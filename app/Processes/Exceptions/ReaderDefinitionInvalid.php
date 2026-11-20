@@ -24,9 +24,9 @@ final class ReaderDefinitionInvalid extends InvalidArgumentException implements 
         );
     }
 
-    public static function limit(string $limit, int $value): self
+    public static function limit(string $limit, int $declaredLimit): self
     {
-        return new self("The reader limit {$limit} must be above zero, not {$value}.");
+        return new self("The reader limit {$limit} must be above zero, not {$declaredLimit}.");
     }
 
     public static function summaryMissing(): self

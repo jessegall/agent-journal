@@ -50,9 +50,9 @@ final readonly class HookController
         $adapter = $this->adapters->for($request->program());
 
         try {
-            $payload = $request->payload();
+            $hookInput = $request->payload();
 
-            if ($payload->isFromNativeChild() || $payload->callsAnyOf($request->program()->nativeChildTools())) {
+            if ($hookInput->isFromNativeChild() || $hookInput->callsAnyOf($request->program()->nativeChildTools())) {
                 $refusal = ProgramReplies::denyTool(self::NATIVE_CHILD_REFUSAL, []);
 
                 return new JsonResponse(HookResponse::fromProgramReply($refusal)->toArray());
@@ -63,7 +63,7 @@ final readonly class HookController
             $this->turns->checkGeneration($sessionId, $generation);
             $this->turns->acknowledgeWake($sessionId, CarbonImmutable::now());
 
-            $call = $adapter->callFor($payload, $access->hookIdentity());
+            $call = $adapter->callFor($hookInput, $access->hookIdentity());
             $capabilities = $adapter->capabilities();
             $answer = function (HookInput $input, Closure $render) use (
                 $sessionId,

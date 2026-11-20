@@ -83,24 +83,24 @@ final readonly class CodexSignIn implements SignInProtocol
     public function deviceCodeFrom(PrivateAccountProcess $process): array|null
     {
         $answer = $this->messageWith($process, 'id', self::LOGIN_REQUEST);
-        $result = is_array($answer['result'] ?? null) ? $answer['result'] : [];
+        $challengeFields = is_array($answer['result'] ?? null) ? $answer['result'] : [];
 
-        if (! is_string($result['verificationUrl'] ?? null) || ! is_string($result['userCode'] ?? null)) {
+        if (! is_string($challengeFields['verificationUrl'] ?? null) || ! is_string($challengeFields['userCode'] ?? null)) {
             return null;
         }
 
-        return ['address' => $result['verificationUrl'], 'code' => $result['userCode']];
+        return ['address' => $challengeFields['verificationUrl'], 'code' => $challengeFields['userCode']];
     }
 
     /**
      * @return array<string, mixed>|null
      */
-    private function messageWith(PrivateAccountProcess $process, string $field, string|int $value): array|null
+    private function messageWith(PrivateAccountProcess $process, string $field, string|int $expectedField): array|null
     {
         foreach (explode("\n", $process->output()) as $line) {
             $message = json_decode($line, true);
 
-            if (is_array($message) && ($message[$field] ?? null) === $value) {
+            if (is_array($message) && ($message[$field] ?? null) === $expectedField) {
                 return $message;
             }
         }

@@ -52,7 +52,7 @@ final readonly class RetainedPages
             ?? throw ContinuationStale::expired();
         $references = array_slice($page->references, $offset);
         $found = $read($references);
-        $entries = [];
+        $visibleRecords = [];
         $offsets = [];
 
         foreach ($references as $index => $reference) {
@@ -60,10 +60,10 @@ final readonly class RetainedPages
                 continue;
             }
 
-            $entries[$reference] = $found[$reference];
+            $visibleRecords[$reference] = $found[$reference];
             $offsets[$reference] = $offset + $index;
         }
 
-        return new RetainedEntries($entries, $offsets, count($references) - count($entries));
+        return new RetainedEntries($visibleRecords, $offsets, count($references) - count($visibleRecords));
     }
 }

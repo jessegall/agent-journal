@@ -33,8 +33,8 @@ final readonly class ParseNextAndOrOperand extends PipelineAdapter
         return $input->chain->toParse;
     }
 
-    protected function back(object $result, object $input): AndOrChain
+    protected function back(object $parsedPipeline, object $input): AndOrChain
     {
-        return $input->joinedWith($result->node);
+        return $input->joinedWith($parsedPipeline->node);
     }
 }

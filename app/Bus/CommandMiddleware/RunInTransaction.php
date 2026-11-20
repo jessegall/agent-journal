@@ -96,7 +96,7 @@ final readonly class RunInTransaction implements CommandMiddleware
             $this->database->statement('SET TRANSACTION ISOLATION LEVEL '.strtoupper($isolation));
             $this->database->statement("SET LOCAL lock_timeout = '{$deadline->lockMilliseconds()}ms'");
             $this->database->statement("SET LOCAL statement_timeout = '{$deadline->milliseconds}ms'");
-            $result = $this->running->running($call, $isolation, fn () => $next($call));
+            $commandReply = $this->running->running($call, $isolation, fn () => $next($call));
             $failed = $this->running->failedJoinedCommand();
 
             if ($failed !== null) {
@@ -105,7 +105,7 @@ final readonly class RunInTransaction implements CommandMiddleware
 
             $this->database->commit();
 
-            return $result;
+            return $commandReply;
         } catch (Throwable $failure) {
             $this->database->rollBack();
 

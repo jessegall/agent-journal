@@ -256,10 +256,10 @@ final class DriverRequest extends Model implements ReadableModel
      * Gives the failed setting change a new value in its own place in the queue, as a new attempt; the host then
      * waits for the program's evidence of it before any content behind it runs.
      */
-    public function repairWith(DriverRequestPayload $payload): void
+    public function repairWith(DriverRequestPayload $driverEnvelope): void
     {
-        $this->carry($payload);
-        $this->payload_digest = $payload->digestFor($this->operation->value);
+        $this->carry($driverEnvelope);
+        $this->payload_digest = $driverEnvelope->digestFor($this->operation->value);
         $this->retry();
     }
 
@@ -418,17 +418,17 @@ final class DriverRequest extends Model implements ReadableModel
         AgentRuntime $runtime,
         DriverOperation $operation,
         string $idempotencyKey,
-        DriverRequestPayload $payload,
+        DriverRequestPayload $driverEnvelope,
     ): self {
         $request = new self();
         $request->agent_runtime_id = $runtime->id;
         $request->sequence = (int) self::query()->where('agent_runtime_id', $runtime->id)->max('sequence') + 1;
         $request->operation = $operation;
         $request->idempotency_key = $idempotencyKey;
-        $request->payload_digest = $payload->digestFor($operation->value);
+        $request->payload_digest = $driverEnvelope->digestFor($operation->value);
         $request->expected_timing = $runtime->activity->expectedTiming();
         $request->expected_observed_at = $runtime->last_observed_at;
-        $request->carry($payload);
+        $request->carry($driverEnvelope);
 
         return $request;
     }
@@ -436,16 +436,16 @@ final class DriverRequest extends Model implements ReadableModel
     /**
      * Takes the payload's typed columns: its message, model, effort or key script.
      */
-    public function carry(DriverRequestPayload $payload): void
+    public function carry(DriverRequestPayload $driverEnvelope): void
     {
-        $this->message = $payload->message;
-        $this->model = $payload->model;
-        $this->effort = $payload->effort;
-        $this->script_id = $payload->scriptId;
-        $this->script_version = $payload->scriptVersion;
-        $this->script_parameters = $payload->scriptParameters;
-        $this->navigation_request_id = $payload->navigationRound?->navigationRequestId;
-        $this->navigation_round = $payload->navigationRound?->toStored();
+        $this->message = $driverEnvelope->message;
+        $this->model = $driverEnvelope->model;
+        $this->effort = $driverEnvelope->effort;
+        $this->script_id = $driverEnvelope->scriptId;
+        $this->script_version = $driverEnvelope->scriptVersion;
+        $this->script_parameters = $driverEnvelope->scriptParameters;
+        $this->navigation_request_id = $driverEnvelope->navigationRound?->navigationRequestId;
+        $this->navigation_round = $driverEnvelope->navigationRound?->toStored();
     }
 
     /**

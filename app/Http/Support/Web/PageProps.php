@@ -27,7 +27,7 @@ final readonly class PageProps
 {
     public function __construct(
         private UiDeclarations $declarations,
-        private WindowResults $results,
+        private WindowResults $windowResults,
         private ReaderRequests $readers,
         private SlotContexts $contexts,
         private ResponseFactory $inertia,
@@ -111,13 +111,13 @@ final readonly class PageProps
         }
 
         $record = $page->get();
-        $values = array_map($request->parameter(...), $record->path->parameters);
+        $routeArguments = array_map($request->parameter(...), $record->path->parameters);
         $route = new Route(['GET'], $record->uri, []);
         $route->bind(
             Request::create(
                 '/'.strtr(
                     $record->uri,
-                    array_combine(array_map(fn (string $name) => '{'.$name.'}', $record->path->parameters), $values),
+                    array_combine(array_map(fn (string $name) => '{'.$name.'}', $record->path->parameters), $routeArguments),
                 ),
             ),
         );

@@ -35,9 +35,9 @@ final readonly class SendSignedCalls implements CallSender
     public function send(JournalCall $call): Data
     {
         $declaration = CallDeclaration::of($call::class);
-        $values = $call instanceof Data ? $call->toArray() : [];
-        $path = $this->pathOf($declaration, $values);
-        $body = array_diff_key($values, array_flip($declaration->pathProperties));
+        $callFields = $call instanceof Data ? $call->toArray() : [];
+        $path = $this->pathOf($declaration, $callFields);
+        $body = array_diff_key($callFields, array_flip($declaration->pathProperties));
         $prepared = $this->client->prepareWithId(
             $this->settings,
             "/agent/{$path}",
@@ -65,13 +65,13 @@ final readonly class SendSignedCalls implements CallSender
     }
 
     /**
-     * @param  array<string, mixed>  $values
+     * @param  array<string, mixed>  $callFields
      */
-    private function pathOf(CallDeclaration $declaration, array $values): string
+    private function pathOf(CallDeclaration $declaration, array $callFields): string
     {
         return (string) preg_replace_callback(
             '/\{(\w+)\}/',
-            fn (array $placeholder) => rawurlencode((string) $values[$placeholder[1]]),
+            fn (array $placeholder) => rawurlencode((string) $callFields[$placeholder[1]]),
             $declaration->endpoint->path,
         );
     }

@@ -201,23 +201,23 @@ final readonly class Supervisor
      */
     private function part(PlanStep $step, ExecutionContext $context, RunState $state): StepOutcome
     {
-        $values = [];
+        $environmentAssignments = [];
         foreach ($step->children as $substitution) {
             $output = $this->inOrder($substitution->children, $context, $state)->output;
-            $values[$substitution->node] = rtrim($output, "\n");
+            $environmentAssignments[$substitution->node] = rtrim($output, "\n");
         }
         if ($step->argv === []) {
-            $assignments = array_map(fn (PlanWord $word) => $this->text($word, $values), $step->assignments);
+            $assignments = array_map(fn (PlanWord $word) => $this->text($word, $environmentAssignments), $step->assignments);
 
             return new StepOutcome(0, $context->withEnvironment([...$context->environment, ...$assignments]));
         }
         $part = $this->queued($step, $state);
         if ($step->type === StepType::Builtin) {
-            $argv = array_map(fn (PlanWord $word) => $this->text($word, $values), $step->argv);
+            $argv = array_map(fn (PlanWord $word) => $this->text($word, $environmentAssignments), $step->argv);
 
             return $this->builtin($part, $argv, $context, $state);
         }
-        $process = $this->spawn($part, $step, $values, $context, $state, ['file', '/dev/null', 'r']);
+        $process = $this->spawn($part, $step, $environmentAssignments, $context, $state, ['file', '/dev/null', 'r']);
         if (is_string($process)) {
             return new StepOutcome(127, $context);
         }
@@ -240,25 +240,25 @@ final readonly class Supervisor
             return new StepOutcome(127, $context);
         }
         $state->events->startedInside($part, gethostname() ?: 'unknown');
-        $result = $this->builtins->run($argv[0], array_slice($argv, 1), $context);
-        $this->capture($part, OutputStream::Stdout, $result->stdout, $state);
-        $this->capture($part, OutputStream::Stderr, $result->stderr, $state);
-        $state->events->ended($part, PartEnd::exited($result->status), true);
+        $builtinExecution = $this->builtins->run($argv[0], array_slice($argv, 1), $context);
+        $this->capture($part, OutputStream::Stdout, $builtinExecution->stdout, $state);
+        $this->capture($part, OutputStream::Stderr, $builtinExecution->stderr, $state);
+        $state->events->ended($part, PartEnd::exited($builtinExecution->status), true);
 
-        return new StepOutcome($result->status, $result->context, $result->stdout);
+        return new StepOutcome($builtinExecution->status, $builtinExecution->context, $builtinExecution->stdout);
     }
 
     /**
      * Starts an external part from its argv after its intent is stored; a part that cannot start is SpawnFailed and its
      * reason is returned.
      *
-     * @param  array<int, string>  $values
+     * @param  array<int, string>  $environmentAssignments
      * @param  array<int, string>  $input
      */
     private function spawn(
         PartKey $part,
         PlanStep $step,
-        array $values,
+        array $environmentAssignments,
         ExecutionContext $context,
         RunState $state,
         array $input,
@@ -269,11 +269,11 @@ final readonly class Supervisor
         }
         $descriptors = [0 => $input, 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         foreach ($step->redirects as $redirect) {
-            $descriptors[$redirect->descriptor] = $this->descriptor($redirect, $values, $context);
+            $descriptors[$redirect->descriptor] = $this->descriptor($redirect, $environmentAssignments, $context);
         }
-        $assigned = array_map(fn (PlanWord $word) => $this->text($word, $values), $step->assignments);
+        $assigned = array_map(fn (PlanWord $word) => $this->text($word, $environmentAssignments), $step->assignments);
         $environment = array_diff_key([...$context->environment, ...$assigned], array_flip(self::SECRET_VARIABLES));
-        $argv = array_map(fn (PlanWord $word) => $this->text($word, $values), $step->argv);
+        $argv = array_map(fn (PlanWord $word) => $this->text($word, $environmentAssignments), $step->argv);
         $process = SpawnedProcess::start($argv, $descriptors, $context->workingFolder, $environment);
         if (is_string($process)) {
             $state->events->spawnFailed($part, $process);
@@ -321,12 +321,12 @@ final readonly class Supervisor
     }
 
     /**
-     * @param  array<int, string>  $values
+     * @param  array<int, string>  $environmentAssignments
      * @return array<int, string|int>
      */
-    private function descriptor(PlanRedirect $redirect, array $values, ExecutionContext $context): array
+    private function descriptor(PlanRedirect $redirect, array $environmentAssignments, ExecutionContext $context): array
     {
-        $target = $this->text($redirect->target, $values);
+        $target = $this->text($redirect->target, $environmentAssignments);
         $path = str_starts_with($target, '/') ? $target : rtrim($context->workingFolder, '/').'/'.$target;
 
         return match ($redirect->type) {
@@ -367,11 +367,11 @@ final readonly class Supervisor
     }
 
     /**
-     * @param  array<int, string>  $values
+     * @param  array<int, string>  $environmentAssignments
      */
-    private function text(PlanWord $word, array $values): string
+    private function text(PlanWord $word, array $environmentAssignments): string
     {
-        $pieces = array_map(fn (string|int $piece) => is_int($piece) ? $values[$piece] : $piece, $word->pieces);
+        $pieces = array_map(fn (string|int $piece) => is_int($piece) ? $environmentAssignments[$piece] : $piece, $word->pieces);
 
         return implode('', $pieces);
     }

@@ -239,13 +239,13 @@ class ReadBuilder extends Builder
             throw RelationReadUndeclared::for($name);
         }
 
-        $results = $relation->getEager();
+        $relatedModels = $relation->getEager();
 
-        if ($query instanceof self && $query->holdsMoreThanDeclared($results->count())) {
+        if ($query instanceof self && $query->holdsMoreThanDeclared($relatedModels->count())) {
             throw ReadLimitExceeded::forRelation($name, (int) $query->completeRelationMax);
         }
 
-        return $relation->match($relation->initRelation($models, $name), $results, $name);
+        return $relation->match($relation->initRelation($models, $name), $relatedModels, $name);
     }
 
     /**

@@ -30,7 +30,7 @@ final readonly class InboxNotices implements InboxNoticesContract
 
     public function __construct(
         private CommandBus $commands,
-        private EntryDispatchers $entries,
+        private EntryDispatchers $entryDispatchers,
         private RequestKey $key,
         private AcceptedReceipt $accepted,
         private InboxResolver $inboxes,

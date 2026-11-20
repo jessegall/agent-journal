@@ -17,8 +17,8 @@ final readonly class RetireAgentController
 {
     public function __invoke(RetireAgentCall $call, CommandBus $commands): AssignmentResultData
     {
-        $result = $commands->run(new RetireAgent(strtolower($call->agentId)));
+        $retirement = $commands->run(new RetireAgent(strtolower($call->agentId)));
 
-        return AssignmentResultData::of($result, new AssignmentHolders([]));
+        return AssignmentResultData::of($retirement, new AssignmentHolders([]));
     }
 }

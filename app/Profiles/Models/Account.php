@@ -243,7 +243,7 @@ final class Account extends Model implements ReadableModel
      * a check of an older generation changes nothing, only a definite sign-out needs a new sign-in, and an account
      * held for its check after a sign-in again stays held until the answer is certain.
      */
-    public function applyCheck(int $generation, AccountCheckResult $result, CarbonImmutable $now): bool
+    public function applyCheck(int $generation, AccountCheckResult $accountCheck, CarbonImmutable $now): bool
     {
         if (! $this->isGeneration($generation)) {
             return false;
@@ -251,7 +251,7 @@ final class Account extends Model implements ReadableModel
 
         $isHeldForCheck = $this->isHeldForCheck();
 
-        if ($isHeldForCheck && $result === AccountCheckResult::Unknown) {
+        if ($isHeldForCheck && $accountCheck === AccountCheckResult::Unknown) {
             return false;
         }
 
@@ -261,7 +261,7 @@ final class Account extends Model implements ReadableModel
 
         $this->check_requested_generation = null;
         $this->checked_at = $now;
-        $isSignedOut = $result === AccountCheckResult::SignedOut && $this->state === AccountState::SignedIn;
+        $isSignedOut = $accountCheck === AccountCheckResult::SignedOut && $this->state === AccountState::SignedIn;
 
         if ($isSignedOut) {
             $this->state = AccountState::NeedsSignIn;

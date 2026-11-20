@@ -220,8 +220,8 @@ final class HookPayload extends Data
         return ($response['is_error'] ?? false) === true ? ToolOutcome::Failed : ToolOutcome::Succeeded;
     }
 
-    private function required(string|Optional $value, string $field): string
+    private function required(string|Optional $hookField, string $field): string
     {
-        return $value instanceof Optional ? throw UnreadablePayload::missing($field) : $value;
+        return $hookField instanceof Optional ? throw UnreadablePayload::missing($field) : $hookField;
     }
 }

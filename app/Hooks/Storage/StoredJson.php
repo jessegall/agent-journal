@@ -21,10 +21,10 @@ final class StoredJson
      * @param  Closure(array<mixed>): TValue  $build
      * @return TValue
      */
-    public static function read(string $column, mixed $value, Closure $build): mixed
+    public static function read(string $column, mixed $storedJson, Closure $build): mixed
     {
         try {
-            return $build((array) json_decode((string) $value, true, flags: JSON_THROW_ON_ERROR));
+            return $build((array) json_decode((string) $storedJson, true, flags: JSON_THROW_ON_ERROR));
         } catch (JsonException|CannotCreateData|TypeError $failure) {
             throw StoredValueInvalid::forColumn($column, $failure);
         }

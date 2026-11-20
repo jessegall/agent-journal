@@ -60,11 +60,11 @@ final readonly class WatchedRuntimes
             return 0;
         }
 
-        $entries = array_map(
+        $runtimeSignatures = array_map(
             fn (WatchedRuntime $runtime): string => "{$runtime->runtimeId}:{$runtime->intervalMs}",
             $watched,
         );
 
-        return crc32(implode(',', $entries));
+        return crc32(implode(',', $runtimeSignatures));
     }
 }

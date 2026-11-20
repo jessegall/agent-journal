@@ -17,8 +17,8 @@ final class UnreadablePayload extends UnexpectedValueException
         return new self("The hook payload has no {$field}.");
     }
 
-    public static function forValue(string $field, string $value): self
+    public static function forValue(string $field, string $hookField): self
     {
-        return new self("The hook payload's {$field} value {$value} cannot be read.");
+        return new self("The hook payload's {$field} value {$hookField} cannot be read.");
     }
 }

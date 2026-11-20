@@ -9,6 +9,7 @@ declare(strict_types=1);
  *   php tools/refactoring/rename-member.php property App\\Core\\Actors\\Support\\ActorIdentity kind type
  *   php tools/refactoring/rename-member.php constant App\\Core\\Web\\Pages\\LoginPage COMPONENT PAGE
  *   php tools/refactoring/rename-member.php variable app/Core/Assignments kind type
+ *   php tools/refactoring/rename-member.php variable app/Core/Assignments/Assignment.php kind type
  *   php tools/refactoring/rename-member.php --list=tools/refactoring/members.txt
  *   php tools/refactoring/rename-member.php ... --dry-run
  *   php tools/refactoring/rename-member.php --test
@@ -220,11 +221,15 @@ function parsedFiles(string $root, array $folders): array
     foreach ($folders as $folder) {
         $path = $root.'/'.$folder;
 
-        if (! is_dir($path)) {
+        if (! file_exists($path)) {
             continue;
         }
 
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS)) as $file) {
+        $sourceFiles = is_file($path)
+            ? [new SplFileInfo($path)]
+            : new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+
+        foreach ($sourceFiles as $file) {
             $name = $file->getPathname();
 
             if ($file->getExtension() !== 'php' || array_filter(SKIPPED, static fn (string $skip): bool => str_contains($name, '/'.$skip.'/')) !== []) {
@@ -672,6 +677,9 @@ function testCases(): array
         ['a variable in a folder, its parameter and its @param line', ['variable', 'app/Use', 'kind', 'type'], [],
             ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
             ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => str_replace(['$kind = ', '? $kind.'], ['$type = ', '? $type.'], $user)], false],
+        ['a variable rename scoped to one file', ['variable', 'app/Use/run.php', 'kind', 'type'], [],
+            ['app/Use/other.php' => $user, 'app/Use/run.php' => $user],
+            ['app/Use/other.php' => $user, 'app/Use/run.php' => str_replace(['$kind = ', '? $kind.'], ['$type = ', '? $type.'], $user)], false],
         ['a property another class also declares is refused', ['property', 'App\\Ids\\Identity', 'kind', 'type'], [],
             ['app/Ids/Identity.php' => $identity, 'app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$kind = '';\n}\n"],
             ['app/Ids/Identity.php' => $identity], true],

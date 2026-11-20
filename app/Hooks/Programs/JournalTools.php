@@ -33,14 +33,14 @@ final readonly class JournalTools
      *
      * @throws UnsupportedHook
      */
-    public function requireJournalResource(string $program, HookPayload $payload): void
+    public function requireJournalResource(string $program, HookPayload $hookInput): void
     {
-        $arguments = $payload->toolArguments();
+        $arguments = $hookInput->toolArguments();
         $server = $arguments->hasArgument('server') ? $arguments->textArgument('server') : self::SERVER;
         $uri = $arguments->hasArgument('uri') ? $arguments->textArgument('uri') : self::RESOURCE_SCHEME;
 
         if ($server !== self::SERVER || $uri === null || ! str_starts_with($uri, self::RESOURCE_SCHEME)) {
-            throw UnsupportedHook::forResource($program, $payload->toolNameText());
+            throw UnsupportedHook::forResource($program, $hookInput->toolNameText());
         }
     }
 }

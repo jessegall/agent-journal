@@ -201,8 +201,8 @@ final readonly class DeclarativeReader
             return "\x01".$line;
         }
         $pairs = [];
-        foreach ($fields as $key => $value) {
-            $pairs[] = $key.'='.(is_scalar($value) ? var_export($value, true) : 'object');
+        foreach ($fields as $key => $configuredField) {
+            $pairs[] = $key.'='.(is_scalar($configuredField) ? var_export($configuredField, true) : 'object');
         }
 
         return implode(' ', $pairs);

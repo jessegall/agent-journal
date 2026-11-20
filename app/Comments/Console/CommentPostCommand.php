@@ -52,7 +52,7 @@ final class CommentPostCommand extends Command
             'quote' => $this->filledOption('quote'),
             'startOffset' => $this->filledOption('start-offset') === null ? null : (int) $this->option('start-offset'),
             'endOffset' => $this->filledOption('end-offset') === null ? null : (int) $this->option('end-offset'),
-        ], fn (int|string|null $value): bool => $value !== null);
+        ], fn (int|string|null $commentField): bool => $commentField !== null);
         $version = $this->filledOption('at-revision');
 
         if ($version === null && $fields === []) {
@@ -64,8 +64,8 @@ final class CommentPostCommand extends Command
 
     private function filledOption(string $name): string|null
     {
-        $value = $this->input->getOption($name);
+        $commentField = $this->input->getOption($name);
 
-        return is_string($value) && $value !== '' ? $value : null;
+        return is_string($commentField) && $commentField !== '' ? $commentField : null;
     }
 }

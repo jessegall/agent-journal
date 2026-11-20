@@ -38,7 +38,7 @@ final readonly class LogCommand implements CommandMiddleware
         $this->meter->begin();
 
         try {
-            $result = $next($call);
+            $commandReply = $next($call);
         } catch (ActorNotAllowed $refusal) {
             $this->write($call, $this->meter->end(), 'refused: '.class_basename($refusal));
             $this->audit($call, $refusal);
@@ -58,7 +58,7 @@ final readonly class LogCommand implements CommandMiddleware
 
         $this->write($call, $this->meter->end(), 'done');
 
-        return $result;
+        return $commandReply;
     }
 
     private function write(CommandCall $call, ReadCounts $counts, string $outcome): void

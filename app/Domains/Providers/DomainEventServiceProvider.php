@@ -52,13 +52,13 @@ final class DomainEventServiceProvider extends EventServiceProvider
             return $events;
         }
 
-        $entries = $this->stateEvents()->cacheEntries();
+        $stateEventEntries = $this->stateEvents()->cacheEntries();
 
-        if ($entries === []) {
+        if ($stateEventEntries === []) {
             return $events;
         }
 
-        return [...$events, self::STATE_EVENTS => $entries];
+        return [...$events, self::STATE_EVENTS => $stateEventEntries];
     }
 
     /**

@@ -53,17 +53,17 @@ final class Registry
     }
 
     /**
-     * @param  TItem  $item
+     * @param  TItem  $registration
      *
      * @throws Throwable
      */
-    public function put(string $key, mixed $item): void
+    public function put(string $key, mixed $registration): void
     {
         if ($this->has($key) && $this->repeated->isDefined()) {
             throw ($this->repeated->get())($key);
         }
 
-        $this->items[$key] = $item;
+        $this->items[$key] = $registration;
     }
 
     public function has(string $key): bool

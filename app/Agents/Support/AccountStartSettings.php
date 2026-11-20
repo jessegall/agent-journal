@@ -46,9 +46,9 @@ final class AccountStartSettings
 
     private string $protectionSettings = '';
 
-    public function setVariable(string $name, string $value): void
+    public function setVariable(string $name, string $variableText): void
     {
-        $this->environment[] = new StartSetting($name, $value);
+        $this->environment[] = new StartSetting($name, $variableText);
     }
 
     public function setEmptyFolderVariable(string $name): void
@@ -66,9 +66,9 @@ final class AccountStartSettings
         $this->startFlags[] = $flag;
     }
 
-    public function keepAccountSetting(string $name, string $value): void
+    public function keepAccountSetting(string $name, string $variableText): void
     {
-        $this->accountSettings[] = new StartSetting($name, $value);
+        $this->accountSettings[] = new StartSetting($name, $variableText);
     }
 
     /**

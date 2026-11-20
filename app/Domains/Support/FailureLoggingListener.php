@@ -20,14 +20,14 @@ final readonly class FailureLoggingListener
      */
     public function __construct(public string $event, public string|AvailableListener $listener) {}
 
-    public function __invoke(mixed ...$payload): mixed
+    public function __invoke(mixed ...$eventArguments): mixed
     {
         $container = Container::getInstance();
 
         try {
             return is_string($this->listener)
-                ? $container->make(Dispatcher::class)->makeListener($this->listener)('', $payload)
-                : ($this->listener)(...$payload);
+                ? $container->make(Dispatcher::class)->makeListener($this->listener)('', $eventArguments)
+                : ($this->listener)(...$eventArguments);
         } catch (Throwable $failure) {
             $container->make(LoggerInterface::class)->error('A listener of a committed fact failed.', [
                 'event' => $this->event,

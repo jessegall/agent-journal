@@ -120,7 +120,7 @@ final class TextResolverTest extends TestCase
 
         $this->expectException(TextSelectionRefused::class);
 
-        $this->resolver()->read($this->record('doc', 1), '1', new TextSelection(all: true));
+        $this->resolver()->read($this->record('doc', 1), '1', new TextSelection(isWholeText: true));
     }
 
     public function test_a_report_has_only_version_one(): void

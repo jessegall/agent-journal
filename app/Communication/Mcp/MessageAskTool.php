@@ -41,8 +41,8 @@ final class MessageAskTool extends MessageWriteTool
         );
     }
 
-    protected function payload(mixed $result): array
+    protected function payload(mixed $messageId): array
     {
-        return ['message_id' => $result];
+        return ['message_id' => $messageId];
     }
 }

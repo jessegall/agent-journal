@@ -49,7 +49,7 @@ final readonly class ChoiceOptions
             throw SettingDeclarationInvalid::badOptionCount($key, self::MOST);
         }
 
-        $values = [];
+        $optionCatalog = [];
 
         foreach ($options as $option) {
             if (get_debug_type($option->value) !== get_debug_type($default)) {
@@ -61,11 +61,11 @@ final readonly class ChoiceOptions
                 throw SettingDeclarationInvalid::badBounds($key);
             }
 
-            if (in_array($option->value, $values, true)) {
+            if (in_array($option->value, $optionCatalog, true)) {
                 throw SettingDeclarationInvalid::optionTwice($key);
             }
 
-            $values[] = $option->value;
+            $optionCatalog[] = $option->value;
         }
 
         $checked = new self($options);

@@ -422,8 +422,8 @@ final readonly class TreeClassifier implements CommandClassifier
             );
         }
         $arguments = array_slice($words, 3);
-        $values = array_map(fn (Word $word): string|null => $word->literal(), $arguments);
-        if (in_array(null, $values, true) || count($values) > count($alias->arguments)) {
+        $literalArguments = array_map(fn (Word $word): string|null => $word->literal(), $arguments);
+        if (in_array(null, $literalArguments, true) || count($literalArguments) > count($alias->arguments)) {
             return $this->unknown(
                 $node,
                 $program,
@@ -437,7 +437,7 @@ final readonly class TreeClassifier implements CommandClassifier
         $inner = $this->classifyTree(
             $this->syntax->parse($alias->body, ShellDialect::Bash),
             $depth + 1,
-            $context->insideAlias($alias->id, array_values(array_filter($values, 'is_string'))),
+            $context->insideAlias($alias->id, array_values(array_filter($literalArguments, 'is_string'))),
         );
         $facts = array_map(
             fn (ClassFact $fact) => new ClassFact(

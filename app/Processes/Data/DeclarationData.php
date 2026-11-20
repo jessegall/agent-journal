@@ -53,7 +53,7 @@ final class DeclarationData extends Data
         $rule = $revision->payload;
         $replaces = array_map(fn (RuleReference $replaced): string => $replaced->label(), $rule->replaces);
         $contract = array_merge([], ...array_map(
-            fn (VerificationContract $item): array => $item->description(),
+            fn (VerificationContract $contract): array => $contract->description(),
             $rule->contracts,
         ));
         $examples = array_map(fn (RuleExample $example): string => $example->label(), $revision->examples);

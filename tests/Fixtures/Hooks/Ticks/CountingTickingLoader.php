@@ -40,7 +40,7 @@ final class CountingTickingLoader implements TickableStateLoader
 
     public function statesFor(StateReferences $references): StateSet
     {
-        $this->batchSizes[] = count($references->all);
+        $this->batchSizes[] = count($references->references);
 
         return StateSet::build(
             $references,

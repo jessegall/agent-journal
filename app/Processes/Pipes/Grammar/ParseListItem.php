@@ -33,8 +33,8 @@ final readonly class ParseListItem extends PipelineAdapter
         return $input->toParse->andOr();
     }
 
-    protected function back(object $result, object $input): ListItem
+    protected function back(object $parsedCommand, object $input): ListItem
     {
-        return new ListItem($input->toParse, $result->node);
+        return new ListItem($input->toParse, $parsedCommand->node);
     }
 }

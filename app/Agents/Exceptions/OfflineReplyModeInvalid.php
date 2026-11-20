@@ -11,8 +11,8 @@ use InvalidArgumentException;
  */
 final class OfflineReplyModeInvalid extends InvalidArgumentException
 {
-    public static function for(string $value): self
+    public static function for(string $modeText): self
     {
-        return new self("The start names the offline reply '{$value}', which the journal never grants; start again.");
+        return new self("The start names the offline reply '{$modeText}', which the journal never grants; start again.");
     }
 }

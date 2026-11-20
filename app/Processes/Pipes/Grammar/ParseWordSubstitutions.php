@@ -32,7 +32,7 @@ final readonly class ParseWordSubstitutions extends PipelineAdapter
         return $input->substitutions();
     }
 
-    protected function back(object $result, object $input): WordToParse
+    protected function back(object $parsedWord, object $input): WordToParse
     {
         return $input;
     }

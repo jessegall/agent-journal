@@ -55,5 +55,5 @@ abstract class JournalWriteTool extends JournalTool
      */
     abstract protected function command(ToolArguments $arguments): Command;
 
-    abstract protected function present(mixed $result): ToolResult;
+    abstract protected function present(mixed $commandReply): ToolResult;
 }

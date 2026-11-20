@@ -69,22 +69,22 @@ final readonly class RetainedNumberedPages implements NumberedPages
      * The cards from the continuation's offset that fit the budget, and the call that goes on: the rest of this page
      * when the budget cut it, else the next numbered page when there is one.
      *
-     * @param  RetainedEntries<array<string, mixed>>  $entries
+     * @param  RetainedEntries<array<string, mixed>>  $retainedCards
      */
-    private function fit(Continuation $continuation, ListedPage $page, RetainedEntries $entries): ToolResult
+    private function fit(Continuation $continuation, ListedPage $page, RetainedEntries $retainedCards): ToolResult
     {
-        $cards = $entries->entries;
+        $cards = $retainedCards->entries;
         $count = count($cards);
 
         while ($count > 1 && ! $this->budget->payloadFits(
-            $this->payload($page, array_slice($cards, 0, $count), $entries->unavailableCount),
+            $this->payload($page, array_slice($cards, 0, $count), $retainedCards->unavailableCount),
         )) {
             $count--;
         }
 
         $nextActions = match (true) {
             $count < count($cards) => [
-                $this->rest($continuation, $page, $entries->offsets[array_keys($cards)[$count]]),
+                $this->rest($continuation, $page, $retainedCards->offsets[array_keys($cards)[$count]]),
             ],
             $page->hasNextPage() => [
                 new NextAction($continuation->tool, [...$continuation->filters, 'page' => $page->page + 1]),
@@ -93,7 +93,7 @@ final readonly class RetainedNumberedPages implements NumberedPages
         };
 
         return ToolResult::ok(
-            $this->payload($page, array_slice($cards, 0, $count), $entries->unavailableCount),
+            $this->payload($page, array_slice($cards, 0, $count), $retainedCards->unavailableCount),
             $nextActions,
         );
     }

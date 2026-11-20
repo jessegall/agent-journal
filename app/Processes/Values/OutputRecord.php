@@ -29,9 +29,9 @@ final readonly class OutputRecord
      */
     public function count(string $field): int|null
     {
-        $value = $this->captures[$field] ?? '';
+        $capturedOutput = $this->captures[$field] ?? '';
 
-        return ctype_digit($value) ? (int) $value : null;
+        return ctype_digit($capturedOutput) ? (int) $capturedOutput : null;
     }
 
     /**

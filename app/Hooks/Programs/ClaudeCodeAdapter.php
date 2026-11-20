@@ -85,40 +85,40 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         return HookProgram::ClaudeCode->modelArguments($model);
     }
 
-    public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall
+    public function callFor(HookPayload $hookInput, HookIdentity $hook): ProgramCall
     {
-        $event = $payload->event()->getOrCall(
-            static fn () => throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName),
+        $event = $hookInput->event()->getOrCall(
+            static fn () => throw UnsupportedHook::for(self::PROGRAM, $hookInput->hookEventName),
         );
 
         return match ($event) {
-            HookEvent::SessionStart => $this->startCall($payload, $hook),
+            HookEvent::SessionStart => $this->startCall($hookInput, $hook),
             HookEvent::UserPromptSubmit => new JudgedCall(
                 new PromptSubmitted(
                     $hook,
                     new PromptDetails(
-                        $payload->nativePromptId() ?? $hook->hookId,
-                        $payload->promptText(),
-                        $payload->nativePromptId(),
+                        $hookInput->nativePromptId() ?? $hook->hookId,
+                        $hookInput->promptText(),
+                        $hookInput->nativePromptId(),
                     ),
                 ),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
-            HookEvent::PreToolUse => $this->toolCall($payload, $hook),
-            HookEvent::PostToolUse => $this->callsJournalTools($payload)
+            HookEvent::PreToolUse => $this->toolCall($hookInput, $hook),
+            HookEvent::PostToolUse => $this->callsJournalTools($hookInput)
                 ? JournalToolCall::finished()
-                : JudgedCall::forFinishedTool($hook, $payload),
+                : JudgedCall::forFinishedTool($hook, $hookInput),
             HookEvent::Stop => new JudgedCall(
-                new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
+                new StopRequested($hook, new StopDetails($hook->hookId, $hookInput->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
             HookEvent::StopFailure => new NotificationCall(
                 $hook,
-                new FailureDetails(HookProgram::ClaudeCode->value, $payload->programFailure()),
+                new FailureDetails(HookProgram::ClaudeCode->value, $hookInput->programFailure()),
                 $this->failures,
             ),
             HookEvent::SessionEnd => new JudgedCall(
-                new SessionEnded($hook, new SessionEndDetails($payload->endReason())),
+                new SessionEnded($hook, new SessionEndDetails($hookInput->endReason())),
                 fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionEnd, $answer),
             ),
         };
@@ -137,12 +137,12 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     /**
      * A start after a compaction is the compaction itself, identified by this callback's id, which its retries share.
      */
-    private function startCall(HookPayload $payload, HookIdentity $hook): ProgramCall
+    private function startCall(HookPayload $hookInput, HookIdentity $hook): ProgramCall
     {
-        $source = $payload->startSource();
+        $source = $hookInput->startSource();
         $input = $source === SessionStartSource::Compact
             ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
-            : new SessionStarted($hook, $payload->startDetails());
+            : new SessionStarted($hook, $hookInput->startDetails());
 
         return new JudgedCall(
             $input,
@@ -153,24 +153,24 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     /**
      * After a call to the journal's own tools nothing walks the stack again; after any other tool the journal is told.
      */
-    private function callsJournalTools(HookPayload $payload): bool
+    private function callsJournalTools(HookPayload $hookInput): bool
     {
-        $tool = ClaudeCodeTool::tryFrom($payload->toolNameText());
+        $tool = ClaudeCodeTool::tryFrom($hookInput->toolNameText());
 
-        return $this->journalTools->names($payload->toolNameText())
+        return $this->journalTools->names($hookInput->toolNameText())
             || ($tool instanceof ClaudeCodeTool && $tool->discoversJournalTools());
     }
 
-    private function toolCall(HookPayload $payload, HookIdentity $hook): ProgramCall
+    private function toolCall(HookPayload $hookInput, HookIdentity $hook): ProgramCall
     {
-        if ($this->journalTools->names($payload->toolNameText())) {
+        if ($this->journalTools->names($hookInput->toolNameText())) {
             return JournalToolCall::starting();
         }
 
-        $tool = ClaudeCodeTool::named($payload->toolNameText());
+        $tool = ClaudeCodeTool::named($hookInput->toolNameText());
 
         if ($tool->canReadResources()) {
-            $this->journalTools->requireJournalResource(self::PROGRAM, $payload);
+            $this->journalTools->requireJournalResource(self::PROGRAM, $hookInput);
         }
 
         if ($tool->discoversJournalTools()) {
@@ -178,25 +178,25 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         }
 
         if ($tool->isFileReader()) {
-            if ($this->protection->refusesRead($hook->sessionId, $payload->fileRead())) {
+            if ($this->protection->refusesRead($hook->sessionId, $hookInput->fileRead())) {
                 return new UnjudgedCall(ProgramReplies::denyProtected());
             }
 
             return $this->files->callUnlessRefused(
                 $hook,
                 FileAccess::Read,
-                $payload->toolArguments()->presentTexts('file_path', 'path'),
-                fn () => $this->judgedTool($hook, $tool->operation($payload->toolArguments()), $payload),
+                $hookInput->toolArguments()->presentTexts('file_path', 'path'),
+                fn () => $this->judgedTool($hook, $tool->operation($hookInput->toolArguments()), $hookInput),
             );
         }
 
-        if ($tool === ClaudeCodeTool::Bash && $this->refusesCommand($payload, $hook)) {
+        if ($tool === ClaudeCodeTool::Bash && $this->refusesCommand($hookInput, $hook)) {
             return new UnjudgedCall(ProgramReplies::denyProtected());
         }
 
         if ($tool === ClaudeCodeTool::Bash) {
-            $original = $payload->toolArguments();
-            $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
+            $original = $hookInput->toolArguments();
+            $command = $this->parser->parse($hookInput->argument('command'), ShellDialect::Bash);
 
             return $this->files->guardShell($hook, $command, fn () => new JudgedCall(
                 new ShellCommandRequested($hook, $command),
@@ -205,10 +205,10 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         }
 
         if ($tool->changesFiles()) {
-            $original = $payload->toolArguments();
-            $path = $payload->argument('file_path', 'notebook_path');
+            $original = $hookInput->toolArguments();
+            $path = $hookInput->argument('file_path', 'notebook_path');
 
-            if ($this->protection->refusesChange(ProtectedFileRead::resolve($payload->workFolder(), $path))) {
+            if ($this->protection->refusesChange(ProtectedFileRead::resolve($hookInput->workFolder(), $path))) {
                 return new UnjudgedCall(ProgramReplies::denyProtected());
             }
 
@@ -226,15 +226,15 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             return new UnjudgedCall(ProgramReplies::allowTool([]));
         }
 
-        return $this->judgedTool($hook, $tool->operation($payload->toolArguments()), $payload);
+        return $this->judgedTool($hook, $tool->operation($hookInput->toolArguments()), $hookInput);
     }
 
     /**
      * A tool call the walk judges by its declared operation; the ready bottom allows it only when the policy grants it.
      */
-    private function judgedTool(HookIdentity $hook, Operation $operation, HookPayload $payload): ProgramCall
+    private function judgedTool(HookIdentity $hook, Operation $operation, HookPayload $hookInput): ProgramCall
     {
-        $original = $payload->toolArguments();
+        $original = $hookInput->toolArguments();
 
         return new JudgedCall(
             new ToolRequested($hook, $operation),
@@ -242,10 +242,10 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         );
     }
 
-    private function refusesCommand(HookPayload $payload, HookIdentity $hook): bool
+    private function refusesCommand(HookPayload $hookInput, HookIdentity $hook): bool
     {
-        $command = $payload->argument('command');
+        $command = $hookInput->argument('command');
 
-        return $this->protection->refusesCommand($hook->sessionId, $command, $payload->workFolder());
+        return $this->protection->refusesCommand($hook->sessionId, $command, $hookInput->workFolder());
     }
 }

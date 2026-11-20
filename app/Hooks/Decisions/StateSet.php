@@ -30,7 +30,7 @@ final readonly class StateSet
         $states = [];
         $typeKey = '';
 
-        foreach ($references->all as $position => $reference) {
+        foreach ($references->references as $position => $reference) {
             $typeKey = $reference->typeKey;
 
             try {

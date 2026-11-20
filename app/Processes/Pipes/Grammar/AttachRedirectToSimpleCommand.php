@@ -32,8 +32,8 @@ final readonly class AttachRedirectToSimpleCommand extends PipelineAdapter
         return $input->toParse->redirect($input->parts->node);
     }
 
-    protected function back(object $result, object $input): SimpleCommandDraft
+    protected function back(object $parsedRedirect, object $input): SimpleCommandDraft
     {
-        return $input->withRedirect($result);
+        return $input->withRedirect($parsedRedirect);
     }
 }

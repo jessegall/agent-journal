@@ -47,8 +47,8 @@ final class NavigationGiveUpTool extends JournalWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $completion): ToolResult
     {
-        return ToolResult::ok(['abandoned' => $result], []);
+        return ToolResult::ok(['abandoned' => $completion], []);
     }
 }

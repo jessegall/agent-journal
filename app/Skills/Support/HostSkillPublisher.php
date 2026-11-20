@@ -76,11 +76,11 @@ final readonly class HostSkillPublisher implements SkillPublisher
             return;
         }
 
-        $entries = new RecursiveIteratorIterator(
+        $skillFiles = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($folder, FilesystemIterator::SKIP_DOTS),
             RecursiveIteratorIterator::CHILD_FIRST,
         );
-        $paths = iterator_to_array($entries, false);
+        $paths = iterator_to_array($skillFiles, false);
 
         foreach ($paths as $entry) {
             $this->checkStaged($folder, $entry, $files);

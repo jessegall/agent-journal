@@ -40,15 +40,15 @@ abstract class AssignmentWriteTool extends JournalWriteTool
     }
 
     /**
-     * @param AssignmentResult $result
+     * @param AssignmentResult $assignmentChange
      */
-    final protected function present(mixed $result): ToolResult
+    final protected function present(mixed $assignmentChange): ToolResult
     {
-        $outcome = $result->outcomes[0];
+        $outcome = $assignmentChange->outcomes[0];
 
         return ToolResult::ok([
             'outcome' => $outcome->type->value,
-            'changed' => count($result->changes),
+            'changed' => count($assignmentChange->changes),
             'assignment' => $outcome->current?->reference->toArray(),
         ]);
     }

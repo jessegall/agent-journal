@@ -10,7 +10,7 @@ namespace App\Communication\Data;
 final readonly class MessageReadBatch
 {
     /**
-     * @param  list<MessageReadResult>  $results
+     * @param  list<MessageReadResult>  $messageReads
      */
-    public function __construct(public array $results) {}
+    public function __construct(public array $messageReads) {}
 }

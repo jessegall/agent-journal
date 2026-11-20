@@ -47,13 +47,13 @@ final class MenuListTool extends JournalReadTool
     {
         $page = $arguments->positiveIntegerOr('page', 1);
         $state = $arguments->optionalText('state');
-        $entries = $this->navigation->menuEntries(
+        $menuEntries = $this->navigation->menuEntries(
             ActorIdentity::of($this->admission->owner()),
             $arguments->optionalText('program'),
             $state === null ? null : MenuEntryState::from($state),
             $page,
         );
 
-        return ToolResult::ok(['page' => $page, 'entries' => $entries], []);
+        return ToolResult::ok(['page' => $page, 'entries' => $menuEntries], []);
     }
 }

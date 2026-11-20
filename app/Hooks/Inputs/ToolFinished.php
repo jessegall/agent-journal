@@ -18,7 +18,7 @@ final readonly class ToolFinished implements HookInput
 {
     public function __construct(
         public HookIdentity $hook,
-        public ToolResult $result,
+        public ToolResult $finishedTool,
     ) {}
 
     public function identity(): HookIdentity

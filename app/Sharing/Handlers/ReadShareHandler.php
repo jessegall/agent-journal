@@ -146,7 +146,7 @@ final readonly class ReadShareHandler implements CommandHandler
      */
     private function linkedFrom(Share $share, RecordIdentity $target, ShareBudget $budget): array
     {
-        $items = [];
+        $cards = [];
 
         foreach (ShareMember::approvedTargetsFrom($share, $target) as $type => $targets) {
             if (! $this->records->has($type)) {
@@ -157,10 +157,10 @@ final readonly class ReadShareHandler implements CommandHandler
             $page = $budget->run(
                 fn () => $provider->readTargets(new ShareTargetRead([$target], $targets, null), $budget),
             );
-            array_push($items, ...array_map(SharedPageItem::fromCard(...), $page->eligible));
+            array_push($cards, ...array_map(SharedPageItem::fromCard(...), $page->eligible));
         }
 
-        return $items;
+        return $cards;
     }
 
     /**

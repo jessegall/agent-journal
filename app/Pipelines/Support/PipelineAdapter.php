@@ -34,18 +34,18 @@ abstract readonly class PipelineAdapter implements Pipe
     abstract protected function into(object $input): object;
 
     /**
-     * @param  TResult  $result
+     * @param  TResult  $pipelineOutput
      * @param  TInput  $input
      */
-    abstract protected function back(object $result, object $input): object;
+    abstract protected function back(object $pipelineOutput, object $input): object;
 
     /**
      * @param  TInput  $input
      */
     public function handle(object $input): object
     {
-        $result = $this->pipelines->run($this->definition(), $this->into($input), $this->produces());
+        $pipelineOutput = $this->pipelines->run($this->definition(), $this->into($input), $this->produces());
 
-        return $this->back($result, $input);
+        return $this->back($pipelineOutput, $input);
     }
 }

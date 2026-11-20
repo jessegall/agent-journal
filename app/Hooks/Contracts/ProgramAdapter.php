@@ -35,7 +35,7 @@ interface ProgramAdapter
     /**
      * Reads one native hook payload into a call the journal answers or lets through, refusing what it does not map.
      */
-    public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall;
+    public function callFor(HookPayload $hookInput, HookIdentity $hook): ProgramCall;
 
     public function renderShell(HookAnswer $answer, ProgramToolInput $original): ProgramReply;
 

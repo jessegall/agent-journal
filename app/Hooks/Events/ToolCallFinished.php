@@ -16,6 +16,6 @@ final readonly class ToolCallFinished implements Event
 {
     public function __construct(
         public StackTarget $target,
-        public ToolResult $result,
+        public ToolResult $finishedTool,
     ) {}
 }

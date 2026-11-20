@@ -42,9 +42,9 @@ final readonly class NavigationRecords implements NavigationReader
         if ($state !== null) {
             $query->where('state', $state);
         }
-        $entries = $query->offset(($page - 1) * self::PAGE_SIZE)->readLimit(self::PAGE_SIZE)->get();
+        $menuEntries = $query->offset(($page - 1) * self::PAGE_SIZE)->readLimit(self::PAGE_SIZE)->get();
 
-        return array_values($entries->map(fn (MenuEntry $entry) => [
+        return array_values($menuEntries->map(fn (MenuEntry $entry) => [
             'id' => $entry->id,
             'program' => $entry->program,
             'goal' => $entry->goal_script,

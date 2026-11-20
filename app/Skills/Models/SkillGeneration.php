@@ -58,15 +58,15 @@ final class SkillGeneration extends Model implements ReadableModel
     }
 
     /**
-     * @param  list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>  $entries
+     * @param  list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>  $skillDefinitions
      */
-    public static function ready(string $catalogueDigest, string $registrationDigest, array $entries): self
+    public static function ready(string $catalogueDigest, string $registrationDigest, array $skillDefinitions): self
     {
         return self::query()->create(
             [
                 'catalogue_digest' => $catalogueDigest,
                 'registration_digest' => $registrationDigest,
-                'entries' => $entries,
+                'entries' => $skillDefinitions,
                 'state' => GenerationState::Ready,
             ],
         );

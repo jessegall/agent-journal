@@ -52,7 +52,7 @@ final readonly class TextRecords implements TextResolver
 
     public function read(RecordIdentity $target, string $version, TextSelection $selection): TextPart
     {
-        if ($selection->all) {
+        if ($selection->isWholeText) {
             throw TextSelectionRefused::unbounded();
         }
 

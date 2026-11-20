@@ -34,11 +34,11 @@ final readonly class CommandClassSet
     }
 
     /**
-     * @param  list<string>  $values
+     * @param  list<string>  $classNames
      */
-    public static function fromArray(array $values): self
+    public static function fromArray(array $classNames): self
     {
-        return self::of(...array_map(CommandClass::from(...), $values));
+        return self::of(...array_map(CommandClass::from(...), $classNames));
     }
 
     public static function empty(): self

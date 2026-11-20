@@ -20,8 +20,8 @@ final readonly class SignInChallenges
 
     public function publish(string $attemptId, SignInChallenge $challenge, CarbonImmutable $until): void
     {
-        $payload = ['address' => $challenge->address, 'code' => $challenge->code];
-        $this->cache->put(self::challengeKey($attemptId), $this->encrypter->encrypt($payload), $until);
+        $challengeFields = ['address' => $challenge->address, 'code' => $challenge->code];
+        $this->cache->put(self::challengeKey($attemptId), $this->encrypter->encrypt($challengeFields), $until);
     }
 
     public function challengeOf(string $attemptId): SignInChallenge|null
@@ -32,9 +32,9 @@ final readonly class SignInChallenges
             return null;
         }
 
-        $payload = $this->encrypter->decrypt($stored);
+        $challengeFields = $this->encrypter->decrypt($stored);
 
-        return new SignInChallenge((string) $payload['address'], $payload['code'] ?? null);
+        return new SignInChallenge((string) $challengeFields['address'], $challengeFields['code'] ?? null);
     }
 
     public function typeCode(string $attemptId, string $code, CarbonImmutable $until): void

@@ -59,16 +59,16 @@ final readonly class MenuStep
     /**
      * @throws MenuStepRefused
      */
-    private static function text(int $index, mixed $value): string|null
+    private static function text(int $index, mixed $stepText): string|null
     {
-        if ($value === null) {
+        if ($stepText === null) {
             return null;
         }
-        if (! is_string($value) || mb_strlen($value) > self::MOST_TEXT_CHARACTERS) {
+        if (! is_string($stepText) || mb_strlen($stepText) > self::MOST_TEXT_CHARACTERS) {
             throw MenuStepRefused::textTooLong($index, self::MOST_TEXT_CHARACTERS);
         }
 
-        return $value;
+        return $stepText;
     }
 
     /**

@@ -19,7 +19,7 @@ final readonly class AvailableListener
      */
     public function __construct(public string $owner, public string $listener) {}
 
-    public function __invoke(mixed ...$payload): mixed
+    public function __invoke(mixed ...$eventArguments): mixed
     {
         $container = Container::getInstance();
 
@@ -27,6 +27,6 @@ final readonly class AvailableListener
             return null;
         }
 
-        return $container->make(Dispatcher::class)->makeListener($this->listener)('', $payload);
+        return $container->make(Dispatcher::class)->makeListener($this->listener)('', $eventArguments);
     }
 }

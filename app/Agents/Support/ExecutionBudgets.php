@@ -56,9 +56,9 @@ final readonly class ExecutionBudgets
             'tmpBytes',
             'workspaceBytes',
             'wallSeconds',
-        ) as $name => $value) {
-            if ($value < 1) {
-                throw ExecutionBudgetInvalid::notPositive($name, $value);
+        ) as $name => $budgetAmount) {
+            if ($budgetAmount < 1) {
+                throw ExecutionBudgetInvalid::notPositive($name, $budgetAmount);
             }
         }
 
@@ -71,9 +71,9 @@ final readonly class ExecutionBudgets
             'memoryBytes' => [$memoryBytes, self::MOST_MEMORY_BYTES],
             'processes' => [$processes, self::MOST_PROCESSES],
             'workspaceBytes' => [$workspaceBytes, self::MOST_WORKSPACE_BYTES],
-        ] as $name => [$value, $most]) {
-            if ($value > $most) {
-                throw ExecutionBudgetInvalid::aboveHost($name, $value, $most);
+        ] as $name => [$budgetAmount, $most]) {
+            if ($budgetAmount > $most) {
+                throw ExecutionBudgetInvalid::aboveHost($name, $budgetAmount, $most);
             }
         }
 

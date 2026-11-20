@@ -106,12 +106,12 @@ final readonly class ReaderDefinition
      */
     private static function listOf(array $fields, string $key): array
     {
-        $value = $fields[$key] ?? [];
-        if (! is_array($value) || ! array_is_list($value)) {
+        $field = $fields[$key] ?? [];
+        if (! is_array($field) || ! array_is_list($field)) {
             throw ReaderDefinitionInvalid::field($key);
         }
 
-        return $value;
+        return $field;
     }
 
     /**
@@ -121,11 +121,11 @@ final readonly class ReaderDefinition
      */
     private static function nameOf(array $fields, string $key): string|null
     {
-        $value = $fields[$key] ?? null;
-        if ($value !== null && ! is_string($value)) {
+        $field = $fields[$key] ?? null;
+        if ($field !== null && ! is_string($field)) {
             throw ReaderDefinitionInvalid::field($key);
         }
 
-        return $value;
+        return $field;
     }
 }

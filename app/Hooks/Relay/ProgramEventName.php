@@ -9,9 +9,9 @@ namespace App\Hooks\Relay;
  */
 final class ProgramEventName
 {
-    public static function of(string $payload): string
+    public static function of(string $hookJson): string
     {
-        $decoded = json_decode($payload, true);
+        $decoded = json_decode($hookJson, true);
 
         return is_array($decoded) && is_string(
             $decoded['hook_event_name'] ?? null,

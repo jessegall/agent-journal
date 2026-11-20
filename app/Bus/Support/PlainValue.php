@@ -14,15 +14,15 @@ use UnitEnum;
  */
 final class PlainValue
 {
-    public static function of(mixed $value): mixed
+    public static function of(mixed $commandField): mixed
     {
         return match (true) {
-            $value instanceof BackedEnum => $value->value,
-            $value instanceof UnitEnum => $value->name,
-            $value instanceof DateTimeInterface => $value->format(DateTimeInterface::ATOM),
-            is_object($value) => array_map(self::of(...), get_object_vars($value)),
-            is_array($value) => array_map(self::of(...), $value),
-            default => $value,
+            $commandField instanceof BackedEnum => $commandField->value,
+            $commandField instanceof UnitEnum => $commandField->name,
+            $commandField instanceof DateTimeInterface => $commandField->format(DateTimeInterface::ATOM),
+            is_object($commandField) => array_map(self::of(...), get_object_vars($commandField)),
+            is_array($commandField) => array_map(self::of(...), $commandField),
+            default => $commandField,
         };
     }
 

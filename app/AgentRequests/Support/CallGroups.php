@@ -130,7 +130,7 @@ final class CallGroups
             fn (ReflectionParameter $parameter) => "\n        ".self::parameter($parameter).',',
             $parameters,
         ));
-        $values = implode('', array_map(
+        $parameterAssignments = implode('', array_map(
             fn (ReflectionParameter $parameter) => <<<TEXT
 
                         '{$parameter->getName()}' => \${$parameter->getName()},
@@ -144,7 +144,7 @@ final class CallGroups
 
         {$docblock}    public function {$name}({$signature}
             ): {$answer} {
-                return \$this->sender->send(\\{$call}::from([{$values}
+                return \$this->sender->send(\\{$call}::from([{$parameterAssignments}
                 ]));
             }
 

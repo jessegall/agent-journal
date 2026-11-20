@@ -79,9 +79,9 @@ final readonly class AccountConfigurationWrite
         $topLevel = substr($current, 0, $firstTable);
         $missing = '';
 
-        foreach ($settings as $name => $value) {
+        foreach ($settings as $name => $setting) {
             if (preg_match('/^'.preg_quote($name, '/').'\s*=/m', $topLevel) !== 1) {
-                $missing .= sprintf("%s = %s\n", $name, $value);
+                $missing .= sprintf("%s = %s\n", $name, $setting);
             }
         }
 

@@ -103,13 +103,13 @@ final readonly class CommandGrammar
             return 'is an array without a list<int>, list<string>, list of an enum or list of a value docblock';
         }
 
-        $item = ltrim($match[1], '\\');
+        $elementType = ltrim($match[1], '\\');
 
-        if (in_array($item, ['int', 'string'], true)) {
+        if (in_array($elementType, ['int', 'string'], true)) {
             return null;
         }
 
-        $class = $this->classNamed($item, $property);
+        $class = $this->classNamed($elementType, $property);
 
         if (enum_exists($class)) {
             return is_subclass_of(
@@ -130,15 +130,15 @@ final readonly class CommandGrammar
      * The class a docblock names: a full name as written, a short one through the file's imports, else in the
      * declaring class's namespace, as PHP itself would read it.
      */
-    private function classNamed(string $item, ReflectionProperty $property): string
+    private function classNamed(string $elementType, ReflectionProperty $property): string
     {
-        if (str_contains($item, '\\')) {
-            return $item;
+        if (str_contains($elementType, '\\')) {
+            return $elementType;
         }
 
         $class = $property->getDeclaringClass();
 
-        return self::importsOf((string) $class->getFileName())[$item] ?? $class->getNamespaceName().'\\'.$item;
+        return self::importsOf((string) $class->getFileName())[$elementType] ?? $class->getNamespaceName().'\\'.$elementType;
     }
 
     /**
@@ -172,9 +172,9 @@ final readonly class CommandGrammar
             return "is typed {$name}, which is no class, enum or allowed type";
         }
 
-        $value = new ReflectionClass($name);
+        $reflectedClass = new ReflectionClass($name);
 
-        if (! $value->isFinal() || ! $value->isReadOnly()) {
+        if (! $reflectedClass->isFinal() || ! $reflectedClass->isReadOnly()) {
             return "holds {$name}, which is not a final readonly value";
         }
 

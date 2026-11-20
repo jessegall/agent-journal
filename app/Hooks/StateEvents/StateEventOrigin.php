@@ -17,7 +17,7 @@ final readonly class StateEventOrigin
     public function __construct(
         public StateEventDispatch $dispatch,
         public StackTarget $target,
-        public StateEventResult $result,
+        public StateEventResult $listenerResult,
     ) {}
 
     /**

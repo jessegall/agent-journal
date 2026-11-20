@@ -69,21 +69,21 @@ final class StopResult extends Model implements ReadableModel
 
     public static function record(StopAttempt $attempt, StopResultReport $report): self
     {
-        $result = new self();
-        $result->stop_attempt_id = $attempt->id;
-        $result->condition_key = $report->conditionKey;
-        $result->definition_hash = $report->definitionHash;
-        $result->status = $report->status;
-        $result->started_at = CarbonImmutable::parse($report->startedAt);
-        $result->ended_at = $report->endedAt === null ? null : CarbonImmutable::parse($report->endedAt);
-        $result->exit_code = $report->exitCode;
-        $result->signal = $report->signal;
-        $result->summary = $report->summary;
-        $result->output = $report->output;
-        $result->truncated = $report->truncated;
-        $result->save();
+        $stopRecord = new self();
+        $stopRecord->stop_attempt_id = $attempt->id;
+        $stopRecord->condition_key = $report->conditionKey;
+        $stopRecord->definition_hash = $report->definitionHash;
+        $stopRecord->status = $report->status;
+        $stopRecord->started_at = CarbonImmutable::parse($report->startedAt);
+        $stopRecord->ended_at = $report->endedAt === null ? null : CarbonImmutable::parse($report->endedAt);
+        $stopRecord->exit_code = $report->exitCode;
+        $stopRecord->signal = $report->signal;
+        $stopRecord->summary = $report->summary;
+        $stopRecord->output = $report->output;
+        $stopRecord->truncated = $report->truncated;
+        $stopRecord->save();
 
-        return $result;
+        return $stopRecord;
     }
 
     /**

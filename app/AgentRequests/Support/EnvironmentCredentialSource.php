@@ -55,12 +55,12 @@ final readonly class EnvironmentCredentialSource implements StartTokenSource
 
     private function usable(string $name): string
     {
-        $value = $this->start->value($name);
+        $credential = $this->start->value($name);
 
-        if (trim($value) === '' || str_contains($value, '${') || str_contains($value, '<')) {
+        if (trim($credential) === '' || str_contains($credential, '${') || str_contains($credential, '<')) {
             throw StartTokenRefused::placeholder($name);
         }
 
-        return $value;
+        return $credential;
     }
 }

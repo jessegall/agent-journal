@@ -14,10 +14,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class RouteNumber
 {
-    public static function of(string $value): int
+    public static function of(string $routeNumberText): int
     {
         try {
-            return RecordReference::number($value);
+            return RecordReference::number($routeNumberText);
         } catch (InvalidRecordReference $invalid) {
             throw new NotFoundHttpException(previous: $invalid);
         }

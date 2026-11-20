@@ -192,10 +192,10 @@ final class CommandReceipt extends Model implements ReadableModel
         ];
     }
 
-    public function complete(mixed $result): void
+    public function complete(mixed $commandReply): void
     {
         $this->state = ReceiptState::Completed;
-        $this->result = ['value' => PlainValue::of($result), 'php' => base64_encode(serialize($result))];
+        $this->result = ['value' => PlainValue::of($commandReply), 'php' => base64_encode(serialize($commandReply))];
         $this->save();
     }
 

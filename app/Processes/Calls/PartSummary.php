@@ -13,7 +13,7 @@ final class PartSummary extends Data
 {
     /**
      * @param  array<string, int>  $bytes
-     * @param  array{type: string, outcome: string, receipt_id: string, problems: list<string>}  $result
+     * @param  array{type: string, outcome: string, receipt_id: string, problems: list<string>}  $partSummary
      */
     public function __construct(
         public int $node,
@@ -24,6 +24,6 @@ final class PartSummary extends Data
         public int|null $code,
         public string $capture,
         public array $bytes,
-        public array $result,
+        public array $partSummary,
     ) {}
 }

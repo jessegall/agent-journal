@@ -27,7 +27,7 @@ final readonly class Continuations implements ContinuationsContract
 
     public function issue(Continuation $continuation): string
     {
-        $payload = self::encode(ContinuationPayload::from([
+        $encodedCursor = self::encode(ContinuationPayload::from([
             'agent' => $this->agent->agentId,
             'session' => $this->agent->sessionId,
             'expires' => CarbonImmutable::now()->addMinutes(self::LIFETIME_MINUTES)->getTimestamp(),
@@ -40,7 +40,7 @@ final readonly class Continuations implements ContinuationsContract
             'retained_page' => $continuation->retainedPageId,
         ])->toJson(JSON_THROW_ON_ERROR));
 
-        return $payload.'.'.$this->signatureOf($payload);
+        return $encodedCursor.'.'.$this->signatureOf($encodedCursor);
     }
 
     public function link(Continuation $position, string $selectorName): NextAction
@@ -89,14 +89,14 @@ final readonly class Continuations implements ContinuationsContract
     /**
      * The fields of a payload whose signature matched, so the journal wrote them itself.
      */
-    private function fieldsOf(string $payload): ContinuationPayload
+    private function fieldsOf(string $encodedCursor): ContinuationPayload
     {
-        return ContinuationPayload::from(json_decode(self::decode($payload), true, 16, JSON_THROW_ON_ERROR));
+        return ContinuationPayload::from(json_decode(self::decode($encodedCursor), true, 16, JSON_THROW_ON_ERROR));
     }
 
-    private function signatureOf(string $payload): string
+    private function signatureOf(string $encodedCursor): string
     {
-        return self::encode(hash_hmac('sha256', self::PURPOSE."\n".$payload, $this->encrypter->getKey(), true));
+        return self::encode(hash_hmac('sha256', self::PURPOSE."\n".$encodedCursor, $this->encrypter->getKey(), true));
     }
 
     private static function encode(string $bytes): string

@@ -13,12 +13,12 @@ use Spatie\LaravelData\Data;
 final class ToolResult extends Data
 {
     /**
-     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $responseFields
      * @param  list<NextAction>  $nextActions
      */
     public function __construct(
         public readonly string $status,
-        public readonly array $payload,
+        public readonly array $responseFields,
         #[DataCollectionOf(NextAction::class)]
         public readonly array $nextActions,
     ) {}
@@ -26,12 +26,12 @@ final class ToolResult extends Data
     /**
      * A successful answer.
      *
-     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $responseFields
      * @param  list<NextAction>  $nextActions
      */
-    public static function ok(array $payload, array $nextActions = []): self
+    public static function ok(array $responseFields, array $nextActions = []): self
     {
-        return self::from(['status' => 'ok', 'payload' => $payload, 'nextActions' => $nextActions]);
+        return self::from(['status' => 'ok', 'payload' => $responseFields, 'nextActions' => $nextActions]);
     }
 
     /**

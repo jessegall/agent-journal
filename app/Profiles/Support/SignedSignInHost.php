@@ -86,9 +86,9 @@ final readonly class SignedSignInHost implements SignInHost
         );
     }
 
-    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $result): void
+    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $accountCheck): void
     {
-        $body = (string) json_encode(['generation' => $claimed->generation, 'result' => $result->value]);
+        $body = (string) json_encode(['generation' => $claimed->generation, 'result' => $accountCheck->value]);
         $this->send('profiles.account-host.check', ['account' => $claimed->accountId], $body);
     }
 

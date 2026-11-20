@@ -203,14 +203,14 @@ final readonly class MarkdownText
      */
     public function part(TextSelection $selection): TextPart
     {
-        $all = explode("\n", $this->text);
+        $lines = explode("\n", $this->text);
         $section = $selection->section === null ? null : $this->sectionBy($selection->section);
         $first = $section->firstLine ?? $selection->firstLine ?? 1;
-        $last = min(count($all), $section->lastLine ?? $selection->lastLine ?? count($all));
+        $last = min(count($lines), $section->lastLine ?? $selection->lastLine ?? count($lines));
         $numbered = [];
 
         for ($number = $first; $number <= $last; $number++) {
-            $line = $all[$number - 1];
+            $line = $lines[$number - 1];
             $kept = (! $selection->bullets || preg_match('/^\s*([-*+]|\d+[.)])\s/', $line) === 1)
                 && ($selection->words === null || mb_stripos($line, $selection->words) !== false);
 
@@ -219,19 +219,19 @@ final readonly class MarkdownText
             }
         }
 
-        return self::bounded($numbered, $first, $last, $selection->all);
+        return self::bounded($numbered, $first, $last, $selection->isWholeText);
     }
 
     /**
      * @param  array<int, string>  $numbered
      */
-    private static function bounded(array $numbered, int $first, int $last, bool $all): TextPart
+    private static function bounded(array $numbered, int $first, int $last, bool $isWholeText): TextPart
     {
         $taken = [];
         $bytes = 0;
 
         foreach ($numbered as $number => $line) {
-            $full = ! $all && (count($taken) >= TextPart::LINES || $bytes + strlen($line) + 1 > TextPart::BYTES);
+            $full = ! $isWholeText && (count($taken) >= TextPart::LINES || $bytes + strlen($line) + 1 > TextPart::BYTES);
 
             if ($full && $taken === []) {
                 throw TextLineTooLong::at($number, TextPart::BYTES);

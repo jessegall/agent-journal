@@ -43,8 +43,8 @@ final class UnsupportedHook extends LogicException
         );
     }
 
-    public static function forValue(string $program, string $field, string $value): self
+    public static function forValue(string $program, string $field, string $hookField): self
     {
-        return new self("The {$program} adapter cannot read the {$field} value {$value}.");
+        return new self("The {$program} adapter cannot read the {$field} value {$hookField}.");
     }
 }

@@ -300,7 +300,7 @@ final class RelayFrames
                 'data' => [
                     'code' => $code->value,
                     'retryable' => $code->isRetryable(),
-                    ...array_filter($errorDetails, fn (mixed $value): bool => $value !== null),
+                    ...array_filter($errorDetails, fn (mixed $detail): bool => $detail !== null),
                 ],
             ],
         ], self::JSON_FLAGS));

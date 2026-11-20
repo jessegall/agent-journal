@@ -18,7 +18,7 @@ use App\Actors\Values\TrustedEntryAuthority;
  */
 final readonly class SystemAuthorizerProvider implements AuthorizerProvider
 {
-    public function __construct(private CurrentActor $actors, private SystemEntryPolicies $entries) {}
+    public function __construct(private CurrentActor $actors, private SystemEntryPolicies $systemPolicies) {}
 
     /**
      * @throws ActorNotAllowed

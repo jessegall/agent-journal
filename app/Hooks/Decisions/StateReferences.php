@@ -14,14 +14,14 @@ final readonly class StateReferences
     public const int MAXIMUM = 100;
 
     /**
-     * @param  list<StateReference>  $all
+     * @param  list<StateReference>  $references
      *
      * @throws StateReferencesInvalid
      */
-    public function __construct(public array $all)
+    public function __construct(public array $references)
     {
-        if (count($all) > self::MAXIMUM) {
-            throw StateReferencesInvalid::tooMany(count($all));
+        if (count($references) > self::MAXIMUM) {
+            throw StateReferencesInvalid::tooMany(count($references));
         }
     }
 
@@ -34,7 +34,7 @@ final readonly class StateReferences
     {
         $ids = [];
 
-        foreach ($this->all as $reference) {
+        foreach ($this->references as $reference) {
             if ($reference->subject instanceof SubjectReference) {
                 $ids[$reference->subject->id] = $reference->subject->id;
             }

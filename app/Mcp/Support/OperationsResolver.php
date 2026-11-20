@@ -44,11 +44,11 @@ final readonly class OperationsResolver
 
     private function page(Operation $operation, int $offset): ToolResult
     {
-        $result = is_array($operation->result) ? $operation->result : ['value' => $operation->result];
-        $outcomes = is_array($result['outcomes'] ?? null) ? array_values($result['outcomes']) : [];
-        unset($result['outcomes']);
+        $receiptFields = is_array($operation->result) ? $operation->result : ['value' => $operation->result];
+        $outcomes = is_array($receiptFields['outcomes'] ?? null) ? array_values($receiptFields['outcomes']) : [];
+        unset($receiptFields['outcomes']);
 
-        $payload = [
+        $pageFields = [
             'request_key' => $operation->requestKey,
             'command' => $operation->command,
             'state' => $operation->state->value,
@@ -56,22 +56,22 @@ final readonly class OperationsResolver
                 'code' => $operation->refusalCode->value,
                 'message' => $operation->refusalMessage,
             ],
-            'result' => $result,
+            'result' => $receiptFields,
             'outcome_count' => count($outcomes),
             'outcome_offset' => $offset,
             'outcomes' => [],
         ];
         foreach (array_slice($outcomes, $offset, self::OUTCOMES_PER_PAGE) as $outcome) {
-            $page = [...$payload['outcomes'], $outcome];
-            if ($payload['outcomes'] !== [] && ! $this->budget->payloadFits([...$payload, 'outcomes' => $page])) {
+            $page = [...$pageFields['outcomes'], $outcome];
+            if ($pageFields['outcomes'] !== [] && ! $this->budget->payloadFits([...$pageFields, 'outcomes' => $page])) {
                 break;
             }
 
-            $payload['outcomes'] = $page;
+            $pageFields['outcomes'] = $page;
         }
-        $next = $offset + count($payload['outcomes']);
+        $next = $offset + count($pageFields['outcomes']);
 
-        return ToolResult::ok($payload, $next < count($outcomes) ? [new NextAction(self::TOOL, [
+        return ToolResult::ok($pageFields, $next < count($outcomes) ? [new NextAction(self::TOOL, [
             'request_key' => $operation->requestKey,
             'continuation' => $this->continuations->issue(
                 new Continuation(self::TOOL, $operation->requestKey, [], $next),

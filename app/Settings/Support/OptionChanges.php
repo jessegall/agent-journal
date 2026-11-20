@@ -33,8 +33,8 @@ final readonly class OptionChanges
     {
         $setting = $this->targets->setting($reference, OptionSetting::class, SettingType::Choice);
 
-        $value = $this->codec->encodeOption($reference->owner, $setting, $option);
+        $encodedOption = $this->codec->encodeOption($reference->owner, $setting, $option);
 
-        return $this->writer->setValue($setting, $value, $expectedRevision);
+        return $this->writer->setValue($setting, $encodedOption, $expectedRevision);
     }
 }

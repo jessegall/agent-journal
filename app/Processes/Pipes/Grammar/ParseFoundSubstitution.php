@@ -32,7 +32,7 @@ final readonly class ParseFoundSubstitution extends PipelineAdapter
         return $input->foundSource();
     }
 
-    protected function back(object $result, object $input): SubstitutionQueue
+    protected function back(object $parsedSubstitution, object $input): SubstitutionQueue
     {
         return $input;
     }

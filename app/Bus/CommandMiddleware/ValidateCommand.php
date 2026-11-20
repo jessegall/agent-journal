@@ -48,7 +48,7 @@ final readonly class ValidateCommand implements CommandMiddleware
     {
         return array_filter(
             array_intersect_key(get_object_vars($command), $rules),
-            static fn (mixed $value): bool => $value !== null,
+            static fn (mixed $commandField): bool => $commandField !== null,
         );
     }
 }

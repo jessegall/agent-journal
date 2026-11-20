@@ -139,7 +139,7 @@ final readonly class MiddlewareRunner
      */
     private function module(string $command, MiddlewareStage $stage): array
     {
-        $entries = array_filter(
+        $middlewareRegistrations = array_filter(
             $this->registry->middlewareFor($command),
             fn (RegisteredMiddleware $entry) => $entry->runsIn($stage) && $this->isAvailable($entry->owner),
         );
@@ -150,7 +150,7 @@ final readonly class MiddlewareRunner
                     $this->container->make($entry->middlewareClass()),
                     $entry,
                 ),
-                $entries,
+                $middlewareRegistrations,
             ),
         );
     }

@@ -13,5 +13,5 @@ use App\Assignments\Support\AssignmentResult;
  */
 interface AssignmentFactPublisher
 {
-    public function publish(ActorIdentity $actor, AssignmentReason $reason, AssignmentResult $result): void;
+    public function publish(ActorIdentity $actor, AssignmentReason $reason, AssignmentResult $assignmentChange): void;
 }

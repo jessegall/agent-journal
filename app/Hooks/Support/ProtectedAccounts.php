@@ -78,11 +78,11 @@ final readonly class ProtectedAccounts
      */
     public function isTouchedByToolCall(array $toolInput, string $workFolder): bool
     {
-        foreach ($toolInput as $value) {
+        foreach ($toolInput as $toolArgument) {
             $isTouched = match (true) {
-                is_array($value) => $this->isTouchedByToolCall($value, $workFolder),
-                is_string($value) => $this->isTouchedBy($value)
-                    || $this->covers(ProtectedFileRead::resolve($workFolder, $value)),
+                is_array($toolArgument) => $this->isTouchedByToolCall($toolArgument, $workFolder),
+                is_string($toolArgument) => $this->isTouchedBy($toolArgument)
+                    || $this->covers(ProtectedFileRead::resolve($workFolder, $toolArgument)),
                 default => false,
             };
 

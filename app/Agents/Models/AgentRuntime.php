@@ -329,7 +329,7 @@ final class AgentRuntime extends Model implements ReadableModel
     ): RuntimeSetting {
         $known = compact('requested', 'staged', 'observed', 'observedAgeSeconds');
 
-        return RuntimeSetting::from(array_filter($known, fn (string|int|null $value) => $value !== null));
+        return RuntimeSetting::from(array_filter($known, fn (string|int|null $setting) => $setting !== null));
     }
 
     /**

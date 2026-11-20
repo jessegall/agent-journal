@@ -18,7 +18,7 @@ final readonly class Operation
         public string $requestKey,
         public string $command,
         public ReceiptState $state,
-        public mixed $result,
+        public mixed $commandReply,
         public RefusalCode|null $refusalCode,
         public string|null $refusalMessage,
         public CarbonImmutable $createdAt,

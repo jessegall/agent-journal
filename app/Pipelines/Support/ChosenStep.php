@@ -24,6 +24,6 @@ final readonly class ChosenStep extends Step
         $then = $sequence([$this->then]);
         $else = $sequence([$this->else]);
 
-        return fn (object $value): object => $condition($value) ? $then($value) : $else($value);
+        return fn (object $stepInput): object => $condition($stepInput) ? $then($stepInput) : $else($stepInput);
     }
 }

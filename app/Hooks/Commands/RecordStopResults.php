@@ -24,14 +24,14 @@ use App\Hooks\Values\StopResultReport;
 final readonly class RecordStopResults extends Command
 {
     /**
-     * @param  list<StopResultReport>  $results
+     * @param  list<StopResultReport>  $stopReports
      */
     public function __construct(
         public string $hostId,
         public string $attemptId,
         public string $policyDigest,
         public int $workspaceGeneration,
-        public array $results,
+        public array $stopReports,
     ) {}
 
     /**
@@ -39,7 +39,7 @@ final readonly class RecordStopResults extends Command
      */
     public function submissionDigest(): string
     {
-        $fingerprints = array_map(fn (StopResultReport $result): array => $result->fingerprint(), $this->results);
+        $fingerprints = array_map(fn (StopResultReport $stopReport): array => $stopReport->fingerprint(), $this->results);
         sort($fingerprints);
 
         return hash('sha256', json_encode(
@@ -57,8 +57,8 @@ final readonly class RecordStopResults extends Command
     {
         $hashes = [];
 
-        foreach ($this->results as $result) {
-            $hashes[$result->conditionKey] = $result->definitionHash;
+        foreach ($this->results as $stopReport) {
+            $hashes[$stopReport->conditionKey] = $stopReport->definitionHash;
         }
 
         return $hashes;

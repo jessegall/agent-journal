@@ -39,12 +39,12 @@ final readonly class SlotContexts
      *
      * @return Option<string>
      */
-    private function idIn(mixed $value): Option
+    private function idIn(mixed $routeArgument): Option
     {
-        if (! is_string($value) || ! Str::isUlid($value)) {
+        if (! is_string($routeArgument) || ! Str::isUlid($routeArgument)) {
             return None::create();
         }
 
-        return Some::create(strtolower($value));
+        return Some::create(strtolower($routeArgument));
     }
 }

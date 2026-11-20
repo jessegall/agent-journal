@@ -18,15 +18,15 @@ enum StopAttemptState: string
     /**
      * The state the host's results settle an attempt in.
      *
-     * @param  list<StopResultType>  $results
+     * @param  list<StopResultType>  $stepOutcomes
      */
-    public static function settledBy(array $results): self
+    public static function settledBy(array $stepOutcomes): self
     {
-        if (array_any($results, fn (StopResultType $result): bool => $result->refusesStop())) {
+        if (array_any($stepOutcomes, fn (StopResultType $stepOutcome): bool => $stepOutcome->refusesStop())) {
             return self::Failed;
         }
 
-        if (array_all($results, fn (StopResultType $result): bool => $result === StopResultType::Passed)) {
+        if (array_all($stepOutcomes, fn (StopResultType $stepOutcome): bool => $stepOutcome === StopResultType::Passed)) {
             return self::Passed;
         }
 

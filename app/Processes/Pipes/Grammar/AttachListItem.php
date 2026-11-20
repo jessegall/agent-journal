@@ -22,16 +22,16 @@ final readonly class AttachListItem implements Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(ListItem $item): ListItems
+    public function handle(ListItem $parsedCommand): ListItems
     {
-        $toParse = $item->toParse;
+        $toParse = $parsedCommand->toParse;
         $cursor = $toParse->cursor();
         if ($cursor->is(TokenType::Background)) {
-            $this->runInBackground($toParse, $item->node);
+            $this->runInBackground($toParse, $parsedCommand->node);
 
             return new ListItems($toParse, false);
         }
-        $toParse->draft()->adopt($toParse->parent, $item->node);
+        $toParse->draft()->adopt($toParse->parent, $parsedCommand->node);
         if (! $this->endsCommand($cursor)) {
             $unexpected = $cursor->currentType()->value;
 
@@ -41,13 +41,13 @@ final readonly class AttachListItem implements Pipe
         return new ListItems($toParse, true);
     }
 
-    private function runInBackground(ListToParse $toParse, int $item): void
+    private function runInBackground(ListToParse $toParse, int $parsedCommand): void
     {
         $draft = $toParse->draft();
         $cursor = $toParse->cursor();
-        $range = $draft->rangeTo($item, $cursor->currentEnd());
+        $range = $draft->rangeTo($parsedCommand, $cursor->currentEnd());
         $background = $draft->add(NodeType::Background, $range, $toParse->parent);
-        $draft->adopt($background, $item);
+        $draft->adopt($background, $parsedCommand);
         $cursor->advance();
     }
 

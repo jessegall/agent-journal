@@ -25,7 +25,7 @@ interface SignInHost
 
     public function claimCheck(): ClaimedAccountCheck|null;
 
-    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $result): void;
+    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $accountCheck): void;
 
     public function claimCleanup(): ClaimedCleanup|null;
 
