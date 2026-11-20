@@ -33,7 +33,10 @@ class StalledTaskLines(EventLineSource):
         current = self.current_tasks.current(agent_id)
         if current is None:
             return []
-        newest_at = self.activities.read(event, agent_id)[agent_id].last_hook_at
+        activities = self.activities.read(event, agent_id)
+        if agent_id not in activities:
+            return []
+        newest_at = activities[agent_id].last_hook_at
         last_given_at = self.history.last_given(self.key, agent_id)
         if newest_at is None or (last_given_at is not None and last_given_at >= newest_at):
             return []
