@@ -11,6 +11,7 @@ use App\Agents\Support\StackTarget;
 use App\Agents\Values\Operation;
 use App\Bus\Contracts\CommandAdmission;
 use App\Bus\Enums\CommandAdmissionStage;
+use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Values\CommandDecision;
 use App\Bus\Values\EffectiveCommand;
@@ -39,7 +40,8 @@ final readonly class StackCommandAdmission implements CommandAdmission
             }
         }
 
-        if ($command->stage === CommandAdmissionStage::BeforeHandler) {
+        if ($command->stage === CommandAdmissionStage::BeforeHandler
+            || $command->effect === CommandEffectType::Recovery) {
             return CommandDecision::allow();
         }
 

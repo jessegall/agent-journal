@@ -12,8 +12,10 @@ use App\Agents\Handlers\RecordHeartbeatHandler;
 use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Enums\CommandEffectType;
 use App\Bus\Support\Command;
 
 /**
@@ -21,6 +23,7 @@ use App\Bus\Support\Command;
  *
  * @extends Command<null>
  */
+#[Effect(CommandEffectType::Recovery)]
 #[HandledBy(RecordHeartbeatHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 #[Operation('record_heartbeat', ResourceAreaType::JournalWork, AccessType::Edit)]

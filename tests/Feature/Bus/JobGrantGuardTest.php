@@ -116,7 +116,9 @@ final class JobGrantGuardTest extends TestCase
 
         $this->assertContains('overview_read', array_column($tools, 'name'));
         $this->assertNotContains('skills_edit', array_column($tools, 'name'));
-        $this->callMcpTool($start, 'skills_edit')->assertJsonPath('error.code', -32602);
+        $this->sendMcp($start, 'tools/call', ['name' => 'skills_edit', 'arguments' => (object) []])
+            ->assertBadRequest()
+            ->assertJsonPath('error.code', -32602);
         $this->assign($start, TestStart::start(), Task::factory()->create())
             ->assertForbidden()
             ->assertJsonPath('code', 'forbidden');

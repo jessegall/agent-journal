@@ -107,11 +107,10 @@ final class SkillMcpToolsTest extends TestCase
             $this->assertNotEmpty($refusal->getMessage());
         }
 
-        $this->callMcpTool(
-            $this->caller,
-            'skills_edit',
-            ['skill' => 'user-review-notes', 'expected_revision' => 1, 'body' => 'Other.'],
-        )->assertJsonPath('error.code', -32602);
+        $this->sendMcp($this->caller, 'tools/call', [
+            'name' => 'skills_edit',
+            'arguments' => ['skill' => 'user-review-notes', 'expected_revision' => 1, 'body' => 'Other.'],
+        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
 
         $this->assertSame(1, SkillRevision::query()->count());
     }

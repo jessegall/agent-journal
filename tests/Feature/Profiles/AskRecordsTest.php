@@ -12,6 +12,7 @@ use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Exceptions\AssignmentTypeInternal;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\RequestKey;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Exceptions\SupervisorRouteInvalid;
 use App\Profiles\Support\ProfileProposal;
@@ -50,15 +51,19 @@ final class AskRecordsTest extends TestCase
         $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorIdentity::of($holder)));
         $record = $ask->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
+        $keys = $this->app->make(RequestKey::class);
+        $keys->set('public-assign-ask');
 
         $this->assertThrows(
             fn () => $bus->run(new AssignRecord($record, $holder->assigneeIdentity())),
             AssignmentTypeInternal::class,
         );
+        $keys->forget();
         $this->assertSame(AskRouteStatus::Assigned, $bus->run(new RouteAsk(new AskReference($ask->id), 0)));
         $assignment = AssignmentRecord::query()->forRecord($record)->firstOrFail()->toAssignment();
         $this->assertTrue($assignment->holder()->isSameAs($holder->assigneeIdentity()));
         $this->assertSame(1, AskHop::query()->count());
+        $keys->set('public-reassign-ask');
         $this->assertThrows(
             fn () => $bus->run(new ReassignRecord($record, $assignment->reference, $requester->assigneeIdentity())),
             AssignmentTypeInternal::class,
