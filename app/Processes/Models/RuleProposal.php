@@ -64,6 +64,8 @@ final class RuleProposal extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -114,20 +116,7 @@ final class RuleProposal extends Model implements ReadableModel
         return $proposal;
     }
 
-    /**
-     * The author adds the next revision to the revision they read; an approval of the earlier one no longer fits.
-     *
-     * @throws RuleProposalRefused
-     */
-    public function revise(int $expectedRevision, ProposedRule $proposed, ActorIdentity $author): RuleProposalRevision
-    {
-        $this->assertAuthor($author);
-        if ($expectedRevision !== $this->current_revision) {
-            throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
-        }
-
-        return $this->record($proposed, $author);
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * The author takes the proposal back; it stays readable as history.
@@ -142,6 +131,23 @@ final class RuleProposal extends Model implements ReadableModel
         }
         $this->state = ProposalState::Withdrawn;
         $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The author adds the next revision to the revision they read; an approval of the earlier one no longer fits.
+     *
+     * @throws RuleProposalRefused
+     */
+    public function revise(int $expectedRevision, ProposedRule $proposed, ActorIdentity $author): RuleProposalRevision
+    {
+        $this->assertAuthor($author);
+        if ($expectedRevision !== $this->current_revision) {
+            throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
+        }
+
+        return $this->record($proposed, $author);
     }
 
     /**
@@ -180,6 +186,8 @@ final class RuleProposal extends Model implements ReadableModel
         return $this->author_type === $actor->type->value && $this->author_id === $actor->id;
     }
 
+    // ----------[ Relations ]----------
+
     /**
      * @return BelongsTo<CommandRequest, $this>
      */
@@ -195,6 +203,8 @@ final class RuleProposal extends Model implements ReadableModel
     {
         return $this->hasMany(RuleProposalRevision::class);
     }
+
+    // ----------[ Internals ]----------
 
     /**
      * Adds the next revision; the proposal waits for review once a revision is complete and stays a draft until then.
@@ -258,6 +268,8 @@ final class RuleProposal extends Model implements ReadableModel
 
         return $this;
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

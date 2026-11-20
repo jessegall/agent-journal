@@ -34,6 +34,8 @@ final class DeskSeat extends Model implements Assignable, ReadableModel
 
     public const string LINK_TYPE = 'core.desk-seat';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -50,21 +52,7 @@ final class DeskSeat extends Model implements Assignable, ReadableModel
         return $seat;
     }
 
-    public function assignmentIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    /**
-     * The seats of one desk.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofDesk(Builder $query, Desk $desk): void
-    {
-        $query->where('desk_id', $desk->deskId());
-    }
+    // ----------[ Queries ]----------
 
     /**
      * One seat of a desk.
@@ -76,6 +64,26 @@ final class DeskSeat extends Model implements Assignable, ReadableModel
         return self::query()->ofDesk($desk)->whereKey($seatId)->firstOr(
             fn () => throw DeskUnavailable::forSeat($seatId),
         );
+    }
+
+    // ----------[ Answers ]----------
+
+    public function assignmentIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The seats of one desk.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofDesk(Builder $query, Desk $desk): void
+    {
+        $query->where('desk_id', $desk->deskId());
     }
 
     /**

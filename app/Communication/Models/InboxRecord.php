@@ -26,6 +26,8 @@ final class InboxRecord extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     public static function openFor(string $providerKey, string $providerId): self
     {
         $inbox = new self([

@@ -35,6 +35,8 @@ final class SkillRequest extends Model implements ReadableModel
     use BoundedReads, HasActorColumns, HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -43,14 +45,6 @@ final class SkillRequest extends Model implements ReadableModel
         return [
             'actor_type' => ActorType::class,
         ];
-    }
-
-    /**
-     * The actor's earlier write under this request id, or null when it sent none.
-     */
-    public static function earlier(ActorIdentity $actor, string $requestId): self|null
-    {
-        return self::query()->byActor($actor)->where('request_id', $requestId)->first();
     }
 
     public static function record(
@@ -68,6 +62,18 @@ final class SkillRequest extends Model implements ReadableModel
             'skill_revision_id' => $revision->id,
         ]);
     }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The actor's earlier write under this request id, or null when it sent none.
+     */
+    public static function earlier(ActorIdentity $actor, string $requestId): self|null
+    {
+        return self::query()->byActor($actor)->where('request_id', $requestId)->first();
+    }
+
+    // ----------[ Answers ]----------
 
     public function sentWith(string $inputDigest): bool
     {

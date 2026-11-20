@@ -18,7 +18,7 @@ final readonly class VerifiedHelperImages implements HelperImages
     /**
      * @throws JsonException when the record exists but is not valid JSON
      */
-    public function isVerified(string $imageReference): bool
+    public function isVerified(string $reference): bool
     {
         if (! is_file($this->recordPath)) {
             return false;
@@ -27,7 +27,7 @@ final readonly class VerifiedHelperImages implements HelperImages
         $record = json_decode((string) file_get_contents($this->recordPath), true, 8, JSON_THROW_ON_ERROR);
 
         foreach ($record['images'] ?? [] as $image) {
-            if (($image['reference'] ?? null) === $imageReference && ($image['status'] ?? null) === 'verified') {
+            if (($image['reference'] ?? null) === $reference && ($image['status'] ?? null) === 'verified') {
                 return true;
             }
         }

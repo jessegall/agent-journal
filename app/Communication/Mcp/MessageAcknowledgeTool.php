@@ -39,8 +39,8 @@ final class MessageAcknowledgeTool extends MessageWriteTool
         );
     }
 
-    protected function payload(mixed $messageRead): array
+    protected function payload(mixed $read): array
     {
-        return ['results' => $messageRead->messageReads];
+        return ['results' => $read->messageReads];
     }
 }

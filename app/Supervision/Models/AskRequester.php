@@ -20,6 +20,8 @@ final class AskRequester extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.ask-requester';
 
+    // ----------[ Queries ]----------
+
     /**
      * Writes the requester row so a concurrent repeatable-read submission retries with a fresh snapshot.
      */

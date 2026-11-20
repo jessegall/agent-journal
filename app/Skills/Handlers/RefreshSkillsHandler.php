@@ -80,9 +80,9 @@ final readonly class RefreshSkillsHandler implements CommandHandler
     /**
      * One pending publication for each running session whose selection changed since its last publication.
      *
-     * @param  list<SkillEntry>  $skillEntries
+     * @param  list<SkillEntry>  $entries
      */
-    private function intendPublications(SkillGeneration $generation, array $skillEntries): int
+    private function intendPublications(SkillGeneration $generation, array $entries): int
     {
         $intents = [];
         $contexts = $this->contexts->forSessions(AgentSession::runningForMaintenance(self::MOST_SESSIONS));
@@ -94,7 +94,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             }
 
             try {
-                $selected = $this->selection->select($skillEntries, $context);
+                $selected = $this->selection->select($entries, $context);
             } catch (SkillSelectionConflict) {
                 continue;
             }
@@ -116,9 +116,9 @@ final readonly class RefreshSkillsHandler implements CommandHandler
     }
 
     /**
-     * @param  list<SkillEntry>  $skillEntries
+     * @param  list<SkillEntry>  $entries
      */
-    private function digestOf(array $skillEntries): string
+    private function digestOf(array $entries): string
     {
         $identities = array_map(fn (SkillEntry $entry) => [
             $entry->key->key,
@@ -126,16 +126,16 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             $entry->revision,
             $entry->rendered->digest,
             $entry->condition->toArray(),
-        ], $skillEntries);
+        ], $entries);
 
         return hash('sha256', json_encode($identities, JSON_THROW_ON_ERROR));
     }
 
     /**
-     * @param  list<SkillEntry>  $skillEntries
+     * @param  list<SkillEntry>  $entries
      * @return list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>
      */
-    private function generationEntries(array $skillEntries): array
+    private function generationEntries(array $entries): array
     {
         return array_map(fn (SkillEntry $entry) => [
             'key' => $entry->key->key,
@@ -143,6 +143,6 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             'revision' => $entry->revision,
             'markdown' => $entry->rendered->markdown,
             'digest' => $entry->rendered->digest,
-        ], $skillEntries);
+        ], $entries);
     }
 }

@@ -59,6 +59,8 @@ final class ProcessStart extends Model implements ReadableModel
      */
     protected $hidden = ['directory', 'start_key'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -129,6 +131,35 @@ final class ProcessStart extends Model implements ReadableModel
     }
 
     /**
+     * Cancels the agent's starts no host has claimed yet, as its retirement does; a claimed start stays until its host
+     * proves the process gone, since retiring the agent proves no exit.
+     *
+     * @return list<RecordIdentity>
+     */
+    public static function cancelPendingOfAgent(string $agentId): array
+    {
+        $starts = self::supervised()
+            ->where('agent_id', $agentId)
+            ->where('state', ProcessStartState::Pending->value)
+            ->lockForUpdate()
+            ->readAll('a retiring agent has few starts')
+            ->get();
+        $accounts = [];
+
+        foreach ($starts as $start) {
+            $start->state = ProcessStartState::Cancelled;
+            $start->ended_at = CarbonImmutable::now();
+            $start->save();
+            $account = $start->accountIdentity();
+            $accounts["{$account->type} {$account->id}"] = $account;
+        }
+
+        return array_values($accounts);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
      * The session's start that may still run, locked: the newest one not cancelled or stopped; none for a session
      * the journal does not supervise.
      */
@@ -148,23 +179,6 @@ final class ProcessStart extends Model implements ReadableModel
     public static function currentOf(string $sessionId): self|null
     {
         return self::supervised()->unresolved()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
-    }
-
-    /**
-     * Starts the next mapping of the session's outputs: grants of an earlier mapping no longer count.
-     */
-    public function advanceOutputGeneration(): void
-    {
-        $this->output_generation++;
-        $this->save();
-    }
-
-    /**
-     * The settings store the start's program keeps its conversations in: its account's folder, named by identity.
-     */
-    public function settingsIdentity(): string
-    {
-        return $this->account_type.':'.$this->account_id;
     }
 
     /**
@@ -210,57 +224,6 @@ final class ProcessStart extends Model implements ReadableModel
             ->pluck('start_key');
 
         return array_values(array_map(strval(...), $keys->all()));
-    }
-
-    /**
-     * The host made the start's process and reports its execution identity; reporting it again changes nothing.
-     */
-    public function recordRunning(string $executionId): void
-    {
-        if ($this->state !== ProcessStartState::Starting) {
-            return;
-        }
-
-        $this->state = ProcessStartState::Running;
-        $this->execution_id = $executionId;
-        $this->save();
-    }
-
-    /**
-     * The host proved the start's process exited, or that none was made; reporting it again changes nothing.
-     */
-    public function stopWithProof(): bool
-    {
-        if (! in_array($this->state, ProcessStartState::unresolved(), true)) {
-            return false;
-        }
-
-        $this->state = ProcessStartState::Stopped;
-        $this->ended_at = CarbonImmutable::now();
-        $this->save();
-
-        return true;
-    }
-
-    public function accountIdentity(): RecordIdentity
-    {
-        return new RecordIdentity($this->account_type, $this->account_id);
-    }
-
-    /**
-     * The host takes the start to make its process, and answers whether it may: a start no longer pending, cancelled
-     * by maintenance or taken already, is never taken again.
-     */
-    public function claim(): bool
-    {
-        if ($this->state !== ProcessStartState::Pending) {
-            return false;
-        }
-
-        $this->state = ProcessStartState::Starting;
-        $this->save();
-
-        return true;
     }
 
     /**
@@ -317,43 +280,16 @@ final class ProcessStart extends Model implements ReadableModel
     }
 
     /**
-     * Cancels the agent's starts no host has claimed yet, as its retirement does; a claimed start stays until its host
-     * proves the process gone, since retiring the agent proves no exit.
-     *
-     * @return list<RecordIdentity>
-     */
-    public static function cancelPendingOfAgent(string $agentId): array
-    {
-        $starts = self::supervised()
-            ->where('agent_id', $agentId)
-            ->where('state', ProcessStartState::Pending->value)
-            ->lockForUpdate()
-            ->readAll('a retiring agent has few starts')
-            ->get();
-        $accounts = [];
-
-        foreach ($starts as $start) {
-            $start->state = ProcessStartState::Cancelled;
-            $start->ended_at = CarbonImmutable::now();
-            $start->save();
-            $account = $start->accountIdentity();
-            $accounts["{$account->type} {$account->id}"] = $account;
-        }
-
-        return array_values($accounts);
-    }
-
-    /**
      * Ends the named starts whose host proved their process exited, and answers the accounts they used.
      *
-     * @param  list<string>  $startKeys
+     * @param  list<string>  $keys
      * @return list<RecordIdentity>
      */
-    public static function stopProven(string $hostId, array $startKeys): array
+    public static function stopProven(string $hostId, array $keys): array
     {
         $starts = self::supervised()
             ->where('host_id', $hostId)
-            ->whereIn('start_key', $startKeys)
+            ->whereIn('start_key', $keys)
             ->unresolved()
             ->lockForUpdate()
             ->readAll('a host reports a bounded batch of exited starts')
@@ -369,6 +305,80 @@ final class ProcessStart extends Model implements ReadableModel
         return array_values($accounts);
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Starts the next mapping of the session's outputs: grants of an earlier mapping no longer count.
+     */
+    public function advanceOutputGeneration(): void
+    {
+        $this->output_generation++;
+        $this->save();
+    }
+
+    /**
+     * The host made the start's process and reports its execution identity; reporting it again changes nothing.
+     */
+    public function recordRunning(string $executionId): void
+    {
+        if ($this->state !== ProcessStartState::Starting) {
+            return;
+        }
+
+        $this->state = ProcessStartState::Running;
+        $this->execution_id = $executionId;
+        $this->save();
+    }
+
+    /**
+     * The host proved the start's process exited, or that none was made; reporting it again changes nothing.
+     */
+    public function stopWithProof(): bool
+    {
+        if (! in_array($this->state, ProcessStartState::unresolved(), true)) {
+            return false;
+        }
+
+        $this->state = ProcessStartState::Stopped;
+        $this->ended_at = CarbonImmutable::now();
+        $this->save();
+
+        return true;
+    }
+
+    /**
+     * The host takes the start to make its process, and answers whether it may: a start no longer pending, cancelled
+     * by maintenance or taken already, is never taken again.
+     */
+    public function claim(): bool
+    {
+        if ($this->state !== ProcessStartState::Pending) {
+            return false;
+        }
+
+        $this->state = ProcessStartState::Starting;
+        $this->save();
+
+        return true;
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The settings store the start's program keeps its conversations in: its account's folder, named by identity.
+     */
+    public function settingsIdentity(): string
+    {
+        return $this->account_type.':'.$this->account_id;
+    }
+
+    public function accountIdentity(): RecordIdentity
+    {
+        return new RecordIdentity($this->account_type, $this->account_id);
+    }
+
+    // ----------[ Internals ]----------
+
     /**
      * The named read of the supervisor and the account-use read, across every agent's starts.
      *
@@ -378,6 +388,8 @@ final class ProcessStart extends Model implements ReadableModel
     {
         return self::query()->withoutGlobalScope(ProcessStartScope::class);
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

@@ -185,16 +185,16 @@ final readonly class NavigationRecords implements NavigationRecordsContract
      * The keys from the root down to the item that matches this request best: the most route and query values matched,
      * ties broken by key.
      *
-     * @param  list<NavigationItemData>  $navigationLinks
+     * @param  list<NavigationItemData>  $links
      * @return list<string>
      */
-    private function current(Request $request, array $navigationLinks): array
+    private function current(Request $request, array $links): array
     {
         $best = [];
         $bestKey = '';
         $bestScore = -1;
 
-        foreach ($this->paths($navigationLinks, []) as $key => $path) {
+        foreach ($this->paths($links, []) as $key => $path) {
             $score = $this->matchScore($key, $request);
 
             if ($score > $bestScore || ($score === $bestScore && $score >= 0 && $key < $bestKey)) {
@@ -206,15 +206,15 @@ final readonly class NavigationRecords implements NavigationRecordsContract
     }
 
     /**
-     * @param  list<NavigationItemData>  $navigationLinks
+     * @param  list<NavigationItemData>  $links
      * @param  list<string>  $above
      * @return array<string, list<string>> each item's path from the root, by its key
      */
-    private function paths(array $navigationLinks, array $above): array
+    private function paths(array $links, array $above): array
     {
         $paths = [];
 
-        foreach ($navigationLinks as $navigation) {
+        foreach ($links as $navigation) {
             $paths[$navigation->key] = [...$above, $navigation->key];
             $paths = [...$paths, ...$this->paths($navigation->children, $paths[$navigation->key])];
         }
@@ -257,14 +257,14 @@ final readonly class NavigationRecords implements NavigationRecordsContract
     /**
      * The visible counted items of a tree, with their target pages visible too.
      *
-     * @param  list<RegisteredNavigation>  $navigationLinks
+     * @param  list<RegisteredNavigation>  $links
      * @return list<RegisteredNavigation>
      */
-    private function countedItems(array $navigationLinks): array
+    private function countedItems(array $links): array
     {
         $counted = [];
 
-        foreach ($navigationLinks as $navigation) {
+        foreach ($links as $navigation) {
             if (! $this->isVisible($navigation)) {
                 continue;
             }
@@ -282,14 +282,14 @@ final readonly class NavigationRecords implements NavigationRecordsContract
     }
 
     /**
-     * @param  list<RegisteredNavigation>  $navigationLinks
+     * @param  list<RegisteredNavigation>  $links
      * @return array<string, RegisteredNavigation>
      */
-    private function flatten(array $navigationLinks): array
+    private function flatten(array $links): array
     {
         $flat = [];
 
-        foreach ($navigationLinks as $navigation) {
+        foreach ($links as $navigation) {
             $flat[$navigation->key] = $navigation;
             $flat = [...$flat, ...$this->flatten($navigation->children)];
         }

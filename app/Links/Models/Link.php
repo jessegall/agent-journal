@@ -47,6 +47,8 @@ final class Link extends MorphPivot implements ReadableModel
      */
     protected $guarded = ['*'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * The link between the two models, made now when there is none yet in either direction.
      */
@@ -59,6 +61,23 @@ final class Link extends MorphPivot implements ReadableModel
             'target_id' => $target->getKey(),
         ]);
     }
+
+    /**
+     * A link stored as given, between two records named by their link type and id.
+     */
+    public static function recorded(string $sourceType, string $sourceId, string $targetType, string $targetId): self
+    {
+        $link = new self();
+        $link->source_type = $sourceType;
+        $link->source_id = $sourceId;
+        $link->target_type = $targetType;
+        $link->target_id = $targetId;
+        $link->save();
+
+        return $link;
+    }
+
+    // ----------[ Queries ]----------
 
     /**
      * The link between a model and a record named only by its link alias and id, made now when there is none yet;
@@ -91,21 +110,6 @@ final class Link extends MorphPivot implements ReadableModel
     }
 
     /**
-     * A link stored as given, between two records named by their link type and id.
-     */
-    public static function recorded(string $sourceType, string $sourceId, string $targetType, string $targetId): self
-    {
-        $link = new self();
-        $link->source_type = $sourceType;
-        $link->source_id = $sourceId;
-        $link->target_type = $targetType;
-        $link->target_id = $targetId;
-        $link->save();
-
-        return $link;
-    }
-
-    /**
      * Removes every link to or from the given models, which are about to be deleted.
      *
      * @param  list<Model>  $models
@@ -129,6 +133,32 @@ final class Link extends MorphPivot implements ReadableModel
         self::announceRemoved(self::removeAll(self::query()->between($first, $second)));
     }
 
+    // ----------[ Answers ]----------
+
+    /**
+     * The record on the other side of this link from the one given, by its link alias and id.
+     *
+     * @return array{string, string}
+     */
+    public function otherSideFrom(Model $record): array
+    {
+        return $this->otherSideFromKey($record->getMorphClass(), (string) $record->getKey());
+    }
+
+    /**
+     * The record on the other side of this link from the record of this link alias and id.
+     *
+     * @return array{string, string}
+     */
+    public function otherSideFromKey(string $type, string $id): array
+    {
+        $isSource = $this->source_type === $type && $this->source_id === $id;
+
+        return $isSource ? [$this->target_type, $this->target_id] : [$this->source_type, $this->source_id];
+    }
+
+    // ----------[ Relations ]----------
+
     /**
      * @return MorphTo<Model, $this>
      */
@@ -144,6 +174,37 @@ final class Link extends MorphPivot implements ReadableModel
     {
         return $this->morphTo();
     }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * Deletes the links of the query and returns their ids.
+     *
+     * @param  ReadBuilder<self>  $query
+     * @return list<string>
+     */
+    private static function removeAll(ReadBuilder $query): array
+    {
+        $removed = $query->readAll('every removed link is announced by id')->pluck('id');
+        $ids = array_values(array_map(strval(...), $removed->all()));
+        self::query()->whereKey($ids)->delete();
+
+        return $ids;
+    }
+
+    /**
+     * Raises LinksRemoved inside the running transaction, so what rested on the links ends with them.
+     *
+     * @param  list<string>  $ids
+     */
+    private static function announceRemoved(array $ids): void
+    {
+        if ($ids !== []) {
+            Container::getInstance()->make(Dispatcher::class)->dispatch(new LinksRemoved($ids));
+        }
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * Every link with this record on either side.
@@ -180,55 +241,6 @@ final class Link extends MorphPivot implements ReadableModel
         $query->where(fn (Builder $either) => $either
             ->where(fn (Builder $forward) => $forward->withSource($record)->where('target_type', $type))
             ->orWhere(fn (Builder $backward) => $backward->withTarget($record)->where('source_type', $type)));
-    }
-
-    /**
-     * The record on the other side of this link from the one given, by its link alias and id.
-     *
-     * @return array{string, string}
-     */
-    public function otherSideFrom(Model $record): array
-    {
-        return $this->otherSideFromKey($record->getMorphClass(), (string) $record->getKey());
-    }
-
-    /**
-     * The record on the other side of this link from the record of this link alias and id.
-     *
-     * @return array{string, string}
-     */
-    public function otherSideFromKey(string $type, string $id): array
-    {
-        $isSource = $this->source_type === $type && $this->source_id === $id;
-
-        return $isSource ? [$this->target_type, $this->target_id] : [$this->source_type, $this->source_id];
-    }
-
-    /**
-     * Deletes the links of the query and returns their ids.
-     *
-     * @param  ReadBuilder<self>  $query
-     * @return list<string>
-     */
-    private static function removeAll(ReadBuilder $query): array
-    {
-        $removed = $query->readAll('every removed link is announced by id')->pluck('id');
-        $ids = array_values(array_map(strval(...), $removed->all()));
-        self::query()->whereKey($ids)->delete();
-
-        return $ids;
-    }
-
-    /**
-     * Raises LinksRemoved inside the running transaction, so what rested on the links ends with them.
-     *
-     * @param  list<string>  $ids
-     */
-    private static function announceRemoved(array $ids): void
-    {
-        if ($ids !== []) {
-            Container::getInstance()->make(Dispatcher::class)->dispatch(new LinksRemoved($ids));
-        }
     }
 
     /**

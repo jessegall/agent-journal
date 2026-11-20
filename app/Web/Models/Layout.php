@@ -29,6 +29,8 @@ final class Layout extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -46,6 +48,8 @@ final class Layout extends Model implements ReadableModel
     {
         return self::query()->create(['user_id' => $userId, 'name' => $name, 'shape' => $shape]);
     }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Saves the layout's new name and shape.

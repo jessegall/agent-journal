@@ -57,15 +57,15 @@ final readonly class NativeTurns implements NativeTurnRecords
      * Records the turn a prompt starts once per (runtime, generation, native prompt id); a repeated hook adds none.
      * The prompt's text is never stored or logged here.
      */
-    public function recordPrompt(string $sessionId, int|null $generation, string|null $nativePromptId): void
+    public function recordPrompt(string $sessionId, int|null $generation, string|null $promptId): void
     {
         $runtime = AgentRuntime::ofSession($sessionId);
 
-        if ($runtime === null || $nativePromptId === null) {
+        if ($runtime === null || $promptId === null) {
             return;
         }
 
         $turnGeneration = $generation ?? $runtime->process_generation;
-        DriverTurn::recordStart($runtime->id, $turnGeneration, $nativePromptId, CarbonImmutable::now());
+        DriverTurn::recordStart($runtime->id, $turnGeneration, $promptId, CarbonImmutable::now());
     }
 }

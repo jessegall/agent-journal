@@ -22,8 +22,8 @@ final class ShareRecordInvalid extends LogicException
         return new self("{$modelClass}, registered for sharing as {$alias}, does not implement Shareable.");
     }
 
-    public static function notAProvider(string $alias, string $providerClass): self
+    public static function notAProvider(string $alias, string $class): self
     {
-        return new self("{$providerClass}, registered for sharing {$alias}, is no share record provider.");
+        return new self("{$class}, registered for sharing {$alias}, is no share record provider.");
     }
 }

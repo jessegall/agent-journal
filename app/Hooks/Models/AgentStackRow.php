@@ -53,6 +53,8 @@ final class AgentStackRow extends Model implements ReadableModel
 
     protected $table = 'agent_stacks';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -66,25 +68,6 @@ final class AgentStackRow extends Model implements ReadableModel
             'closed_at' => 'immutable_datetime',
             'held_at' => 'immutable_datetime',
         ];
-    }
-
-    /**
-     * The agent and session whose stack this is.
-     */
-    public function target(): StackTarget
-    {
-        return new StackTarget($this->agent_id, $this->session_id);
-    }
-
-    public function startFor(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): void
-    {
-        $this->agent_id = $target->agentId;
-        $this->session_id = $target->sessionId;
-        $this->version = 1;
-        $this->frames = $frames;
-        $this->has_ticking_frames = $frames->holdTicking($ticking);
-        $this->status = StackStatus::Active;
-        $this->save();
     }
 
     /**
@@ -105,6 +88,42 @@ final class AgentStackRow extends Model implements ReadableModel
             'created_at' => $now,
             'updated_at' => $now,
         ]);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The active stack of the target as the caller may read it, unlocked; none when it is missing or closed.
+     *
+     * @return Option<self>
+     */
+    public static function activeFor(StackTarget $target): Option
+    {
+        $row = self::query()->forTarget($target)->first();
+
+        return $row !== null && $row->isActive() ? new Some($row) : None::create();
+    }
+
+    /**
+     * The active stack of a target the caller was authorized for, unlocked; none when it is missing or closed.
+     *
+     * @return Option<self>
+     */
+    public static function activeAuthorizedFor(StackTarget $target): Option
+    {
+        $row = self::query()->authorizedFor($target)->first();
+
+        return $row !== null && $row->isActive() ? new Some($row) : None::create();
+    }
+
+    /**
+     * @return Option<self>
+     */
+    public static function lockActiveAuthorizedFor(StackTarget $target): Option
+    {
+        $row = self::query()->authorizedFor($target)->lockForUpdate()->first();
+
+        return $row !== null && $row->isActive() ? new Some($row) : None::create();
     }
 
     /**
@@ -151,30 +170,6 @@ final class AgentStackRow extends Model implements ReadableModel
     }
 
     /**
-     * The active stack of the target as the caller may read it, unlocked; none when it is missing or closed.
-     *
-     * @return Option<self>
-     */
-    public static function activeFor(StackTarget $target): Option
-    {
-        $row = self::query()->forTarget($target)->first();
-
-        return $row !== null && $row->isActive() ? new Some($row) : None::create();
-    }
-
-    /**
-     * The active stack of a target the caller was authorized for, unlocked; none when it is missing or closed.
-     *
-     * @return Option<self>
-     */
-    public static function activeAuthorizedFor(StackTarget $target): Option
-    {
-        $row = self::query()->authorizedFor($target)->first();
-
-        return $row !== null && $row->isActive() ? new Some($row) : None::create();
-    }
-
-    /**
      * The active stack of a target the caller was authorized for (its start, or a user acting on it), read through
      * the explicit authorized query and locked.
      */
@@ -192,25 +187,6 @@ final class AgentStackRow extends Model implements ReadableModel
     }
 
     /**
-     * @return Option<self>
-     */
-    public static function lockActiveAuthorizedFor(StackTarget $target): Option
-    {
-        $row = self::query()->authorizedFor($target)->lockForUpdate()->first();
-
-        return $row !== null && $row->isActive() ? new Some($row) : None::create();
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function historyOf(Builder $query, ActorIdentity $actor): void
-    {
-        $query->withoutGlobalScope(AgentSessionScope::class)->where('agent_id', $actor->id);
-    }
-
-    /**
      * @param  list<string>  $sessions
      * @return list<self>
      */
@@ -225,9 +201,17 @@ final class AgentStackRow extends Model implements ReadableModel
             ->orderBy('session_id')->lockForUpdate()->readLimit(count($sessions))->get()->all());
     }
 
-    public function isActive(): bool
+    // ----------[ Mutations ]----------
+
+    public function startFor(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): void
     {
-        return $this->status === StackStatus::Active;
+        $this->agent_id = $target->agentId;
+        $this->session_id = $target->sessionId;
+        $this->version = 1;
+        $this->frames = $frames;
+        $this->has_ticking_frames = $frames->holdTicking($ticking);
+        $this->status = StackStatus::Active;
+        $this->save();
     }
 
     /**
@@ -252,6 +236,32 @@ final class AgentStackRow extends Model implements ReadableModel
         $this->status = StackStatus::Closed;
         $this->closed_at = $time;
         $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The agent and session whose stack this is.
+     */
+    public function target(): StackTarget
+    {
+        return new StackTarget($this->agent_id, $this->session_id);
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === StackStatus::Active;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function historyOf(Builder $query, ActorIdentity $actor): void
+    {
+        $query->withoutGlobalScope(AgentSessionScope::class)->where('agent_id', $actor->id);
     }
 
     /**

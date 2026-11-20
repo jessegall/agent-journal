@@ -5006,6 +5006,7 @@ class	TaskRunTaken
 class	TaskSearch
 class	TaskStarted
 class	TaskSummary
+class	TaskText
 class	TaskType
 class	TaskWork
 class	TaskWriteTool
@@ -5034,6 +5035,7 @@ class	TextLineTooLong
 class	TextMatchInvalid
 class	TextOperand
 class	TextPart
+class	TextPreview
 class	TextRange
 class	TextReadCommand
 class	TextReading
@@ -5585,7 +5587,8 @@ constant	NavigationAnswer::LABEL_CHARACTER_LIMIT
 constant	NavigationExpiry::SWEEP_LIMIT
 constant	NavigationProof::JOINERS
 constant	NavigationProof::MOST_CHARACTERS
-constant	NavigationRecords::PAGE_SIZE
+constant	NavigationReader::MENU_PAGE_SIZE
+constant	NavigationReader::ROUND_LIMIT
 constant	NavigationRequest::LINK_TYPE
 constant	NavigationRoundReportData::STEP_LIMIT
 constant	NavigationUncertainty::FINGERPRINT
@@ -12197,6 +12200,7 @@ method	MenuEntryRefused::notFound()
 method	MenuEntryStaleData::__construct()
 method	MenuEntryState::isUsable()
 method	MenuListTool::__construct()
+method	MenuListTool::page()
 method	MenuListTool::read()
 method	MenuListTool::schema()
 method	MenuRetireTool::command()
@@ -12606,6 +12610,7 @@ method	NavigationRaiseRefused::unknownEntry()
 method	NavigationRaiseRefused::unknownRequest()
 method	NavigationReader::menuEntries()
 method	NavigationReader::menuEntry()
+method	NavigationReader::menuEntryCount()
 method	NavigationReader::navigationRequest()
 method	NavigationRecords::__construct()
 method	NavigationRecords::childrenOf()
@@ -12617,6 +12622,8 @@ method	NavigationRecords::isVisible()
 method	NavigationRecords::matchScore()
 method	NavigationRecords::menuEntries()
 method	NavigationRecords::menuEntry()
+method	NavigationRecords::menuEntryCount()
+method	NavigationRecords::menuQuery()
 method	NavigationRecords::navigationRequest()
 method	NavigationRecords::paths()
 method	NavigationRecords::registeredItem()
@@ -14313,6 +14320,7 @@ method	PublicationReadTool::rangeSchema()
 method	PublicationReadTool::readRequest()
 method	PublicationResource::bodyArguments()
 method	PublicationResource::markdown()
+method	PublicationResource::pathArguments()
 method	PublicationState::awaitsDelivery()
 method	PublicationState::canMoveTo()
 method	PublicationState::isOpen()
@@ -18742,6 +18750,7 @@ method	Task::casts()
 method	Task::currentRun()
 method	Task::describe()
 method	Task::details()
+method	Task::detailsWithText()
 method	Task::executionBy()
 method	Task::file()
 method	Task::finish()
@@ -18887,6 +18896,7 @@ method	TaskState::hasEnded()
 method	TaskState::isHoldingChecks()
 method	TaskState::unfinished()
 method	TaskSummary::__construct()
+method	TaskText::__construct()
 method	TaskWork::__construct()
 method	TaskWork::needsWork()
 method	TaskWork::unfinishedReason()
@@ -19001,6 +19011,7 @@ method	TextOperand::__construct()
 method	TextOperand::label()
 method	TextPart::__construct()
 method	TextPart::toSafeHtml()
+method	TextPreview::within()
 method	TextRange::__construct()
 method	TextRange::anchorIn()
 method	TextRange::checkedLines()
@@ -19850,15 +19861,12 @@ parameter	$assets
 parameter	$assignableType
 parameter	$assigned
 parameter	$assignedIds
-parameter	$assignedPlanPage
-parameter	$assignedTaskPage
 parameter	$assignee
 parameter	$assigneeType
 parameter	$assignees
 parameter	$assignerClass
 parameter	$assignment
 parameter	$assignmentBatch
-parameter	$assignmentBatches
 parameter	$assignmentChange
 parameter	$assignmentId
 parameter	$assignmentIds
@@ -19899,7 +19907,6 @@ parameter	$authorizedSource
 parameter	$authorizer
 parameter	$authorizers
 parameter	$authtoken
-parameter	$autoAssignments
 parameter	$availability
 parameter	$available
 parameter	$awaitsCleanupRetry
@@ -19943,7 +19950,6 @@ parameter	$branches
 parameter	$brief
 parameter	$broadcast
 parameter	$budget
-parameter	$budgetAmount
 parameter	$budgets
 parameter	$buffer
 parameter	$build
@@ -19957,6 +19963,7 @@ parameter	$bundles
 parameter	$bus
 parameter	$by
 parameter	$byOwner
+parameter	$byState
 parameter	$bypassLogPath
 parameter	$bypasses
 parameter	$byte
@@ -19966,7 +19973,6 @@ parameter	$bytes
 parameter	$cache
 parameter	$caches
 parameter	$call
-parameter	$callFields
 parameter	$callId
 parameter	$callSite
 parameter	$callback
@@ -20046,8 +20052,6 @@ parameter	$chunk
 parameter	$chunkSize
 parameter	$chunks
 parameter	$claim
-parameter	$claimAssignmentId
-parameter	$claimAssignmentIds
 parameter	$claimBatchMax
 parameter	$claimHolder
 parameter	$claimId
@@ -20093,7 +20097,6 @@ parameter	$command
 parameter	$commandBudgetMilliseconds
 parameter	$commandDigest
 parameter	$commandField
-parameter	$commandOwners
 parameter	$commandReply
 parameter	$commandRequest
 parameter	$commandRequestId
@@ -20194,7 +20197,6 @@ parameter	$counts
 parameter	$coverage
 parameter	$cpuCores
 parameter	$createdAt
-parameter	$createdDocument
 parameter	$createdReport
 parameter	$creationAttributes
 parameter	$creations
@@ -20320,11 +20322,8 @@ parameter	$done
 parameter	$doneTasks
 parameter	$draft
 parameter	$draftId
-parameter	$draftView
 parameter	$drafts
-parameter	$drainSeconds
 parameter	$drained
-parameter	$driverEnvelope
 parameter	$driverType
 parameter	$due
 parameter	$duration
@@ -20373,9 +20372,11 @@ parameter	$engineListeners
 parameter	$enteredAt
 parameter	$entrance
 parameter	$entries
+parameter	$entries	app/Sharing/Support/ShareAuditPage.php
+parameter	$entries	app/Skills/Handlers/RefreshSkillsHandler.php
+parameter	$entries	app/Skills/Resolvers/Support/SkillStatusResolver.php
 parameter	$entry
 parameter	$entryDispatchers
-parameter	$entryFingerprint
 parameter	$entryGroup
 parameter	$entryId
 parameter	$enum
@@ -20394,12 +20395,10 @@ parameter	$evaluator
 parameter	$event
 parameter	$eventActivity
 parameter	$eventArguments
-parameter	$eventFields
 parameter	$eventId
 parameter	$eventKey
 parameter	$eventName
 parameter	$eventNames
-parameter	$eventResults
 parameter	$eventScope
 parameter	$events
 parameter	$evidence
@@ -20506,6 +20505,7 @@ parameter	$firstRead
 parameter	$firstReader
 parameter	$firstRequest
 parameter	$firstRequestId
+parameter	$firstRound
 parameter	$fixedFiles
 parameter	$flag
 parameter	$flags
@@ -20527,7 +20527,6 @@ parameter	$found
 parameter	$foundIn
 parameter	$frame
 parameter	$frameId
-parameter	$frameIds
 parameter	$frames
 parameter	$framing
 parameter	$from
@@ -20536,7 +20535,6 @@ parameter	$fromOffset
 parameter	$fromRevision
 parameter	$gate
 parameter	$gateway
-parameter	$gatewayClass
 parameter	$gatewayConfigurationId
 parameter	$gatewayKey
 parameter	$gatewayKeys
@@ -20557,6 +20555,7 @@ parameter	$grants
 parameter	$graph
 parameter	$graphDigest
 parameter	$group
+parameter	$groupId
 parameter	$groupKey
 parameter	$groupState
 parameter	$groups
@@ -20575,7 +20574,6 @@ parameter	$hasOpenWork
 parameter	$hash
 parameter	$head
 parameter	$header
-parameter	$headerTokens
 parameter	$headers
 parameter	$heading
 parameter	$headingPath
@@ -20624,6 +20622,7 @@ parameter	$hostSecret
 parameter	$http
 parameter	$icon
 parameter	$id
+parameter	$idGroups
 parameter	$idempotencyKey
 parameter	$identifier
 parameter	$identity
@@ -20658,7 +20657,6 @@ parameter	$installContext
 parameter	$installation
 parameter	$installationName
 parameter	$installed
-parameter	$installedVersion
 parameter	$installer
 parameter	$instances
 parameter	$instead
@@ -20720,9 +20718,11 @@ parameter	$isUnread
 parameter	$isWholeText
 parameter	$isWorkRequired
 parameter	$isolation
+parameter	$issue
 parameter	$issued
 parameter	$issuedAt
 parameter	$italic
+parameter	$item	app/Ui/Declarations/RegisteredNavigation.php
 parameter	$job
 parameter	$jobId
 parameter	$jobState
@@ -20808,7 +20808,6 @@ parameter	$listName
 parameter	$listRead
 parameter	$listed
 parameter	$listener
-parameter	$listenerDomain
 parameter	$listenerPort
 parameter	$listenerResult
 parameter	$listenerResults
@@ -20843,7 +20842,6 @@ parameter	$manifest
 parameter	$manifestDigest
 parameter	$manifests
 parameter	$markdown
-parameter	$markdownIssue
 parameter	$marker
 parameter	$match
 parameter	$matches
@@ -20871,7 +20869,6 @@ parameter	$memory
 parameter	$memoryBytes
 parameter	$memoryId
 parameter	$memorySwapBytes
-parameter	$menuEntryId
 parameter	$merge
 parameter	$mermaid
 parameter	$message
@@ -20928,6 +20925,7 @@ parameter	$mostRecords
 parameter	$mostRenderedBytes
 parameter	$mounts
 parameter	$move
+parameter	$ms
 parameter	$name
 parameter	$nameContext
 parameter	$namedPaths
@@ -20942,11 +20940,9 @@ parameter	$nativeEvent
 parameter	$nativeId
 parameter	$nativePromptId
 parameter	$navigation
-parameter	$navigationArguments
 parameter	$navigationId
 parameter	$navigationItem
 parameter	$navigationItems
-parameter	$navigationLabel
 parameter	$navigationLinks
 parameter	$navigationReports
 parameter	$navigationRequestId
@@ -20975,7 +20971,6 @@ parameter	$nextCharacter
 parameter	$nextCursor
 parameter	$nextLine
 parameter	$nextOffset
-parameter	$nextPhase
 parameter	$nextStep
 parameter	$nextTaskOffset
 parameter	$noNewPrivileges
@@ -20993,6 +20988,7 @@ parameter	$number
 parameter	$numberGroupId
 parameter	$numberOrHeading
 parameter	$numberOrKey
+parameter	$numberText
 parameter	$numbered
 parameter	$numbers
 parameter	$object
@@ -21006,6 +21002,7 @@ parameter	$observedAt
 parameter	$occupant
 parameter	$occurredAt
 parameter	$occurrence
+parameter	$of
 parameter	$ofType
 parameter	$offlineReply
 parameter	$offlineReplySeal
@@ -21084,6 +21081,7 @@ parameter	$ownership
 parameter	$packageFile
 parameter	$packages
 parameter	$page
+parameter	$pageId
 parameter	$pageMax
 parameter	$pageName
 parameter	$pages
@@ -21094,7 +21092,6 @@ parameter	$panels
 parameter	$param
 parameter	$parameter
 parameter	$parameterText
-parameter	$parameterTexts
 parameter	$parameterType
 parameter	$parameters
 parameter	$parent
@@ -21149,7 +21146,6 @@ parameter	$permitId
 parameter	$permitReference
 parameter	$permits
 parameter	$phase
-parameter	$phaseCount
 parameter	$phaseId
 parameter	$phaseIds
 parameter	$phaseNumber
@@ -21282,7 +21278,6 @@ parameter	$publicFolder
 parameter	$publicOrigin
 parameter	$publication
 parameter	$publicationId
-parameter	$publicationIds
 parameter	$publicationPending
 parameter	$publicationVersion
 parameter	$publications
@@ -21324,7 +21319,6 @@ parameter	$readContext
 parameter	$readEntries
 parameter	$readOnlyRoot
 parameter	$reader
-parameter	$readerClass
 parameter	$readerRevision
 parameter	$readerRevisionId
 parameter	$readers
@@ -21473,6 +21467,7 @@ parameter	$resultNote
 parameter	$resultNumber
 parameter	$resultReference
 parameter	$resultRevision
+parameter	$results	app/Hooks/StateEvents/StateEventEffects.php
 parameter	$resumesConversation
 parameter	$retained
 parameter	$retainedCards
@@ -21514,7 +21509,6 @@ parameter	$rounds
 parameter	$route
 parameter	$routeArgument
 parameter	$routeName
-parameter	$routeNumberText
 parameter	$routeProfile
 parameter	$routeValues
 parameter	$routeVersion
@@ -21621,7 +21615,6 @@ parameter	$selector
 parameter	$selectorName
 parameter	$selfMeasured
 parameter	$send
-parameter	$sendCommand
 parameter	$sender
 parameter	$senderSessionId
 parameter	$sending
@@ -21631,7 +21624,6 @@ parameter	$sentSteps
 parameter	$sequence
 parameter	$sequenceRunId
 parameter	$serverClock
-parameter	$serverUrl
 parameter	$service
 parameter	$session
 parameter	$sessionId
@@ -21642,7 +21634,6 @@ parameter	$setting
 parameter	$settingDecimal
 parameter	$settingInput
 parameter	$settingNumber
-parameter	$settingRows
 parameter	$settingText
 parameter	$settings
 parameter	$settingsIdentity
@@ -21680,8 +21671,6 @@ parameter	$skeleton
 parameter	$skill
 parameter	$skillAllowlist
 parameter	$skillConditions
-parameter	$skillDefinitions
-parameter	$skillEntries
 parameter	$skillId
 parameter	$skillKey
 parameter	$skillKeys
@@ -21695,12 +21684,10 @@ parameter	$slotTakes
 parameter	$slots
 parameter	$slug
 parameter	$snapshot
-parameter	$snapshotNode
 parameter	$snapshots
 parameter	$snippet
 parameter	$socket
 parameter	$source
-parameter	$sourceClass
 parameter	$sourceDigest
 parameter	$sourceHash
 parameter	$sourceId
@@ -21733,7 +21720,6 @@ parameter	$start
 parameter	$startFlags
 parameter	$startId
 parameter	$startKey
-parameter	$startKeys
 parameter	$startNanoseconds
 parameter	$startOffset
 parameter	$startRequestId
@@ -21752,7 +21738,6 @@ parameter	$startup
 parameter	$state
 parameter	$stateClass
 parameter	$stateLabel
-parameter	$stateOf
 parameter	$statePush
 parameter	$stateType
 parameter	$stateVersion
@@ -21792,7 +21777,6 @@ parameter	$store
 parameter	$stored
 parameter	$storedCode
 parameter	$storedDetails
-parameter	$storedJson
 parameter	$storedRevision
 parameter	$storedValue
 parameter	$stream
@@ -21825,6 +21809,7 @@ parameter	$suppliedKey
 parameter	$support
 parameter	$supported
 parameter	$surface
+parameter	$swapBytes
 parameter	$switch
 parameter	$switchable
 parameter	$switchedOn
@@ -21855,7 +21840,6 @@ parameter	$targets
 parameter	$task
 parameter	$taskCount
 parameter	$taskCounts
-parameter	$taskCountsByState
 parameter	$taskGroups
 parameter	$taskId
 parameter	$taskIdGroups
@@ -21869,6 +21853,7 @@ parameter	$templateFields
 parameter	$terminal
 parameter	$terminator
 parameter	$text
+parameter	$texts
 parameter	$then
 parameter	$thread
 parameter	$tick
@@ -21885,7 +21870,6 @@ parameter	$toParse
 parameter	$toggle
 parameter	$toggles
 parameter	$token
-parameter	$tokenHash
 parameter	$tokens
 parameter	$tombstoneDays
 parameter	$tooLarge
@@ -21898,7 +21882,6 @@ parameter	$toolName
 parameter	$toolNames
 parameter	$toolResponse
 parameter	$toolResult
-parameter	$toolRule
 parameter	$tools
 parameter	$total
 parameter	$totalField
@@ -21917,7 +21900,6 @@ parameter	$transportProfile
 parameter	$tree
 parameter	$treeDigest
 parameter	$trigger
-parameter	$triggerReference
 parameter	$truncated
 parameter	$trust
 parameter	$trustedEntry
@@ -22066,7 +22048,6 @@ parameter	$workdir
 parameter	$worker
 parameter	$workingDirectory
 parameter	$workingFolder
-parameter	$workingRoots
 parameter	$workspace
 parameter	$workspaceBytes
 parameter	$workspaceGeneration
@@ -25146,6 +25127,7 @@ property	MenuEntryStaleData::$runtimeId
 property	MenuEntryStaleData::$step
 property	MenuListTool::$admission
 property	MenuListTool::$navigation
+property	MenuListTool::$pages
 property	MenuShowTool::$admission
 property	MenuShowTool::$navigation
 property	MenuStep::$choose
@@ -26593,9 +26575,9 @@ property	ReadRequestKey::$app
 property	ReadRequestKey::$failures
 property	ReadRequestKey::$key
 property	ReadRequestKey::$reads
-property	ReadRetainedDraftTool::$chunks
 property	ReadRetainedDraftTool::$continuations
 property	ReadRetainedDraftTool::$drafts
+property	ReadRetainedDraftTool::$fields
 property	ReadShare::$cursor
 property	ReadShare::$head
 property	ReadShare::$path
@@ -29311,16 +29293,13 @@ property	TaskCounts::$actors
 property	TaskDetailRecords::$assignees
 property	TaskDetailRecords::$executions
 property	TaskDetailRecords::$visibility
-property	TaskDetails::$blockReason
-property	TaskDetails::$brief
-property	TaskDetails::$cancelReason
 property	TaskDetails::$execution
 property	TaskDetails::$holder
 property	TaskDetails::$id
 property	TaskDetails::$number
-property	TaskDetails::$resultNote
 property	TaskDetails::$revision
 property	TaskDetails::$state
+property	TaskDetails::$text
 property	TaskDetails::$title
 property	TaskEdited::$revision
 property	TaskEdited::$taskId
@@ -29366,6 +29345,10 @@ property	TaskSummary::$changedAt
 property	TaskSummary::$number
 property	TaskSummary::$state
 property	TaskSummary::$title
+property	TaskText::$blockReason
+property	TaskText::$brief
+property	TaskText::$cancelReason
+property	TaskText::$resultNote
 property	TaskWork::$isCurrentRun
 property	TaskWork::$number
 property	TaskWork::$runNumber
@@ -29994,6 +29977,7 @@ variable	$bytes
 variable	$cache
 variable	$call
 variable	$callContractMatch
+variable	$callFields
 variable	$callId
 variable	$callParameterType
 variable	$caller
@@ -30075,6 +30059,7 @@ variable	$columns
 variable	$command
 variable	$commandClasses
 variable	$commandOwner
+variable	$commandOwners
 variable	$commandReply
 variable	$commandRequest
 variable	$commands
@@ -30550,6 +30535,7 @@ variable	$lineStart
 variable	$lineage
 variable	$lines
 variable	$link
+variable	$linkIds
 variable	$linkOfId
 variable	$linkOfTarget
 variable	$linkType
@@ -30658,6 +30644,7 @@ variable	$namespace
 variable	$namespaceMatch
 variable	$namespaces
 variable	$navigation
+variable	$navigationLinks
 variable	$nearest
 variable	$needed
 variable	$negation
@@ -30672,6 +30659,7 @@ variable	$next
 variable	$nextActions
 variable	$nextAfter
 variable	$nextAfterId
+variable	$nextRound
 variable	$nextStep
 variable	$nextTaskOffset
 variable	$node
@@ -31016,6 +31004,8 @@ variable	$room
 variable	$root
 variable	$roots
 variable	$round
+variable	$roundCount
+variable	$roundQuery
 variable	$rounds
 variable	$route
 variable	$routeArguments
@@ -31115,6 +31105,7 @@ variable	$since
 variable	$site
 variable	$size
 variable	$skill
+variable	$skillEntries
 variable	$skillFiles
 variable	$skillId
 variable	$skills
@@ -31132,6 +31123,7 @@ variable	$sortedParameters
 variable	$source
 variable	$sourceAdmitted
 variable	$sourceArea
+variable	$sourceClass
 variable	$sourceRoot
 variable	$sources
 variable	$span
@@ -31302,6 +31294,7 @@ variable	$valid
 variable	$validation
 variable	$validator
 variable	$value	app/Scripts/Support/ObjectReader.php
+variable	$values
 variable	$variable
 variable	$variables
 variable	$verb

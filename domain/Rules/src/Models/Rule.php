@@ -62,6 +62,8 @@ final class Rule extends Model implements Numbered, ReadableModel
      */
     protected $attributes = ['state' => 'active'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -106,6 +108,8 @@ final class Rule extends Model implements Numbered, ReadableModel
         return $rule;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The rule read under its row lock, for a change that must happen once.
      */
@@ -113,6 +117,16 @@ final class Rule extends Model implements Numbered, ReadableModel
     {
         return self::query()->whereKey($ruleId)->lockForUpdate()->firstOr(fn () => throw RuleMissing::withId($ruleId));
     }
+
+    // ----------[ Mutations ]----------
+
+    public function remove(): void
+    {
+        $this->state = RuleState::Removed;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
 
     /**
      * Makes the proposal hold, approved by an actor other than the one who proposed it.
@@ -143,11 +157,24 @@ final class Rule extends Model implements Numbered, ReadableModel
         return $this->state === RuleState::Proposed;
     }
 
-    public function remove(): void
+    /**
+     * The rule as a read shows it, with the number of the rule it replaces, if any.
+     */
+    public function details(int|null $replacedNumber): RuleDetails
     {
-        $this->state = RuleState::Removed;
-        $this->save();
+        return new RuleDetails(
+            $this->id,
+            $this->number,
+            $this->text,
+            $this->state,
+            $this->reason,
+            $this->proposer_type,
+            $this->proposer_id,
+            $replacedNumber,
+        );
     }
+
+    // ----------[ Internals ]----------
 
     private function closeProposal(RuleState $outcome): void
     {
@@ -158,6 +185,8 @@ final class Rule extends Model implements Numbered, ReadableModel
         $this->state = $outcome;
         $this->save();
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query
@@ -175,22 +204,5 @@ final class Rule extends Model implements Numbered, ReadableModel
     protected function active(Builder $query): void
     {
         $query->where('state', RuleState::Active->value);
-    }
-
-    /**
-     * The rule as a read shows it, with the number of the rule it replaces, if any.
-     */
-    public function details(int|null $replacedNumber): RuleDetails
-    {
-        return new RuleDetails(
-            $this->id,
-            $this->number,
-            $this->text,
-            $this->state,
-            $this->reason,
-            $this->proposer_type,
-            $this->proposer_id,
-            $replacedNumber,
-        );
     }
 }

@@ -16,8 +16,8 @@ final class AnsweringMessageStateReference extends StateReferenceFactory
 {
     public const string TYPE_KEY = 'communication.answering';
 
-    public static function forClaim(string $claimAssignmentId): StateReference
+    public static function forClaim(string $assignmentId): StateReference
     {
-        return self::about(new SubjectReference($claimAssignmentId, 0));
+        return self::about(new SubjectReference($assignmentId, 0));
     }
 }

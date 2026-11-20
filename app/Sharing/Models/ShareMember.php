@@ -41,6 +41,8 @@ final class ShareMember extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.share-member';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -69,6 +71,8 @@ final class ShareMember extends Model implements ReadableModel
 
         return $member;
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The members the share's current scope still approves.
@@ -100,11 +104,11 @@ final class ShareMember extends Model implements ReadableModel
      * Ends the approval of every member that rested on one of these links; a link made again has a new id, so only a
      * refreshed scope approves it.
      *
-     * @param  list<string>  $linkIds
+     * @param  list<string>  $ids
      */
-    public static function invalidateForLinks(array $linkIds, CarbonImmutable $at): void
+    public static function invalidateForLinks(array $ids, CarbonImmutable $at): void
     {
-        self::query()->onLinks($linkIds)->stillApproved()->update(['invalidated_at' => $at]);
+        self::query()->onLinks($ids)->stillApproved()->update(['invalidated_at' => $at]);
     }
 
     /**
@@ -181,19 +185,23 @@ final class ShareMember extends Model implements ReadableModel
         return $grouped;
     }
 
+    // ----------[ Answers ]----------
+
     public function target(): RecordIdentity
     {
         return new RecordIdentity($this->target_type, $this->target_id);
     }
 
+    // ----------[ Scopes ]----------
+
     /**
      * @param  Builder<self>  $query
-     * @param  list<string>  $linkIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function onLinks(Builder $query, array $linkIds): void
+    protected function onLinks(Builder $query, array $ids): void
     {
-        $query->whereIn('link_id', $linkIds);
+        $query->whereIn('link_id', $ids);
     }
 
     /**

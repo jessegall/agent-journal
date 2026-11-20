@@ -22,11 +22,11 @@ final readonly class ProfileStartAdmission implements StartProfileAdmission
 {
     public function __construct(private ProfileResolver $profiles) {}
 
-    public function admit(string $profileKey, int $profileRevision): AuthoritySource
+    public function admit(string $profileKey, int $revision): AuthoritySource
     {
         try {
             return new StartProfileAuthority(
-                $this->profiles->admittedPin(ProfileKey::from($profileKey), $profileRevision),
+                $this->profiles->admittedPin(ProfileKey::from($profileKey), $revision),
             );
         } catch (ProfileRetired|ProfileMissing|ModelNotFoundException $cause) {
             throw CredentialRejected::profileMismatched(previous: $cause);

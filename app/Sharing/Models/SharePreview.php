@@ -60,6 +60,8 @@ final class SharePreview extends Model implements ReadableModel
 
     public const int MINUTES_VALID = 10;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -98,6 +100,8 @@ final class SharePreview extends Model implements ReadableModel
         return $preview;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The preview of this id, read without a lock to learn which configuration to lock first.
      *
@@ -132,10 +136,7 @@ final class SharePreview extends Model implements ReadableModel
         );
     }
 
-    public function root(): RecordIdentity
-    {
-        return new RecordIdentity($this->root_type, $this->root_id);
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * Uses the preview once for its owner, after checking it still shows what the owner confirmed: the same selected
@@ -175,23 +176,14 @@ final class SharePreview extends Model implements ReadableModel
         return $selection;
     }
 
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ownedBy(Builder $query, string $ownerUserId): void
+    // ----------[ Answers ]----------
+
+    public function root(): RecordIdentity
     {
-        $query->where('owner_user_id', $ownerUserId);
+        return new RecordIdentity($this->root_type, $this->root_id);
     }
 
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function stillOpen(Builder $query): void
-    {
-        $query->whereNull('consumed_at')->where('expires_at', '>', CarbonImmutable::now());
-    }
+    // ----------[ Internals ]----------
 
     /**
      * @param  list<ShareSelectedTarget>  $selection
@@ -226,5 +218,25 @@ final class SharePreview extends Model implements ReadableModel
                 JSON_THROW_ON_ERROR,
             ),
         );
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ownedBy(Builder $query, string $ownerUserId): void
+    {
+        $query->where('owner_user_id', $ownerUserId);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function stillOpen(Builder $query): void
+    {
+        $query->whereNull('consumed_at')->where('expires_at', '>', CarbonImmutable::now());
     }
 }

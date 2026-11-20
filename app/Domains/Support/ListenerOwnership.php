@@ -30,12 +30,12 @@ final readonly class ListenerOwnership
         string $event,
         string $listener,
         string $method,
-        DomainEntry|null $listenerDomain,
+        DomainEntry|null $domain,
     ): void {
         $owner = $this->eventDomain($event, $listener);
 
         if ($owner === null) {
-            $isCoreListener = $listenerDomain === null;
+            $isCoreListener = $domain === null;
             if (! $isCoreListener && ! $this->coreExports->hasEvent($event)) {
                 throw InvalidListener::privateEvent($listener, $method, $event, self::CORE);
             }
@@ -43,7 +43,7 @@ final readonly class ListenerOwnership
             return;
         }
 
-        if ($listenerDomain === null) {
+        if ($domain === null) {
             $isExportedUiEvent = $owner->exportsEvent($event) && is_subclass_of($event, UserInterfaceUpdater::class);
             if (! $isExportedUiEvent) {
                 throw InvalidListener::privateEvent($listener, $method, $event, $owner->name);
@@ -52,11 +52,11 @@ final readonly class ListenerOwnership
             return;
         }
 
-        if ($listenerDomain === $owner) {
+        if ($domain === $owner) {
             return;
         }
 
-        if (! $listenerDomain->requiresDomain($owner)) {
+        if (! $domain->requiresDomain($owner)) {
             throw InvalidListener::notRequired($listener, $event, $owner->name);
         }
 

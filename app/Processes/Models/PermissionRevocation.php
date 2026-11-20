@@ -42,6 +42,8 @@ final class PermissionRevocation extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -65,6 +67,8 @@ final class PermissionRevocation extends Model implements ReadableModel
             'revoked_at' => CarbonImmutable::now(),
         ]);
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The permissions narrowed by every revocation of their source.

@@ -77,6 +77,8 @@ final class AgentSession extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -93,6 +95,8 @@ final class AgentSession extends Model implements ReadableModel
             'profile_revision' => 'integer',
         ];
     }
+
+    // ----------[ Queries ]----------
 
     public static function selectMessage(string $sessionId, string $messageId): void
     {
@@ -122,73 +126,6 @@ final class AgentSession extends Model implements ReadableModel
     public static function jobSourceMessageIds(string $sessionId): Builder
     {
         return self::query()->whereKey($sessionId)->select('job_source_message_id');
-    }
-
-    /**
-     * Starts the session of one start with the program and model it runs and the request that started it.
-     *
-     * @throws SessionSelectionFixed
-     */
-    public function startFor(Agent $agent, self|null $parent, SelectedProgram $selection, string $requestId): void
-    {
-        $this->agent_id = $agent->id;
-        $this->parent_session_id = $parent?->id;
-        $this->status = SessionStatus::Active;
-        $this->useSelection($selection, $requestId);
-    }
-
-    /**
-     * Records the selection and the start request once; a session never changes the program or model it ran.
-     *
-     * @throws SessionSelectionFixed
-     */
-    public function useSelection(SelectedProgram $selection, string $requestId): void
-    {
-        if ($this->getAttribute('model') !== null) {
-            throw SessionSelectionFixed::forSession($this->id);
-        }
-
-        $this->program = $selection->program->value;
-        $this->model = $selection->model;
-        $this->requested_model_type = $selection->requested->type;
-        $this->requested_model = $selection->requested->model;
-        $this->program_source = $selection->source->programSource;
-        $this->profile_key = $selection->source->profileKey;
-        $this->profile_revision = $selection->source->profileRevision;
-        $this->start_request_id = $requestId;
-        $this->save();
-    }
-
-    /**
-     * The selection this session was started with, rebuilt from its row.
-     */
-    public function selection(): SelectedProgram
-    {
-        $requested = $this->requested_model_type === ModelSelectionType::Named
-            ? ModelSelection::named((string) $this->requested_model)
-            : ModelSelection::profileDefault();
-
-        return new SelectedProgram(
-            HookProgram::from((string) $this->program),
-            $this->model,
-            $requested,
-            new SelectionSource($this->program_source, $this->profile_key, $this->profile_revision),
-        );
-    }
-
-    /**
-     * Records the skill generation the session's program was spawned with.
-     */
-    public function recordSkillGeneration(string $generationId): void
-    {
-        $this->skill_generation_id = $generationId;
-        $this->save();
-    }
-
-    public function enterConversation(ProgramConversation $conversation): void
-    {
-        $this->current_conversation_id = $conversation->id;
-        $this->save();
     }
 
     /**
@@ -248,11 +185,6 @@ final class AgentSession extends Model implements ReadableModel
         return array_values($running->all());
     }
 
-    public function target(): StackTarget
-    {
-        return new StackTarget($this->agent_id, $this->id);
-    }
-
     /**
      * The running sessions launched for an owner's work, oldest first.
      *
@@ -287,57 +219,9 @@ final class AgentSession extends Model implements ReadableModel
         return array_values($sessions->all());
     }
 
-    /**
-     * This session as a use of the account it ran with; it runs until it ends.
-     */
-    public function useOf(RecordIdentity $account): AccountUse
-    {
-        return new AccountUse(
-            $account,
-            $this->id,
-            $this->agent_id,
-            $this->selection()->program->value,
-            AccountProcessRole::Execution,
-            CarbonImmutable::instance($this->created_at),
-            $this->ended_at,
-        );
-    }
-
     public static function lockedForUpdate(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->lockForUpdate()->firstOrFail();
-    }
-
-    /**
-     * @return HasMany<ConversationVisit, $this>
-     */
-    public function visits(): HasMany
-    {
-        return $this->hasMany(ConversationVisit::class, 'session_id');
-    }
-
-    /**
-     * @return BelongsTo<ProgramConversation, $this>
-     */
-    public function currentConversation(): BelongsTo
-    {
-        return $this->belongsTo(ProgramConversation::class, 'current_conversation_id');
-    }
-
-    public function endAt(CarbonImmutable $time): void
-    {
-        $this->status = SessionStatus::Ended;
-        $this->ended_at = $time;
-        $this->save();
-    }
-
-    /**
-     * The program ended without an end hook, and the evidence says how the journal knows.
-     */
-    public function endWithEvidenceAt(CarbonImmutable $time, string $evidence): void
-    {
-        $this->end_evidence = $evidence;
-        $this->endAt($time);
     }
 
     /**
@@ -403,6 +287,125 @@ final class AgentSession extends Model implements ReadableModel
         return $running !== null;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Records the selection and the start request once; a session never changes the program or model it ran.
+     *
+     * @throws SessionSelectionFixed
+     */
+    public function useSelection(SelectedProgram $selection, string $requestId): void
+    {
+        if ($this->getAttribute('model') !== null) {
+            throw SessionSelectionFixed::forSession($this->id);
+        }
+
+        $this->program = $selection->program->value;
+        $this->model = $selection->model;
+        $this->requested_model_type = $selection->requested->type;
+        $this->requested_model = $selection->requested->model;
+        $this->program_source = $selection->source->programSource;
+        $this->profile_key = $selection->source->profileKey;
+        $this->profile_revision = $selection->source->profileRevision;
+        $this->start_request_id = $requestId;
+        $this->save();
+    }
+
+    /**
+     * Records the skill generation the session's program was spawned with.
+     */
+    public function recordSkillGeneration(string $generationId): void
+    {
+        $this->skill_generation_id = $generationId;
+        $this->save();
+    }
+
+    public function enterConversation(ProgramConversation $conversation): void
+    {
+        $this->current_conversation_id = $conversation->id;
+        $this->save();
+    }
+
+    public function endAt(CarbonImmutable $time): void
+    {
+        $this->status = SessionStatus::Ended;
+        $this->ended_at = $time;
+        $this->save();
+    }
+
+    /**
+     * A sign of life from the host: a silent session is active again.
+     */
+    public function recordHeartbeatAt(CarbonImmutable $time): void
+    {
+        $this->last_heartbeat_at = $time;
+        $this->silent_since = null;
+        $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * Starts the session of one start with the program and model it runs and the request that started it.
+     *
+     * @throws SessionSelectionFixed
+     */
+    public function startFor(Agent $agent, self|null $parent, SelectedProgram $selection, string $requestId): void
+    {
+        $this->agent_id = $agent->id;
+        $this->parent_session_id = $parent?->id;
+        $this->status = SessionStatus::Active;
+        $this->useSelection($selection, $requestId);
+    }
+
+    /**
+     * The selection this session was started with, rebuilt from its row.
+     */
+    public function selection(): SelectedProgram
+    {
+        $requested = $this->requested_model_type === ModelSelectionType::Named
+            ? ModelSelection::named((string) $this->requested_model)
+            : ModelSelection::profileDefault();
+
+        return new SelectedProgram(
+            HookProgram::from((string) $this->program),
+            $this->model,
+            $requested,
+            new SelectionSource($this->program_source, $this->profile_key, $this->profile_revision),
+        );
+    }
+
+    public function target(): StackTarget
+    {
+        return new StackTarget($this->agent_id, $this->id);
+    }
+
+    /**
+     * This session as a use of the account it ran with; it runs until it ends.
+     */
+    public function useOf(RecordIdentity $account): AccountUse
+    {
+        return new AccountUse(
+            $account,
+            $this->id,
+            $this->agent_id,
+            $this->selection()->program->value,
+            AccountProcessRole::Execution,
+            CarbonImmutable::instance($this->created_at),
+            $this->ended_at,
+        );
+    }
+
+    /**
+     * The program ended without an end hook, and the evidence says how the journal knows.
+     */
+    public function endWithEvidenceAt(CarbonImmutable $time, string $evidence): void
+    {
+        $this->end_evidence = $evidence;
+        $this->endAt($time);
+    }
+
     /**
      * Whether a message may still be addressed to this session: it is running or waiting, not ended.
      * Delivery and wake ask the same question.
@@ -417,16 +420,41 @@ final class AgentSession extends Model implements ReadableModel
         return $this->status->isRunning();
     }
 
+    // ----------[ Relations ]----------
+
     /**
-     * A sign of life from the host: a silent session is active again.
+     * @return HasMany<ConversationVisit, $this>
      */
-    public function recordHeartbeatAt(CarbonImmutable $time): void
+    public function visits(): HasMany
     {
-        $this->last_heartbeat_at = $time;
-        $this->silent_since = null;
-        $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
-        $this->save();
+        return $this->hasMany(ConversationVisit::class, 'session_id');
     }
+
+    /**
+     * @return BelongsTo<ProgramConversation, $this>
+     */
+    public function currentConversation(): BelongsTo
+    {
+        return $this->belongsTo(ProgramConversation::class, 'current_conversation_id');
+    }
+
+    /**
+     * @return HasOne<StartToken, $this>
+     */
+    public function startToken(): HasOne
+    {
+        return $this->hasOne(StartToken::class, 'agent_session_id');
+    }
+
+    /**
+     * @return BelongsTo<Agent, $this>
+     */
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class);
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * The running sessions of one agent.
@@ -460,21 +488,5 @@ final class AgentSession extends Model implements ReadableModel
             ->where('last_heartbeat_at', '>', $observedAt->subSeconds($window->presenceSeconds))
             ->whereHas('startToken', fn (Builder $startToken) => $startToken->whereNull('revoked_at'))
             ->whereHas('agent', fn (Builder $agent) => $agent->whereNull('retired_at'));
-    }
-
-    /**
-     * @return HasOne<StartToken, $this>
-     */
-    public function startToken(): HasOne
-    {
-        return $this->hasOne(StartToken::class, 'agent_session_id');
-    }
-
-    /**
-     * @return BelongsTo<Agent, $this>
-     */
-    public function agent(): BelongsTo
-    {
-        return $this->belongsTo(Agent::class);
     }
 }

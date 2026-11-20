@@ -15,8 +15,8 @@ final readonly class ShowAutoAssignmentController
 {
     public function __invoke(
         ShowAutoAssignmentCall $call,
-        AutoAssignmentResolver $autoAssignments,
+        AutoAssignmentResolver $assignments,
     ): AutoAssignmentStatusData {
-        return AutoAssignmentStatusData::of($autoAssignments->status($call->key()));
+        return AutoAssignmentStatusData::of($assignments->status($call->key()));
     }
 }

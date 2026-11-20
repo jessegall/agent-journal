@@ -68,6 +68,8 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
 
     protected $attributes = ['attention' => 'active'];
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return [
@@ -94,6 +96,17 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
         ]);
     }
 
+    protected static function booted(): void
+    {
+        self::updating(function (self $report): void {
+            if (array_diff(array_keys($report->getDirty()), ['attention', 'updated_at']) !== []) {
+                throw RecordImmutable::for('report');
+            }
+        });
+    }
+
+    // ----------[ Queries ]----------
+
     public static function lockedForClosing(int|string $reference): self
     {
         $reports = self::query()->lockForUpdate();
@@ -103,6 +116,8 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
 
         return $reports->whereKey($reference)->firstOr(fn () => throw ReportMissing::identified($reference));
     }
+
+    // ----------[ Answers ]----------
 
     public function card(): PublicationCard
     {
@@ -157,15 +172,6 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
         );
     }
 
-    protected static function booted(): void
-    {
-        self::updating(function (self $report): void {
-            if (array_diff(array_keys($report->getDirty()), ['attention', 'updated_at']) !== []) {
-                throw RecordImmutable::for('report');
-            }
-        });
-    }
-
     /**
      * The report's safe card for a share; a filed report never changes, so its published version is always 1.
      */
@@ -173,6 +179,16 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     {
         return new ShareRecordCard($this->shareIdentity(), $this->title, '1');
     }
+
+    /**
+     * A report's text, filed once: version 1 is its only version.
+     */
+    public function textVersion(string|null $version = null): TextVersion
+    {
+        return TextVersion::ofOnlyMarkdown($version, 'Report', $this->body);
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * Every report: reports are published to every signed-in actor.
@@ -183,13 +199,5 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     protected function sharedPublished(Builder $query): void
     {
         $query->whereNotNull('filed_at');
-    }
-
-    /**
-     * A report's text, filed once: version 1 is its only version.
-     */
-    public function textVersion(string|null $version = null): TextVersion
-    {
-        return TextVersion::ofOnlyMarkdown($version, 'Report', $this->body);
     }
 }

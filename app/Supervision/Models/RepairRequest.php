@@ -52,6 +52,8 @@ final class RepairRequest extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -59,6 +61,8 @@ final class RepairRequest extends Model implements ReadableModel
     {
         return ['state' => RepairRequestState::class];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Retains the repair a source asks for once; asking again finds it.
@@ -81,6 +85,16 @@ final class RepairRequest extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Mutations ]----------
+
+    public function settle(RepairRequestState $state): void
+    {
+        $this->state = $state;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
     /**
      * How many repairs this work was sent back for before this one.
      */
@@ -91,12 +105,6 @@ final class RepairRequest extends Model implements ReadableModel
             ->where('work_id', $this->work_id)
             ->whereKeyNot($this->id)
             ->count();
-    }
-
-    public function settle(RepairRequestState $state): void
-    {
-        $this->state = $state;
-        $this->save();
     }
 
     public function work(): RecordIdentity

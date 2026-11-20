@@ -66,6 +66,8 @@ final class AgentRuntime extends Model implements ReadableModel
      */
     public const int FRESH_SECONDS = 60;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -81,6 +83,24 @@ final class AgentRuntime extends Model implements ReadableModel
             'generation_started_at' => 'immutable_datetime',
         ];
     }
+
+    public static function forIntent(AgentSession $session, RuntimeIntent $intent): self
+    {
+        $runtime = new self();
+        $runtime->agent_session_id = $session->id;
+        $runtime->host_id = $intent->hostId;
+        $runtime->driver_type = $intent->driverType;
+        $runtime->program = $intent->program;
+        $runtime->program_build = $intent->programBuild;
+        $runtime->profile = $intent->profile;
+        $runtime->canonical_folder = $intent->folder;
+        $runtime->requested_model = $intent->model;
+        $runtime->requested_effort = $intent->effort;
+
+        return $runtime;
+    }
+
+    // ----------[ Queries ]----------
 
     /**
      * The runtime a session opens on a host, as its intent describes it, not saved yet.
@@ -132,102 +152,15 @@ final class AgentRuntime extends Model implements ReadableModel
             ->exists();
     }
 
-    public static function forIntent(AgentSession $session, RuntimeIntent $intent): self
-    {
-        $runtime = new self();
-        $runtime->agent_session_id = $session->id;
-        $runtime->host_id = $intent->hostId;
-        $runtime->driver_type = $intent->driverType;
-        $runtime->program = $intent->program;
-        $runtime->program_build = $intent->programBuild;
-        $runtime->profile = $intent->profile;
-        $runtime->canonical_folder = $intent->folder;
-        $runtime->requested_model = $intent->model;
-        $runtime->requested_effort = $intent->effort;
-
-        return $runtime;
-    }
-
     /**
-     * @return BelongsTo<AgentSession, $this>
+     * The runtime of that session; none before the session opened one.
      */
-    public function session(): BelongsTo
+    public static function ofSession(string $sessionId): self|null
     {
-        return $this->belongsTo(AgentSession::class, 'agent_session_id');
+        return self::query()->where('agent_session_id', $sessionId)->first();
     }
 
-    /**
-     * @return BelongsTo<Host, $this>
-     */
-    public function host(): BelongsTo
-    {
-        return $this->belongsTo(Host::class);
-    }
-
-    /**
-     * @return HasMany<DriverRequest, $this>
-     */
-    public function requests(): HasMany
-    {
-        return $this->hasMany(DriverRequest::class);
-    }
-
-    /**
-     * @return HasMany<TerminalView, $this>
-     */
-    public function terminalViews(): HasMany
-    {
-        return $this->hasMany(TerminalView::class);
-    }
-
-    /**
-     * How many live terminal views watch the runtime, counted once with the runtime when it was read with its watchers.
-     */
-    public function watcherCount(): int
-    {
-        if (! array_key_exists('watchers', $this->getAttributes())) {
-            $this->loadCount(['terminalViews as watchers' => self::liveViews(...)]);
-        }
-
-        return (int) $this->getAttribute('watchers');
-    }
-
-    /**
-     * Reads each runtime with how many live terminal views watch it.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function withWatchers(Builder $query): void
-    {
-        $query->withCount(['terminalViews as watchers' => self::liveViews(...)]);
-    }
-
-    /**
-     * The live terminal views of any viewer, which is what a runtime's watcher count counts.
-     *
-     * @param  Builder<TerminalView>  $views
-     */
-    private static function liveViews(Builder $views): void
-    {
-        $views->acrossActors()->live();
-    }
-
-    /**
-     * Whether the runtime's program draws a screen a viewer can watch: only a terminal runtime does.
-     */
-    public function hasScreen(): bool
-    {
-        return $this->driver_type === DriverType::Terminal;
-    }
-
-    /**
-     * Whether the runtime is stopping or stopped.
-     */
-    public function hasEnded(): bool
-    {
-        return in_array($this->activity, [RuntimeActivity::Stopping, RuntimeActivity::Stopped], true);
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * A stop was asked for: the runtime takes no more requests while it stops.
@@ -317,6 +250,101 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
+     * Keeps the start token for the host's one start grant; it is encrypted at rest and cleared when claimed.
+     */
+    public function holdStartGrant(string $token): void
+    {
+        $this->start_grant = $token;
+        $this->save();
+    }
+
+    /**
+     * Hands the start token over once: the first claim gets it and clears it, any later claim gets nothing.
+     */
+    public function claimStartGrant(): string|null
+    {
+        $token = $this->start_grant;
+        $this->start_grant = null;
+        $this->save();
+
+        return $token;
+    }
+
+    /**
+     * The requested model and effort again, from the newest setting request of each that is still open, after one
+     * was cancelled; none open leaves nothing requested.
+     */
+    public function recomputeRequestedSettings(): void
+    {
+        $open = $this->requests()
+            ->whereIn('progress', RequestProgress::open())
+            ->whereIn('operation', [DriverOperation::ChangeModel, DriverOperation::ChangeEffort])
+            ->orderBy('sequence')
+            ->readAll('the open setting requests of one runtime decide what it has requested')
+            ->get();
+
+        $this->requested_model = $open->where('operation', DriverOperation::ChangeModel)->last()?->model;
+        $this->requested_effort = $open->where('operation', DriverOperation::ChangeEffort)->last()?->effort;
+        $this->save();
+    }
+
+    /**
+     * Moves the runtime to a new process generation on the given host, starting again with nothing held and the
+     * rotated credential waiting for that host's start grant; reports of the old generation are refused after it.
+     */
+    public function reassignTo(string $hostId, string $startToken): void
+    {
+        $this->host_id = $hostId;
+        $this->process_generation++;
+        $this->activity = RuntimeActivity::Starting;
+        $this->hold_reason = HoldReason::None;
+        $this->start_grant = $startToken;
+        $this->save();
+    }
+
+    public function requestModel(string $model): void
+    {
+        $this->requested_model = $model;
+        $this->save();
+    }
+
+    public function requestEffort(string $effort): void
+    {
+        $this->requested_effort = $effort;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * How many live terminal views watch the runtime, counted once with the runtime when it was read with its watchers.
+     */
+    public function watcherCount(): int
+    {
+        if (! array_key_exists('watchers', $this->getAttributes())) {
+            $this->loadCount(['terminalViews as watchers' => self::liveViews(...)]);
+        }
+
+        return (int) $this->getAttribute('watchers');
+    }
+
+    /**
+     * Whether the runtime's program draws a screen a viewer can watch: only a terminal runtime does.
+     */
+    public function hasScreen(): bool
+    {
+        return $this->driver_type === DriverType::Terminal;
+    }
+
+    /**
+     * Whether the runtime is stopping or stopped.
+     */
+    public function hasEnded(): bool
+    {
+        return in_array($this->activity, [RuntimeActivity::Stopping, RuntimeActivity::Stopped], true);
+    }
+
+    /**
      * Seconds since the host last reported on this runtime, or null when it never did.
      */
     public function observationAge(CarbonImmutable $now): int|null
@@ -358,20 +386,6 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
-     * One setting in its three states; a state the runtime has no value for is left out.
-     */
-    private static function setting(
-        string|null $requested,
-        string|null $staged,
-        string|null $observed,
-        int|null $observedAgeSeconds,
-    ): RuntimeSetting {
-        $known = compact('requested', 'staged', 'observed', 'observedAgeSeconds');
-
-        return RuntimeSetting::from(array_filter($known, fn (string|int|null $setting) => $setting !== null));
-    }
-
-    /**
      * Whether the last observation is older than the freshness bound, or missing: the status may no longer hold.
      */
     public function isStale(CarbonImmutable $now): bool
@@ -379,45 +393,6 @@ final class AgentRuntime extends Model implements ReadableModel
         $age = $this->observationAge($now);
 
         return $age === null || $age > self::FRESH_SECONDS;
-    }
-
-    /**
-     * Keeps the start token for the host's one start grant; it is encrypted at rest and cleared when claimed.
-     */
-    public function holdStartGrant(string $token): void
-    {
-        $this->start_grant = $token;
-        $this->save();
-    }
-
-    /**
-     * Hands the start token over once: the first claim gets it and clears it, any later claim gets nothing.
-     */
-    public function claimStartGrant(): string|null
-    {
-        $token = $this->start_grant;
-        $this->start_grant = null;
-        $this->save();
-
-        return $token;
-    }
-
-    /**
-     * The requested model and effort again, from the newest setting request of each that is still open, after one
-     * was cancelled; none open leaves nothing requested.
-     */
-    public function recomputeRequestedSettings(): void
-    {
-        $open = $this->requests()
-            ->whereIn('progress', RequestProgress::open())
-            ->whereIn('operation', [DriverOperation::ChangeModel, DriverOperation::ChangeEffort])
-            ->orderBy('sequence')
-            ->readAll('the open setting requests of one runtime decide what it has requested')
-            ->get();
-
-        $this->requested_model = $open->where('operation', DriverOperation::ChangeModel)->last()?->model;
-        $this->requested_effort = $open->where('operation', DriverOperation::ChangeEffort)->last()?->effort;
-        $this->save();
     }
 
     /**
@@ -458,37 +433,76 @@ final class AgentRuntime extends Model implements ReadableModel
         return $this->process_generation === $processGeneration;
     }
 
+    // ----------[ Relations ]----------
+
     /**
-     * Moves the runtime to a new process generation on the given host, starting again with nothing held and the
-     * rotated credential waiting for that host's start grant; reports of the old generation are refused after it.
+     * @return BelongsTo<AgentSession, $this>
      */
-    public function reassignTo(string $hostId, string $startToken): void
+    public function session(): BelongsTo
     {
-        $this->host_id = $hostId;
-        $this->process_generation++;
-        $this->activity = RuntimeActivity::Starting;
-        $this->hold_reason = HoldReason::None;
-        $this->start_grant = $startToken;
-        $this->save();
-    }
-
-    public function requestModel(string $model): void
-    {
-        $this->requested_model = $model;
-        $this->save();
-    }
-
-    public function requestEffort(string $effort): void
-    {
-        $this->requested_effort = $effort;
-        $this->save();
+        return $this->belongsTo(AgentSession::class, 'agent_session_id');
     }
 
     /**
-     * The runtime of that session; none before the session opened one.
+     * @return BelongsTo<Host, $this>
      */
-    public static function ofSession(string $sessionId): self|null
+    public function host(): BelongsTo
     {
-        return self::query()->where('agent_session_id', $sessionId)->first();
+        return $this->belongsTo(Host::class);
+    }
+
+    /**
+     * @return HasMany<DriverRequest, $this>
+     */
+    public function requests(): HasMany
+    {
+        return $this->hasMany(DriverRequest::class);
+    }
+
+    /**
+     * @return HasMany<TerminalView, $this>
+     */
+    public function terminalViews(): HasMany
+    {
+        return $this->hasMany(TerminalView::class);
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * The live terminal views of any viewer, which is what a runtime's watcher count counts.
+     *
+     * @param  Builder<TerminalView>  $views
+     */
+    private static function liveViews(Builder $views): void
+    {
+        $views->acrossActors()->live();
+    }
+
+    /**
+     * One setting in its three states; a state the runtime has no value for is left out.
+     */
+    private static function setting(
+        string|null $requested,
+        string|null $staged,
+        string|null $observed,
+        int|null $observedAgeSeconds,
+    ): RuntimeSetting {
+        $known = compact('requested', 'staged', 'observed', 'observedAgeSeconds');
+
+        return RuntimeSetting::from(array_filter($known, fn (string|int|null $setting) => $setting !== null));
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * Reads each runtime with how many live terminal views watch it.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withWatchers(Builder $query): void
+    {
+        $query->withCount(['terminalViews as watchers' => self::liveViews(...)]);
     }
 }

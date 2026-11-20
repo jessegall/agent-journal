@@ -44,6 +44,8 @@ final class RuleProposalRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -56,10 +58,19 @@ final class RuleProposalRevision extends Model implements ReadableModel
         ];
     }
 
+    protected static function booted(): void
+    {
+        self::updating(fn (self $revision) => throw RevisionImmutable::proposal($revision->id));
+    }
+
+    // ----------[ Answers ]----------
+
     public function proposedRule(): ProposedRule
     {
         return new ProposedRule($this->payload, $this->evidence, $this->examples);
     }
+
+    // ----------[ Relations ]----------
 
     /**
      * @return BelongsTo<RuleProposal, $this>
@@ -69,10 +80,7 @@ final class RuleProposalRevision extends Model implements ReadableModel
         return $this->belongsTo(RuleProposal::class, 'rule_proposal_id');
     }
 
-    protected static function booted(): void
-    {
-        self::updating(fn (self $revision) => throw RevisionImmutable::proposal($revision->id));
-    }
+    // ----------[ Scopes ]----------
 
     /**
      * The revision of the proposal that answers the request.

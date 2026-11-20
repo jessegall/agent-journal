@@ -34,13 +34,13 @@ final readonly class NavigationRound
      * The round of a main agent's answer to the request at the row version and screen generation it read.
      */
     public static function answering(
-        string $navigationRequestId,
+        string $requestId,
         int $rowVersion,
         int $generation,
         NavigationAnswer $answer,
     ): self {
         return new self(
-            $navigationRequestId,
+            $requestId,
             $rowVersion,
             $generation,
             keys: $answer->keys,
@@ -53,23 +53,23 @@ final readonly class NavigationRound
     /**
      * @param  non-empty-list<NavigationKey>  $keys
      */
-    public static function keys(string $navigationRequestId, int $rowVersion, int $generation, array $keys): self
+    public static function keys(string $requestId, int $rowVersion, int $generation, array $keys): self
     {
-        return new self($navigationRequestId, $rowVersion, $generation, keys: $keys);
+        return new self($requestId, $rowVersion, $generation, keys: $keys);
     }
 
-    public static function choose(string $navigationRequestId, int $rowVersion, int $generation, string $label): self
+    public static function choose(string $requestId, int $rowVersion, int $generation, string $label): self
     {
-        return new self($navigationRequestId, $rowVersion, $generation, choose: $label);
+        return new self($requestId, $rowVersion, $generation, choose: $label);
     }
 
-    public static function confirm(string $navigationRequestId, int $rowVersion, int $generation, string $label): self
+    public static function confirm(string $requestId, int $rowVersion, int $generation, string $label): self
     {
-        return new self($navigationRequestId, $rowVersion, $generation, confirm: $label);
+        return new self($requestId, $rowVersion, $generation, confirm: $label);
     }
 
     public static function proof(
-        string $navigationRequestId,
+        string $requestId,
         int $rowVersion,
         int $generation,
         string $proof,
@@ -77,7 +77,7 @@ final readonly class NavigationRound
         int|null $nextStep,
     ): self {
         return new self(
-            $navigationRequestId,
+            $requestId,
             $rowVersion,
             $generation,
             proof: $proof,

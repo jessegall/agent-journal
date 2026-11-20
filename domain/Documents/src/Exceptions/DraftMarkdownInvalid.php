@@ -20,9 +20,9 @@ final class DraftMarkdownInvalid extends RuntimeException implements CodedRefusa
         return new self('Fix the Markdown on lines '.implode(', ', $lines).' before publishing.');
     }
 
-    public static function fromBody(MarkdownInvalid $markdownIssue): self
+    public static function fromBody(MarkdownInvalid $issue): self
     {
-        return new self($markdownIssue->getMessage(), previous: $markdownIssue);
+        return new self($issue->getMessage(), previous: $issue);
     }
 
     public function refusalCode(): RefusalCode

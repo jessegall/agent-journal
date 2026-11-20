@@ -82,9 +82,9 @@ final readonly class DocumentRecords implements DocumentResolver
         ]);
     }
 
-    public function revisions(int $documentNumber, int $page): array
+    public function revisions(int $number, int $page): array
     {
-        $document = self::published($documentNumber);
+        $document = self::published($number);
 
         return array_values($document->revisions()->whereNotNull('closed_at')->orderBy('number')->forPage(
             $page,

@@ -101,16 +101,16 @@ final class SettingsDocumentCast implements CastsAttributes
     /**
      * The entries of one list by key, each as its key and its encoded value.
      *
-     * @param  list<mixed>  $settingRows
+     * @param  list<mixed>  $rows
      * @return array<string, array{key: string, value: EncodedValue}>
      *
      * @throws SettingsDocumentInvalid
      */
-    private function entries(string $owner, string $listName, array $settingRows): array
+    private function entries(string $owner, string $listName, array $rows): array
     {
         $settingsByKey = [];
 
-        foreach ($settingRows as $position => $entry) {
+        foreach ($rows as $position => $entry) {
             if (! $entry instanceof stdClass
                 || ! $this->holdsExactly($entry, ['key', 'value'])
                 || ! is_string($entry->key)

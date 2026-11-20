@@ -30,15 +30,15 @@ final readonly class ScriptParameter implements JsonSerializable
     /**
      * The parameters of names and values, in their order.
      *
-     * @param  array<string, string>  $parameterTexts
+     * @param  array<string, string>  $texts
      * @return list<self>
      */
-    public static function listOf(array $parameterTexts): array
+    public static function listOf(array $texts): array
     {
         return array_map(
             fn (string $name, string $parameterText) => new self($name, $parameterText),
-            array_keys($parameterTexts),
-            $parameterTexts,
+            array_keys($texts),
+            $texts,
         );
     }
 

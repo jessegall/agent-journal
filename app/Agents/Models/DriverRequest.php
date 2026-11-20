@@ -87,6 +87,8 @@ final class DriverRequest extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -107,12 +109,28 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * @return BelongsTo<AgentRuntime, $this>
+     * The next request of the runtime, for the operation and its payload, not accepted yet.
      */
-    public function runtime(): BelongsTo
-    {
-        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
+    public static function queued(
+        AgentRuntime $runtime,
+        DriverOperation $operation,
+        string $idempotencyKey,
+        DriverRequestPayload $envelope,
+    ): self {
+        $request = new self();
+        $request->agent_runtime_id = $runtime->id;
+        $request->sequence = (int) self::query()->where('agent_runtime_id', $runtime->id)->max('sequence') + 1;
+        $request->operation = $operation;
+        $request->idempotency_key = $idempotencyKey;
+        $request->payload_digest = $envelope->digestFor($operation->value);
+        $request->expected_timing = $runtime->activity->expectedTiming();
+        $request->expected_observed_at = $runtime->last_observed_at;
+        $request->carry($envelope);
+
+        return $request;
     }
+
+    // ----------[ Mutations ]----------
 
     public function accept(): void
     {
@@ -163,6 +181,43 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
+     * Sends the request again under its own key, as a new attempt: a report of an older attempt is refused after it.
+     */
+    public function retry(): void
+    {
+        $this->attempt_version++;
+        $this->outcome = null;
+        $this->moveTo(RequestProgress::Accepted);
+        $this->save();
+    }
+
+    public function hold(HoldReason $reason): void
+    {
+        $this->hold_reason = $reason;
+        $this->row_version++;
+        $this->save();
+    }
+
+    /**
+     * Claims the wake up to the requested watermark, so a later wake request raises it instead of adding a row.
+     */
+    public function claimWake(int $requested): void
+    {
+        $this->wake_requested = max($requested, $this->wake_requested);
+        $this->row_version++;
+        $this->save();
+    }
+
+    public function acknowledgeWake(int $acknowledged): void
+    {
+        $this->wake_acknowledged = max($acknowledged, $this->wake_acknowledged);
+        $this->row_version++;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
      * Its runtime's process ended for good: a stop has been done, anything else can no longer be.
      */
     public function settleAfterExit(): void
@@ -180,9 +235,9 @@ final class DriverRequest extends Model implements ReadableModel
     /**
      * Whether the request is still at the row version the caller read.
      */
-    public function isAtRowVersion(int $rowVersion): bool
+    public function isAtRowVersion(int $version): bool
     {
-        return $this->row_version === $rowVersion;
+        return $this->row_version === $version;
     }
 
     /**
@@ -191,17 +246,6 @@ final class DriverRequest extends Model implements ReadableModel
     public function canRetry(): bool
     {
         return in_array($this->progress, [RequestProgress::Failed, RequestProgress::Unavailable], true);
-    }
-
-    /**
-     * Sends the request again under its own key, as a new attempt: a report of an older attempt is refused after it.
-     */
-    public function retry(): void
-    {
-        $this->attempt_version++;
-        $this->outcome = null;
-        $this->moveTo(RequestProgress::Accepted);
-        $this->save();
     }
 
     /**
@@ -256,10 +300,10 @@ final class DriverRequest extends Model implements ReadableModel
      * Gives the failed setting change a new value in its own place in the queue, as a new attempt; the host then
      * waits for the program's evidence of it before any content behind it runs.
      */
-    public function repairWith(DriverRequestPayload $driverEnvelope): void
+    public function repairWith(DriverRequestPayload $envelope): void
     {
-        $this->carry($driverEnvelope);
-        $this->payload_digest = $driverEnvelope->digestFor($this->operation->value);
+        $this->carry($envelope);
+        $this->payload_digest = $envelope->digestFor($this->operation->value);
         $this->retry();
     }
 
@@ -340,13 +384,6 @@ final class DriverRequest extends Model implements ReadableModel
         $this->finish(RequestProgress::DeliveryUncertain, null);
     }
 
-    public function hold(HoldReason $reason): void
-    {
-        $this->hold_reason = $reason;
-        $this->row_version++;
-        $this->save();
-    }
-
     /**
      * What the caller who asked for this request is told: where it stands and the timing to expect.
      */
@@ -412,40 +449,18 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * The next request of the runtime, for the operation and its payload, not accepted yet.
-     */
-    public static function queued(
-        AgentRuntime $runtime,
-        DriverOperation $operation,
-        string $idempotencyKey,
-        DriverRequestPayload $driverEnvelope,
-    ): self {
-        $request = new self();
-        $request->agent_runtime_id = $runtime->id;
-        $request->sequence = (int) self::query()->where('agent_runtime_id', $runtime->id)->max('sequence') + 1;
-        $request->operation = $operation;
-        $request->idempotency_key = $idempotencyKey;
-        $request->payload_digest = $driverEnvelope->digestFor($operation->value);
-        $request->expected_timing = $runtime->activity->expectedTiming();
-        $request->expected_observed_at = $runtime->last_observed_at;
-        $request->carry($driverEnvelope);
-
-        return $request;
-    }
-
-    /**
      * Takes the payload's typed columns: its message, model, effort or key script.
      */
-    public function carry(DriverRequestPayload $driverEnvelope): void
+    public function carry(DriverRequestPayload $envelope): void
     {
-        $this->message = $driverEnvelope->message;
-        $this->model = $driverEnvelope->model;
-        $this->effort = $driverEnvelope->effort;
-        $this->script_id = $driverEnvelope->scriptId;
-        $this->script_version = $driverEnvelope->scriptVersion;
-        $this->script_parameters = $driverEnvelope->scriptParameters;
-        $this->navigation_request_id = $driverEnvelope->navigationRound?->navigationRequestId;
-        $this->navigation_round = $driverEnvelope->navigationRound?->toStored();
+        $this->message = $envelope->message;
+        $this->model = $envelope->model;
+        $this->effort = $envelope->effort;
+        $this->script_id = $envelope->scriptId;
+        $this->script_version = $envelope->scriptVersion;
+        $this->script_parameters = $envelope->scriptParameters;
+        $this->navigation_request_id = $envelope->navigationRound?->navigationRequestId;
+        $this->navigation_round = $envelope->navigationRound?->toStored();
     }
 
     /**
@@ -458,23 +473,6 @@ final class DriverRequest extends Model implements ReadableModel
         }
 
         return NavigationRound::fromStored($this->navigation_round);
-    }
-
-    /**
-     * Claims the wake up to the requested watermark, so a later wake request raises it instead of adding a row.
-     */
-    public function claimWake(int $requested): void
-    {
-        $this->wake_requested = max($requested, $this->wake_requested);
-        $this->row_version++;
-        $this->save();
-    }
-
-    public function acknowledgeWake(int $acknowledged): void
-    {
-        $this->wake_acknowledged = max($acknowledged, $this->wake_acknowledged);
-        $this->row_version++;
-        $this->save();
     }
 
     /**
@@ -506,6 +504,18 @@ final class DriverRequest extends Model implements ReadableModel
         $this->wake_acknowledged = $this->wake_requested;
         $this->markApplied('no_pending_work', RequestOutcome::NoWork);
     }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<AgentRuntime, $this>
+     */
+    public function runtime(): BelongsTo
+    {
+        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
+    }
+
+    // ----------[ Internals ]----------
 
     private function finish(RequestProgress $progress, RequestOutcome|null $outcome): void
     {

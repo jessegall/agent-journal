@@ -90,6 +90,8 @@ final class ProfileRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -145,6 +147,8 @@ final class ProfileRevision extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The profile's current revision; a profile without an activated revision is missing.
      *
@@ -163,28 +167,6 @@ final class ProfileRevision extends Model implements ReadableModel
     public static function numbered(Profile $profile, int $revision): self
     {
         return self::query()->ofProfile($profile)->where('revision', $revision)->firstOrFail();
-    }
-
-    public function scriptSource(): ScriptSource
-    {
-        return ScriptSource::fromDefinitions($this->script_source, $this->script_commands);
-    }
-
-    /**
-     * The script this revision runs; a revision without one has none.
-     *
-     * @return Option<ProfileScript>
-     */
-    public function script(): Option
-    {
-        if ($this->compiled_script === null || $this->script_definition_digest === null) {
-            return None::create();
-        }
-
-        return new Some(new ProfileScript(
-            $this->scriptSource(),
-            new CompiledScript($this->compiled_script, $this->script_definition_digest),
-        ));
     }
 
     /**
@@ -211,23 +193,6 @@ final class ProfileRevision extends Model implements ReadableModel
             ])->all();
     }
 
-    public function snapshot(ProfileKey $key): ProfileSnapshot
-    {
-        return ProfileSnapshot::from([
-            'key' => $key,
-            'revision' => $this->revision,
-            'base' => $this->base,
-            'instructions' => $this->instructions,
-            'model' => $this->model,
-            'skillAllowlist' => $this->skill_allowlist,
-            'requiredSkills' => $this->required_skills,
-            'start' => $this->start_policy,
-            'authorization' => $this->authorization,
-            'supervisor' => $this->supervisor,
-            'instances' => $this->instances,
-        ]);
-    }
-
     /**
      * @return list<SupervisorProfile>
      */
@@ -251,6 +216,49 @@ final class ProfileRevision extends Model implements ReadableModel
 
         return $profiles;
     }
+
+    // ----------[ Answers ]----------
+
+    public function scriptSource(): ScriptSource
+    {
+        return ScriptSource::fromDefinitions($this->script_source, $this->script_commands);
+    }
+
+    /**
+     * The script this revision runs; a revision without one has none.
+     *
+     * @return Option<ProfileScript>
+     */
+    public function script(): Option
+    {
+        if ($this->compiled_script === null || $this->script_definition_digest === null) {
+            return None::create();
+        }
+
+        return new Some(new ProfileScript(
+            $this->scriptSource(),
+            new CompiledScript($this->compiled_script, $this->script_definition_digest),
+        ));
+    }
+
+    public function snapshot(ProfileKey $key): ProfileSnapshot
+    {
+        return ProfileSnapshot::from([
+            'key' => $key,
+            'revision' => $this->revision,
+            'base' => $this->base,
+            'instructions' => $this->instructions,
+            'model' => $this->model,
+            'skillAllowlist' => $this->skill_allowlist,
+            'requiredSkills' => $this->required_skills,
+            'start' => $this->start_policy,
+            'authorization' => $this->authorization,
+            'supervisor' => $this->supervisor,
+            'instances' => $this->instances,
+        ]);
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

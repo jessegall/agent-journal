@@ -53,6 +53,8 @@ final class ReviewDecision extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -83,17 +85,21 @@ final class ReviewDecision extends Model implements ReadableModel
         return $made;
     }
 
+    // ----------[ Mutations ]----------
+
+    public function linkMerge(Ask $merge): void
+    {
+        $this->merge_ask_id = $merge->id;
+        $this->save();
+    }
+
+    // ----------[ Relations ]----------
+
     /**
      * @return BelongsTo<CodeReview, $this>
      */
     public function review(): BelongsTo
     {
         return $this->belongsTo(CodeReview::class, 'code_review_id');
-    }
-
-    public function linkMerge(Ask $merge): void
-    {
-        $this->merge_ask_id = $merge->id;
-        $this->save();
     }
 }

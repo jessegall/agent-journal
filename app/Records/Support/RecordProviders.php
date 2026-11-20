@@ -36,15 +36,15 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
         $this->providerOfType = Registry::once(UnknownLinkType::forAlias(...), RecordProviderInvalid::repeated(...));
     }
 
-    public function register(string $type, string $providerClass): void
+    public function register(string $type, string $class): void
     {
         RecordIdentity::assertKnownType($type);
 
-        if (! is_subclass_of($providerClass, RecordProvider::class)) {
-            throw RecordProviderInvalid::notAProvider($type, $providerClass);
+        if (! is_subclass_of($class, RecordProvider::class)) {
+            throw RecordProviderInvalid::notAProvider($type, $class);
         }
 
-        $this->providerOfType->put($type, $providerClass);
+        $this->providerOfType->put($type, $class);
     }
 
     public function identify(RecordReference $reference): RecordIdentity

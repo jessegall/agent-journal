@@ -68,6 +68,8 @@ final class PartRun extends Model implements ReadableModel
         'stream_offsets' => '{}',
     ];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -102,15 +104,7 @@ final class PartRun extends Model implements ReadableModel
         ]);
     }
 
-    public function end(): PartEnd
-    {
-        return match ($this->end_type) {
-            PartEndType::NotYet => PartEnd::notYet(),
-            PartEndType::Exited => PartEnd::exited($this->end_code),
-            PartEndType::Signalled => PartEnd::signalled($this->end_code),
-            PartEndType::Unavailable => PartEnd::unavailable($this->end_reason),
-        };
-    }
+    // ----------[ Mutations ]----------
 
     public function start(int $pid, string $host): void
     {
@@ -159,6 +153,33 @@ final class PartRun extends Model implements ReadableModel
     }
 
     /**
+     * Records how far a stream was captured, as the byte offset after its last chunk.
+     */
+    public function captureUpTo(OutputChunk $chunk): void
+    {
+        $this->stream_offsets = [...$this->stream_offsets, $chunk->stream->value => $chunk->offset + $chunk->length];
+        $this->save();
+    }
+
+    public function markCapture(CaptureState $state): void
+    {
+        $this->capture_state = $state;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    public function end(): PartEnd
+    {
+        return match ($this->end_type) {
+            PartEndType::NotYet => PartEnd::notYet(),
+            PartEndType::Exited => PartEnd::exited($this->end_code),
+            PartEndType::Signalled => PartEnd::signalled($this->end_code),
+            PartEndType::Unavailable => PartEnd::unavailable($this->end_reason),
+        };
+    }
+
+    /**
      * Stops the part on a stop request; its partial output stays as diagnostics.
      */
     public function stop(string $reason): void
@@ -198,21 +219,6 @@ final class PartRun extends Model implements ReadableModel
     }
 
     /**
-     * Records how far a stream was captured, as the byte offset after its last chunk.
-     */
-    public function captureUpTo(OutputChunk $chunk): void
-    {
-        $this->stream_offsets = [...$this->stream_offsets, $chunk->stream->value => $chunk->offset + $chunk->length];
-        $this->save();
-    }
-
-    public function markCapture(CaptureState $state): void
-    {
-        $this->capture_state = $state;
-        $this->save();
-    }
-
-    /**
      * The streams this part wrote at least one byte to.
      *
      * @return list<OutputStream>
@@ -239,6 +245,8 @@ final class PartRun extends Model implements ReadableModel
         return array_map(fn (array $sums): string => hash('sha256', implode("\n", $sums)), $checksums);
     }
 
+    // ----------[ Relations ]----------
+
     /**
      * @return BelongsTo<ProcessRun, $this>
      */
@@ -263,6 +271,8 @@ final class PartRun extends Model implements ReadableModel
         return $this->hasMany(OutputChunk::class);
     }
 
+    // ----------[ Internals ]----------
+
     private function finishAs(LifecycleState $state): void
     {
         $this->moveTo($state);
@@ -277,6 +287,8 @@ final class PartRun extends Model implements ReadableModel
         }
         $this->lifecycle = $next;
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * The ended parts of a run that no reader assessed yet.

@@ -188,14 +188,14 @@ final readonly class StopAttemptGate implements StopConditionGate
      * How many of the session's latest settled attempts, this one first, failed in a row with the same failures under
      * the same policy and workspace generation.
      */
-    private function unchangedFailureCount(string $sessionId, StopAttempt $attempt, string $failureSummary): int
+    private function unchangedFailureCount(string $sessionId, StopAttempt $attempt, string $summary): int
     {
         $unchangedFailures = 0;
 
         foreach (StopAttempt::latestSettledOf($sessionId, self::UNCHANGED_FAILURES_TO_HOLD + 1) as $settled) {
             $isSameFailure = $settled->state === StopAttemptState::Failed
                 && $settled->isFor($attempt->policy_digest, $attempt->workspace_generation)
-                && $this->evidence->result($settled->reference())->failureSummary() === $failureSummary;
+                && $this->evidence->result($settled->reference())->failureSummary() === $summary;
 
             if (! $isSameFailure) {
                 break;

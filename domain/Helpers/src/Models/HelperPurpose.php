@@ -36,6 +36,8 @@ final class HelperPurpose extends Model implements ReadableModel
     use BelongsToOneActor, BoundedReads, HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -43,6 +45,8 @@ final class HelperPurpose extends Model implements ReadableModel
     {
         return ['purpose_type' => PurposeType::class];
     }
+
+    // ----------[ Queries ]----------
 
     public static function forSubject(
         ActorIdentity $parent,
@@ -92,6 +96,22 @@ final class HelperPurpose extends Model implements ReadableModel
         return self::start($parent, $profileKey, PurposeType::Free, null, $label);
     }
 
+    /**
+     * The purposes of any holder that name the same work as this one: the same subject, or the same label.
+     *
+     * @return Builder<self>
+     */
+    public static function sameAs(self $purpose): Builder
+    {
+        $same = self::query()->acrossActors()->where('profile_key', $purpose->profile_key);
+
+        return $purpose->subject_id === null
+            ? $same->where('label', $purpose->label)
+            : $same->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
+    }
+
+    // ----------[ Internals ]----------
+
     private static function start(
         ActorIdentity $parent,
         string $profileKey,
@@ -109,19 +129,5 @@ final class HelperPurpose extends Model implements ReadableModel
         $purpose->save();
 
         return $purpose;
-    }
-
-    /**
-     * The purposes of any holder that name the same work as this one: the same subject, or the same label.
-     *
-     * @return Builder<self>
-     */
-    public static function sameAs(self $purpose): Builder
-    {
-        $same = self::query()->acrossActors()->where('profile_key', $purpose->profile_key);
-
-        return $purpose->subject_id === null
-            ? $same->where('label', $purpose->label)
-            : $same->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
     }
 }

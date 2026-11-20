@@ -34,6 +34,8 @@ final class ProcessEvent extends Model implements ReadableModel
 
     public const string OPERATIONAL_ERROR = 'operational_error';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -43,17 +45,17 @@ final class ProcessEvent extends Model implements ReadableModel
     }
 
     /**
-     * @param  array<string, mixed>  $eventFields
+     * @param  array<string, mixed>  $fields
      */
-    public static function record(ProcessRun $run, int $sequence, string $type, array $eventFields): self
+    public static function record(ProcessRun $run, int $sequence, string $type, array $fields): self
     {
         $existing = self::query()->ofRun($run)->where('sequence', $sequence)->first();
         if ($existing === null) {
             return self::query()->create(
-                ['process_run_id' => $run->id, 'sequence' => $sequence, 'type' => $type, 'payload' => $eventFields],
+                ['process_run_id' => $run->id, 'sequence' => $sequence, 'type' => $type, 'payload' => $fields],
             );
         }
-        if ($existing->type === $type && $existing->payload === $eventFields) {
+        if ($existing->type === $type && $existing->payload === $fields) {
             return $existing;
         }
         $next = (int) self::query()->ofRun($run)->max('sequence') + 1;
@@ -63,10 +65,12 @@ final class ProcessEvent extends Model implements ReadableModel
                 'process_run_id' => $run->id,
                 'sequence' => $next,
                 'type' => self::OPERATIONAL_ERROR,
-                'payload' => ['conflicts_with' => $sequence, 'type' => $type, 'payload' => $eventFields],
+                'payload' => ['conflicts_with' => $sequence, 'type' => $type, 'payload' => $fields],
             ],
         );
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

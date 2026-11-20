@@ -36,6 +36,8 @@ final class DriverTurn extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -45,14 +47,6 @@ final class DriverTurn extends Model implements ReadableModel
             'started_at' => 'immutable_datetime',
             'finished_at' => 'immutable_datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<AgentRuntime, $this>
-     */
-    public function runtime(): BelongsTo
-    {
-        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
     }
 
     /**
@@ -74,10 +68,22 @@ final class DriverTurn extends Model implements ReadableModel
         return self::query()->where($key)->first() ?? self::query()->create([...$key, 'started_at' => $startedAt]);
     }
 
+    // ----------[ Mutations ]----------
+
     public function finish(string $outcome, CarbonImmutable $at): void
     {
         $this->outcome = $outcome;
         $this->finished_at = $at;
         $this->save();
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<AgentRuntime, $this>
+     */
+    public function runtime(): BelongsTo
+    {
+        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
     }
 }

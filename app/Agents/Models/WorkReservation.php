@@ -41,6 +41,8 @@ final class WorkReservation extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -48,6 +50,8 @@ final class WorkReservation extends Model implements ReadableModel
     {
         return ['generation' => 'integer', 'handed_off_at' => 'datetime', 'released_at' => 'datetime'];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Reserves the actor and checkout of certified work, once per certificate.
@@ -85,18 +89,18 @@ final class WorkReservation extends Model implements ReadableModel
     /**
      * Which of these agents certified work still holds for review.
      *
-     * @param  list<string>  $agentIds
+     * @param  list<string>  $ids
      * @return list<string>
      */
-    public static function reservedAgentIds(array $agentIds): array
+    public static function reservedAgentIds(array $ids): array
     {
-        if ($agentIds === []) {
+        if ($ids === []) {
             return [];
         }
 
         return array_values(array_unique(self::query()
             ->where('actor_type', ActorType::Agent->value)
-            ->whereIn('actor_id', $agentIds)
+            ->whereIn('actor_id', $ids)
             ->whereNull('released_at')
             ->readAll('the open reservations of these agents, a few at most for each')
             ->pluck('actor_id')
@@ -112,6 +116,8 @@ final class WorkReservation extends Model implements ReadableModel
             ->whereNull('released_at')
             ->exists();
     }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Marks the review of this work open, so the handoff runs no more.
@@ -139,6 +145,8 @@ final class WorkReservation extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
     /**
      * The actor whose certified work is reserved.
      */
@@ -146,6 +154,8 @@ final class WorkReservation extends Model implements ReadableModel
     {
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
+
+    // ----------[ Relations ]----------
 
     /**
      * @return BelongsTo<CertifiedWork, $this>

@@ -9,8 +9,8 @@ use LogicException;
 
 final class InvalidStateClass extends LogicException
 {
-    public static function for(string $stateClass): self
+    public static function for(string $class): self
     {
-        return new self($stateClass.' must be a concrete subclass of '.AgentState::class.'.');
+        return new self($class.' must be a concrete subclass of '.AgentState::class.'.');
     }
 }

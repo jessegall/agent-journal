@@ -33,6 +33,8 @@ final class UserPresence extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -42,6 +44,8 @@ final class UserPresence extends Model implements ReadableModel
             'last_heartbeat_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Writes the user's one row with this beat, creating it on the first beat; two beats at once still leave one row.
@@ -54,6 +58,8 @@ final class UserPresence extends Model implements ReadableModel
             ['last_heartbeat_at'],
         );
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * The rows whose beat still counts at the observation time: the beat plus the window is strictly later.

@@ -89,11 +89,11 @@ final readonly class ReaderRequests implements ReaderRequestsContract
     }
 
     /**
-     * @param  class-string  $readerClass
+     * @param  class-string  $class
      */
-    private function parameterFor(string $readerClass, FormRequest $request): string
+    private function parameterFor(string $class, FormRequest $request): string
     {
-        foreach (new ReflectionClass($readerClass)->getConstructor()?->getParameters() ?? [] as $parameter) {
+        foreach (new ReflectionClass($class)->getConstructor()?->getParameters() ?? [] as $parameter) {
             $type = $parameter->getType();
 
             if ($type instanceof ReflectionNamedType && $type->getName() === $request::class) {

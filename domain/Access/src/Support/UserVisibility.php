@@ -26,11 +26,11 @@ final readonly class UserVisibility implements ActorVisibilityProvider
 
     /**
      * @param  Builder<covariant Model>  $query
-     * @param  class-string<Scope<Model>>  $ownerScope
+     * @param  class-string<Scope<Model>>  $scope
      */
-    public function readAcrossOwners(Builder $query, string $ownerScope): void
+    public function readAcrossOwners(Builder $query, string $scope): void
     {
-        $query->withoutGlobalScope($ownerScope);
+        $query->withoutGlobalScope($scope);
     }
 
     /**

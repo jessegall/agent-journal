@@ -43,10 +43,10 @@ final readonly class ExecutableBinding
     public static function projectContent(
         string $family,
         string $relativePath,
-        string $contentDigest,
+        string $digest,
         int $configurationRevision,
     ): self {
-        return new self(BindingType::ProjectContent, $family, [$relativePath], $contentDigest, $configurationRevision);
+        return new self(BindingType::ProjectContent, $family, [$relativePath], $digest, $configurationRevision);
     }
 
     /**

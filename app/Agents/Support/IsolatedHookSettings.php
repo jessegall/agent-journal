@@ -42,9 +42,9 @@ final class IsolatedHookSettings
     /**
      * Lets the program call a tool without a native prompt, such as the journal's own MCP tools.
      */
-    public function allowTool(string $toolRule): void
+    public function allowTool(string $rule): void
     {
-        $this->allowedTools[] = $toolRule;
+        $this->allowedTools[] = $rule;
     }
 
     public function hasHooks(): bool

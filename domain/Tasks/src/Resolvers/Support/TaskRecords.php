@@ -20,11 +20,11 @@ final readonly class TaskRecords
     /**
      * The tasks of these ids that exist, by id, in one read.
      *
-     * @param  list<string>  $taskIds
+     * @param  list<string>  $ids
      * @return array<string, Task>
      */
-    public function many(array $taskIds): array
+    public function many(array $ids): array
     {
-        return Task::query()->whereKey($taskIds)->readLimit(count($taskIds))->get()->keyBy('id')->all();
+        return Task::query()->whereKey($ids)->readLimit(count($ids))->get()->keyBy('id')->all();
     }
 }

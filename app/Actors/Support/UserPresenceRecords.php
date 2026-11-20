@@ -15,12 +15,12 @@ final readonly class UserPresenceRecords implements UserPresences
 {
     public function __construct(private PresenceWindow $window) {}
 
-    public function freshCountAmong(array $userIds, CarbonImmutable $observedAt): int
+    public function freshCountAmong(array $ids, CarbonImmutable $observedAt): int
     {
-        if ($userIds === []) {
+        if ($ids === []) {
             return 0;
         }
 
-        return UserPresence::query()->freshAt($observedAt, $this->window)->whereIn('user_id', $userIds)->count();
+        return UserPresence::query()->freshAt($observedAt, $this->window)->whereIn('user_id', $ids)->count();
     }
 }

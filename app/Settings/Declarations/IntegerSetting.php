@@ -76,9 +76,9 @@ final readonly class IntegerSetting implements Setting
     /**
      * Whether a value lies within this setting's bounds.
      */
-    public function accepts(int $settingInput): bool
+    public function accepts(int $input): bool
     {
-        return $settingInput >= $this->minimum && $settingInput <= $this->maximum;
+        return $input >= $this->minimum && $input <= $this->maximum;
     }
 
     public function defaultValue(): int
@@ -86,9 +86,9 @@ final readonly class IntegerSetting implements Setting
         return $this->default;
     }
 
-    public function catalogueValue(string|bool|int|Decimal|BackedEnum $settingInput): CatalogueValue
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue
     {
-        return IntegerValueData::from(['value' => $settingInput]);
+        return IntegerValueData::from(['value' => $input]);
     }
 
     public function catalogueConstraints(): CatalogueConstraints|Optional

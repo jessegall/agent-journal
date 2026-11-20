@@ -70,6 +70,8 @@ final class ProfileRun extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -93,12 +95,12 @@ final class ProfileRun extends Model implements ReadableModel
         ActorIdentity $actor,
         WorkReference $work,
         string $profileKey,
-        int $profileRevision,
+        int $revision,
         string $definitionDigest,
-        string $triggerReference,
+        string $reference,
     ): self {
         $runs = self::query()->acrossActors()->ownedBy($actor)->where('work', $work->key);
-        $run = (clone $runs)->where('trigger_reference', $triggerReference)->first()
+        $run = (clone $runs)->where('trigger_reference', $reference)->first()
             ?? (clone $runs)->whereIn('state', ProfileRunState::unfinished())->first();
 
         if ($run !== null) {
@@ -108,9 +110,9 @@ final class ProfileRun extends Model implements ReadableModel
         $run = new self();
         $run->work = $work->key;
         $run->profile_key = $profileKey;
-        $run->profile_revision = $profileRevision;
+        $run->profile_revision = $revision;
         $run->definition_digest = $definitionDigest;
-        $run->trigger_reference = $triggerReference;
+        $run->trigger_reference = $reference;
         $run->state = ProfileRunState::Running;
         $run->unchanged_returns = 0;
         $run->sequence = (int) (clone $runs)->max('sequence') + 1;
@@ -120,27 +122,14 @@ final class ProfileRun extends Model implements ReadableModel
         return $run;
     }
 
+    // ----------[ Queries ]----------
+
     public static function lockedForStep(string $runId): self
     {
         return self::query()->acrossActors()->whereKey($runId)->lockForUpdate()->firstOrFail();
     }
 
-    /**
-     * The actor's last run on this work that ended before this one began.
-     *
-     * @return Option<self>
-     */
-    public function previous(): Option
-    {
-        return Option::fromValue(self::query()->acrossActors()
-            ->where('actor_type', $this->actor_type)
-            ->where('actor_id', $this->actor_id)
-            ->where('work', $this->work)
-            ->where('sequence', '<', $this->sequence)
-            ->whereNotIn('state', ProfileRunState::unfinished())
-            ->orderByDesc('sequence')
-            ->first());
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * Records the workspace generation the run starts on.
@@ -168,36 +157,24 @@ final class ProfileRun extends Model implements ReadableModel
      *
      * @throws ProfileRunRefused
      */
-    public function recordStep(string $stepReference, StepOutcome $outcome): ProfileStepResult
+    public function recordStep(string $reference, StepOutcome $outcome): ProfileStepResult
     {
-        $recorded = $this->results()->where('step_reference', $stepReference)->first();
+        $recorded = $this->results()->where('step_reference', $reference)->first();
 
         if ($recorded !== null) {
             return $recorded;
         }
 
-        if ($this->state !== ProfileRunState::Suspended || $this->awaited_step !== $stepReference) {
-            throw ProfileRunRefused::stepNotAwaited($this->id, $stepReference);
+        if ($this->state !== ProfileRunState::Suspended || $this->awaited_step !== $reference) {
+            throw ProfileRunRefused::stepNotAwaited($this->id, $reference);
         }
 
-        $result = ProfileStepResult::record($this, $stepReference, $outcome);
+        $result = ProfileStepResult::record($this, $reference, $outcome);
         $this->state = ProfileRunState::Running;
         $this->awaited_step = null;
         $this->save();
 
         return $result;
-    }
-
-    /**
-     * Records the outcome of a step the run took itself, once: a step replayed from its record is not recorded again.
-     */
-    public function completeStep(string $stepReference, StepOutcome $outcome): void
-    {
-        if ($this->results()->where('step_reference', $stepReference)->exists()) {
-            return;
-        }
-
-        ProfileStepResult::record($this, $stepReference, $outcome);
     }
 
     /**
@@ -210,6 +187,37 @@ final class ProfileRun extends Model implements ReadableModel
         $this->unchanged_returns = $unchangedReturns;
         $this->awaited_step = null;
         $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The actor's last run on this work that ended before this one began.
+     *
+     * @return Option<self>
+     */
+    public function previous(): Option
+    {
+        return Option::fromValue(self::query()->acrossActors()
+            ->where('actor_type', $this->actor_type)
+            ->where('actor_id', $this->actor_id)
+            ->where('work', $this->work)
+            ->where('sequence', '<', $this->sequence)
+            ->whereNotIn('state', ProfileRunState::unfinished())
+            ->orderByDesc('sequence')
+            ->first());
+    }
+
+    /**
+     * Records the outcome of a step the run took itself, once: a step replayed from its record is not recorded again.
+     */
+    public function completeStep(string $reference, StepOutcome $outcome): void
+    {
+        if ($this->results()->where('step_reference', $reference)->exists()) {
+            return;
+        }
+
+        ProfileStepResult::record($this, $reference, $outcome);
     }
 
     /**
@@ -231,6 +239,8 @@ final class ProfileRun extends Model implements ReadableModel
     {
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
+
+    // ----------[ Relations ]----------
 
     /**
      * @return HasMany<ProfileStepResult, $this>

@@ -36,6 +36,8 @@ final class CommandAlias extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return ['argument_grammar' => 'array', 'revision' => 'integer'];
@@ -63,14 +65,7 @@ final class CommandAlias extends Model implements ReadableModel
         return $alias;
     }
 
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function named(Builder $query, string $name, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey)->where('name', $name);
-    }
+    // ----------[ Answers ]----------
 
     /**
      * The alias as the classifier reads it: found, with its body, revision, digest and declared arguments.
@@ -85,5 +80,16 @@ final class CommandAlias extends Model implements ReadableModel
             $this->body_digest,
             $this->argument_grammar,
         );
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function named(Builder $query, string $name, string $projectKey): void
+    {
+        $query->where('project_key', $projectKey)->where('name', $name);
     }
 }

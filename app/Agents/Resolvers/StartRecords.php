@@ -24,11 +24,11 @@ final readonly class StartRecords implements StartRecordResolver
         return $record !== null ? self::detailsOf($record) : throw StartRecordMissing::forRequest($requestId);
     }
 
-    public function forOwnerReference(string $ownerReference): array
+    public function forOwnerReference(string $reference): array
     {
         $this->actors->actor();
 
-        return array_values(StartRecord::query()->forOwnerReference($ownerReference)->orderByDesc('id')->readLimit(
+        return array_values(StartRecord::query()->forOwnerReference($reference)->orderByDesc('id')->readLimit(
             self::MOST_PER_OWNER,
         )->get()
             ->map(fn (StartRecord $record) => self::detailsOf($record))

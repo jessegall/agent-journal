@@ -20,9 +20,9 @@ final readonly class CodexFolderTrust
      *
      * @throws FolderTrustRefused
      */
-    public static function forWorkingRoot(string $workingRoots, string $folder): self
+    public static function forWorkingRoot(string $roots, string $folder): self
     {
-        $isDirectChild = dirname($folder) === rtrim($workingRoots, '/')
+        $isDirectChild = dirname($folder) === rtrim($roots, '/')
             && ! in_array(basename($folder), ['.', '..'], true);
 
         if (! $isDirectChild || ! is_dir($folder) || is_link($folder)) {

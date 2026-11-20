@@ -25,12 +25,12 @@ final readonly class VisibleTasks implements TaskResolver
     }
 
     /**
-     * @param  list<string>  $taskIds
+     * @param  list<string>  $ids
      */
-    public function requireAllVisible(array $taskIds): void
+    public function requireAllVisible(array $ids): void
     {
         $this->actors->actor();
-        $requestedTaskIds = array_values(array_unique($taskIds));
+        $requestedTaskIds = array_values(array_unique($ids));
         $visibleTaskIds = array_values(array_map(
             strval(...),
             Task::query()->whereKey($requestedTaskIds)->readLimit(count($requestedTaskIds))->pluck('id')->all(),
@@ -39,17 +39,17 @@ final readonly class VisibleTasks implements TaskResolver
     }
 
     /**
-     * @param  list<string>  $taskIds
+     * @param  list<string>  $ids
      * @return list<TaskSummary>
      */
-    public function summaries(array $taskIds): array
+    public function summaries(array $ids): array
     {
         $this->actors->actor();
-        $requestedTaskIds = array_values(array_unique($taskIds));
+        $requestedTaskIds = array_values(array_unique($ids));
         $tasks = Task::query()->whereKey($requestedTaskIds)->readLimit(count($requestedTaskIds))->get()->keyBy('id');
         $this->assertAllFound($requestedTaskIds, array_values(array_map(strval(...), $tasks->keys()->all())));
 
-        return array_map(fn (string $taskId) => $tasks[$taskId]->summary(), $taskIds);
+        return array_map(fn (string $taskId) => $tasks[$taskId]->summary(), $ids);
     }
 
     /**

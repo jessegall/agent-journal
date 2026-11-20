@@ -48,6 +48,8 @@ final class SequenceRun extends Model implements Numbered, ReadableModel
      */
     protected $attributes = ['current_step' => 1, 'state' => 'running'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -75,6 +77,8 @@ final class SequenceRun extends Model implements Numbered, ReadableModel
         return $run;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The run read under its row lock, among those the actor may see, for a change that must happen once.
      */
@@ -83,6 +87,8 @@ final class SequenceRun extends Model implements Numbered, ReadableModel
         // A run belongs to no actor until it is started, so its start may also take a run nobody follows yet.
         return self::lockedForActorOrUnheld($id) ?? throw SequenceRunMissing::forId($id);
     }
+
+    // ----------[ Mutations ]----------
 
     public function startFor(ActorIdentity $follower): void
     {
@@ -113,6 +119,8 @@ final class SequenceRun extends Model implements Numbered, ReadableModel
         $this->state = SequenceRunState::Cancelled;
         $this->save();
     }
+
+    // ----------[ Answers ]----------
 
     public function work(): SequenceWork
     {

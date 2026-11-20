@@ -47,12 +47,12 @@ final class CreateDocumentTool extends JournalWriteTool
         );
     }
 
-    protected function present(mixed $createdDocument): ToolResult
+    protected function present(mixed $document): ToolResult
     {
         return ToolResult::ok([
-            'doc_id' => $createdDocument->number,
-            'document_id' => $createdDocument->id,
-            'revision' => $createdDocument->revision,
+            'doc_id' => $document->number,
+            'document_id' => $document->id,
+            'revision' => $document->revision,
         ]);
     }
 }

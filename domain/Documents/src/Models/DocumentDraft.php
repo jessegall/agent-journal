@@ -62,6 +62,8 @@ final class DocumentDraft extends Model implements ReadableModel
 
     protected $attributes = ['version' => 1];
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return [
@@ -90,34 +92,7 @@ final class DocumentDraft extends Model implements ReadableModel
         ]);
     }
 
-    /**
-     * The draft an agent holds, which closes when the agent's session ends.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function heldByAgent(Builder $query, string $agentId): void
-    {
-        $query->where('author_type', ActorType::Agent->value)->where('author_id', $agentId);
-    }
-
-    /**
-     * @return BelongsTo<Document, $this>
-     */
-    public function document(): BelongsTo
-    {
-        return $this->belongsTo(Document::class);
-    }
-
-    public function isEditedBy(ActorIdentity $editor): bool
-    {
-        return $this->author_type === $editor->type && $this->author_id === $editor->id;
-    }
-
-    public function isAtVersion(int $version): bool
-    {
-        return $this->version === $version;
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * Saves new text and counts the save in the version.
@@ -129,6 +104,47 @@ final class DocumentDraft extends Model implements ReadableModel
         $this->body = $text->body->text;
         $this->version++;
         $this->save();
+    }
+
+    /**
+     * Closes the draft inside the caller's transaction, under the document's lock: a revision with the next number
+     * when the text changed, a close record either way, and the draft gone.
+     */
+    public function closeInto(
+        Document $document,
+        DocumentRevision $baseRevision,
+        CloseCause $cause,
+        Actor|null $closer,
+        string|null $reason,
+    ): DocumentClose {
+        $published = $this->hasChangesFrom($baseRevision);
+        $resultNumber = $published ? $document->addRevision(
+            $this->title,
+            $this->abstract,
+            $this->body,
+            $this->author_type,
+            $this->author_id,
+        )->number : $baseRevision->number;
+        $close = DocumentClose::record($this, $resultNumber, $cause, $closer, $reason, $published);
+
+        if ($published) {
+            $document->reactivate();
+        }
+        $this->delete();
+
+        return $close;
+    }
+
+    // ----------[ Answers ]----------
+
+    public function isEditedBy(ActorIdentity $editor): bool
+    {
+        return $this->author_type === $editor->type && $this->author_id === $editor->id;
+    }
+
+    public function isAtVersion(int $version): bool
+    {
+        return $this->version === $version;
     }
 
     public function view(Document $document): DraftView
@@ -172,32 +188,26 @@ final class DocumentDraft extends Model implements ReadableModel
         );
     }
 
+    // ----------[ Relations ]----------
+
     /**
-     * Closes the draft inside the caller's transaction, under the document's lock: a revision with the next number
-     * when the text changed, a close record either way, and the draft gone.
+     * @return BelongsTo<Document, $this>
      */
-    public function closeInto(
-        Document $document,
-        DocumentRevision $baseRevision,
-        CloseCause $cause,
-        Actor|null $closer,
-        string|null $reason,
-    ): DocumentClose {
-        $published = $this->hasChangesFrom($baseRevision);
-        $resultNumber = $published ? $document->addRevision(
-            $this->title,
-            $this->abstract,
-            $this->body,
-            $this->author_type,
-            $this->author_id,
-        )->number : $baseRevision->number;
-        $close = DocumentClose::record($this, $resultNumber, $cause, $closer, $reason, $published);
+    public function document(): BelongsTo
+    {
+        return $this->belongsTo(Document::class);
+    }
 
-        if ($published) {
-            $document->reactivate();
-        }
-        $this->delete();
+    // ----------[ Scopes ]----------
 
-        return $close;
+    /**
+     * The draft an agent holds, which closes when the agent's session ends.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function heldByAgent(Builder $query, string $agentId): void
+    {
+        $query->where('author_type', ActorType::Agent->value)->where('author_id', $agentId);
     }
 }

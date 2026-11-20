@@ -36,6 +36,8 @@ final class RecordSettlement extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'documents.settlement';
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return [
@@ -63,16 +65,14 @@ final class RecordSettlement extends Model implements ReadableModel
         ]);
     }
 
-    /**
-     * The settlements of one record, newest first.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function onRecord(Builder $query, string $type, string $id): void
+    protected static function booted(): void
     {
-        $query->where('parent_type', $type)->where('parent_id', $id)->orderByDesc('settled_at')->orderByDesc('id');
+        self::updating(function (self $settlement): void {
+            throw RecordImmutable::for('settlement');
+        });
     }
+
+    // ----------[ Answers ]----------
 
     public function card(): SettlementCard
     {
@@ -85,10 +85,16 @@ final class RecordSettlement extends Model implements ReadableModel
         ]);
     }
 
-    protected static function booted(): void
+    // ----------[ Scopes ]----------
+
+    /**
+     * The settlements of one record, newest first.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function onRecord(Builder $query, string $type, string $id): void
     {
-        self::updating(function (self $settlement): void {
-            throw RecordImmutable::for('settlement');
-        });
+        $query->where('parent_type', $type)->where('parent_id', $id)->orderByDesc('settled_at')->orderByDesc('id');
     }
 }

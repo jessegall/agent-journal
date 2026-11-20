@@ -146,15 +146,15 @@ final class NavigationItem
     }
 
     /**
-     * @param  array<mixed>  $navigationArguments
+     * @param  array<mixed>  $arguments
      */
-    private static function assertNoLooseValues(string $navigationLabel, string $type, array $navigationArguments): void
+    private static function assertNoLooseValues(string $label, string $type, array $arguments): void
     {
         if (! array_all(
-            $navigationArguments,
+            $arguments,
             fn (mixed $argument, int|string $name) => is_string($name) && is_string($argument),
         )) {
-            throw InvalidNavigationDeclaration::valuesNotStrings($navigationLabel, $type);
+            throw InvalidNavigationDeclaration::valuesNotStrings($label, $type);
         }
     }
 }

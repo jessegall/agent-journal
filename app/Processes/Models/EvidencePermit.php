@@ -66,6 +66,8 @@ final class EvidencePermit extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -114,6 +116,27 @@ final class EvidencePermit extends Model implements ReadableModel
         return $permit;
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Uses the permit for its run; a failed spawn or capture later still leaves it used.
+     */
+    public function consume(string $requestId, ProcessRun $run): void
+    {
+        $this->request_id = $requestId;
+        $this->consumed_at = CarbonImmutable::now();
+        $this->process_run_id = $run->id;
+        $this->save();
+    }
+
+    public function expire(): void
+    {
+        $this->expires_at = CarbonImmutable::now();
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
     /**
      * Checks that this actor may use the permit now for this request; the same request id again is allowed and the
      * caller returns the run it already started.
@@ -141,40 +164,7 @@ final class EvidencePermit extends Model implements ReadableModel
         return $this->consumed_at !== null && $this->request_id === $requestId;
     }
 
-    /**
-     * Uses the permit for its run; a failed spawn or capture later still leaves it used.
-     */
-    public function consume(string $requestId, ProcessRun $run): void
-    {
-        $this->request_id = $requestId;
-        $this->consumed_at = CarbonImmutable::now();
-        $this->process_run_id = $run->id;
-        $this->save();
-    }
-
-    public function expire(): void
-    {
-        $this->expires_at = CarbonImmutable::now();
-        $this->save();
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function sampling(Builder $query, CommandRequest $request): void
-    {
-        $query->where('command_request_id', $request->id)->whereNotNull('process_run_id');
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
-    {
-        $query->where('project_key', $projectKey);
-    }
+    // ----------[ Internals ]----------
 
     /**
      * A permit for the line, filled from the line, the runner and the limits, not yet saved.
@@ -199,5 +189,25 @@ final class EvidencePermit extends Model implements ReadableModel
         $permit->expires_at = CarbonImmutable::now()->addMinutes($limits->minutesValid);
 
         return $permit;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sampling(Builder $query, CommandRequest $request): void
+    {
+        $query->where('command_request_id', $request->id)->whereNotNull('process_run_id');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofProject(Builder $query, string $projectKey): void
+    {
+        $query->where('project_key', $projectKey);
     }
 }

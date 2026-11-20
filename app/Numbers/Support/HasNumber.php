@@ -43,9 +43,9 @@ trait HasNumber
         return is_string($id) ? $id : null;
     }
 
-    public function assignNumber(string $numberGroupId, int $number): void
+    public function assignNumber(string $groupId, int $number): void
     {
-        $this->number_group_id = $numberGroupId;
+        $this->number_group_id = $groupId;
         $this->number = $number;
     }
 }

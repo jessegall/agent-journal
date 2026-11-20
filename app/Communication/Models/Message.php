@@ -90,6 +90,8 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
 
     public const string LINK_TYPE = 'communication.message';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, mixed>
      */
@@ -115,26 +117,6 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
             static fn (): RegisteredInboxes => Container::getInstance()->make(RegisteredInboxes::class),
             static fn (): CurrentSession => Container::getInstance()->make(CurrentSession::class),
         ));
-    }
-
-    /**
-     * Every inbox's messages, for the journal's own work on a message it already holds: it lifts the visibility limit.
-     *
-     * @param  Builder<static>  $query
-     */
-    #[Scope]
-    protected function acrossInboxes(Builder $query): void
-    {
-        $query->withoutGlobalScope(MessageVisibility::class);
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function matchingBody(Builder $query, string $words): void
-    {
-        TextSearch::narrow($query, 'body', $words);
     }
 
     /**
@@ -167,6 +149,8 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         return $message;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * @return Builder<self>
      */
@@ -182,26 +166,6 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         return self::query()->whereKey($messageId)->firstOr(fn () => throw MessageMissing::forId($messageId));
     }
 
-    public function revision(): int
-    {
-        return $this->state_version + 1;
-    }
-
-    /**
-     * @param  Builder<self>  $messages
-     */
-    #[Scope]
-    protected function forInboxState(Builder $messages, AgentInboxState $state): void
-    {
-        match ($state) {
-            AgentInboxState::Pending => $messages->where(fn (Builder $pending) => $pending
-                ->where('state', MessageState::WaitingForAnswer)
-                ->orWhere(fn (Builder $unread) => $unread->whereNull('read_at')->where('state', MessageState::Sent))),
-            AgentInboxState::Answered => $messages->where('state', MessageState::Answered),
-            AgentInboxState::All => $messages,
-        };
-    }
-
     /**
      * The message under its row lock, for a change that must happen once.
      *
@@ -212,23 +176,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw MessageMissing::forId($id));
     }
 
-    public function assignmentIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    /**
-     * The message's first line, the only text a link card shows of it.
-     */
-    public function firstLine(): string
-    {
-        return mb_strimwidth(strtok($this->body, "\n") ?: '', 0, 80, '…');
-    }
-
-    public function isAtStateVersion(int $expected): bool
-    {
-        return $this->state_version === $expected;
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * Keeps the first reader of the message and the seat it read through; a later read changes nothing. Reading
@@ -248,6 +196,187 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         $this->save();
 
         return true;
+    }
+
+    /**
+     * The message now waits for an answer; asking again while it waits changes nothing.
+     *
+     * @throws MessageStateConflict
+     */
+    public function requireAnswer(): void
+    {
+        if ($this->needsReply()) {
+            return;
+        }
+
+        $this->assertOpen();
+        $this->state = MessageState::WaitingForAnswer;
+        $this->is_question = true;
+        $this->state_version++;
+        $this->save();
+    }
+
+    /**
+     * @throws MessageStateConflict
+     */
+    public function answerWith(self $reply, ActorIdentity $actor, CarbonImmutable $at): void
+    {
+        if (! $this->needsReply()) {
+            throw MessageStateConflict::notWaiting($this->id);
+        }
+
+        $this->state = MessageState::Answered;
+        $this->state_version++;
+        $this->answer_message_id = $reply->id;
+        $this->closeBy($actor, $at);
+        $this->save();
+    }
+
+    /**
+     * @throws MessageStateConflict
+     */
+    public function dismissBy(ActorIdentity $actor, DismissalType $type, string $reason, CarbonImmutable $at): void
+    {
+        $this->assertOpen();
+        $this->state = MessageState::Dismissed;
+        $this->state_version++;
+        $this->dismissal_type = $type;
+        $this->dismissal_reason = $reason;
+        $this->closeBy($actor, $at);
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    public function revision(): int
+    {
+        return $this->state_version + 1;
+    }
+
+    public function assignmentIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    /**
+     * The message's first line, the only text a link card shows of it, ending in … when the message goes on.
+     */
+    public function firstLine(): string
+    {
+        $line = strtok($this->body, "\n") ?: '';
+        $preview = mb_strimwidth($line, 0, 80, '…');
+
+        return $line === trim($this->body) || str_ends_with($preview, '…') ? $preview : $preview.'…';
+    }
+
+    public function isAtStateVersion(int $expected): bool
+    {
+        return $this->state_version === $expected;
+    }
+
+    public function author(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id);
+    }
+
+    /**
+     * Who first read the message, absent until someone has.
+     */
+    public function firstRead(): MessageReader|Optional
+    {
+        if ($this->read_at === null || $this->read_by_type === null || $this->read_by_id === null) {
+            return Optional::create();
+        }
+
+        return new MessageReader($this->read_by_type, $this->read_by_id, $this->read_at->toIso8601String());
+    }
+
+    public function isWrittenBy(ActorIdentity $actor): bool
+    {
+        return $this->sender_type === $actor->type->value && $this->sender_id === $actor->id;
+    }
+
+    public function isReplyBy(self $original, ActorIdentity $actor, string|null $sessionId): bool
+    {
+        return $this->reply_to_id === $original->id
+            && $this->isWrittenBy($actor)
+            && $this->sender_session_id === $sessionId;
+    }
+
+    /**
+     * The actor that first read the message, when it was read.
+     */
+    public function firstReader(): ActorIdentity|null
+    {
+        return $this->read_by_type === null || $this->read_by_id === null
+            ? null
+            : new ActorIdentity(ActorType::from($this->read_by_type), $this->read_by_id);
+    }
+
+    public function needsReply(): bool
+    {
+        return $this->state === MessageState::WaitingForAnswer;
+    }
+
+    public function isDismissed(): bool
+    {
+        return $this->state === MessageState::Dismissed;
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * @throws MessageStateConflict
+     */
+    private function assertOpen(): void
+    {
+        if ($this->state->isClosed()) {
+            throw MessageStateConflict::closed($this->id);
+        }
+    }
+
+    private function closeBy(ActorIdentity $actor, CarbonImmutable $at): void
+    {
+        $this->closed_by_type = $actor->type->value;
+        $this->closed_by_id = $actor->id;
+        $this->closed_at = $at;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * Every inbox's messages, for the journal's own work on a message it already holds: it lifts the visibility limit.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function acrossInboxes(Builder $query): void
+    {
+        $query->withoutGlobalScope(MessageVisibility::class);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function matchingBody(Builder $query, string $words): void
+    {
+        TextSearch::narrow($query, 'body', $words);
+    }
+
+    /**
+     * @param  Builder<self>  $messages
+     */
+    #[Scope]
+    protected function forInboxState(Builder $messages, AgentInboxState $state): void
+    {
+        match ($state) {
+            AgentInboxState::Pending => $messages->where(fn (Builder $pending) => $pending
+                ->where('state', MessageState::WaitingForAnswer)
+                ->orWhere(fn (Builder $unread) => $unread->whereNull('read_at')->where('state', MessageState::Sent))),
+            AgentInboxState::Answered => $messages->where('state', MessageState::Answered),
+            AgentInboxState::All => $messages,
+        };
     }
 
     /**
@@ -322,119 +451,5 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
             ->orWhere(fn (Builder $same) => $same
                 ->where('created_at', $cursor->created_at)
                 ->where('id', '<', $cursor->id)));
-    }
-
-    public function author(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id);
-    }
-
-    /**
-     * Who first read the message, absent until someone has.
-     */
-    public function firstRead(): MessageReader|Optional
-    {
-        if ($this->read_at === null || $this->read_by_type === null || $this->read_by_id === null) {
-            return Optional::create();
-        }
-
-        return new MessageReader($this->read_by_type, $this->read_by_id, $this->read_at->toIso8601String());
-    }
-
-    public function isWrittenBy(ActorIdentity $actor): bool
-    {
-        return $this->sender_type === $actor->type->value && $this->sender_id === $actor->id;
-    }
-
-    public function isReplyBy(self $original, ActorIdentity $actor, string|null $sessionId): bool
-    {
-        return $this->reply_to_id === $original->id
-            && $this->isWrittenBy($actor)
-            && $this->sender_session_id === $sessionId;
-    }
-
-    /**
-     * The actor that first read the message, when it was read.
-     */
-    public function firstReader(): ActorIdentity|null
-    {
-        return $this->read_by_type === null || $this->read_by_id === null
-            ? null
-            : new ActorIdentity(ActorType::from($this->read_by_type), $this->read_by_id);
-    }
-
-    public function needsReply(): bool
-    {
-        return $this->state === MessageState::WaitingForAnswer;
-    }
-
-    public function isDismissed(): bool
-    {
-        return $this->state === MessageState::Dismissed;
-    }
-
-    /**
-     * The message now waits for an answer; asking again while it waits changes nothing.
-     *
-     * @throws MessageStateConflict
-     */
-    public function requireAnswer(): void
-    {
-        if ($this->needsReply()) {
-            return;
-        }
-
-        $this->assertOpen();
-        $this->state = MessageState::WaitingForAnswer;
-        $this->is_question = true;
-        $this->state_version++;
-        $this->save();
-    }
-
-    /**
-     * @throws MessageStateConflict
-     */
-    public function answerWith(self $reply, ActorIdentity $actor, CarbonImmutable $at): void
-    {
-        if (! $this->needsReply()) {
-            throw MessageStateConflict::notWaiting($this->id);
-        }
-
-        $this->state = MessageState::Answered;
-        $this->state_version++;
-        $this->answer_message_id = $reply->id;
-        $this->closeBy($actor, $at);
-        $this->save();
-    }
-
-    /**
-     * @throws MessageStateConflict
-     */
-    public function dismissBy(ActorIdentity $actor, DismissalType $type, string $reason, CarbonImmutable $at): void
-    {
-        $this->assertOpen();
-        $this->state = MessageState::Dismissed;
-        $this->state_version++;
-        $this->dismissal_type = $type;
-        $this->dismissal_reason = $reason;
-        $this->closeBy($actor, $at);
-        $this->save();
-    }
-
-    /**
-     * @throws MessageStateConflict
-     */
-    private function assertOpen(): void
-    {
-        if ($this->state->isClosed()) {
-            throw MessageStateConflict::closed($this->id);
-        }
-    }
-
-    private function closeBy(ActorIdentity $actor, CarbonImmutable $at): void
-    {
-        $this->closed_by_type = $actor->type->value;
-        $this->closed_by_id = $actor->id;
-        $this->closed_at = $at;
     }
 }

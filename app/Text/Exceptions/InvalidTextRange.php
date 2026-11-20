@@ -28,14 +28,14 @@ final class InvalidTextRange extends RuntimeException implements CommandRefusal
         return new self("The text has no section {$number}.");
     }
 
-    public static function badLines(int $first, int $last, int $lineCount): self
+    public static function badLines(int $first, int $last, int $count): self
     {
         return new self(
             sprintf(
                 'Lines %s to %s are not lines of this text, which has %s; give the first line first, both from 1.',
                 $first,
                 $last,
-                $lineCount,
+                $count,
             ),
         );
     }

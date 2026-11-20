@@ -6,6 +6,7 @@ namespace App\Mcp\Support;
 
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Values\MappedRefusal;
+use App\Text\Support\TextPreview;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 
@@ -26,7 +27,7 @@ final readonly class Refusal
         string $message,
         private array $details,
     ) {
-        $this->message = mb_strcut($message, 0, self::MESSAGE_BYTES);
+        $this->message = TextPreview::within($message, self::MESSAGE_BYTES);
     }
 
     public static function of(MappedRefusal $refusal): self

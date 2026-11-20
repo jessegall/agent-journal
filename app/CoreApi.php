@@ -1102,6 +1102,7 @@ use App\Text\Exceptions\TextVersionUnavailable;
 use App\Text\Support\MarkdownText;
 use App\Text\Support\Section as TextSection;
 use App\Text\Support\TextPart;
+use App\Text\Support\TextPreview;
 use App\Text\Support\TextReading;
 use App\Text\Support\TextSelection;
 use App\Text\Values\TextAnchor;
@@ -1536,6 +1537,7 @@ final class CoreApi
                 TextSections::class,
                 TextSelection::class,
                 MarkdownText::class,
+                TextPreview::class,
                 TextReading::class,
                 TextVersion::class,
                 TextRange::class,

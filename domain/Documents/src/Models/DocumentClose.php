@@ -51,6 +51,8 @@ final class DocumentClose extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'documents.close';
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return [
@@ -88,6 +90,15 @@ final class DocumentClose extends Model implements ReadableModel
         ]);
     }
 
+    protected static function booted(): void
+    {
+        self::updating(function (self $close): void {
+            throw RecordImmutable::for('draft close');
+        });
+    }
+
+    // ----------[ Answers ]----------
+
     public function result(): CloseResult
     {
         return new CloseResult($this->result_revision_number, $this->published);
@@ -104,12 +115,5 @@ final class DocumentClose extends Model implements ReadableModel
             'published' => $this->published,
             'closedAt' => (string) $this->closed_at?->toIso8601String(),
         ]);
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(function (self $close): void {
-            throw RecordImmutable::for('draft close');
-        });
     }
 }

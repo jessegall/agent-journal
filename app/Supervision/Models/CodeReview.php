@@ -72,6 +72,8 @@ final class CodeReview extends Model implements ReadableModel
      */
     public const int IMPORT_ATTEMPT_LIMIT = 5;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -79,6 +81,8 @@ final class CodeReview extends Model implements ReadableModel
     {
         return ['state' => CodeReviewState::class, 'import_attempts' => 'integer'];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The review of reserved work, retained once per certificate.
@@ -123,6 +127,8 @@ final class CodeReview extends Model implements ReadableModel
             ->firstOrFail();
     }
 
+    // ----------[ Mutations ]----------
+
     public function failImport(string $reason): void
     {
         $this->import_attempts++;
@@ -152,6 +158,8 @@ final class CodeReview extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
     public function isAwaitingImport(): bool
     {
         return $this->state === CodeReviewState::AwaitingImport;
@@ -171,6 +179,8 @@ final class CodeReview extends Model implements ReadableModel
     {
         return new ActorIdentity(ActorType::from($this->worker_type), $this->worker_id);
     }
+
+    // ----------[ Relations ]----------
 
     /**
      * @return HasOne<ReviewDecision, $this>

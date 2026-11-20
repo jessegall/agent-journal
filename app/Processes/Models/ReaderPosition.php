@@ -36,6 +36,8 @@ final class ReaderPosition extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -47,6 +49,8 @@ final class ReaderPosition extends Model implements ReadableModel
             'interpretation' => InterpretationState::class,
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The live position of a reader in a part, started empty the first time.
@@ -70,6 +74,8 @@ final class ReaderPosition extends Model implements ReadableModel
         );
     }
 
+    // ----------[ Mutations ]----------
+
     /**
      * The reader broke on this part (an exception, its time budget or an oversized record); capture goes on and a
      * restart resumes from the last committed offset.
@@ -80,6 +86,14 @@ final class ReaderPosition extends Model implements ReadableModel
         $this->save();
     }
 
+    public function advance(ReaderCheckpoint $checkpoint): void
+    {
+        $this->checkpoint = $checkpoint->toArray();
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
     public function hasFailed(): bool
     {
         return $this->interpretation === InterpretationState::ReaderFailed;
@@ -88,11 +102,5 @@ final class ReaderPosition extends Model implements ReadableModel
     public function checkpoint(): ReaderCheckpoint
     {
         return ReaderCheckpoint::fromArray($this->checkpoint);
-    }
-
-    public function advance(ReaderCheckpoint $checkpoint): void
-    {
-        $this->checkpoint = $checkpoint->toArray();
-        $this->save();
     }
 }

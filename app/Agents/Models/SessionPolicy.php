@@ -50,6 +50,8 @@ final class SessionPolicy extends Model implements ReadableModel
     use BoundedReads, HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -88,18 +90,7 @@ final class SessionPolicy extends Model implements ReadableModel
         return $frozen;
     }
 
-    public function policy(): StartPolicy
-    {
-        return new StartPolicy(
-            $this->access_policy->toAccessPolicy(),
-            $this->stop_conditions->toStopConditions(),
-            $this->execution_policy->toExecutionPolicy(),
-            $this->profile_key,
-            $this->profile_revision,
-            $this->configuration_hash,
-            $this->requires_review,
-        );
-    }
+    // ----------[ Queries ]----------
 
     /**
      * When each session's launch must have ended: its start plus the wall budget frozen with it, by session id. A
@@ -129,6 +120,21 @@ final class SessionPolicy extends Model implements ReadableModel
         }
 
         return $deadlines;
+    }
+
+    // ----------[ Answers ]----------
+
+    public function policy(): StartPolicy
+    {
+        return new StartPolicy(
+            $this->access_policy->toAccessPolicy(),
+            $this->stop_conditions->toStopConditions(),
+            $this->execution_policy->toExecutionPolicy(),
+            $this->profile_key,
+            $this->profile_revision,
+            $this->configuration_hash,
+            $this->requires_review,
+        );
     }
 
     /**

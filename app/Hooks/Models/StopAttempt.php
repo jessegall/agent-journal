@@ -51,6 +51,8 @@ final class StopAttempt extends Model implements ReadableModel
      */
     public const int FIRST_GENERATION = 0;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -63,6 +65,8 @@ final class StopAttempt extends Model implements ReadableModel
             'certified_at' => 'datetime',
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The agent whose session made the attempt, as the actor that asks for help when its stop is held.
@@ -162,13 +166,28 @@ final class StopAttempt extends Model implements ReadableModel
             ->all());
     }
 
+    // ----------[ Mutations ]----------
+
     /**
-     * @return HasMany<StopResult, $this>
+     * Records that one submission of the host's results settled the attempt.
      */
-    public function results(): HasMany
+    public function settle(StopAttemptState $state, string $submissionDigest): void
     {
-        return $this->hasMany(StopResult::class);
+        $this->state = $state;
+        $this->submission_digest = $submissionDigest;
+        $this->save();
     }
+
+    /**
+     * Marks this passed attempt as the certificate of the session's completion.
+     */
+    public function certify(): void
+    {
+        $this->certified_at = Carbon::now();
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
 
     /**
      * Whether results run under this policy digest and workspace generation belong to this attempt.
@@ -203,32 +222,23 @@ final class StopAttempt extends Model implements ReadableModel
         return $this->submission_digest !== null && hash_equals($this->submission_digest, $submissionDigest);
     }
 
-    /**
-     * Records that one submission of the host's results settled the attempt.
-     */
-    public function settle(StopAttemptState $state, string $submissionDigest): void
-    {
-        $this->state = $state;
-        $this->submission_digest = $submissionDigest;
-        $this->save();
-    }
-
     public function isCertified(): bool
     {
         return $this->certified_at !== null;
     }
 
-    /**
-     * Marks this passed attempt as the certificate of the session's completion.
-     */
-    public function certify(): void
-    {
-        $this->certified_at = Carbon::now();
-        $this->save();
-    }
-
     public function reference(): StopAttemptReference
     {
         return new StopAttemptReference($this->id);
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return HasMany<StopResult, $this>
+     */
+    public function results(): HasMany
+    {
+        return $this->hasMany(StopResult::class);
     }
 }

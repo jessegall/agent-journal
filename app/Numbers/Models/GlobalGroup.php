@@ -29,6 +29,8 @@ final class GlobalGroup extends Model implements ReadableModel
 
     public const string JOURNAL = 'journal';
 
+    // ----------[ Queries ]----------
+
     /**
      * The journal's own group, which numbers:install creates before any numbered record is written.
      */

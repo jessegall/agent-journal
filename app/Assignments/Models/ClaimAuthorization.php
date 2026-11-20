@@ -32,6 +32,8 @@ final class ClaimAuthorization extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, mixed>
      */
@@ -39,6 +41,8 @@ final class ClaimAuthorization extends Model implements ReadableModel
     {
         return ['basis_type' => ClaimBasis::class];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * A waiting message claimed through the claimant's seat at the inbox's desk.
@@ -70,9 +74,9 @@ final class ClaimAuthorization extends Model implements ReadableModel
     /**
      * The proof behind one claim, when it has one.
      */
-    public static function ofClaim(string $claimAssignmentId): self|null
+    public static function ofClaim(string $assignmentId): self|null
     {
-        return self::query()->where('claim_assignment_id', $claimAssignmentId)->first();
+        return self::query()->where('claim_assignment_id', $assignmentId)->first();
     }
 
     /**
@@ -88,6 +92,24 @@ final class ClaimAuthorization extends Model implements ReadableModel
                 ->where('participation_assignment_id', $source->id)
                 ->orWhere('work_assignment_id', $source->id));
     }
+
+    /**
+     * The proofs behind these claims, keyed by claim assignment id.
+     *
+     * @param  list<string>  $assignmentIds
+     * @return array<string, self>
+     */
+    public static function ofClaims(array $assignmentIds): array
+    {
+        return self::query()
+            ->whereIn('claim_assignment_id', $assignmentIds)
+            ->readLimit(count($assignmentIds))
+            ->get()
+            ->keyBy('claim_assignment_id')
+            ->all();
+    }
+
+    // ----------[ Answers ]----------
 
     /**
      * Whether the exact assignments the claim stands on still exist and are still held as they were proved.
@@ -124,21 +146,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
         return array_values(array_filter([$this->participation_assignment_id, $this->work_assignment_id]));
     }
 
-    /**
-     * The proofs behind these claims, keyed by claim assignment id.
-     *
-     * @param  list<string>  $claimAssignmentIds
-     * @return array<string, self>
-     */
-    public static function ofClaims(array $claimAssignmentIds): array
-    {
-        return self::query()
-            ->whereIn('claim_assignment_id', $claimAssignmentIds)
-            ->readLimit(count($claimAssignmentIds))
-            ->get()
-            ->keyBy('claim_assignment_id')
-            ->all();
-    }
+    // ----------[ Internals ]----------
 
     private static function prove(
         AssignmentReference $claim,

@@ -53,11 +53,11 @@ final readonly class ExportBuilder
     }
 
     /**
-     * @param  class-string  ...$valueClasses
+     * @param  class-string  ...$classes
      */
-    public function values(string ...$valueClasses): self
+    public function values(string ...$classes): self
     {
-        return clone ($this, ['valueClasses' => [...$this->valueClasses, ...self::plainList('values', $valueClasses)]]);
+        return clone ($this, ['valueClasses' => [...$this->valueClasses, ...self::plainList('values', $classes)]]);
     }
 
     /**
@@ -102,10 +102,10 @@ final readonly class ExportBuilder
      *
      * @throws MalformedExports
      */
-    private static function plainList(string $exportGroup, array $names): array
+    private static function plainList(string $group, array $names): array
     {
         if (! array_is_list($names)) {
-            throw MalformedExports::keyedList($exportGroup);
+            throw MalformedExports::keyedList($group);
         }
 
         return $names;

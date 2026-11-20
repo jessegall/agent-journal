@@ -50,9 +50,9 @@ final readonly class ExecutionContext
         return hash('sha256', realpath($this->projectRoot) ?: $this->projectRoot);
     }
 
-    public function withWorkingFolder(string $workingFolder): self
+    public function withWorkingFolder(string $folder): self
     {
-        return clone ($this, ['workingFolder' => $workingFolder]);
+        return clone ($this, ['workingFolder' => $folder]);
     }
 
     /**

@@ -37,6 +37,7 @@ use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskProgress;
 use Domain\Tasks\Api\TaskSummary;
+use Domain\Tasks\Api\TaskText;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Assignments\ActiveTaskAssignments;
 use Domain\Tasks\Assignments\NamedTaskPoolFactory;
@@ -127,6 +128,7 @@ final class TasksDomain extends Domain implements
                 TaskState::class,
                 TaskExecution::class,
                 TaskDetails::class,
+                TaskText::class,
                 TaskType::class,
             )
             ->exceptions(TaskMissing::class)

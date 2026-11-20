@@ -49,9 +49,9 @@ final class StateMethods
     /**
      * @return array<string, StateMethod>
      */
-    public function forState(string $stateClass): array
+    public function forState(string $class): array
     {
-        return $this->declarationsFor($stateClass)['methods'];
+        return $this->declarationsFor($class)['methods'];
     }
 
     /**
@@ -115,13 +115,13 @@ final class StateMethods
     /**
      * @return array{methods: array<string, StateMethod>, events: array<class-string<Event>, StateMethod>}
      */
-    private function declarationsFor(string $stateClass): array
+    private function declarationsFor(string $class): array
     {
-        if (! is_subclass_of($stateClass, AgentState::class)) {
-            throw InvalidStateClass::for($stateClass);
+        if (! is_subclass_of($class, AgentState::class)) {
+            throw InvalidStateClass::for($class);
         }
 
-        return $this->byClass[$stateClass] ??= $this->discover(new ReflectionClass($stateClass));
+        return $this->byClass[$class] ??= $this->discover(new ReflectionClass($class));
     }
 
     /**

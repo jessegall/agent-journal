@@ -55,6 +55,8 @@ final class CleanupOperation extends Model implements ReadableModel
      */
     public const int ATTEMPT_LIMIT = 5;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -66,6 +68,8 @@ final class CleanupOperation extends Model implements ReadableModel
             'attempts' => 'integer',
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Opens the cleanup of the session's ended launch on its host; opening it again finds the same one.
@@ -105,6 +109,8 @@ final class CleanupOperation extends Model implements ReadableModel
         return self::query()->where('host_id', $hostId)->where('agent_session_id', $sessionId)->firstOrFail();
     }
 
+    // ----------[ Mutations ]----------
+
     /**
      * Records one pass of the host: the removed resources add to those removed before, a kept workspace becomes the
      * recovery location, and a failure counts an attempt. A pass on a finished cleanup changes nothing.
@@ -124,6 +130,8 @@ final class CleanupOperation extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
     public function isDone(): bool
     {
         return $this->state === CleanupState::Done;
@@ -141,6 +149,8 @@ final class CleanupOperation extends Model implements ReadableModel
             fn (CleanupStep $step) => ! in_array($step->value, $this->removed_steps, true),
         ));
     }
+
+    // ----------[ Internals ]----------
 
     private function stateAfterPass(): CleanupState
     {

@@ -21,12 +21,12 @@ final readonly class ClaudeAccountSettings
     public static function fill(
         AccountStartSettings $settings,
         string $directory,
-        string $accountsRoot,
+        string $root,
         array $startFlags,
     ): void {
         $settings->setVariable('CLAUDE_CONFIG_DIR', $directory);
-        $settings->setVariable('JOURNAL_ACCOUNTS_ROOT', $accountsRoot);
-        $settings->protectWith(ClaudeAccountProtection::settingsFor($directory, $accountsRoot));
+        $settings->setVariable('JOURNAL_ACCOUNTS_ROOT', $root);
+        $settings->protectWith(ClaudeAccountProtection::settingsFor($directory, $root));
         $settings->setEmptyFolderVariable('ANTHROPIC_CONFIG_DIR');
 
         foreach (self::OTHER_CREDENTIALS as $variable) {

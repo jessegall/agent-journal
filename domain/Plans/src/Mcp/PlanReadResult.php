@@ -90,10 +90,10 @@ final readonly class PlanReadResult
     private function nextPhases(
         PlanDetails $plan,
         Continuation $position,
-        int $nextPhase,
-        int $phaseCount,
+        int $phase,
+        int $count,
     ): Continuation|null {
-        $hasMorePhases = $nextPhase < $phaseCount;
+        $hasMorePhases = $phase < $count;
         $taskOffset = $hasMorePhases ? $position->offset : $plan->nextTaskOffset;
         if ($taskOffset === null) {
             return null;
@@ -102,7 +102,7 @@ final readonly class PlanReadResult
         return new Continuation(
             self::TOOL,
             $plan->id,
-            [...$position->filters, 'phase_offset' => $hasMorePhases ? $nextPhase : 0],
+            [...$position->filters, 'phase_offset' => $hasMorePhases ? $phase : 0],
             $taskOffset,
             revision: $plan->revision,
         );

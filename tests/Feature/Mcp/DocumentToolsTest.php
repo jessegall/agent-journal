@@ -57,7 +57,10 @@ final class DocumentToolsTest extends TestCase
         $this->assertNotEmpty($first['next_actions']);
         $this->sendMcp($designer, 'resources/read', ['uri' => "journal://v1/docs/{$id}/revisions/2"])
             ->assertJsonPath('result.contents.0.mimeType', 'text/markdown')
-            ->assertJsonPath('result.contents.0.text', $first['body']);
+            ->assertJsonPath(
+                'result.contents.0.text',
+                fn (string $text) => str_starts_with($text, $first['body']),
+            );
     }
 
     public function test_a_reviewer_files_a_report_but_cannot_discover_or_call_document_writes(): void
@@ -84,6 +87,34 @@ final class DocumentToolsTest extends TestCase
             ->assertJsonPath('result.contents.0.mimeType', 'text/markdown')
             ->assertJsonPath('result.contents.0.text', '# Findings');
         $this->assertDatabaseCount('documents', 0);
+    }
+
+    public function test_a_long_report_resource_names_its_next_part_and_the_parts_join_to_the_whole_body(): void
+    {
+        $reviewer = TestStart::start('read-only-helper');
+        $body = implode("\n", array_map(fn (int $line) => "Line {$line} of the findings.", range(1, 120)));
+        $id = $this->callMcpTool($reviewer, 'reports_create', [
+            'title' => 'Long evidence',
+            'abstract' => 'A body of several parts.',
+            'body' => $body,
+            'request_key' => 'long-report',
+        ])->json('result.structuredContent.report_id');
+
+        $read = '';
+        $uri = "journal://v1/reports/{$id}";
+        for ($part = 1; $uri !== null && $part <= 20; $part++) {
+            $text = $this->sendMcp($reviewer, 'resources/read', ['uri' => $uri])->json('result.contents.0.text');
+            $found = preg_match(
+                '/\n\n\(This is one part of the text\. Read the next part at (\S+)\)$/',
+                $text,
+                $match,
+            );
+            $read .= $found === 1 ? substr($text, 0, -strlen($match[0])) : $text;
+            $uri = $found === 1 ? $match[1] : null;
+        }
+
+        $this->assertGreaterThan(1, $part - 1);
+        $this->assertSame($body, $read);
     }
 
     public function test_an_interrupted_upload_publishes_nothing(): void

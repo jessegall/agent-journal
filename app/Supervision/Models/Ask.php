@@ -60,6 +60,8 @@ final class Ask extends Model implements Assignable, ReadableModel
      */
     public const int LIFETIME_HOURS = 48;
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return ['version' => 'integer', 'open' => 'boolean', 'outcome' => UnansweredReason::class];
@@ -69,6 +71,8 @@ final class Ask extends Model implements Assignable, ReadableModel
     {
         return new AskReference(new self()->newUniqueId());
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * @return Option<self>
@@ -129,30 +133,6 @@ final class Ask extends Model implements Assignable, ReadableModel
         return $ask;
     }
 
-    public function replay(AskTypeKey $type, string $body): AskReference
-    {
-        if ($type->key !== $this->type_key || $body !== $this->body) {
-            throw AskRefused::submissionChanged();
-        }
-
-        return $this->reference();
-    }
-
-    public function reference(): AskReference
-    {
-        return new AskReference($this->id);
-    }
-
-    public function assignmentIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    public function requester(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
-    }
-
     public static function forAttention(string $id): self
     {
         return self::query()->acrossActors()->whereKey($id)->firstOrFail();
@@ -197,24 +177,7 @@ final class Ask extends Model implements Assignable, ReadableModel
         return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
-    public function typeKey(): AskTypeKey
-    {
-        return AskTypeKey::from($this->type_key);
-    }
-
-    public function workReference(): WorkReference
-    {
-        return new WorkReference($this->work);
-    }
-
-    public function requirePending(int $version): SupervisorTarget
-    {
-        if (! $this->open || $this->version !== $version || $this->pending_target === null) {
-            throw AskRefused::routeChanged();
-        }
-
-        return SupervisorTarget::parse($this->pending_target);
-    }
+    // ----------[ Mutations ]----------
 
     public function accept(ActorIdentity $holder, int $routeVersion): AskHop
     {
@@ -234,6 +197,69 @@ final class Ask extends Model implements Assignable, ReadableModel
         $this->save();
     }
 
+    /**
+     * Adds the owner's late text to an unanswered ask as a new version; its outcome and time stay as they were.
+     */
+    public function answerLate(string $text): void
+    {
+        $this->late_answer = $text;
+        $this->version++;
+        $this->save();
+    }
+
+    public function close(): void
+    {
+        $this->version++;
+        $this->open = false;
+        $this->pending_target = null;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    public function replay(AskTypeKey $type, string $body): AskReference
+    {
+        if ($type->key !== $this->type_key || $body !== $this->body) {
+            throw AskRefused::submissionChanged();
+        }
+
+        return $this->reference();
+    }
+
+    public function reference(): AskReference
+    {
+        return new AskReference($this->id);
+    }
+
+    public function assignmentIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    public function requester(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+    }
+
+    public function typeKey(): AskTypeKey
+    {
+        return AskTypeKey::from($this->type_key);
+    }
+
+    public function workReference(): WorkReference
+    {
+        return new WorkReference($this->work);
+    }
+
+    public function requirePending(int $version): SupervisorTarget
+    {
+        if (! $this->open || $this->version !== $version || $this->pending_target === null) {
+            throw AskRefused::routeChanged();
+        }
+
+        return SupervisorTarget::parse($this->pending_target);
+    }
+
     public function closeUnanswered(UnansweredReason $reason): void
     {
         $this->outcome = $reason;
@@ -245,28 +271,12 @@ final class Ask extends Model implements Assignable, ReadableModel
         return ! $this->open && $this->outcome !== null;
     }
 
-    /**
-     * Adds the owner's late text to an unanswered ask as a new version; its outcome and time stay as they were.
-     */
-    public function answerLate(string $text): void
-    {
-        $this->late_answer = $text;
-        $this->version++;
-        $this->save();
-    }
-
     public function hasOutlived(CarbonImmutable $now): bool
     {
         return CarbonImmutable::instance($this->created_at)->addHours(self::LIFETIME_HOURS) <= $now;
     }
 
-    public function close(): void
-    {
-        $this->version++;
-        $this->open = false;
-        $this->pending_target = null;
-        $this->save();
-    }
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

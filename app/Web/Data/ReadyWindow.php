@@ -25,10 +25,10 @@ final class ReadyWindow extends Data
     ) {}
 
     /**
-     * @param  array<string, mixed>  $windowFields
+     * @param  array<string, mixed>  $fields
      */
-    public static function of(array $windowFields): self
+    public static function of(array $fields): self
     {
-        return new self(WindowState::Ready, $windowFields);
+        return new self(WindowState::Ready, $fields);
     }
 }

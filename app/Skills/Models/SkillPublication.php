@@ -67,6 +67,8 @@ final class SkillPublication extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -80,25 +82,6 @@ final class SkillPublication extends Model implements ReadableModel
             'state' => PublicationState::class,
             'manifest' => 'array',
         ];
-    }
-
-    /**
-     * Records the intent to deliver this selection to the session's target; an open intent for the same target is
-     * superseded, so one target has one open intent.
-     *
-     * @param  list<string>  $skillKeys  the keys of the selected skills, in the generation's order
-     */
-    public static function intend(
-        string $sessionId,
-        string $program,
-        string $target,
-        SkillGeneration $generation,
-        string $selectionDigest,
-        array $skillKeys,
-    ): self {
-        return self::intendMany($generation, [
-            new PublicationIntent($sessionId, $program, $target, $selectionDigest, $skillKeys),
-        ])[0];
     }
 
     /**
@@ -147,6 +130,187 @@ final class SkillPublication extends Model implements ReadableModel
             ]);
         }, $intents);
     }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * Records the intent to deliver this selection to the session's target; an open intent for the same target is
+     * superseded, so one target has one open intent.
+     *
+     * @param  list<string>  $keys  the keys of the selected skills, in the generation's order
+     */
+    public static function intend(
+        string $sessionId,
+        string $program,
+        string $target,
+        SkillGeneration $generation,
+        string $selectionDigest,
+        array $keys,
+    ): self {
+        return self::intendMany($generation, [
+            new PublicationIntent($sessionId, $program, $target, $selectionDigest, $keys),
+        ])[0];
+    }
+
+    /**
+     * The selection digest of each session's newest open or delivered publication, by session id, in one query.
+     *
+     * @param  list<string>  $sessionIds
+     * @return array<string, string>
+     */
+    public static function currentSelectionsOf(array $sessionIds): array
+    {
+        $publications = self::query()
+            ->whereIn('session_id', $sessionIds)
+            ->whereIn('state', [
+                PublicationState::Pending->value,
+                PublicationState::Preparing->value,
+                PublicationState::Delivered->value,
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->readLimit(max(1, 2 * count($sessionIds)))
+            ->get()
+            ->unique('session_id');
+
+        return $publications->mapWithKeys(fn (self $publication) => [
+            $publication->session_id => $publication->selection_digest,
+        ])->all();
+    }
+
+    /**
+     * @throws SkillPublicationMissing
+     */
+    public static function lockById(string $publicationId): self
+    {
+        return self::query()->whereKey($publicationId)->lockForUpdate()->firstOr(
+            fn () => throw SkillPublicationMissing::for($publicationId),
+        );
+    }
+
+    /**
+     * Every publication no worker will touch again and not yet retired, newest first, for the daily prune.
+     *
+     * @return list<self>
+     */
+    public static function settled(int $limit): array
+    {
+        $settled = self::query()
+            ->whereIn('state', [
+                PublicationState::Delivered->value,
+                PublicationState::Failed->value,
+                PublicationState::Superseded->value,
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($settled->all());
+    }
+
+    /**
+     * Every publication still waiting for a worker, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function open(int $limit): array
+    {
+        $open = self::query()
+            ->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value])
+            ->orderBy('created_at')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($open->all());
+    }
+
+    /**
+     * The newest publication of each of these sessions, for status; an agent passes only its own session.
+     *
+     * @param  list<string>  $ids
+     * @return list<self>
+     */
+    public static function latestOfSessions(array $ids, int $limit): array
+    {
+        $latest = self::query()
+            ->whereIn('session_id', $ids)
+            ->orderByDesc('created_at')
+            ->readLimit($limit)
+            ->get()
+            ->unique('session_id');
+
+        return array_values($latest->all());
+    }
+
+    /**
+     * Where each of these publications stands, by id; an id that names none is left out.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, PublicationState>
+     */
+    public static function statesOf(array $ids): array
+    {
+        $publications = self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->get();
+
+        return $publications->mapWithKeys(fn (self $publication) => [$publication->id => $publication->state])->all();
+    }
+
+    /**
+     * The session's first publication: the set its program was started with, which a program that loads skills only
+     * at a new session keeps.
+     */
+    public static function firstOfSession(string $sessionId): self
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->firstOrFail();
+    }
+
+    /**
+     * The session's newest delivered publication, or null when none was delivered yet.
+     */
+    public static function latestDeliveredOfSession(string $sessionId): self|null
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->inState(PublicationState::Delivered)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
+     * The session's newest publication, or null when none was asked for it.
+     */
+    public static function latestOfSession(string $sessionId): self|null
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
+     * The newest publication of every session, for a user's status.
+     *
+     * @return list<self>
+     */
+    public static function latestOfEverySession(int $limit): array
+    {
+        $latest = self::query()
+            ->orderByDesc('created_at')
+            ->readLimit($limit)
+            ->get()
+            ->unique('session_id');
+
+        return array_values($latest->all());
+    }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Takes the publication for one worker under a new fencing version and a lease; answers that version.
@@ -237,6 +401,8 @@ final class SkillPublication extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
     /**
      * The immutable generation this publication delivers.
      */
@@ -258,63 +424,6 @@ final class SkillPublication extends Model implements ReadableModel
 
         return $this->state === PublicationState::Preparing
             && ($this->lease_until === null || $this->lease_until->lessThan($now));
-    }
-
-    /**
-     * The selection digest of each session's newest open or delivered publication, by session id, in one query.
-     *
-     * @param  list<string>  $sessionIds
-     * @return array<string, string>
-     */
-    public static function currentSelectionsOf(array $sessionIds): array
-    {
-        $publications = self::query()
-            ->whereIn('session_id', $sessionIds)
-            ->whereIn('state', [
-                PublicationState::Pending->value,
-                PublicationState::Preparing->value,
-                PublicationState::Delivered->value,
-            ])
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->readLimit(max(1, 2 * count($sessionIds)))
-            ->get()
-            ->unique('session_id');
-
-        return $publications->mapWithKeys(fn (self $publication) => [
-            $publication->session_id => $publication->selection_digest,
-        ])->all();
-    }
-
-    /**
-     * @throws SkillPublicationMissing
-     */
-    public static function lockById(string $publicationId): self
-    {
-        return self::query()->whereKey($publicationId)->lockForUpdate()->firstOr(
-            fn () => throw SkillPublicationMissing::for($publicationId),
-        );
-    }
-
-    /**
-     * Every publication no worker will touch again and not yet retired, newest first, for the daily prune.
-     *
-     * @return list<self>
-     */
-    public static function settled(int $limit): array
-    {
-        $settled = self::query()
-            ->whereIn('state', [
-                PublicationState::Delivered->value,
-                PublicationState::Failed->value,
-                PublicationState::Superseded->value,
-            ])
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->readLimit($limit)
-            ->get();
-
-        return array_values($settled->all());
     }
 
     /**
@@ -346,107 +455,6 @@ final class SkillPublication extends Model implements ReadableModel
         return self::openKeyOf($this->session_id, $this->target);
     }
 
-    /**
-     * Every publication still waiting for a worker, oldest first.
-     *
-     * @return list<self>
-     */
-    public static function open(int $limit): array
-    {
-        $open = self::query()
-            ->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value])
-            ->orderBy('created_at')
-            ->readLimit($limit)
-            ->get();
-
-        return array_values($open->all());
-    }
-
-    /**
-     * The newest publication of each of these sessions, for status; an agent passes only its own session.
-     *
-     * @param  list<string>  $sessionIds
-     * @return list<self>
-     */
-    public static function latestOfSessions(array $sessionIds, int $limit): array
-    {
-        $latest = self::query()
-            ->whereIn('session_id', $sessionIds)
-            ->orderByDesc('created_at')
-            ->readLimit($limit)
-            ->get()
-            ->unique('session_id');
-
-        return array_values($latest->all());
-    }
-
-    /**
-     * Where each of these publications stands, by id; an id that names none is left out.
-     *
-     * @param  list<string>  $publicationIds
-     * @return array<string, PublicationState>
-     */
-    public static function statesOf(array $publicationIds): array
-    {
-        $publications = self::query()->whereKey($publicationIds)->readLimit(max(1, count($publicationIds)))->get();
-
-        return $publications->mapWithKeys(fn (self $publication) => [$publication->id => $publication->state])->all();
-    }
-
-    /**
-     * The session's first publication: the set its program was started with, which a program that loads skills only
-     * at a new session keeps.
-     */
-    public static function firstOfSession(string $sessionId): self
-    {
-        return self::query()
-            ->where('session_id', $sessionId)
-            ->orderBy('created_at')
-            ->orderBy('id')
-            ->firstOrFail();
-    }
-
-    /**
-     * The session's newest delivered publication, or null when none was delivered yet.
-     */
-    public static function latestDeliveredOfSession(string $sessionId): self|null
-    {
-        return self::query()
-            ->where('session_id', $sessionId)
-            ->inState(PublicationState::Delivered)
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->first();
-    }
-
-    /**
-     * The session's newest publication, or null when none was asked for it.
-     */
-    public static function latestOfSession(string $sessionId): self|null
-    {
-        return self::query()
-            ->where('session_id', $sessionId)
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->first();
-    }
-
-    /**
-     * The newest publication of every session, for a user's status.
-     *
-     * @return list<self>
-     */
-    public static function latestOfEverySession(int $limit): array
-    {
-        $latest = self::query()
-            ->orderByDesc('created_at')
-            ->readLimit($limit)
-            ->get()
-            ->unique('session_id');
-
-        return array_values($latest->all());
-    }
-
     public function status(): PublicationStatus
     {
         return new PublicationStatus(
@@ -459,6 +467,8 @@ final class SkillPublication extends Model implements ReadableModel
             $this->error,
         );
     }
+
+    // ----------[ Internals ]----------
 
     /**
      * @throws SkillPublicationFailed
@@ -486,6 +496,8 @@ final class SkillPublication extends Model implements ReadableModel
     {
         return $sessionId.'|'.$target;
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

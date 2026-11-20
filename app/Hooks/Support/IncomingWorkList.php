@@ -24,13 +24,13 @@ final class IncomingWorkList implements IncomingWorkRegistration
 
     public function __construct(private readonly Container $container) {}
 
-    public function register(string $workClass): void
+    public function register(string $class): void
     {
-        if (in_array($workClass, $this->workClasses, true)) {
-            throw IncomingWorkRepeated::forWork($workClass);
+        if (in_array($class, $this->workClasses, true)) {
+            throw IncomingWorkRepeated::forWork($class);
         }
 
-        $this->workClasses[] = $workClass;
+        $this->workClasses[] = $class;
     }
 
     /**

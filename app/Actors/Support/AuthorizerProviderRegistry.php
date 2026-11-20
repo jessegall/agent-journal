@@ -32,11 +32,11 @@ final class AuthorizerProviderRegistry implements AuthorizerProviderRegistration
     }
 
     /**
-     * @param  class-string<AuthorizerProvider>  $providerClass
+     * @param  class-string<AuthorizerProvider>  $class
      */
-    public function register(ActorType $type, string $providerClass): void
+    public function register(ActorType $type, string $class): void
     {
-        $this->providers->put($type->value, $providerClass);
+        $this->providers->put($type->value, $class);
     }
 
     /**

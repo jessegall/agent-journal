@@ -30,6 +30,8 @@ final class SupervisorLink extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.supervisor-link';
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return ['routes' => SupervisorRoutesCast::class, 'versions' => 'array'];
@@ -49,6 +51,8 @@ final class SupervisorLink extends Model implements ReadableModel
         return $link;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * @return array<string, SupervisorRoutes>
      */
@@ -64,10 +68,7 @@ final class SupervisorLink extends Model implements ReadableModel
         return $routes;
     }
 
-    public function versionFor(AskTypeKey|null $type): int
-    {
-        return $this->versions[AskTypeKey::routeOf($type)] ?? 0;
-    }
+    // ----------[ Mutations ]----------
 
     public function change(SupervisorRoutes $routes, AskTypeKey|null $type): void
     {
@@ -75,5 +76,12 @@ final class SupervisorLink extends Model implements ReadableModel
         $this->routes = $routes;
         $this->versions = [...$this->versions, $key => $this->versionFor($type) + 1];
         $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    public function versionFor(AskTypeKey|null $type): int
+    {
+        return $this->versions[AskTypeKey::routeOf($type)] ?? 0;
     }
 }

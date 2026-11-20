@@ -29,6 +29,8 @@ final class Host extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -54,6 +56,8 @@ final class Host extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The stored form of a host secret: its hash, so the secret itself is never kept.
      */
@@ -77,6 +81,16 @@ final class Host extends Model implements ReadableModel
         return $host->isRevoked() ? throw HostCredentialRejected::revoked() : $host;
     }
 
+    // ----------[ Mutations ]----------
+
+    public function revokeAt(CarbonImmutable $time): void
+    {
+        $this->revoked_at = $time;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
     /**
      * Whether a folder lies inside one of the roots this host may start in.
      */
@@ -90,12 +104,6 @@ final class Host extends Model implements ReadableModel
         }
 
         return false;
-    }
-
-    public function revokeAt(CarbonImmutable $time): void
-    {
-        $this->revoked_at = $time;
-        $this->save();
     }
 
     public function isRevoked(): bool

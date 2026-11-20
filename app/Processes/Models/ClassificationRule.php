@@ -44,6 +44,8 @@ final class ClassificationRule extends Model implements ReadableModel
     use HasUlids, Linkable;
     use NamedByRuleScope;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -55,6 +57,8 @@ final class ClassificationRule extends Model implements ReadableModel
             'state' => ClassificationState::class,
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The project's classification rule of a declaration, or a new one not yet active when it has none.
@@ -72,20 +76,7 @@ final class ClassificationRule extends Model implements ReadableModel
             ]);
     }
 
-    /**
-     * Makes a newer approved revision the active one.
-     *
-     * @throws ClassificationRuleRefused
-     */
-    public function activate(RuleRevision $revision, int $expectedRevision): void
-    {
-        $this->assertExpectedRevision($expectedRevision);
-        $this->assertOwnRevision($revision);
-        if ($revision->revision <= $this->active_revision) {
-            throw ClassificationRuleRefused::notNewer($this->rule_id, $revision->revision, $this->active_revision);
-        }
-        $this->point($revision, "Revision {$revision->revision} approved.");
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * Stops the rule from classifying; its revisions stay recorded and one may be restored.
@@ -103,6 +94,23 @@ final class ClassificationRule extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
+    /**
+     * Makes a newer approved revision the active one.
+     *
+     * @throws ClassificationRuleRefused
+     */
+    public function activate(RuleRevision $revision, int $expectedRevision): void
+    {
+        $this->assertExpectedRevision($expectedRevision);
+        $this->assertOwnRevision($revision);
+        if ($revision->revision <= $this->active_revision) {
+            throw ClassificationRuleRefused::notNewer($this->rule_id, $revision->revision, $this->active_revision);
+        }
+        $this->point($revision, "Revision {$revision->revision} approved.");
+    }
+
     /**
      * Makes an earlier approved revision of this rule the active one again.
      *
@@ -116,12 +124,26 @@ final class ClassificationRule extends Model implements ReadableModel
     }
 
     /**
+     * @throws ClassificationRuleRefused
+     */
+    public function assertExpectedRevision(int $revision): void
+    {
+        if ($revision !== $this->active_revision) {
+            throw ClassificationRuleRefused::stale($this->rule_id, $revision, $this->active_revision);
+        }
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
      * @return BelongsTo<RuleRevision, $this>
      */
     public function activeRevision(): BelongsTo
     {
         return $this->belongsTo(RuleRevision::class, 'active_revision_id');
     }
+
+    // ----------[ Internals ]----------
 
     private function point(RuleRevision $revision, string $reason): void
     {
@@ -135,22 +157,14 @@ final class ClassificationRule extends Model implements ReadableModel
     /**
      * @throws ClassificationRuleRefused
      */
-    public function assertExpectedRevision(int $expectedRevision): void
-    {
-        if ($expectedRevision !== $this->active_revision) {
-            throw ClassificationRuleRefused::stale($this->rule_id, $expectedRevision, $this->active_revision);
-        }
-    }
-
-    /**
-     * @throws ClassificationRuleRefused
-     */
     private function assertOwnRevision(RuleRevision $revision): void
     {
         if (! $revision->belongsToRule($this)) {
             throw ClassificationRuleRefused::otherRule($this->rule_id, $revision->rule_id);
         }
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

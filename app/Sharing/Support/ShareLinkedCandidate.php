@@ -39,11 +39,11 @@ final readonly class ShareLinkedCandidate
     /**
      * Whether the candidate's link is one of these approved links.
      *
-     * @param  list<string>  $approvedLinkIds
+     * @param  list<string>  $ids
      */
-    public function isApprovedAmong(array $approvedLinkIds): bool
+    public function isApprovedAmong(array $ids): bool
     {
-        return in_array($this->linkId, $approvedLinkIds, true);
+        return in_array($this->linkId, $ids, true);
     }
 
     /**

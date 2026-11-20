@@ -47,6 +47,8 @@ final class AutoAssignment extends Model implements ReadableModel
     use BoundedReads, HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -60,16 +62,6 @@ final class AutoAssignment extends Model implements ReadableModel
             'configuration_revision' => 'integer',
             'last_served_at' => 'immutable_datetime',
         ];
-    }
-
-    /**
-     * The actor's auto-assignment of the type, its row locked for update; none when it was never enabled.
-     *
-     * @return Option<self>
-     */
-    public static function lockedFor(AutoAssignmentKey $key): Option
-    {
-        return Option::fromValue(self::query()->forKey($key)->lockForUpdate()->first());
     }
 
     /**
@@ -95,6 +87,18 @@ final class AutoAssignment extends Model implements ReadableModel
         return self::query()->forKey($input->key)->lockForUpdate()->firstOrFail();
     }
 
+    // ----------[ Queries ]----------
+
+    /**
+     * The actor's auto-assignment of the type, its row locked for update; none when it was never enabled.
+     *
+     * @return Option<self>
+     */
+    public static function lockedFor(AutoAssignmentKey $key): Option
+    {
+        return Option::fromValue(self::query()->forKey($key)->lockForUpdate()->first());
+    }
+
     /**
      * One page of the auto-assignments that are on, by id, for the engine to consider.
      */
@@ -111,10 +115,7 @@ final class AutoAssignment extends Model implements ReadableModel
         return self::pageOf(self::query()->ofActor($actor), $page);
     }
 
-    public function isAtRevision(int $expected): bool
-    {
-        return $this->configuration_revision === $expected;
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * Sets whether it is on, its pool and its size, and moves to the next revision only when one of them changed;
@@ -135,6 +136,18 @@ final class AutoAssignment extends Model implements ReadableModel
         return true;
     }
 
+    public function markServedAt(CarbonImmutable $time): void
+    {
+        self::query()->whereKey($this->id)->update(['last_served_at' => $time]);
+    }
+
+    // ----------[ Answers ]----------
+
+    public function isAtRevision(int $expected): bool
+    {
+        return $this->configuration_revision === $expected;
+    }
+
     public function toFact(): AutoAssignmentFact
     {
         return new AutoAssignmentFact(
@@ -148,10 +161,26 @@ final class AutoAssignment extends Model implements ReadableModel
         );
     }
 
-    public function markServedAt(CarbonImmutable $time): void
+    // ----------[ Internals ]----------
+
+    /**
+     * @param  ReadBuilder<self>  $query
+     */
+    private static function pageOf(ReadBuilder $query, Page $page): AutoAssignmentPage
     {
-        self::query()->whereKey($this->id)->update(['last_served_at' => $time]);
+        $rows = $query
+            ->when($page->afterId !== null, fn (Builder $after) => $after->where('id', '>', $page->afterId))
+            ->orderBy('id')
+            ->readLimit($page->limit + 1)
+            ->get();
+        $shown = $rows->take($page->limit);
+        $facts = array_values($shown->map(fn (self $row) => $row->toFact())->all());
+        $hasMore = $rows->count() > $page->limit;
+
+        return new AutoAssignmentPage($facts, $hasMore ? $shown->last()?->id : null);
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query
@@ -169,22 +198,5 @@ final class AutoAssignment extends Model implements ReadableModel
     protected function ofActor(Builder $query, ActorIdentity $actor): void
     {
         $query->where('actor_type', $actor->type)->where('actor_id', $actor->id);
-    }
-
-    /**
-     * @param  ReadBuilder<self>  $query
-     */
-    private static function pageOf(ReadBuilder $query, Page $page): AutoAssignmentPage
-    {
-        $rows = $query
-            ->when($page->afterId !== null, fn (Builder $after) => $after->where('id', '>', $page->afterId))
-            ->orderBy('id')
-            ->readLimit($page->limit + 1)
-            ->get();
-        $shown = $rows->take($page->limit);
-        $facts = array_values($shown->map(fn (self $row) => $row->toFact())->all());
-        $hasMore = $rows->count() > $page->limit;
-
-        return new AutoAssignmentPage($facts, $hasMore ? $shown->last()?->id : null);
     }
 }

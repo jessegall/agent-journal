@@ -8,7 +8,6 @@ use App\Agents\Contracts\ReadGrant;
 use App\Agents\Values\ReadRequest;
 use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
-use App\Mcp\Support\ToolArguments;
 use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Resolvers\DocumentPages;
@@ -39,7 +38,7 @@ final class DocumentRevisionResource extends PublicationResource implements HasU
 
     protected function read(Request $request): Response
     {
-        $arguments = ToolArguments::read($this->name(), $request, ['id', 'revision']);
+        $arguments = $this->pathArguments($request, ['id', 'revision']);
         $id = $arguments->recordReference('id');
         $revision = $arguments->recordReference('revision');
         if (! is_int($revision)) {
@@ -48,6 +47,9 @@ final class DocumentRevisionResource extends PublicationResource implements HasU
 
         $this->reads->assertAllowed(new ReadRequest(DocumentPages::TOOL, ResourceAreaType::JournalContent));
 
-        return $this->markdown($this->documents->document($id, $this->bodyArguments(DocumentPages::TOOL, $revision)));
+        return $this->markdown(
+            $this->documents->document($id, $this->bodyArguments($request, DocumentPages::TOOL, $revision)),
+            $request,
+        );
     }
 }

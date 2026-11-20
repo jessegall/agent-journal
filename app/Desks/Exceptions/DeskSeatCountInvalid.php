@@ -17,9 +17,9 @@ final class DeskSeatCountInvalid extends RuntimeException implements CodedRefusa
 {
     use RendersRefusal;
 
-    public static function for(int $seatCount): self
+    public static function for(int $count): self
     {
-        return new self("A desk has between 1 and 100 seats; {$seatCount} were asked for.");
+        return new self("A desk has between 1 and 100 seats; {$count} were asked for.");
     }
 
     protected function status(): int

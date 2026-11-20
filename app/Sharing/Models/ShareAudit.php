@@ -50,6 +50,8 @@ final class ShareAudit extends Model implements ReadableModel
      */
     private const int LIFECYCLE_DAYS = 365;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -91,6 +93,8 @@ final class ShareAudit extends Model implements ReadableModel
 
         return $audit;
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * One page of the share's audit rows, newest first, starting after the given id; one more row than the page holds
@@ -146,6 +150,8 @@ final class ShareAudit extends Model implements ReadableModel
         self::query()->whereKey($ids)->delete();
     }
 
+    // ----------[ Answers ]----------
+
     /**
      * The row as the share's owner reads it: a public read shows an unknown visitor, any other step its actor's role:
      * the
@@ -155,6 +161,8 @@ final class ShareAudit extends Model implements ReadableModel
     {
         return new ShareAuditEntry($this->id, $this->type, $this->created_at, $this->reason_code, $this->shownActor());
     }
+
+    // ----------[ Internals ]----------
 
     private function shownActor(): ShareAuditActor
     {
@@ -168,6 +176,19 @@ final class ShareAudit extends Model implements ReadableModel
             ActorType::System, ActorType::Engine => ShareAuditActor::System,
         };
     }
+
+    private static function fact(ShareAuditType $type, ActorIdentity $actor, string|null $reasonCode): self
+    {
+        $audit = new self();
+        $audit->type = $type;
+        $audit->actor_type = $actor->type;
+        $audit->actor_id = $actor->id;
+        $audit->reason_code = $reasonCode;
+
+        return $audit;
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query
@@ -185,16 +206,5 @@ final class ShareAudit extends Model implements ReadableModel
     protected function olderThan(Builder $query, string $id): void
     {
         $query->where('id', '<', $id);
-    }
-
-    private static function fact(ShareAuditType $type, ActorIdentity $actor, string|null $reasonCode): self
-    {
-        $audit = new self();
-        $audit->type = $type;
-        $audit->actor_type = $actor->type;
-        $audit->actor_id = $actor->id;
-        $audit->reason_code = $reasonCode;
-
-        return $audit;
     }
 }

@@ -20,9 +20,9 @@ final readonly class AssignmentFacts implements AssignmentFactPublisher
 {
     public function __construct(private Dispatcher $events) {}
 
-    public function publish(ActorIdentity $actor, AssignmentReason $reason, AssignmentResult $assignmentChange): void
+    public function publish(ActorIdentity $actor, AssignmentReason $reason, AssignmentResult $change): void
     {
-        if (! $assignmentChange->hasChanges()) {
+        if (! $change->hasChanges()) {
             return;
         }
 
@@ -30,7 +30,7 @@ final readonly class AssignmentFacts implements AssignmentFactPublisher
             (string) Str::uuid(),
             $actor,
             $reason,
-            $assignmentChange->changes,
+            $change->changes,
             CarbonImmutable::now(),
         ));
     }

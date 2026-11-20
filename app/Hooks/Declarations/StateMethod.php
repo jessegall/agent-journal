@@ -25,12 +25,12 @@ final readonly class StateMethod
     ) {}
 
     /**
-     * @param  class-string<AgentState>  $stateClass
+     * @param  class-string<AgentState>  $class
      */
-    public static function fromMethod(string $stateClass, ReflectionMethod $method): self
+    public static function fromMethod(string $class, ReflectionMethod $method): self
     {
         return new self(
-            $stateClass,
+            $class,
             $method->getDeclaringClass()->getName(),
             $method->getName(),
             $method->getAttributes(StackWide::class) !== [],

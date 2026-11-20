@@ -22,13 +22,13 @@ final readonly class AgentLabels implements ActorLabelProvider, AgentResolver
     public function __construct(private CurrentActor $actors, private CurrentAuthorizer $authorizer) {}
 
     /**
-     * @param  list<string>  $agentIds
+     * @param  list<string>  $ids
      * @return array<string, AgentLabel>
      */
-    public function labelsFor(array $agentIds): array
+    public function labelsFor(array $ids): array
     {
         $actor = $this->actors->actor();
-        $unique = array_values(array_unique($agentIds));
+        $unique = array_values(array_unique($ids));
         $visible = $this->inspectsAgents() ? $unique : array_values(array_intersect($unique, [$actor->id]));
 
         if ($visible === []) {

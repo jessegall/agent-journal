@@ -13,24 +13,24 @@ use InvalidArgumentException;
  */
 final class ExecutionBudgetInvalid extends InvalidArgumentException implements CommandRefusal
 {
-    public static function notPositive(string $budget, int $budgetAmount): self
+    public static function notPositive(string $budget, int $amount): self
     {
-        return new self("The budget {$budget} must be above zero, not {$budgetAmount}.");
+        return new self("The budget {$budget} must be above zero, not {$amount}.");
     }
 
-    public static function swapDiffers(int $memoryBytes, int $memorySwapBytes): self
+    public static function swapDiffers(int $bytes, int $swapBytes): self
     {
         return new self(
             sprintf(
                 'Memory and swap are limited alike: %s bytes of swap differs from %s bytes of memory.',
-                $memorySwapBytes,
-                $memoryBytes,
+                $swapBytes,
+                $bytes,
             ),
         );
     }
 
-    public static function aboveHost(string $budget, int $budgetAmount, int $most): self
+    public static function aboveHost(string $budget, int $amount, int $most): self
     {
-        return new self("The budget {$budget} is at most {$most} on this host, not {$budgetAmount}.");
+        return new self("The budget {$budget} is at most {$most} on this host, not {$amount}.");
     }
 }

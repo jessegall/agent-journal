@@ -39,6 +39,8 @@ final class HelperNotice extends Model implements ReadableModel
      */
     public const int DELIVERED_LIMIT = 20;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -60,6 +62,8 @@ final class HelperNotice extends Model implements ReadableModel
         return $notice;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The notices of this parent not yet given to it, oldest first, locked so each is given once.
      *
@@ -76,6 +80,8 @@ final class HelperNotice extends Model implements ReadableModel
             ->get()
             ->all());
     }
+
+    // ----------[ Mutations ]----------
 
     public function markDelivered(): void
     {

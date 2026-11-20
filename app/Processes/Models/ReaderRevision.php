@@ -53,6 +53,8 @@ final class ReaderRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -83,6 +85,13 @@ final class ReaderRevision extends Model implements ReadableModel
         ]);
     }
 
+    protected static function booted(): void
+    {
+        self::updating(fn (self $revision) => throw RevisionImmutable::reader($revision->id));
+    }
+
+    // ----------[ Answers ]----------
+
     /**
      * @throws ReaderDefinitionInvalid
      */
@@ -95,6 +104,8 @@ final class ReaderRevision extends Model implements ReadableModel
     {
         return $this->proofs()->exists();
     }
+
+    // ----------[ Relations ]----------
 
     /**
      * @return HasMany<ReaderProof, $this>
@@ -112,10 +123,7 @@ final class ReaderRevision extends Model implements ReadableModel
         return $this->belongsTo(CommandRequest::class);
     }
 
-    protected static function booted(): void
-    {
-        self::updating(fn (self $revision) => throw RevisionImmutable::reader($revision->id));
-    }
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

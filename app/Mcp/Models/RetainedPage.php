@@ -41,6 +41,8 @@ final class RetainedPage extends Model implements ReadableModel
 
     protected $table = 'core_mcp_retained_pages';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -71,6 +73,8 @@ final class RetainedPage extends Model implements ReadableModel
             'expires_at' => $expiresAt,
         ]);
     }
+
+    // ----------[ Answers ]----------
 
     /**
      * Pages past their expiry, of every session, for the daily prune.

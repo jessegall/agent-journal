@@ -49,6 +49,8 @@ final class DeskRecord extends Model implements Desk, ReadableModel
 
     public const int LARGEST_SEAT_COUNT = 100;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -60,6 +62,8 @@ final class DeskRecord extends Model implements Desk, ReadableModel
             'seating_revision' => 'integer',
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * A named desk with its seats, from one to a hundred.
@@ -149,13 +153,7 @@ final class DeskRecord extends Model implements Desk, ReadableModel
         )->first());
     }
 
-    /**
-     * An actor's own desk: unnamed, with one seat.
-     */
-    public function isPersonal(): bool
-    {
-        return $this->name === null && $this->seat_count === 1;
-    }
+    // ----------[ Mutations ]----------
 
     public function advanceSeating(): void
     {
@@ -167,6 +165,16 @@ final class DeskRecord extends Model implements Desk, ReadableModel
     {
         $this->label = $label;
         $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * An actor's own desk: unnamed, with one seat.
+     */
+    public function isPersonal(): bool
+    {
+        return $this->name === null && $this->seat_count === 1;
     }
 
     public function deskId(): string
@@ -193,6 +201,47 @@ final class DeskRecord extends Model implements Desk, ReadableModel
     {
         return new AssigneeIdentity(self::ASSIGNEE_TYPE, $this->id);
     }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * The desk row with its inbox, under an id chosen first so the inbox can name it.
+     */
+    private static function openRow(string|null $name, string $label, int $seatCount, bool $forwardsOccupants): self
+    {
+        $desk = new self();
+        $desk->id = (string) Str::ulid();
+        $desk->name = $name;
+        $desk->label = $label;
+        $desk->inbox_id = InboxRecord::openFor(self::INBOX_PROVIDER, $desk->id)->id;
+        $desk->seat_count = $seatCount;
+        $desk->forwards_occupants = $forwardsOccupants;
+        $desk->seating_revision = 0;
+        $desk->save();
+
+        return $desk;
+    }
+
+    private function openSeats(): void
+    {
+        foreach (range(1, $this->seat_count) as $number) {
+            DeskSeat::openAt($this, $number);
+        }
+    }
+
+    /**
+     * @throws DeskSeatCountInvalid
+     */
+    private static function checkedSeatCount(int $count): int
+    {
+        if ($count < 1 || $count > self::LARGEST_SEAT_COUNT) {
+            throw DeskSeatCountInvalid::for($count);
+        }
+
+        return $count;
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * The desks the actor holds a seat at.
@@ -240,42 +289,5 @@ final class DeskRecord extends Model implements Desk, ReadableModel
     protected function forwarding(Builder $query): void
     {
         $query->where('forwards_occupants', true);
-    }
-
-    /**
-     * The desk row with its inbox, under an id chosen first so the inbox can name it.
-     */
-    private static function openRow(string|null $name, string $label, int $seatCount, bool $forwardsOccupants): self
-    {
-        $desk = new self();
-        $desk->id = (string) Str::ulid();
-        $desk->name = $name;
-        $desk->label = $label;
-        $desk->inbox_id = InboxRecord::openFor(self::INBOX_PROVIDER, $desk->id)->id;
-        $desk->seat_count = $seatCount;
-        $desk->forwards_occupants = $forwardsOccupants;
-        $desk->seating_revision = 0;
-        $desk->save();
-
-        return $desk;
-    }
-
-    private function openSeats(): void
-    {
-        foreach (range(1, $this->seat_count) as $number) {
-            DeskSeat::openAt($this, $number);
-        }
-    }
-
-    /**
-     * @throws DeskSeatCountInvalid
-     */
-    private static function checkedSeatCount(int $seatCount): int
-    {
-        if ($seatCount < 1 || $seatCount > self::LARGEST_SEAT_COUNT) {
-            throw DeskSeatCountInvalid::for($seatCount);
-        }
-
-        return $seatCount;
     }
 }

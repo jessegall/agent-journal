@@ -6,6 +6,7 @@ namespace Domain\Documents\Mcp;
 
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\Continuations;
+use App\Mcp\Contracts\TextFields;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\Continuation;
@@ -25,7 +26,7 @@ final class ReadRetainedDraftTool extends PublicationReadTool
     public function __construct(
         private readonly DraftReader $drafts,
         private readonly Continuations $continuations,
-        private readonly PublicationChunks $chunks,
+        private readonly TextFields $fields,
     ) {}
 
     public function schema(JsonSchema $schema): array
@@ -40,16 +41,13 @@ final class ReadRetainedDraftTool extends PublicationReadTool
     {
         $id = $arguments->ulid('draft_id');
         $draft = $this->drafts->draft($id);
+        $text = ['body' => $draft->body, 'reason' => $draft->reason];
         $cursor = $arguments->continuation();
         $position = $cursor === null
-            ? new Continuation($this->name(), $id, [], 1)
+            ? $this->fields->start(new Continuation($this->name(), $id, [], 1), $text)
             : $this->continuations->open($cursor, $this->name(), $id);
+        $summary = ['draft_id' => $id, 'document_id' => $draft->documentId, 'base_revision' => $draft->baseRevision];
 
-        return $this->chunks->page($draft->body, $position, 'draft_id', [
-            'draft_id' => $id,
-            'document_id' => $draft->documentId,
-            'base_revision' => $draft->baseRevision,
-            'reason' => mb_strcut($draft->reason, 0, 500),
-        ]);
+        return $this->fields->page($summary, $text, $position, 'draft_id');
     }
 }

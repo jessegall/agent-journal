@@ -20,11 +20,11 @@ final readonly class ListAutoAssignmentsController
         ListAutoAssignmentsRequest $request,
         CurrentActor $actors,
         AutoAssignmentAccess $access,
-        AutoAssignmentResolver $autoAssignments,
+        AutoAssignmentResolver $assignments,
     ): JsonResponse {
         $actor = $request->actor();
         $access->assertMayRead($actors->actor(), $actor);
 
-        return new JsonResponse(AutoAssignmentPageData::of($autoAssignments->listFor($actor, $request->page())));
+        return new JsonResponse(AutoAssignmentPageData::of($assignments->listFor($actor, $request->page())));
     }
 }

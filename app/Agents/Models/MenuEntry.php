@@ -77,6 +77,8 @@ final class MenuEntry extends Model implements ReadableModel
      */
     protected $attributes = ['uses' => 0];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -126,6 +128,8 @@ final class MenuEntry extends Model implements ReadableModel
         return $entry;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * @param  non-empty-list<MenuStep>  $steps
      */
@@ -157,14 +161,38 @@ final class MenuEntry extends Model implements ReadableModel
         return $current ?? $menuQuery->whereJsonDoesntContain('builds', [['build' => $build]])->first();
     }
 
+    // ----------[ Mutations ]----------
+
     /**
-     * @param  non-empty-list<MenuStep>  $steps
-     * @return non-empty-list<array{fingerprint: string, choose: string|null, key: string|null, proof: string|null}>
+     * A replay went by the entry.
      */
-    private static function storedSteps(array $steps): array
+    public function used(): void
     {
-        return array_map(fn (MenuStep $step) => $step->toStored(), $steps);
+        $this->uses++;
+        $this->last_used_at = CarbonImmutable::now();
+        $this->save();
     }
+
+    /**
+     * A newer proven entry replaces this one.
+     */
+    public function supersededBy(self $entry): void
+    {
+        $this->state = MenuEntryState::Superseded;
+        $this->superseded_by_id = $entry->id;
+        $this->save();
+    }
+
+    /**
+     * The owner takes the entry out of the library.
+     */
+    public function retire(): void
+    {
+        $this->state = MenuEntryState::Retired;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
 
     public function goal(): ScriptGoal
     {
@@ -223,16 +251,6 @@ final class MenuEntry extends Model implements ReadableModel
     }
 
     /**
-     * A replay went by the entry.
-     */
-    public function used(): void
-    {
-        $this->uses++;
-        $this->last_used_at = CarbonImmutable::now();
-        $this->save();
-    }
-
-    /**
      * A replay proved the entry on another build too.
      */
     public function provenOn(string $build): void
@@ -256,23 +274,42 @@ final class MenuEntry extends Model implements ReadableModel
     }
 
     /**
-     * A newer proven entry replaces this one.
+     * The entry as the host replays it, and nothing else of its owner's.
      */
-    public function supersededBy(self $entry): void
+    public function libraryAnswer(): LibraryEntryAnswer
     {
-        $this->state = MenuEntryState::Superseded;
-        $this->superseded_by_id = $entry->id;
-        $this->save();
+        return new LibraryEntryAnswer(
+            $this->id,
+            $this->program,
+            EntryGoalAnswer::of($this->goal()),
+            $this->steps(),
+            $this->completes->value,
+            $this->next_step,
+            $this->proof,
+        );
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * @param  non-empty-list<MenuStep>  $steps
+     * @return non-empty-list<array{fingerprint: string, choose: string|null, key: string|null, proof: string|null}>
+     */
+    private static function storedSteps(array $steps): array
+    {
+        return array_map(fn (MenuStep $step) => $step->toStored(), $steps);
     }
 
     /**
-     * The owner takes the entry out of the library.
+     * @param  array<string, MenuEntryBuild>  $builds
      */
-    public function retire(): void
+    private function storeBuilds(array $builds): void
     {
-        $this->state = MenuEntryState::Retired;
+        $this->builds = array_values(array_map(fn (MenuEntryBuild $build) => $build->toArray(), $builds));
         $this->save();
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query
@@ -296,9 +333,9 @@ final class MenuEntry extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function matching(Builder $query, string $entryFingerprint, ScriptGoal $goal): void
+    protected function matching(Builder $query, string $fingerprint, ScriptGoal $goal): void
     {
-        $query->where('entry_fingerprint', $entryFingerprint)->where('goal_key', $goal->key());
+        $query->where('entry_fingerprint', $fingerprint)->where('goal_key', $goal->key());
     }
 
     /**
@@ -308,30 +345,5 @@ final class MenuEntry extends Model implements ReadableModel
     protected function recentFirst(Builder $query): void
     {
         $query->orderByDesc('updated_at')->orderByDesc('id');
-    }
-
-    /**
-     * @param  array<string, MenuEntryBuild>  $builds
-     */
-    private function storeBuilds(array $builds): void
-    {
-        $this->builds = array_values(array_map(fn (MenuEntryBuild $build) => $build->toArray(), $builds));
-        $this->save();
-    }
-
-    /**
-     * The entry as the host replays it, and nothing else of its owner's.
-     */
-    public function libraryAnswer(): LibraryEntryAnswer
-    {
-        return new LibraryEntryAnswer(
-            $this->id,
-            $this->program,
-            EntryGoalAnswer::of($this->goal()),
-            $this->steps(),
-            $this->completes->value,
-            $this->next_step,
-            $this->proof,
-        );
     }
 }

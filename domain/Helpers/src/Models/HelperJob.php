@@ -59,6 +59,8 @@ final class HelperJob extends Model implements Assignable, ReadableModel
 
     public const string LINK_TYPE = 'helpers.job';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -105,6 +107,93 @@ final class HelperJob extends Model implements Assignable, ReadableModel
 
         return $job;
     }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * Whether the helper already had a job of this purpose: the same subject, or the same named work.
+     */
+    public static function existsFor(HelperIdentity $identity, HelperPurpose $purpose): bool
+    {
+        return self::query()->acrossActors()
+            ->where('helper_identity_id', $identity->id)
+            ->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'))
+            ->exists();
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Opens the unfinished job for another attempt; its brief, purpose, steering and source stay.
+     */
+    public function reopenForAttempt(): void
+    {
+        $this->moveTo(JobState::Accepted);
+        $this->save();
+    }
+
+    /**
+     * Opens finished, reviewed work again for repair on the same helper and checkout: its history and certificate
+     * stay, the findings join its steering, and it is unfinished until a new stop certifies it.
+     */
+    public function reopenForRepair(string $findings): void
+    {
+        $this->state = JobState::Accepted;
+        $this->finished_at = null;
+        $this->steering = [...$this->steering, $findings];
+        $this->save();
+    }
+
+    public function addSteering(string $steering): void
+    {
+        $this->moveTo($this->state);
+        $this->steering = [...$this->steering, $steering];
+        $this->save();
+    }
+
+    public function finish(string $resultReference): void
+    {
+        $this->moveTo(JobState::Finished);
+        $this->result_reference = $resultReference;
+        $this->finished_at = CarbonImmutable::now();
+        $this->save();
+    }
+
+    /**
+     * Finishes the job on the stop evidence that certified its work complete.
+     */
+    public function finishByStopEvidence(string $reference): void
+    {
+        $this->moveTo(JobState::Finished);
+        $this->stop_evidence_reference = $reference;
+        $this->finished_at = CarbonImmutable::now();
+        $this->save();
+    }
+
+    public function cancel(): void
+    {
+        $this->moveTo(JobState::Cancelled);
+        $this->save();
+    }
+
+    /**
+     * Holds the job for repair on the stop evidence that failed the same way three times.
+     */
+    public function hold(string $stopEvidenceReference): void
+    {
+        $this->moveTo(JobState::Held);
+        $this->stop_evidence_reference = $stopEvidenceReference;
+        $this->save();
+    }
+
+    public function markUnfinished(string $stopEvidenceReference): void
+    {
+        $this->moveTo(JobState::Unfinished);
+        $this->stop_evidence_reference = $stopEvidenceReference;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
 
     public function launch(): JobLaunch
     {
@@ -183,27 +272,6 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
-    /**
-     * Opens the unfinished job for another attempt; its brief, purpose, steering and source stay.
-     */
-    public function reopenForAttempt(): void
-    {
-        $this->moveTo(JobState::Accepted);
-        $this->save();
-    }
-
-    /**
-     * Opens finished, reviewed work again for repair on the same helper and checkout: its history and certificate
-     * stay, the findings join its steering, and it is unfinished until a new stop certifies it.
-     */
-    public function reopenForRepair(string $findings): void
-    {
-        $this->state = JobState::Accepted;
-        $this->finished_at = null;
-        $this->steering = [...$this->steering, $findings];
-        $this->save();
-    }
-
     public function wasDispatchedAs(string $payloadDigest): bool
     {
         return $this->payload_digest === $payloadDigest;
@@ -219,54 +287,7 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         return $this->state->isFinal();
     }
 
-    public function addSteering(string $steering): void
-    {
-        $this->moveTo($this->state);
-        $this->steering = [...$this->steering, $steering];
-        $this->save();
-    }
-
-    public function finish(string $resultReference): void
-    {
-        $this->moveTo(JobState::Finished);
-        $this->result_reference = $resultReference;
-        $this->finished_at = CarbonImmutable::now();
-        $this->save();
-    }
-
-    /**
-     * Finishes the job on the stop evidence that certified its work complete.
-     */
-    public function finishByStopEvidence(string $stopEvidenceReference): void
-    {
-        $this->moveTo(JobState::Finished);
-        $this->stop_evidence_reference = $stopEvidenceReference;
-        $this->finished_at = CarbonImmutable::now();
-        $this->save();
-    }
-
-    public function cancel(): void
-    {
-        $this->moveTo(JobState::Cancelled);
-        $this->save();
-    }
-
-    /**
-     * Holds the job for repair on the stop evidence that failed the same way three times.
-     */
-    public function hold(string $stopEvidenceReference): void
-    {
-        $this->moveTo(JobState::Held);
-        $this->stop_evidence_reference = $stopEvidenceReference;
-        $this->save();
-    }
-
-    public function markUnfinished(string $stopEvidenceReference): void
-    {
-        $this->moveTo(JobState::Unfinished);
-        $this->stop_evidence_reference = $stopEvidenceReference;
-        $this->save();
-    }
+    // ----------[ Internals ]----------
 
     private function moveTo(JobState $state): void
     {
@@ -276,6 +297,8 @@ final class HelperJob extends Model implements Assignable, ReadableModel
 
         $this->state = $state;
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * Jobs not yet finished, cancelled or failed; a held or unfinished job still keeps its helper from new work.
@@ -289,17 +312,6 @@ final class HelperJob extends Model implements Assignable, ReadableModel
             fn (JobState $state) => $state->value,
             array_filter(JobState::cases(), fn (JobState $state) => $state->isFinal()),
         ));
-    }
-
-    /**
-     * Whether the helper already had a job of this purpose: the same subject, or the same named work.
-     */
-    public static function existsFor(HelperIdentity $identity, HelperPurpose $purpose): bool
-    {
-        return self::query()->acrossActors()
-            ->where('helper_identity_id', $identity->id)
-            ->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'))
-            ->exists();
     }
 
     /**

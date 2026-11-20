@@ -30,6 +30,8 @@ final class HelperMessage extends Model implements ReadableModel
     use BelongsToOneActor, BoundedReads, HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     public static function keep(ActorIdentity $parent, HelperIdentity $helper, string $text, string $command): self
     {
         $message = new self();

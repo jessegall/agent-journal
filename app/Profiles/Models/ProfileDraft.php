@@ -31,6 +31,8 @@ final class ProfileDraft extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.profile-draft';
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return ['revision' => 'integer'];
@@ -44,6 +46,20 @@ final class ProfileDraft extends Model implements ReadableModel
         return self::query()->with('currentRevision')->where('profile_key', $profile->key)->first()
             ?? new self(['profile_key' => $profile->key, 'revision' => 0]);
     }
+
+    public static function saveFor(ProfileKey $profile, int $expected, ScriptSource $source, ActorIdentity $author): int
+    {
+        $draft = self::lockForProfiles([$profile->key])[$profile->key];
+        $draft->sourceAt($expected);
+        $revision = ProfileDraftRevision::appendTo($draft, $source, $author);
+        $draft->revision = $revision->revision;
+        $draft->current_revision_id = $revision->id;
+        $draft->save();
+
+        return $revision->revision;
+    }
+
+    // ----------[ Queries ]----------
 
     /**
      * @param  list<string>  $profiles
@@ -78,13 +94,7 @@ final class ProfileDraft extends Model implements ReadableModel
             ->all();
     }
 
-    /**
-     * @return BelongsTo<ProfileDraftRevision, $this>
-     */
-    public function currentRevision(): BelongsTo
-    {
-        return $this->belongsTo(ProfileDraftRevision::class, 'current_revision_id');
-    }
+    // ----------[ Answers ]----------
 
     public function sourceAt(int $expected): ScriptSource
     {
@@ -95,15 +105,13 @@ final class ProfileDraft extends Model implements ReadableModel
         return $this->currentRevision?->scriptSource() ?? ScriptSource::empty();
     }
 
-    public static function saveFor(ProfileKey $profile, int $expected, ScriptSource $source, ActorIdentity $author): int
-    {
-        $draft = self::lockForProfiles([$profile->key])[$profile->key];
-        $draft->sourceAt($expected);
-        $revision = ProfileDraftRevision::appendTo($draft, $source, $author);
-        $draft->revision = $revision->revision;
-        $draft->current_revision_id = $revision->id;
-        $draft->save();
+    // ----------[ Relations ]----------
 
-        return $revision->revision;
+    /**
+     * @return BelongsTo<ProfileDraftRevision, $this>
+     */
+    public function currentRevision(): BelongsTo
+    {
+        return $this->belongsTo(ProfileDraftRevision::class, 'current_revision_id');
     }
 }

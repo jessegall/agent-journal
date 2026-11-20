@@ -24,6 +24,8 @@ final class SupervisorChange extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     protected static function booted(): void
     {
         self::updating(fn () => throw SupervisorRouteRefused::historyEdited());

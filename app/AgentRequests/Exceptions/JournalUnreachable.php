@@ -13,9 +13,9 @@ use Throwable;
  */
 final class JournalUnreachable extends CallFailed implements CodedRefusal
 {
-    public static function at(string $journalUrl, Throwable $previous): self
+    public static function at(string $url, Throwable $previous): self
     {
-        return new self("The journal at {$journalUrl} did not answer; send the call again shortly.", 0, $previous);
+        return new self("The journal at {$url} did not answer; send the call again shortly.", 0, $previous);
     }
 
     public function refusalCode(): RefusalCode

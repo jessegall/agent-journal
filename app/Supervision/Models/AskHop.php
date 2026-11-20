@@ -45,6 +45,8 @@ final class AskHop extends Model implements ReadableModel
      */
     private const string URGENT_FIRST = 'case when ask_hops.type_key in (?, ?) then 0 else 1 end';
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return ['accepted_at' => 'immutable_datetime', 'version' => 'integer', 'route_version' => 'integer'];
@@ -62,6 +64,8 @@ final class AskHop extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Queries ]----------
+
     public static function currentFor(Ask $ask): self
     {
         return self::query()->where('ask_id', $ask->id)->where('version', $ask->version)->firstOrFail();
@@ -74,60 +78,6 @@ final class AskHop extends Model implements ReadableModel
     public static function repliesTo(array $asks): array
     {
         return self::query()->whereIn('ask_id', $asks)->whereNotNull('result')->pluck('result', 'ask_id')->all();
-    }
-
-    public function answer(string $body, string $attention): void
-    {
-        $this->result = $body;
-        $this->attention = $attention;
-        $this->save();
-    }
-
-    public function holder(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
-    }
-
-    public function isHeldByAgent(): bool
-    {
-        return $this->holder()->type->isAgent();
-    }
-
-    /**
-     * The holder as one text, to group the hops of one holder's queue.
-     */
-    public function holderKey(): string
-    {
-        return "{$this->actor_type}:{$this->actor_id}";
-    }
-
-    public function recordWake(string $wake): void
-    {
-        $this->wake = $wake;
-        $this->save();
-    }
-
-    public function recordAttention(string $attention): void
-    {
-        $this->attention = $attention;
-        $this->save();
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function currentHops(Builder $query): void
-    {
-        $query->join('asks', 'asks.id', '=', 'ask_hops.ask_id')
-            ->join('assignments', function ($assignment): void {
-                $assignment->on('assignments.record_id', '=', 'ask_hops.ask_id')
-                    ->where('assignments.record_type', Ask::LINK_TYPE)
-                    ->whereColumn('assignments.holder_type', 'ask_hops.actor_type')
-                    ->whereColumn('assignments.holder_id', 'ask_hops.actor_id');
-            })
-            ->where('asks.open', true)->whereColumn('asks.version', 'ask_hops.version')
-            ->select('ask_hops.*');
     }
 
     /**
@@ -215,8 +165,68 @@ final class AskHop extends Model implements ReadableModel
             });
     }
 
+    // ----------[ Mutations ]----------
+
+    public function answer(string $body, string $attention): void
+    {
+        $this->result = $body;
+        $this->attention = $attention;
+        $this->save();
+    }
+
+    public function recordWake(string $wake): void
+    {
+        $this->wake = $wake;
+        $this->save();
+    }
+
+    public function recordAttention(string $attention): void
+    {
+        $this->attention = $attention;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    public function holder(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+    }
+
+    public function isHeldByAgent(): bool
+    {
+        return $this->holder()->type->isAgent();
+    }
+
+    /**
+     * The holder as one text, to group the hops of one holder's queue.
+     */
+    public function holderKey(): string
+    {
+        return "{$this->actor_type}:{$this->actor_id}";
+    }
+
     public function lockDelivery(): self
     {
         return self::query()->whereKey($this->id)->lockForUpdate()->firstOrFail();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function currentHops(Builder $query): void
+    {
+        $query->join('asks', 'asks.id', '=', 'ask_hops.ask_id')
+            ->join('assignments', function ($assignment): void {
+                $assignment->on('assignments.record_id', '=', 'ask_hops.ask_id')
+                    ->where('assignments.record_type', Ask::LINK_TYPE)
+                    ->whereColumn('assignments.holder_type', 'ask_hops.actor_type')
+                    ->whereColumn('assignments.holder_id', 'ask_hops.actor_id');
+            })
+            ->where('asks.open', true)->whereColumn('asks.version', 'ask_hops.version')
+            ->select('ask_hops.*');
     }
 }

@@ -45,6 +45,8 @@ final class DockedRecord extends Model implements ReadableModel
 
     public const int LARGEST_LIMIT = 100;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -82,6 +84,8 @@ final class DockedRecord extends Model implements ReadableModel
         return $placement;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The owner's placement of the record in the conversation, when there is one.
      */
@@ -99,6 +103,8 @@ final class DockedRecord extends Model implements ReadableModel
             ->first();
     }
 
+    // ----------[ Mutations ]----------
+
     public function hide(): void
     {
         if ($this->hidden_at === null) {
@@ -115,10 +121,14 @@ final class DockedRecord extends Model implements ReadableModel
         }
     }
 
+    // ----------[ Answers ]----------
+
     public function record(): RecordIdentity
     {
         return new RecordIdentity($this->record_type, $this->record_id);
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

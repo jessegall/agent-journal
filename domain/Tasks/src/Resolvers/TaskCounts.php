@@ -21,12 +21,12 @@ final readonly class TaskCounts implements TaskProgressCounter
     public function __construct(private CurrentActor $actors) {}
 
     /**
-     * @param  list<string>  $taskIds
+     * @param  list<string>  $ids
      */
-    public function progressOf(array $taskIds): TaskProgress
+    public function progressOf(array $ids): TaskProgress
     {
         $this->actors->actor();
-        $states = Task::query()->whereKey($taskIds)->readLimit(count($taskIds))->pluck('state')->countBy(
+        $states = Task::query()->whereKey($ids)->readLimit(count($ids))->pluck('state')->countBy(
             fn (TaskState $state) => $state->value,
         );
 
@@ -38,13 +38,13 @@ final readonly class TaskCounts implements TaskProgressCounter
      *
      * @template TKey of array-key
      *
-     * @param  array<TKey, list<string>>  $taskIdGroups
+     * @param  array<TKey, list<string>>  $idGroups
      * @return array<TKey, TaskProgress>
      */
-    public function progressByGroup(array $taskIdGroups): array
+    public function progressByGroup(array $idGroups): array
     {
         $this->actors->actor();
-        $allTaskIds = array_merge(...array_values($taskIdGroups));
+        $allTaskIds = array_merge(...array_values($idGroups));
         $stateOfTask = Task::query()->whereKey($allTaskIds)->readLimit(count($allTaskIds))->pluck('state', 'id')->all();
 
         return array_map(
@@ -52,16 +52,16 @@ final readonly class TaskCounts implements TaskProgressCounter
                 fn (string $taskId) => $stateOfTask[$taskId]->value,
                 array_values(array_filter($taskIds, fn (string $taskId) => isset($stateOfTask[$taskId]))),
             ))),
-            $taskIdGroups,
+            $idGroups,
         );
     }
 
     /**
-     * @param  array<array-key, int>  $taskCountsByState  Counts by state value, omitting states with no tasks.
+     * @param  array<array-key, int>  $byState  Counts by state value, omitting states with no tasks.
      */
-    private static function progressOfStates(array $taskCountsByState): TaskProgress
+    private static function progressOfStates(array $byState): TaskProgress
     {
-        $taskCounts = [...array_fill_keys(array_column(TaskState::cases(), 'value'), 0), ...$taskCountsByState];
+        $taskCounts = [...array_fill_keys(array_column(TaskState::cases(), 'value'), 0), ...$byState];
 
         return new TaskProgress(
             done: $taskCounts[TaskState::Finished->value],

@@ -61,6 +61,8 @@ class User extends Authenticatable implements
      */
     use HasFactory, HasUlids, Linkable, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * Get the attributes that should be cast.
      *
@@ -76,6 +78,16 @@ class User extends Authenticatable implements
     }
 
     /**
+     * A new user with a name, an email and a password the hashed cast hashes.
+     */
+    public static function register(string $name, string $email, string $password): self
+    {
+        return self::query()->create(['name' => $name, 'email' => $email, 'password' => $password]);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
      * The installation's owner account, made the first time and found by its email after that.
      */
     public static function installOwner(string $name, string $email, string $password): self
@@ -84,12 +96,27 @@ class User extends Authenticatable implements
     }
 
     /**
-     * A new user with a name, an email and a password the hashed cast hashes.
+     * The id of the user with this email address, the journal's owner; none when no such user exists yet.
      */
-    public static function register(string $name, string $email, string $password): self
+    public static function ownerIdFor(string $email): string|null
     {
-        return self::query()->create(['name' => $name, 'email' => $email, 'password' => $password]);
+        $id = self::query()->where('email', $email)->value('id');
+
+        return is_string($id) ? $id : null;
     }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Stores a new password; the hashed cast hashes it.
+     */
+    public function changePassword(string $password): void
+    {
+        $this->password = $password;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
 
     public function assigneeIdentity(): AssigneeIdentity
     {
@@ -104,24 +131,5 @@ class User extends Authenticatable implements
     public function actorId(): string
     {
         return $this->id;
-    }
-
-    /**
-     * Stores a new password; the hashed cast hashes it.
-     */
-    public function changePassword(string $password): void
-    {
-        $this->password = $password;
-        $this->save();
-    }
-
-    /**
-     * The id of the user with this email address, the journal's owner; none when no such user exists yet.
-     */
-    public static function ownerIdFor(string $email): string|null
-    {
-        $id = self::query()->where('email', $email)->value('id');
-
-        return is_string($id) ? $id : null;
     }
 }

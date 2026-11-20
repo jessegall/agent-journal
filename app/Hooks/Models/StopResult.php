@@ -54,6 +54,8 @@ final class StopResult extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -87,13 +89,7 @@ final class StopResult extends Model implements ReadableModel
         return $stopRecord;
     }
 
-    /**
-     * @return BelongsTo<StopAttempt, $this>
-     */
-    public function attempt(): BelongsTo
-    {
-        return $this->belongsTo(StopAttempt::class, 'stop_attempt_id');
-    }
+    // ----------[ Queries ]----------
 
     /**
      * Forgets the raw output of every result recorded before the moment, and answers how many there were; their
@@ -103,6 +99,8 @@ final class StopResult extends Model implements ReadableModel
     {
         return self::query()->whereNotNull('output')->where('created_at', '<', $before)->update(['output' => null]);
     }
+
+    // ----------[ Answers ]----------
 
     /**
      * This result as an inspection shows it, under its condition's label; its raw output stays out.
@@ -122,5 +120,15 @@ final class StopResult extends Model implements ReadableModel
             $this->truncated,
             $this->summary,
         );
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<StopAttempt, $this>
+     */
+    public function attempt(): BelongsTo
+    {
+        return $this->belongsTo(StopAttempt::class, 'stop_attempt_id');
     }
 }

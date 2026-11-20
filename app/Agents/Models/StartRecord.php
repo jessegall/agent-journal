@@ -81,6 +81,8 @@ final class StartRecord extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -141,14 +143,22 @@ final class StartRecord extends Model implements ReadableModel
     }
 
     /**
-     * The inbox the started agent answers to, when its dispatcher had one.
-     *
-     * @return Option<string>
+     * Records whether the session went on in the conversation its start chose: a session that entered another one,
+     * or a fresh one, never counts as resumed.
      */
-    public function replyInboxId(): Option
+    public static function confirmConversation(string $sessionId, string $nativeId): void
     {
-        return Option::fromValue($this->reply_inbox_id);
+        $start = self::query()->where('session_id', $sessionId)->whereNull('conversation_resumed')->first();
+
+        if ($start === null || $start->conversation_mode !== ConversationModeType::Resume) {
+            return;
+        }
+
+        $start->conversation_resumed = $start->conversation_target === $nativeId;
+        $start->save();
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The start an owner made for this session, when the session began from an owner's request.
@@ -173,22 +183,6 @@ final class StartRecord extends Model implements ReadableModel
     }
 
     /**
-     * Records whether the session went on in the conversation its start chose: a session that entered another one,
-     * or a fresh one, never counts as resumed.
-     */
-    public static function confirmConversation(string $sessionId, string $nativeId): void
-    {
-        $start = self::query()->where('session_id', $sessionId)->whereNull('conversation_resumed')->first();
-
-        if ($start === null || $start->conversation_mode !== ConversationModeType::Resume) {
-            return;
-        }
-
-        $start->conversation_resumed = $start->conversation_target === $nativeId;
-        $start->save();
-    }
-
-    /**
      * Whether the session was started to resume an earlier conversation of the same agent.
      */
     public static function resumesConversation(string $sessionId): bool
@@ -197,6 +191,27 @@ final class StartRecord extends Model implements ReadableModel
             ->where('session_id', $sessionId)
             ->where('conversation_mode', ConversationModeType::Resume->value)
             ->exists();
+    }
+
+    // ----------[ Mutations ]----------
+
+    public function startedAs(AgentSession $session): void
+    {
+        $this->session_id = $session->id;
+        $this->disposition = StartDisposition::Started;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The inbox the started agent answers to, when its dispatcher had one.
+     *
+     * @return Option<string>
+     */
+    public function replyInboxId(): Option
+    {
+        return Option::fromValue($this->reply_inbox_id);
     }
 
     /**
@@ -209,12 +224,7 @@ final class StartRecord extends Model implements ReadableModel
         return new RecordIdentity($type, $id);
     }
 
-    public function startedAs(AgentSession $session): void
-    {
-        $this->session_id = $session->id;
-        $this->disposition = StartDisposition::Started;
-        $this->save();
-    }
+    // ----------[ Internals ]----------
 
     /**
      * @throws StartRequestConflict
@@ -227,6 +237,8 @@ final class StartRecord extends Model implements ReadableModel
 
         return $this;
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query
@@ -241,9 +253,9 @@ final class StartRecord extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function forOwnerReference(Builder $query, string $ownerReference): void
+    protected function forOwnerReference(Builder $query, string $reference): void
     {
-        $query->where('owner_reference', $ownerReference);
+        $query->where('owner_reference', $reference);
     }
 
     /**

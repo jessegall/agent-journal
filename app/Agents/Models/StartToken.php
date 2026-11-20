@@ -31,6 +31,8 @@ final class StartToken extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -41,19 +43,21 @@ final class StartToken extends Model implements ReadableModel
         ];
     }
 
-    public function issueFor(AgentSession $session, string $tokenHash): void
+    // ----------[ Mutations ]----------
+
+    public function issueFor(AgentSession $session, string $hash): void
     {
         $this->agent_session_id = $session->id;
-        $this->token_hash = $tokenHash;
+        $this->token_hash = $hash;
         $this->save();
     }
 
     /**
      * Replaces the token: the old one stops working at once, and the session keeps its one credential row.
      */
-    public function rotateTo(string $tokenHash): void
+    public function rotateTo(string $hash): void
     {
-        $this->token_hash = $tokenHash;
+        $this->token_hash = $hash;
         $this->revoked_at = null;
         $this->save();
     }
@@ -64,10 +68,14 @@ final class StartToken extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
     public function isRevoked(): bool
     {
         return $this->revoked_at !== null;
     }
+
+    // ----------[ Relations ]----------
 
     /**
      * @return BelongsTo<AgentSession, $this>

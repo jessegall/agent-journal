@@ -35,6 +35,8 @@ final class CapacityReservation extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -88,6 +90,8 @@ final class CapacityReservation extends Model implements ReadableModel
             ],
         );
     }
+
+    // ----------[ Queries ]----------
 
     public static function isHeldFor(string $startRequestId): bool
     {

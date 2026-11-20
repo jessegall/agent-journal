@@ -45,11 +45,11 @@ final readonly class ShippedReaders
     /**
      * The shipped reader of a tool for the version installed, or none when it is bound to another version.
      */
-    public function forInstalled(string $tool, string $installedVersion): ShippedReader|null
+    public function forInstalled(string $tool, string $version): ShippedReader|null
     {
         $readers = array_filter($this->all(), fn (ShippedReader $reader): bool => $reader->tool === $tool);
 
-        return array_find($readers, fn (ShippedReader $reader): bool => $reader->version === $installedVersion);
+        return array_find($readers, fn (ShippedReader $reader): bool => $reader->version === $version);
     }
 
     private function phpstan(): ShippedReader

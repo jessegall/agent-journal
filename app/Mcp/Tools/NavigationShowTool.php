@@ -32,16 +32,23 @@ final class NavigationShowTool extends JournalReadTool
 
     public function schema(JsonSchema $schema): array
     {
-        return ['request' => $schema->string()->max(26)->required()];
+        return [
+            'request' => $schema->string()->max(26)->required(),
+            'first_round' => $schema->integer()->min(1),
+        ];
     }
 
     protected function read(ToolArguments $arguments): ToolResult
     {
         return ToolResult::ok([
-            ...$this->navigation->navigationRequest($arguments->text('request')),
+            ...$this->navigation->navigationRequest(
+                $arguments->text('request'),
+                $arguments->positiveIntegerOr('first_round', 1),
+            ),
             'how_to_answer' => 'Move with keys up, down, tab or esc; confirm a menu entry with choose "<label>" or '
                 .'confirm "<label>" of the highlighted entry, never a raw enter; when the goal shows, call '
-                .'navigation_done with a proof the screen did not show before.',
+                .'navigation_done with a proof the screen did not show before. When next_round is set, call '
+                .'navigation_show again with first_round set to it for the later rounds.',
         ], []);
     }
 }

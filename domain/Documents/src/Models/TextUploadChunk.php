@@ -20,6 +20,8 @@ final class TextUploadChunk extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     public static function store(TextUpload $upload, int $position, string $text): void
     {
         self::query()->create([
@@ -29,16 +31,20 @@ final class TextUploadChunk extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Answers ]----------
+
+    public function text(): string
+    {
+        return base64_decode($this->encoded_text);
+    }
+
+    // ----------[ Relations ]----------
+
     /**
      * @return BelongsTo<TextUpload, $this>
      */
     public function upload(): BelongsTo
     {
         return $this->belongsTo(TextUpload::class, 'upload_id');
-    }
-
-    public function text(): string
-    {
-        return base64_decode($this->encoded_text);
     }
 }

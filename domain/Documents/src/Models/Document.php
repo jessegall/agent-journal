@@ -75,6 +75,8 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
 
     protected $attributes = ['attention' => 'active'];
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return [
@@ -98,6 +100,25 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
 
         return $document;
     }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The document of this number, locked for the transaction: the one lock every writer of a document takes first.
+     *
+     * @throws DocumentMissing
+     */
+    public static function lockedForEditing(int|string $number): self
+    {
+        $query = self::query()->with('currentRevision')->lockForUpdate();
+        if (is_int($number)) {
+            return $query->where('number', $number)->firstOr(fn () => throw DocumentMissing::numbered($number));
+        }
+
+        return $query->whereKey($number)->firstOr(fn () => throw DocumentMissing::identified($number));
+    }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Adds the next revision and makes it the document's current one.
@@ -134,6 +155,8 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
             $this->save();
         }
     }
+
+    // ----------[ Answers ]----------
 
     /**
      * How the document's drafts ended, newest first.
@@ -237,63 +260,11 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     }
 
     /**
-     * The document of this number, locked for the transaction: the one lock every writer of a document takes first.
-     *
-     * @throws DocumentMissing
-     */
-    public static function lockedForEditing(int|string $number): self
-    {
-        $query = self::query()->with('currentRevision')->lockForUpdate();
-        if (is_int($number)) {
-            return $query->where('number', $number)->firstOr(fn () => throw DocumentMissing::numbered($number));
-        }
-
-        return $query->whereKey($number)->firstOr(fn () => throw DocumentMissing::identified($number));
-    }
-
-    /**
      * The close already recorded for a draft token of this document, which a repeated close answers with.
      */
     public function closeOf(string $token): DocumentClose|null
     {
         return DocumentClose::query()->where('document_id', $this->id)->where('token', $token)->first();
-    }
-
-    /**
-     * @return HasOne<DocumentDraft, $this>
-     */
-    public function draft(): HasOne
-    {
-        return $this->hasOne(DocumentDraft::class);
-    }
-
-    /**
-     * @return HasMany<DocumentRevision, $this>
-     */
-    public function revisions(): HasMany
-    {
-        return $this->hasMany(DocumentRevision::class);
-    }
-
-    /**
-     * The revision the document shows now: the last one published.
-     *
-     * @return BelongsTo<DocumentRevision, $this>
-     */
-    public function currentRevision(): BelongsTo
-    {
-        return $this->belongsTo(DocumentRevision::class, 'current_revision_id');
-    }
-
-    /**
-     * Every document: documents are published to every signed-in actor.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function sharedPublished(Builder $query): void
-    {
-        $query->whereHas('revisions', fn (Builder $revisions) => $revisions->whereNotNull('closed_at'));
     }
 
     /**
@@ -334,5 +305,46 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
         return $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->firstOr(
             fn () => throw TextVersionUnavailable::named($version),
         );
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return HasOne<DocumentDraft, $this>
+     */
+    public function draft(): HasOne
+    {
+        return $this->hasOne(DocumentDraft::class);
+    }
+
+    /**
+     * @return HasMany<DocumentRevision, $this>
+     */
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(DocumentRevision::class);
+    }
+
+    /**
+     * The revision the document shows now: the last one published.
+     *
+     * @return BelongsTo<DocumentRevision, $this>
+     */
+    public function currentRevision(): BelongsTo
+    {
+        return $this->belongsTo(DocumentRevision::class, 'current_revision_id');
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * Every document: documents are published to every signed-in actor.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sharedPublished(Builder $query): void
+    {
+        $query->whereHas('revisions', fn (Builder $revisions) => $revisions->whereNotNull('closed_at'));
     }
 }

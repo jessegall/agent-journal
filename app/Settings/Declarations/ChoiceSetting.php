@@ -77,9 +77,9 @@ final readonly class ChoiceSetting implements OptionSetting
     /**
      * Whether a value is exactly one of the options; a value of the other type never is.
      */
-    public function accepts(string|int $settingInput): bool
+    public function accepts(string|int $input): bool
     {
-        return $this->options->contains($settingInput);
+        return $this->options->contains($input);
     }
 
     public function defaultValue(): string|int
@@ -87,9 +87,9 @@ final readonly class ChoiceSetting implements OptionSetting
         return $this->default;
     }
 
-    public function catalogueValue(string|bool|int|Decimal|BackedEnum $settingInput): CatalogueValue
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue
     {
-        return ChoiceOptions::valueData($settingInput);
+        return ChoiceOptions::valueData($input);
     }
 
     public function catalogueConstraints(): CatalogueConstraints|Optional

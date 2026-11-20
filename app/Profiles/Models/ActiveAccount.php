@@ -38,6 +38,8 @@ final class ActiveAccount extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.active-account';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -48,6 +50,8 @@ final class ActiveAccount extends Model implements ReadableModel
             'change_number' => 'integer',
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The program's selection row, made when it is first needed and locked for the rest of the transaction; two
@@ -113,28 +117,6 @@ final class ActiveAccount extends Model implements ReadableModel
     }
 
     /**
-     * Chooses the account when the program never had one chosen, as for its first signed-in account.
-     */
-    public function chooseFirst(Account $account): void
-    {
-        if ($this->has_selected) {
-            return;
-        }
-
-        $this->select($account);
-    }
-
-    /**
-     * Leaves the program with no chosen account when the given one was chosen, as when it must sign in again.
-     */
-    public function clearIfChosen(Account $account): void
-    {
-        if ($this->account_id === $account->id) {
-            $this->clear();
-        }
-    }
-
-    /**
      * Each program's current choice, one row per program made so far.
      *
      * @return list<self>
@@ -143,6 +125,8 @@ final class ActiveAccount extends Model implements ReadableModel
     {
         return array_values(self::query()->orderBy('program')->readAll('one row per program')->get()->all());
     }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Makes the account the one new starts use, and answers whether that changed anything: choosing the one already
@@ -179,6 +163,32 @@ final class ActiveAccount extends Model implements ReadableModel
         $this->change_number++;
         $this->save();
     }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * Chooses the account when the program never had one chosen, as for its first signed-in account.
+     */
+    public function chooseFirst(Account $account): void
+    {
+        if ($this->has_selected) {
+            return;
+        }
+
+        $this->select($account);
+    }
+
+    /**
+     * Leaves the program with no chosen account when the given one was chosen, as when it must sign in again.
+     */
+    public function clearIfChosen(Account $account): void
+    {
+        if ($this->account_id === $account->id) {
+            $this->clear();
+        }
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

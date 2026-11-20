@@ -24,10 +24,10 @@ final readonly class DriverRequests
         StackTarget $target,
         DriverOperation $operation,
         string $idempotencyKey,
-        DriverRequestPayload $driverEnvelope,
+        DriverRequestPayload $envelope,
     ): DriverRequest {
         $runtime = $this->lockedRuntime($target);
-        $digest = $driverEnvelope->digestFor($operation->value);
+        $digest = $envelope->digestFor($operation->value);
 
         $existing = DriverRequest::query()->where('agent_runtime_id', $runtime->id)->where(
             'idempotency_key',
@@ -43,7 +43,7 @@ final readonly class DriverRequests
             throw DriverRequestRefused::stopping($target);
         }
 
-        $request = DriverRequest::queued($runtime, $operation, $idempotencyKey, $driverEnvelope);
+        $request = DriverRequest::queued($runtime, $operation, $idempotencyKey, $envelope);
         $request->accept();
 
         return $request;

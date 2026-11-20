@@ -14,8 +14,8 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ShowAutoAssignmentController
 {
-    public function __invoke(ShowAutoAssignmentRequest $request, AutoAssignmentResolver $autoAssignments): JsonResponse
+    public function __invoke(ShowAutoAssignmentRequest $request, AutoAssignmentResolver $assignments): JsonResponse
     {
-        return new JsonResponse(AutoAssignmentStatusData::of($autoAssignments->status($request->key())));
+        return new JsonResponse(AutoAssignmentStatusData::of($assignments->status($request->key())));
     }
 }

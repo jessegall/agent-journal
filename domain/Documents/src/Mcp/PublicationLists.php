@@ -7,8 +7,10 @@ namespace Domain\Documents\Mcp;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
+use App\Text\Support\TextPreview;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
@@ -57,8 +59,13 @@ final readonly class PublicationLists
             return $this->continuations->open($cursor, $tool, '');
         }
 
+        $search = $arguments->textOr('search', '');
+        if (mb_strlen($search) > 200) {
+            throw ToolArgumentInvalid::for('search', 'at most 200 characters');
+        }
+
         return new Continuation($tool, '', [
-            'search' => mb_substr($arguments->textOr('search', ''), 0, 200),
+            'search' => $search,
             'state' => $state?->value,
         ], $arguments->positiveIntegerOr('page', 1, 1_000_000));
     }
@@ -71,8 +78,8 @@ final readonly class PublicationLists
         $entries = array_map(fn (PublicationCard $card) => [
             'id' => (int) $card->number,
             'record_id' => $card->id,
-            'title' => mb_strcut($card->title, 0, 100),
-            'abstract' => mb_strcut($card->abstract, 0, 120),
+            'title' => TextPreview::within($card->title, 100),
+            'abstract' => TextPreview::within($card->abstract, 120),
         ], $cards);
         $next = $hasNext ? [new NextAction($position->tool, [
             'continuation' => $this->continuations->issue(new Continuation(

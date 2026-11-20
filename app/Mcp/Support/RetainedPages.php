@@ -42,9 +42,9 @@ final readonly class RetainedPages
      *
      * @throws ContinuationStale
      */
-    public function resolve(string $retainedPageId, int $offset, Closure $read): RetainedEntries
+    public function resolve(string $pageId, int $offset, Closure $read): RetainedEntries
     {
-        $page = RetainedPage::query()->whereKey($retainedPageId)->where(
+        $page = RetainedPage::query()->whereKey($pageId)->where(
             'expires_at',
             '>=',
             CarbonImmutable::now(),

@@ -37,6 +37,8 @@ final class SettingsRecord extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -46,17 +48,6 @@ final class SettingsRecord extends Model implements ReadableModel
             'revision' => 'integer',
             'document' => SettingsDocumentCast::class,
         ];
-    }
-
-    /**
-     * The owner's record, read for the runtime of the whole installation and not for any one actor; none while the
-     * owner has never stored an override.
-     *
-     * @return Option<self>
-     */
-    public static function sharedRuntimeForOwner(string $owner): Option
-    {
-        return Option::fromValue(self::query()->ownedBy($owner)->first());
     }
 
     /**
@@ -77,6 +68,19 @@ final class SettingsRecord extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Queries ]----------
+
+    /**
+     * The owner's record, read for the runtime of the whole installation and not for any one actor; none while the
+     * owner has never stored an override.
+     *
+     * @return Option<self>
+     */
+    public static function sharedRuntimeForOwner(string $owner): Option
+    {
+        return Option::fromValue(self::query()->ownedBy($owner)->first());
+    }
+
     /**
      * The owner's record, locked until the transaction ends; insertIfAbsent runs first, so the record exists.
      */
@@ -84,6 +88,8 @@ final class SettingsRecord extends Model implements ReadableModel
     {
         return self::query()->ownedBy($owner)->lockForUpdate()->firstOrFail();
     }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Stores the changed document as the next revision: one revision for however many entries it changed.
@@ -94,6 +100,8 @@ final class SettingsRecord extends Model implements ReadableModel
         $this->revision++;
         $this->save();
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

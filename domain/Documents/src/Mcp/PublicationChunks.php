@@ -73,6 +73,7 @@ final readonly class PublicationChunks
             'line_start' => $chunk->lineStart,
             'line_end' => $chunk->nextCharacter > 0 ? $chunk->nextLine : $chunk->nextLine - 1,
             'character_offset' => $chunk->characterStart,
+            'ends_line' => $chunk->nextCharacter === 0,
         ], $next);
     }
 

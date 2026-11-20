@@ -40,6 +40,8 @@ final class PhaseTask extends Pivot implements ReadableModel
      */
     protected $guarded = ['*'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -48,28 +50,7 @@ final class PhaseTask extends Pivot implements ReadableModel
         return ['position' => 'integer'];
     }
 
-    /**
-     * The places of a phase in their order; the table has no created_at.
-     */
-    public function defaultReadOrder(): ReadOrder
-    {
-        return ReadOrder::by(['phase_tasks.phase_id', 'phase_tasks.position'], 'phase_tasks.id');
-    }
-
-    /**
-     * The places of one plan's tasks, phase by phase and in each phase's order, the place's id last.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function inPlanOrder(Builder $query, string $planId): void
-    {
-        $query->join('phases', 'phases.id', '=', 'phase_tasks.phase_id')
-            ->where('phases.plan_id', $planId)
-            ->orderBy('phases.number')
-            ->orderBy('phase_tasks.position')
-            ->orderBy('phase_tasks.id');
-    }
+    // ----------[ Queries ]----------
 
     /**
      * The task ids of each of the phases, each phase's in its order, read in one query and keyed by phase id.
@@ -91,5 +72,32 @@ final class PhaseTask extends Pivot implements ReadableModel
         }
 
         return $taskIds;
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The places of a phase in their order; the table has no created_at.
+     */
+    public function defaultReadOrder(): ReadOrder
+    {
+        return ReadOrder::by(['phase_tasks.phase_id', 'phase_tasks.position'], 'phase_tasks.id');
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The places of one plan's tasks, phase by phase and in each phase's order, the place's id last.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inPlanOrder(Builder $query, string $planId): void
+    {
+        $query->join('phases', 'phases.id', '=', 'phase_tasks.phase_id')
+            ->where('phases.plan_id', $planId)
+            ->orderBy('phases.number')
+            ->orderBy('phase_tasks.position')
+            ->orderBy('phase_tasks.id');
     }
 }

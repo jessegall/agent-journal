@@ -37,6 +37,8 @@ final class SkillGeneration extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.skill-generation';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -58,15 +60,15 @@ final class SkillGeneration extends Model implements ReadableModel
     }
 
     /**
-     * @param  list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>  $skillDefinitions
+     * @param  list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>  $definitions
      */
-    public static function ready(string $catalogueDigest, string $registrationDigest, array $skillDefinitions): self
+    public static function ready(string $catalogueDigest, string $registrationDigest, array $definitions): self
     {
         return self::query()->create(
             [
                 'catalogue_digest' => $catalogueDigest,
                 'registration_digest' => $registrationDigest,
-                'entries' => $skillDefinitions,
+                'entries' => $definitions,
                 'state' => GenerationState::Ready,
             ],
         );
@@ -88,6 +90,8 @@ final class SkillGeneration extends Model implements ReadableModel
         );
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The newest ready generation, or null before the first refresh.
      */
@@ -104,15 +108,19 @@ final class SkillGeneration extends Model implements ReadableModel
         return self::query()->orderByDesc('created_at')->orderByDesc('id')->first();
     }
 
-    public function status(): GenerationStatus
-    {
-        return new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason);
-    }
+    // ----------[ Mutations ]----------
 
     public function retire(): void
     {
         $this->state = GenerationState::Retired;
         $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    public function status(): GenerationStatus
+    {
+        return new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason);
     }
 
     /**
@@ -130,6 +138,8 @@ final class SkillGeneration extends Model implements ReadableModel
 
         return null;
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

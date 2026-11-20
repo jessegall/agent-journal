@@ -96,16 +96,16 @@ final readonly class SkillStatusResolver
     /**
      * The keys selected now, and the reason each other skill is not; a required-skill conflict selects none.
      *
-     * @param  list<SkillEntry>  $skillEntries
+     * @param  list<SkillEntry>  $entries
      * @return array{selected: list<string>, reasons: array<string, string>}
      */
-    private function selectionOf(AgentSession $session, array $skillEntries): array
+    private function selectionOf(AgentSession $session, array $entries): array
     {
         try {
-            $selected = $this->selection->select($skillEntries, $this->contexts->forSession($session));
+            $selected = $this->selection->select($entries, $this->contexts->forSession($session));
         } catch (SkillSelectionConflict|SkillContextUnavailable $refused) {
             return ['selected' => [], 'reasons' => array_fill_keys(
-                array_map(fn (SkillEntry $entry) => $entry->key->key, $skillEntries),
+                array_map(fn (SkillEntry $entry) => $entry->key->key, $entries),
                 $refused->getMessage(),
             )];
         }

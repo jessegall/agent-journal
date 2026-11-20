@@ -44,6 +44,8 @@ final class Memory extends Model implements Numbered, ReadableModel
 
     public const int HEAVIEST = 10;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -66,6 +68,8 @@ final class Memory extends Model implements Numbered, ReadableModel
         return $memory;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * One of the calling actor's own memories, locked for a change; another actor's answers as unavailable.
      *
@@ -78,10 +82,7 @@ final class Memory extends Model implements Numbered, ReadableModel
         );
     }
 
-    public function isAtRevision(int $expectedRevision): bool
-    {
-        return $this->revision === $expectedRevision;
-    }
+    // ----------[ Mutations ]----------
 
     public function saveFor(ActorIdentity $actor): void
     {
@@ -98,5 +99,12 @@ final class Memory extends Model implements Numbered, ReadableModel
         $this->weight = $weight === null ? $this->weight : $weight;
         $this->revision++;
         $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    public function isAtRevision(int $expectedRevision): bool
+    {
+        return $this->revision === $expectedRevision;
     }
 }

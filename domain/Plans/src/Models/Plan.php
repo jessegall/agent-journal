@@ -95,6 +95,8 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
      */
     protected $attributes = ['state' => 'planned', 'revision' => 1];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -121,6 +123,28 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
             'creator_id' => $creator->actorId(),
         ]);
     }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * Locks a plan's row for update, so its phases and their tasks hold still until the transaction ends. Every change
+     * of a plan's membership and every cascade over it takes this lock first; a future move between plans takes both
+     * plans' locks in id order.
+     */
+    public static function lockStructure(string $planId): self
+    {
+        return self::query()->whereKey($planId)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * A plan is shared as a summary root; the documents and reports linked to it are the owner's to select.
+     */
+    public static function shareRelations(): ShareRelationSet
+    {
+        return ShareRelationSet::linked('records', 'share-linked-record');
+    }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Gives the plan a new title, brief and type, as a new revision.
@@ -157,14 +181,6 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     }
 
     /**
-     * Whether the plan is being worked: started, and neither finished nor cancelled.
-     */
-    public function isStarted(): bool
-    {
-        return $this->state === PlanState::Started;
-    }
-
-    /**
      * Starts the plan; true when it changed, false when it was already started. Any other state refuses.
      */
     public function startOnce(): bool
@@ -181,6 +197,16 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
         $this->save();
 
         return true;
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * Whether the plan is being worked: started, and neither finished nor cancelled.
+     */
+    public function isStarted(): bool
+    {
+        return $this->state === PlanState::Started;
     }
 
     /**
@@ -203,16 +229,6 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
         self::lockStructure($this->id);
 
         return $this->phases()->create(['title' => $title]);
-    }
-
-    /**
-     * Locks a plan's row for update, so its phases and their tasks hold still until the transaction ends. Every change
-     * of a plan's membership and every cascade over it takes this lock first; a future move between plans takes both
-     * plans' locks in id order.
-     */
-    public static function lockStructure(string $planId): self
-    {
-        return self::query()->whereKey($planId)->lockForUpdate()->firstOrFail();
     }
 
     /**
@@ -291,29 +307,6 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
         );
     }
 
-    /**
-     * The caller's current plan first when it has one, then the newest.
-     *
-     * @param  Builder<self>  $query
-     * @param  Option<string>  $focusedPlanId
-     */
-    #[Scope]
-    protected function listOrder(Builder $query, Option $focusedPlanId): void
-    {
-        $focusedPlanId->forAll(
-            fn (string $id) => $query->orderByRaw('case when "plans"."id" = ? then 0 else 1 end', [$id]),
-        );
-        $query->orderByDesc('id');
-    }
-
-    /**
-     * @return HasMany<Phase, $this>
-     */
-    public function phases(): HasMany
-    {
-        return $this->hasMany(Phase::class)->orderBy('number');
-    }
-
     public function assignmentIdentity(): RecordIdentity
     {
         return $this->shareIdentity();
@@ -322,14 +315,6 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     public function shareIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    /**
-     * A plan is shared as a summary root; the documents and reports linked to it are the owner's to select.
-     */
-    public static function shareRelations(): ShareRelationSet
-    {
-        return ShareRelationSet::linked('records', 'share-linked-record');
     }
 
     /**
@@ -378,5 +363,32 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
             $withText ? $this->finish_note : null,
             $withText ? $this->cancel_reason : null,
         );
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return HasMany<Phase, $this>
+     */
+    public function phases(): HasMany
+    {
+        return $this->hasMany(Phase::class)->orderBy('number');
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The caller's current plan first when it has one, then the newest.
+     *
+     * @param  Builder<self>  $query
+     * @param  Option<string>  $focusedPlanId
+     */
+    #[Scope]
+    protected function listOrder(Builder $query, Option $focusedPlanId): void
+    {
+        $focusedPlanId->forAll(
+            fn (string $id) => $query->orderByRaw('case when "plans"."id" = ? then 0 else 1 end', [$id]),
+        );
+        $query->orderByDesc('id');
     }
 }

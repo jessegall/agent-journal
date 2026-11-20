@@ -23,12 +23,12 @@ final readonly class CodexAccountSettings
     public static function fill(
         AccountStartSettings $settings,
         string $directory,
-        string $accountsRoot,
+        string $root,
         array $startFlags,
         array $accountSettings,
     ): void {
         $settings->setVariable('CODEX_HOME', $directory);
-        $settings->setVariable('JOURNAL_ACCOUNTS_ROOT', $accountsRoot);
+        $settings->setVariable('JOURNAL_ACCOUNTS_ROOT', $root);
         $settings->protectWith(CodexAccountProtection::settingsFor());
 
         foreach (self::OTHER_CREDENTIALS as $variable) {

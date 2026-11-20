@@ -13,8 +13,8 @@ use App\Processes\Values\Grammar\ListRead;
  */
 final readonly class CompleteList implements Pipe
 {
-    public function handle(ListItems $listCursor): ListRead
+    public function handle(ListItems $cursor): ListRead
     {
-        return new ListRead($listCursor->toParse->context, $listCursor->toParse->parent);
+        return new ListRead($cursor->toParse->context, $cursor->toParse->parent);
     }
 }

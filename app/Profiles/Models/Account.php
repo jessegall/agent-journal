@@ -68,6 +68,8 @@ final class Account extends Model implements ReadableModel
      */
     protected $hidden = ['directory', 'live_writer_attempt_id', 'operation_id'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -102,6 +104,8 @@ final class Account extends Model implements ReadableModel
 
         return $account;
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The account the owner may change, locked for the rest of the transaction; a removed account keeps its name for
@@ -168,6 +172,80 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
+     * The next account whose check a host runs, for the journal's host transport whoever acts; none when none waits.
+     */
+    public static function nextToCheck(): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->whereNotNull('check_requested_generation')
+            ->orderBy('updated_at')
+            ->lockForUpdate()
+            ->first();
+    }
+
+    /**
+     * The program of an account, for the journal's own maintenance or the host, read before its locks are taken.
+     */
+    public static function programForJournal(string $accountId): HookProgram
+    {
+        $program = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->value('program');
+
+        return HookProgram::from((string) $program);
+    }
+
+    /**
+     * The program of the account the owner may change, read before its locks are taken in their order.
+     *
+     * @throws AccountMissing
+     */
+    public static function programOf(string $accountId): HookProgram
+    {
+        $program = self::query()->whereKey($accountId)->value('program');
+
+        if (! is_string($program)) {
+            throw AccountMissing::for($accountId);
+        }
+
+        return HookProgram::from($program);
+    }
+
+    /**
+     * The removed accounts whose processes are all gone and whose sign-in or folder a host has still to clean.
+     */
+    public static function nextToClean(): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('state', AccountState::Removing->value)
+            ->where('cleanup_released', true)
+            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
+            ->whereNotNull('directory')
+            ->orderBy('updated_at')
+            ->first();
+    }
+
+    /**
+     * The accounts being removed that still wait for their processes to end.
+     *
+     * @return list<string>
+     */
+    public static function waitingForCleanupIds(int $limit): array
+    {
+        $ids = self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('state', AccountState::Removing->value)
+            ->where('cleanup_released', false)
+            ->orderBy('updated_at')
+            ->readLimit($limit)
+            ->pluck('id');
+
+        return array_values(array_map(strval(...), $ids->all()));
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
      * The account signed in by the attempt that holds its folder: signed in, checked now, its writer released. Signed
      * in again, it starts a new sign-in generation, so a report or check from before is out of date, and starts may
      * use it again.
@@ -226,24 +304,11 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
-     * The next account whose check a host runs, for the journal's host transport whoever acts; none when none waits.
-     */
-    public static function nextToCheck(): self|null
-    {
-        return self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->whereNotNull('check_requested_generation')
-            ->orderBy('updated_at')
-            ->lockForUpdate()
-            ->first();
-    }
-
-    /**
      * Applies the host's check made in the given generation, and answers whether it showed the account signed out;
      * a check of an older generation changes nothing, only a definite sign-out needs a new sign-in, and an account
      * held for its check after a sign-in again stays held until the answer is certain.
      */
-    public function applyCheck(int $generation, AccountCheckResult $accountCheck, CarbonImmutable $now): bool
+    public function applyCheck(int $generation, AccountCheckResult $check, CarbonImmutable $now): bool
     {
         if (! $this->isGeneration($generation)) {
             return false;
@@ -251,7 +316,7 @@ final class Account extends Model implements ReadableModel
 
         $isHeldForCheck = $this->isHeldForCheck();
 
-        if ($isHeldForCheck && $accountCheck === AccountCheckResult::Unknown) {
+        if ($isHeldForCheck && $check === AccountCheckResult::Unknown) {
             return false;
         }
 
@@ -261,7 +326,7 @@ final class Account extends Model implements ReadableModel
 
         $this->check_requested_generation = null;
         $this->checked_at = $now;
-        $isSignedOut = $accountCheck === AccountCheckResult::SignedOut && $this->state === AccountState::SignedIn;
+        $isSignedOut = $check === AccountCheckResult::SignedOut && $this->state === AccountState::SignedIn;
 
         if ($isSignedOut) {
             $this->state = AccountState::NeedsSignIn;
@@ -270,45 +335,6 @@ final class Account extends Model implements ReadableModel
         $this->save();
 
         return $isSignedOut;
-    }
-
-    /**
-     * The account as the start it is chosen for runs with it.
-     */
-    public function selectedForStart(): SelectedAccount
-    {
-        return new SelectedAccount(
-            $this->recordIdentity(),
-            $this->program,
-            $this->directoryForStart(),
-            $this->sign_in_generation,
-        );
-    }
-
-    /**
-     * The program of an account, for the journal's own maintenance or the host, read before its locks are taken.
-     */
-    public static function programForJournal(string $accountId): HookProgram
-    {
-        $program = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->value('program');
-
-        return HookProgram::from((string) $program);
-    }
-
-    /**
-     * The program of the account the owner may change, read before its locks are taken in their order.
-     *
-     * @throws AccountMissing
-     */
-    public static function programOf(string $accountId): HookProgram
-    {
-        $program = self::query()->whereKey($accountId)->value('program');
-
-        if (! is_string($program)) {
-            throw AccountMissing::for($accountId);
-        }
-
-        return HookProgram::from($program);
     }
 
     /**
@@ -331,37 +357,6 @@ final class Account extends Model implements ReadableModel
 
         $this->name($label);
         $this->save();
-    }
-
-    public function recordIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    /**
-     * Refuses a start on an account that is not signed in or is held for maintenance.
-     *
-     * @throws AccountUnavailable
-     */
-    public function assertAvailable(): void
-    {
-        if (! $this->state->canStart() || $this->maintenance) {
-            throw AccountUnavailable::forStart($this->program, $this->state->startUnavailableReason());
-        }
-    }
-
-    /**
-     * The folder a start runs the program's sign-in from; a removed account has none.
-     *
-     * @throws AccountUnavailable
-     */
-    public function directoryForStart(): string
-    {
-        if ($this->directory === null) {
-            throw AccountUnavailable::forStart($this->program, StartUnavailableReason::NoAccount);
-        }
-
-        return $this->directory;
     }
 
     /**
@@ -395,14 +390,6 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
-     * Whether a report or a check made in this sign-in generation still speaks for the account.
-     */
-    public function isGeneration(int $generation): bool
-    {
-        return $this->sign_in_generation === $generation;
-    }
-
-    /**
      * Holds the account so no new start or claim may use it while its sign-in is changed or removed; holding it
      * again changes nothing.
      */
@@ -414,23 +401,6 @@ final class Account extends Model implements ReadableModel
 
         $this->maintenance = true;
         $this->save();
-    }
-
-    /**
-     * Whether starts wait for the host's check after a sign-in again that did not finish: only a certain answer
-     * lets them go.
-     */
-    public function isHeldForCheck(): bool
-    {
-        return $this->maintenance
-            && $this->live_writer_attempt_id === null
-            && $this->state === AccountState::SignedIn
-            && $this->check_requested_generation !== null;
-    }
-
-    public function hasLiveWriter(): bool
-    {
-        return $this->live_writer_attempt_id !== null;
     }
 
     /**
@@ -463,19 +433,6 @@ final class Account extends Model implements ReadableModel
 
         $this->cleanup_tries = 0;
         $this->save();
-    }
-
-    /**
-     * Whether the host stopped trying the cleanup on its own and waits for the owner's Retry.
-     */
-    public function awaitsCleanupRetry(): bool
-    {
-        return $this->state === AccountState::Removing && $this->cleanup_tries >= CleanupProgress::MOST_TRIES;
-    }
-
-    public function isBeingRemoved(): bool
-    {
-        return in_array($this->state, [AccountState::Removing, AccountState::Removed], true);
     }
 
     /**
@@ -514,39 +471,6 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
-     * The removed accounts whose processes are all gone and whose sign-in or folder a host has still to clean.
-     */
-    public static function nextToClean(): self|null
-    {
-        return self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('state', AccountState::Removing->value)
-            ->where('cleanup_released', true)
-            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
-            ->whereNotNull('directory')
-            ->orderBy('updated_at')
-            ->first();
-    }
-
-    /**
-     * The accounts being removed that still wait for their processes to end.
-     *
-     * @return list<string>
-     */
-    public static function waitingForCleanupIds(int $limit): array
-    {
-        $ids = self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('state', AccountState::Removing->value)
-            ->where('cleanup_released', false)
-            ->orderBy('updated_at')
-            ->readLimit($limit)
-            ->pluck('id');
-
-        return array_values(array_map(strval(...), $ids->all()));
-    }
-
-    /**
      * Ends the removal once the processes are gone and the program's store and folder are deleted; the row, its link
      * and its label stay for history.
      */
@@ -560,11 +484,99 @@ final class Account extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
+    /**
+     * The account as the start it is chosen for runs with it.
+     */
+    public function selectedForStart(): SelectedAccount
+    {
+        return new SelectedAccount(
+            $this->recordIdentity(),
+            $this->program,
+            $this->directoryForStart(),
+            $this->sign_in_generation,
+        );
+    }
+
+    public function recordIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    /**
+     * Refuses a start on an account that is not signed in or is held for maintenance.
+     *
+     * @throws AccountUnavailable
+     */
+    public function assertAvailable(): void
+    {
+        if (! $this->state->canStart() || $this->maintenance) {
+            throw AccountUnavailable::forStart($this->program, $this->state->startUnavailableReason());
+        }
+    }
+
+    /**
+     * The folder a start runs the program's sign-in from; a removed account has none.
+     *
+     * @throws AccountUnavailable
+     */
+    public function directoryForStart(): string
+    {
+        if ($this->directory === null) {
+            throw AccountUnavailable::forStart($this->program, StartUnavailableReason::NoAccount);
+        }
+
+        return $this->directory;
+    }
+
+    /**
+     * Whether a report or a check made in this sign-in generation still speaks for the account.
+     */
+    public function isGeneration(int $generation): bool
+    {
+        return $this->sign_in_generation === $generation;
+    }
+
+    /**
+     * Whether starts wait for the host's check after a sign-in again that did not finish: only a certain answer
+     * lets them go.
+     */
+    public function isHeldForCheck(): bool
+    {
+        return $this->maintenance
+            && $this->live_writer_attempt_id === null
+            && $this->state === AccountState::SignedIn
+            && $this->check_requested_generation !== null;
+    }
+
+    public function hasLiveWriter(): bool
+    {
+        return $this->live_writer_attempt_id !== null;
+    }
+
+    /**
+     * Whether the host stopped trying the cleanup on its own and waits for the owner's Retry.
+     */
+    public function awaitsCleanupRetry(): bool
+    {
+        return $this->state === AccountState::Removing && $this->cleanup_tries >= CleanupProgress::MOST_TRIES;
+    }
+
+    public function isBeingRemoved(): bool
+    {
+        return in_array($this->state, [AccountState::Removing, AccountState::Removed], true);
+    }
+
+    // ----------[ Internals ]----------
+
     private function name(AccountLabel $label): void
     {
         $this->label = $label->label;
         $this->label_key = $label->key();
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

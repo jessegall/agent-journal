@@ -9,8 +9,10 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\NavigationReader;
 use App\Agents\Enums\MenuEntryState;
 use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
+use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -32,6 +34,7 @@ final class MenuListTool extends JournalReadTool
     public function __construct(
         private readonly JournalAdmission $admission,
         private readonly NavigationReader $navigation,
+        private readonly NumberedPages $pages,
     ) {}
 
     public function schema(JsonSchema $schema): array
@@ -40,20 +43,37 @@ final class MenuListTool extends JournalReadTool
             'program' => $schema->string()->max(80),
             'state' => $schema->string()->enum(array_column(MenuEntryState::cases(), 'value')),
             'page' => $schema->integer()->min(1),
+            'continuation' => $schema->string(),
         ];
     }
 
     protected function read(ToolArguments $arguments): ToolResult
     {
-        $page = $arguments->positiveIntegerOr('page', 1);
-        $state = $arguments->optionalText('state');
-        $menuEntries = $this->navigation->menuEntries(
-            ActorIdentity::of($this->admission->owner()),
-            $arguments->optionalText('program'),
-            $state === null ? null : MenuEntryState::from($state),
-            $page,
+        return $this->pages->answer(
+            $this->name(),
+            $arguments,
+            fn (ToolArguments $initialArguments) => array_filter([
+                'program' => $initialArguments->optionalText('program'),
+                'state' => $initialArguments->optionalText('state'),
+                'page' => $initialArguments->positiveIntegerOr('page', 1),
+            ], fn (string|int|null $filter) => $filter !== null),
+            fn (ToolArguments $filters) => $this->page($filters),
         );
+    }
 
-        return ToolResult::ok(['page' => $page, 'entries' => $menuEntries], []);
+    private function page(ToolArguments $filters): ListedPage
+    {
+        $owner = ActorIdentity::of($this->admission->owner());
+        $program = $filters->optionalText('program');
+        $state = $filters->optionalText('state');
+        $state = $state === null ? null : MenuEntryState::from($state);
+        $page = $filters->positiveInteger('page');
+
+        return new ListedPage(
+            $this->navigation->menuEntries($owner, $program, $state, $page),
+            $page,
+            NavigationReader::MENU_PAGE_SIZE,
+            $this->navigation->menuEntryCount($owner, $program, $state),
+        );
     }
 }

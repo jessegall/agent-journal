@@ -282,14 +282,14 @@ final class RelayFrames
     }
 
     /**
-     * @param  array<string, mixed>  $errorDetails
+     * @param  array<string, mixed>  $details
      */
     private function writeError(
         int|string|null $id,
         int $jsonRpcCode,
         RefusalCode $code,
         string $message,
-        array $errorDetails = [],
+        array $details = [],
     ): void {
         $this->write(json_encode([
             'jsonrpc' => '2.0',
@@ -300,7 +300,7 @@ final class RelayFrames
                 'data' => [
                     'code' => $code->value,
                     'retryable' => $code->isRetryable(),
-                    ...array_filter($errorDetails, fn (mixed $detail): bool => $detail !== null),
+                    ...array_filter($details, fn (mixed $detail): bool => $detail !== null),
                 ],
             ],
         ], self::JSON_FLAGS));

@@ -12,8 +12,8 @@ use RuntimeException;
  */
 final class ProfileRunRefused extends RuntimeException implements CommandRefusal
 {
-    public static function stepNotAwaited(string $runId, string $stepReference): self
+    public static function stepNotAwaited(string $runId, string $reference): self
     {
-        return new self("Profile run {$runId} does not wait on step {$stepReference}; nothing was recorded.");
+        return new self("Profile run {$runId} does not wait on step {$reference}; nothing was recorded.");
     }
 }

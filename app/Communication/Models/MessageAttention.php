@@ -46,6 +46,8 @@ final class MessageAttention extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -75,6 +77,8 @@ final class MessageAttention extends Model implements ReadableModel
         return $attention;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The keys of the actors already asked because of this origin.
      *
@@ -90,6 +94,8 @@ final class MessageAttention extends Model implements ReadableModel
             ->map(fn (self $attention) => "{$attention->actor_type}:{$attention->actor_id}")
             ->all());
     }
+
+    // ----------[ Answers ]----------
 
     /**
      * Whether this member's runtime accepted the wake, as its message's author reads it.

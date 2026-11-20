@@ -48,13 +48,13 @@ final readonly class HookRelay
         private OutputGrantSeal $grantSeal,
     ) {}
 
-    public function relay(HookProgram $program, string $hookJson, RelaySettings $settings): ProgramReply
+    public function relay(HookProgram $program, string $json, RelaySettings $settings): ProgramReply
     {
         $log = new BypassLog($settings->bypassLogPath);
         $pending = new PendingEnvelopes($this->files, $settings->pendingEnvelopesFolder());
-        $envelope = CallbackEnvelope::forCallback($program->value, $hookJson, CarbonImmutable::now());
+        $envelope = CallbackEnvelope::forCallback($program->value, $json, CarbonImmutable::now());
         $preparation = new PreparationState($this->files, $settings->preparationFile());
-        $event = HookEvent::tryFrom(ProgramEventName::of($hookJson));
+        $event = HookEvent::tryFrom(ProgramEventName::of($json));
 
         if ($event?->isToolCall() === true && ! $preparation->isPrepared()) {
             return OutageReply::preparationPending($event->value);
@@ -70,11 +70,11 @@ final readonly class HookRelay
             $this->uploadBypasses($settings, $log);
             $reply = $this->send($envelope, $settings);
         } catch (ConnectionException|JournalUnreachable|CallDeadlinePassed) {
-            return $this->answerWithoutJournal(CallFailure::Unreachable, $hookJson, $settings, $log);
+            return $this->answerWithoutJournal(CallFailure::Unreachable, $json, $settings, $log);
         }
 
         if (! $reply->isSuccessful()) {
-            return $this->answerWithoutJournal(CallFailure::fromStatus($reply->status), $hookJson, $settings, $log);
+            return $this->answerWithoutJournal(CallFailure::fromStatus($reply->status), $json, $settings, $log);
         }
 
         $pending->acknowledge($envelope);
@@ -82,7 +82,7 @@ final readonly class HookRelay
         try {
             $programReply = ProgramReply::fromJournal($reply->body);
         } catch (JsonException|ProgramReplyMalformed) {
-            return $this->answerWithoutJournal(CallFailure::Refused, $hookJson, $settings, $log);
+            return $this->answerWithoutJournal(CallFailure::Refused, $json, $settings, $log);
         }
 
         if ($event === HookEvent::SessionStart) {
@@ -122,13 +122,13 @@ final readonly class HookRelay
 
     private function answerWithoutJournal(
         CallFailure $failure,
-        string $hookJson,
+        string $json,
         RelaySettings $settings,
         BypassLog $log,
     ): ProgramReply {
-        $event = ProgramEventName::of($hookJson);
+        $event = ProgramEventName::of($json);
 
-        if ($failure->isOutage() && $settings->passesOutages && $this->touchesAccounts($hookJson, $settings)) {
+        if ($failure->isOutage() && $settings->passesOutages && $this->touchesAccounts($json, $settings)) {
             return OutageReply::protectedRefusal($event);
         }
 
@@ -148,9 +148,9 @@ final readonly class HookRelay
      * outputs passes when the host's sealed snapshot grants that exact file; anything else in the account is
      * refused, and so is every read when the snapshot is missing, stale or not sealed for this start.
      */
-    private function touchesAccounts(string $hookJson, RelaySettings $settings): bool
+    private function touchesAccounts(string $json, RelaySettings $settings): bool
     {
-        $call = json_decode($hookJson, true);
+        $call = json_decode($json, true);
 
         if (! is_array($call) || ! is_array($call['tool_input'] ?? null)) {
             return false;

@@ -73,6 +73,8 @@ final class RuleRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -130,6 +132,13 @@ final class RuleRevision extends Model implements ReadableModel
         ]);
     }
 
+    protected static function booted(): void
+    {
+        self::updating(fn (self $revision) => throw RevisionImmutable::rule($revision->id));
+    }
+
+    // ----------[ Answers ]----------
+
     /**
      * Whether this revision belongs to the classification rule: the same project, owner and rule id.
      */
@@ -140,10 +149,7 @@ final class RuleRevision extends Model implements ReadableModel
             && $this->rule_id === $rule->rule_id;
     }
 
-    protected static function booted(): void
-    {
-        self::updating(fn (self $revision) => throw RevisionImmutable::rule($revision->id));
-    }
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

@@ -8,8 +8,8 @@ use LogicException;
 
 final class InvalidHookAnswer extends LogicException
 {
-    public static function for(string $hookMethod, string $answerType): self
+    public static function for(string $method, string $answerType): self
     {
-        return new self("The hook {$hookMethod} cannot take the answer {$answerType}.");
+        return new self("The hook {$method} cannot take the answer {$answerType}.");
     }
 }

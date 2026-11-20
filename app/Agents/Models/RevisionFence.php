@@ -29,6 +29,8 @@ final class RevisionFence extends Model implements ReadableModel
     use BoundedReads, HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -36,6 +38,8 @@ final class RevisionFence extends Model implements ReadableModel
     {
         return ['profile_revision' => 'integer', 'reconciled_at' => 'immutable_datetime'];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Keeps the fence of the revision once; fencing the same revision again changes nothing.
@@ -65,6 +69,8 @@ final class RevisionFence extends Model implements ReadableModel
 
         return array_values($pending->all());
     }
+
+    // ----------[ Mutations ]----------
 
     public function markReconciledAt(CarbonImmutable $time): void
     {

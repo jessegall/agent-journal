@@ -15,10 +15,10 @@ trait RefusesOtherRuns
     /**
      * @throws TaskRunNotYours
      */
-    private function assertCurrentTaskRun(Task $task, int $runNumber): void
+    private function assertCurrentTaskRun(Task $task, int $number): void
     {
-        if (! $task->isCurrentRun($runNumber)) {
-            throw TaskRunNotYours::forRun($task->number, $runNumber);
+        if (! $task->isCurrentRun($number)) {
+            throw TaskRunNotYours::forRun($task->number, $number);
         }
     }
 }

@@ -80,19 +80,19 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
     /**
      * The agents with a running or silent session or a start nobody resolved yet: none of them can take new work.
      *
-     * @param  list<string>  $agentIds
+     * @param  list<string>  $ids
      * @return list<string>
      */
-    private function busyAgents(array $agentIds): array
+    private function busyAgents(array $ids): array
     {
         $running = AgentSession::query()
-            ->whereIn('agent_id', $agentIds)
+            ->whereIn('agent_id', $ids)
             ->running()
             ->readAll('the running sessions of the offered helpers')
             ->pluck('agent_id')
             ->all();
         $starting = ProcessStart::query()
-            ->whereIn('agent_id', $agentIds)
+            ->whereIn('agent_id', $ids)
             ->unresolved()
             ->readAll('the unresolved starts of the offered helpers')
             ->pluck('agent_id')

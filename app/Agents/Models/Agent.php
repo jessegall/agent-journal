@@ -44,6 +44,8 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -60,18 +62,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
         return self::query()->create(['name' => $name, 'profile_key' => $profileKey]);
     }
 
-    /**
-     * These agents by id, in one query, for trusted Core work over many sessions.
-     *
-     * @param  list<string>  $agentIds
-     * @return array<string, self>
-     */
-    public static function byIds(array $agentIds): array
-    {
-        $agents = self::query()->whereKey($agentIds)->readLimit(max(1, count($agentIds)))->get();
-
-        return $agents->keyBy('id')->all();
-    }
+    // ----------[ Queries ]----------
 
     /**
      * @return Option<ActorIdentity>
@@ -92,6 +83,21 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     }
 
     /**
+     * These agents by id, in one query, for trusted Core work over many sessions.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, self>
+     */
+    public static function byIds(array $ids): array
+    {
+        $agents = self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->get();
+
+        return $agents->keyBy('id')->all();
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
      * Makes the session the agent's current runtime under a new generation; every earlier runtime is fenced.
      */
     public function adoptRuntime(AgentSession $session): void
@@ -110,6 +116,14 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
         $this->current_session_id = null;
         $this->save();
     }
+
+    public function retireAt(CarbonInterface $retiredAt): void
+    {
+        $this->retired_at = Carbon::instance($retiredAt);
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
 
     public function isCurrentRuntime(AgentSession $session): bool
     {
@@ -150,11 +164,5 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     public function isRetired(): bool
     {
         return $this->retired_at !== null;
-    }
-
-    public function retireAt(CarbonInterface $retiredAt): void
-    {
-        $this->retired_at = Carbon::instance($retiredAt);
-        $this->save();
     }
 }

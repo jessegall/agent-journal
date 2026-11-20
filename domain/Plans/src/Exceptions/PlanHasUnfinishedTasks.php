@@ -18,14 +18,14 @@ final class PlanHasUnfinishedTasks extends RuntimeException implements CodedRefu
 {
     use RendersRefusal;
 
-    public static function for(int $planNumber, int $unfinished): self
+    public static function for(int $number, int $unfinished): self
     {
-        return new self("Plan {$planNumber} still has {$unfinished} unfinished tasks; finish or cancel them first.");
+        return new self("Plan {$number} still has {$unfinished} unfinished tasks; finish or cancel them first.");
     }
 
-    public static function notStarted(int $planNumber, string $state): self
+    public static function notStarted(int $number, string $state): self
     {
-        return new self("Plan {$planNumber} is {$state}; only a started plan is finished.");
+        return new self("Plan {$number} is {$state}; only a started plan is finished.");
     }
 
     public function refusalCode(): RefusalCode

@@ -28,12 +28,12 @@ final readonly class ShareAuditPage
     /**
      * The page of the share's entries, with the pruning totals the share keeps.
      *
-     * @param  list<ShareAuditEntry>  $auditEntries
+     * @param  list<ShareAuditEntry>  $entries
      */
-    public static function of(Share $share, array $auditEntries, string|null $nextAfter): self
+    public static function of(Share $share, array $entries, string|null $nextAfter): self
     {
         return new self(
-            $auditEntries,
+            $entries,
             $nextAfter,
             $share->pruned_allowed_reads,
             $share->pruned_denied_reads,

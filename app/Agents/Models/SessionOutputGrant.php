@@ -47,6 +47,8 @@ final class SessionOutputGrant extends Model implements ReadableModel
      */
     protected $hidden = ['transcript_path', 'output_directory'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -76,6 +78,8 @@ final class SessionOutputGrant extends Model implements ReadableModel
         }
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The session's grants by conversation, whatever start made them: what a remap of the same session carries on.
      *
@@ -104,6 +108,8 @@ final class SessionOutputGrant extends Model implements ReadableModel
 
         return array_values($grants->map(fn (self $grant) => $grant->paths())->all());
     }
+
+    // ----------[ Answers ]----------
 
     public function paths(): SessionOutputPaths
     {

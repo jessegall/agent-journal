@@ -34,8 +34,8 @@ final readonly class GatewayEndpoint
     /**
      * The reference a run keeps the program of one endpoint version under.
      */
-    public static function referenceOf(string $runId, int $endpointVersion): string
+    public static function referenceOf(string $runId, int $version): string
     {
-        return "{$runId}:{$endpointVersion}";
+        return "{$runId}:{$version}";
     }
 }

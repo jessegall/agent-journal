@@ -9,41 +9,41 @@ namespace App\Ui\Exceptions;
  */
 final class InvalidNavigationDeclaration extends UiDeclarationError
 {
-    public static function nothingToOpen(string $navigationLabel): self
+    public static function nothingToOpen(string $label): self
     {
-        return new self("Navigation item {$navigationLabel} needs a page, child items or a children resolver.");
+        return new self("Navigation item {$label} needs a page, child items or a children resolver.");
     }
 
-    public static function valuesNotStrings(string $navigationLabel, string $parameterType): self
+    public static function valuesNotStrings(string $label, string $parameterType): self
     {
         return new self(
-            "Navigation item {$navigationLabel} must give its {$parameterType} values as a map of strings to strings.",
+            "Navigation item {$label} must give its {$parameterType} values as a map of strings to strings.",
         );
     }
 
-    public static function pageMissing(string $navigationLabel, string $page): self
+    public static function pageMissing(string $label, string $page): self
     {
         return new self(
-            "Navigation item {$navigationLabel} opens the page {$page}, which its domain does not declare.",
+            "Navigation item {$label} opens the page {$page}, which its domain does not declare.",
         );
     }
 
-    public static function routeValuesMismatch(string $navigationLabel, string $page, string $path): self
+    public static function routeValuesMismatch(string $label, string $page, string $path): self
     {
         return new self(
             sprintf(
                 "Navigation item %s must give a route value for exactly each parameter of the path '%s' of page %s.",
-                $navigationLabel,
+                $label,
                 $path,
                 $page,
             ),
         );
     }
 
-    public static function rootOnlyOnChild(string $navigationLabel, string $child): self
+    public static function rootOnlyOnChild(string $label, string $child): self
     {
         return new self(
-            "Navigation item {$navigationLabel} has the child {$child} with a group or at the foot;"
+            "Navigation item {$label} has the child {$child} with a group or at the foot;"
             .' only a root item has either.',
         );
     }

@@ -60,6 +60,8 @@ final class Comment extends Model implements ReadableModel, Shareable
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -74,19 +76,6 @@ final class Comment extends Model implements ReadableModel, Shareable
             'end_offset' => 'integer',
             'created_at' => 'immutable_datetime',
         ];
-    }
-
-    public function shareIdentity(): RecordIdentity
-    {
-        return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    /**
-     * A comment reaches no other record; it is shared only through its parent.
-     */
-    public static function shareRelations(): ShareRelationSet
-    {
-        return ShareRelationSet::none();
     }
 
     /**
@@ -133,6 +122,30 @@ final class Comment extends Model implements ReadableModel, Shareable
         return $comment;
     }
 
+    protected static function booted(): void
+    {
+        self::updating(function (self $comment): void {
+            throw CommentImmutable::for($comment->id);
+        });
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * A comment reaches no other record; it is shared only through its parent.
+     */
+    public static function shareRelations(): ShareRelationSet
+    {
+        return ShareRelationSet::none();
+    }
+
+    // ----------[ Answers ]----------
+
+    public function shareIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
     /**
      * What the comment is about: the whole record when no anchor column is set, otherwise the complete anchor.
      *
@@ -161,34 +174,6 @@ final class Comment extends Model implements ReadableModel, Shareable
         } catch (IncompleteTextAnchor $broken) {
             throw CommentAnchorCorrupt::for($this->id, $broken);
         }
-    }
-
-    /**
-     * The anchor its columns hold, refused when a column its type needs is empty.
-     *
-     * @throws IncompleteTextAnchor
-     */
-    private function anchor(): TextAnchor
-    {
-        $type = $this->anchor_type === null ? null : TextAnchorType::tryFrom($this->anchor_type);
-        if ($type === null) {
-            throw IncompleteTextAnchor::withoutType();
-        }
-        $column = fn (string $field, string $name): string|int => $this->getAttribute($name)
-            ?? throw IncompleteTextAnchor::missing($type->value, $field);
-        $isQuote = $type === TextAnchorType::Quote;
-
-        return TextAnchor::restored(
-            (string) $column('versionId', 'version_id'),
-            (string) $column('versionLabel', 'version_label'),
-            $type,
-            $type === TextAnchorType::Section ? (int) $column('sectionNumber', 'section_number') : 0,
-            (int) $column('firstLine', 'first_line'),
-            (int) $column('lastLine', 'last_line'),
-            $isQuote ? (string) $column('quote', 'quote') : '',
-            $isQuote ? (int) $column('startOffset', 'start_offset') : 0,
-            $isQuote ? (int) $column('endOffset', 'end_offset') : 0,
-        );
     }
 
     /**
@@ -224,6 +209,56 @@ final class Comment extends Model implements ReadableModel, Shareable
             MarkdownText::safeHtmlOf($this->body),
         );
     }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * The anchor its columns hold, refused when a column its type needs is empty.
+     *
+     * @throws IncompleteTextAnchor
+     */
+    private function anchor(): TextAnchor
+    {
+        $type = $this->anchor_type === null ? null : TextAnchorType::tryFrom($this->anchor_type);
+        if ($type === null) {
+            throw IncompleteTextAnchor::withoutType();
+        }
+        $column = fn (string $field, string $name): string|int => $this->getAttribute($name)
+            ?? throw IncompleteTextAnchor::missing($type->value, $field);
+        $isQuote = $type === TextAnchorType::Quote;
+
+        return TextAnchor::restored(
+            (string) $column('versionId', 'version_id'),
+            (string) $column('versionLabel', 'version_label'),
+            $type,
+            $type === TextAnchorType::Section ? (int) $column('sectionNumber', 'section_number') : 0,
+            (int) $column('firstLine', 'first_line'),
+            (int) $column('lastLine', 'last_line'),
+            $isQuote ? (string) $column('quote', 'quote') : '',
+            $isQuote ? (int) $column('startOffset', 'start_offset') : 0,
+            $isQuote ? (int) $column('endOffset', 'end_offset') : 0,
+        );
+    }
+
+    private static function draft(
+        Model $target,
+        ActorIdentity $author,
+        string|null $sessionId,
+        string $body,
+        string $key,
+        string $hash,
+    ): self {
+        $comment = new self(['body' => $body, 'submission_key' => $key, 'submission_hash' => $hash]);
+        $comment->target_type = $target->getMorphClass();
+        $comment->target_id = (string) $target->getKey();
+        $comment->author_type = $author->type;
+        $comment->author_id = $author->id;
+        $comment->author_session_id = $sessionId;
+
+        return $comment;
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * The comments on one record, oldest first.
@@ -282,30 +317,5 @@ final class Comment extends Model implements ReadableModel, Shareable
             'author_type',
             $author->type->value,
         )->where('author_id', $author->id)->where('author_session_id', $sessionId)->where('submission_key', $key);
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(function (self $comment): void {
-            throw CommentImmutable::for($comment->id);
-        });
-    }
-
-    private static function draft(
-        Model $target,
-        ActorIdentity $author,
-        string|null $sessionId,
-        string $body,
-        string $key,
-        string $hash,
-    ): self {
-        $comment = new self(['body' => $body, 'submission_key' => $key, 'submission_hash' => $hash]);
-        $comment->target_type = $target->getMorphClass();
-        $comment->target_id = (string) $target->getKey();
-        $comment->author_type = $author->type;
-        $comment->author_id = $author->id;
-        $comment->author_session_id = $sessionId;
-
-        return $comment;
     }
 }

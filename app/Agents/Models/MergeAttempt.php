@@ -76,6 +76,8 @@ final class MergeAttempt extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -89,6 +91,8 @@ final class MergeAttempt extends Model implements ReadableModel
             'acknowledged_at' => 'datetime',
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The attempt of an approval, prepared once; a replay finds it.
@@ -147,6 +151,8 @@ final class MergeAttempt extends Model implements ReadableModel
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
+    // ----------[ Mutations ]----------
+
     /**
      * Records that supervision settled the outcome, once.
      */
@@ -201,6 +207,8 @@ final class MergeAttempt extends Model implements ReadableModel
         $this->evidence = $evidence;
         $this->save();
     }
+
+    // ----------[ Answers ]----------
 
     public function outcome(): MergeOutcome
     {

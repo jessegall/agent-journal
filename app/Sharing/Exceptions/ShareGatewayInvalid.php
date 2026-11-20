@@ -16,8 +16,8 @@ final class ShareGatewayInvalid extends LogicException
         return new self("A share gateway is already registered under {$key}.");
     }
 
-    public static function notAGateway(string $key, string $gatewayClass): self
+    public static function notAGateway(string $key, string $class): self
     {
-        return new self("{$gatewayClass}, registered as the share gateway {$key}, is no share gateway.");
+        return new self("{$class}, registered as the share gateway {$key}, is no share gateway.");
     }
 }

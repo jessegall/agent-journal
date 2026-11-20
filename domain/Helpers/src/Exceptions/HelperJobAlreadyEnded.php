@@ -12,13 +12,13 @@ use RuntimeException;
  */
 final class HelperJobAlreadyEnded extends RuntimeException implements CommandRefusal
 {
-    public static function withSendCommand(string $jobId, string $state, string $sendCommand): self
+    public static function withSendCommand(string $jobId, string $state, string $command): self
     {
         return new self(sprintf(
             'Helper job %s is %s and is not continued. Give the helper new work instead: %s',
             $jobId,
             $state,
-            $sendCommand,
+            $command,
         ));
     }
 }

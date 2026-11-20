@@ -43,6 +43,8 @@ final class HookCall extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -53,6 +55,8 @@ final class HookCall extends Model implements ReadableModel
             'steps' => RecordedStepsCast::class,
         ];
     }
+
+    // ----------[ Mutations ]----------
 
     public function recordFor(HookIdentity $hook, RecordedAnswer $answer, RecordedSteps $steps): void
     {
@@ -65,6 +69,8 @@ final class HookCall extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
     /**
      * Whether this recorded call is the same call as the identity: the same id with the same input.
      */
@@ -72,6 +78,8 @@ final class HookCall extends Model implements ReadableModel
     {
         return $this->event_id === $hook->hookId && hash_equals($this->input_digest, $hook->inputDigest);
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

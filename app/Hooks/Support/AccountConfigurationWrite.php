@@ -20,9 +20,9 @@ final readonly class AccountConfigurationWrite
      *
      * @throws AccountConfigurationUnwritten
      */
-    public function addTrust(string $accountDirectory, CodexFolderTrust $trust): bool
+    public function addTrust(string $directory, CodexFolderTrust $trust): bool
     {
-        return $this->prepare($accountDirectory, [], [], $trust, []);
+        return $this->prepare($directory, [], [], $trust, []);
     }
 
     /**
@@ -37,13 +37,13 @@ final readonly class AccountConfigurationWrite
      * @throws AccountConfigurationUnwritten
      */
     public function prepare(
-        string $accountDirectory,
+        string $directory,
         array $settings,
         array $tables,
         CodexFolderTrust $trust,
         array $replacedTables,
     ): bool {
-        $path = rtrim($accountDirectory, '/').'/config.toml';
+        $path = rtrim($directory, '/').'/config.toml';
         $lock = fopen($path.'.lock', 'c');
 
         if ($lock === false || ! flock($lock, LOCK_EX)) {

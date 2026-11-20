@@ -49,6 +49,8 @@ final class ReaderProof extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -81,6 +83,8 @@ final class ReaderProof extends Model implements ReadableModel
     {
         self::updating(fn (self $proof) => throw RevisionImmutable::proof($proof->id));
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

@@ -74,19 +74,19 @@ final class ActorProviderRegistry implements
     }
 
     /**
-     * @param  class-string<ActorProvider>  $providerClass
+     * @param  class-string<ActorProvider>  $class
      */
-    public function register(ActorType $type, string $providerClass): void
+    public function register(ActorType $type, string $class): void
     {
-        $this->providers->put($type->value, $providerClass);
+        $this->providers->put($type->value, $class);
     }
 
     /**
-     * @param  class-string<ActorLabelProvider>  $providerClass
+     * @param  class-string<ActorLabelProvider>  $class
      */
-    public function registerLabels(ActorType $type, string $providerClass): void
+    public function registerLabels(ActorType $type, string $class): void
     {
-        $this->labelProviders->put($type->value, $providerClass);
+        $this->labelProviders->put($type->value, $class);
     }
 
     /**
@@ -113,11 +113,11 @@ final class ActorProviderRegistry implements
     }
 
     /**
-     * @param  class-string<ActorVisibilityProvider>  $providerClass
+     * @param  class-string<ActorVisibilityProvider>  $class
      */
-    public function registerVisibility(ActorType $type, string $providerClass): void
+    public function registerVisibility(ActorType $type, string $class): void
     {
-        $this->visibilityProviders->put($type->value, $providerClass);
+        $this->visibilityProviders->put($type->value, $class);
     }
 
     /**
@@ -145,16 +145,16 @@ final class ActorProviderRegistry implements
      * A type with no provider may not read across owners.
      *
      * @param  Builder<covariant Model>  $query
-     * @param  class-string<Scope<Model>>  $ownerScope
+     * @param  class-string<Scope<Model>>  $scope
      *
      * @throws CrossOwnerReadRefused
      */
-    public function readAcrossOwners(Builder $query, string $ownerScope): void
+    public function readAcrossOwners(Builder $query, string $scope): void
     {
         $type = Container::getInstance()->make(CurrentActor::class)->actor()->actorType();
         $providerClass = $this->visibilityProviders->get($type->value);
 
-        Container::getInstance()->make($providerClass)->readAcrossOwners($query, $ownerScope);
+        Container::getInstance()->make($providerClass)->readAcrossOwners($query, $scope);
     }
 
     /**
@@ -186,11 +186,11 @@ final class ActorProviderRegistry implements
     }
 
     /**
-     * @param  class-string<WorkStackProvider>  $providerClass
+     * @param  class-string<WorkStackProvider>  $class
      */
-    public function registerWorkStack(ActorType $type, string $providerClass): void
+    public function registerWorkStack(ActorType $type, string $class): void
     {
-        $this->workStackProviders->put($type->value, $providerClass);
+        $this->workStackProviders->put($type->value, $class);
     }
 
     /**

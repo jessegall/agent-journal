@@ -65,13 +65,13 @@ final readonly class SendSignedCalls implements CallSender
     }
 
     /**
-     * @param  array<string, mixed>  $callFields
+     * @param  array<string, mixed>  $fields
      */
-    private function pathOf(CallDeclaration $declaration, array $callFields): string
+    private function pathOf(CallDeclaration $declaration, array $fields): string
     {
         return (string) preg_replace_callback(
             '/\{(\w+)\}/',
-            fn (array $placeholder) => rawurlencode((string) $callFields[$placeholder[1]]),
+            fn (array $placeholder) => rawurlencode((string) $fields[$placeholder[1]]),
             $declaration->endpoint->path,
         );
     }

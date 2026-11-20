@@ -27,9 +27,9 @@ final readonly class SelectedProgram
     /**
      * The same selection pinned to a profile, for a start whose selection named none.
      */
-    public function pinnedTo(string $profileKey, int $profileRevision): self
+    public function pinnedTo(string $profileKey, int $revision): self
     {
-        $source = new SelectionSource($this->source->programSource, $profileKey, $profileRevision);
+        $source = new SelectionSource($this->source->programSource, $profileKey, $revision);
 
         return new self($this->program, $this->model, $this->requested, $source);
     }

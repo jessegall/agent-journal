@@ -34,6 +34,8 @@ final class AccountNotice extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -72,6 +74,8 @@ final class AccountNotice extends Model implements ReadableModel
         return $notice;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * Resolves the program's open notices once its accounts work again.
      */
@@ -92,11 +96,15 @@ final class AccountNotice extends Model implements ReadableModel
         return array_values(self::query()->open()->latest()->readLimit(20)->get()->all());
     }
 
+    // ----------[ Mutations ]----------
+
     public function dismiss(CarbonImmutable $now): void
     {
         $this->resolved_at = $now;
         $this->save();
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

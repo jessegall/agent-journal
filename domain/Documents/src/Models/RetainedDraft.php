@@ -37,6 +37,8 @@ final class RetainedDraft extends Model implements ReadableModel
 
     public const string DRAFT_SCOPE = 'private_draft';
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return ['author_type' => ActorType::class];
@@ -61,6 +63,18 @@ final class RetainedDraft extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Queries ]----------
+
+    /**
+     * @return Builder<self>
+     */
+    public static function forRecovery(): Builder
+    {
+        return self::query()->withoutGlobalScope(self::DRAFT_SCOPE);
+    }
+
+    // ----------[ Answers ]----------
+
     public function view(): RetainedDraftView
     {
         return new RetainedDraftView(
@@ -75,13 +89,5 @@ final class RetainedDraft extends Model implements ReadableModel
     public function workingText(): DraftText
     {
         return new DraftText($this->title, $this->abstract, MarkdownText::workingBody($this->body));
-    }
-
-    /**
-     * @return Builder<self>
-     */
-    public static function forRecovery(): Builder
-    {
-        return self::query()->withoutGlobalScope(self::DRAFT_SCOPE);
     }
 }

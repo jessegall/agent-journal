@@ -23,7 +23,7 @@ final class RulesResource extends JournalResource
 
     protected function read(Request $request): Response
     {
-        $arguments = ToolArguments::read($this->name(), $request, []);
+        $arguments = ToolArguments::query($this->name(), $request, ['page', 'continuation']);
 
         return Response::text(json_encode(
             $this->rules->read($arguments)->structuredContent(),

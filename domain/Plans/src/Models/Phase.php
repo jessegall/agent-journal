@@ -46,6 +46,8 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
      */
     public const string LINK_TYPE = 'plans.phase';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -53,6 +55,31 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     {
         return ['number' => 'integer', 'revision' => 'integer'];
     }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Adds the tasks only when the phase is still at the revision the caller read, and makes a new revision of it.
+     *
+     * @param  list<string>  $ids
+     *
+     * @throws PhaseRevisionChanged
+     */
+    public function addTasksAtRevision(int $expectedRevision, array $ids): void
+    {
+        Plan::lockStructure($this->plan_id);
+        $this->refresh();
+
+        if ($this->revision !== $expectedRevision) {
+            throw PhaseRevisionChanged::for($this->number, $expectedRevision, $this->revision);
+        }
+
+        $this->addTasksUnderPlanLock($ids);
+        $this->revision++;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
 
     /**
      * Puts a task, named by id, at the end of this phase. The caller has checked with Tasks that the task exists.
@@ -66,59 +93,11 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
      * Puts several tasks, named by id, at the end of this phase in the order given, with one insert. A task already in
      * a phase, or named twice, is refused before anything is written. It runs inside the caller's transaction.
      *
-     * @param  list<string>  $taskIds
+     * @param  list<string>  $ids
      */
-    public function addTasks(array $taskIds): void
+    public function addTasks(array $ids): void
     {
-        $this->addTasksUnderPlanLock($taskIds);
-    }
-
-    /**
-     * Adds the tasks only when the phase is still at the revision the caller read, and makes a new revision of it.
-     *
-     * @param  list<string>  $taskIds
-     *
-     * @throws PhaseRevisionChanged
-     */
-    public function addTasksAtRevision(int $expectedRevision, array $taskIds): void
-    {
-        Plan::lockStructure($this->plan_id);
-        $this->refresh();
-
-        if ($this->revision !== $expectedRevision) {
-            throw PhaseRevisionChanged::for($this->number, $expectedRevision, $this->revision);
-        }
-
-        $this->addTasksUnderPlanLock($taskIds);
-        $this->revision++;
-        $this->save();
-    }
-
-    /**
-     * @param  list<string>  $taskIds
-     */
-    private function addTasksUnderPlanLock(array $taskIds): void
-    {
-        Plan::lockStructure($this->plan_id);
-        $duplicateTaskIds = array_keys(array_filter(array_count_values($taskIds), fn (int $count) => $count > 1));
-        $alreadyPlacedTaskId = PhaseTask::query()->whereIn('task_id', $taskIds)->value('task_id');
-
-        if ($duplicateTaskIds !== [] || $alreadyPlacedTaskId !== null) {
-            throw TaskAlreadyInAPhase::forTask((string) ($duplicateTaskIds[0] ?? $alreadyPlacedTaskId));
-        }
-
-        $next = PhaseTask::query()->where('phase_id', $this->id)->count() + 1;
-
-        PhaseTask::query()->insert(array_map(
-            fn (string $taskId, int $offset) => [
-                'id' => new PhaseTask()->newUniqueId(),
-                'phase_id' => $this->id,
-                'task_id' => $taskId,
-                'position' => $next + $offset,
-            ],
-            $taskIds,
-            array_keys($taskIds),
-        ));
+        $this->addTasksUnderPlanLock($ids);
     }
 
     /**
@@ -135,25 +114,6 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
                 )->readAll('every task of the phase')->orderBy('position')->pluck('task_id')->all(),
             ),
         );
-    }
-
-    /**
-     * @return BelongsTo<Plan, $this>
-     */
-    public function plan(): BelongsTo
-    {
-        return $this->belongsTo(Plan::class);
-    }
-
-    /**
-     * The phase that holds the task, if any.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function holdingTask(Builder $query, string $taskId): void
-    {
-        $query->whereIn('id', PhaseTask::query()->select('phase_id')->where('task_id', $taskId));
     }
 
     public function assignmentIdentity(): RecordIdentity
@@ -187,10 +147,62 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     /**
      * The phase in a plan read, with the window of its tasks that read shows.
      *
-     * @param  list<string>  $taskIds
+     * @param  list<string>  $ids
      */
-    public function withTasks(array $taskIds): PlanPhaseTasks
+    public function withTasks(array $ids): PlanPhaseTasks
     {
-        return new PlanPhaseTasks($this->id, $this->number, $this->title, $this->revision, $taskIds);
+        return new PlanPhaseTasks($this->id, $this->number, $this->title, $this->revision, $ids);
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<Plan, $this>
+     */
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * @param  list<string>  $ids
+     */
+    private function addTasksUnderPlanLock(array $ids): void
+    {
+        Plan::lockStructure($this->plan_id);
+        $duplicateTaskIds = array_keys(array_filter(array_count_values($ids), fn (int $count) => $count > 1));
+        $alreadyPlacedTaskId = PhaseTask::query()->whereIn('task_id', $ids)->value('task_id');
+
+        if ($duplicateTaskIds !== [] || $alreadyPlacedTaskId !== null) {
+            throw TaskAlreadyInAPhase::forTask((string) ($duplicateTaskIds[0] ?? $alreadyPlacedTaskId));
+        }
+
+        $next = PhaseTask::query()->where('phase_id', $this->id)->count() + 1;
+
+        PhaseTask::query()->insert(array_map(
+            fn (string $taskId, int $offset) => [
+                'id' => new PhaseTask()->newUniqueId(),
+                'phase_id' => $this->id,
+                'task_id' => $taskId,
+                'position' => $next + $offset,
+            ],
+            $ids,
+            array_keys($ids),
+        ));
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * The phase that holds the task, if any.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function holdingTask(Builder $query, string $taskId): void
+    {
+        $query->whereIn('id', PhaseTask::query()->select('phase_id')->where('task_id', $taskId));
     }
 }

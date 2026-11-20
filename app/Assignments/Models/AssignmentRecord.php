@@ -51,6 +51,8 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      */
     protected $guarded = ['*'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -88,6 +90,18 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         ]);
     }
 
+    protected static function booted(): void
+    {
+        self::addGlobalScope(
+            new SignedInScope(
+                static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
+                static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
+            ),
+        );
+    }
+
+    // ----------[ Queries ]----------
+
     /**
      * Removes, in one statement, every claim that stands on this exact seat or work assignment.
      */
@@ -102,14 +116,14 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     /**
      * The current holder of each of these exact assignments that still exists, keyed by assignment id.
      *
-     * @param  list<string>  $assignmentIds
+     * @param  list<string>  $ids
      * @return array<string, AssigneeIdentity>
      */
-    public static function holdersOf(array $assignmentIds): array
+    public static function holdersOf(array $ids): array
     {
         return self::query()
             ->withoutGlobalScope(SignedInScope::class)
-            ->whereKey($assignmentIds)
+            ->whereKey($ids)
             ->get()
             ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()->holder()])
             ->all();
@@ -118,14 +132,14 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     /**
      * These exact assignments that still exist, keyed by assignment id.
      *
-     * @param  list<string>  $assignmentIds
+     * @param  list<string>  $ids
      * @return array<string, Assignment>
      */
-    public static function assignmentsOf(array $assignmentIds): array
+    public static function assignmentsOf(array $ids): array
     {
         return self::query()
             ->withoutGlobalScope(SignedInScope::class)
-            ->whereKey($assignmentIds)
+            ->whereKey($ids)
             ->get()
             ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()])
             ->all();
@@ -134,15 +148,15 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     /**
      * The current assignments of these records of one type, read by a trusted provider path.
      *
-     * @param  list<string>  $recordIds
+     * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function ofRecords(string $type, array $recordIds): array
+    public static function ofRecords(string $type, array $ids): array
     {
         return array_values(self::query()
             ->withoutGlobalScope(SignedInScope::class)
             ->where('record_type', $type)
-            ->whereIn('record_id', $recordIds)
+            ->whereIn('record_id', $ids)
             ->get()
             ->all());
     }
@@ -155,6 +169,8 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         return self::holdersOf([$assignmentId]) !== [];
     }
 
+    // ----------[ Answers ]----------
+
     public function toAssignment(): Assignment
     {
         return new Assignment(
@@ -163,15 +179,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         );
     }
 
-    protected static function booted(): void
-    {
-        self::addGlobalScope(
-            new SignedInScope(
-                static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
-                static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
-            ),
-        );
-    }
+    // ----------[ Scopes ]----------
 
     /**
      * The record's assignment whoever holds it, for the store that must see the real current holder.
@@ -223,14 +231,14 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      * The assignments of one record type among the given record ids, read by a trusted provider path.
      *
      * @param  Builder<self>  $query
-     * @param  Builder<*>  $recordIds
+     * @param  Builder<*>  $ids
      */
     #[Scope]
-    protected function assignedAmong(Builder $query, string $type, Builder $recordIds): void
+    protected function assignedAmong(Builder $query, string $type, Builder $ids): void
     {
         $query->withoutGlobalScope(SignedInScope::class)
             ->where('record_type', $type)
-            ->whereIn('record_id', $recordIds);
+            ->whereIn('record_id', $ids);
     }
 
     /**

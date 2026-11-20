@@ -28,10 +28,10 @@ final class GatewayLeaseRefused extends RuntimeException implements CodedRefusal
         );
     }
 
-    public static function forEndpoint(string $configurationId, int $endpointVersion): self
+    public static function forEndpoint(string $configurationId, int $version): self
     {
         return new self(
-            "Endpoint version {$endpointVersion} of configuration {$configurationId} is not held by this run.",
+            "Endpoint version {$version} of configuration {$configurationId} is not held by this run.",
         );
     }
 

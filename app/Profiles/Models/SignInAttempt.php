@@ -61,6 +61,8 @@ final class SignInAttempt extends Model implements ReadableModel
      */
     protected $hidden = ['directory', 'process_reference', 'login_reference', 'request_key'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -110,6 +112,33 @@ final class SignInAttempt extends Model implements ReadableModel
 
         return $attempt;
     }
+
+    /**
+     * The oldest attempt no host runs yet, taken by this host to run its program's sign-in; none when nothing waits.
+     */
+    public static function claimFor(string $hostId, CarbonImmutable $now): self|null
+    {
+        $attempt = self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('state', SignInState::Starting->value)
+            ->where('waits_for_uses', false)
+            ->whereNull('process_reference')
+            ->where('expires_at', '>', $now)
+            ->orderBy('created_at')
+            ->lockForUpdate()
+            ->first();
+
+        if ($attempt === null) {
+            return null;
+        }
+
+        $attempt->process_reference = $hostId;
+        $attempt->save();
+
+        return $attempt;
+    }
+
+    // ----------[ Queries ]----------
 
     /**
      * The earliest attempt still signing in a new account of the program, or this account, which a second start
@@ -214,56 +243,6 @@ final class SignInAttempt extends Model implements ReadableModel
         return array_values($attempts->all());
     }
 
-    public function type(): SignInType
-    {
-        return $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain;
-    }
-
-    public function isLive(): bool
-    {
-        return $this->state->isLive();
-    }
-
-    public function isExpiredAt(CarbonImmutable $now): bool
-    {
-        return $this->expires_at <= $now;
-    }
-
-    /**
-     * Ends a live attempt in the given state; an attempt that made no account still owes the deletion of its folder.
-     */
-    public function end(SignInState $state): void
-    {
-        $this->state = $state;
-        $this->cleanup_pending = $this->account_id === null && $state !== SignInState::Complete;
-        $this->save();
-    }
-
-    /**
-     * The oldest attempt no host runs yet, taken by this host to run its program's sign-in; none when nothing waits.
-     */
-    public static function claimFor(string $hostId, CarbonImmutable $now): self|null
-    {
-        $attempt = self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('state', SignInState::Starting->value)
-            ->where('waits_for_uses', false)
-            ->whereNull('process_reference')
-            ->where('expires_at', '>', $now)
-            ->orderBy('created_at')
-            ->lockForUpdate()
-            ->first();
-
-        if ($attempt === null) {
-            return null;
-        }
-
-        $attempt->process_reference = $hostId;
-        $attempt->save();
-
-        return $attempt;
-    }
-
     /**
      * The live attempts the host took that it says it no longer runs, locked; another host's attempts are left alone.
      *
@@ -303,6 +282,71 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
+     * The ended attempt whose new account's folder a host has still to clean; an attempt for a saved account never
+     * owes more than its own traces, so it is never handed out.
+     */
+    public static function nextToClean(): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('cleanup_pending', true)
+            ->whereNull('account_id')
+            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
+            ->whereNotNull('directory')
+            ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
+            ->orderBy('updated_at')
+            ->first();
+    }
+
+    /**
+     * The owner's unfinished new-account sign-ins whose folder still waits for its cleanup, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function pendingCleanups(): array
+    {
+        $attempts = self::query()
+            ->where('cleanup_pending', true)
+            ->whereNull('account_id')
+            ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
+            ->orderBy('created_at')
+            ->readLimit(50)
+            ->get();
+
+        return array_values($attempts->all());
+    }
+
+    /**
+     * The live attempts to sign an account in again that still wait for the account's processes to end.
+     *
+     * @return list<string>
+     */
+    public static function waitingForUsesIds(int $limit): array
+    {
+        $ids = self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('waits_for_uses', true)
+            ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
+            ->orderBy('created_at')
+            ->readLimit($limit)
+            ->pluck('id');
+
+        return array_values(array_map(strval(...), $ids->all()));
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Ends a live attempt in the given state; an attempt that made no account still owes the deletion of its folder.
+     */
+    public function end(SignInState $state): void
+    {
+        $this->state = $state;
+        $this->cleanup_pending = $this->account_id === null && $state !== SignInState::Complete;
+        $this->save();
+    }
+
+    /**
      * The program's sign-in started and now waits for its user; only from here may a verified result complete it.
      */
     public function waitForUser(): void
@@ -323,36 +367,6 @@ final class SignInAttempt extends Model implements ReadableModel
         $account->writerFor($this);
         $this->generation = $account->sign_in_generation;
         $this->save();
-    }
-
-    /**
-     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
-     * in again that may have changed is checked before starts use it again.
-     */
-    public function finish(SignInState $state): void
-    {
-        $this->end($state);
-
-        if ($this->account_id !== null) {
-            Account::lockedForJournal($this->account_id)->endSignInAgain($this);
-        }
-    }
-
-    /**
-     * The ended attempt whose new account's folder a host has still to clean; an attempt for a saved account never
-     * owes more than its own traces, so it is never handed out.
-     */
-    public static function nextToClean(): self|null
-    {
-        return self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('cleanup_pending', true)
-            ->whereNull('account_id')
-            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
-            ->whereNotNull('directory')
-            ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-            ->orderBy('updated_at')
-            ->first();
     }
 
     /**
@@ -396,29 +410,6 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * The owner's unfinished new-account sign-ins whose folder still waits for its cleanup, oldest first.
-     *
-     * @return list<self>
-     */
-    public static function pendingCleanups(): array
-    {
-        $attempts = self::query()
-            ->where('cleanup_pending', true)
-            ->whereNull('account_id')
-            ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-            ->orderBy('created_at')
-            ->readLimit(50)
-            ->get();
-
-        return array_values($attempts->all());
-    }
-
-    public function awaitsCleanupRetry(): bool
-    {
-        return $this->cleanup_pending && $this->cleanup_tries >= CleanupProgress::MOST_TRIES;
-    }
-
-    /**
      * Every process on the account's folder ended: a host may now take the attempt.
      */
     public function releaseForHost(): void
@@ -427,22 +418,39 @@ final class SignInAttempt extends Model implements ReadableModel
         $this->save();
     }
 
-    /**
-     * The live attempts to sign an account in again that still wait for the account's processes to end.
-     *
-     * @return list<string>
-     */
-    public static function waitingForUsesIds(int $limit): array
-    {
-        $ids = self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('waits_for_uses', true)
-            ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
-            ->orderBy('created_at')
-            ->readLimit($limit)
-            ->pluck('id');
+    // ----------[ Answers ]----------
 
-        return array_values(array_map(strval(...), $ids->all()));
+    public function type(): SignInType
+    {
+        return $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain;
+    }
+
+    public function isLive(): bool
+    {
+        return $this->state->isLive();
+    }
+
+    public function isExpiredAt(CarbonImmutable $now): bool
+    {
+        return $this->expires_at <= $now;
+    }
+
+    /**
+     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
+     * in again that may have changed is checked before starts use it again.
+     */
+    public function finish(SignInState $state): void
+    {
+        $this->end($state);
+
+        if ($this->account_id !== null) {
+            Account::lockedForJournal($this->account_id)->endSignInAgain($this);
+        }
+    }
+
+    public function awaitsCleanupRetry(): bool
+    {
+        return $this->cleanup_pending && $this->cleanup_tries >= CleanupProgress::MOST_TRIES;
     }
 
     /**
@@ -454,6 +462,8 @@ final class SignInAttempt extends Model implements ReadableModel
         return $this->state->canComplete() && ! $this->isExpiredAt($now) && $this->generation === $generation;
     }
 
+    // ----------[ Relations ]----------
+
     /**
      * @return BelongsTo<Account, $this>
      */
@@ -461,6 +471,8 @@ final class SignInAttempt extends Model implements ReadableModel
     {
         return $this->belongsTo(Account::class);
     }
+
+    // ----------[ Internals ]----------
 
     /**
      * @throws SignInAttemptMissing
@@ -481,6 +493,8 @@ final class SignInAttempt extends Model implements ReadableModel
         $this->expires_at = $expiresAt;
         $this->save();
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

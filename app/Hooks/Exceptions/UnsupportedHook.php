@@ -11,9 +11,9 @@ use LogicException;
  */
 final class UnsupportedHook extends LogicException
 {
-    public static function for(string $program, string $hookMethod): self
+    public static function for(string $program, string $method): self
     {
-        return new self("The {$program} adapter does not map {$hookMethod}.");
+        return new self("The {$program} adapter does not map {$method}.");
     }
 
     public static function forTool(string $program, string $toolName): self

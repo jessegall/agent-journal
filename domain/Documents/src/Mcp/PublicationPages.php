@@ -11,6 +11,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
 use App\Records\Support\RecordIdentity;
 use App\Text\Support\MarkdownText;
+use App\Text\Support\TextPreview;
 use Domain\Documents\Values\DocumentReadCard;
 use Domain\Documents\Values\ReportReadCard;
 
@@ -35,7 +36,7 @@ final readonly class PublicationPages
         $entries = [];
         $length = strlen(json_encode($abstract, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
         foreach (array_slice($outline, $position->offset - 1, self::OUTLINE_ENTRIES) as $heading) {
-            $excerpt = mb_strcut($heading, 0, 70);
+            $excerpt = TextPreview::within($heading, 70);
             $length += strlen(json_encode($excerpt, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)) + 1;
             if ($entries !== [] && $length > 6200) {
                 break;

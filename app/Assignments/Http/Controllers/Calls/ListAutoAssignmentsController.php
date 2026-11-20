@@ -21,12 +21,12 @@ final readonly class ListAutoAssignmentsController
         ListAutoAssignmentsCall $call,
         CurrentActor $actors,
         AutoAssignmentAccess $access,
-        AutoAssignmentResolver $autoAssignments,
+        AutoAssignmentResolver $assignments,
     ): AutoAssignmentPageData {
         $actor = new ActorIdentity($call->actorType, strtolower($call->actorId));
         $access->assertMayRead($actors->actor(), $actor);
         $page = new Page($call->after === null ? null : strtolower($call->after));
 
-        return AutoAssignmentPageData::of($autoAssignments->listFor($actor, $page));
+        return AutoAssignmentPageData::of($assignments->listFor($actor, $page));
     }
 }

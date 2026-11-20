@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Data;
 
+use App\Text\Support\TextPreview;
+
 final readonly class SearchHit
 {
     private function __construct(
@@ -34,6 +36,6 @@ final readonly class SearchHit
     {
         $words = preg_replace('/[\p{C}\s]+/u', ' ', $text);
 
-        return mb_strcut((string) $words, 0, $bytes);
+        return TextPreview::within((string) $words, $bytes);
     }
 }

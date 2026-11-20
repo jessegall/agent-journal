@@ -59,6 +59,8 @@ final class ResultReceipt extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -87,6 +89,8 @@ final class ResultReceipt extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Mutations ]----------
+
     /**
      * This receipt no longer stands: a newer one for the same part replaced it.
      */
@@ -95,6 +99,8 @@ final class ResultReceipt extends Model implements ReadableModel
         $this->superseded_by_id = $newer->id;
         $this->save();
     }
+
+    // ----------[ Answers ]----------
 
     /**
      * The canonical operation of the part this receipt is the result of.
@@ -118,6 +124,8 @@ final class ResultReceipt extends Model implements ReadableModel
     {
         return $this->superseded_by_id === null;
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

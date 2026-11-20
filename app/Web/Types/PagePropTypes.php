@@ -110,11 +110,11 @@ final readonly class PagePropTypes
     }
 
     /**
-     * @param  class-string  $dataClass
+     * @param  class-string  $class
      */
-    private function dataName(string $dataClass): string
+    private function dataName(string $class): string
     {
-        return class_basename($dataClass);
+        return class_basename($class);
     }
 
     /**

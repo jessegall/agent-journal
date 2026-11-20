@@ -80,6 +80,8 @@ final class CommandReceipt extends Model implements ReadableModel
      */
     public const int CONTRACT_MAJOR = 1;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -103,22 +105,6 @@ final class CommandReceipt extends Model implements ReadableModel
                 ReceiptCallers::class,
             )->current()->limitReadable($query),
         );
-    }
-
-    /**
-     * The caller's receipt of the command under the key, locked for this transaction, if it has one.
-     *
-     * @param  class-string  $command
-     */
-    public static function lockedFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
-    {
-        $query = self::query()->withoutGlobalScope('caller');
-        $caller->limit($query);
-
-        return $query->where('command', $command)->where(
-            'contract_major',
-            self::CONTRACT_MAJOR,
-        )->where('request_key', $requestKey)->lockForUpdate()->first();
     }
 
     /**
@@ -170,33 +156,22 @@ final class CommandReceipt extends Model implements ReadableModel
         self::query()->create([...self::keyColumns($caller, $requestKey, $command, $retention), ...$refusal]);
     }
 
+    // ----------[ Queries ]----------
+
     /**
-     * @return array<string, mixed>
+     * The caller's receipt of the command under the key, locked for this transaction, if it has one.
+     *
+     * @param  class-string  $command
      */
-    private static function keyColumns(
-        ReceiptCaller $caller,
-        string $requestKey,
-        object $command,
-        ReceiptRetention $retention,
-    ): array {
-        $now = CarbonImmutable::now();
-
-        return [
-            ...$caller->columns(),
-            'contract_major' => self::CONTRACT_MAJOR,
-            'request_key' => $requestKey,
-            'command' => $command::class,
-            'fingerprint' => PlainValue::fingerprintOf($command),
-            'answers_until' => $retention->answersUntil($now),
-            'refuses_until' => $retention->refusesUntil($now),
-        ];
-    }
-
-    public function complete(mixed $commandReply): void
+    public static function lockedFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
     {
-        $this->state = ReceiptState::Completed;
-        $this->result = ['value' => PlainValue::of($commandReply), 'php' => base64_encode(serialize($commandReply))];
-        $this->save();
+        $query = self::query()->withoutGlobalScope('caller');
+        $caller->limit($query);
+
+        return $query->where('command', $command)->where(
+            'contract_major',
+            self::CONTRACT_MAJOR,
+        )->where('request_key', $requestKey)->lockForUpdate()->first();
     }
 
     /**
@@ -214,6 +189,17 @@ final class CommandReceipt extends Model implements ReadableModel
             ],
         );
     }
+
+    // ----------[ Mutations ]----------
+
+    public function complete(mixed $reply): void
+    {
+        $this->state = ReceiptState::Completed;
+        $this->result = ['value' => PlainValue::of($reply), 'php' => base64_encode(serialize($reply))];
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
 
     /**
      * Whether this receipt's key may answer the command: the key expired and is used again, or it holds this command.
@@ -271,6 +257,32 @@ final class CommandReceipt extends Model implements ReadableModel
             CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now()),
         );
     }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function keyColumns(
+        ReceiptCaller $caller,
+        string $requestKey,
+        object $command,
+        ReceiptRetention $retention,
+    ): array {
+        $now = CarbonImmutable::now();
+
+        return [
+            ...$caller->columns(),
+            'contract_major' => self::CONTRACT_MAJOR,
+            'request_key' => $requestKey,
+            'command' => $command::class,
+            'fingerprint' => PlainValue::fingerprintOf($command),
+            'answers_until' => $retention->answersUntil($now),
+            'refuses_until' => $retention->refusesUntil($now),
+        ];
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * Receipts of every caller whose answer is kept no longer and that are not yet expired, for the prune.

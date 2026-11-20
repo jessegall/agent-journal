@@ -16,8 +16,8 @@ final class RecordProviderInvalid extends LogicException
         return new self("A record provider is already registered for {$type}.");
     }
 
-    public static function notAProvider(string $type, string $providerClass): self
+    public static function notAProvider(string $type, string $class): self
     {
-        return new self("{$providerClass}, registered for {$type}, is no record provider.");
+        return new self("{$class}, registered for {$type}, is no record provider.");
     }
 }

@@ -50,6 +50,8 @@ final class HelperIdentity extends Model implements ReadableModel
         'helper_actor_id',
     ];
 
+    // ----------[ Constructors ]----------
+
     protected static function booted(): void
     {
         self::updating(function (self $identity): void {
@@ -97,15 +99,7 @@ final class HelperIdentity extends Model implements ReadableModel
         return $identity;
     }
 
-    /**
-     * Gives up this helper's designation once its agent retired, so a replacement can take it; a designation another
-     * transaction already moved is left alone.
-     */
-    public function releaseDesignation(): void
-    {
-        self::query()->acrossActors()->whereKey($this->id)->whereNotNull('designated_profile')
-            ->update(['designated_profile' => null]);
-    }
+    // ----------[ Queries ]----------
 
     /**
      * The helper designated for the profile, whoever holds it.
@@ -117,6 +111,20 @@ final class HelperIdentity extends Model implements ReadableModel
         return Option::fromValue(self::query()->acrossActors()->where('designated_profile', $profileKey)->first());
     }
 
+    // ----------[ Mutations ]----------
+
+    /**
+     * Gives up this helper's designation once its agent retired, so a replacement can take it; a designation another
+     * transaction already moved is left alone.
+     */
+    public function releaseDesignation(): void
+    {
+        self::query()->acrossActors()->whereKey($this->id)->whereNotNull('designated_profile')
+            ->update(['designated_profile' => null]);
+    }
+
+    // ----------[ Answers ]----------
+
     /**
      * The lasting actor this identity represents.
      */
@@ -125,15 +133,17 @@ final class HelperIdentity extends Model implements ReadableModel
         return new ActorIdentity(ActorType::from($this->helper_actor_type), $this->helper_actor_id);
     }
 
+    // ----------[ Scopes ]----------
+
     /**
      * The parent's identities of one profile key and base, the only ones a start may reuse for that profile.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofProfile(Builder $query, string $profileKey, string $profileBase): void
+    protected function ofProfile(Builder $query, string $profileKey, string $base): void
     {
-        $query->where('profile_key', $profileKey)->where('profile_base', $profileBase);
+        $query->where('profile_key', $profileKey)->where('profile_base', $base);
     }
 
     /**

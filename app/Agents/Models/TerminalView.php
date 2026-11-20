@@ -66,6 +66,8 @@ final class TerminalView extends Model implements ReadableModel
 
     public const int DEFAULT_INTERVAL_MS = 500;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -99,6 +101,8 @@ final class TerminalView extends Model implements ReadableModel
         return $view;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * Ends every view whose lease ran out unrenewed, in one update.
      */
@@ -131,13 +135,7 @@ final class TerminalView extends Model implements ReadableModel
             ->delete();
     }
 
-    /**
-     * @return BelongsTo<AgentRuntime, $this>
-     */
-    public function runtime(): BelongsTo
-    {
-        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * Keeps the view live for one lease from now.
@@ -158,6 +156,14 @@ final class TerminalView extends Model implements ReadableModel
         $this->save();
     }
 
+    public function close(CarbonImmutable $now): void
+    {
+        $this->closed_at = $now;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
     /**
      * Whether the view still watches the runtime as it ran when the view opened or last followed it.
      */
@@ -166,16 +172,22 @@ final class TerminalView extends Model implements ReadableModel
         return $this->agent_runtime_id === $runtime->id && $this->process_generation === $runtime->process_generation;
     }
 
-    public function close(CarbonImmutable $now): void
-    {
-        $this->closed_at = $now;
-        $this->save();
-    }
-
     public function isLive(): bool
     {
         return $this->closed_at === null;
     }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<AgentRuntime, $this>
+     */
+    public function runtime(): BelongsTo
+    {
+        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<static>  $query

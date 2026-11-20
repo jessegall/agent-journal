@@ -40,6 +40,8 @@ final class Profile extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.profile';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -72,6 +74,8 @@ final class Profile extends Model implements ReadableModel
 
         return $revision;
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The profile with this key, retired or not, locked until the transaction ends.
@@ -108,6 +112,8 @@ final class Profile extends Model implements ReadableModel
         return array_values(self::query()->orderBy('key')->readLimit($limit)->get()->all());
     }
 
+    // ----------[ Mutations ]----------
+
     /**
      * Takes the profile out of new starts; its key and revisions stay.
      */
@@ -117,10 +123,14 @@ final class Profile extends Model implements ReadableModel
         $this->save();
     }
 
+    // ----------[ Answers ]----------
+
     public function isRetired(): bool
     {
         return $this->retired_at !== null;
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

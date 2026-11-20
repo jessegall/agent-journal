@@ -17,6 +17,7 @@ use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsMcpFrames;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -63,7 +64,7 @@ final class MenuToolsTest extends TestCase
 
         $listed = $this->callMcpTool($this->caller, 'menu_list')
             ->assertJsonPath('result.isError', false)
-            ->json('result.structuredContent.entries');
+            ->json('result.structuredContent.cards');
         $shown = $this->callMcpTool($this->caller, 'menu_show', ['entry' => $entry->id])
             ->assertJsonPath('result.isError', false)
             ->json('result.structuredContent');
@@ -75,13 +76,37 @@ final class MenuToolsTest extends TestCase
         $this->assertSame('GPT-6', $shown['steps'][0]['choose']);
     }
 
+    #[TimeLimit(20, 'It proves 51 menu entries, one stalled script each.')]
+    public function test_a_list_past_one_page_names_its_total_and_the_next_page_reads_the_rest(): void
+    {
+        $ids = array_map(fn (int $count) => $this->entryOf('owner')->id, range(1, 51));
+
+        $answer = $this->callMcpTool($this->caller, 'menu_list')->json('result.structuredContent');
+        $total = $answer['total'];
+        $listed = array_column($answer['cards'], 'id');
+        for ($read = 1; ($answer['next_actions'] ?? []) !== [] && $read < 10; $read++) {
+            $next = $answer['next_actions'][0];
+            $answer = $this->callMcpTool(
+                $this->caller,
+                $next['tool'],
+                $next['arguments'],
+            )->json('result.structuredContent');
+            $listed = [...$listed, ...array_column($answer['cards'], 'id')];
+        }
+
+        $this->assertSame(51, $total);
+        $this->assertGreaterThan(1, $read);
+        $this->assertCount(51, $listed);
+        $this->assertEqualsCanonicalizing($ids, $listed);
+    }
+
     public function test_another_actors_entry_is_not_found(): void
     {
         $entry = $this->entryOf('someone-else');
 
         $this->callMcpTool($this->caller, 'menu_show', ['entry' => $entry->id])
             ->assertJsonPath('result.isError', true);
-        $listed = $this->callMcpTool($this->caller, 'menu_list')->json('result.structuredContent.entries');
+        $listed = $this->callMcpTool($this->caller, 'menu_list')->json('result.structuredContent.cards');
         $this->assertSame([], $listed);
     }
 

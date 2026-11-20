@@ -52,6 +52,8 @@ final class EvidenceRead extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -78,6 +80,8 @@ final class EvidenceRead extends Model implements ReadableModel
             'end_byte' => $range->endByte,
         ]);
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

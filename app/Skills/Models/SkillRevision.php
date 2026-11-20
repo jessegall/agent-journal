@@ -71,6 +71,8 @@ final class SkillRevision extends Model implements ReadableModel
      */
     public const int CONDITION_VERSION = 1;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -121,6 +123,8 @@ final class SkillRevision extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Queries ]----------
+
     public static function currentOf(Skill $skill): self
     {
         return self::query()->ofSkill($skill)->whereKey($skill->current_revision_id)->firstOrFail();
@@ -158,6 +162,8 @@ final class SkillRevision extends Model implements ReadableModel
         return array_values(self::query()->ofSkill($skill)->orderByDesc('revision')->readLimit($limit)->get()->all());
     }
 
+    // ----------[ Answers ]----------
+
     /**
      * The revision's condition, read through the condition tree as it stands today.
      */
@@ -185,6 +191,8 @@ final class SkillRevision extends Model implements ReadableModel
             json_encode($this->condition, JSON_THROW_ON_ERROR),
         );
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

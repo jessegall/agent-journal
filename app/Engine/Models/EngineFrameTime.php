@@ -33,6 +33,8 @@ final class EngineFrameTime extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -43,19 +45,21 @@ final class EngineFrameTime extends Model implements ReadableModel
         ];
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The settled time of each frame that has one, by frame id, in one read.
      *
-     * @param  list<string>  $frameIds
+     * @param  list<string>  $ids
      * @return array<string, CarbonImmutable>
      */
-    public static function settledAtFor(array $frameIds): array
+    public static function settledAtFor(array $ids): array
     {
-        if ($frameIds === []) {
+        if ($ids === []) {
             return [];
         }
 
-        return self::query()->whereIn('frame_id', $frameIds)->readLimit(count($frameIds))->get()
+        return self::query()->whereIn('frame_id', $ids)->readLimit(count($ids))->get()
             ->mapWithKeys(fn (self $time) => [$time->frame_id => $time->settled_at])
             ->all();
     }

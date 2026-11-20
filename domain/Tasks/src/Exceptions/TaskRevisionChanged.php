@@ -18,12 +18,12 @@ final class TaskRevisionChanged extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
-    public static function for(int $taskNumber, int $expected, int $current): self
+    public static function for(int $number, int $expected, int $current): self
     {
         return new self(
             sprintf(
                 'Task %s is at revision %s, not %s; read it again with tasks_read and edit that revision.',
-                $taskNumber,
+                $number,
                 $current,
                 $expected,
             ),

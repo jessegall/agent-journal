@@ -13,9 +13,9 @@ use App\Mcp\Tools\JournalWriteTool;
  */
 abstract class MessageWriteTool extends JournalWriteTool
 {
-    final protected function present(mixed $messageAnswer): ToolResult
+    final protected function present(mixed $answer): ToolResult
     {
-        return ToolResult::ok($this->payload($messageAnswer), []);
+        return ToolResult::ok($this->payload($answer), []);
     }
 
     /**

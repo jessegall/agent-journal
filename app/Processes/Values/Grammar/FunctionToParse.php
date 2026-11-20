@@ -16,15 +16,15 @@ final readonly class FunctionToParse
     private function __construct(public CommandToParse $toParse, public int $start) {}
 
     /**
-     * @param  int  $headerTokens  how many tokens come before the body: the name, (), and the function keyword
+     * @param  int  $tokens  how many tokens come before the body: the name, (), and the function keyword
      *
      * @throws ShellGrammarStopped
      */
-    public static function afterHeader(CommandToParse $toParse, int $headerTokens): self
+    public static function afterHeader(CommandToParse $command, int $tokens): self
     {
-        $cursor = $toParse->cursor();
+        $cursor = $command->cursor();
         $start = $cursor->position();
-        for ($skipped = 0; $skipped < $headerTokens; $skipped++) {
+        for ($skipped = 0; $skipped < $tokens; $skipped++) {
             $cursor->advance();
         }
         $cursor->skip(TokenType::Newline);
@@ -32,6 +32,6 @@ final readonly class FunctionToParse
             throw ShellGrammarStopped::invalid('A function definition has no body.', $start);
         }
 
-        return new self($toParse, $start);
+        return new self($command, $start);
     }
 }

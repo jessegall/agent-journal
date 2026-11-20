@@ -158,12 +158,12 @@ final readonly class SkillAuthoring
      *
      * @return list<string>
      */
-    public function savedLines(SkillRevisionResult $savedRevision): array
+    public function savedLines(SkillRevisionResult $revision): array
     {
-        $skill = Skill::query()->whereKey($savedRevision->skillId)->firstOrFail();
+        $skill = Skill::query()->whereKey($revision->skillId)->firstOrFail();
 
         return [
-            "Skill {$savedRevision->number} ({$skill->key}): revision {$savedRevision->revision} saved;"
+            "Skill {$revision->number} ({$skill->key}): revision {$revision->revision} saved;"
             .' publication pending.',
             ...$this->statusLines($skill),
         ];

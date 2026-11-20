@@ -52,9 +52,9 @@ final readonly class BooleanSetting implements Setting
         return $this->default;
     }
 
-    public function catalogueValue(string|bool|int|Decimal|BackedEnum $settingInput): CatalogueValue
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue
     {
-        return BooleanValueData::from(['value' => $settingInput]);
+        return BooleanValueData::from(['value' => $input]);
     }
 
     public function catalogueConstraints(): CatalogueConstraints|Optional

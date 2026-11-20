@@ -25,14 +25,14 @@ final class AssignmentResultData extends Data
         public readonly int $changed,
     ) {}
 
-    public static function of(AssignmentResult $assignmentChange, AssignmentHolders $holders): self
+    public static function of(AssignmentResult $change, AssignmentHolders $holders): self
     {
         return new self(
             array_map(fn (AssignmentOutcome $outcome) => new AssignmentOutcomeData(
                 RecordHolderData::of($outcome->record, $holders->forRecord($outcome->record)),
                 $outcome->type,
-            ), $assignmentChange->outcomes),
-            count($assignmentChange->changes),
+            ), $change->outcomes),
+            count($change->changes),
         );
     }
 }

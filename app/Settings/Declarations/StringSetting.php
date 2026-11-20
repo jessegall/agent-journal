@@ -74,12 +74,12 @@ final readonly class StringSetting implements Setting
     /**
      * Whether a value is valid UTF-8 and within this setting's lengths.
      */
-    public function accepts(string $settingInput): bool
+    public function accepts(string $input): bool
     {
         return mb_check_encoding(
-            $settingInput,
+            $input,
             'UTF-8',
-        ) && strlen($settingInput) >= $this->minimumLength && strlen($settingInput) <= $this->maximumLength;
+        ) && strlen($input) >= $this->minimumLength && strlen($input) <= $this->maximumLength;
     }
 
     public function defaultValue(): string
@@ -87,9 +87,9 @@ final readonly class StringSetting implements Setting
         return $this->default;
     }
 
-    public function catalogueValue(string|bool|int|Decimal|BackedEnum $settingInput): CatalogueValue
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $input): CatalogueValue
     {
-        return StringValueData::from(['value' => $settingInput]);
+        return StringValueData::from(['value' => $input]);
     }
 
     public function catalogueConstraints(): CatalogueConstraints|Optional

@@ -45,6 +45,8 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
      */
     private const int HEALTHY_SECONDS = 45;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -60,11 +62,11 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     /**
      * A new endpoint version of the configuration, opening under the run on the configuration's public origin.
      */
-    public static function openFor(ShareGatewayConfiguration $configuration, int $endpointVersion, string $runId): self
+    public static function openFor(ShareGatewayConfiguration $configuration, int $version, string $runId): self
     {
         $endpoint = new self();
         $endpoint->share_gateway_configuration_id = $configuration->id;
-        $endpoint->endpoint_version = $endpointVersion;
+        $endpoint->endpoint_version = $version;
         $endpoint->run_id = $runId;
         $endpoint->public_origin = $configuration->settings->publicOrigin;
         $endpoint->state = GatewayEndpointState::Opening;
@@ -72,6 +74,8 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
 
         return $endpoint;
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Counts every endpoint another run opened as stopped: a new run never adopts a process it did not start.
@@ -125,37 +129,6 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     }
 
     /**
-     * The key of the gateway this endpoint's configuration uses.
-     */
-    public function gatewayKey(): string
-    {
-        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
-    }
-
-    /**
-     * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
-     */
-    public function toGatewayEndpoint(): GatewayEndpoint
-    {
-        return new GatewayEndpoint(
-            $this->run_id,
-            $this->endpoint_version,
-            $this->public_origin,
-            GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
-        );
-    }
-
-    /**
-     * Whether the endpoint answered a health check within the last 45 seconds.
-     */
-    public function isHealthy(): bool
-    {
-        return $this->last_health_at !== null && $this->last_health_at->isAfter(
-            CarbonImmutable::now()->subSeconds(self::HEALTHY_SECONDS),
-        );
-    }
-
-    /**
      * Whether any endpoint version of the configuration is opening or open, under any run.
      */
     public static function anyRunningOf(ShareGatewayConfiguration $configuration): bool
@@ -187,18 +160,15 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
      *
      * @throws GatewayLeaseRefused
      */
-    public static function lockHeldBy(string $configurationId, int $endpointVersion, string $runId): self
+    public static function lockHeldBy(string $configurationId, int $version, string $runId): self
     {
         return self::query()->ofConfiguration($configurationId)->where(
             'endpoint_version',
-            $endpointVersion,
-        )->ofRun($runId)->lockForUpdate()->firstOr(fn () => throw GatewayLeaseRefused::forEndpoint($configurationId, $endpointVersion));
+            $version,
+        )->ofRun($runId)->lockForUpdate()->firstOr(fn () => throw GatewayLeaseRefused::forEndpoint($configurationId, $version));
     }
 
-    public function isVersion(int $endpointVersion): bool
-    {
-        return $this->endpoint_version === $endpointVersion;
-    }
+    // ----------[ Mutations ]----------
 
     public function moveTo(GatewayEndpointState $state): void
     {
@@ -214,6 +184,46 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
         $this->last_health_at = CarbonImmutable::now();
         $this->save();
     }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The key of the gateway this endpoint's configuration uses.
+     */
+    public function gatewayKey(): string
+    {
+        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
+    }
+
+    /**
+     * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
+     */
+    public function toGatewayEndpoint(): GatewayEndpoint
+    {
+        return new GatewayEndpoint(
+            $this->run_id,
+            $this->endpoint_version,
+            $this->public_origin,
+            GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
+        );
+    }
+
+    /**
+     * Whether the endpoint answered a health check within the last 45 seconds.
+     */
+    public function isHealthy(): bool
+    {
+        return $this->last_health_at !== null && $this->last_health_at->isAfter(
+            CarbonImmutable::now()->subSeconds(self::HEALTHY_SECONDS),
+        );
+    }
+
+    public function isVersion(int $version): bool
+    {
+        return $this->endpoint_version === $version;
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

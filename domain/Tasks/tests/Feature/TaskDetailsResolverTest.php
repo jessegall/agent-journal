@@ -32,6 +32,7 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
+use Spatie\LaravelData\Optional;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\AssignmentWriterInTransaction;
@@ -98,8 +99,11 @@ final class TaskDetailsResolverTest extends TestCase
                 $details->execution?->state,
             ],
         );
-        $this->assertSame('Held by one, run by another.', $details->brief);
-        $this->assertNull($this->app->make(TaskDetailsResolver::class)->details($task->id, ReadView::Summary)->brief);
+        $this->assertSame('Held by one, run by another.', $details->text->brief);
+        $this->assertInstanceOf(
+            Optional::class,
+            $this->app->make(TaskDetailsResolver::class)->details($task->id, ReadView::Summary)->text,
+        );
     }
 
     #[TimeLimit(3, 'It creates twenty tasks, each with its own session and run, before the read.')]

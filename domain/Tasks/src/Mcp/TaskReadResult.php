@@ -13,6 +13,7 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
 use App\Reads\Enums\ReadView;
 use Domain\Tasks\Api\TaskDetails;
+use Domain\Tasks\Api\TaskText;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Http\Data\TaskExecutionData;
 
@@ -82,11 +83,15 @@ final readonly class TaskReadResult
      */
     private function text(TaskDetails $task): array
     {
+        if (! $task->text instanceof TaskText) {
+            return [];
+        }
+
         return array_filter([
-            'brief' => $task->brief,
-            'result_note' => $task->resultNote,
-            'block_reason' => $task->blockReason,
-            'cancel_reason' => $task->cancelReason,
+            'brief' => $task->text->brief,
+            'result_note' => $task->text->resultNote,
+            'block_reason' => $task->text->blockReason,
+            'cancel_reason' => $task->text->cancelReason,
         ], is_string(...));
     }
 }

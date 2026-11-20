@@ -18,9 +18,9 @@ final class TaskNotOpenForAssignment extends RuntimeException implements CodedRe
 {
     use RendersRefusal;
 
-    public static function forTask(int $taskNumber, string $state): self
+    public static function forTask(int $number, string $state): self
     {
-        return new self("Task {$taskNumber} is {$state}; only an open task is given out automatically.");
+        return new self("Task {$number} is {$state}; only an open task is given out automatically.");
     }
 
     public function refusalCode(): RefusalCode

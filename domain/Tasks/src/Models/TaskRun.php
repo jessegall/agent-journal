@@ -41,6 +41,8 @@ final class TaskRun extends Model implements Assignable, ReadableModel
 
     public const string LINK_TYPE = 'tasks.run';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, mixed>
      */
@@ -54,11 +56,11 @@ final class TaskRun extends Model implements Assignable, ReadableModel
      *
      * @param  Option<string>  $replyInboxId
      */
-    public static function startFor(Task $task, int $runNumber, ActorIdentity $starter, Option $replyInboxId): self
+    public static function startFor(Task $task, int $number, ActorIdentity $starter, Option $replyInboxId): self
     {
         $run = new self([
             'task_id' => $task->id,
-            'run_number' => $runNumber,
+            'run_number' => $number,
             'started_by_type' => $starter->type->value,
             'started_by_id' => $starter->id,
             'state' => TaskRunState::Running,
@@ -69,6 +71,8 @@ final class TaskRun extends Model implements Assignable, ReadableModel
         return $run;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The task's current run, opened by the starter the first time it is asked for.
      *
@@ -78,16 +82,6 @@ final class TaskRun extends Model implements Assignable, ReadableModel
     {
         return self::ofTask($task, $task->run_number)
             ?? self::startFor($task, $task->run_number, $starter, $replyInboxId);
-    }
-
-    /**
-     * The inbox the run answers to, when its dispatcher had one.
-     *
-     * @return Option<string>
-     */
-    public function replyInboxId(): Option
-    {
-        return Option::fromValue($this->reply_inbox_id);
     }
 
     /**
@@ -105,15 +99,12 @@ final class TaskRun extends Model implements Assignable, ReadableModel
     /**
      * The task's run of this number, when it was started.
      */
-    public static function ofTask(Task $task, int $runNumber): self|null
+    public static function ofTask(Task $task, int $number): self|null
     {
-        return self::query()->where('task_id', $task->id)->where('run_number', $runNumber)->first();
+        return self::query()->where('task_id', $task->id)->where('run_number', $number)->first();
     }
 
-    public function isFinished(): bool
-    {
-        return $this->state === TaskRunState::Finished;
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * @throws TaskRunFinished
@@ -127,6 +118,23 @@ final class TaskRun extends Model implements Assignable, ReadableModel
         $this->state = TaskRunState::Finished;
         $this->outcome = $outcome;
         $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * The inbox the run answers to, when its dispatcher had one.
+     *
+     * @return Option<string>
+     */
+    public function replyInboxId(): Option
+    {
+        return Option::fromValue($this->reply_inbox_id);
+    }
+
+    public function isFinished(): bool
+    {
+        return $this->state === TaskRunState::Finished;
     }
 
     /**

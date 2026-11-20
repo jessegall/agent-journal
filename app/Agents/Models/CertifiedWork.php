@@ -36,6 +36,8 @@ final class CertifiedWork extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Queries ]----------
+
     /**
      * Records the certificate of the start's work, with the checkout frozen in its session's policy; recording the
      * same certificate again finds the first.
@@ -67,6 +69,8 @@ final class CertifiedWork extends Model implements ReadableModel
             ->where('certificate', $certificate)
             ->firstOr(fn () => throw HelperWorkUncertified::for($work, $certificate));
     }
+
+    // ----------[ Answers ]----------
 
     /**
      * The work the certificate is for.

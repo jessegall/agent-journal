@@ -34,6 +34,8 @@ final class SkillReceipt extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -45,6 +47,8 @@ final class SkillReceipt extends Model implements ReadableModel
             'read_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Records the read once per session, context, skill and text.

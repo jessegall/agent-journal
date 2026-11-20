@@ -30,6 +30,8 @@ final class ProfileDraftRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return ['revision' => 'integer', 'commands' => 'array', 'author_type' => ActorType::class];
@@ -46,6 +48,8 @@ final class ProfileDraftRevision extends Model implements ReadableModel
             'author_id' => $author->id,
         ]);
     }
+
+    // ----------[ Answers ]----------
 
     public function scriptSource(): ScriptSource
     {

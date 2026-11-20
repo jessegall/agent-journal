@@ -11,6 +11,7 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
 use App\Records\Support\RecordIdentity;
 use App\Text\Support\MarkdownText;
+use App\Text\Support\TextPreview;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Enums\PublicationView;
 use Domain\Documents\Mcp\PublicationChunks;
@@ -120,7 +121,7 @@ final readonly class DocumentPages implements DocumentReader
             ...$card->toArray(),
             'revisions' => $page->map(fn (DocumentRevision $revision) => [
                 'revision' => $revision->number,
-                'title' => mb_strcut($revision->title, 0, 100),
+                'title' => TextPreview::within($revision->title, 100),
                 'author_type' => $revision->author_type->value,
                 'author_id' => $revision->author_id,
             ])->all(),

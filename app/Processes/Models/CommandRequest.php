@@ -68,6 +68,8 @@ final class CommandRequest extends Model implements ReadableModel
 
     public const int EXCERPT_LENGTH = 200;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -96,6 +98,8 @@ final class CommandRequest extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The line as a request shows it: control bytes as spaces, cut to the excerpt length.
      */
@@ -103,6 +107,16 @@ final class CommandRequest extends Model implements ReadableModel
     {
         return mb_substr((string) preg_replace('/[\x00-\x1F\x7F]/', ' ', $line), 0, self::EXCERPT_LENGTH);
     }
+
+    /**
+     * The request with that id, locked for the change about to be made to it.
+     */
+    public static function lockedForChange(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->sole();
+    }
+
+    // ----------[ Answers ]----------
 
     public function nextStep(): NextStep
     {
@@ -289,6 +303,8 @@ final class CommandRequest extends Model implements ReadableModel
         $this->moveTo(RequestState::Withdrawn);
     }
 
+    // ----------[ Internals ]----------
+
     /**
      * @throws RequestTransitionRefused
      */
@@ -305,6 +321,8 @@ final class CommandRequest extends Model implements ReadableModel
     {
         return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep()->steps));
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query
@@ -335,13 +353,5 @@ final class CommandRequest extends Model implements ReadableModel
             RequestState::Rejected->value,
             RequestState::Withdrawn->value,
         ]);
-    }
-
-    /**
-     * The request with that id, locked for the change about to be made to it.
-     */
-    public static function lockedForChange(string $id): self
-    {
-        return self::query()->whereKey($id)->lockForUpdate()->sole();
     }
 }

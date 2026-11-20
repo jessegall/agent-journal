@@ -101,6 +101,8 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
      */
     protected $attributes = ['row_version' => 1];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -160,6 +162,8 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         return $navigation;
     }
 
+    // ----------[ Queries ]----------
+
     public static function raisedForOperation(string $runtimeId, string $operationKey): self|null
     {
         return self::query()->acrossActors()
@@ -184,22 +188,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     }
 
     /**
-     * @return BelongsTo<DriverRequest, $this>
-     */
-    public function driverRequest(): BelongsTo
-    {
-        return $this->belongsTo(DriverRequest::class);
-    }
-
-    /**
-     * @return BelongsTo<AgentRuntime, $this>
-     */
-    public function runtime(): BelongsTo
-    {
-        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
-    }
-
-    /**
      * Cancels the open navigation request of a driver request that was cancelled or ended with its runtime, in the
      * same transaction; a driver request with none is left as it is.
      */
@@ -213,6 +201,8 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
             ->first();
         $open?->cancel();
     }
+
+    // ----------[ Answers ]----------
 
     /**
      * The user the request belongs to.
@@ -252,9 +242,9 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         return $this->state === NavigationState::Answering;
     }
 
-    public function isAtRowVersion(int $rowVersion): bool
+    public function isAtRowVersion(int $version): bool
     {
-        return $this->row_version === $rowVersion;
+        return $this->row_version === $version;
     }
 
     /**
@@ -347,32 +337,25 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         $this->cancelQueuedRounds();
     }
 
+    // ----------[ Relations ]----------
+
     /**
-     * @param  Builder<self>  $query
+     * @return BelongsTo<DriverRequest, $this>
      */
-    #[Scope]
-    protected function open(Builder $query): void
+    public function driverRequest(): BelongsTo
     {
-        $query->whereIn('state', NavigationState::openStates());
+        return $this->belongsTo(DriverRequest::class);
     }
 
     /**
-     * @param  Builder<self>  $query
+     * @return BelongsTo<AgentRuntime, $this>
      */
-    #[Scope]
-    protected function forRuntime(Builder $query, AgentRuntime $runtime): void
+    public function runtime(): BelongsTo
     {
-        $query->where('agent_runtime_id', $runtime->id);
+        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
     }
 
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function expiredBefore(Builder $query, CarbonImmutable $moment): void
-    {
-        $query->where('expires_at', '<', $moment);
-    }
+    // ----------[ Internals ]----------
 
     /**
      * Cancels the main agent's rounds that have not reached the host yet: the request they answer has ended.
@@ -404,5 +387,34 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     {
         $this->row_version++;
         $this->save();
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function open(Builder $query): void
+    {
+        $query->whereIn('state', NavigationState::openStates());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forRuntime(Builder $query, AgentRuntime $runtime): void
+    {
+        $query->where('agent_runtime_id', $runtime->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function expiredBefore(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('expires_at', '<', $moment);
     }
 }

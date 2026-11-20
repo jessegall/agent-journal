@@ -59,6 +59,8 @@ final class OutputAssessment extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -101,24 +103,29 @@ final class OutputAssessment extends Model implements ReadableModel
         ]);
     }
 
-    public function isValid(): bool
-    {
-        return $this->interpretation === InterpretationState::Valid && $this->problems === [];
-    }
-
     protected static function booted(): void
     {
         self::updating(fn (self $assessment) => throw RevisionImmutable::assessment($assessment->id));
     }
 
+    // ----------[ Queries ]----------
+
     /**
-     * @param  Builder<self>  $query
+     * The newest assessment of that part's output; none before its first.
      */
-    #[Scope]
-    protected function ofProject(Builder $query, string $projectKey): void
+    public static function latestOf(PartRun $part): self|null
     {
-        $query->where('project_key', $projectKey);
+        return self::query()->where('part_run_id', $part->id)->latest('created_at')->first();
     }
+
+    // ----------[ Answers ]----------
+
+    public function isValid(): bool
+    {
+        return $this->interpretation === InterpretationState::Valid && $this->problems === [];
+    }
+
+    // ----------[ Internals ]----------
 
     /**
      * @param  list<OutputProblem>  $problems
@@ -134,11 +141,14 @@ final class OutputAssessment extends Model implements ReadableModel
             : InterpretationState::Invalid;
     }
 
+    // ----------[ Scopes ]----------
+
     /**
-     * The newest assessment of that part's output; none before its first.
+     * @param  Builder<self>  $query
      */
-    public static function latestOf(PartRun $part): self|null
+    #[Scope]
+    protected function ofProject(Builder $query, string $projectKey): void
     {
-        return self::query()->where('part_run_id', $part->id)->latest('created_at')->first();
+        $query->where('project_key', $projectKey);
     }
 }

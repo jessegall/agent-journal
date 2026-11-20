@@ -41,14 +41,14 @@ final class StateEventDispatcher extends Dispatcher
         return $wrapped;
     }
 
-    public function dispatch($event, $eventArguments = [], $halt = false)
+    public function dispatch($event, $arguments = [], $halt = false)
     {
         if (! $event instanceof Event || ! $this->hasBridge($event::class)) {
-            return parent::dispatch($event, $eventArguments, $halt);
+            return parent::dispatch($event, $arguments, $halt);
         }
 
-        if ($eventArguments instanceof StateEventPayload && $eventArguments->hasKey($this->payloadKey)) {
-            return parent::dispatch($event, $eventArguments, $halt);
+        if ($arguments instanceof StateEventPayload && $arguments->hasKey($this->payloadKey)) {
+            return parent::dispatch($event, $arguments, $halt);
         }
 
         $dispatch = ($this->scope)()->capture($event);
@@ -75,17 +75,17 @@ final class StateEventDispatcher extends Dispatcher
     /**
      * @return mixed The first listener result when halting, otherwise the list of responses.
      */
-    protected function invokeListeners($event, $eventArguments, $halt = false): mixed
+    protected function invokeListeners($event, $arguments, $halt = false): mixed
     {
         if (! is_string($event) || ! $this->hasBridge($event)) {
-            return parent::invokeListeners($event, $eventArguments, $halt);
+            return parent::invokeListeners($event, $arguments, $halt);
         }
 
         $scope = ($this->scope)();
-        $captured = $eventArguments[1] ?? null;
+        $captured = $arguments[1] ?? null;
 
         if (! $captured instanceof StateEventPayload || ! $captured->hasKey($this->payloadKey)) {
-            return $scope->deliverWithoutScope(fn () => parent::invokeListeners($event, $eventArguments, $halt));
+            return $scope->deliverWithoutScope(fn () => parent::invokeListeners($event, $arguments, $halt));
         }
 
         $dispatch = $captured->dispatch;

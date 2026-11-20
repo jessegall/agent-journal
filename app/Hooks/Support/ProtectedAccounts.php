@@ -74,11 +74,11 @@ final readonly class ProtectedAccounts
      * Whether any text of a tool call reaches a protected folder, as a path from the work folder or in a command;
      * used where no grant can be read, so a session's own outputs are refused too.
      *
-     * @param  array<array-key, mixed>  $toolInput
+     * @param  array<array-key, mixed>  $input
      */
-    public function isTouchedByToolCall(array $toolInput, string $workFolder): bool
+    public function isTouchedByToolCall(array $input, string $workFolder): bool
     {
-        foreach ($toolInput as $toolArgument) {
+        foreach ($input as $toolArgument) {
             $isTouched = match (true) {
                 is_array($toolArgument) => $this->isTouchedByToolCall($toolArgument, $workFolder),
                 is_string($toolArgument) => $this->isTouchedBy($toolArgument)

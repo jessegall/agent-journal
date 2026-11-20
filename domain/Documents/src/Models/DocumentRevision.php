@@ -44,6 +44,8 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
 
     public const string LINK_TYPE = 'documents.revision';
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return [
@@ -60,6 +62,8 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
             throw RecordImmutable::for('revision');
         });
     }
+
+    // ----------[ Answers ]----------
 
     public function card(): RevisionCard
     {
@@ -91,6 +95,16 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * A revision is numbered within its document.
+     */
+    public function numberHolder(): Model
+    {
+        return $this->relationLoaded('document') ? $this->document : $this->document()->sole();
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
      * @return BelongsTo<Document, $this>
      */
     public function document(): BelongsTo
@@ -98,13 +112,7 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
         return $this->belongsTo(Document::class);
     }
 
-    /**
-     * A revision is numbered within its document.
-     */
-    public function numberHolder(): Model
-    {
-        return $this->relationLoaded('document') ? $this->document : $this->document()->sole();
-    }
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

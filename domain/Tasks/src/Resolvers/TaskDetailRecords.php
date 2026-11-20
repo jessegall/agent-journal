@@ -32,6 +32,8 @@ final readonly class TaskDetailRecords implements TaskDetailsResolver
         )->forRecord($task->assignmentIdentity());
         $execution = $this->executions->of($task->newCollection([$task]))[$task->id];
 
-        return $task->details($holder, $execution, $view->includesText());
+        return $view->includesText()
+            ? $task->detailsWithText($holder, $execution)
+            : $task->details($holder, $execution);
     }
 }

@@ -48,6 +48,8 @@ final class Skill extends Model implements Numbered, ReadableModel
 
     public const string LINK_TYPE = 'core.skill';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -70,83 +72,7 @@ final class Skill extends Model implements Numbered, ReadableModel
         );
     }
 
-    /**
-     * Appends the draft as the skill's next revision, with its checked condition, and makes it current.
-     */
-    public function appendRevision(
-        SkillDraft $draft,
-        SkillCondition $condition,
-        ActorIdentity $author,
-        string|null $sourceKey = null,
-        string|null $sourceDigest = null,
-    ): SkillRevision {
-        $revision = SkillRevision::appendTo($this, $draft, $condition, $author, $sourceKey, $sourceDigest);
-        $this->current_revision_id = $revision->id;
-        $this->save();
-
-        return $revision;
-    }
-
-    /**
-     * Appends an earlier revision's content as the next revision, with its condition checked again today.
-     */
-    public function restoreFrom(SkillRevision $earlier, SkillCondition $condition, ActorIdentity $author): SkillRevision
-    {
-        return $this->appendRevision(
-            $earlier->draft(),
-            $condition,
-            $author,
-            $earlier->source_key,
-            $earlier->source_digest,
-        );
-    }
-
-    /**
-     * Takes the skill out of every future selection, when its owner asks; its revisions stay readable. Answers the
-     * revision that was current.
-     *
-     * @throws SkillOwnerRequired
-     */
-    public function retireBy(ActorIdentity $actor): SkillRevision
-    {
-        if ($this->owner_type !== $actor->type || $this->owner_id !== $actor->id) {
-            throw SkillOwnerRequired::toRetire($this->key);
-        }
-
-        $this->retired_at = CarbonImmutable::now();
-        $this->save();
-
-        return SkillRevision::currentOf($this);
-    }
-
-    /**
-     * Refuses a write to a retired skill, or one made against a revision that is no longer current.
-     *
-     * @throws SkillRetired
-     * @throws SkillRevisionConflict
-     */
-    public function checkWritableAt(int $expectedRevision): void
-    {
-        if ($this->isRetired()) {
-            throw SkillRetired::for($this->key);
-        }
-
-        $latest = SkillRevision::currentOf($this)->revision;
-
-        if ($latest !== $expectedRevision) {
-            throw SkillRevisionConflict::latest($this->key, $latest);
-        }
-    }
-
-    public function isRetired(): bool
-    {
-        return $this->retired_at !== null;
-    }
-
-    public function skillKey(): SkillKey
-    {
-        return SkillKey::from($this->key);
-    }
+    // ----------[ Queries ]----------
 
     /**
      * The visible skill with this id, locked until the transaction ends.
@@ -188,6 +114,90 @@ final class Skill extends Model implements Numbered, ReadableModel
     {
         return array_values(self::query()->orderBy('key')->readLimit($limit)->get()->all());
     }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Appends the draft as the skill's next revision, with its checked condition, and makes it current.
+     */
+    public function appendRevision(
+        SkillDraft $draft,
+        SkillCondition $condition,
+        ActorIdentity $author,
+        string|null $sourceKey = null,
+        string|null $sourceDigest = null,
+    ): SkillRevision {
+        $revision = SkillRevision::appendTo($this, $draft, $condition, $author, $sourceKey, $sourceDigest);
+        $this->current_revision_id = $revision->id;
+        $this->save();
+
+        return $revision;
+    }
+
+    /**
+     * Takes the skill out of every future selection, when its owner asks; its revisions stay readable. Answers the
+     * revision that was current.
+     *
+     * @throws SkillOwnerRequired
+     */
+    public function retireBy(ActorIdentity $actor): SkillRevision
+    {
+        if ($this->owner_type !== $actor->type || $this->owner_id !== $actor->id) {
+            throw SkillOwnerRequired::toRetire($this->key);
+        }
+
+        $this->retired_at = CarbonImmutable::now();
+        $this->save();
+
+        return SkillRevision::currentOf($this);
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * Appends an earlier revision's content as the next revision, with its condition checked again today.
+     */
+    public function restoreFrom(SkillRevision $earlier, SkillCondition $condition, ActorIdentity $author): SkillRevision
+    {
+        return $this->appendRevision(
+            $earlier->draft(),
+            $condition,
+            $author,
+            $earlier->source_key,
+            $earlier->source_digest,
+        );
+    }
+
+    /**
+     * Refuses a write to a retired skill, or one made against a revision that is no longer current.
+     *
+     * @throws SkillRetired
+     * @throws SkillRevisionConflict
+     */
+    public function checkWritableAt(int $expectedRevision): void
+    {
+        if ($this->isRetired()) {
+            throw SkillRetired::for($this->key);
+        }
+
+        $latest = SkillRevision::currentOf($this)->revision;
+
+        if ($latest !== $expectedRevision) {
+            throw SkillRevisionConflict::latest($this->key, $latest);
+        }
+    }
+
+    public function isRetired(): bool
+    {
+        return $this->retired_at !== null;
+    }
+
+    public function skillKey(): SkillKey
+    {
+        return SkillKey::from($this->key);
+    }
+
+    // ----------[ Scopes ]----------
 
     /**
      * Skills visible in this environment: those of the whole installation and those of the environment itself.

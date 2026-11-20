@@ -44,6 +44,8 @@ final class TextUpload extends Model implements ReadableModel
 
     protected $attributes = ['received_bytes' => 0, 'next_index' => 0];
 
+    // ----------[ Constructors ]----------
+
     protected function casts(): array
     {
         return [
@@ -67,6 +69,8 @@ final class TextUpload extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Queries ]----------
+
     public static function locked(string $id): self
     {
         return self::query()->unexpired()->whereKey($id)->lockForUpdate()->firstOr(
@@ -82,10 +86,16 @@ final class TextUpload extends Model implements ReadableModel
         );
     }
 
-    public function attachmentText(): string
+    public static function pruneExpired(): void
     {
-        return $this->body();
+        self::query()->withoutGlobalScope(self::SESSION_SCOPE)
+            ->where('expires_at', '<=', CarbonImmutable::now())
+            ->readInChunks(100, function ($uploads): void {
+                $uploads->each(fn (self $upload) => $upload->delete());
+            });
     }
+
+    // ----------[ Mutations ]----------
 
     public function appendChunk(int $position, string $text, string $digest): void
     {
@@ -146,23 +156,14 @@ final class TextUpload extends Model implements ReadableModel
         return $body;
     }
 
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function unexpired(Builder $query): void
+    // ----------[ Answers ]----------
+
+    public function attachmentText(): string
     {
-        $query->where('expires_at', '>', CarbonImmutable::now());
+        return $this->body();
     }
 
-    public static function pruneExpired(): void
-    {
-        self::query()->withoutGlobalScope(self::SESSION_SCOPE)
-            ->where('expires_at', '<=', CarbonImmutable::now())
-            ->readInChunks(100, function ($uploads): void {
-                $uploads->each(fn (self $upload) => $upload->delete());
-            });
-    }
+    // ----------[ Internals ]----------
 
     private function body(): string
     {
@@ -178,5 +179,16 @@ final class TextUpload extends Model implements ReadableModel
     private static function isDigest(string $digest): bool
     {
         return strlen($digest) === 64 && ctype_xdigit($digest);
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unexpired(Builder $query): void
+    {
+        $query->where('expires_at', '>', CarbonImmutable::now());
     }
 }

@@ -41,6 +41,8 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.share-gateway-configuration';
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -72,29 +74,7 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
         return $configuration;
     }
 
-    /**
-     * Takes the gateway out of use: no new share or preview uses it, and it is no longer the default. The provider's
-     * account and domain are left as they are.
-     */
-    public function disable(): void
-    {
-        $this->disabled_at = CarbonImmutable::now();
-        $this->is_default = false;
-        $this->save();
-    }
-
-    /**
-     * Makes this revision the one new shares use when the owner names none; no other stays the default.
-     */
-    public function makeDefault(): void
-    {
-        self::query()->markedDefault()->whereKeyNot(
-            $this->id,
-        )->lockForUpdate()->readAll('at most one configuration is the default')->get();
-        self::query()->markedDefault()->whereKeyNot($this->id)->update(['is_default' => false]);
-        $this->is_default = true;
-        $this->save();
-    }
+    // ----------[ Queries ]----------
 
     /**
      * The enabled configuration of this id.
@@ -143,6 +123,58 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
         );
     }
 
+    /**
+     * The gateway key of each of these configurations, by configuration id.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, string>
+     */
+    public static function gatewayKeysOf(array $ids): array
+    {
+        return array_map(
+            strval(...),
+            self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->pluck('gateway_key', 'id')->all(),
+        );
+    }
+
+    /**
+     * The enabled configuration the owner made the default.
+     *
+     * @throws ShareGatewayUnavailable
+     */
+    public static function usableDefault(): self
+    {
+        return self::query()->enabled()->markedDefault()->firstOr(fn () => throw ShareGatewayUnavailable::noDefault());
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Takes the gateway out of use: no new share or preview uses it, and it is no longer the default. The provider's
+     * account and domain are left as they are.
+     */
+    public function disable(): void
+    {
+        $this->disabled_at = CarbonImmutable::now();
+        $this->is_default = false;
+        $this->save();
+    }
+
+    /**
+     * Makes this revision the one new shares use when the owner names none; no other stays the default.
+     */
+    public function makeDefault(): void
+    {
+        self::query()->markedDefault()->whereKeyNot(
+            $this->id,
+        )->lockForUpdate()->readAll('at most one configuration is the default')->get();
+        self::query()->markedDefault()->whereKeyNot($this->id)->update(['is_default' => false]);
+        $this->is_default = true;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
     public function isDisabled(): bool
     {
         return $this->disabled_at !== null;
@@ -166,30 +198,6 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     public function unendedShares(): array
     {
         return Share::unendedOf($this->id);
-    }
-
-    /**
-     * The gateway key of each of these configurations, by configuration id.
-     *
-     * @param  list<string>  $ids
-     * @return array<string, string>
-     */
-    public static function gatewayKeysOf(array $ids): array
-    {
-        return array_map(
-            strval(...),
-            self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->pluck('gateway_key', 'id')->all(),
-        );
-    }
-
-    /**
-     * The enabled configuration the owner made the default.
-     *
-     * @throws ShareGatewayUnavailable
-     */
-    public static function usableDefault(): self
-    {
-        return self::query()->enabled()->markedDefault()->firstOr(fn () => throw ShareGatewayUnavailable::noDefault());
     }
 
     /**
@@ -226,6 +234,8 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     {
         return new GatewayConfiguration($this->id, $this->configuration_version, $this->settings);
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

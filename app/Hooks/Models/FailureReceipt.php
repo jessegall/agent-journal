@@ -35,6 +35,8 @@ final class FailureReceipt extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -44,6 +46,8 @@ final class FailureReceipt extends Model implements ReadableModel
             'failure' => ProgramFailure::class,
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Keeps the failure the hook reported unless its event was already received, and answers whether it is new.

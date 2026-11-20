@@ -23,12 +23,12 @@ final readonly class TaskAssignmentRecords implements TaskAssignmentResolver
     public function __construct(private CurrentActor $actors) {}
 
     /**
-     * @param  list<string>  $taskIds
+     * @param  list<string>  $ids
      * @return list<RecordIdentity>
      */
-    public function records(array $taskIds): array
+    public function records(array $ids): array
     {
-        $states = $this->statesOf($taskIds);
+        $states = $this->statesOf($ids);
 
         return array_map(fn (string $taskId) => new RecordIdentity(Task::LINK_TYPE, $taskId), array_keys($states));
     }
@@ -36,29 +36,29 @@ final readonly class TaskAssignmentRecords implements TaskAssignmentResolver
     /**
      * @template TKey of array-key
      *
-     * @param  array<TKey, list<string>>  $taskGroups
+     * @param  array<TKey, list<string>>  $groups
      * @return array<TKey, TaskAssignmentCompletion>
      */
-    public function completionOf(array $taskGroups): array
+    public function completionOf(array $groups): array
     {
-        $states = $this->statesOf(array_merge(...array_values($taskGroups)));
+        $states = $this->statesOf(array_merge(...array_values($groups)));
 
         return array_map(fn (array $taskIds) => new TaskAssignmentCompletion(
             count($taskIds),
             count(array_filter($taskIds, fn (string $taskId) => ! $states[$taskId]->hasEnded())),
-        ), $taskGroups);
+        ), $groups);
     }
 
     /**
-     * @param  list<string>  $taskIds
+     * @param  list<string>  $ids
      * @return array<string, TaskState>
      *
      * @throws TaskMissing
      */
-    private function statesOf(array $taskIds): array
+    private function statesOf(array $ids): array
     {
         $this->actors->actor();
-        $requestedTaskIds = array_values(array_unique($taskIds));
+        $requestedTaskIds = array_values(array_unique($ids));
         $states = Task::query()->whereKey($requestedTaskIds)->readLimit(
             count($requestedTaskIds),
         )->orderBy('id')->pluck('state', 'id')->all();

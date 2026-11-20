@@ -44,6 +44,8 @@ final class NumberGroup extends Model implements ReadableModel
      */
     protected $attributes = ['last_number' => 0];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -59,6 +61,8 @@ final class NumberGroup extends Model implements ReadableModel
     {
         self::query()->create(['holder_type' => $holderType, 'holder_id' => $holderId, 'record_type' => $recordType]);
     }
+
+    // ----------[ Mutations ]----------
 
     /**
      * Hands out the next number of the group; the caller holds the group's row lock inside a bus command.
@@ -83,6 +87,8 @@ final class NumberGroup extends Model implements ReadableModel
         $this->retired_at = Carbon::now();
         $this->save();
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

@@ -18,9 +18,9 @@ final class TaskRestartRefused extends RuntimeException implements CodedRefusal,
 {
     use RendersRefusal;
 
-    public static function forTask(int $taskNumber, string $state): self
+    public static function forTask(int $number, string $state): self
     {
-        return new self("Task {$taskNumber} is {$state}; an ended task is not started again.");
+        return new self("Task {$number} is {$state}; an ended task is not started again.");
     }
 
     public function refusalCode(): RefusalCode

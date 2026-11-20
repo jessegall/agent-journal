@@ -40,6 +40,8 @@ final class ModuleRuleBundle extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -47,6 +49,8 @@ final class ModuleRuleBundle extends Model implements ReadableModel
     {
         return ['approved_at' => 'datetime'];
     }
+
+    // ----------[ Queries ]----------
 
     public static function approve(string $projectKey, RuleBundle $bundle, ActorIdentity $approver): self
     {
@@ -63,12 +67,16 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Answers ]----------
+
     public function approves(RuleBundle $bundle): bool
     {
         return $this->module === $bundle->module
             && $this->version === $bundle->version
             && $this->digest === $bundle->digest();
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

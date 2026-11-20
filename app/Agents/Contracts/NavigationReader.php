@@ -12,10 +12,14 @@ use App\Agents\Enums\MenuEntryState;
  */
 interface NavigationReader
 {
+    public const int MENU_PAGE_SIZE = 50;
+
+    public const int ROUND_LIMIT = 100;
+
     /**
-     * One page of the owner's menu entries, newest first.
+     * One page of the owner's menu entries, newest first, keyed by entry id.
      *
-     * @return list<array<string, mixed>>
+     * @return array<string, array<string, mixed>>
      */
     public function menuEntries(
         ActorIdentity $owner,
@@ -25,6 +29,11 @@ interface NavigationReader
     ): array;
 
     /**
+     * How many of the owner's menu entries match the filters, over every page.
+     */
+    public function menuEntryCount(ActorIdentity $owner, string|null $program, MenuEntryState|null $state): int;
+
+    /**
      * One menu entry of the owner, whole.
      *
      * @return array<string, mixed>
@@ -32,9 +41,10 @@ interface NavigationReader
     public function menuEntry(ActorIdentity $owner, string $id): array;
 
     /**
-     * One navigation request the current actor may answer, with its rounds and its screen.
+     * One navigation request the current actor may answer, with its screen and up to ROUND_LIMIT of its rounds
+     * from the first one asked for, counted from 1, with the first round of the rest when more follow.
      *
      * @return array<string, mixed>
      */
-    public function navigationRequest(string $id): array;
+    public function navigationRequest(string $id, int $firstRound): array;
 }

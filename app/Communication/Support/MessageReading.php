@@ -66,12 +66,12 @@ final readonly class MessageReading
     /**
      * The ids among the messages that a valid claim already holds.
      *
-     * @param  list<string>  $messageIds
+     * @param  list<string>  $ids
      * @return list<string>
      */
-    public function heldIds(array $messageIds): array
+    public function heldIds(array $ids): array
     {
-        return array_keys($this->proved->validClaimsOn(Message::LINK_TYPE, $messageIds));
+        return array_keys($this->proved->validClaimsOn(Message::LINK_TYPE, $ids));
     }
 
     /**

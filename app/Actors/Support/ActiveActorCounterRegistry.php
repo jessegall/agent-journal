@@ -32,13 +32,13 @@ final class ActiveActorCounterRegistry implements ActiveActorRegistration
     }
 
     /**
-     * @param  class-string<ActiveActorCounter>  $counterClass
+     * @param  class-string<ActiveActorCounter>  $class
      *
      * @throws ActiveActorCounterRepeated
      */
-    public function register(string $counterClass): void
+    public function register(string $class): void
     {
-        $this->counters->put($counterClass::type()->value, $counterClass);
+        $this->counters->put($class::type()->value, $class);
     }
 
     public function has(ActorType $type): bool

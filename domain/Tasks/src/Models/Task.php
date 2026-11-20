@@ -26,6 +26,7 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
+use Domain\Tasks\Api\TaskText;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
@@ -108,6 +109,8 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
      */
     protected $attributes = ['state' => 'open', 'run_number' => 0, 'revision' => 1];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -132,6 +135,24 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
             'creator_type' => $creator->actorType(),
             'creator_id' => $creator->actorId(),
         ]);
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The summary of the task a task frame stands for; none when the frame names no task that exists.
+     *
+     * @return Option<TaskSummary>
+     */
+    public static function summaryOf(StateReference $frame): Option
+    {
+        if (! $frame->subject instanceof SubjectReference) {
+            return None::create();
+        }
+
+        $task = self::query()->whereKey($frame->subject->id)->first();
+
+        return $task === null ? None::create() : new Some($task->summary());
     }
 
     /**
@@ -167,43 +188,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         return new OrderedRecordIds(array_values($ordered->readLimit($limit)->pluck('id')->all()));
     }
 
-    public function isOpenForAssignment(): bool
-    {
-        return $this->state === TaskState::Open;
-    }
-
-    /**
-     * Tasks whose work is not over: open, started or blocked.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function unfinished(Builder $query): void
-    {
-        $query->whereIn('state', TaskState::unfinished());
-    }
-
-    /**
-     * Orders by each id's place in the list, with the ids passed as bindings.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function inListedOrder(Builder $query, OrderedRecordIds $ids): void
-    {
-        $cases = $ids->ids
-                |> count(...)
-                |> (fn ($caseCount) => array_fill(0, $caseCount, 'when ? then cast(? as integer)'))
-                |> (fn ($caseClauses) => implode(' ', $caseClauses));
-
-        $bindings = [];
-
-        foreach ($ids->ids as $position => $id) {
-            array_push($bindings, $id, $position);
-        }
-
-        $query->orderByRaw("case id {$cases} end", $bindings);
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * Starts a new run; a task that is already started keeps its run.
@@ -287,9 +272,16 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         $this->save();
     }
 
-    public function isCurrentRun(int $runNumber): bool
+    // ----------[ Answers ]----------
+
+    public function isOpenForAssignment(): bool
     {
-        return $runNumber === $this->run_number;
+        return $this->state === TaskState::Open;
+    }
+
+    public function isCurrentRun(int $number): bool
+    {
+        return $number === $this->run_number;
     }
 
     /**
@@ -312,22 +304,6 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     public function currentRun(): TaskRun|null
     {
         return $this->run_number === 0 ? null : TaskRun::ofTask($this, $this->run_number);
-    }
-
-    /**
-     * The summary of the task a task frame stands for; none when the frame names no task that exists.
-     *
-     * @return Option<TaskSummary>
-     */
-    public static function summaryOf(StateReference $frame): Option
-    {
-        if (! $frame->subject instanceof SubjectReference) {
-            return None::create();
-        }
-
-        $task = self::query()->whereKey($frame->subject->id)->first();
-
-        return $task === null ? None::create() : new Some($task->summary());
     }
 
     /**
@@ -354,24 +330,73 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
-     * The task as a read shows it; its long texts only when the read asks for them.
+     * The task as a read shows it, without its long texts.
      *
      * @param  Option<AssignmentHolder>  $holder
      */
-    public function details(Option $holder, TaskExecution|null $execution, bool $withText): TaskDetails
+    public function details(Option $holder, TaskExecution|null $execution): TaskDetails
     {
-        return new TaskDetails(
-            $this->id,
-            $this->number,
-            $this->title,
-            $this->state,
-            $this->revision,
-            $holder,
-            $execution,
-            $withText ? $this->brief : null,
-            $withText ? $this->result_note : null,
-            $withText ? $this->block_reason : null,
-            $withText ? $this->cancel_reason : null,
-        );
+        return TaskDetails::from([
+            'id' => $this->id,
+            'number' => $this->number,
+            'title' => $this->title,
+            'state' => $this->state,
+            'revision' => $this->revision,
+            'holder' => $holder,
+            'execution' => $execution,
+        ]);
+    }
+
+    /**
+     * The task as a read shows it, with its long texts.
+     *
+     * @param  Option<AssignmentHolder>  $holder
+     */
+    public function detailsWithText(Option $holder, TaskExecution|null $execution): TaskDetails
+    {
+        return TaskDetails::from([
+            ...$this->details($holder, $execution)->all(),
+            'text' => TaskText::from([
+                'brief' => $this->brief,
+                'resultNote' => $this->result_note,
+                'blockReason' => $this->block_reason,
+                'cancelReason' => $this->cancel_reason,
+            ]),
+        ]);
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * Tasks whose work is not over: open, started or blocked.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unfinished(Builder $query): void
+    {
+        $query->whereIn('state', TaskState::unfinished());
+    }
+
+    /**
+     * Orders by each id's place in the list, with the ids passed as bindings.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inListedOrder(Builder $query, OrderedRecordIds $ids): void
+    {
+        $cases = $ids->ids
+                |> count(...)
+                |> (fn ($caseCount) => array_fill(0, $caseCount, 'when ? then cast(? as integer)'))
+                |> (fn ($caseClauses) => implode(' ', $caseClauses));
+
+        $bindings = [];
+
+        foreach ($ids->ids as $position => $id) {
+            array_push($bindings, $id, $position);
+        }
+
+        $query->orderByRaw("case id {$cases} end", $bindings);
     }
 }

@@ -35,6 +35,8 @@ final class ProfileStepResult extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -43,11 +45,11 @@ final class ProfileStepResult extends Model implements ReadableModel
         return ['status' => StepStatus::class];
     }
 
-    public static function record(ProfileRun $run, string $stepReference, StepOutcome $outcome): self
+    public static function record(ProfileRun $run, string $reference, StepOutcome $outcome): self
     {
         $result = new self();
         $result->profile_run_id = $run->id;
-        $result->step_reference = $stepReference;
+        $result->step_reference = $reference;
         $result->status = $outcome->status;
         $result->port = $outcome->port;
         $result->evidence = $outcome->evidence;
@@ -55,6 +57,8 @@ final class ProfileStepResult extends Model implements ReadableModel
 
         return $result;
     }
+
+    // ----------[ Answers ]----------
 
     public function outcome(): StepOutcome
     {

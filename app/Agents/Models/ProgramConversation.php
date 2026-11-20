@@ -35,6 +35,8 @@ final class ProgramConversation extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * The conversation a session first enters, under the host settings it ran with.
      */
@@ -53,6 +55,8 @@ final class ProgramConversation extends Model implements ReadableModel
         ]);
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * The native id of the agent's latest conversation under this context in this program, the one a resume
      * continues; none when it never had one there.
@@ -69,6 +73,8 @@ final class ProgramConversation extends Model implements ReadableModel
         return $conversation?->native_id;
     }
 
+    // ----------[ Answers ]----------
+
     /**
      * Whether a session of this agent, started for this context, may continue the conversation.
      */
@@ -76,6 +82,8 @@ final class ProgramConversation extends Model implements ReadableModel
     {
         return $this->agent_id === $agentId && $this->context_reference === $contextReference;
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

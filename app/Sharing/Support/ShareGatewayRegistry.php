@@ -25,21 +25,21 @@ final class ShareGatewayRegistry
     public function __construct(private readonly Container $container) {}
 
     /**
-     * @param  class-string<ShareGateway>  $gatewayClass
+     * @param  class-string<ShareGateway>  $class
      *
      * @throws ShareGatewayInvalid
      */
-    public function register(string $key, string $gatewayClass): void
+    public function register(string $key, string $class): void
     {
         if (array_key_exists($key, $this->gatewayClasses)) {
             throw ShareGatewayInvalid::repeated($key);
         }
 
-        if (! is_subclass_of($gatewayClass, ShareGateway::class)) {
-            throw ShareGatewayInvalid::notAGateway($key, $gatewayClass);
+        if (! is_subclass_of($class, ShareGateway::class)) {
+            throw ShareGatewayInvalid::notAGateway($key, $class);
         }
 
-        $this->gatewayClasses[$key] = $gatewayClass;
+        $this->gatewayClasses[$key] = $class;
     }
 
     public function has(string $key): bool

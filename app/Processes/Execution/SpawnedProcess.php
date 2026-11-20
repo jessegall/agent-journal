@@ -73,7 +73,7 @@ final class SpawnedProcess
      */
     public function drain(
         callable $onOutput,
-        float $drainSeconds = self::DRAIN_SECONDS,
+        float $seconds = self::DRAIN_SECONDS,
         StopSignal $stop = new NoStop(),
     ): bool {
         $deadline = null;
@@ -108,7 +108,7 @@ final class SpawnedProcess
                     unset($streams[$descriptor]);
                 }
             }
-            $deadline ??= $this->hasEnded() ? microtime(true) + $drainSeconds : null;
+            $deadline ??= $this->hasEnded() ? microtime(true) + $seconds : null;
             if ($deadline !== null && $streams !== [] && microtime(true) > $deadline) {
                 array_map(fclose(...), $streams);
                 $emitOutput(1, 1);

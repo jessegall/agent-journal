@@ -39,6 +39,8 @@ final class MessagePin extends Model implements ReadableModel
 
     public const int LARGEST_LIMIT = 100;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -76,6 +78,8 @@ final class MessagePin extends Model implements ReadableModel
 
         return $pin;
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Removes the owner's pin of the message in the conversation, when there is one.

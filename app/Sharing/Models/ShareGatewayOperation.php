@@ -50,6 +50,8 @@ final class ShareGatewayOperation extends Model implements ReadableModel
 
     private const int LEASE_TOKEN_BYTES = 32;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -77,6 +79,8 @@ final class ShareGatewayOperation extends Model implements ReadableModel
 
         return $operation;
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The id of the oldest operation no run holds now: never claimed, or claimed under a lease that ran out without an
@@ -136,14 +140,7 @@ final class ShareGatewayOperation extends Model implements ReadableModel
         return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
-    /**
-     * Whether no run holds the operation now and it has no outcome.
-     */
-    public function isClaimable(): bool
-    {
-        return $this->outcome_code === null
-            && ($this->run_id === null || $this->lease_ends_at === null || ! $this->lease_ends_at->isFuture());
-    }
+    // ----------[ Mutations ]----------
 
     /**
      * The run claims the operation for the endpoint under a new random lease token for 90 seconds, and gets what it
@@ -173,6 +170,23 @@ final class ShareGatewayOperation extends Model implements ReadableModel
         );
     }
 
+    public function finish(GatewayOutcome $outcome): void
+    {
+        $this->outcome_code = $outcome;
+        $this->save();
+    }
+
+    // ----------[ Answers ]----------
+
+    /**
+     * Whether no run holds the operation now and it has no outcome.
+     */
+    public function isClaimable(): bool
+    {
+        return $this->outcome_code === null
+            && ($this->run_id === null || $this->lease_ends_at === null || ! $this->lease_ends_at->isFuture());
+    }
+
     /**
      * Whether the run holds the operation for this endpoint version under this lease token, whatever its deadline.
      */
@@ -194,11 +208,7 @@ final class ShareGatewayOperation extends Model implements ReadableModel
         return $this->outcome_code !== null;
     }
 
-    public function finish(GatewayOutcome $outcome): void
-    {
-        $this->outcome_code = $outcome;
-        $this->save();
-    }
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

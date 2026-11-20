@@ -38,6 +38,8 @@ final class DeskPreference extends MorphPivot implements ReadableModel
      */
     protected $guarded = ['*'];
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -66,6 +68,8 @@ final class DeskPreference extends MorphPivot implements ReadableModel
         return $preference;
     }
 
+    // ----------[ Queries ]----------
+
     /**
      * Whether the actor prefers this desk.
      */
@@ -73,6 +77,8 @@ final class DeskPreference extends MorphPivot implements ReadableModel
     {
         return self::query()->ownedBy($actor)->where('desk_id', $desk->deskId())->exists();
     }
+
+    // ----------[ Mutations ]----------
 
     public function switchTo(Desk $desk): void
     {

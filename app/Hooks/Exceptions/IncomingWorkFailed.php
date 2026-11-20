@@ -13,8 +13,8 @@ use Throwable;
  */
 final class IncomingWorkFailed extends RuntimeException
 {
-    public static function forWork(string $workClass, Throwable $cause): self
+    public static function forWork(string $class, Throwable $cause): self
     {
-        return new self("The incoming work {$workClass} failed: {$cause->getMessage()}", 0, $cause);
+        return new self("The incoming work {$class} failed: {$cause->getMessage()}", 0, $cause);
     }
 }

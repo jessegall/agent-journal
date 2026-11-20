@@ -14,26 +14,51 @@ use Laravel\Mcp\Response;
 
 abstract class PublicationResource extends JournalResource
 {
-    protected function bodyArguments(string $tool, int|null $revision = null): ToolArguments
+    /**
+     * The URI template's fields, without the query a continued read adds to the last of them.
+     *
+     * @param  list<string>  $fields
+     */
+    protected function pathArguments(Request $request, array $fields): ToolArguments
     {
-        $arguments = ['view' => PublicationView::Body->value];
-        if ($revision !== null) {
-            $arguments['revision'] = $revision;
-        }
+        $values = array_map(fn (mixed $value) => is_string($value) ? strtok($value, '?') : $value, $request->all());
+
+        return ToolArguments::read($this->name(), new Request($values), $fields);
+    }
+
+    /**
+     * The body read's arguments, with the continuation the resource's URI carries for a later part.
+     */
+    protected function bodyArguments(Request $request, string $tool, int|null $revision = null): ToolArguments
+    {
+        $continuation = ToolArguments::query($this->name(), $request, ['continuation'])->continuation();
+        $arguments = match (true) {
+            $continuation !== null => ['continuation' => $continuation],
+            $revision !== null => ['view' => PublicationView::Body->value, 'revision' => $revision],
+            default => ['view' => PublicationView::Body->value],
+        };
 
         return ToolArguments::read($tool, new Request($arguments), array_keys($arguments));
     }
 
-    protected function markdown(ToolResult $page): Response
+    /**
+     * The body part as Markdown, with the line break it ends on; when more follows, a closing line names the URI
+     * that reads the next part.
+     */
+    protected function markdown(ToolResult $page, Request $request): Response
     {
-        $response = Response::text($page->responseFields['body']);
+        $body = $page->responseFields['body'];
         if ($page->nextActions === []) {
-            return $response;
+            return Response::text($body);
         }
+        $body .= $page->responseFields['ends_line'] ? "\n" : '';
+        $path = strtok((string) $request->uri(), '?');
+        $next = $path.'?continuation='.rawurlencode($page->nextActions[0]->arguments['continuation']);
 
-        return $response->withMeta('next_actions', array_map(
-            fn (NextAction $action): array => $action->structuredContent(),
-            $page->nextActions,
-        ));
+        return Response::text($body."\n\n(This is one part of the text. Read the next part at {$next})")
+            ->withMeta('next_actions', array_map(
+                fn (NextAction $action): array => $action->structuredContent(),
+                $page->nextActions,
+            ));
     }
 }

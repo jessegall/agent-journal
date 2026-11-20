@@ -28,12 +28,12 @@ final readonly class ProjectReceipts implements ResultReceipts
         return $receipt === null ? None::create() : Some::create($receipt->published());
     }
 
-    public function forPart(string $partRunId): Option
+    public function forPart(string $runId): Option
     {
         $receipt = ResultReceipt::query()
             ->ofProject($this->projects->current())
             ->current()
-            ->where('part_run_id', $partRunId)
+            ->where('part_run_id', $runId)
             ->first();
 
         return $receipt === null ? None::create() : Some::create($receipt->published());

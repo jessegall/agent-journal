@@ -62,13 +62,13 @@ final readonly class CheckCommandMiddleware implements Pipe
     }
 
     /**
-     * @param  array<string, CommandOwner>  $commandOwners
+     * @param  array<string, CommandOwner>  $owners
      * @param  list<string>  $ownerClasses
      */
     private static function checkScope(
         CommandOwner $owner,
         MiddlewareDeclaration $declaration,
-        array $commandOwners,
+        array $owners,
         array $ownerClasses,
     ): void {
         $scope = $declaration->scope;
@@ -84,7 +84,7 @@ final readonly class CheckCommandMiddleware implements Pipe
             return;
         }
 
-        $commandOwner = $commandOwners[$scope->target] ?? null;
+        $commandOwner = $owners[$scope->target] ?? null;
 
         if ($commandOwner === null) {
             throw MiddlewareDeclarationInvalid::for(

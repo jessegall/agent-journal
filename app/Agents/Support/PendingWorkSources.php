@@ -22,11 +22,11 @@ final class PendingWorkSources
     public function __construct(private readonly Container $container) {}
 
     /**
-     * @param  class-string<PendingWorkSource>  $sourceClass
+     * @param  class-string<PendingWorkSource>  $class
      */
-    public function register(string $sourceClass): void
+    public function register(string $class): void
     {
-        $this->sources[] = $sourceClass;
+        $this->sources[] = $class;
     }
 
     public function hasWorkFor(ActorIdentity $actor): bool

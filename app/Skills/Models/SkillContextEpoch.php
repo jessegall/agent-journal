@@ -28,6 +28,8 @@ final class SkillContextEpoch extends Model implements ReadableModel
     use BoundedReads, HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -36,14 +38,6 @@ final class SkillContextEpoch extends Model implements ReadableModel
         return [
             'epoch' => 'integer',
         ];
-    }
-
-    /**
-     * The session's current context epoch; 0 until its first clear or compaction.
-     */
-    public static function currentOf(string $sessionId): int
-    {
-        return self::query()->where('session_id', $sessionId)->first()->epoch ?? 0;
     }
 
     /**
@@ -61,5 +55,15 @@ final class SkillContextEpoch extends Model implements ReadableModel
 
         $current->epoch++;
         $current->save();
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The session's current context epoch; 0 until its first clear or compaction.
+     */
+    public static function currentOf(string $sessionId): int
+    {
+        return self::query()->where('session_id', $sessionId)->first()->epoch ?? 0;
     }
 }

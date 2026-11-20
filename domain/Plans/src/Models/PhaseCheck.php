@@ -40,6 +40,8 @@ final class PhaseCheck extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -47,6 +49,8 @@ final class PhaseCheck extends Model implements ReadableModel
     {
         return ['recorded_at' => 'datetime'];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * The phase relies on this receipt's result; recording the same receipt again changes nothing.
@@ -60,6 +64,8 @@ final class PhaseCheck extends Model implements ReadableModel
             'actor_id' => $recorder->id,
         ]);
     }
+
+    // ----------[ Scopes ]----------
 
     /**
      * @param  Builder<self>  $query

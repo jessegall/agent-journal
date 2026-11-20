@@ -58,6 +58,8 @@ final class WorkspaceRead extends Model implements ReadableModel
     use HasUlids;
     use Linkable;
 
+    // ----------[ Constructors ]----------
+
     /**
      * @return array<string, string>
      */
@@ -71,6 +73,8 @@ final class WorkspaceRead extends Model implements ReadableModel
             'sampled_at' => 'immutable_datetime',
         ];
     }
+
+    // ----------[ Queries ]----------
 
     /**
      * Retains the read for its reference once; asking again finds the same read.
@@ -109,6 +113,8 @@ final class WorkspaceRead extends Model implements ReadableModel
         return self::query()->where('read_reference', $reference->key)->firstOrFail();
     }
 
+    // ----------[ Mutations ]----------
+
     /**
      * Records the host's one sample; an answer for a read already answered changes nothing.
      */
@@ -125,6 +131,8 @@ final class WorkspaceRead extends Model implements ReadableModel
         $this->sampled_at = $facts->sampledAt;
         $this->save();
     }
+
+    // ----------[ Answers ]----------
 
     /**
      * What the host found, once it answered.
