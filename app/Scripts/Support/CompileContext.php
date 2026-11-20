@@ -17,8 +17,10 @@ use App\Scripts\Values\TriggerPolicy;
 
 final readonly class CompileContext
 {
-    /** @param array<string, NamedCommand> $commands */
-    public function __construct(
+    /**
+     * @param array<string, NamedCommand> $commands
+     */
+    private function __construct(
         private KeywordRegistry $keywords,
         private ObjectRegistry $objects,
         private ScriptGraph $graph,
@@ -27,7 +29,22 @@ final readonly class CompileContext
         public string $next,
     ) {}
 
-    /** @param list<ParsedStatement> $statements */
+    /**
+     * @param  array<string, NamedCommand>  $commands
+     */
+    public static function forHandler(
+        KeywordRegistry $keywords,
+        ObjectRegistry $objects,
+        ScriptGraph $graph,
+        array $commands,
+        TriggerPolicy $policy,
+    ): self {
+        return new self($keywords, $objects, $graph, $commands, $policy, $policy->fallthrough);
+    }
+
+    /**
+     * @param list<ParsedStatement> $statements
+     */
     public function compileBlock(array $statements): string
     {
         $next = $this->next;
@@ -106,7 +123,9 @@ final readonly class CompileContext
         return $this->textInstruction($statement, ['passed' => $this->next, 'failure' => $this->policy->failure]);
     }
 
-    /** @param array<string, string> $successors */
+    /**
+     * @param array<string, string> $successors
+     */
     private function textInstruction(ParsedStatement $statement, array $successors): Instruction
     {
         $operand = $statement->operand;

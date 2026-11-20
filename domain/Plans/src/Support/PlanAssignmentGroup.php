@@ -54,7 +54,9 @@ final readonly class PlanAssignmentGroup
         return $this->group($root, $phase->plan_id, $this->tasks->records($this->taskIdsOf(new Collection([$phase]))));
     }
 
-    /** @param list<RecordIdentity> $records */
+    /**
+     * @param list<RecordIdentity> $records
+     */
     private function group(RecordIdentity $root, string $planId, array $records): AssignmentGroup
     {
         return new AssignmentGroup($root, $records, new RecoveryCall('plans_read', ['plan_id' => $planId]));

@@ -43,7 +43,7 @@ final class WriteToolTest extends CommandBusTestCase
         $start = $this->startWithNotes();
         Route::middleware('journal.agent')->post(
             self::PATH,
-            static fn (Request $request, CommandBus $bus): array => [
+            static fn (Request $request, CommandBus $bus) => [
                 'note_id' => $bus->run(new WriteNote($request->string('text')->toString())),
             ],
         );

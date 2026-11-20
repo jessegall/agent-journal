@@ -16,7 +16,9 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
-/** Shows one menu entry with its steps, proofs and the builds it is stale on. */
+/**
+ * Shows one menu entry with its steps, proofs and the builds it is stale on.
+ */
 #[IsReadOnly]
 #[Name('menu_show')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]

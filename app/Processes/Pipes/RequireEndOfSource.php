@@ -17,13 +17,13 @@ final readonly class RequireEndOfSource implements Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(ListRead $list): ReadSource
+    public function handle(ListRead $listRead): ReadSource
     {
-        $cursor = $list->context->cursor;
+        $cursor = $listRead->context->cursor;
         if (! $cursor->atEnd()) {
             throw ShellGrammarStopped::invalid("Unexpected {$cursor->currentType()->value}.", $cursor->position());
         }
 
-        return new ReadSource($list->context->source, $list->parent);
+        return new ReadSource($listRead->context->source, $listRead->parent);
     }
 }

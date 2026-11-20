@@ -9,7 +9,9 @@ use App\Agents\Events\SessionOpened;
 use App\Communication\Models\Message;
 use App\Contracts\Listener;
 
-/** Captures a launch's authorized message source in the session transaction. */
+/**
+ * Captures a launch's authorized message source in the session transaction.
+ */
 final readonly class CaptureJobMessageSource implements Listener
 {
     public function handle(SessionOpened $event): void

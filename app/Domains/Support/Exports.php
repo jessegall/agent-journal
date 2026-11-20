@@ -194,7 +194,7 @@ final class Exports
      *
      * @return ReflectionClass<object>
      */
-    private function ownType(string $list, string $name): ReflectionClass
+    private function ownType(string $exportGroup, string $name): ReflectionClass
     {
         $className = ltrim($name, '\\');
 
@@ -202,7 +202,7 @@ final class Exports
             || trait_exists($className);
 
         if (! $declared) {
-            throw InvalidExports::missing($this->owner, $list, $className);
+            throw InvalidExports::missing($this->owner, $exportGroup, $className);
         }
 
         if (stripos($className, $this->namespace.'\\') !== 0) {

@@ -102,10 +102,10 @@ final readonly class ExportBuilder
      *
      * @throws MalformedExports
      */
-    private static function plainList(string $list, array $names): array
+    private static function plainList(string $exportGroup, array $names): array
     {
         if (! array_is_list($names)) {
-            throw MalformedExports::keyedList($list);
+            throw MalformedExports::keyedList($exportGroup);
         }
 
         return $names;

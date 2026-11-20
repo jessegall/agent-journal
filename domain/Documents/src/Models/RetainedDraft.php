@@ -77,7 +77,9 @@ final class RetainedDraft extends Model implements ReadableModel
         return new DraftText($this->title, $this->abstract, MarkdownText::workingBody($this->body));
     }
 
-    /** @return Builder<self> */
+    /**
+     * @return Builder<self>
+     */
     public static function forRecovery(): Builder
     {
         return self::query()->withoutGlobalScope(self::DRAFT_SCOPE);

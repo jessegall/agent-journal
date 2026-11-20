@@ -11,7 +11,9 @@ use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\AgentMessageView;
 use App\Mcp\Data\SearchPage;
 
-/** Reads the caller's inbox and message context without changing any message or selection. */
+/**
+ * Reads the caller's inbox and message context without changing any message or selection.
+ */
 interface AgentMessageReader
 {
     public const string CONTEXT_TOOL = 'messages_context';

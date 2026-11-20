@@ -206,7 +206,10 @@ final class AskRecordsTest extends TestCase
         $this->assertFalse($inbox->card($second)->open);
         $this->assertSame(3, Ask::openSubmissions(ActorIdentity::of($requester)));
         $this->assertSame(3, AssignmentRecord::query()->count());
-        $this->assertSame('pending', AskHop::query()->where('ask_id', $first->id)->firstOrFail()->attention);
+        $this->assertSame(
+            AskHop::PENDING_DELIVERY,
+            AskHop::query()->where('ask_id', $first->id)->firstOrFail()->attention,
+        );
     }
 
     public function test_a_typed_review_still_requires_a_visible_work_record(): void

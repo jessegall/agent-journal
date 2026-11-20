@@ -268,7 +268,7 @@ final readonly class ConditionTree
         }
 
         try {
-            $data = $registration->parameters::validateAndCreate($parameters);
+            $conditionParameters = $registration->parameters::validateAndCreate($parameters);
         } catch (ValidationException|CannotCreateData $refusal) {
             $problem = 'does not fit '.$key.': '.$refusal->getMessage();
 
@@ -279,7 +279,7 @@ final readonly class ConditionTree
             $key,
             $registration->version,
             $parameters,
-            $data,
+            $conditionParameters,
             $this->container->make($registration->evaluator),
             $this->guard,
             $this->failures,

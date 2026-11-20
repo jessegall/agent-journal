@@ -18,7 +18,9 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
-/** @implements JournalCall<RecordCommented> */
+/**
+ * @implements JournalCall<RecordCommented>
+ */
 #[Endpoint('docs/comment', 'POST', RecordCommented::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class DocumentCommentCall extends Data implements JournalCall
 {

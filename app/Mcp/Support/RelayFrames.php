@@ -147,9 +147,9 @@ final class RelayFrames
     }
 
     /**
-     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $errorDetails
      */
-    private function refuse(Frame $frame, RefusalCode $code, string $message, array $data = []): void
+    private function refuse(Frame $frame, RefusalCode $code, string $message, array $errorDetails = []): void
     {
         if (! $frame->isRequest()) {
             $this->diagnose("A {$frame->method()} message was not delivered: {$message}");
@@ -157,7 +157,7 @@ final class RelayFrames
             return;
         }
 
-        $this->writeError($frame->id(), self::SERVER_ERROR, $code, $message, $data);
+        $this->writeError($frame->id(), self::SERVER_ERROR, $code, $message, $errorDetails);
     }
 
     /**
@@ -282,14 +282,14 @@ final class RelayFrames
     }
 
     /**
-     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $errorDetails
      */
     private function writeError(
         int|string|null $id,
         int $jsonRpcCode,
         RefusalCode $code,
         string $message,
-        array $data = [],
+        array $errorDetails = [],
     ): void {
         $this->write(json_encode([
             'jsonrpc' => '2.0',
@@ -300,7 +300,7 @@ final class RelayFrames
                 'data' => [
                     'code' => $code->value,
                     'retryable' => $code->isRetryable(),
-                    ...array_filter($data, fn (mixed $value): bool => $value !== null),
+                    ...array_filter($errorDetails, fn (mixed $value): bool => $value !== null),
                 ],
             ],
         ], self::JSON_FLAGS));

@@ -55,17 +55,8 @@ use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
-use Domain\Tasks\Mcp\AssignedTasksTool;
-use Domain\Tasks\Mcp\BlockTaskTool;
-use Domain\Tasks\Mcp\CancelTaskTool;
-use Domain\Tasks\Mcp\CreateTaskTool;
-use Domain\Tasks\Mcp\EditTaskTool;
-use Domain\Tasks\Mcp\FinishTaskTool;
 use Domain\Tasks\Mcp\HeldTasksOverview;
-use Domain\Tasks\Mcp\StartTaskTool;
-use Domain\Tasks\Mcp\TaskReadTool;
 use Domain\Tasks\Mcp\TaskResource;
-use Domain\Tasks\Mcp\TasksListTool;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Policies\TaskPolicy;
@@ -187,21 +178,6 @@ final class TasksDomain extends Domain implements
     public function numberedModels(): array
     {
         return [NumberedModel::global(Task::class)];
-    }
-
-    public function mcpTools(): array
-    {
-        return [
-            AssignedTasksTool::class,
-            TasksListTool::class,
-            TaskReadTool::class,
-            CreateTaskTool::class,
-            EditTaskTool::class,
-            StartTaskTool::class,
-            FinishTaskTool::class,
-            BlockTaskTool::class,
-            CancelTaskTool::class,
-        ];
     }
 
     public function mcpResources(): array

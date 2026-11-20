@@ -55,15 +55,12 @@ func TestARuntimeNeedingAttentionStartsAgainOnlyUnderANewerGeneration(t *testing
 func TestAMarkedProcessWhoseIdentityCannotBeReadIsNotTakenForExited(t *testing.T) {
 	markers := Markers{Folder: t.TempDir()}
 	running := startGroup(t, "sleep 30")
-	original := startIdentityOf
-	t.Cleanup(func() { startIdentityOf = original })
-	startIdentityOf = func(int) (string, error) { return "", errNoStartIdentity }
 	marker := StartMarker{RuntimeID: "runtime-1", ProcessID: running.Pid, StartIdentity: "Thu Nov 20 01:00:00 2026"}
 	if err := markers.Write(marker); err != nil {
 		t.Fatal(err)
 	}
 
-	outcomes, err := markers.Reconcile()
+	outcomes, err := markers.reconcile(func(int) (string, error) { return "", errNoStartIdentity })
 	if err != nil {
 		t.Fatal(err)
 	}

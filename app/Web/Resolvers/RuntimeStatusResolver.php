@@ -24,11 +24,11 @@ final readonly class RuntimeStatusResolver implements PageResolver
 
     public function read(): RuntimesData
     {
-        $entries = array_map(fn (RuntimeStatus $status) => RuntimeEntryData::from([
+        $runtimeEntries = array_map(fn (RuntimeStatus $status) => RuntimeEntryData::from([
             'status' => $status,
             'requests' => $this->runtimes->requestsOf($status->sessionId, self::REQUESTS_EACH),
         ]), $this->runtimes->page(1, self::RUNTIMES));
 
-        return RuntimesData::from(['runtimes' => $entries]);
+        return RuntimesData::from(['runtimes' => $runtimeEntries]);
     }
 }

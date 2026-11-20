@@ -7,6 +7,7 @@ namespace App\Scripts\Support;
 use App\Contracts\DomainAvailability;
 use App\Registries\Support\Registry;
 use App\Scripts\Contracts\ScriptKeywordDefinition;
+use App\Scripts\Contracts\ScriptKeywordRegistration;
 use App\Scripts\Contracts\ScriptStatement;
 use App\Scripts\Contracts\ScriptTrigger;
 use App\Scripts\Exceptions\ScriptDefinitionRefused;
@@ -16,9 +17,11 @@ use App\Scripts\Enums\KeywordCategory;
 use Illuminate\Contracts\Container\Container;
 use PhpOption\Option;
 
-final readonly class KeywordRegistry
+final readonly class KeywordRegistry implements ScriptKeywordRegistration
 {
-    /** @var Registry<RegisteredKeyword> */
+    /**
+     * @var Registry<RegisteredKeyword>
+     */
     private Registry $keywords;
 
     public function __construct(private Container $container)
@@ -76,13 +79,17 @@ final readonly class KeywordRegistry
         return $this->keywords->get($token);
     }
 
-    /** @return Option<RegisteredKeyword> */
+    /**
+     * @return Option<RegisteredKeyword>
+     */
     public function find(string $token): Option
     {
         return $this->keywords->find($token);
     }
 
-    /** @return list<RegisteredKeyword> */
+    /**
+     * @return list<RegisteredKeyword>
+     */
     public function all(): array
     {
         return array_values($this->keywords->all());

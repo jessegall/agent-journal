@@ -11,7 +11,9 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AskInbox extends Data
 {
-    /** @param list<AskCard> $cards */
+    /**
+     * @param list<AskCard> $cards
+     */
     public function __construct(
         #[DataCollectionOf(AskCard::class)]
         public readonly array $cards,

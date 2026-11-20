@@ -7,7 +7,7 @@ namespace App\Profiles\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
-use App\Profiles\Exceptions\ProfileRevisionImmutable;
+use App\Profiles\Models\Concerns\PreventsRevisionUpdates;
 use App\Profiles\Values\ScriptSource;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['profile_key', 'revision', 'source', 'commands', 'author_type', 'author_id'])]
 final class ProfileDraftRevision extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads, HasUlids, Linkable, PreventsRevisionUpdates;
 
     public const string LINK_TYPE = 'core.profile-draft-revision';
 
@@ -33,11 +33,6 @@ final class ProfileDraftRevision extends Model implements ReadableModel
     protected function casts(): array
     {
         return ['revision' => 'integer', 'commands' => 'array', 'author_type' => ActorType::class];
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(fn (self $revision) => throw ProfileRevisionImmutable::for($revision->id));
     }
 
     public static function appendTo(ProfileDraft $draft, ScriptSource $script, ActorIdentity $author): self

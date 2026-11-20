@@ -9,9 +9,9 @@ namespace App\Domains\Exceptions;
  */
 final class InvalidExports extends DomainDeclarationError
 {
-    public static function missing(string $owner, string $list, string $name): self
+    public static function missing(string $owner, string $exportGroup, string $name): self
     {
-        return new self("{$owner} exports {$name} under {$list}, but no such class exists; fix the name or remove it.");
+        return new self("{$owner} exports {$name} under {$exportGroup}, but no such class exists; fix the name or remove it.");
     }
 
     public static function outsideOwner(string $owner, string $name, string $namespace): self

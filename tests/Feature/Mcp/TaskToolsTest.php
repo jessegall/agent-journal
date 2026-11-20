@@ -145,7 +145,9 @@ final class TaskToolsTest extends TestCase
         return $response->json('result.structuredContent.run_number');
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function resource(string $uri): array
     {
         return json_decode(

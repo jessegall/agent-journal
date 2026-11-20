@@ -13,7 +13,9 @@ use App\Supervision\Values\AskReference;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;
 
-/** @implements JournalCall<AskInbox> */
+/**
+ * @implements JournalCall<AskInbox>
+ */
 #[Endpoint('asks/list', 'POST', AskInbox::class, CallEffect::Read)]
 final class ListAsksCall extends Data implements JournalCall
 {

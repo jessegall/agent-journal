@@ -50,7 +50,7 @@ final readonly class ScriptParser
     private function handler(ScriptCursor $cursor, ScriptLine $line): ScriptHandler
     {
         $opening = $this->keyword($line);
-        if ($opening->form === SyntaxForm::EndBlock || $opening->form === SyntaxForm::ElseBlock) {
+        if ($opening->form->isStatementBoundary()) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnexpectedEnd, $line->source, 'Unexpected block ending.');
         }
 
@@ -84,7 +84,9 @@ final readonly class ScriptParser
         return new ScriptHandler($trigger->get()->definition, $line->source, $statements);
     }
 
-    /** @return list<ParsedStatement> */
+    /**
+     * @return list<ParsedStatement>
+     */
     private function body(ScriptCursor $cursor, int $depth): array
     {
         $statements = [];
@@ -92,7 +94,7 @@ final readonly class ScriptParser
         while (($line = $cursor->current()) !== null) {
             $keyword = $this->keyword($line);
 
-            if ($keyword->form === SyntaxForm::ElseBlock || $keyword->form === SyntaxForm::EndBlock) {
+            if ($keyword->form->isStatementBoundary()) {
                 return $statements;
             }
 

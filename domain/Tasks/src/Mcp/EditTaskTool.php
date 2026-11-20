@@ -7,7 +7,7 @@ namespace Domain\Tasks\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Api\TaskTextLimits;
+use Domain\Tasks\Api\TaskTextLimit;
 use Domain\Tasks\Commands\EditTask;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -27,8 +27,8 @@ final class EditTaskTool extends TaskWriteTool
         return [
             ...$this->taskSchema($schema),
             'expected_revision' => $schema->integer()->min(1)->required(),
-            'title' => $schema->string()->max(TaskTextLimits::TITLE),
-            'brief' => $schema->string()->max(TaskTextLimits::NOTE),
+            'title' => $schema->string()->max(TaskTextLimit::Title->value),
+            'brief' => $schema->string()->max(TaskTextLimit::Note->value),
         ];
     }
 

@@ -8,12 +8,15 @@ use App\Domains\Contracts\DomainBootstrapper;
 use App\Domains\Contracts\ScriptKeywordProvider;
 use App\Domains\Contracts\ScriptObjectProvider;
 use App\Domains\Support\DomainEntry;
-use App\Scripts\Support\KeywordRegistry;
-use App\Scripts\Support\ObjectRegistry;
+use App\Scripts\Contracts\ScriptKeywordRegistration;
+use App\Scripts\Contracts\ScriptObjectRegistration;
 
 final readonly class RegisterScriptDefinitions implements DomainBootstrapper
 {
-    public function __construct(private ObjectRegistry $objects, private KeywordRegistry $keywords) {}
+    public function __construct(
+        private ScriptObjectRegistration $objects,
+        private ScriptKeywordRegistration $keywords,
+    ) {}
 
     public function __invoke(DomainEntry $domain): void
     {

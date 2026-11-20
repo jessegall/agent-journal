@@ -37,7 +37,9 @@ final readonly class ContractSnapshot
         ]), self::JSON_FLAGS | JSON_PRETTY_PRINT)."\n";
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     public function differences(string $recorded, string $current): array
     {
         $before = (array) json_decode($recorded, flags: JSON_THROW_ON_ERROR);

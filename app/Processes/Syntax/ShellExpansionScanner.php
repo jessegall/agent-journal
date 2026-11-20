@@ -56,7 +56,7 @@ final readonly class ShellExpansionScanner
             );
         }
         if ($next === '(') {
-            return $this->readBalanced($cursor, $start, $start + 2, 'a command substitution');
+            return $this->readBalanced($cursor, 'a command substitution');
         }
         if ($next === '{') {
             $nameStart = $cursor->at($start + 2);
@@ -98,8 +98,10 @@ final readonly class ShellExpansionScanner
      *
      * @throws ShellLineUnreadable
      */
-    public function readBalanced(LexerCursor $cursor, int $start, int $contentStart, string $what): WordSegment
+    public function readBalanced(LexerCursor $cursor, string $what): WordSegment
     {
+        $start = $cursor->position;
+        $contentStart = $start + 2;
         $depth = 1;
         $index = $contentStart;
         $length = strlen($cursor->source);
@@ -208,7 +210,8 @@ final readonly class ShellExpansionScanner
     private function endOfBalanced(LexerCursor $cursor, int $index): int
     {
         $inner = $cursor->fork();
-        $this->readBalanced($inner, $index, $index + 2, 'a command substitution');
+        $inner->position = $index;
+        $this->readBalanced($inner, 'a command substitution');
 
         return $inner->position;
     }

@@ -7,7 +7,7 @@ namespace Domain\Plans\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Api\PlanTextLimits;
+use Domain\Plans\Api\PlanTextLimit;
 use Domain\Plans\Commands\AddPhase;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -26,7 +26,7 @@ final class CreatePhaseTool extends PlanWriteTool
     {
         return [
             'plan_id' => $schema->string()->max(26)->required(),
-            'title' => $schema->string()->max(PlanTextLimits::TITLE)->required(),
+            'title' => $schema->string()->max(PlanTextLimit::Title->value)->required(),
         ];
     }
 

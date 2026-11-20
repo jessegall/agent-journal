@@ -116,7 +116,9 @@ final class AgentSession extends Model implements ReadableModel
         return self::jobSourceMessageIds($sessionId)->value('job_source_message_id');
     }
 
-    /** @return Builder<self> */
+    /**
+     * @return Builder<self>
+     */
     public static function jobSourceMessageIds(string $sessionId): Builder
     {
         return self::query()->whereKey($sessionId)->select('job_source_message_id');

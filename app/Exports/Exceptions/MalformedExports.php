@@ -12,16 +12,16 @@ use InvalidArgumentException;
  */
 final class MalformedExports extends InvalidArgumentException
 {
-    public static function emptyName(string $list, int $position): self
+    public static function emptyName(string $exportGroup, int $position): self
     {
         return new self(
-            "The {$list} exports hold an empty name at position {$position}; name the class or remove the entry.",
+            "The {$exportGroup} exports hold an empty name at position {$position}; name the class or remove the entry.",
         );
     }
 
-    public static function keyedList(string $list): self
+    public static function keyedList(string $exportGroup): self
     {
-        return new self("The {$list} exports are keyed; pass the class names as a plain list.");
+        return new self("The {$exportGroup} exports are keyed; pass the class names as a plain list.");
     }
 
     public static function listedTwice(string $name, string $firstList, string $secondList): self

@@ -7,7 +7,9 @@ namespace App\Communication\Data;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\MessageState;
 
-/** A visible message's envelope, state, and relation to the calling session. */
+/**
+ * A visible message's envelope, state, and relation to the calling session.
+ */
 final readonly class AgentMessageCard
 {
     public function __construct(

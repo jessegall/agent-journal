@@ -12,6 +12,8 @@ interface RequestKey
 
     public function forget(): void;
 
-    /** @param class-string $command */
+    /**
+     * @param class-string $command
+     */
     public function requireFor(string $command): string;
 }

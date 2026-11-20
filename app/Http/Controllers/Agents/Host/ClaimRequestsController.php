@@ -40,9 +40,9 @@ final readonly class ClaimRequestsController
             'host long poll',
             fn () => $this->pollUntil($deadline, $claim, $version, $knownVersion),
         );
-        $list = $watched->forHost($host->hostId);
+        $watchedTerminals = $watched->forHost($host->hostId);
 
-        return new JsonResponse(new ClaimAnswer($claimed, $list));
+        return new JsonResponse(new ClaimAnswer($claimed, $watchedTerminals));
     }
 
     /**

@@ -6,15 +6,18 @@ namespace App\Scripts\Support;
 
 use App\Contracts\DomainAvailability;
 use App\Registries\Support\Registry;
+use App\Scripts\Contracts\ScriptObjectRegistration;
 use App\Scripts\Exceptions\ScriptDefinitionRefused;
 use App\Scripts\Values\ObjectDefinition;
 use App\Scripts\Values\ScriptContext;
 use Illuminate\Container\Container;
 use PhpOption\Option;
 
-final readonly class ObjectRegistry
+final readonly class ObjectRegistry implements ScriptObjectRegistration
 {
-    /** @var Registry<ObjectDefinition> */
+    /**
+     * @var Registry<ObjectDefinition>
+     */
     private Registry $objects;
 
     public function __construct(private ObjectReflection $reflection, private Container $container)
@@ -22,13 +25,17 @@ final readonly class ObjectRegistry
         $this->objects = Registry::once(ScriptDefinitionRefused::unknown(...), ScriptDefinitionRefused::duplicate(...));
     }
 
-    /** @param class-string $class */
+    /**
+     * @param class-string $class
+     */
     public function register(string $class): void
     {
         $this->store($this->reflection->describe($class, 'Core'));
     }
 
-    /** @param class-string $class */
+    /**
+     * @param class-string $class
+     */
     public function registerOwned(string $owner, string $class): void
     {
         if ($owner === '' || strcasecmp($owner, 'Core') === 0) {
@@ -43,13 +50,17 @@ final readonly class ObjectRegistry
         return $this->objects->get($key);
     }
 
-    /** @return Option<ObjectDefinition> */
+    /**
+     * @return Option<ObjectDefinition>
+     */
     public function find(string $key): Option
     {
         return $this->objects->find($key);
     }
 
-    /** @return list<ObjectDefinition> */
+    /**
+     * @return list<ObjectDefinition>
+     */
     public function all(): array
     {
         return array_values($this->objects->all());

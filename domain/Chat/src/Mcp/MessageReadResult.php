@@ -11,7 +11,9 @@ use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 
-/** Renders message content and keeps continuation calls in their own field. */
+/**
+ * Renders message content and keeps continuation calls in their own field.
+ */
 final readonly class MessageReadResult
 {
     public const string TOOL = 'messages_read';
@@ -24,16 +26,17 @@ final readonly class MessageReadResult
         $details = $cursor === null
             ? $this->messages->message($messageId, $arguments->enumOr('view', $this->defaultView($tool)))
             : $this->messages->context($messageId, $cursor);
+        $payload = ['message' => self::card($details->message)];
         $body = $details->body;
-
-        return ToolResult::ok([
-            'message' => self::card($details->message),
-            ...($body === null ? [] : [
+        if ($body !== null) {
+            $payload += [
                 'body' => $body->text,
                 'line_start' => $body->lineStart,
                 'character_offset' => $body->characterStart,
-            ]),
-        ], $details->continuation === null ? [] : [new NextAction($tool, [
+            ];
+        }
+
+        return ToolResult::ok($payload, $details->continuation === null ? [] : [new NextAction($tool, [
             'message_id' => $messageId,
             'continuation' => $details->continuation,
         ])]);
@@ -44,14 +47,16 @@ final readonly class MessageReadResult
         return $tool === self::TOOL ? AgentMessageView::Summary : AgentMessageView::Context;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     public static function card(AgentMessageCard $message): array
     {
         return [
             'message_id' => $message->id,
             'number' => $message->number,
             'preview' => $message->preview,
-            'author' => ['type' => $message->author->type->value, 'id' => $message->author->id],
+            'author' => $message->author->toArray(),
             'source_inbox_id' => $message->sourceInboxId,
             'recipient_inbox_id' => $message->recipientInboxId,
             'state' => $message->state->value,

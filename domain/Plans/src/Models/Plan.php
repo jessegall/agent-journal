@@ -25,7 +25,7 @@ use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
-use Domain\Plans\Api\PlanTextLimits;
+use Domain\Plans\Api\PlanTextLimit;
 use Domain\Plans\Database\Factories\PlanFactory;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
@@ -78,17 +78,17 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     /**
      * The most characters a plan's title or a phase's title holds.
      */
-    public const int TITLE_CHARACTERS = PlanTextLimits::TITLE;
+    public const int TITLE_CHARACTERS = PlanTextLimit::Title->value;
 
     /**
      * The most characters a plan's brief holds.
      */
-    public const int BRIEF_CHARACTERS = PlanTextLimits::BRIEF;
+    public const int BRIEF_CHARACTERS = PlanTextLimit::Brief->value;
 
     /**
      * The most characters a plan's finish note or cancel reason holds.
      */
-    public const int NOTE_CHARACTERS = PlanTextLimits::NOTE;
+    public const int NOTE_CHARACTERS = PlanTextLimit::Note->value;
 
     /**
      * @var array<string, mixed>

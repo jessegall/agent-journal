@@ -17,7 +17,9 @@ final class ScriptCursor
 
     private int $statements = 0;
 
-    /** @param list<ScriptLine> $lines */
+    /**
+     * @param list<ScriptLine> $lines
+     */
     public function __construct(private readonly array $lines) {}
 
     public function current(): ScriptLine|null

@@ -28,15 +28,15 @@ final readonly class StackRestorer
     public function restore(FrameRecords $records): AgentStack
     {
         $records->checkBottom();
-        $all = $records->all();
+        $frameRecords = $records->all();
 
-        if (count($all) > AgentStack::DEEPEST) {
+        if (count($frameRecords) > AgentStack::DEEPEST) {
             throw StackTooDeep::for('a stored stack', AgentStack::DEEPEST);
         }
 
         $frames = [];
 
-        foreach ($this->positionsByType($all) as $typeKey => $positions) {
+        foreach ($this->positionsByType($frameRecords) as $typeKey => $positions) {
             $type = $this->types->registry()->get($typeKey);
 
             $stateClass = $type->stateClass();
@@ -44,11 +44,11 @@ final readonly class StackRestorer
             foreach (array_chunk($positions, StateReferences::MAXIMUM) as $batch) {
                 $typeEnabled = ! $type instanceof ConditionalStateType || $type->isEnabled();
                 $states = $type->statesFor(
-                    new StateReferences(array_map(fn (int $position) => $all[$position]->reference, $batch)),
+                    new StateReferences(array_map(fn (int $position) => $frameRecords[$position]->reference, $batch)),
                 );
 
                 foreach ($batch as $index => $position) {
-                    $record = $all[$position];
+                    $record = $frameRecords[$position];
 
                     if ($record->schemaVersion !== $type->schemaVersion()) {
                         throw StateSchemaUnknown::for($record->description(), $type->schemaVersion());

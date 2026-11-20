@@ -53,19 +53,19 @@ final readonly class Exports
         ];
         $seenIn = [];
 
-        foreach ($lists as $list => $names) {
+        foreach ($lists as $exportGroup => $names) {
             foreach ($names as $position => $name) {
                 $key = self::normalized($name);
 
                 if ($key === '') {
-                    throw MalformedExports::emptyName($list, $position);
+                    throw MalformedExports::emptyName($exportGroup, $position);
                 }
 
                 if (isset($seenIn[$key])) {
-                    throw MalformedExports::listedTwice($name, $seenIn[$key], $list);
+                    throw MalformedExports::listedTwice($name, $seenIn[$key], $exportGroup);
                 }
 
-                $seenIn[$key] = $list;
+                $seenIn[$key] = $exportGroup;
             }
         }
 

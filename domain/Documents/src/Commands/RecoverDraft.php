@@ -17,7 +17,9 @@ use Domain\Documents\Handlers\RecoverDraftHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
-/** @extends Command<DraftReference> */
+/**
+ * @extends Command<DraftReference>
+ */
 #[HandledBy(RecoverDraftHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 #[Operation('recover_draft', ResourceAreaType::JournalDocuments, AccessType::Edit)]

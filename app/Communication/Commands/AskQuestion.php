@@ -20,7 +20,9 @@ use App\Operations\Enums\ResourceAreaType;
 use App\Records\Support\RecordIdentity;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
-/** @extends Command<string> */
+/**
+ * @extends Command<string>
+ */
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 #[HandledBy(AskQuestionHandler::class)]
@@ -34,7 +36,9 @@ final readonly class AskQuestion extends Command implements AuthorizedCommand
         public RecordIdentity|null $relatedRecord = null,
     ) {}
 
-    /** @return class-string */
+    /**
+     * @return class-string
+     */
     public function subject(): string
     {
         return Message::class;
