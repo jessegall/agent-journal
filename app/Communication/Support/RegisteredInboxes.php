@@ -101,6 +101,10 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
         );
         $first = array_shift($queries) ?? InboxRecord::query()->whereKey([])->select('id');
 
-        return array_reduce($queries, fn (Builder $combinedMessages, Builder $more) => $combinedMessages->union($more), $first);
+        return array_reduce(
+            $queries,
+            fn (Builder $combinedMessages, Builder $more) => $combinedMessages->union($more),
+            $first,
+        );
     }
 }

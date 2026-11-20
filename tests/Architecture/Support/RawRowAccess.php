@@ -44,7 +44,7 @@ final readonly class RawRowAccess implements FileScan
 
     public function key(): string
     {
-        return 'raw-row-access-2';
+        return 'raw-row-access-3';
     }
 
     public function findingsIn(ParsedFile $file): array

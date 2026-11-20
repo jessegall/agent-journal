@@ -71,7 +71,7 @@ final class RepeatedReadTest extends TestCase
             ),
         );
 
-        $this->assertCount(12, $identities->value);
+        $this->assertCount(12, $identities->measuredAnswer);
     }
 
     #[TimeLimit(seconds: 5, reason: 'It files 249 tasks one by one, each numbered, before the chunked read it checks.')]
@@ -91,6 +91,6 @@ final class RepeatedReadTest extends TestCase
             return $count;
         });
 
-        $this->assertSame(251, $seen->value);
+        $this->assertSame(251, $seen->measuredAnswer);
     }
 }
