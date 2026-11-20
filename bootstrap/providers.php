@@ -12,6 +12,7 @@ use App\Desks\Providers\DesksServiceProvider;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Engine\Providers\EngineServiceProvider;
+use App\Files\Providers\FilesServiceProvider;
 use App\Hooks\Providers\HooksServiceProvider;
 use App\Mcp\Providers\McpServiceProvider;
 use App\Numbers\Providers\NumbersServiceProvider;
@@ -41,6 +42,7 @@ use Domain\Tasks\Providers\TasksServiceProvider;
 
 return [
     AppServiceProvider::class,
+    FilesServiceProvider::class,
     DomainServiceProvider::class,
     SkillsServiceProvider::class,
     DomainEventServiceProvider::class,
