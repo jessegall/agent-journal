@@ -65,7 +65,11 @@ Status: unsupported.
 
 Status: unverified for both programs.
 
-No host starts programs yet: the protected host is task 258 (plan 8). The pinned builds ran on the host only headless for the hook capture of task 89, under isolated settings, not as a journal start with a doc 15 account. Plan 8 tasks 227 and 228 capture the account handshakes; when they land, their captures belong here and may turn these rows to supported.
+The protected host (task 258, [host-installation.md](host-installation.md)) claims, prepares, starts, stops and
+reconciles account starts, but it starts none yet: neither program's protected arrangement is available on any host
+(`journal-agent protection` names what is missing, [host-protection.md](host-protection.md)), so every account start
+is refused before release. The rows stay unverified until the native evidence procedures show the arrangement hold;
+only then may `ProgramCompatibility` mark a build, platform and arrangement native shown.
 
 ## Changing a row
 
@@ -90,8 +94,8 @@ agent's launch token, and every write runs through the bus as the journal itself
 
 A start is bound to the host that claimed it; another host's reports find nothing. Repeated reports change nothing.
 A start the host never names stays unresolved, so a missing process id or a lost host never ends one, and account
-maintenance waits for it. The protected launcher that installs the fixed program and hook copies, claims, spawns and
-reconciles is task 258; until it exists no start is spawned, and a pending start is not a running process.
+maintenance waits for it. The protected host claims, spawns and reconciles these starts (task 258); until a program's
+protected arrangement is shown no start is spawned, and a pending start is not a running process.
 
 ### The recipe a claim carries
 

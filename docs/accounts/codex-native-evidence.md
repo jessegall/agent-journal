@@ -45,6 +45,7 @@ the task that consumes it.
 | parallel-refresh | missing: two threads on one owner across a token refresh | task 243 |
 | cleanup | missing: removing a disposable account, then a folder check | task 246 |
 | outage-keeps-denials | missing: a protected launch while the journal is unreachable | task 263 |
+| host-* | missing: the protected host's native boundary for each item, as journal-agent protection reports it ([host-protection.md](host-protection.md)) | task 258 |
 
 A thread's id, recorded when `thread/started` arrives, is the execution key; a session tree's or a fork's id never
 is. `tests/Unit/Accounts/CodexNativeEvidenceTest.php` runs the procedure against a stand-in program.

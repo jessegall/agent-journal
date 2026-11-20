@@ -9,6 +9,7 @@ declare(strict_types=1);
  *
  *   php tools/accounts/check-codex.php [--program=codex] [--accounts-root=<journal accounts folder>]
  *       [--account-a=<account directory>] [--account-b=<account directory>]
+ *       [--host=<journal-agent>] [--host-state=<its state folder>]
  */
 
 use App\Hooks\Support\ProgramCompatibility;
@@ -21,6 +22,7 @@ use function Tools\Accounts\judged;
 use function Tools\Accounts\missing;
 use function Tools\Accounts\pinned_build_item;
 use function Tools\Accounts\print_evidence;
+use function Tools\Accounts\protected_host_items;
 use function Tools\Accounts\read_options;
 use function Tools\Accounts\run_program;
 
@@ -117,4 +119,7 @@ $items[] = missing('parallel-refresh', 'two threads on one owner across a token 
 $items[] = missing('cleanup', 'removing a disposable signed-in account, then a folder check', 'task 246');
 $items[] = missing('outage-keeps-denials', 'a protected start while the journal is unreachable', 'task 263');
 
-print_evidence($compatibility, $installed, $items);
+print_evidence($compatibility, $installed, [
+    ...$items,
+    ...protected_host_items($options['host_agent'], $options['host_state'], 'codex', $compatibility->version),
+]);

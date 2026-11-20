@@ -38,6 +38,10 @@ const drainBound = 10 * time.Second
 var errStopUnconfirmed = errors.New("the execution could not be proven ended")
 
 func (executor *protectedExecutor) Start(ctx context.Context, request host.StartRequest) (host.StartReply, error) {
+	if request.ExecutionMode == "required_container" {
+		refusal := host.RequireContainerTransport(request.AccountReference)
+		return host.StartReply{StartID: request.StartID, Refusal: refusal.Error()}, nil
+	}
 	prepared, err := executor.preparation.Prepare(ctx, request.RuntimeID)
 	if err != nil {
 		return host.StartReply{StartID: request.StartID, Refusal: err.Error()}, nil
