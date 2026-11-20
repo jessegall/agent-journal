@@ -21,4 +21,9 @@ final readonly class StateEventAudience
         public AuthoritySource $authority,
         public array $targets,
     ) {}
+
+    public function allowsTarget(StackTarget $target): bool
+    {
+        return array_any($this->targets, fn (StackTarget $admitted) => $admitted->isSameAs($target));
+    }
 }

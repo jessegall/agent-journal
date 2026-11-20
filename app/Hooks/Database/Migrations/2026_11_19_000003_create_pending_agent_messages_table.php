@@ -14,8 +14,10 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('actor_type', 16);
             $table->string('actor_id');
-            $table->string('hook_id', 128);
-            $table->text('text');
+            $table->string('origin_type', 32);
+            $table->string('origin_id', 128);
+            $table->jsonb('lines');
+            $table->boolean('requests_attention');
             $table->timestampsTz();
 
             $table->index(['actor_type', 'actor_id', 'created_at']);

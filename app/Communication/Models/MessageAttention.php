@@ -63,7 +63,7 @@ final class MessageAttention extends Model implements ReadableModel
         $attention = new self([
             'origin_type' => $origin->type,
             'origin_id' => $origin->id,
-            'origin_receipt_id' => $origin->receiptId,
+            'origin_receipt_id' => $origin->sourceId,
             'inbox_id' => $inboxId,
             'actor_type' => $actor->type->value,
             'actor_id' => $actor->id,

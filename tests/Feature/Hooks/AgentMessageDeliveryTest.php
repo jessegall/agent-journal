@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Actors\Contracts\ActorAttention;
+use App\Actors\Support\AttentionOrigin;
 use App\Agents\Enums\DriverOperation;
+use App\Agents\Exceptions\StackTargetRefused;
+use App\Agents\Support\StackTarget;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
@@ -12,6 +16,9 @@ use App\Agents\Support\PendingWorkSources;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
+use App\Hooks\Events\Support\StateEventContext;
+use App\Hooks\Events\Support\StateEventDispatch;
+use App\Hooks\Events\Support\StateEventScope;
 use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
@@ -22,9 +29,14 @@ use App\Hooks\Models\PendingAgentMessage;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\HookAnswer;
+use App\Hooks\Support\AgentMessageDelivery;
+use App\Hooks\Support\PendingAgentMessages;
+use App\Hooks\Support\StackTransaction;
+use Tests\Fixtures\Agents\RecordedAttention;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
 use Tests\Fixtures\Hooks\MessagingState;
+use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -88,6 +100,55 @@ final class AgentMessageDeliveryTest extends TestCase
         $this->assertSame(MessagingState::TEXT, $this->contextOf($reply));
         $this->assertSame(0, PendingAgentMessage::countFor($this->target->actorIdentity()));
         $this->assertSame(0, DriverRequest::query()->where('operation', DriverOperation::Wake)->count());
+    }
+
+    public function test_event_context_reaches_the_next_hook_with_one_wake_for_its_message_subset(): void
+    {
+        $attention = new RecordedAttention();
+        $this->app->instance(ActorAttention::class, $attention);
+        $delivery = $this->app->make(AgentMessageDelivery::class);
+        $work = $this->app->make(PendingAgentMessages::class);
+        $transaction = $this->app->make(StackTransaction::class);
+        $target = $this->target;
+        $actor = $target->actorIdentity();
+
+        $plain = $this->captureFor($target);
+        $transaction->run(
+            fn () => $delivery->retainEvent($target, $plain, new StateEventContext(['Plain context.'], [])),
+        );
+
+        $this->assertSame([], $attention->wakes);
+        $this->assertSame(0, $work->pendingCount($actor));
+
+        $marked = $this->captureFor($target);
+        $context = new StateEventContext(['Wake once.', 'More context.', 'Wake once.'], ['Wake once.', 'Wake once.']);
+        $transaction->run(fn () => $delivery->retainEvent($target, $marked, $context));
+
+        $this->assertEquals([[$actor, AttentionOrigin::stateEvent($marked->id)->keyFor($actor)]], $attention->wakes);
+        $this->assertSame(1, $work->pendingCount($actor));
+        $this->assertSame(2, PendingAgentMessage::countFor($actor));
+        $this->assertSame(
+            "Plain context.\nWake once.\nMore context.\nWake once.",
+            $this->contextOf($this->answerPrompt('call-2')),
+        );
+        $this->assertSame('{}', $this->answerPrompt('call-3'));
+    }
+
+    public function test_event_context_cannot_be_retained_for_a_target_outside_the_captured_scope(): void
+    {
+        $dispatch = $this->captureFor($this->target);
+        $other = TestActors::stack(2, 20);
+        $delivery = $this->app->make(AgentMessageDelivery::class);
+
+        $this->expectException(StackTargetRefused::class);
+        $delivery->retainEvent($other, $dispatch, new StateEventContext(['Outside this delivery.'], []));
+    }
+
+    private function captureFor(StackTarget $target): StateEventDispatch
+    {
+        $scope = $this->app->make(StateEventScope::class);
+
+        return $scope->admit([$target], fn () => $scope->capture(new NoteWritten()));
     }
 
     private function answerPrompt(string $callId): string

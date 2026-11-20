@@ -8,13 +8,13 @@ use App\Actors\Contracts\ActorAttention;
 use App\Actors\Support\AttentionOrigin;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\HookInput;
+use App\Hooks\Events\Support\StateEventContext;
+use App\Hooks\Events\Support\StateEventDispatch;
 use App\Hooks\Models\PendingAgentMessage;
 use App\Hooks\Stack\HookAnswer;
 
 /**
- * Brings the states' messages to their agent inside the hook transaction. A hook that leaves the agent idle keeps its
- * messages for the next hook and wakes the agent's runtime once; any other hook hands the kept ones over, first in its
- * context, beside its own.
+ * Keeps authorized event context and idle hook messages, and hands them over in the next eligible hook.
  */
 final readonly class AgentMessageDelivery
 {
@@ -31,18 +31,35 @@ final readonly class AgentMessageDelivery
         return $answer->withRemindersFirst(PendingAgentMessage::takeAllFor($target->actorIdentity()));
     }
 
+    public function retainEvent(StackTarget $target, StateEventDispatch $dispatch, StateEventContext $context): void
+    {
+        $dispatch->checkTarget($target);
+
+        if ($context->isEmpty()) {
+            return;
+        }
+
+        $actor = $target->actorIdentity();
+        $origin = AttentionOrigin::stateEvent($dispatch->id);
+        PendingAgentMessage::keep($actor, $origin, $context->lines, $context->requestsAttention());
+
+        if ($context->requestsAttention()) {
+            $this->attention->request($actor, $origin);
+        }
+    }
+
     /**
      * @param  list<string>  $messages
      */
     private function keepAndWake(StackTarget $target, HookInput $input, array $messages): void
     {
         $agent = $target->actorIdentity();
-        $hookId = $input->identity()->hookId;
+        $origin = AttentionOrigin::agentMessages($input->identity()->hookId);
 
         foreach ($messages as $text) {
-            PendingAgentMessage::keep($agent, $hookId, $text);
+            PendingAgentMessage::keep($agent, $origin, [$text], requestsAttention: true);
         }
 
-        $this->attention->request($agent, AttentionOrigin::agentMessages($hookId));
+        $this->attention->request($agent, $origin);
     }
 }

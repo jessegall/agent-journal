@@ -6,6 +6,7 @@ namespace App\Hooks\Models;
 
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Support\AttentionOrigin;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -15,31 +16,49 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A state's message to an agent that went idle on the hook that sent it: it waits here for the agent's next hook,
- * which adds it to the agent's context and removes it.
+ * A hook message or an ordered event contribution waiting to be handed over in an agent's next hook.
  *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
- * @property string $hook_id
- * @property string $text
+ * @property string $origin_type
+ * @property string $origin_id
+ * @property list<string> $lines
+ * @property bool $requests_attention
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['hook_id', 'text'])]
+#[Fillable(['origin_type', 'origin_id', 'lines', 'requests_attention'])]
 final class PendingAgentMessage extends Model implements ReadableModel
 {
     use BelongsToOneActor, BoundedReads, HasUlids;
     use Linkable;
 
     /**
-     * The most messages one hook hands over; any further ones wait for the hook after it.
+     * The most deliveries one hook hands over, with all their lines.
      */
     public const int LARGEST_DELIVERY = 50;
 
-    public static function keep(ActorIdentity $agent, string $hookId, string $text): self
+    protected function casts(): array
     {
-        $message = new self(['hook_id' => $hookId, 'text' => $text]);
+        return ['lines' => 'array', 'requests_attention' => 'boolean'];
+    }
+
+    /**
+     * @param list<string> $lines
+     */
+    public static function keep(
+        ActorIdentity $agent,
+        AttentionOrigin $origin,
+        array $lines,
+        bool $requestsAttention,
+    ): self {
+        $message = new self([
+            'origin_type' => $origin->type,
+            'origin_id' => $origin->id,
+            'lines' => $lines,
+            'requests_attention' => $requestsAttention,
+        ]);
         $message->belongTo($agent);
         $message->save();
 
@@ -62,11 +81,16 @@ final class PendingAgentMessage extends Model implements ReadableModel
             ->get();
         self::query()->ownedBy($agent)->whereKey($messages->modelKeys())->delete();
 
-        return array_values($messages->map(fn (self $message) => $message->text)->all());
+        return $messages->flatMap(fn (self $message) => $message->lines)->values()->all();
     }
 
     public static function countFor(ActorIdentity $agent): int
     {
         return self::query()->ownedBy($agent)->count();
+    }
+
+    public static function countAttentionFor(ActorIdentity $agent): int
+    {
+        return self::query()->ownedBy($agent)->where('requests_attention', true)->count();
     }
 }

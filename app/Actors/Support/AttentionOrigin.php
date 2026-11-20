@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Actors\Support;
 
 /**
- * What asks for an actor's attention: one message, seat change, state's message to an agent or navigation round, with
- * the receipt, hook or raise it was accepted under. The same origin always derives the same wake key for an actor, so
- * a replay wakes nobody twice.
+ * An attention request and its source, such as a receipt, hook, navigation operation or event dispatch.
+ * Its type and id derive a stable wake key for each actor.
  */
 final readonly class AttentionOrigin
 {
@@ -19,10 +18,12 @@ final readonly class AttentionOrigin
 
     public const string NAVIGATION = 'navigation';
 
+    public const string STATE_EVENT = 'state_event';
+
     public function __construct(
         public string $type,
         public string $id,
-        public string $receiptId,
+        public string $sourceId,
     ) {}
 
     public static function message(string $messageId, string $receiptId): self
@@ -45,6 +46,11 @@ final readonly class AttentionOrigin
     public static function navigation(string $requestId, int $round, string $raiseKey): self
     {
         return new self(self::NAVIGATION, "{$requestId}:{$round}", $raiseKey);
+    }
+
+    public static function stateEvent(string $dispatchId): self
+    {
+        return new self(self::STATE_EVENT, $dispatchId, $dispatchId);
     }
 
     public function keyFor(ActorIdentity $actor): string

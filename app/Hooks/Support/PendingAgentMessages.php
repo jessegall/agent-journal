@@ -15,6 +15,6 @@ final readonly class PendingAgentMessages implements PendingWorkSource
 {
     public function pendingCount(ActorIdentity $actor): int
     {
-        return PendingAgentMessage::countFor($actor);
+        return PendingAgentMessage::countAttentionFor($actor);
     }
 }
