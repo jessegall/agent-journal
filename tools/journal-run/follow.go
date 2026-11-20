@@ -48,10 +48,10 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 	started := tracker.current()
 	queueStarted := started
 	for {
-		tracker.reportParts(stdout)
 		if code, ended := tracker.Folder.End(); ended {
 			return tracker.finish(stdout, code)
 		}
+		tracker.reportParts(stdout)
 		if !tracker.Options.ShellAlive() {
 			return tracker.orphan(stdout)
 		}
@@ -153,8 +153,9 @@ func (tracker *Tracker) reportParts(stdout io.Writer) {
 		if (ended || tracker.Folder.Started(position)) && !tracker.Reported[position] {
 			tracker.partStarted(position)
 		}
+		// a part that ends with the line, as the last part always does, is told by the line's end
 		if ended && !tracker.Reported[position] {
-			tracker.partEnded(stdout, position, code)
+			tracker.partEnded(stdout, position, code, !tracker.Folding && position != tracker.Parts)
 		}
 	}
 }
@@ -177,14 +178,15 @@ func (tracker *Tracker) partStarted(position int) {
 	_ = tracker.Folder.WriteStartTold(position)
 }
 
-func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {
+// partEnded shows an ended part and, when tells is set, reports its end on its own.
+func (tracker *Tracker) partEnded(stdout io.Writer, position, code int, tells bool) {
 	tracker.partStarted(position)
 	tracker.Reported[position] = true
 	if stdout != io.Discard {
 		tracker.showLateOutput(stdout)
 		tracker.showPart(stdout, position)
 	}
-	if tracker.Folding {
+	if !tells {
 		return
 	}
 	tracker.report("process", "part-end", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position), "--exit-code", strconv.Itoa(code))
@@ -239,7 +241,7 @@ func (tracker *Tracker) finish(stdout io.Writer, code int) int {
 			break
 		}
 		if _, started := tracker.startedOutput(position); started {
-			tracker.partEnded(stdout, position, code)
+			tracker.partEnded(stdout, position, code, true)
 			break
 		}
 	}
