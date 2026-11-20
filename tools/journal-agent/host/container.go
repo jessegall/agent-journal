@@ -86,7 +86,7 @@ func DockerCreateArguments(manifest ContainerManifest, name string) ([]string, e
 		arguments = append(arguments, "--tmpfs", folder+":size="+strconv.Itoa(size))
 	}
 	mount := manifest.Mounts[0]
-	volume := "type=bind,source=" + mount.Source + ",target=" + mount.Target
+	volume := "type=bind,source=" + mount.Source + ",target=" + mount.Target + ",bind-propagation=rprivate"
 	if !mount.Writable {
 		volume += ",readonly"
 	}

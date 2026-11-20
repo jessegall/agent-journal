@@ -22,7 +22,7 @@ func TestAManifestBecomesABoundedUnprivilegedContainer(t *testing.T) {
 	}
 
 	for _, want := range []string{"--read-only", "no-new-privileges", "ALL", "10001:10001", "none",
-		"type=bind,source=/workspaces/helper-7,target=/workspace,readonly", "journal/helper@sha256:abc"} {
+		"type=bind,source=/workspaces/helper-7,target=/workspace,bind-propagation=rprivate,readonly", "journal/helper@sha256:abc"} {
 		if !slices.Contains(arguments, want) {
 			t.Fatalf("the arguments lack %s: %v", want, arguments)
 		}
