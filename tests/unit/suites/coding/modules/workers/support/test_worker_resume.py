@@ -2,13 +2,14 @@ from contextlib import nullcontext
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
 ENDED_AT = datetime(2026, 11, 1, 9, 0, tzinfo=timezone.utc)
 WORKER = SimpleNamespace(id=3, profile=f"{WORKER_PROFILE.name}", program="codex", program_model="gpt-6.1-terra", session="s-7", ended_at=ENDED_AT, environment_id=1)
 REPLACED_WORKER = SimpleNamespace(**{**vars(WORKER), "session": "s-8"})
-WORKTREE = SimpleNamespace(id=4, folder="/work/project/.journal/worktrees/main/worker-7", branch="journal/main/worker-7", environment_id=1, task_id=12)
+WORKTREE = SimpleNamespace(id=4, folder="/work/project/.journal/worktrees/main/worker-7", branch="journal/main/worker-7", environment_id=1, task_id=12, state=WorktreeState.CUT)
 JOB = SimpleNamespace(id=30, text="Fix the rounding of the tax")
 LAUNCHER_ANSWER = "the launcher took the command"
 

@@ -36,6 +36,7 @@ from suites.coding.modules.workers.support.worker_started_work import WorkerStar
 from suites.coding.modules.workers.support.worker_places import JOB_DELIVERY_SECONDS, WorkerPlaces
 from core.modules.agents.support.agent_conversations import AgentConversations
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from core.modules.helpers.support.cold_sessions import ColdSessions
 from core.modules.helpers.support.program_state import ProgramState
 from core.modules.helpers.support.program_states import ProgramStates
@@ -124,6 +125,8 @@ class WorkerResume:
         return self.agent_resume.resume(worker, command)
 
     def launch_job(self, worker: Agent, worktree: Worktree, job: AgentLine, actor: Actor) -> Dispatch:
+        if worktree.state not in (WorktreeState.CUT, WorktreeState.DELIVERED):
+            return Dispatch.REFUSED
         if not self.may_resume(worker) or not self.places.can_resume(worker):
             return Dispatch.REFUSED
         environment = self.queries.query(Environment).find(worktree.environment_id)
