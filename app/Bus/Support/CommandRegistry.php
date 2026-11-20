@@ -114,6 +114,11 @@ final readonly class CommandRegistry
         return $this->entry($command)->repeatableRead;
     }
 
+    public function allowsEngine(string $command): bool
+    {
+        return $this->entry($command)->allowsEngine;
+    }
+
     public function effectOf(string $command): CommandEffectType
     {
         return $this->entry($command)->effect;

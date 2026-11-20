@@ -26,6 +26,7 @@ final readonly class RegisteredCommand
         public string $owner,
         public bool $exported,
         public bool $repeatableRead,
+        public bool $allowsEngine,
         public CommandEffectType $effect,
         public Operation|null $operation,
         public bool $requiresRequestKey,

@@ -6,6 +6,7 @@ namespace App\Assignments\Actions;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Actions\Support\AssignmentBatch;
 use App\Assignments\Contracts\AssignmentProviders;
@@ -16,6 +17,7 @@ use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Exceptions\AssignmentConflict;
+use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Exceptions\AssignmentRootFinished;
 use App\Assignments\Policies\AssignmentPolicy;
 use App\Assignments\Storage\AssignmentStore;
@@ -55,7 +57,9 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
     public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
     {
         $this->transaction->requireOpen();
-        $admitted = $this->admission->admitPublic($record, $recipient);
+        $admitted = $this->actors->actor()->type === ActorType::Engine
+            ? $this->admission->admitMaintenance($record, $recipient)
+            : $this->admission->admitPublic($record, $recipient);
 
         return $this->assignAdmitted($admitted);
     }
@@ -227,6 +231,12 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
      */
     private function requireUnassign(): void
     {
+        $caller = $this->actors->actor();
+
+        if ($caller->type === ActorType::Engine) {
+            throw AssignmentDenied::forCaller(ActorIdentity::of($caller));
+        }
+
         $this->authorizer->authorize(AssignmentPolicy::class, AssignmentPolicy::class, AssignmentAbility::Unassign);
     }
 

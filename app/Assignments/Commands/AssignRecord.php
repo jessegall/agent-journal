@@ -14,6 +14,7 @@ use App\Assignments\Policies\AssignmentPolicy;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
@@ -28,6 +29,7 @@ use App\Records\Support\RecordIdentity;
  *
  * @extends Command<AssignmentResult>
  */
+#[AllowsEngine]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 #[HandledBy(AssignRecordHandler::class)]
@@ -36,6 +38,8 @@ use App\Records\Support\RecordIdentity;
 #[Operation('assign_record', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class AssignRecord extends Command implements HasAuthorizationSubject
 {
+    public const string MAINTENANCE_SCOPE = 'assignments.fill';
+
     public function __construct(
         public RecordIdentity $record,
         public AssigneeIdentity $recipient,

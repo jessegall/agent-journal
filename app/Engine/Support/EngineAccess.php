@@ -7,6 +7,7 @@ namespace App\Engine\Support;
 use App\Actors\Contracts\Actor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\StackTarget;
+use App\Assignments\Contracts\MaintenanceAdmission;
 use App\Engine\Contracts\EngineGrant;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Hooks\Contracts\EngineTargetAccess;
@@ -20,7 +21,7 @@ use PhpOption\Some;
  * What the engine may address in this operation, one grant at a time: a frame's target or a listener's declared
  * maintenance capability. It starts with no grant, so everything is refused until the engine grants something.
  */
-final class EngineAccess implements EngineTargetAccess
+final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
 {
     private EngineGrant|FrameGrant $grant;
 

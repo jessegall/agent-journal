@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus\Pipes;
 
 use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
@@ -35,6 +36,7 @@ use ReflectionClass;
 final readonly class ReadCommandHandlers implements Pipe
 {
     private const array SINGLE_ATTRIBUTES = [
+        AllowsEngine::class,
         RepeatableRead::class,
         Effect::class,
         Operation::class,
