@@ -74,17 +74,15 @@ final readonly class StartAgentHandler implements CommandHandler
             return self::receiptOf($request, AgentSession::query()->findOrFail($record->session_id), false);
         }
 
-        if (AgentSession::query()->runningFor($request->agentId)->exists()) {
-            throw AgentBusy::forAgent($request->agentId);
-        }
+        // The agent's lifecycle and start reservation, then the host's capacity, then the program's account, then
+        // the session: the order of every start.
+        $agent = Agent::query()->findOrFail($request->agentId);
+        $this->sessions->reserveStart($agent);
 
         if ($request->execution()->mode === ExecutionModeType::RequiredContainer) {
             $this->admitContainer($request);
         }
 
-        // The agent's lifecycle, then the program's selection and account, then the session: the order of every start.
-        $agent = Agent::query()->findOrFail($request->agentId);
-        $this->sessions->lockForStart($agent);
         $account = $this->accounts->forStart($request->selection->program->value);
         $parent = $request->parentSessionId === null
             ? null

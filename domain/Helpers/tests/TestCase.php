@@ -8,6 +8,8 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
+use App\Agents\Enums\ConversationModeType;
+use Domain\Helpers\Support\JobLaunch;
 use Tests\TestCase as BaseTestCase;
 
 /**
@@ -24,5 +26,13 @@ abstract class TestCase extends BaseTestCase
         $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
 
         return ActorIdentity::of($actor);
+    }
+
+    /**
+     * A job launched for the request on revision 1 of its profile, on a reused identity in a new conversation.
+     */
+    protected static function launchFor(string $requestId): JobLaunch
+    {
+        return new JobLaunch($requestId, hash('sha256', $requestId), 1, false, false, ConversationModeType::New, '');
     }
 }

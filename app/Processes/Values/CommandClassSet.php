@@ -74,6 +74,11 @@ final readonly class CommandClassSet
         return self::of(...array_filter($this->classes, fn (CommandClass $class) => ! $other->contains($class)));
     }
 
+    public function isWithin(self $other): bool
+    {
+        return $this->missingFrom($other)->isEmpty();
+    }
+
     public function sharesAnyWith(self $other): bool
     {
         return array_any($this->classes, fn (CommandClass $class) => $other->contains($class));

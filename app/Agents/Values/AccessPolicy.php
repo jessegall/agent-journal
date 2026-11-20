@@ -112,4 +112,40 @@ final readonly class AccessPolicy
     {
         return array_any($this->classGrants, fn (ClassGrant $grant): bool => $grant->grants($access, $area));
     }
+
+    /**
+     * Whether the other policy grants nothing this one does not: every class grant and exact grant held here, every
+     * denial kept, its paths and destinations inside these and its processes within these. What cannot be proved
+     * contained is not.
+     */
+    public function contains(self $other): bool
+    {
+        return array_all($other->classGrants, fn (ClassGrant $grant): bool => array_all(
+            $grant->accessTypes,
+            fn (AccessType $access) => $this->grants($access, $grant->area),
+        ))
+            && array_all($other->operationGrants, fn (OperationGrant $grant): bool => in_array(
+                $grant,
+                $this->operationGrants,
+            ))
+            && array_all($this->denials, fn (string $denial): bool => in_array($denial, $other->denials, true))
+            && self::isNarrowed($other->paths, $this->paths)
+            && self::isNarrowed($other->destinations, $this->destinations)
+            && $this->processes->contains($other->processes);
+    }
+
+    /**
+     * A list of held-to entries is narrowed when this one holds none, or the other holds only entries of its own.
+     *
+     * @param  list<string>  $narrower
+     * @param  list<string>  $wider
+     */
+    private static function isNarrowed(array $narrower, array $wider): bool
+    {
+        if ($wider === []) {
+            return true;
+        }
+
+        return $narrower !== [] && array_all($narrower, fn (string $entry): bool => in_array($entry, $wider, true));
+    }
 }

@@ -25,8 +25,8 @@ final class AgentCreationTest extends TestCase
     {
         $bus = $this->app->make(CommandBus::class);
 
-        $resolver = $bus->run(new CreateAgent('Researcher', 'read-only-helper'));
-        $writer = $bus->run(new CreateAgent('Builder', 'writing-helper'));
+        $resolver = $bus->run(new CreateAgent('Researcher', 'read-only-helper'))->id;
+        $writer = $bus->run(new CreateAgent('Builder', 'writing-helper'))->id;
         $labels = $this->app->make(AgentResolver::class)->labelsFor([$resolver, $writer]);
 
         $this->assertSame(['Researcher', 'Builder'], [$labels[$resolver]->name, $labels[$writer]->name]);

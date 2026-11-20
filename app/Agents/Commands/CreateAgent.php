@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\CreateAgentHandler;
 use App\Agents\Models\Agent;
@@ -15,10 +16,10 @@ use App\Bus\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
- * Creates an agent with a name and the profile it starts with, and answers its id; its owner, such as Helpers,
+ * Creates an agent with a name and the profile it starts with, and answers its actor; its owner, such as Helpers,
  * decides who it serves.
  *
- * @extends Command<string>
+ * @extends Command<ActorIdentity>
  */
 #[HandledBy(CreateAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]

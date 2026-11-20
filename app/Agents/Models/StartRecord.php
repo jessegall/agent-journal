@@ -179,4 +179,13 @@ final class StartRecord extends Model implements ReadableModel
     {
         $query->where('owner_reference', $ownerReference);
     }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function requestedBy(Builder $query, ActorIdentity $requester): void
+    {
+        $query->where('actor_type', $requester->type->value)->where('actor_id', $requester->id);
+    }
 }

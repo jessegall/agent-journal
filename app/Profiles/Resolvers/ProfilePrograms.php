@@ -40,6 +40,7 @@ final readonly class ProfilePrograms implements ProfileSelections
         return new ProfileSelection(
             SelectedProgram::resolve($programKey, $requested, $defaults, $parentProgram),
             $snapshot->base,
+            $snapshot->revision,
             $start,
         );
     }

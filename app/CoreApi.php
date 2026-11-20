@@ -146,11 +146,13 @@ use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\SettleAccountUses;
 use App\Agents\Commands\StartAgent;
+use App\Agents\Commands\StartOwnedAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\AgentResolver;
+use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\HelperImages;
@@ -163,7 +165,9 @@ use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Contracts\StartExecutor;
 use App\Agents\Contracts\StartReadiness;
+use App\Agents\Contracts\StartReceipts;
 use App\Agents\Contracts\StartRecordResolver;
+use App\Agents\Contracts\StartReservations;
 use App\Agents\Contracts\StartsAgent;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
@@ -235,6 +239,7 @@ use App\Agents\Exceptions\ProgramRequired;
 use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Exceptions\StartRecordMissing;
+use App\Agents\Exceptions\StartRefused;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AccountUse;
@@ -263,6 +268,8 @@ use App\Agents\Support\ManifestMount;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\NavigationRaiseAnswer;
 use App\Agents\Support\OpenedRuntime;
+use App\Agents\Support\OwnerStartReceipt;
+use App\Agents\Support\OwnerStartRequest;
 use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
@@ -321,6 +328,7 @@ use App\Assignments\Contracts\AutoAssigner;
 use App\Assignments\Contracts\AutoAssignmentActivity;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Contracts\RecordVisibility;
+use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentPurpose;
 use App\Assignments\Enums\AssignmentReason;
@@ -1091,6 +1099,10 @@ final class CoreApi
             ->contracts(
                 SessionPolicyReader::class,
                 LaunchCandidates::class,
+                StartReservations::class,
+                StartReceipts::class,
+                CallingProgram::class,
+                ResponsibilityWriter::class,
                 ActiveAccountReader::class,
                 StartsAgent::class,
                 AccountUses::class,
@@ -1354,6 +1366,8 @@ final class CoreApi
                 LaunchProfileKey::class,
                 RankedLaunchCandidate::class,
                 LaunchCandidateRank::class,
+                OwnerStartRequest::class,
+                OwnerStartReceipt::class,
                 ToolArguments::class,
                 RecordCard::class,
                 StateReferences::class,
@@ -1774,6 +1788,7 @@ final class CoreApi
                 DismissMessage::class,
                 RetireAgent::class,
                 StartAgent::class,
+                StartOwnedAgent::class,
                 ContinueStart::class,
                 CreateAgent::class,
                 RecordHeartbeat::class,
@@ -2043,6 +2058,7 @@ final class CoreApi
                 ProgramUnsupported::class,
                 StartRequestConflict::class,
                 AgentBusy::class,
+                StartRefused::class,
                 StartRecordMissing::class,
                 ConversationIncompatible::class,
                 ManifestRefused::class,

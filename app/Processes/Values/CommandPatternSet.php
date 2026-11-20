@@ -32,6 +32,13 @@ final readonly class CommandPatternSet
         return array_any($this->patterns, fn (CommandPattern $pattern) => $pattern->matches($argv));
     }
 
+    public function isWithin(self $other): bool
+    {
+        $others = $other->toArray();
+
+        return array_all($this->toArray(), fn (array $pattern) => in_array($pattern, $others, true));
+    }
+
     /**
      * @return list<list<string>>
      */

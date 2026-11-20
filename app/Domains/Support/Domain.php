@@ -12,6 +12,7 @@ use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\DomainBootstrapper;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
+use App\Domains\Contracts\ProvidesInternalAssignables;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\CapabilityWithoutTrait;
 use App\Exports\Support\Exports;
@@ -31,6 +32,7 @@ abstract class Domain
         ProvidesAssignables::class => HasAssignables::class,
         ProvidesAssignees::class => HasAssignables::class,
         ProvidesAutoAssignments::class => HasAssignables::class,
+        ProvidesInternalAssignables::class => HasAssignables::class,
         ProvidesStates::class => HasStates::class,
         ProvidesNumberedModels::class => HasNumberedModels::class,
     ];
