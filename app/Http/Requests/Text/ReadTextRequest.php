@@ -37,12 +37,12 @@ final class ReadTextRequest extends RecordTargetRequest
     public function selection(): TextSelection
     {
         if ($this->filled('section')) {
-            return new TextSelection(section: $this->string('section')->toString());
+            return TextSelection::from(['section' => $this->string('section')->toString()]);
         }
 
-        return new TextSelection(
-            firstLine: $this->filled('first_line') ? $this->integer('first_line') : 1,
-            lastLine: $this->filled('last_line') ? $this->integer('last_line') : null,
-        );
+        return TextSelection::from([
+            'firstLine' => $this->filled('first_line') ? $this->integer('first_line') : 1,
+            'lastLine' => $this->filled('last_line') ? $this->integer('last_line') : null,
+        ]);
     }
 }

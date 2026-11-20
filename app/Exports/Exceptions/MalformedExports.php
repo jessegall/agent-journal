@@ -15,7 +15,8 @@ final class MalformedExports extends InvalidArgumentException
     public static function emptyName(string $exportGroup, int $position): self
     {
         return new self(
-            "The {$exportGroup} exports hold an empty name at position {$position}; name the class or remove the entry.",
+            "The {$exportGroup} exports hold an empty name at position {$position};"
+            .' name the class or remove the entry.',
         );
     }
 

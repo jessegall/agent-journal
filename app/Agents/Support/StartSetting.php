@@ -16,7 +16,9 @@ final readonly class StartSetting implements JsonSerializable
         public string $settingText,
     ) {}
 
-    /** @return array{name: string, value: string} */
+    /**
+     * @return array{name: string, value: string}
+     */
     public function jsonSerialize(): array
     {
         return ['name' => $this->name, 'value' => $this->settingText];

@@ -16,7 +16,9 @@ final class DraftConflict extends RuntimeException implements CodedRefusal, Comm
 {
     public static function stale(int $expectedVersion, int $currentVersion): self
     {
-        return new self("The draft is at version {$currentVersion}, not {$expectedVersion}; read it again and repeat the edit.");
+        return new self(
+            "The draft is at version {$currentVersion}, not {$expectedVersion}; read it again and repeat the edit.",
+        );
     }
 
     public static function notYours(): self

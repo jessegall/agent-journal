@@ -14,7 +14,6 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Domains\Support\AvailableListener;
 use Carbon\CarbonImmutable;
-use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\CloseDocument;
 use Domain\Documents\Commands\CreateDocument;
@@ -89,8 +88,8 @@ final class SettleAndRecoverTest extends TestCase
         $this->assertSame(['Shipped.'], array_map(fn ($settlement) => $settlement->reason, $inspection->settlements));
 
         $draft = $this->bus()->run(new OpenDocument('1'));
-        $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Ship it again.'));
-        $this->bus()->run(new CloseDocument($this->target($draft)));
+        $draft = $this->bus()->run(new ReplaceDocumentText($draft->target(), 'Ship it.', 'Ship it again.'));
+        $this->bus()->run(new CloseDocument($draft->target()));
 
         $this->assertSame(AttentionState::Active, $this->documents()->inspect(1)->attention);
         $this->assertCount(1, $this->documents()->inspect(1)->settlements);
@@ -142,7 +141,7 @@ final class SettleAndRecoverTest extends TestCase
         $this->actAsUser(1);
 
         $this->assertThrows(
-            fn () => $this->bus()->run(new RecoverDocument($this->target($draft), ' ')),
+            fn () => $this->bus()->run(new RecoverDocument($draft->target(), ' ')),
             CommandInputInvalid::class,
             'reason:',
         );
@@ -168,7 +167,7 @@ final class SettleAndRecoverTest extends TestCase
     {
         $this->actAsAgent(9, 90);
         $draft = $this->bus()->run(new OpenDocument('1'));
-        $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Ship it soon.'));
+        $draft = $this->bus()->run(new ReplaceDocumentText($draft->target(), 'Ship it.', 'Ship it soon.'));
 
         $this->actAsUser(1);
         $editing = $this->documents()->inspect(1)->editing;
@@ -182,7 +181,7 @@ final class SettleAndRecoverTest extends TestCase
             $this->assertSame(1, DocumentDraft::query()->count());
         }
 
-        $result = $this->bus()->run(new RecoverDocument($this->target($draft), '  Agent gone.  '));
+        $result = $this->bus()->run(new RecoverDocument($draft->target(), '  Agent gone.  '));
         $close = DocumentClose::query()->sole();
 
         $this->assertSame([2, true], [$result->revisionNumber, $result->published]);
@@ -207,7 +206,7 @@ final class SettleAndRecoverTest extends TestCase
         $this->bus()->run(new CreateDocument('Notes', 'What we saw', "Text\n"));
         $this->actAsAgent(9, 90);
         $draft = $this->bus()->run(new OpenDocument('1'));
-        $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Shipped.'));
+        $this->bus()->run(new ReplaceDocumentText($draft->target(), 'Ship it.', 'Shipped.'));
         $this->actAsAgent(8, 80);
         $this->bus()->run(new OpenDocument('2'));
 
@@ -226,7 +225,7 @@ final class SettleAndRecoverTest extends TestCase
     {
         $this->actAsAgent(9, 90);
         $draft = $this->bus()->run(new OpenDocument('1'));
-        $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Shipped.'));
+        $this->bus()->run(new ReplaceDocumentText($draft->target(), 'Ship it.', 'Shipped.'));
 
         $this->assertThrows(
             fn () => DB::transaction(function (): void {
@@ -254,11 +253,6 @@ final class SettleAndRecoverTest extends TestCase
     {
         $this->app->make(CloseEndedSessionDraft::class)
             ->handle(new SessionClosed(TestIds::of($agent), TestIds::of($session)));
-    }
-
-    private function target(DraftReference $draft): DraftTarget
-    {
-        return new DraftTarget((string) $draft->documentNumber, $draft->token, $draft->version);
     }
 
     private function actAsAgent(int $agent, int $session): void

@@ -138,7 +138,10 @@ final readonly class CommandRule implements StoredValue
             'binding' => StoredExecutableBinding::fromBinding($this->binding)->toArray(),
             'revision' => $this->revision,
             'replaces' => array_map(fn (RuleReference $replaced): array => $replaced->toArray(), $this->replaces),
-            'contracts' => array_map(fn (VerificationContract $contract): array => $contract->toArray(), $this->contracts),
+            'contracts' => array_map(
+                fn (VerificationContract $contract): array => $contract->toArray(),
+                $this->contracts,
+            ),
         ];
     }
 

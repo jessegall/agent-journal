@@ -117,12 +117,12 @@ final readonly class DocumentRecords implements DocumentResolver
             throw StaleRead::revision($expectedRevision, $current);
         }
 
-        $revision = $document->revisions()->whereNotNull('closed_at')->where(
+        $publishedRevision = $document->revisions()->whereNotNull('closed_at')->where(
             'number',
             $revision ?? $current,
         )->first() ?? throw DocumentMissing::numbered($number);
 
-        return RecordReading::read("doc {$number}", $revision, $selection);
+        return RecordReading::read("doc {$number}", $publishedRevision, $selection);
     }
 
     public function show(int $number): DocumentView

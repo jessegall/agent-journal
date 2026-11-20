@@ -231,7 +231,8 @@ final readonly class MarkdownText
         $bytes = 0;
 
         foreach ($numbered as $number => $line) {
-            $full = ! $isWholeText && (count($taken) >= TextPart::LINES || $bytes + strlen($line) + 1 > TextPart::BYTES);
+            $full = ! $isWholeText
+                && (count($taken) >= TextPart::LINES || $bytes + strlen($line) + 1 > TextPart::BYTES);
 
             if ($full && $taken === []) {
                 throw TextLineTooLong::at($number, TextPart::BYTES);

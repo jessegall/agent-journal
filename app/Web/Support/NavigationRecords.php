@@ -230,7 +230,10 @@ final readonly class NavigationRecords implements NavigationRecordsContract
     {
         $navigation = $this->registeredItem($key);
 
-        if ($navigation === null || $navigation->page === null || $request->route()?->getName() !== $navigation->page->routeName()) {
+        if ($navigation === null
+            || $navigation->page === null
+            || $request->route()?->getName() !== $navigation->page->routeName()
+        ) {
             return -1;
         }
 

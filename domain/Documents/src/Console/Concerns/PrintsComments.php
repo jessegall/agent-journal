@@ -46,14 +46,20 @@ trait PrintsComments
         $report = $start;
 
         foreach ($comments as $commentView) {
-            $anchorDescription = $commentView instanceof TextCommentView ? $commentView->anchor->description() : 'on the whole record';
+            $anchorDescription = $commentView instanceof TextCommentView
+                ? $commentView->anchor->description()
+                : 'on the whole record';
             $report = $this->commentReport($report, $commentView->comment, $anchorDescription);
         }
 
         return $report;
     }
 
-    private function commentReport(CommandReport $report, CommentDetails $comment, string $anchorDescription): CommandReport
+    private function commentReport(
+        CommandReport $report,
+        CommentDetails $comment,
+        string $anchorDescription,
+    ): CommandReport
     {
         return $report
             ->line("{$comment->authorType->value} {$comment->authorId}  {$comment->createdAt}")

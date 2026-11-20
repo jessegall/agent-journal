@@ -71,10 +71,10 @@ final readonly class CommentRecords implements CommentResolver
         $text = $record instanceof TextContent ? $record->textVersion(
             $subject->versionId,
         ) : throw TargetHasNoText::for($target->type);
-        $chosen = $selection->isOutlineOnly() ? new TextSelection(
-            firstLine: $subject->firstLine,
-            lastLine: $subject->lastLine,
-        ) : $selection;
+        $chosen = $selection->isOutlineOnly() ? TextSelection::from([
+            'firstLine' => $subject->firstLine,
+            'lastLine' => $subject->lastLine,
+        ]) : $selection;
 
         return new TextCommentLocation($card, $subject, MarkdownText::body($text->text)->part($chosen));
     }

@@ -22,7 +22,6 @@ use App\Sharing\Support\ShareTargetRead;
 use App\Text\Exceptions\ContentTooLarge;
 use App\Text\Support\MarkdownText;
 use Carbon\CarbonImmutable;
-use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Commands\OpenDocument;
@@ -89,7 +88,7 @@ final class SharingTest extends TestCase
         $draft = $bus->run(new OpenDocument('1'));
         $bus->run(
             new ReplaceDocumentBody(
-                new DraftTarget((string) $draft->documentNumber, $draft->token, $draft->version),
+                $draft->target(),
                 <<<'TEXT'
                 # Draft
                 Not yet.

@@ -89,7 +89,10 @@ final readonly class OutputPolicy
             return [$stream];
         }
         $merged = $redirect->type === RedirectType::DuplicateOutput;
-        $requiresSeparateStreams = array_any($part->contracts, fn ($contract) => $contract->output->streams === StreamUse::Separate);
+        $requiresSeparateStreams = array_any(
+            $part->contracts,
+            fn ($contract) => $contract->output->streams === StreamUse::Separate,
+        );
 
         return $merged && $requiresSeparateStreams ? ["{$stream} kept apart"] : [];
     }

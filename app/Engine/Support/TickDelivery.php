@@ -90,7 +90,8 @@ final readonly class TickDelivery
                 }
 
                 $start = $this->clock->nanoseconds();
-                $now = $passNow->addMicroseconds(intdiv($start - $passClockNanoseconds, self::NANOSECONDS_PER_MICROSECOND));
+                $elapsedMicroseconds = intdiv($start - $passClockNanoseconds, self::NANOSECONDS_PER_MICROSECOND);
+                $now = $passNow->addMicroseconds($elapsedMicroseconds);
 
                 if ($this->tick($current->get(), $now, $this->deltaFor($current->get(), $start, $now, $checkpoints))) {
                     $settled[] = [$current->get(), $now, $start];

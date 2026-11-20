@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\ChangeDocumentDetails;
 use Domain\Documents\Commands\ReplaceDocumentBody;
 use Domain\Documents\Http\Requests\DraftPageRequest;
@@ -22,7 +21,7 @@ final readonly class SaveDraftPageController
         $saved = $commands->run(new ChangeDocumentDetails($request->target(), $request->title(), $request->abstract()));
         $commands->run(
             new ReplaceDocumentBody(
-                new DraftTarget((string) $saved->documentNumber, $saved->token, $saved->version),
+                $saved->target(),
                 $request->body(),
             ),
         );

@@ -16,12 +16,16 @@ final class InvalidNavigationDeclaration extends UiDeclarationError
 
     public static function valuesNotStrings(string $navigationLabel, string $parameterType): self
     {
-        return new self("Navigation item {$navigationLabel} must give its {$parameterType} values as a map of strings to strings.");
+        return new self(
+            "Navigation item {$navigationLabel} must give its {$parameterType} values as a map of strings to strings.",
+        );
     }
 
     public static function pageMissing(string $navigationLabel, string $page): self
     {
-        return new self("Navigation item {$navigationLabel} opens the page {$page}, which its domain does not declare.");
+        return new self(
+            "Navigation item {$navigationLabel} opens the page {$page}, which its domain does not declare.",
+        );
     }
 
     public static function routeValuesMismatch(string $navigationLabel, string $page, string $path): self
@@ -39,7 +43,8 @@ final class InvalidNavigationDeclaration extends UiDeclarationError
     public static function rootOnlyOnChild(string $navigationLabel, string $child): self
     {
         return new self(
-            "Navigation item {$navigationLabel} has the child {$child} with a group or at the foot; only a root item has either.",
+            "Navigation item {$navigationLabel} has the child {$child} with a group or at the foot;"
+            .' only a root item has either.',
         );
     }
 }

@@ -23,8 +23,8 @@ final readonly class LocateCommentController
     ): CommentLocated {
         $target = $records->identify(RecordReference::parse($call->target));
         $selection = $call->firstLine === null
-            ? new TextSelection()
-            : new TextSelection(firstLine: $call->firstLine, lastLine: (int) $call->lastLine);
+            ? TextSelection::from([])
+            : TextSelection::from(['firstLine' => $call->firstLine, 'lastLine' => (int) $call->lastLine]);
 
         return CommentLocated::from($comments->location($target, $call->comment, $selection)->toArray());
     }
