@@ -7,6 +7,7 @@ from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTe
 from suites.coding.modules.workers.agent_messages.worker_test_limit_refusal_message import WorkerTestLimitRefusalMessage
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKERS_RUN_ANY_COMMAND
 from core.modules.processes.support.reader_demands import ASKING_FLAGS
 
 
@@ -24,7 +25,7 @@ class WorkerTestCountPolicy(EventPolicy):
     def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
         limit = self.settings.number(WORKER_TEST_LIMIT)
         tool = event.tool
-        if limit <= 0 or tool is None or tool.shell is None:
+        if limit <= 0 or tool is None or tool.shell is None or self.settings.flag(WORKERS_RUN_ANY_COMMAND):
             return None
         test_lines = dict.fromkeys(part.text for part in tool.shell.parts
                                    if part.classification.category is CommandCategory.TEST_RUN and not ASKING_FLAGS.intersection(part.arguments))

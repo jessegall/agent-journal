@@ -56,17 +56,8 @@ def busy_worker(readers_disabled):
     return readers_disabled
 
 
-def test_a_worker_test_of_an_unknown_tool_under_a_limit_asks_for_the_count_reader(limited):
-    worker_run(limited, "custom-test run", CommandCategory.TEST_RUN)
-    expect_blocked(limited)
-    request = limited.container.get(ReaderRequestQuery).open().first()
-    limited.expect_rows("count" in request.reason, detail=request.reason)
-
-
 def test_a_worker_run_moved_to_the_background_is_asked_for_a_title_like_a_main_agents_and_asked_for_no_reader(readers_disabled):
     process = moved_run_of(readers_disabled, reader_worker(readers_disabled), "custom-build run", CommandCategory.BUILD)
     lines = hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))
     readers_disabled.expect_rows(any(f"Output {process.id} is titled by its raw command" in line for line in lines),
                                  not readers_disabled.container.get(ReaderRequestQuery).open().filter(creator_id=reader_worker(readers_disabled).id).exists(), detail="\n".join(lines))
-
-

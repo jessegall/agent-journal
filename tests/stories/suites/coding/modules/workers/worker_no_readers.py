@@ -85,23 +85,9 @@ def test_a_worker_test_of_a_known_tool_under_a_limit_opens_no_request(limited):
     expect_unblocked(limited)
 
 
-
-
 def test_a_worker_build_under_a_limit_opens_no_request(limited):
     worker_run(limited, "custom-build run", CommandCategory.BUILD)
     expect_unblocked(limited)
-
-
-def test_a_reader_with_a_count_command_lifts_the_count_request(limited):
-    limited.expect_success('reader add counted --commands "custom-test*" --title Testing --lines "done" --summary "done" --count-command "custom-test --list"', actor=limited.agent)
-    worker_run(limited, "custom-test run", CommandCategory.TEST_RUN)
-    expect_unblocked(limited)
-
-
-def test_a_reader_without_a_count_command_still_asks_for_the_count(limited):
-    limited.expect_success('reader add plain --commands "custom-test*" --title Testing --lines "done" --summary "done"', actor=limited.agent)
-    worker_run(limited, "custom-test run", CommandCategory.TEST_RUN)
-    expect_blocked(limited)
 
 
 def test_a_worker_is_not_told_about_a_reader_request_it_does_not_have(forced):
@@ -121,12 +107,8 @@ def test_the_main_agent_is_still_refused_a_raw_test_line(forced):
     forced.expect_hook_refusal(MAIN, HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell), "alias")
 
 
-def test_a_worker_after_two_silent_runs_is_refused_its_start_like_every_role(busy_worker):
+def test_a_worker_after_two_silent_runs_still_starts_its_command(busy_worker):
     silent_worker_run(busy_worker, "custom-build run")
     silent_worker_run(busy_worker, "custom-build run")
     sample = HookSamples.shell("custom-build run", ShellPart("custom-build", CommandCategory.BUILD, ["run"]))
-    busy_worker.expect_hook_refusal(WORKER, sample, "custom-build run ran silent twice")
-
-
-
-
+    busy_worker.expect_hook_allowed(WORKER, sample)

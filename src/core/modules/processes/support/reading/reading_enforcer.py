@@ -26,6 +26,7 @@ from core.modules.processes.support.run_shape import RunShape
 from core.modules.processes.support.run_shapes import INSPECTED_CHARACTERS, RunShapes
 from core.modules.processes.support.silent_run import SilentRun
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
+from core.modules.agents.support.agent_rows import AgentRows
 
 
 EXIT_COMMANDS = ("output read", "output peek", "output page", "output stop", "reader", "refusal skip", "command-type")
@@ -44,12 +45,14 @@ class ReadingEnforcer:
     command that takes an exit always passes."""
 
     def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows, marks: UnreadableMarkRegistry, run_counts: CommandRunCounts, decisions: ReadingDecisionQuery,
-                 request_values: RequestValues) -> None:
+                 request_values: RequestValues, agents: AgentRows) -> None:
         self.runs, self.folder, self.readers, self.marks, self.run_counts, self.decisions = runs, folder, readers, marks, run_counts, decisions
-        self.request_values = request_values
+        self.request_values, self.agents = request_values, agents
 
     # read once a hook, so the refusal and the lines that come with it agree
-    def answer(self, event: HookEvent) -> ReadingAnswer:
+    def answer(self, event: HookEvent, agent_id: int) -> ReadingAnswer:
+        if not self.agents.is_main(agent_id):
+            return ReadingAnswer()
         return self.request_values.read(f"processes.reading:{event.event_id}", lambda: event.event_id, lambda: self.found(event))
 
     def found(self, event: HookEvent) -> ReadingAnswer:

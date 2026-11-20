@@ -65,10 +65,8 @@ stays kept on the same agent number and session until retired.
   `journal proof make` and commit again. Only what failed runs again.
 - Your test commands are those the journal found in the project's manifests and the ones your dispatch named;
   `journal worker presets` lists the found ones. For a command you lack, ask with `journal worker ask --about tests`.
-- Run a test yourself only if you really need it. Each worker has three test commands between two commits by default,
-  set by `worker-phase-test-runs`. Each counted command says how many remain. A fourth is refused; only then ask with
-  `journal worker ask --about tests`. A granted line runs with `journal helper run` and does not use the allowance. The
-  count starts anew at your next commit. After failed tests come back, runs are free until you commit again.
+- Run any command you need, tests too, as often as you need: nothing counts your runs and no grant is asked for. Keep
+  runs to the tests your change touches, never the full suite.
 - A test or build, also `journal worker test`, holds your call for the setting `worker-run-wait-seconds` (60 by default), queued or
   running. If it ends in time you get its output at once; if not you get its output number and may go on or stop.
 - A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your
@@ -88,7 +86,7 @@ When you cannot go on, ask the merger; it hears your point, your last refusal, y
 | You saw | Ask | Meanwhile |
 |---|---|---|
 | A judge refusal you cannot place | `journal worker ask "<what>" --about judge` | fix the findings in your own files, leave the rest, and go on |
-| No test runs left, or a test you cannot run | `journal worker ask "<what>" --about tests` | work on another task or prove what you have while the answer comes |
+| A test you cannot run | `journal worker ask "<what>" --about tests` | work on another task or prove what you have while the answer comes |
 | The task is already built, or changed nothing | `journal worker ask "<what>" --about built` | prove each point with where it is and commit with --differences already built: <where>, then go on with your other tasks |
 | A clash you cannot settle | `journal worker ask "<what>" --about conflict` | settle what you can in the named files |
 | A tool or folder you do not have | `journal worker ask "<what>" --about tool` | do the part that needs no such tool |
@@ -101,13 +99,4 @@ your open question. An open question lets you stop; the answer wakes you. Going 
 ## Process rules
 
 A worker needs no Monitor for a background run. It can continue independent work or stop and receive the
-result when the run ends. A worker drafts and saves a reader for its own open request with
-`journal reader draft <request> --save`, or edits the suggested `reader add` command. Every save uses the normal
-checks and output proof. After the configured failed-save limit (default 3), it stops and the main agent is
-asked to help. Drafts without `--save` use no try. A worker cannot remove readers, choose defaults or skip requests.
-
-A reader's `--count-command` lists tests before a run waiting in its lane starts when `worker-run-most-tests` is
-positive. Counts of test parts are added. A count above the limit stops the run. A listing that fails, is cut off
-after 120 seconds or gives no number stops it too, and the line says why: a tool the worktree lacks, such as
-`node_modules`, is linked with `--library-link` at dispatch. A test tool with no reader runs once, so a reader can
-be drawn from its output.
+result when the run ends. A worker is never asked to write a reader: the main agent keeps the readers.

@@ -7,8 +7,8 @@ READ_POLICY_KEY = "processes.reading"
 
 
 class ReadingPolicy(EventPolicy):
-    """A command that ran without a good reader is refused its next start until a reader or a reason is given, for
-    every role."""
+    """A command of the main agent that ran without a good reader is refused its next start until a reader or a
+    reason is given."""
 
     key = READ_POLICY_KEY
     rank = "shell.all"
@@ -17,4 +17,4 @@ class ReadingPolicy(EventPolicy):
         self.enforcer = enforcer
 
     def refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None:
-        return self.enforcer.answer(event).refusal
+        return self.enforcer.answer(event, agent_id).refusal
