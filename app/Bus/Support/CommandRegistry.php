@@ -14,7 +14,7 @@ use App\Bus\Pipes\CheckExportedCommands;
 use App\Bus\Pipes\ReadCommandHandlers;
 use App\Bus\Pipes\RegisterCommands;
 use App\Bus\Values\EffectiveCommand;
-use App\Pipelines\Contracts\RunsPipelines;
+use App\Pipelines\Contracts\PipelineRunner;
 use PhpOption\Option;
 
 /**
@@ -33,7 +33,7 @@ final readonly class CommandRegistry
      *
      * @param  list<CommandOwner>  $owners  Core first, then the domains in bootstrap/domains.php order
      */
-    public static function from(array $owners, RunsPipelines $pipelines): self
+    public static function from(array $owners, PipelineRunner $pipelines): self
     {
         return $pipelines->runSteps(
             [

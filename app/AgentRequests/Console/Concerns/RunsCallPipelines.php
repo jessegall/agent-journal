@@ -12,7 +12,7 @@ use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Values\CallToSend;
 use App\AgentRequests\Values\CommandReport;
 use App\Pipelines\Contracts\PipelineDefinition;
-use App\Pipelines\Support\Pipelines;
+use App\Pipelines\Support\PipelineRunner;
 use Closure;
 use Illuminate\Container\Container;
 use JsonException;
@@ -30,7 +30,7 @@ trait RunsCallPipelines
     protected function runCalls(string $pipeline, object $input): int
     {
         return $this->runReport(
-            fn (): CommandReport => Container::getInstance()->make(Pipelines::class)->run(
+            fn (): CommandReport => Container::getInstance()->make(PipelineRunner::class)->run(
                 $pipeline,
                 $input,
                 CommandReport::class,

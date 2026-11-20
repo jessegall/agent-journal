@@ -9,7 +9,7 @@ use App\Pipelines\Support\Step;
 /**
  * What other Core areas use of the Pipelines area's Pipelines.
  */
-interface RunsPipelines
+interface PipelineRunner
 {
     /**
      * Runs the input through every step of the definition and returns the output of the last step.

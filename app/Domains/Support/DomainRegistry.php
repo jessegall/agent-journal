@@ -13,7 +13,7 @@ use App\Domains\Exceptions\DomainListedTwice;
 use App\Domains\Exceptions\DomainNotFound;
 use App\Domains\Exceptions\RequiredDomainMissing;
 use App\Mcp\Contracts\McpRegistration;
-use App\Pipelines\Contracts\RunsPipelines;
+use App\Pipelines\Contracts\PipelineRunner;
 use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Values\CommandRule;
 use App\Settings\Declarations\ToggleGroup;
@@ -112,7 +112,7 @@ final readonly class DomainRegistry
      * Every owner's commands and middleware, Core's first and then the domains in bootstrap/domains.php order, checked
      * together; start-up stops at the first wrong declaration.
      */
-    public function commandDeclarations(CommandOwner $core, RunsPipelines $pipelines): CommandRegistry
+    public function commandDeclarations(CommandOwner $core, PipelineRunner $pipelines): CommandRegistry
     {
         $owners = [$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())];
 

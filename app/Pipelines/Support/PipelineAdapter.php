@@ -16,7 +16,7 @@ use App\Pipelines\Contracts\PipelineDefinition;
  */
 abstract readonly class PipelineAdapter implements Pipe
 {
-    public function __construct(private Pipelines $pipelines) {}
+    public function __construct(private PipelineRunner $pipelines) {}
 
     /**
      * @return class-string<PipelineDefinition>

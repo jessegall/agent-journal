@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Syntax;
 
-use App\Pipelines\Contracts\RunsPipelines;
+use App\Pipelines\Contracts\PipelineRunner;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\ShellGrammarStopped;
@@ -21,7 +21,7 @@ use App\Processes\Values\TreeDiagnostic;
  */
 final readonly class TreeParser
 {
-    public function __construct(private RunsPipelines $pipelines) {}
+    public function __construct(private PipelineRunner $pipelines) {}
 
     public function parse(string $line, ShellDialect $dialect): ShellTree
     {

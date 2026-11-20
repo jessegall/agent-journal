@@ -7,7 +7,7 @@ namespace Tests\Architecture;
 use App\Pipelines\Contracts\Pipe;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\PipelineAdapter;
-use App\Pipelines\Support\Pipelines;
+use App\Pipelines\Support\PipelineRunner;
 use ReflectionClass;
 use ReflectionNamedType;
 use Tests\Architecture\Support\DomainFiles;
@@ -94,7 +94,7 @@ final class PipelineRulesTest extends TestCase
              * @var class-string $given
              */
             $given = $type->getName();
-            if ($given === Pipelines::class || is_subclass_of($given, PipelineAdapter::class)) {
+            if ($given === PipelineRunner::class || is_subclass_of($given, PipelineAdapter::class)) {
                 return true;
             }
             if (! isset($seen[$given]) && class_exists($given) && self::reachesPipelines($given, $seen)) {

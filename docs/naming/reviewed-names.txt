@@ -2532,7 +2532,7 @@ class	PipedCommands
 class	PipedCommandsToParse
 class	PipelineAdapter
 class	PipelinePump
-class	Pipelines
+class	PipelineRunner
 class	PlaceWord
 class	PlainGroupAvailabilityData
 class	PlainValue
@@ -5253,6 +5253,7 @@ interface	PendingWorkSource
 interface	Pipable
 interface	Pipe
 interface	PipelineDefinition
+interface	PipelineRunner
 interface	PlanDetailsResolver
 interface	PlanResolver
 interface	Policy
@@ -5310,7 +5311,6 @@ interface	RuleResolver
 interface	RunClaims
 interface	RunEvents
 interface	RunsAsActor
-interface	RunsPipelines
 interface	RunsStackTransactions
 interface	RuntimeResolver
 interface	SectionResolver
@@ -10818,13 +10818,13 @@ method	PipelineAdapter::into()
 method	PipelineAdapter::produces()
 method	PipelineDefinition::pipes()
 method	PipelinePump::run()
-method	Pipelines::__construct()
-method	Pipelines::build()
-method	Pipelines::run()
-method	Pipelines::runOf()
-method	Pipelines::runSteps()
-method	Pipelines::sequence()
-method	Pipelines::step()
+method	PipelineRunner::__construct()
+method	PipelineRunner::build()
+method	PipelineRunner::run()
+method	PipelineRunner::runOf()
+method	PipelineRunner::runSteps()
+method	PipelineRunner::sequence()
+method	PipelineRunner::step()
 method	PlaceWord::handle()
 method	PlacedInConversation::conversation()
 method	PlacedInConversation::inConversation()
@@ -13262,8 +13262,6 @@ method	RunsCallPipelines::runCall()
 method	RunsCallPipelines::runCalls()
 method	RunsCallPipelines::runReport()
 method	RunsCallPipelines::sendCall()
-method	RunsPipelines::run()
-method	RunsPipelines::runSteps()
 method	RunsStackTransactions::run()
 method	RunsWindowResolver::__construct()
 method	RunsWindowResolver::read()
@@ -19315,8 +19313,8 @@ property	PipedCommands::$start
 property	PipedCommandsToParse::$negationStart
 property	PipedCommandsToParse::$toParse
 property	PipelineAdapter::$pipelines
-property	Pipelines::$container
-property	Pipelines::$steps
+property	PipelineRunner::$container
+property	PipelineRunner::$steps
 property	PlainGroupAvailabilityData::$state
 property	Plan::$attributes
 property	PlanAssignmentGroup::$tasks

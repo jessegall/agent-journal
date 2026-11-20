@@ -16,7 +16,7 @@ use App\Hooks\Support\IncomingWorkList;
 use App\Hooks\Support\StackAccess;
 use App\Hooks\Support\StackTransaction;
 use App\Hooks\Values\Answer\HookCallStage;
-use App\Pipelines\Contracts\RunsPipelines;
+use App\Pipelines\Contracts\PipelineRunner;
 use Closure;
 
 /**
@@ -29,7 +29,7 @@ final readonly class AgentStateMachine
         private StackTransaction $transaction,
         private StackAccess $access,
         private IncomingWorkList $incomingWork,
-        private RunsPipelines $pipelines,
+        private PipelineRunner $pipelines,
         private StateEventActivity $eventActivity,
     ) {}
 
