@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Assignments\Mcp\Concerns;
+namespace App\Mcp\Tools\Concerns;
 
 use App\Actors\Enums\ActorType;
 use App\Assignments\Support\AssigneeIdentity;

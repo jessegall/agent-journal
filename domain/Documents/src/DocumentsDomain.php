@@ -86,6 +86,7 @@ use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\ReportState;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Enums\EditingState;
@@ -189,6 +190,7 @@ final class DocumentsDomain extends Domain implements
                 ReportCard::class,
                 ReportView::class,
                 ReportList::class,
+                ReportState::class,
             )
             ->commands(
                 CreateDocument::class,

@@ -6,6 +6,7 @@ namespace App\Profiles\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Profiles\Exceptions\ProfileRevisionImmutable;
 use App\Profiles\Values\ScriptSource;
 use App\Reads\Contracts\ReadableModel;
@@ -23,7 +24,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['profile_key', 'revision', 'source', 'commands', 'author_type', 'author_id'])]
 final class ProfileDraftRevision extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
+    use BoundedReads, HasUlids, Linkable;
+
+    public const string LINK_TYPE = 'core.profile-draft-revision';
 
     public const null UPDATED_AT = null;
 

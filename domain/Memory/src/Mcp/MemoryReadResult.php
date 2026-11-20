@@ -6,8 +6,8 @@ namespace Domain\Memory\Mcp;
 
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Support\Continuations;
-use App\Mcp\Support\TextFields;
+use App\Mcp\Contracts\Continuations;
+use App\Mcp\Contracts\TextFields;
 use Domain\Memory\Contracts\MemoryResolver;
 
 final readonly class MemoryReadResult

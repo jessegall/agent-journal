@@ -7,7 +7,6 @@ namespace App\Assignments\Commands;
 use App\Assignments\Handlers\ClaimAutoAssignmentHandler;
 use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\AutoAssignmentOutcome;
-use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
@@ -17,7 +16,6 @@ use App\Bus\Support\Command;
 /**
  * @extends Command<AutoAssignmentOutcome>
  */
-#[AllowsEngine]
 #[RepeatableRead]
 #[Entry(CommandEntry::EngineMaintenance)]
 #[HandledBy(ClaimAutoAssignmentHandler::class)]

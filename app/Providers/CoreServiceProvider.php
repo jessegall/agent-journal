@@ -13,6 +13,8 @@ use App\Agents\Models\ProgramConversation;
 use App\Agents\Models\StartBypass;
 use App\Agents\Models\StartToken;
 use App\Assignments\Models\ClaimAuthorization;
+use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Enums\AssignmentPurpose;
 use App\Bus\Models\CommandReceipt;
 use App\Comments\Models\Comment;
 use App\Engine\Models\EngineFrameTime;
@@ -26,6 +28,8 @@ use App\Pipelines\Support\PipelineRunner;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\Profile;
+use App\Profiles\Models\ProfileDraft;
+use App\Profiles\Models\ProfileDraftRevision;
 use App\Profiles\Models\ProfileRevision;
 use App\Profiles\Models\SignInAttempt;
 use App\Settings\Models\SettingsRecord;
@@ -42,6 +46,8 @@ use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Models\SkillRequest;
 use App\Skills\Models\SkillRevision;
+use App\Supervision\Models\Ask;
+use App\Supervision\Support\AskAssignments;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -78,8 +84,16 @@ final class CoreServiceProvider extends ServiceProvider
         $this->app->bind(PipelineRunnerContract::class, PipelineRunner::class);
     }
 
-    public function boot(LinkTypeRegistry $links): void
+    public function boot(LinkTypeRegistry $links, AssignmentRegistration $assignments): void
     {
+        $assignments->registerOwner('Supervision', []);
+        $assignments->registerRecord(
+            Ask::LINK_TYPE,
+            AskAssignments::class,
+            'Supervision',
+            AssignmentPurpose::JournalAssigned,
+        );
+
         $links->register([
             'core.agent' => Agent::class,
             'core.agent-session' => AgentSession::class,
@@ -99,6 +113,8 @@ final class CoreServiceProvider extends ServiceProvider
             'core.skill-publication' => SkillPublication::class,
             'core.skill-request' => SkillRequest::class,
             Profile::LINK_TYPE => Profile::class,
+            ProfileDraft::LINK_TYPE => ProfileDraft::class,
+            ProfileDraftRevision::LINK_TYPE => ProfileDraftRevision::class,
             ProfileRevision::LINK_TYPE => ProfileRevision::class,
             Account::LINK_TYPE => Account::class,
             ActiveAccount::LINK_TYPE => ActiveAccount::class,

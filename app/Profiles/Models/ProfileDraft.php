@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Models;
 
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Profiles\Exceptions\ProfileDraftRefused;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ScriptSource;
@@ -12,9 +13,10 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 /**
  * @property string $profile_key
@@ -23,10 +25,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ProfileDraftRevision|null $currentRevision
  */
 #[Fillable(['profile_key', 'revision', 'current_revision_id'])]
-#[Table(key: 'profile_key', keyType: 'string', incrementing: false)]
 final class ProfileDraft extends Model implements ReadableModel
 {
-    use BoundedReads;
+    use BoundedReads, HasUlids, Linkable;
+
+    public const string LINK_TYPE = 'core.profile-draft';
 
     protected function casts(): array
     {
@@ -46,12 +49,17 @@ final class ProfileDraft extends Model implements ReadableModel
         sort($profiles);
         $now = CarbonImmutable::now();
         self::query()->insertOrIgnore(array_map(
-            fn (string $profile) => ['profile_key' => $profile, 'created_at' => $now, 'updated_at' => $now],
+            fn (string $profile) => [
+                'id' => (string) Str::ulid(),
+                'profile_key' => $profile,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
             $profiles,
         ));
 
         return self::query()
-            ->whereKey($profiles)
+            ->whereIn('profile_key', $profiles)
             ->orderBy('profile_key')
             ->lockForUpdate()
             ->with('currentRevision')

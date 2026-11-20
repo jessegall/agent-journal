@@ -6,7 +6,7 @@ namespace Domain\Documents\Resolvers;
 
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Support\Continuations;
+use App\Mcp\Contracts\Continuations;
 use Domain\Documents\Contracts\AttachmentReader;
 use Domain\Documents\Mcp\PublicationChunks;
 use Domain\Documents\Models\TextUpload;

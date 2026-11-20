@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Mcp\Contracts\TextFields as TextFieldsContract;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ContinuationStale;
 
 /** Pages named fields of a record's text without splitting a Unicode character. */
-final readonly class TextFields
+final readonly class TextFields implements TextFieldsContract
 {
     private const int CHUNK_BYTES = 900;
 

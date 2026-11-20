@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace App\Mcp\Providers;
 
+use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
+use App\Mcp\Support\JobPermissionReader;
+use App\Mcp\Contracts\TextFields as TextFieldsContract;
+use App\Mcp\Support\TextFields;
+use App\Mcp\Contracts\Continuations as ContinuationsContract;
+use App\Mcp\Support\Continuations;
 use App\Agents\Support\AgentContext;
 use App\Hooks\Contracts\JournalToolNames;
 use App\Mcp\Console\RelayCommand;
@@ -31,6 +37,9 @@ final class McpServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind(JobPermissionReaderContract::class, JobPermissionReader::class);
+        $this->app->bind(TextFieldsContract::class, TextFields::class);
+        $this->app->bind(ContinuationsContract::class, Continuations::class);
         $this->app->bind(McpCall::class, LoggedMcpCall::class);
         $this->app->bind(NumberedPages::class, RetainedNumberedPages::class);
         $this->app->bind(JournalToolNames::class, McpCatalogue::class);

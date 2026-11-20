@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Assignments\Mcp;
+namespace App\Mcp\Tools;
 
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Enums\DiscoveryProfile;
-use App\Assignments\Mcp\Concerns\ReadsAssignmentArguments;
+use App\Mcp\Tools\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Support\AssignmentResult;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;

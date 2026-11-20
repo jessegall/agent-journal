@@ -8,10 +8,10 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Models\Agent;
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecordForMaintenance;
 use App\Assignments\Commands\ClaimAutoAssignment;
 use App\Assignments\Commands\EnableAutoAssignment;
-use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Contracts\MaintenanceAssignmentWriter;
 use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Enums\AutoAssignmentClaimType;
 use App\Assignments\Exceptions\AssignmentConflict;
@@ -80,7 +80,7 @@ final class ClaimAutoAssignmentTest extends TestCase
     {
         $record = Task::factory()->create()->assignmentIdentity();
         $this->enable($this->key);
-        $this->mock(AssignmentWriter::class)->shouldReceive('assign')->once()->andThrow(
+        $this->mock(MaintenanceAssignmentWriter::class)->shouldReceive('assignForMaintenance')->once()->andThrow(
             AssignmentConflict::heldByAnother($record),
         );
 
@@ -94,7 +94,7 @@ final class ClaimAutoAssignmentTest extends TestCase
         $this->assertThrows(
             fn () => $this->claim($this->key, 'different.scope'),
             EngineAccessRefused::class,
-            AssignRecord::MAINTENANCE_SCOPE,
+            AssignRecordForMaintenance::FILL_SCOPE,
         );
     }
 
@@ -106,7 +106,7 @@ final class ClaimAutoAssignmentTest extends TestCase
 
     private function claim(
         AutoAssignmentKey $key,
-        string $scope = AssignRecord::MAINTENANCE_SCOPE,
+        string $scope = AssignRecordForMaintenance::FILL_SCOPE,
     ): AutoAssignmentOutcome {
         $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
         $access = $this->app->make(EngineAccess::class);

@@ -11,7 +11,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('profile_drafts', function (Blueprint $table): void {
-            $table->string('profile_key')->primary();
+            $table->ulid('id')->primary();
+            $table->string('profile_key')->unique();
             $table->unsignedInteger('revision')->default(0);
             $table->ulid('current_revision_id')->nullable();
             $table->timestampsTz();

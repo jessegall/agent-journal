@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Agents\Support\ReadGrant;
+use App\Agents\Contracts\ReadGrant;
 use App\Agents\Values\ReadRequest;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Communication\Listeners;
 
+use App\Agents\Models\AgentSession;
 use App\Agents\Events\SessionOpened;
-use App\Agents\Models\JobMessageSource;
 use App\Communication\Models\Message;
 use App\Contracts\Listener;
 
@@ -18,6 +18,6 @@ final readonly class CaptureJobMessageSource implements Listener
             return;
         }
 
-        JobMessageSource::capture($event->sessionId, $event->authorizedSource->id);
+        AgentSession::captureJobSourceMessage($event->sessionId, $event->authorizedSource->id);
     }
 }

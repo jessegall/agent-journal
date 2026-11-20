@@ -266,9 +266,14 @@ final readonly class BindingRules
 
         foreach (new NodeFinder()->findInstanceOf($file->statements, MethodCall::class) as $call) {
             $method = $call->name instanceof Node\Identifier ? $call->name->toString() : '';
+
+            if (! in_array($method, self::BINDING_METHODS, true) || $call->isPartialFunctionApplication()) {
+                continue;
+            }
+
             $abstract = self::classStringOf($call->getArgs()[0]->value ?? null);
 
-            if (! in_array($method, self::BINDING_METHODS, true) || $abstract === null) {
+            if ($abstract === null) {
                 continue;
             }
 

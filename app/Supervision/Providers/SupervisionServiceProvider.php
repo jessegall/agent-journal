@@ -6,8 +6,6 @@ namespace App\Supervision\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
-use App\Assignments\Contracts\AssignmentRegistration;
-use App\Assignments\Enums\AssignmentPurpose;
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
 use App\Profiles\Contracts\SupervisorDefinitions;
@@ -17,11 +15,13 @@ use App\Supervision\Contracts\AskReader;
 use App\Supervision\Enums\AskAbility;
 use App\Supervision\Enums\SupervisorAbility;
 use App\Supervision\Models\Ask;
+use App\Supervision\Models\AskHop;
+use App\Supervision\Models\AskRequester;
+use App\Supervision\Models\SupervisorChange;
 use App\Supervision\Models\SupervisorLink;
 use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Policies\SupervisorPolicy;
 use App\Supervision\Readers\AskRecords;
-use App\Supervision\Support\AskAssignments;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Support\CurrentAskAdmission;
 use App\Supervision\Support\SupervisorRouting;
@@ -46,7 +46,6 @@ final class SupervisionServiceProvider extends ServiceProvider
 
     public function boot(
         PolicyCatalogue $policies,
-        AssignmentRegistration $assignments,
         LinkTypeRegistry $links,
         AskTypeRegistry $types,
         Repository $config,
@@ -66,14 +65,13 @@ final class SupervisionServiceProvider extends ServiceProvider
         $types->register($this->app->make(StuckType::class));
         $this->requireKnownAskTypes($types, $config->array('profiles.profiles'));
 
-        $links->register([Ask::LINK_TYPE => Ask::class]);
-        $assignments->registerOwner('Supervision', []);
-        $assignments->registerRecord(
-            Ask::LINK_TYPE,
-            AskAssignments::class,
-            'Supervision',
-            AssignmentPurpose::JournalAssigned,
-        );
+        $links->register([
+            Ask::LINK_TYPE => Ask::class,
+            AskHop::LINK_TYPE => AskHop::class,
+            AskRequester::LINK_TYPE => AskRequester::class,
+            SupervisorChange::LINK_TYPE => SupervisorChange::class,
+            SupervisorLink::LINK_TYPE => SupervisorLink::class,
+        ]);
     }
 
     /**

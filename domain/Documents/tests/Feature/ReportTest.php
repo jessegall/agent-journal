@@ -80,6 +80,7 @@ final class ReportTest extends TestCase
             [$reviewer->session->id],
             array_column($links->linkedOfType($report, 'core.agent-session'), 'id'),
         );
+        $reviewer->startRequest($this->app);
         $inspection = $this->app->make(ReportResolver::class)->inspect($report->number);
         $this->assertSame('The findings were addressed.', $inspection->settlements[0]->reason);
         $this->assertDatabaseCount('plans', 0);
