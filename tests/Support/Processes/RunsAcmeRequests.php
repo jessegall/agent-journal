@@ -102,7 +102,7 @@ trait RunsAcmeRequests
             ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId),
             new PartKey(1, 1, 'acme verify'),
         );
-        $part->start(1, 'host');
+        $part->start('host', 1);
         $recorder = $this->app->make(SpoolRecorder::class);
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));
         $part->finishProcess(PartEnd::exited($status));
@@ -140,7 +140,7 @@ trait RunsAcmeRequests
         $projectKey = (string) config('processes.project_key');
         $run = ProcessRun::admit($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
         $part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
-        $part->start(1, 'host');
+        $part->start('host', 1);
         $recorder = $this->app->make(SpoolRecorder::class);
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));
         $part->finishProcess(PartEnd::exited($status));

@@ -70,7 +70,7 @@ final readonly class SessionRecords implements SessionResolver
     {
         $session = AgentSession::query()->whereKey($sessionId)->where('agent_id', $agentId)->lockForUpdate()->first();
 
-        return $session !== null && $session->canReceiveMessages() ? $session : throw StackTargetRefused::forTarget(
+        return $session !== null && $session->isActive() ? $session : throw StackTargetRefused::forTarget(
             "session {$sessionId}",
         );
     }

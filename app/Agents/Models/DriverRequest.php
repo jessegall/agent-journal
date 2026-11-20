@@ -345,15 +345,6 @@ final class DriverRequest extends Model implements ReadableModel
         return $this->isStoppedKeyScript() && $this->script_step !== null;
     }
 
-    /**
-     * Sends the key script again from its recorded step, as a new attempt; the host goes on only once that step's
-     * screen is read afresh.
-     */
-    public function resumeScript(): void
-    {
-        $this->retry();
-    }
-
     public function supersede(): void
     {
         $this->finish(RequestProgress::Superseded, null);

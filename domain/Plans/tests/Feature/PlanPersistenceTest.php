@@ -34,9 +34,9 @@ final class PlanPersistenceTest extends TestCase
         $first = $this->task('First');
         $third = $this->task('Third');
 
-        $read->addTask($second->id);
-        $start->addTask($third->id);
-        $read->addTask($first->id);
+        $read->addTasks([$second->id]);
+        $start->addTasks([$third->id]);
+        $read->addTasks([$first->id]);
 
         $this->assertSame(['Read', 'Start'], $plan->phases()->pluck('title')->all());
         $this->assertSame([$second->id, $first->id], $read->taskIds());
@@ -48,11 +48,11 @@ final class PlanPersistenceTest extends TestCase
     {
         $plan = Plan::factory()->create(['title' => 'Fix the login redirect', 'type' => PlanType::Fix]);
         $task = $this->task('Write a failing test');
-        $plan->addPhase('Reproduce')->addTask($task->id);
+        $plan->addPhase('Reproduce')->addTasks([$task->id]);
 
         $this->expectException(TaskAlreadyInAPhase::class);
 
-        $plan->addPhase('Fix')->addTask($task->id);
+        $plan->addPhase('Fix')->addTasks([$task->id]);
     }
 
     public function test_tasks_count_progress_by_id_including_none(): void

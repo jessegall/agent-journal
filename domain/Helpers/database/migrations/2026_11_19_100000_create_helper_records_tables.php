@@ -54,7 +54,6 @@ return new class extends Migration
             $table->string('request_id', 64);
             $table->string('state', 16);
             $table->json('steering');
-            $table->string('result_reference')->nullable();
             $table->string('stop_evidence_reference')->nullable();
             $table->unsignedInteger('profile_revision');
             $table->timestampTz('finished_at')->nullable();

@@ -45,7 +45,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partStarted($part, $pid))) {
             return;
         }
-        $this->part($part)->start($pid, $host);
+        $this->part($part)->start($host, $pid);
     }
 
     public function startedInside(PartKey $part, string $host): void
@@ -53,7 +53,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partStartedInside($part))) {
             return;
         }
-        $this->part($part)->startInside($host);
+        $this->part($part)->start($host);
     }
 
     public function output(PartKey $part, OutputStream $stream, string $bytes): void

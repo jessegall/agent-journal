@@ -53,7 +53,7 @@ final class RunReconcileTest extends TestCase
         $this->run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($admission->runId);
         $this->run->consumeFor('test-key', (string) config('app.key'));
         $this->part = PartRun::queue($this->run, new PartKey(1, 1, 'cat'));
-        $this->part->start(1, 'host');
+        $this->part->start('host', 1);
     }
 
     public function test_a_silent_run_is_lost_with_no_status_and_incomplete_capture(): void

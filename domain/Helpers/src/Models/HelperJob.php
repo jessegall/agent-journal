@@ -40,7 +40,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $request_id
  * @property JobState $state
  * @property list<string> $steering
- * @property string|null $result_reference
  * @property string|null $stop_evidence_reference
  * @property int $profile_revision
  * @property CarbonImmutable|null $finished_at
@@ -151,18 +150,10 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         $this->save();
     }
 
-    public function finish(string $resultReference): void
-    {
-        $this->moveTo(JobState::Finished);
-        $this->result_reference = $resultReference;
-        $this->finished_at = CarbonImmutable::now();
-        $this->save();
-    }
-
     /**
      * Finishes the job on the stop evidence that certified its work complete.
      */
-    public function finishByStopEvidence(string $reference): void
+    public function finish(string $reference): void
     {
         $this->moveTo(JobState::Finished);
         $this->stop_evidence_reference = $reference;

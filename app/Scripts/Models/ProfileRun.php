@@ -160,7 +160,7 @@ final class ProfileRun extends Model implements ReadableModel
      */
     public function recordStep(string $reference, StepOutcome $outcome): ProfileStepResult
     {
-        $recorded = $this->results()->where('step_reference', $reference)->first();
+        $recorded = $this->recordedResult($reference);
 
         if ($recorded !== null) {
             return $recorded;
@@ -176,6 +176,18 @@ final class ProfileRun extends Model implements ReadableModel
         $this->save();
 
         return $result;
+    }
+
+    /**
+     * Records the outcome of a step the run took itself, once: a step replayed from its record is not recorded again.
+     */
+    public function completeStep(string $reference, StepOutcome $outcome): void
+    {
+        if ($this->recordedResult($reference) !== null) {
+            return;
+        }
+
+        ProfileStepResult::record($this, $reference, $outcome);
     }
 
     /**
@@ -210,25 +222,13 @@ final class ProfileRun extends Model implements ReadableModel
     }
 
     /**
-     * Records the outcome of a step the run took itself, once: a step replayed from its record is not recorded again.
-     */
-    public function completeStep(string $reference, StepOutcome $outcome): void
-    {
-        if ($this->results()->where('step_reference', $reference)->exists()) {
-            return;
-        }
-
-        ProfileStepResult::record($this, $reference, $outcome);
-    }
-
-    /**
      * The outcome recorded for one of the run's steps.
      *
      * @return Option<StepOutcome>
      */
     public function outcomeOf(string $stepReference): Option
     {
-        $result = $this->results()->where('step_reference', $stepReference)->first();
+        $result = $this->recordedResult($stepReference);
 
         return $result === null ? None::create() : new Some($result->outcome());
     }
@@ -241,5 +241,11 @@ final class ProfileRun extends Model implements ReadableModel
     public function results(): HasMany
     {
         return $this->hasMany(ProfileStepResult::class);
+    }
+    // ----------[ Internals ]----------
+
+    private function recordedResult(string $reference): ProfileStepResult|null
+    {
+        return $this->results()->where('step_reference', $reference)->first();
     }
 }

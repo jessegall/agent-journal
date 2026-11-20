@@ -406,15 +406,6 @@ final class AgentSession extends Model implements ReadableModel
         $this->endAt($time);
     }
 
-    /**
-     * Whether a message may still be addressed to this session: it is running or waiting, not ended.
-     * Delivery and wake ask the same question.
-     */
-    public function canReceiveMessages(): bool
-    {
-        return $this->status->isRunning();
-    }
-
     public function isActive(): bool
     {
         return $this->status->isRunning();

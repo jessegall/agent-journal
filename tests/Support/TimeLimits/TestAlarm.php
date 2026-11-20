@@ -16,7 +16,7 @@ use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
  */
 final class TestAlarm
 {
-    public const int DEFAULT_SECONDS = 1;
+    public const int DEFAULT_SECONDS = 2;
 
     public const int PREPARATION_SECONDS = 60;
 

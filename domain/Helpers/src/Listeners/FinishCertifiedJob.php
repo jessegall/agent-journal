@@ -17,7 +17,7 @@ final readonly class FinishCertifiedJob implements Listener
     public function handle(HelperCompletionCertified $event): void
     {
         foreach (JobStopEvidence::openJobs($event->work) as $job) {
-            $job->finishByStopEvidence(JobStopEvidence::referenceOf($event->attempt));
+            $job->finish(JobStopEvidence::referenceOf($event->attempt));
         }
     }
 }

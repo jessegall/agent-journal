@@ -45,7 +45,7 @@ final class StoredOutputReadTest extends TestCase
             TestRunAdmissions::of(admissionId: 'stored-output'),
         );
         $part = PartRun::queue($this->run, new PartKey(1, 1, 'tool'));
-        $part->start(1, 'host');
+        $part->start('host', 1);
         $lines = implode(
             '',
             array_map(fn (int $line) => "line {$line}".($line === 50 ? ' error' : '')."\n", range(1, 100)),

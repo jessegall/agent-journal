@@ -53,16 +53,16 @@ final class PlanTaskPoolTest extends TestCase
         $build = $plan->addPhase('Build');
         $review = $plan->addPhase('Review');
         [$first, $second, $third, $fourth] = array_map(fn () => Task::factory()->create()->id, range(1, 4));
-        $review->addTask($fourth);
-        $build->addTask($second);
-        $review->addTask($third);
-        $build->addTask($first);
+        $review->addTasks([$fourth]);
+        $build->addTasks([$second]);
+        $review->addTasks([$third]);
+        $build->addTasks([$first]);
         $factory = $this->app->make(PlanTaskPoolFactory::class);
 
         $this->assertSame([$second, $first, $fourth, $third], $this->open($factory, $plan)->ids->ids);
 
         $later = Task::factory()->create()->id;
-        $build->addTask($later);
+        $build->addTasks([$later]);
 
         $this->assertSame([$second, $first, $later, $fourth, $third], $this->open($factory, $plan)->ids->ids);
     }
@@ -84,7 +84,7 @@ final class PlanTaskPoolTest extends TestCase
     {
         $factory = $this->app->make(PlanTaskPoolFactory::class);
         $plan = Plan::factory()->create(['state' => $state]);
-        $plan->addPhase('Build')->addTask(Task::factory()->create()->id);
+        $plan->addPhase('Build')->addTasks([Task::factory()->create()->id]);
         $factory->validate(self::reference($plan), $this->builder);
 
         $this->assertThrows(

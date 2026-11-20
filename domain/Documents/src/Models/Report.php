@@ -136,11 +136,7 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     public function searchResult(string $words): PublicationCard
     {
         return PublicationCard::from([
-            'id' => $this->id,
-            'number' => (string) $this->number,
-            'title' => $this->title,
-            'abstract' => $this->abstract,
-            'attention' => $this->attention,
+            ...$this->card()->all(),
             'snippet' => $this->snippetFor($words),
             'foundIn' => 'report',
         ]);

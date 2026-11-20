@@ -37,7 +37,7 @@ final class ProcessRecordsTest extends TestCase
     {
         $part = $this->part();
 
-        $part->start(4242, 'host-a');
+        $part->start('host-a', 4242);
         $part->finishProcess(PartEnd::exited(0));
         $part->finishDraining();
 
@@ -49,7 +49,7 @@ final class ProcessRecordsTest extends TestCase
     public function test_a_part_with_an_exit_but_undrained_streams_is_not_ended(): void
     {
         $part = $this->part();
-        $part->start(1, 'host-a');
+        $part->start('host-a', 1);
 
         $part->finishProcess(PartEnd::exited(1));
 
@@ -60,7 +60,7 @@ final class ProcessRecordsTest extends TestCase
     public function test_a_signalled_part_has_no_status_code(): void
     {
         $part = $this->part();
-        $part->start(1, 'host-a');
+        $part->start('host-a', 1);
 
         $part->finishProcess(PartEnd::signalled(9));
 

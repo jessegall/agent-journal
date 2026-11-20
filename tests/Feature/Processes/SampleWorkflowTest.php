@@ -108,7 +108,7 @@ final class SampleWorkflowTest extends TestCase
         $runId = $this->runAsAgent(new StartSample($this->requestId, $permitId, 'first'));
 
         $part = $this->part($runId);
-        $part->start(1, 'host');
+        $part->start('host', 1);
         $part->finishProcess(PartEnd::exited(0));
         $part->finishDraining();
 
@@ -146,7 +146,7 @@ final class SampleWorkflowTest extends TestCase
     private function endRun(string $runId, int $status): void
     {
         $part = $this->part($runId);
-        $part->start(1, 'host');
+        $part->start('host', 1);
         $recorder = $this->app->make(SpoolRecorder::class);
         $chunk = new CapturedChunk($part, OutputStream::Stdout, <<<'TEXT'
         ok first

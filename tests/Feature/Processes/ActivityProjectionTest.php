@@ -41,7 +41,7 @@ final class ActivityProjectionTest extends TestCase
         Event::fake([RunChanged::class]);
         $run = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of());
         $this->part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
-        $this->part->start(1, 'host');
+        $this->part->start('host', 1);
         $bytes = <<<TEXT
         first
         \x1b[31mlatest line

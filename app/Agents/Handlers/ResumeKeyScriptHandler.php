@@ -22,7 +22,7 @@ final readonly class ResumeKeyScriptHandler implements CommandHandler
             throw DriverRequestRefused::noStoppedScript($request->id);
         }
 
-        $request->resumeScript();
+        $request->retry();
 
         return $this->recovery->record($request, RecoveryAction::ScriptResumed, $command->reason);
     }

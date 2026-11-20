@@ -131,7 +131,7 @@ final class OutputCaptureTest extends TestCase
     {
         $run = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of());
         $part = PartRun::queue($run, new PartKey(1, 1, 'head'));
-        $part->start(1, 'host');
+        $part->start('host', 1);
         $part->finishProcess(PartEnd::exited(0));
 
         return $part;

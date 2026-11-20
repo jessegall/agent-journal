@@ -106,21 +106,14 @@ final class PartRun extends Model implements ReadableModel
 
     // ----------[ Mutations ]----------
 
-    public function start(int $pid, string $host): void
+    /**
+     * Starts the part on a host, in its own process, or with no process for a builtin that runs inside the
+     * supervisor.
+     */
+    public function start(string $host, int|null $pid = null): void
     {
         $this->moveTo(LifecycleState::Running);
         $this->pid = $pid;
-        $this->host = $host;
-        $this->started_at = CarbonImmutable::now();
-        $this->save();
-    }
-
-    /**
-     * Starts a builtin, which runs inside the supervisor with no process of its own.
-     */
-    public function startInside(string $host): void
-    {
-        $this->moveTo(LifecycleState::Running);
         $this->host = $host;
         $this->started_at = CarbonImmutable::now();
         $this->save();

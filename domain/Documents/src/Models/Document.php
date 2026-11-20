@@ -192,14 +192,8 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
      */
     public function searchResult(string $words, DocumentRevision $matchingRevision): PublicationCard
     {
-        $revision = $this->currentRevisionOrFail();
-
         return PublicationCard::from([
-            'id' => $this->id,
-            'number' => (string) $this->number,
-            'title' => $revision->title,
-            'abstract' => $revision->abstract,
-            'attention' => $this->attention,
+            ...$this->card()->all(),
             'snippet' => $matchingRevision->snippetFor($words),
             'foundIn' => "revision {$matchingRevision->number}",
         ]);

@@ -151,7 +151,7 @@ final readonly class ShippedReaderInstaller
         $runId = $this->commands->run(new StartSample($requestId, $permit, "shipped-{$reader->tool}-{$sample->file}"));
         $run = ProcessRun::ofAnyActor($runId);
         $part = PartRun::queue($run, new PartKey(1, 1, $reader->invocation));
-        $part->start(0, 'shipped');
+        $part->start('shipped');
         $bytes = $reader->outputOf($sample);
         $this->recorder->append(new CapturedChunk($part, OutputStream::Stdout, $bytes, CarbonImmutable::now()));
         $part->finishProcess($sample->end());

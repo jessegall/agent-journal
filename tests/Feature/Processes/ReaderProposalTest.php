@@ -159,7 +159,7 @@ final class ReaderProposalTest extends TestCase
             ),
         );
         $part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
-        $part->start(1, 'host');
+        $part->start('host', 1);
         $recorder = $this->app->make(SpoolRecorder::class);
         $now = CarbonImmutable::now();
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, <<<'TEXT'
