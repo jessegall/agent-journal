@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsActors;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestActors;
@@ -30,6 +31,7 @@ final class SkillPreviewTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
+    use HasContainerSupport;
     use InstallsBuiltInProfiles;
 
     private const array TABLES = ['agent_sessions', 'agents', 'profile_revisions', 'profiles'];

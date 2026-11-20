@@ -20,6 +20,7 @@ use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsTestUser;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -32,6 +33,7 @@ final class ProfileStorageTest extends TestCase
 {
     use ActsAsTestUser;
     use CommitsHookRows;
+    use HasContainerSupport;
 
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
 

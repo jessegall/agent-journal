@@ -92,7 +92,7 @@ final class DocumentsTest extends TestCase
         $this->assertThrows(
             fn () => $this->bus()->run(new CreateReport('Check', 'What we found', "Text\n", $about)),
             CommandInputInvalid::class,
-            'about: The about field must not have more than 50 items.',
+            'relatedRecords: The related records field must not have more than 50 items.',
         );
         $this->assertSame(0, Document::query()->count() + Report::query()->count());
     }

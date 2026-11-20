@@ -23,6 +23,7 @@ use Domain\Rules\Commands\ProposeRule;
 use Domain\Rules\Enums\RuleAbility;
 use Domain\Rules\Policies\RulePolicy;
 use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -35,6 +36,7 @@ use Tests\TestCase;
  */
 final class JobPermissionTest extends TestCase
 {
+    use HasContainerSupport;
     use RefreshHookDatabase;
     use StartsAgentRequests;
 

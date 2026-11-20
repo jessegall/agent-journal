@@ -12,7 +12,7 @@ use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\NavigationRequest;
-use App\Agents\Pipelines\NavigationAdmissionPipeline;
+use App\Agents\Pipelines\ResolveNavigationAdmissionPipeline;
 use App\Agents\Support\HostRuntimes;
 use App\Agents\Support\NavigationDispatch;
 use App\Agents\Support\NavigationRaiseAnswer;
@@ -48,7 +48,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
         }
 
         return $this->pipelines->run(
-            NavigationAdmissionPipeline::class,
+            ResolveNavigationAdmissionPipeline::class,
             new NavigationAdmission(
                 $command,
                 $runtime,

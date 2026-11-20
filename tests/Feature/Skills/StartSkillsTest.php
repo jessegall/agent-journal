@@ -30,6 +30,7 @@ use App\Skills\Support\HostSkillPublisher;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\FullDiskPublisher;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\RunsTrustedCommands;
@@ -46,6 +47,7 @@ use Tests\TestCase;
 final class StartSkillsTest extends TestCase
 {
     use CommitsHookRows;
+    use HasContainerSupport;
     use InstallsBuiltInProfiles;
     use PublishesSkills;
     use RunsTrustedCommands;

@@ -8,7 +8,6 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
-use App\Hooks\Events\StateTypesRequested;
 use App\Profiles\Contracts\SupervisorDefinitions;
 use App\Profiles\Values\AskTypeKey;
 use App\Supervision\Contracts\AskAdmission;
@@ -23,8 +22,6 @@ use App\Supervision\Models\SupervisorLink;
 use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Policies\SupervisorPolicy;
 use App\Supervision\Readers\AskRecords;
-use App\Supervision\States\AnsweringAskState;
-use App\Supervision\States\AnsweringAskStates;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Support\CurrentAskAdmission;
 use App\Supervision\Support\SupervisorRouting;
@@ -35,7 +32,6 @@ use App\Supervision\Types\StuckType;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 
 final class SupervisionServiceProvider extends ServiceProvider
@@ -54,13 +50,9 @@ final class SupervisionServiceProvider extends ServiceProvider
         LinkTypeRegistry $links,
         AskTypeRegistry $types,
         Repository $config,
-        Dispatcher $events,
     ): void {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/asks.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
-        $events->listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register(AnsweringAskState::TYPE, $this->app->make(AnsweringAskStates::class));
-        });
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('asks:recover-delivery')->everyMinute()->withoutOverlapping(),

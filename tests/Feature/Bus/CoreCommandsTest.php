@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Assignments\Commands\ClaimAutoAssignment;
 use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\FenceProfileRevision;
@@ -13,6 +12,8 @@ use App\Agents\Commands\ReportFailure;
 use App\Agents\Commands\ReportRunning;
 use App\Agents\Commands\ReportStopped;
 use App\Agents\Commands\StartAgent;
+use App\Assignments\Commands\AssignRecordForMaintenance;
+use App\Assignments\Commands\ClaimAutoAssignment;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
@@ -177,6 +178,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             VerifyRestoredOutput::class,
             ClaimStartGrant::class,
             ClaimAutoAssignment::class,
+            AssignRecordForMaintenance::class,
         ], CoreCommands::privateCommands());
     }
 

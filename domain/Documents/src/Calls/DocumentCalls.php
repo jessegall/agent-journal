@@ -70,8 +70,8 @@ final readonly class DocumentCalls
             'mode' => $mode,
             'section' => $section,
             'body' => $body,
-            'old' => $originalText,
-            'new' => $replacementText,
+            'originalText' => $originalText,
+            'replacementText' => $replacementText,
             'title' => $title,
             'abstract' => $abstract,
             'requestKey' => $requestKey,
@@ -157,7 +157,7 @@ final readonly class DocumentCalls
         return $this->sender->send(MakeDocumentCall::from([
             'title' => $title,
             'abstract' => $abstract,
-            'about' => $relatedRecords,
+            'relatedRecords' => $relatedRecords,
             'requestKey' => $requestKey,
             'body' => $body,
             'uploadId' => $uploadId,
@@ -178,7 +178,7 @@ final readonly class DocumentCalls
         return $this->sender->send(MakeReportCall::from([
             'title' => $title,
             'abstract' => $abstract,
-            'about' => $relatedRecords,
+            'relatedRecords' => $relatedRecords,
             'requestKey' => $requestKey,
             'body' => $body,
             'uploadId' => $uploadId,

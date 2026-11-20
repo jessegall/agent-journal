@@ -7,7 +7,7 @@ namespace Domain\Plans\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Api\PlanTextLimit;
+use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Commands\FinishPlan;
 use Domain\Plans\Enums\PlanState;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

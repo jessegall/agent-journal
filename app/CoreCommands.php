@@ -15,6 +15,7 @@ use App\Agents\Commands\ReportFailure;
 use App\Agents\Commands\ReportRunning;
 use App\Agents\Commands\ReportStopped;
 use App\Agents\Commands\StartAgent;
+use App\Assignments\Commands\AssignRecordForMaintenance;
 use App\Assignments\Commands\ClaimAutoAssignment;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
@@ -172,6 +173,7 @@ final class CoreCommands
             VerifyRestoredOutput::class,
             ClaimStartGrant::class,
             ClaimAutoAssignment::class,
+            AssignRecordForMaintenance::class,
         ];
     }
 

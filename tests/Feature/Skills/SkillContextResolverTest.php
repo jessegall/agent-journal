@@ -18,6 +18,7 @@ use App\Skills\Values\SkillContext;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsActors;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\StartsAgentRequests;
@@ -32,6 +33,7 @@ final class SkillContextResolverTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
+    use HasContainerSupport;
     use InstallsBuiltInProfiles;
     use StartsAgentRequests;
 
