@@ -2421,7 +2421,6 @@ class	HelperNoticeData
 class	HelperNoticeListData
 class	HelperNotices
 class	HelperNoticesCommand
-class	HelperNoticesListTool
 class	HelperPolicy
 class	HelperProfileMismatch
 class	HelperProfileTypeConflict
@@ -2745,7 +2744,6 @@ class	MarkdownInvalid
 class	MarkdownPart
 class	MarkdownParts
 class	MarkdownText
-class	McpBudgetExceeded
 class	McpCatalogue
 class	McpClassInvalid
 class	McpCommandMissing
@@ -4168,7 +4166,6 @@ class	SendHelper
 class	SendHelperCall
 class	SendHelperController
 class	SendHelperHandler
-class	SendHelperTool
 class	SendMessage
 class	SendMessageCall
 class	SendMessageCommand
@@ -9672,8 +9669,6 @@ method	DiscardUploadHandler::handle()
 method	DiscardUploadTool::command()
 method	DiscardUploadTool::present()
 method	DiscardUploadTool::writeSchema()
-method	DiscoveryProfile::byteLimit()
-method	DiscoveryProfile::toolLimit()
 method	DismissAccountNotice::__construct()
 method	DismissAccountNotice::subject()
 method	DismissAccountNoticeController::__invoke()
@@ -10919,9 +10914,6 @@ method	HelperNoticeData::fromHelperNotice()
 method	HelperNoticeListData::__construct()
 method	HelperNotices::newest()
 method	HelperNoticesCommand::handle()
-method	HelperNoticesListTool::__construct()
-method	HelperNoticesListTool::read()
-method	HelperNoticesListTool::schema()
 method	HelperPolicy::authorize()
 method	HelperProfileMismatch::forIdentity()
 method	HelperProfileTypeConflict::forProfile()
@@ -10964,8 +10956,11 @@ method	HelpersDomain::commands()
 method	HelpersDomain::description()
 method	HelpersDomain::exports()
 method	HelpersDomain::internalAssignables()
+method	HelpersDomain::mcpResources()
+method	HelpersDomain::overviewContributions()
 method	HelpersDomain::policies()
 method	HelpersDomain::requires()
+method	HelpersDomain::searchContributions()
 method	HelpersServiceProvider::boot()
 method	HelpersServiceProvider::register()
 method	HereDocument::__construct()
@@ -11798,12 +11793,9 @@ method	MarkdownText::withSectionReplaced()
 method	MarkdownText::withTextReplaced()
 method	MarkdownText::withoutTrailingBlankLines()
 method	MarkdownText::workingBody()
-method	McpBudgetExceeded::bytes()
-method	McpBudgetExceeded::tools()
 method	McpCall::answerResource()
 method	McpCall::answerTool()
 method	McpCatalogue::__construct()
-method	McpCatalogue::assertWithinBudget()
 method	McpCatalogue::definitionOf()
 method	McpCatalogue::overviewContributionClasses()
 method	McpCatalogue::registerOverviewContribution()
@@ -15969,9 +15961,6 @@ method	SendHelperCall::__construct()
 method	SendHelperController::__invoke()
 method	SendHelperHandler::__construct()
 method	SendHelperHandler::handle()
-method	SendHelperTool::command()
-method	SendHelperTool::present()
-method	SendHelperTool::writeSchema()
 method	SendMessage::__construct()
 method	SendMessage::subject()
 method	SendMessageCall::__construct()
@@ -17504,6 +17493,7 @@ method	StartHelperHandler::__construct()
 method	StartHelperHandler::handle()
 method	StartHelperTool::command()
 method	StartHelperTool::present()
+method	StartHelperTool::writeSchema()
 method	StartMaterial::__construct()
 method	StartMaterialMissing::forRequest()
 method	StartOwnedAgent::__construct()
@@ -23943,7 +23933,6 @@ property	HelperNoticeData::$text
 property	HelperNoticeListData::$notices
 property	HelperNoticesCommand::$description
 property	HelperNoticesCommand::$signature
-property	HelperNoticesListTool::$notices
 property	HelperReceipt::$identityId
 property	HelperReceipt::$isNewJob
 property	HelperReceipt::$jobId
@@ -24492,8 +24481,6 @@ property	McpCatalogue::$commands
 property	McpCatalogue::$overviewContributions
 property	McpCatalogue::$resources
 property	McpCatalogue::$searchContributions
-property	McpCatalogue::$toolBytes
-property	McpCatalogue::$toolCounts
 property	McpCatalogue::$tools
 property	McpInstructions::$authorizer
 property	MeasureReads::$log
@@ -30318,7 +30305,6 @@ variable	$signedLeft
 variable	$since
 variable	$site
 variable	$size
-variable	$sizes
 variable	$skill
 variable	$skillFiles
 variable	$skillId

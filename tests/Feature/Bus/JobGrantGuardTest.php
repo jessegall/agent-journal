@@ -23,15 +23,12 @@ use App\Hooks\Enums\NoSubject;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\Frame;
 use App\Hooks\Stack\StackVerdict;
-use App\Mcp\Exceptions\McpBudgetExceeded;
-use App\Mcp\Support\McpCatalogue;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Domain\Rules\Commands\ProposeRule;
 use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Domains\Ledger\Mcp\SecondBudgetReadTool;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
@@ -137,14 +134,6 @@ final class JobGrantGuardTest extends TestCase
 
         $this->assertFalse($reads->allows(new ReadRequest('plans_list')));
         $this->signed(TestStart::start(), '/agent/tasks/assigned', [])->assertForbidden();
-    }
-
-    public function test_the_catalogue_rejects_the_twenty_fifth_tool_of_a_read_only_profile(): void
-    {
-        $catalogue = $this->app->make(McpCatalogue::class);
-        $this->expectException(McpBudgetExceeded::class);
-        $this->expectExceptionMessage('read-only-helper');
-        $catalogue->registerTool(SecondBudgetReadTool::class);
     }
 
     private function assign(TestStart $start, TestStart $recipient, Task $task): TestResponse

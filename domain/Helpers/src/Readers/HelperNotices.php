@@ -8,7 +8,7 @@ use Domain\Helpers\Http\Data\HelperNoticeData;
 use Domain\Helpers\Models\HelperNotice;
 
 /**
- * The newest notices the caller was left about its helpers' jobs, for the signed call and the MCP tool alike.
+ * The newest notices the caller was left about its helpers' jobs, for the signed notices call.
  */
 final readonly class HelperNotices
 {

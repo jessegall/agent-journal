@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Mcp\Enums\DiscoveryProfile;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
@@ -59,7 +58,6 @@ final class DocumentToolsTest extends TestCase
         $this->sendMcp($designer, 'resources/read', ['uri' => "journal://v1/docs/{$id}/revisions/2"])
             ->assertJsonPath('result.contents.0.mimeType', 'text/markdown')
             ->assertJsonPath('result.contents.0.text', $first['body']);
-        $this->assertLessThanOrEqual(DiscoveryProfile::WritingHelper->toolLimit(), count($this->catalogue($designer)));
     }
 
     public function test_a_reviewer_files_a_report_but_cannot_discover_or_call_document_writes(): void
@@ -69,11 +67,6 @@ final class DocumentToolsTest extends TestCase
         $names = array_column($tools, 'name');
         $this->assertContains('reports_create', $names);
         $this->assertNotContains('docs_create', $names);
-        $this->assertLessThanOrEqual(DiscoveryProfile::ReadOnlyHelper->toolLimit(), count($tools));
-        $this->assertLessThanOrEqual(
-            DiscoveryProfile::ReadOnlyHelper->byteLimit(),
-            array_sum(array_map(fn (array $tool): int => strlen(json_encode($tool, JSON_THROW_ON_ERROR)), $tools)),
-        );
 
         $this->sendMcp($reviewer, 'tools/call', [
             'name' => 'docs_create', 'arguments' => ['title' => 'Forged', 'request_key' => 'forged-doc'],

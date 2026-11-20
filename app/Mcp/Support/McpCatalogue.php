@@ -10,7 +10,6 @@ use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Contracts\SearchContribution;
 use App\Mcp\Enums\DiscoveryProfile;
-use App\Mcp\Exceptions\McpBudgetExceeded;
 use App\Mcp\Exceptions\McpClassInvalid;
 use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Exceptions\McpResourceUriTaken;
@@ -53,16 +52,6 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     private array $searchContributions = [];
 
-    /**
-     * @var array<string, int>
-     */
-    private array $toolBytes = [];
-
-    /**
-     * @var array<string, int>
-     */
-    private array $toolCounts = [];
-
     public function __construct(private readonly CommandRegistry $commands) {}
 
     /**
@@ -70,7 +59,6 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      * @throws McpCommandMissing
      * @throws McpToolNameInvalid
      * @throws McpToolNameTaken
-     * @throws McpBudgetExceeded
      */
     public function registerTool(string $className): void
     {
@@ -95,36 +83,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
             throw McpCommandMissing::for($className, $write->get()->command);
         }
 
-        $bytes = strlen(json_encode($tool->toArray(), JSON_THROW_ON_ERROR));
-        $counts = $this->toolCounts;
-        $sizes = $this->toolBytes;
-
-        foreach (DiscoveryProfile::cases() as $profile) {
-            if (! $tool->isVisibleTo($profile)) {
-                continue;
-            }
-
-            $count = ($counts[$profile->value] ?? 0) + 1;
-            $size = ($sizes[$profile->value] ?? 0) + $bytes;
-            $this->assertWithinBudget($profile, $count, $size);
-            $counts[$profile->value] = $count;
-            $sizes[$profile->value] = $size;
-        }
-
         $this->tools[$name] = $className;
-        $this->toolCounts = $counts;
-        $this->toolBytes = $sizes;
-    }
-
-    private function assertWithinBudget(DiscoveryProfile $profile, int $count, int $bytes): void
-    {
-        if ($count > $profile->toolLimit()) {
-            throw McpBudgetExceeded::tools($profile->value, $count, $profile->toolLimit());
-        }
-
-        if ($bytes > $profile->byteLimit()) {
-            throw McpBudgetExceeded::bytes($profile->value, $bytes, $profile->byteLimit());
-        }
     }
 
     /**

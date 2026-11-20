@@ -13,6 +13,7 @@ use App\Domains\Concerns\HasAssignables;
 use App\Domains\Contracts\InternalAssignableContributor;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Mcp\Contracts\McpToolProvider;
 use Domain\Helpers\Commands\CancelHelperJob;
 use Domain\Helpers\Commands\ContinueHelper;
 use Domain\Helpers\Commands\SendHelper;
@@ -39,7 +40,11 @@ use Domain\Helpers\Support\HelperWork;
 use Domain\Helpers\Support\JobLaunch;
 use Domain\Helpers\Support\SteerReceipt;
 
-final class HelpersDomain extends Domain implements CommandProvider, InternalAssignableContributor, PolicyProvider
+final class HelpersDomain extends Domain implements
+    CommandProvider,
+    InternalAssignableContributor,
+    McpToolProvider,
+    PolicyProvider
 {
     use HasAssignables;
 
@@ -105,5 +110,20 @@ final class HelpersDomain extends Domain implements CommandProvider, InternalAss
     public function internalAssignables(): array
     {
         return [HelperJob::LINK_TYPE => HelperJobAssignments::class];
+    }
+
+    public function mcpResources(): array
+    {
+        return [];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [];
+    }
+
+    public function searchContributions(): array
+    {
+        return [];
     }
 }
