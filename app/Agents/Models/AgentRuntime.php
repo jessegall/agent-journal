@@ -49,6 +49,7 @@ use PhpOption\Option;
  * @property CarbonImmutable|null $settings_observed_at
  * @property string|null $start_grant
  * @property int $process_generation
+ * @property CarbonImmutable|null $generation_started_at
  * @property CarbonImmutable|null $last_observed_at
  * @property Carbon $updated_at
  * @property int $row_version
@@ -77,6 +78,7 @@ final class AgentRuntime extends Model implements ReadableModel
             'hold_reason' => HoldReason::class,
             'settings_observed_at' => 'immutable_datetime',
             'last_observed_at' => 'immutable_datetime',
+            'generation_started_at' => 'immutable_datetime',
         ];
     }
 
@@ -96,6 +98,27 @@ final class AgentRuntime extends Model implements ReadableModel
     public static function hostOfSession(string $sessionId): Option
     {
         return Option::fromValue(self::query()->where('agent_session_id', $sessionId)->value('host_id'));
+    }
+
+    /**
+     * The session of the host's own runtime; another host's runtime is not found.
+     */
+    public static function sessionOfHostRuntime(string $hostId, string $runtimeId): string
+    {
+        return self::query()->whereKey($runtimeId)->where('host_id', $hostId)->firstOrFail()->agent_session_id;
+    }
+
+    /**
+     * When the current process generation of the session's runtime began; none for a session the host never
+     * started, such as one the owner runs in its own terminal.
+     *
+     * @return Option<CarbonImmutable>
+     */
+    public static function generationStartOfSession(string $sessionId): Option
+    {
+        $runtime = self::query()->where('agent_session_id', $sessionId)->first();
+
+        return Option::fromValue($runtime?->generation_started_at);
     }
 
     /**
@@ -251,6 +274,7 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->activity = RuntimeActivity::Starting;
         $this->hold_reason = HoldReason::None;
         $this->process_generation = 1;
+        $this->generation_started_at = CarbonImmutable::now();
         $this->save();
     }
 
@@ -265,6 +289,10 @@ final class AgentRuntime extends Model implements ReadableModel
     ): bool {
         if ($processGeneration < $this->process_generation) {
             return false;
+        }
+
+        if ($processGeneration > $this->process_generation) {
+            $this->generation_started_at = $at;
         }
 
         $this->activity = $activity;

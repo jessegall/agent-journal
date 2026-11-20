@@ -18,6 +18,7 @@ use App\Http\Controllers\Agents\Host\ReportFailureController;
 use App\Http\Controllers\Agents\Host\ReportRunningController;
 use App\Http\Controllers\Agents\Host\ReportStoppedController;
 use App\Http\Controllers\Agents\Host\RequestReportController;
+use App\Http\Controllers\Agents\Host\RuntimeReadinessController;
 use App\Http\Controllers\Agents\Host\ScreenReportController;
 use App\Http\Controllers\Agents\Host\StaleEntryController;
 use App\Http\Controllers\Agents\Host\StartGrantController;
@@ -30,6 +31,7 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/claim', ClaimRequestsController::class)->name('claim');
     Route::post('/runtimes', OpenMainRuntimeController::class)->name('runtimes.open');
     Route::post('/runtimes/{runtime}/start', StartGrantController::class)->name('start');
+    Route::get('/runtimes/{runtime}/readiness', RuntimeReadinessController::class)->name('runtimes.readiness');
     Route::post('/runtimes/{runtime}/navigation', RaiseNavigationController::class)->name('navigation.raise');
     Route::post('/navigation/{navigation}/interrupt', InterruptNavigationController::class)
         ->name('navigation.interrupt');

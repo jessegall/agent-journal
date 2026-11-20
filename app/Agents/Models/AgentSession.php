@@ -372,6 +372,15 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
+     * Whether the session discovered its tools in or after the second the moment falls in: a discovery is signed to
+     * the second, so one in the same second as a generation's start belongs to that generation.
+     */
+    public static function discoveredInOrAfterSecondOf(string $sessionId, CarbonImmutable $moment): bool
+    {
+        return self::query()->whereKey($sessionId)->where('discovered_at', '>=', $moment->startOfSecond())->exists();
+    }
+
+    /**
      * Whether the session's program discovered its tools after the moment given.
      */
     public static function discoveredAfter(string $sessionId, CarbonImmutable $moment): bool

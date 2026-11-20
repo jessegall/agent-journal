@@ -981,10 +981,6 @@ case	TaskTextLimit::Note
 case	TaskTextLimit::Title
 case	TaskView::Context
 case	TaskView::Summary
-case	TaskWorkState::Active
-case	TaskWorkState::Blocked
-case	TaskWorkState::Cancelled
-case	TaskWorkState::Finished
 case	TerminalFrameState::Ended
 case	TerminalFrameState::Live
 case	TerminalFrameState::Restarted
@@ -4061,6 +4057,7 @@ class	RuntimeEvidence
 class	RuntimeExit
 class	RuntimeIntent
 class	RuntimeLivenessReportData
+class	RuntimeReadinessController
 class	RuntimeRecords
 class	RuntimeScreen
 class	RuntimeSetting
@@ -6067,7 +6064,6 @@ enum	TaskRunState
 enum	TaskState
 enum	TaskTextLimit
 enum	TaskView
-enum	TaskWorkState
 enum	TerminalFrameState
 enum	TerminalViewRefusal
 enum	TextAnchorType
@@ -6974,6 +6970,7 @@ method	AgentRuntime::claimStartGrant()
 method	AgentRuntime::closeAfterExit()
 method	AgentRuntime::existsForSession()
 method	AgentRuntime::forIntent()
+method	AgentRuntime::generationStartOfSession()
 method	AgentRuntime::hasEnded()
 method	AgentRuntime::hasScreen()
 method	AgentRuntime::holdFor()
@@ -6998,6 +6995,7 @@ method	AgentRuntime::requestEffort()
 method	AgentRuntime::requestModel()
 method	AgentRuntime::requests()
 method	AgentRuntime::session()
+method	AgentRuntime::sessionOfHostRuntime()
 method	AgentRuntime::setting()
 method	AgentRuntime::status()
 method	AgentRuntime::terminalViews()
@@ -7014,6 +7012,7 @@ method	AgentSession::captureJobSourceMessage()
 method	AgentSession::casts()
 method	AgentSession::currentConversation()
 method	AgentSession::discoveredAfter()
+method	AgentSession::discoveredInOrAfterSecondOf()
 method	AgentSession::endAt()
 method	AgentSession::endWithEvidenceAt()
 method	AgentSession::enterConversation()
@@ -15685,6 +15684,7 @@ method	RuntimeEvidence::__construct()
 method	RuntimeExit::__construct()
 method	RuntimeIntent::__construct()
 method	RuntimeLivenessReportData::__construct()
+method	RuntimeReadinessController::__invoke()
 method	RuntimeRecords::__construct()
 method	RuntimeRecords::folderOf()
 method	RuntimeRecords::forSession()
@@ -16058,6 +16058,7 @@ method	SessionProvenance::parentOf()
 method	SessionProvenance::parentSessionOf()
 method	SessionProvenance::record()
 method	SessionReadiness::discoveredSince()
+method	SessionReadiness::isReady()
 method	SessionReadiness::recordDiscovery()
 method	SessionRecords::__construct()
 method	SessionRecords::active()
@@ -17551,6 +17552,7 @@ method	StartProfilePin::__construct()
 method	StartProgram::__construct()
 method	StartProgram::of()
 method	StartReadiness::discoveredSince()
+method	StartReadiness::isReady()
 method	StartReadiness::recordDiscovery()
 method	StartReceipt::__construct()
 method	StartReceipts::receiptFor()
@@ -18422,13 +18424,11 @@ method	TaskStarted::__construct()
 method	TaskState::hasEnded()
 method	TaskState::isHoldingChecks()
 method	TaskState::unfinished()
-method	TaskState::workState()
 method	TaskSummary::__construct()
 method	TaskView::includesText()
 method	TaskWork::__construct()
 method	TaskWork::needsWork()
 method	TaskWork::unfinishedReason()
-method	TaskWorkState::needsWork()
 method	TaskWriteTool::runSchema()
 method	TaskWriteTool::taskSchema()
 method	TasksDomain::assignables()
@@ -20163,6 +20163,7 @@ parameter	$isCertain
 parameter	$isClean
 parameter	$isContinuation
 parameter	$isCredentialWriteInProgress
+parameter	$isCurrentRun
 parameter	$isDefault
 parameter	$isDirectoryRemoved
 parameter	$isDirty
@@ -21517,7 +21518,6 @@ parameter	$workId
 parameter	$workProviderClass
 parameter	$workStack
 parameter	$workStacks
-parameter	$workState
 parameter	$workdir
 parameter	$workingDirectory
 parameter	$workingFolder
@@ -28579,12 +28579,12 @@ property	TaskExecution::$actorId
 property	TaskExecution::$actorLabel
 property	TaskExecution::$actorType
 property	TaskExecution::$runNumber
-property	TaskExecution::$workState
+property	TaskExecution::$state
 property	TaskExecutionData::$actorId
 property	TaskExecutionData::$actorLabel
 property	TaskExecutionData::$actorType
 property	TaskExecutionData::$runNumber
-property	TaskExecutionData::$workState
+property	TaskExecutionData::$state
 property	TaskExecutions::$claims
 property	TaskExecutions::$labels
 property	TaskFilters::$page
@@ -28617,6 +28617,7 @@ property	TaskSummary::$changedAt
 property	TaskSummary::$number
 property	TaskSummary::$state
 property	TaskSummary::$title
+property	TaskWork::$isCurrentRun
 property	TaskWork::$number
 property	TaskWork::$runNumber
 property	TaskWork::$state
