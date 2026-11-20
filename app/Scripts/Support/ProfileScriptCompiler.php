@@ -17,6 +17,7 @@ use App\Scripts\Contracts\ScriptChecks;
 use App\Scripts\Enums\DiagnosticCode;
 use App\Scripts\Exceptions\ScriptSyntaxError;
 use App\Scripts\Values\BooleanOperand;
+use App\Scripts\Values\Instruction;
 use App\Scripts\Values\KeywordDefinition;
 use App\Scripts\Values\ScriptRange;
 
@@ -43,9 +44,16 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
     {
         $compiled = $this->compile($source);
 
-        foreach ($compiled->graph['instructions'] as $instruction) {
-            foreach ($this->operations($instruction['keyword'], $instruction['operand']) as $operation) {
-                $this->assertAllowed($access, $instruction['source'], $operation);
+        /**
+
+         * @var array<string, Instruction> $instructions
+
+         */
+        $instructions = $compiled->graph['instructions'];
+
+        foreach ($instructions as $instruction) {
+            foreach ($this->operations($instruction->keyword, $instruction->operand) as $operation) {
+                $this->assertAllowed($access, $instruction->source, $operation);
             }
         }
 

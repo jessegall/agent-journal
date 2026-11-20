@@ -57,8 +57,8 @@ SCRIPT, ['tests' => [
             'true' => 'line-3',
             'false' => 'final-checks',
             'failure' => 'return-policy',
-        ], $graph['instructions']['line-2']['successors']);
-        $this->assertSame(['returned' => 'return-policy'], $graph['instructions']['line-4']['successors']);
+        ], $graph['instructions']['line-2']->successors);
+        $this->assertSame(['returned' => 'return-policy'], $graph['instructions']['line-4']->successors);
     }
 
     #[DataProvider('invalidScripts')]
@@ -98,8 +98,8 @@ SCRIPT, ['tests' => [
         $this->assertSame([], $check->diagnostics);
         $this->assertNotNull($check->compiled);
         $step = $check->compiled->graph['instructions']['line-2'];
-        $this->assertSame('NOTE', $step['keyword']);
-        $this->assertEquals(new TextOperand('Retain "évidence".'), $step['operand']);
+        $this->assertSame('NOTE', $step->keyword);
+        $this->assertEquals(new TextOperand('Retain "évidence".'), $step->operand);
     }
 
     public function test_activation_freezes_the_source_graph_and_used_definition_digest(): void

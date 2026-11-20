@@ -29,7 +29,7 @@ final class ScriptGraph
     private array $definitions = [];
 
     /**
-     * @param list<string> $ports
+     * @param  list<string>  $ports
      */
     public function add(Instruction $instruction, array $ports): string
     {
@@ -67,18 +67,17 @@ final class ScriptGraph
     }
 
     /**
-     * @param array<string, mixed> $handlers
+     * @param  array<string, mixed>  $handlers
      */
     public function compiled(array $handlers, string $sourceHash): CompiledScript
     {
         ksort($this->definitions);
         $digest = hash('sha256', json_encode($this->definitions, JSON_THROW_ON_ERROR));
-        $instructions = array_map(fn (Instruction $instruction) => $instruction->stored(), $this->instructions);
 
         return new CompiledScript([
             'sourceHash' => $sourceHash,
             'handlers' => $handlers,
-            'instructions' => $instructions,
+            'instructions' => $this->instructions,
         ], $digest);
     }
 

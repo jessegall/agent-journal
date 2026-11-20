@@ -5,14 +5,30 @@ declare(strict_types=1);
 namespace App\Scripts\Enums;
 
 /**
- * Where a profile script run stands: running its instructions, suspended on a step the host still owes, finished,
- * failed, or uncertain because a step's outcome cannot be known.
+ * Where a profile script run stands: running its instructions, suspended on a step the host still owes, admitted to
+ * the final checks, returned to the actor with what to do, or held for repair.
  */
 enum ProfileRunState: string
 {
     case Running = 'running';
     case Suspended = 'suspended';
-    case Finished = 'finished';
-    case Failed = 'failed';
-    case Uncertain = 'uncertain';
+    case FinalChecks = 'final_checks';
+    case Returned = 'returned';
+    case Held = 'held';
+
+    /**
+     * Whether the run still has instructions to go through.
+     */
+    public function isUnfinished(): bool
+    {
+        return $this === self::Running || $this === self::Suspended;
+    }
+
+    /**
+     * @return list<self>
+     */
+    public static function unfinished(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $state) => $state->isUnfinished()));
+    }
 }

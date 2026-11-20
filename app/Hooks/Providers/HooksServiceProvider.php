@@ -7,6 +7,7 @@ namespace App\Hooks\Providers;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Enums\ActorType;
+use App\Agents\Contracts\ActorGuidance;
 use App\Agents\Contracts\ReadAdmission;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\PendingWorkSources;
@@ -33,6 +34,7 @@ use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Contracts\StateTypes as StateTypesContract;
 use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Contracts\StopEvidence;
+use App\Hooks\Contracts\StopPreparer;
 use App\Hooks\Contracts\UserStack;
 use App\Hooks\Contracts\WorkProgress;
 use App\Hooks\Declarations\StateMethods;
@@ -56,8 +58,10 @@ use App\Hooks\StateEvents\StateEventDispatcher;
 use App\Hooks\StateEvents\StateEventScope;
 use App\Hooks\Support\AgentWorkStack;
 use App\Hooks\Support\ContextBudget;
+use App\Hooks\Support\HookGuidance;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\IncomingWorkList;
+use App\Hooks\Support\NoStopPreparation;
 use App\Hooks\Support\PendingAgentMessages;
 use App\Hooks\Support\ProtectedAccounts;
 use App\Hooks\Support\RetentionPeriods;
@@ -113,6 +117,8 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
         $this->app->scoped(StopEvidence::class, StopAttemptRecords::class);
         $this->app->scoped(StopConditionGate::class, StopAttemptGate::class);
+        $this->app->bindIf(StopPreparer::class, NoStopPreparation::class);
+        $this->app->bind(ActorGuidance::class, HookGuidance::class);
         $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
             $this->app->make('config')->integer('hooks.hook_call_days'),

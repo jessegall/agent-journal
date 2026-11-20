@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Scripts\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Values\WorkReference;
@@ -19,10 +20,15 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * One run of a profile's activated script for an actor's work, started by one trigger: the revision and digest it
- * runs, where its cursor stands, and the step it waits on while suspended.
+ * runs, the line its cursor stands on, the step it waits on while suspended, the workspace generation it started on,
+ * how many returns in a row found that generation unchanged, what it told the actor when it ended, and its place
+ * among the actor's runs on that work.
  *
  * @property string $id
  * @property string $actor_type
@@ -35,6 +41,10 @@ use Illuminate\Support\Carbon;
  * @property ProfileRunState $state
  * @property int $cursor
  * @property string|null $awaited_step
+ * @property int|null $generation
+ * @property int $unchanged_returns
+ * @property string|null $message
+ * @property int $sequence
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -48,6 +58,10 @@ use Illuminate\Support\Carbon;
     'state',
     'cursor',
     'awaited_step',
+    'generation',
+    'unchanged_returns',
+    'message',
+    'sequence',
 ])]
 final class ProfileRun extends Model implements ReadableModel
 {
@@ -61,13 +75,21 @@ final class ProfileRun extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['profile_revision' => 'integer', 'cursor' => 'integer', 'state' => ProfileRunState::class];
+        return [
+            'profile_revision' => 'integer',
+            'cursor' => 'integer',
+            'generation' => 'integer',
+            'unchanged_returns' => 'integer',
+            'sequence' => 'integer',
+            'state' => ProfileRunState::class,
+        ];
     }
 
     /**
-     * Starts the run a trigger asks for once; the same trigger finds the run it started.
+     * The run a trigger is answered by: the run it started, else the actor's unfinished run on this work, which
+     * the new trigger continues (there is never more than one), else a new run, numbered after the others.
      */
-    public static function start(
+    public static function forTrigger(
         ActorIdentity $actor,
         WorkReference $work,
         string $profileKey,
@@ -75,7 +97,9 @@ final class ProfileRun extends Model implements ReadableModel
         string $definitionDigest,
         string $triggerReference,
     ): self {
-        $run = self::query()->acrossActors()->ownedBy($actor)->where('trigger_reference', $triggerReference)->first();
+        $runs = self::query()->acrossActors()->ownedBy($actor)->where('work', $work->key);
+        $run = (clone $runs)->where('trigger_reference', $triggerReference)->first()
+            ?? (clone $runs)->whereIn('state', ProfileRunState::unfinished())->first();
 
         if ($run !== null) {
             return $run;
@@ -88,6 +112,8 @@ final class ProfileRun extends Model implements ReadableModel
         $run->definition_digest = $definitionDigest;
         $run->trigger_reference = $triggerReference;
         $run->state = ProfileRunState::Running;
+        $run->unchanged_returns = 0;
+        $run->sequence = (int) (clone $runs)->max('sequence') + 1;
         $run->belongTo($actor);
         $run->save();
 
@@ -100,10 +126,37 @@ final class ProfileRun extends Model implements ReadableModel
     }
 
     /**
-     * Suspends the run on the step whose outcome the host still owes.
+     * The actor's last run on this work that ended before this one began.
+     *
+     * @return Option<self>
      */
-    public function suspendOn(string $stepReference): void
+    public function previous(): Option
     {
+        return Option::fromValue(self::query()->acrossActors()
+            ->where('actor_type', $this->actor_type)
+            ->where('actor_id', $this->actor_id)
+            ->where('work', $this->work)
+            ->where('sequence', '<', $this->sequence)
+            ->whereNotIn('state', ProfileRunState::unfinished())
+            ->orderByDesc('sequence')
+            ->first());
+    }
+
+    /**
+     * Records the workspace generation the run starts on.
+     */
+    public function startOn(int $generation): void
+    {
+        $this->generation = $generation;
+        $this->save();
+    }
+
+    /**
+     * Suspends the run on a line until the step it waits on has its outcome.
+     */
+    public function suspendOn(int $line, string $stepReference): void
+    {
+        $this->cursor = $line;
         $this->state = ProfileRunState::Suspended;
         $this->awaited_step = $stepReference;
         $this->save();
@@ -133,6 +186,50 @@ final class ProfileRun extends Model implements ReadableModel
         $this->save();
 
         return $result;
+    }
+
+    /**
+     * Records the outcome of a step the run took itself, once: a step replayed from its record is not recorded again.
+     */
+    public function completeStep(string $stepReference, StepOutcome $outcome): void
+    {
+        if ($this->results()->where('step_reference', $stepReference)->exists()) {
+            return;
+        }
+
+        ProfileStepResult::record($this, $stepReference, $outcome);
+    }
+
+    /**
+     * Ends the run in a finished state with what it told the actor and how many unchanged returns led to it.
+     */
+    public function finish(ProfileRunState $state, string $message, int $unchangedReturns): void
+    {
+        $this->state = $state;
+        $this->message = $message;
+        $this->unchanged_returns = $unchangedReturns;
+        $this->awaited_step = null;
+        $this->save();
+    }
+
+    /**
+     * The outcome recorded for one of the run's steps.
+     *
+     * @return Option<StepOutcome>
+     */
+    public function outcomeOf(string $stepReference): Option
+    {
+        $result = $this->results()->where('step_reference', $stepReference)->first();
+
+        return $result === null ? None::create() : new Some($result->outcome());
+    }
+
+    /**
+     * The actor whose stop the run prepares.
+     */
+    public function actor(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
     /**

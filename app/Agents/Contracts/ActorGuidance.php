@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Contracts;
+
+use App\Actors\Support\ActorIdentity;
+
+/**
+ * Hands an actor guidance it reads at its next hook, and wakes it to read it.
+ */
+interface ActorGuidance
+{
+    /**
+     * @param  string  $key  what the guidance is for, so one wake stands for it
+     */
+    public function retain(ActorIdentity $actor, string $guidance, string $key): void;
+}

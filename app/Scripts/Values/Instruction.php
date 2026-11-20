@@ -11,7 +11,7 @@ use App\Scripts\Exceptions\ScriptSyntaxError;
 final readonly class Instruction
 {
     /**
-     * @param array<string, string> $successors
+     * @param  array<string, string>  $successors
      */
     public function __construct(
         public string $keyword,
@@ -50,22 +50,6 @@ final readonly class Instruction
     public function seconds(): int
     {
         return $this->operand instanceof NamedCommand ? $this->operand->timeoutSeconds : 0;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function stored(): array
-    {
-        $operand = $this->operand;
-
-        return [
-            'keyword' => $this->keyword,
-            'source' => $this->source,
-            'operand' => $operand,
-            'commandKey' => $operand instanceof NamedCommand ? $operand->key : null,
-            'successors' => $this->successors,
-        ];
     }
 
     private function wrongOperand(): ScriptSyntaxError

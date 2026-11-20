@@ -10,10 +10,10 @@ use App\Scripts\Contracts\ScriptKeywordDefinition;
 use App\Scripts\Contracts\ScriptKeywordRegistration;
 use App\Scripts\Contracts\ScriptStatement;
 use App\Scripts\Contracts\ScriptTrigger;
-use App\Scripts\Exceptions\ScriptDefinitionRefused;
-use App\Scripts\Values\RegisteredKeyword;
-use App\Scripts\Values\KeywordDefinition;
 use App\Scripts\Enums\KeywordCategory;
+use App\Scripts\Exceptions\ScriptDefinitionRefused;
+use App\Scripts\Values\KeywordDefinition;
+use App\Scripts\Values\RegisteredKeyword;
 use Illuminate\Contracts\Container\Container;
 use PhpOption\Option;
 
@@ -107,6 +107,20 @@ final readonly class KeywordRegistry implements ScriptKeywordRegistration
         }
 
         return $this->container->make($keyword->implementation);
+    }
+
+    /**
+     * The statement that runs an instruction of this keyword.
+     */
+    public function statementFor(string $token): ScriptStatement
+    {
+        $definition = $this->get($token)->definition;
+
+        if (! $definition instanceof KeywordDefinition) {
+            throw ScriptDefinitionRefused::invalidKeyword($token);
+        }
+
+        return $this->statement($definition);
     }
 
     public function trigger(KeywordDefinition $keyword): ScriptTrigger

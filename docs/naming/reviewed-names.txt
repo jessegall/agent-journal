@@ -616,11 +616,11 @@ case	ProfileAbility::EditDraft
 case	ProfileChangeType::Added
 case	ProfileChangeType::Changed
 case	ProfileChangeType::Unchanged
-case	ProfileRunState::Failed
-case	ProfileRunState::Finished
+case	ProfileRunState::FinalChecks
+case	ProfileRunState::Held
+case	ProfileRunState::Returned
 case	ProfileRunState::Running
 case	ProfileRunState::Suspended
-case	ProfileRunState::Uncertain
 case	ProgramEvidence::ContractPassed
 case	ProgramEvidence::NativeShown
 case	ProgramEvidence::PrerequisiteMissing
@@ -929,6 +929,10 @@ case	StopAttemptState::Failed
 case	StopAttemptState::Passed
 case	StopAttemptState::Pending
 case	StopAttemptState::Unresolved
+case	StopPreparationState::FinalChecks
+case	StopPreparationState::Held
+case	StopPreparationState::Preparing
+case	StopPreparationState::ReturnToActor
 case	StopResultType::Cancelled
 case	StopResultType::Failed
 case	StopResultType::FailedToStart
@@ -2457,6 +2461,7 @@ class	HookController
 class	HookDeadlineExpired
 class	HookDigestChanged
 class	HookFailure
+class	HookGuidance
 class	HookIdentity
 class	HookIdentityExpired
 class	HookPayload
@@ -2902,6 +2907,7 @@ class	NoEngineGrant
 class	NoRefusalReason
 class	NoReplacementLine
 class	NoStop
+class	NoStopPreparation
 class	NoSubstitutionFound
 class	NodeRead
 class	NodeToParse
@@ -3264,7 +3270,9 @@ class	ProfileRevisionRevoked
 class	ProfileRevisionUnreadable
 class	ProfileRevokeCommand
 class	ProfileRun
+class	ProfileRunExecution
 class	ProfileRunRefused
+class	ProfileScript
 class	ProfileScriptCompiler
 class	ProfileSelection
 class	ProfileShowCommand
@@ -4125,6 +4133,7 @@ class	ScriptProgress
 class	ScriptProgressData
 class	ScriptRange
 class	ScriptSource
+class	ScriptStopPreparation
 class	ScriptSyntaxError
 class	ScriptsServiceProvider
 class	SearchHit
@@ -4723,6 +4732,8 @@ class	StopConditionRunData
 class	StopConditions
 class	StopConditionsInvalid
 class	StopDetails
+class	StopPreparation
+class	StopPreparationRequest
 class	StopProcessRun
 class	StopProcessRunHandler
 class	StopRefused
@@ -5190,6 +5201,7 @@ constant	AttachmentPages::TOOL
 constant	AttentionOrigin::AGENT_MESSAGE
 constant	AttentionOrigin::ASK
 constant	AttentionOrigin::ASK_REPLY
+constant	AttentionOrigin::GUIDANCE
 constant	AttentionOrigin::MESSAGE
 constant	AttentionOrigin::NAVIGATION
 constant	AttentionOrigin::SEATING
@@ -5526,6 +5538,7 @@ constant	ProfileListCommand::ROWS
 constant	ProfileProposal::UNSUPPORTED_FIELDS
 constant	ProfileRevision::LINK_TYPE
 constant	ProfileRevision::UPDATED_AT
+constant	ProfileRunExecution::EVIDENCE_LIMIT
 constant	ProfileStartPolicy::FIELDS
 constant	ProfileStartPolicy::HELPER_IMAGE
 constant	ProfileStartPolicy::WORKSPACE
@@ -5581,6 +5594,7 @@ constant	RecordNotFound::CODE
 constant	RecordProviders::MOST_LINKS_SHOWN
 constant	RecordRefusalReceipt::UNCODED_REFUSALS
 constant	RecordRule::PLACEHOLDERS
+constant	RecordScriptStepResultHandler::RECORDED
 constant	RecordSettlement::LINK_TYPE
 constant	RecordedAnswer::CURRENT_VERSION
 constant	RecordedHostCapabilities::UNRECORDED_EVIDENCE
@@ -5602,6 +5616,7 @@ constant	ReportPages::TOOL
 constant	ReportRuntimeScreenHandler::MAX_BYTES
 constant	ReportRuntimeScreenHandler::MAX_FRAMES_PER_SECOND
 constant	ReportShareProvider::CARD_COLUMNS
+constant	ReportWorkspaceReadHandler::ANSWERED
 constant	RequestKey::FORM
 constant	RequestKey::LONGEST
 constant	RequiredServices::SERVICES
@@ -5641,6 +5656,12 @@ constant	ScriptGraph::EXECUTION_BUDGET
 constant	ScriptParser::NESTING_LIMIT
 constant	ScriptParser::TEXT_LIMIT
 constant	ScriptSource::MAX_BYTES
+constant	ScriptStopPreparation::DEFINITIONS_CHANGED
+constant	ScriptStopPreparation::ENTRY_READ
+constant	ScriptStopPreparation::PREPARING
+constant	ScriptStopPreparation::RETURNS_HELD
+constant	ScriptStopPreparation::TRIGGER
+constant	ScriptStopPreparation::UNCHANGED_RETURNS_TO_HOLD
 constant	SearchContribution::PAGE_SIZE
 constant	SeatLossRepair::PERSONAL_LABEL
 constant	SecureShareResponse::HEADERS
@@ -5752,6 +5773,8 @@ constant	StopAttemptGate::CHECKS_RUNNING
 constant	StopAttemptGate::CHECKS_UNRESOLVED
 constant	StopAttemptGate::NO_CHECKS_REQUIRED
 constant	StopAttemptGate::NO_CONDITIONS_SUBMISSION
+constant	StopAttemptGate::OWN_WORK
+constant	StopAttemptGate::PREPARATION_HELD_SUBMISSION
 constant	StopAttemptGate::STOP_HELD
 constant	StopAttemptGate::UNCHANGED_FAILURES_TO_HOLD
 constant	StopCondition::CLEAN_WORKTREE
@@ -6063,6 +6086,7 @@ enum	StateEventStage
 enum	StepStatus
 enum	StepType
 enum	StopAttemptState
+enum	StopPreparationState
 enum	StopResultType
 enum	StreamUse
 enum	SummaryRule
@@ -6101,6 +6125,7 @@ interface	ActiveRuleChange
 interface	Actor
 interface	ActorAttention
 interface	ActorDesks
+interface	ActorGuidance
 interface	ActorInboxResolver
 interface	ActorLabelProvider
 interface	ActorLabels
@@ -6288,6 +6313,7 @@ interface	Policy
 interface	PolicyCatalogue
 interface	PolicyProvider
 interface	ProfileResolver
+interface	ProfileScripts
 interface	ProfileSelections
 interface	ProgramAdapter
 interface	ProgramAdapters
@@ -6395,6 +6421,7 @@ interface	StateRegistration
 interface	StateTypes
 interface	StopConditionGate
 interface	StopEvidence
+interface	StopPreparer
 interface	StopSignal
 interface	StopTime
 interface	StopTimes
@@ -6705,6 +6732,7 @@ method	ActorContextMissing::forRequest()
 method	ActorDesks::provision()
 method	ActorDestinationProvider::__construct()
 method	ActorDestinationProvider::destinationsFor()
+method	ActorGuidance::retain()
 method	ActorIdentity::__construct()
 method	ActorIdentity::asColumns()
 method	ActorIdentity::asFields()
@@ -7779,6 +7807,7 @@ method	AttentionOrigin::__construct()
 method	AttentionOrigin::agentMessages()
 method	AttentionOrigin::ask()
 method	AttentionOrigin::askReply()
+method	AttentionOrigin::guidance()
 method	AttentionOrigin::keyFor()
 method	AttentionOrigin::message()
 method	AttentionOrigin::navigation()
@@ -11061,6 +11090,8 @@ method	HookDigestChanged::forCall()
 method	HookEvent::isSessionStart()
 method	HookEvent::isToolCall()
 method	HookFailure::__construct()
+method	HookGuidance::__construct()
+method	HookGuidance::retain()
 method	HookIdentity::__construct()
 method	HookIdentityExpired::forCall()
 method	HookInput::accepts()
@@ -11285,7 +11316,6 @@ method	Instruction::__construct()
 method	Instruction::command()
 method	Instruction::condition()
 method	Instruction::seconds()
-method	Instruction::stored()
 method	Instruction::text()
 method	Instruction::wrongOperand()
 method	IntegerChoiceConstraintsData::__construct()
@@ -11493,6 +11523,7 @@ method	KeywordRegistry::isAvailable()
 method	KeywordRegistry::register()
 method	KeywordRegistry::registerOwned()
 method	KeywordRegistry::statement()
+method	KeywordRegistry::statementFor()
 method	KeywordRegistry::store()
 method	KeywordRegistry::trigger()
 method	LaravelCommandBus::__construct()
@@ -12438,6 +12469,7 @@ method	NoRefusalReason::forAnswer()
 method	NoReplacementLine::forAnswer()
 method	NoStop::isRequested()
 method	NoStop::reason()
+method	NoStopPreparation::prepare()
 method	NoSubstitutionFound::inQueue()
 method	NodeRead::__construct()
 method	NodeToParse::__construct()
@@ -12495,8 +12527,6 @@ method	ObjectDefinition::__construct()
 method	ObjectMember::__construct()
 method	ObjectRead::__construct()
 method	ObjectRead::failed()
-method	ObjectRead::hasFailed()
-method	ObjectRead::isPending()
 method	ObjectRead::pending()
 method	ObjectRead::value()
 method	ObjectReader::__construct()
@@ -13609,6 +13639,7 @@ method	ProfileProvenance::originOf()
 method	ProfileRecords::admitted()
 method	ProfileRecords::admittedPin()
 method	ProfileRecords::has()
+method	ProfileRecords::scriptAt()
 method	ProfileRecords::snapshotAt()
 method	ProfileRecords::snapshotFor()
 method	ProfileRecords::supervisorProfiles()
@@ -13625,6 +13656,7 @@ method	ProfileRevision::currentSources()
 method	ProfileRevision::currentSupervisorProfiles()
 method	ProfileRevision::numbered()
 method	ProfileRevision::ofProfile()
+method	ProfileRevision::script()
 method	ProfileRevision::scriptSource()
 method	ProfileRevision::snapshot()
 method	ProfileRevisionImmutable::for()
@@ -13632,18 +13664,37 @@ method	ProfileRevisionReference::__construct()
 method	ProfileRevisionRevoked::__construct()
 method	ProfileRevisionUnreadable::forRevision()
 method	ProfileRevokeCommand::handle()
+method	ProfileRun::actor()
 method	ProfileRun::casts()
+method	ProfileRun::completeStep()
+method	ProfileRun::finish()
+method	ProfileRun::forTrigger()
 method	ProfileRun::lockedForStep()
+method	ProfileRun::outcomeOf()
+method	ProfileRun::previous()
 method	ProfileRun::recordStep()
 method	ProfileRun::results()
-method	ProfileRun::start()
+method	ProfileRun::startOn()
 method	ProfileRun::suspendOn()
+method	ProfileRunExecution::__construct()
+method	ProfileRunExecution::branch()
+method	ProfileRunExecution::check()
+method	ProfileRunExecution::holds()
+method	ProfileRunExecution::read()
+method	ProfileRunExecution::recordEvidence()
+method	ProfileRunExecution::run()
+method	ProfileRunExecution::subject()
+method	ProfileRunExecution::yieldToActor()
 method	ProfileRunRefused::stepNotAwaited()
+method	ProfileRunState::isUnfinished()
+method	ProfileRunState::unfinished()
+method	ProfileScript::__construct()
 method	ProfileScriptCompiler::__construct()
 method	ProfileScriptCompiler::assertAllowed()
 method	ProfileScriptCompiler::compile()
 method	ProfileScriptCompiler::compileForProfile()
 method	ProfileScriptCompiler::operations()
+method	ProfileScripts::scriptAt()
 method	ProfileSelection::__construct()
 method	ProfileSelection::startPolicy()
 method	ProfileSelections::select()
@@ -13667,6 +13718,7 @@ method	ProfileStartPolicyCast::models()
 method	ProfileStartPolicyCast::origins()
 method	ProfileStartPolicyCast::set()
 method	ProfileStepResult::casts()
+method	ProfileStepResult::outcome()
 method	ProfileStepResult::record()
 method	Profiles::__construct()
 method	Profiles::evaluate()
@@ -14546,6 +14598,7 @@ method	RecordRuntimeCommand::handle()
 method	RecordRuntimeHandler::__construct()
 method	RecordRuntimeHandler::handle()
 method	RecordScriptStepResult::__construct()
+method	RecordScriptStepResultHandler::__construct()
 method	RecordScriptStepResultHandler::handle()
 method	RecordSettled::__construct()
 method	RecordSettlement::booted()
@@ -15915,6 +15968,15 @@ method	ScriptSource::isEmpty()
 method	ScriptStatement::compile()
 method	ScriptStatement::execute()
 method	ScriptStatement::flow()
+method	ScriptStopPreparation::__construct()
+method	ScriptStopPreparation::answer()
+method	ScriptStopPreparation::context()
+method	ScriptStopPreparation::currentProgram()
+method	ScriptStopPreparation::go()
+method	ScriptStopPreparation::hold()
+method	ScriptStopPreparation::prepare()
+method	ScriptStopPreparation::suspend()
+method	ScriptStopPreparation::take()
 method	ScriptSyntaxError::__construct()
 method	ScriptSyntaxError::at()
 method	ScriptTrigger::policy()
@@ -17875,6 +17937,7 @@ method	StepOutcome::reported()
 method	StepOutcome::then()
 method	StepOutcome::uncertain()
 method	StepOutcome::withContext()
+method	StepStatus::isUnresolved()
 method	StepType::hasSeparateChildContexts()
 method	StepType::isControl()
 method	StepType::ofControl()
@@ -17900,8 +17963,13 @@ method	StopAttempt::wasSubmittedAs()
 method	StopAttemptGate::__construct()
 method	StopAttemptGate::answer()
 method	StopAttemptGate::certifyCompletion()
+method	StopAttemptGate::holdPrepared()
+method	StopAttemptGate::openAttempt()
 method	StopAttemptGate::passWithoutConditions()
+method	StopAttemptGate::prepare()
 method	StopAttemptGate::refuseOrHold()
+method	StopAttemptGate::runFinalChecks()
+method	StopAttemptGate::tellOwnerHeld()
 method	StopAttemptGate::unchangedFailureCount()
 method	StopAttemptMissing::for()
 method	StopAttemptRecords::result()
@@ -17929,6 +17997,13 @@ method	StopConditionsInvalid::repeatedKey()
 method	StopConditionsInvalid::tooMany()
 method	StopDetails::__construct()
 method	StopEvidence::result()
+method	StopPreparation::__construct()
+method	StopPreparation::finalChecks()
+method	StopPreparation::held()
+method	StopPreparation::preparing()
+method	StopPreparation::returnToActor()
+method	StopPreparationRequest::__construct()
+method	StopPreparer::prepare()
 method	StopProcessRun::__construct()
 method	StopProcessRun::subject()
 method	StopProcessRunHandler::__construct()
@@ -19235,6 +19310,7 @@ method	WorkingOnTaskStateReference::forTask()
 method	WorkspaceFacts::__construct()
 method	WorkspaceObject::__construct()
 method	WorkspaceObject::facts()
+method	WorkspaceRead::actor()
 method	WorkspaceRead::answer()
 method	WorkspaceRead::byReference()
 method	WorkspaceRead::casts()
@@ -20215,6 +20291,7 @@ parameter	$installer
 parameter	$instances
 parameter	$instead
 parameter	$instruction
+parameter	$instructionId
 parameter	$instructions
 parameter	$intent
 parameter	$intents
@@ -20684,7 +20761,6 @@ parameter	$pause
 parameter	$payloadDigest
 parameter	$pending
 parameter	$pendingCleanups
-parameter	$pendingReference
 parameter	$pendingStarts
 parameter	$pendingWork
 parameter	$perPage
@@ -20739,7 +20815,9 @@ parameter	$positional
 parameter	$precision
 parameter	$predecessor
 parameter	$prefix
+parameter	$preparation
 parameter	$prepared
+parameter	$preparer
 parameter	$presence
 parameter	$presenceSeconds
 parameter	$presences
@@ -21395,6 +21473,7 @@ parameter	$taskIds
 parameter	$taskNumber
 parameter	$taskOffset
 parameter	$tasks
+parameter	$tellsOwner
 parameter	$template
 parameter	$templateFields
 parameter	$terminal
@@ -21464,6 +21543,7 @@ parameter	$unavailableCount
 parameter	$unavailableRequirements
 parameter	$uncertainty
 parameter	$unchanged
+parameter	$unchangedReturns
 parameter	$unclaimed
 parameter	$underline
 parameter	$unfinished
@@ -24106,6 +24186,7 @@ property	HookController::$adapters
 property	HookController::$deadline
 property	HookController::$turns
 property	HookFailure::$message
+property	HookGuidance::$attention
 property	HookIdentity::$agentId
 property	HookIdentity::$hookId
 property	HookIdentity::$inputDigest
@@ -24916,8 +24997,7 @@ property	ObjectDefinition::$members
 property	ObjectDefinition::$owner
 property	ObjectMember::$name
 property	ObjectMember::$read
-property	ObjectRead::$diagnostic
-property	ObjectRead::$pendingReference
+property	ObjectRead::$unread
 property	ObjectRead::$value
 property	ObjectReader::$objects
 property	ObjectReflection::$operations
@@ -25626,6 +25706,12 @@ property	ProfileRevisionRevoked::$revision
 property	ProfileRevisionRevoked::$revisionReference
 property	ProfileRevokeCommand::$description
 property	ProfileRevokeCommand::$signature
+property	ProfileRunExecution::$access
+property	ProfileRunExecution::$context
+property	ProfileRunExecution::$reader
+property	ProfileRunExecution::$step
+property	ProfileScript::$compiled
+property	ProfileScript::$source
 property	ProfileScriptCompiler::$checks
 property	ProfileScriptCompiler::$keywords
 property	ProfileScriptCompiler::$objects
@@ -26245,6 +26331,7 @@ property	RecordScriptStepResult::$port
 property	RecordScriptStepResult::$runId
 property	RecordScriptStepResult::$status
 property	RecordScriptStepResult::$stepReference
+property	RecordScriptStepResultHandler::$guidance
 property	RecordSettled::$recordId
 property	RecordSettled::$recordType
 property	RecordSkillRead::$evidence
@@ -26687,6 +26774,7 @@ property	ReportWorkspaceRead::$isClean
 property	ReportWorkspaceRead::$isDirty
 property	ReportWorkspaceRead::$reference
 property	ReportWorkspaceReadHandler::$clock
+property	ReportWorkspaceReadHandler::$guidance
 property	ReportsListTool::$publications
 property	RequestEditor::$actors
 property	RequestEditor::$provenance
@@ -27331,6 +27419,10 @@ property	ScriptRange::$length
 property	ScriptRange::$line
 property	ScriptSource::$commands
 property	ScriptSource::$text
+property	ScriptStopPreparation::$checks
+property	ScriptStopPreparation::$keywords
+property	ScriptStopPreparation::$profiles
+property	ScriptStopPreparation::$reader
 property	ScriptSyntaxError::$diagnostic
 property	SearchHit::$excerpt
 property	SearchHit::$id
@@ -28355,6 +28447,7 @@ property	StopAgentHandler::$requests
 property	StopAttemptGate::$events
 property	StopAttemptGate::$evidence
 property	StopAttemptGate::$policies
+property	StopAttemptGate::$preparer
 property	StopAttemptReference::$attemptId
 property	StopAttemptResult::$state
 property	StopAttemptResult::$statuses
@@ -28379,6 +28472,15 @@ property	StopConditions::$attemptSeconds
 property	StopConditions::$conditions
 property	StopDetails::$isContinuation
 property	StopDetails::$turnId
+property	StopPreparation::$message
+property	StopPreparation::$state
+property	StopPreparation::$tellsOwner
+property	StopPreparationRequest::$access
+property	StopPreparationRequest::$actor
+property	StopPreparationRequest::$profileKey
+property	StopPreparationRequest::$profileRevision
+property	StopPreparationRequest::$trigger
+property	StopPreparationRequest::$work
 property	StopProcessRun::$reason
 property	StopProcessRun::$runId
 property	StopProcessRunHandler::$administration
@@ -29083,6 +29185,7 @@ property	WorkspaceObject::$available
 property	WorkspaceObject::$clean
 property	WorkspaceObject::$context
 property	WorkspaceObject::$dirty
+property	WorkspaceObject::$generation
 property	WorkspaceObject::$workspaces
 property	WorkspaceReadPending::$reference
 property	WorkspaceReadReference::$key
@@ -30483,6 +30586,7 @@ variable	$status
 variable	$statuses
 variable	$stdout
 variable	$steerReceipt
+variable	$step
 variable	$stepInput
 variable	$steps
 variable	$stepsUp
@@ -30586,6 +30690,7 @@ variable	$types
 variable	$unavailable
 variable	$unavailableTaskIds
 variable	$uncertainty
+variable	$unchanged
 variable	$unchangedFailures
 variable	$undeclared
 variable	$underline

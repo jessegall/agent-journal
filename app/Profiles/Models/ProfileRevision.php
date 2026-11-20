@@ -19,6 +19,7 @@ use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\ProfileScript;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Profiles\Values\ProfileStartPolicy;
 use App\Profiles\Values\ScriptSource;
@@ -32,6 +33,9 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * One numbered, immutable revision of a profile: the built-in profile it starts from, its instructions, default model,
@@ -53,6 +57,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property InstancePolicy $instances
  * @property string $script_source
  * @property array<string, mixed> $script_commands
+ * @property array<string, mixed>|null $compiled_script
+ * @property string|null $script_definition_digest
  * @property ActorType $author_type
  * @property string $author_id
  * @property CarbonImmutable $created_at
@@ -161,6 +167,23 @@ final class ProfileRevision extends Model implements ReadableModel
     public function scriptSource(): ScriptSource
     {
         return ScriptSource::fromDefinitions($this->script_source, $this->script_commands);
+    }
+
+    /**
+     * The script this revision runs; a revision without one has none.
+     *
+     * @return Option<ProfileScript>
+     */
+    public function script(): Option
+    {
+        if ($this->compiled_script === null || $this->script_definition_digest === null) {
+            return None::create();
+        }
+
+        return new Some(new ProfileScript(
+            $this->scriptSource(),
+            new CompiledScript($this->compiled_script, $this->script_definition_digest),
+        ));
     }
 
     /**

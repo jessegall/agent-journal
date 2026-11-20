@@ -18,6 +18,7 @@ use App\Hooks\Contracts\OperationPolicy;
 use App\Processes\Contracts\CommandPermissionResolver;
 use App\Profiles\Contracts\OperationNames;
 use App\Profiles\Contracts\ProfileResolver;
+use App\Profiles\Contracts\ProfileScripts;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\AccountAbility;
 use App\Profiles\Enums\ProfileAbility;
@@ -59,6 +60,7 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->scoped(OperationPolicy::class, ProfileOperationPolicy::class);
         $this->app->bind(OperationNames::class, ConfiguredOperations::class);
         $this->app->bind(ProfileResolver::class, ProfileRecords::class);
+        $this->app->bind(ProfileScripts::class, ProfileRecords::class);
         $this->app->bind(ProfileSelections::class, ProfilePrograms::class);
         $this->app->bind(StartProfileAdmission::class, ProfileStartAdmission::class);
         $this->app->bind(BuiltInStartProfiles::class, BuiltInProfilePins::class);

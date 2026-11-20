@@ -7,21 +7,29 @@ namespace App\Hooks\Support;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Models\CertifiedWork;
 use App\Agents\Models\StartRecord;
+use App\Agents\Support\StackTarget;
+use App\Agents\Support\StartPolicy;
+use App\Agents\Values\WorkReference;
 use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Contracts\StopEvidence;
+use App\Hooks\Contracts\StopPreparer;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\StopAttemptState;
+use App\Hooks\Enums\StopPreparationState;
 use App\Hooks\Events\HelperCompletionCertified;
 use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\StopAttempt;
+use App\Hooks\Values\StopPreparation;
+use App\Hooks\Values\StopPreparationRequest;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Opens the stop attempt of a session started under a frozen policy, once per stop callback, and answers by the
  * host's results: still running ends the turn with the job left open, passed allows the stop and certifies the work
  * complete, failed or unresolved refuses it with what the conditions said, and the third unchanged failure in a row
- * ends the turn with the work held for repair. A session without conditions finishes on its stack checks alone.
+ * ends the turn with the work held for repair. A session without conditions finishes on its stack checks alone. A
+ * profile's stop is prepared first, by its STOP script: until it is ready for the final checks no attempt opens.
  */
 final readonly class StopAttemptGate implements StopConditionGate
 {
@@ -39,11 +47,19 @@ final readonly class StopAttemptGate implements StopConditionGate
      */
     public const int UNCHANGED_FAILURES_TO_HOLD = 3;
 
+    /**
+     * The work of a session no one started for other work: its own.
+     */
+    private const string OWN_WORK = 'own-work';
+
     private const string NO_CONDITIONS_SUBMISSION = 'no-conditions';
+
+    private const string PREPARATION_HELD_SUBMISSION = 'preparation-held';
 
     public function __construct(
         private SessionPolicyReader $policies,
         private StopEvidence $evidence,
+        private StopPreparer $preparer,
         private Dispatcher $events,
     ) {}
 
@@ -54,12 +70,56 @@ final readonly class StopAttemptGate implements StopConditionGate
         }
 
         $policy = $this->policies->policyFor($stop->sessionId);
-        $attempt = StopAttempt::openFor(
-            $stop,
-            $policy->digest(),
-            StopAttempt::FIRST_GENERATION,
-            $policy->stopConditions->definitionHashes(),
-        );
+        $preparation = $this->prepare($stop, $policy);
+
+        return match ($preparation->state) {
+            StopPreparationState::Preparing => Decision::allow()->withMessage($preparation->message),
+            StopPreparationState::ReturnToActor => Decision::deny($preparation->message),
+            StopPreparationState::Held => $this->holdPrepared($stop, $policy, $preparation),
+            StopPreparationState::FinalChecks => $this->runFinalChecks($stop, $policy),
+        };
+    }
+
+    /**
+     * Prepares the stop by the session's profile revision; a session started without a profile needs none.
+     */
+    private function prepare(HookIdentity $stop, StartPolicy $policy): StopPreparation
+    {
+        if ($policy->profileKey === null || $policy->profileRevision === null) {
+            return StopPreparation::finalChecks();
+        }
+
+        $work = StartRecord::ownerStartOf($stop->sessionId)
+            ->map(fn (StartRecord $start) => WorkReference::forRecord($start->ownerWork()))
+            ->getOrElse(WorkReference::free(self::OWN_WORK));
+
+        return $this->preparer->prepare(new StopPreparationRequest(
+            new StackTarget($stop->agentId, $stop->sessionId)->actorIdentity(),
+            $work,
+            $policy->profileKey,
+            $policy->profileRevision,
+            $policy->access,
+            $stop->hookId,
+        ));
+    }
+
+    /**
+     * Ends the turn with the work held; the first time it is held, the stop is recorded as failed and the owner told.
+     */
+    private function holdPrepared(HookIdentity $stop, StartPolicy $policy, StopPreparation $preparation): Decision
+    {
+        if ($preparation->tellsOwner) {
+            $attempt = $this->openAttempt($stop, $policy);
+            $attempt->settle(StopAttemptState::Failed, self::PREPARATION_HELD_SUBMISSION);
+            $this->tellOwnerHeld($attempt);
+        }
+
+        return Decision::allow()->withMessage($preparation->message);
+    }
+
+    private function runFinalChecks(HookIdentity $stop, StartPolicy $policy): Decision
+    {
+        $attempt = $this->openAttempt($stop, $policy);
 
         if ($policy->stopConditions->isEmpty()) {
             return $this->passWithoutConditions($attempt);
@@ -73,6 +133,16 @@ final readonly class StopAttemptGate implements StopConditionGate
             StopAttemptState::Failed => $this->refuseOrHold($attempt, $stop, $stopOutcome->failureSummary()),
             StopAttemptState::Unresolved => Decision::deny(self::CHECKS_UNRESOLVED),
         };
+    }
+
+    private function openAttempt(HookIdentity $stop, StartPolicy $policy): StopAttempt
+    {
+        return StopAttempt::openFor(
+            $stop,
+            $policy->digest(),
+            StopAttempt::FIRST_GENERATION,
+            $policy->stopConditions->definitionHashes(),
+        );
     }
 
     private function passWithoutConditions(StopAttempt $attempt): Decision
@@ -112,14 +182,19 @@ final readonly class StopAttemptGate implements StopConditionGate
         }
 
         if ($unchangedFailures === self::UNCHANGED_FAILURES_TO_HOLD) {
-            StartRecord::ownerStartOf($attempt->session_id)->forAll(
-                fn (StartRecord $start) => $this->events->dispatch(
-                    new HelperStopHeld($start->ownerWork(), $attempt->reference()),
-                ),
-            );
+            $this->tellOwnerHeld($attempt);
         }
 
         return Decision::allow()->withMessage(self::STOP_HELD.PHP_EOL.$failureSummary);
+    }
+
+    private function tellOwnerHeld(StopAttempt $attempt): void
+    {
+        StartRecord::ownerStartOf($attempt->session_id)->forAll(
+            fn (StartRecord $start) => $this->events->dispatch(
+                new HelperStopHeld($start->ownerWork(), $attempt->reference()),
+            ),
+        );
     }
 
     /**

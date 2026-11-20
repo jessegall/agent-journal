@@ -22,6 +22,12 @@ final class WorkspaceObject
     #[ScriptMember(read: 'workspace.status')]
     public bool $clean { get => $this->facts()->isClean; }
 
+    /**
+     * The checkout's generation, read by the runner to tell a repaired workspace from an unchanged one; a script
+     * cannot name it, since only boolean members are script members.
+     */
+    public int $generation { get => $this->facts()->generation; }
+
     public function __construct(
         private readonly WorkspaceReader $workspaces,
         private readonly ScriptContext $context,

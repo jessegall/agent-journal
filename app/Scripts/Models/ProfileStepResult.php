@@ -55,4 +55,9 @@ final class ProfileStepResult extends Model implements ReadableModel
 
         return $result;
     }
+
+    public function outcome(): StepOutcome
+    {
+        return StepOutcome::reported($this->status, $this->port, $this->evidence);
+    }
 }

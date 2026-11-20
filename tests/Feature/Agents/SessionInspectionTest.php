@@ -17,6 +17,8 @@ use App\Hooks\Models\StopAttempt;
 use App\Hooks\Readers\SessionInspections;
 use App\Hooks\Values\StopResultLine;
 use App\Hooks\Values\StopResultReport;
+use App\Profiles\Contracts\ProfileResolver;
+use App\Profiles\Values\ProfileKey;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
@@ -39,19 +41,20 @@ final class SessionInspectionTest extends TestCase
     {
         $writer = TestStart::start('writing-helper');
         $policy = StartPolicy::mainOnHost('/workspace');
+        $revision = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('writing-helper'))->revision;
         SessionPolicy::freeze($writer->session, new StartPolicy(
             $policy->access,
             StopConditions::make([StopCondition::cleanWorktree()]),
             $policy->execution,
             'writing-helper',
-            3,
+            $revision,
             self::CONFIGURATION_HASH,
         ));
         $this->failStop($writer);
 
         $inspection = $this->app->make(SessionInspections::class)->of($writer->session->id);
 
-        $this->assertSame(['writing-helper', 3, self::CONFIGURATION_HASH], [
+        $this->assertSame(['writing-helper', $revision, self::CONFIGURATION_HASH], [
             $inspection->profileKey,
             $inspection->profileRevision,
             $inspection->configurationHash,

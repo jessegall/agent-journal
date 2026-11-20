@@ -24,6 +24,8 @@ final readonly class AttentionOrigin
 
     public const string ASK_REPLY = 'ask_reply';
 
+    public const string GUIDANCE = 'guidance';
+
     public function __construct(
         public string $type,
         public string $id,
@@ -65,6 +67,14 @@ final readonly class AttentionOrigin
     public static function askReply(string $askId): self
     {
         return new self(self::ASK_REPLY, $askId, $askId);
+    }
+
+    /**
+     * Guidance a script handed the actor, named by what it is for.
+     */
+    public static function guidance(string $key): self
+    {
+        return new self(self::GUIDANCE, $key, $key);
     }
 
     public function keyFor(ActorIdentity $actor): string

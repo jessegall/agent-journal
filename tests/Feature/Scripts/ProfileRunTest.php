@@ -41,8 +41,8 @@ final class ProfileRunTest extends TestCase
 
         $pending = $reader->read('workspace', 'dirty', $context);
 
-        $this->assertTrue($pending->isPending());
-        $this->assertSame('read-1', $pending->pendingReference);
+        $this->assertSame(StepStatus::Pending, $pending->unread?->status);
+        $this->assertSame('read-1', $pending->unread->evidence);
 
         $this->answer(dirty: true);
         $this->answer(dirty: false);
@@ -55,13 +55,13 @@ final class ProfileRunTest extends TestCase
     {
         $read = $this->app->make(ObjectReader::class)->read('workspace', 'missing', $this->context());
 
-        $this->assertTrue($read->hasFailed());
+        $this->assertSame(StepStatus::Failed, $read->unread?->status);
         $this->assertNull($read->value);
     }
 
     public function test_a_step_outcome_is_recorded_once_and_resumes_the_waiting_run(): void
     {
-        $run = ProfileRun::start(
+        $run = ProfileRun::forTrigger(
             ActorIdentity::of(TestStart::start('writing-helper')->agent),
             WorkReference::free('ask'),
             'journal-worker',
@@ -69,7 +69,7 @@ final class ProfileRunTest extends TestCase
             str_repeat('a', 64),
             'trigger-1',
         );
-        $run->suspendOn('step-1');
+        $run->suspendOn(2, 'step-1');
 
         $this->report($run, 'step-1', StepStatus::Completed);
         $this->report($run, 'step-1', StepStatus::Failed);

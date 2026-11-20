@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Values\WorkReference;
 use App\Agents\Values\WorkspaceFacts;
@@ -143,6 +144,14 @@ final class WorkspaceRead extends Model implements ReadableModel
             (int) $this->generation,
             $this->sampled_at,
         ));
+    }
+
+    /**
+     * The actor whose checkout is read.
+     */
+    public function actor(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
     public function reference(): WorkspaceReadReference
