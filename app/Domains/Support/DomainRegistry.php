@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Support;
 
+use App\Bus\Support\CheckedCommandRegistries;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
 use App\Domains\Exceptions\AlwaysOnDomainRequiresSwitchable;
@@ -116,7 +117,7 @@ final readonly class DomainRegistry
     {
         $owners = [$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())];
 
-        return CommandRegistry::from($owners, $pipelines);
+        return CheckedCommandRegistries::for($owners, $pipelines);
     }
 
     /**
