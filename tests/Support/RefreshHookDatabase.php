@@ -52,7 +52,8 @@ trait RefreshHookDatabase
     /**
      * A create migration is edited in place (rule 34), so a database kept from an earlier run can hold old tables that
      * migrate never touches. The database keeps a fingerprint of the migration files it was built from; once per
-     * process a differing fingerprint rebuilds it with migrate:fresh.
+     * process a differing fingerprint rebuilds it with migrate:fresh. A parallel worker's database is made new for
+     * every run and Laravel has just migrated it, so one with no fingerprint yet is only stamped, not built again.
      */
     private function rebuildWhenMigrationsChanged(): void
     {
@@ -68,8 +69,13 @@ trait RefreshHookDatabase
             "select shobj_description(oid, 'pg_database') from pg_database where datname = current_database()",
         );
 
-        if ($stored !== $fingerprint) {
+        $isFreshWorker = $stored === null && HookDatabase::isParallelWorker($this->app);
+
+        if ($stored !== $fingerprint && ! $isFreshWorker) {
             $this->app->make(Kernel::class)->call('migrate:fresh', ['--force' => true]);
+        }
+
+        if ($stored !== $fingerprint) {
             $connection->statement(sprintf('comment on database "%s" is \'%s\'', $database, $fingerprint));
         }
 
@@ -99,12 +105,17 @@ trait RefreshHookDatabase
         return [null];
     }
 
+    /**
+     * Empties the tables a test committed rows to, in one statement; their sequences keep counting, as no test reads
+     * an id it did not make.
+     */
     protected function emptyTables(string ...$tables): void
     {
-        $database = $this->app->make(DatabaseManager::class);
-
-        foreach ($tables as $table) {
-            $database->table($table)->truncate();
+        if ($tables === []) {
+            return;
         }
+
+        $quoted = implode(', ', array_map(fn (string $table) => '"'.$table.'"', $tables));
+        $this->app->make(DatabaseManager::class)->connection()->statement("truncate table {$quoted} cascade");
     }
 }
