@@ -9,7 +9,6 @@ use Domain\Helpers\Contracts\HelperReader;
 use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
-use Domain\Helpers\Models\HelperNotice;
 use Domain\Helpers\Support\HelperReceipt;
 
 /**
@@ -18,8 +17,6 @@ use Domain\Helpers\Support\HelperReceipt;
  */
 final readonly class HelperRecords implements HelperReader
 {
-    private const int MOST_NOTICES = 50;
-
     public function __construct(private StartReceipts $starts) {}
 
     public function receiptOf(string $jobId): HelperReceipt
@@ -32,10 +29,5 @@ final readonly class HelperRecords implements HelperReader
             $this->starts->receiptFor($job->assignmentIdentity()),
             false,
         );
-    }
-
-    public function notices(): array
-    {
-        return array_values(HelperNotice::query()->latest('id')->readLimit(self::MOST_NOTICES)->get()->all());
     }
 }

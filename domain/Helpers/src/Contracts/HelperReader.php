@@ -6,7 +6,6 @@ namespace Domain\Helpers\Contracts;
 
 use App\Agents\Exceptions\StartRecordMissing;
 use Domain\Helpers\Exceptions\HelperUnavailable;
-use Domain\Helpers\Models\HelperNotice;
 use Domain\Helpers\Support\HelperReceipt;
 
 /**
@@ -20,11 +19,4 @@ interface HelperReader
      * @throws StartRecordMissing
      */
     public function receiptOf(string $jobId): HelperReceipt;
-
-    /**
-     * The newest notices the caller was left about its helpers' jobs, at most 50.
-     *
-     * @return list<HelperNotice>
-     */
-    public function notices(): array;
 }

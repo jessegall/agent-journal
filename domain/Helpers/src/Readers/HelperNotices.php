@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Helpers\Readers;
+
+use Domain\Helpers\Http\Data\HelperNoticeData;
+use Domain\Helpers\Models\HelperNotice;
+
+/**
+ * The newest notices the caller was left about its helpers' jobs, for the signed call and the MCP tool alike.
+ */
+final readonly class HelperNotices
+{
+    /**
+     * The most notices one read answers.
+     */
+    private const int MOST_NOTICES = 50;
+
+    /**
+     * @return list<HelperNoticeData>
+     */
+    public function newest(): array
+    {
+        $notices = HelperNotice::query()->latest('id')->readLimit(self::MOST_NOTICES)->get()->all();
+
+        return array_values(HelperNoticeData::collect($notices));
+    }
+}

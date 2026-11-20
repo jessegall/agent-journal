@@ -294,6 +294,7 @@ use App\Agents\Support\TerminalViewReceipt;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\ClassGrant;
+use App\Agents\Values\HelperImportReceipt;
 use App\Agents\Values\MenuStep;
 use App\Agents\Values\NavigationAnswer;
 use App\Agents\Values\NavigationRound;
@@ -595,6 +596,7 @@ use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Enums\TransitionType;
 use App\Hooks\Events\ContextStarted;
@@ -1389,6 +1391,7 @@ final class CoreApi
                 StackVerdict::class,
                 WorkspaceReadReference::class,
                 WorkReference::class,
+                HelperImportReceipt::class,
                 NavigationUncertainty::class,
                 EventCommands::class,
                 StackWide::class,
@@ -1545,6 +1548,7 @@ final class CoreApi
                 ContextCompacted::class,
                 CompactionDetails::class,
                 ContextStartType::class,
+                SessionTransferType::class,
                 FileEditRequested::class,
                 FileChanges::class,
                 FileChange::class,

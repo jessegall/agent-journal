@@ -16,8 +16,8 @@ use App\Exports\Support\Exports;
 use Domain\Helpers\Commands\CancelHelperJob;
 use Domain\Helpers\Commands\ContinueHelper;
 use Domain\Helpers\Commands\SendHelper;
-use Domain\Helpers\Commands\SteerHelper;
 use Domain\Helpers\Commands\StartHelper;
+use Domain\Helpers\Commands\SteerHelper;
 use Domain\Helpers\Contracts\HelperReader;
 use Domain\Helpers\Enums\HelperAbility;
 use Domain\Helpers\Enums\JobState;
@@ -68,7 +68,13 @@ final class HelpersDomain extends Domain implements CommandProvider, InternalAss
     {
         return Exports::make()
             ->contracts(HelperReader::class)
-            ->values(HelperReceipt::class, HelperWork::class, JobLaunch::class, JobState::class, SteerReceipt::class)
+            ->values(
+                HelperReceipt::class,
+                HelperWork::class,
+                JobLaunch::class,
+                JobState::class,
+                SteerReceipt::class,
+            )
             ->commands(
                 StartHelper::class,
                 SendHelper::class,

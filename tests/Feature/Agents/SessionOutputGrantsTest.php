@@ -20,6 +20,7 @@ use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
@@ -35,6 +36,11 @@ final class SessionOutputGrantsTest extends TestCase
     use RefreshHookDatabase;
     use StartsAgentRequests;
     use WithActiveAccount;
+
+    /**
+     * @var array<string, string>
+     */
+    private array $owners = [];
 
     private const string PROJECT = '/journal/accounts/claude-code/projects/-work';
 
@@ -142,7 +148,7 @@ final class SessionOutputGrantsTest extends TestCase
             ($agent ?? $this->agent)->id,
             TestSelections::of(),
             StartOriginType::OwnerRequest,
-            $context,
+            $this->ownerOf($context),
             $context,
             ConversationModeType::New,
             null,
@@ -152,5 +158,13 @@ final class SessionOutputGrantsTest extends TestCase
         return AgentSession::query()->findOrFail(
             $this->app->make(CommandBus::class)->run(new StartAgent($request))->sessionId,
         );
+    }
+
+    /**
+     * The job each conversation context was started for, the same one each time the context is started.
+     */
+    private function ownerOf(string $context): string
+    {
+        return $this->owners[$context] ??= 'helpers.job:'.Str::ulid();
     }
 }

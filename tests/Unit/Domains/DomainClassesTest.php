@@ -117,7 +117,10 @@ final class DomainClassesTest extends TestCase
         yield 'Reminders' => [RemindersDomain::class, [], []];
         yield 'Access' => [AccessDomain::class, [], []];
         yield 'Helpers' => [HelpersDomain::class, [], [
+            'CancelHelperJob',
+            'ContinueHelper',
             'HelperBusy',
+            'HelperJobAlreadyEnded',
             'HelperJobUnfinished',
             'HelperLaunchUncertain',
             'HelperProfileMismatch',
@@ -133,6 +136,8 @@ final class DomainClassesTest extends TestCase
             'JobState',
             'SendHelper',
             'StartHelper',
+            'SteerHelper',
+            'SteerReceipt',
         ]];
     }
 

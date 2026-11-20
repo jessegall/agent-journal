@@ -7,6 +7,7 @@ namespace App\Supervision\Providers;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
+use App\Engine\Support\EngineListenerSet;
 use App\Links\Support\LinkTypeRegistry;
 use App\Profiles\Contracts\SupervisorDefinitions;
 use App\Profiles\Values\AskTypeKey;
@@ -22,6 +23,7 @@ use App\Supervision\Models\SupervisorLink;
 use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Policies\SupervisorPolicy;
 use App\Supervision\Readers\AskRecords;
+use App\Supervision\Support\AdvanceDueAsksOnTick;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Support\CurrentAskAdmission;
 use App\Supervision\Support\SupervisorRouting;
@@ -50,7 +52,9 @@ final class SupervisionServiceProvider extends ServiceProvider
         LinkTypeRegistry $links,
         AskTypeRegistry $types,
         Repository $config,
+        EngineListenerSet $engineListeners,
     ): void {
+        $engineListeners->add(AdvanceDueAsksOnTick::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/asks.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->callAfterResolving(

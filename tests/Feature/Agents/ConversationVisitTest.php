@@ -18,6 +18,7 @@ use App\Agents\Support\StartRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\HasResearcherAgent;
 use Tests\Support\RefreshHookDatabase;
@@ -35,6 +36,11 @@ final class ConversationVisitTest extends TestCase
     use RefreshHookDatabase;
     use StartsOwnerRequest;
     use WithActiveAccount;
+
+    /**
+     * @var array<string, string>
+     */
+    private array $owners = [];
 
     protected function setUp(): void
     {
@@ -125,7 +131,7 @@ final class ConversationVisitTest extends TestCase
             $this->agent->id,
             TestSelections::of(),
             StartOriginType::OwnerRequest,
-            $context,
+            $this->ownerOf($context),
             $context,
             ConversationModeType::New,
             null,
@@ -135,5 +141,13 @@ final class ConversationVisitTest extends TestCase
         return AgentSession::query()->findOrFail(
             $this->app->make(CommandBus::class)->run(new StartAgent($request))->sessionId,
         );
+    }
+
+    /**
+     * The job each conversation context was started for, the same one each time the context is started.
+     */
+    private function ownerOf(string $context): string
+    {
+        return $this->owners[$context] ??= 'helpers.job:'.Str::ulid();
     }
 }

@@ -1574,6 +1574,7 @@ class	CancelHelperJob
 class	CancelHelperJobCall
 class	CancelHelperJobController
 class	CancelHelperJobHandler
+class	CancelHelperJobTool
 class	CancelInput
 class	CancelKeyScript
 class	CancelKeyScriptCommand
@@ -1907,6 +1908,7 @@ class	ContinueHelper
 class	ContinueHelperCall
 class	ContinueHelperController
 class	ContinueHelperHandler
+class	ContinueHelperTool
 class	ContinueStart
 class	ContinueStartController
 class	ContinueStartHandler
@@ -2417,7 +2419,9 @@ class	HelperMessage
 class	HelperNotice
 class	HelperNoticeData
 class	HelperNoticeListData
+class	HelperNotices
 class	HelperNoticesCommand
+class	HelperNoticesListTool
 class	HelperPolicy
 class	HelperProfileMismatch
 class	HelperProfileTypeConflict
@@ -4164,6 +4168,7 @@ class	SendHelper
 class	SendHelperCall
 class	SendHelperController
 class	SendHelperHandler
+class	SendHelperTool
 class	SendMessage
 class	SendMessageCall
 class	SendMessageCommand
@@ -4599,6 +4604,7 @@ class	StartHelper
 class	StartHelperCall
 class	StartHelperController
 class	StartHelperHandler
+class	StartHelperTool
 class	StartMaterial
 class	StartMaterialMissing
 class	StartOwnedAgent
@@ -4699,6 +4705,7 @@ class	SteerHelper
 class	SteerHelperCall
 class	SteerHelperController
 class	SteerHelperHandler
+class	SteerHelperTool
 class	SteerReceipt
 class	Step
 class	StepOutOfOrder
@@ -5369,7 +5376,7 @@ constant	HelperDispatch::NEW_HELPER_REASON
 constant	HelperIdentity::FIXED_COLUMNS
 constant	HelperJob::LINK_TYPE
 constant	HelperNotice::MOST_DELIVERED
-constant	HelperRecords::MOST_NOTICES
+constant	HelperNotices::MOST_NOTICES
 constant	HookController::NATIVE_CHILD_REFUSAL
 constant	HookRelay::ATTEMPTS
 constant	HookRelay::READ_TOOL
@@ -8122,6 +8129,9 @@ method	CancelHelperJobController::__invoke()
 method	CancelHelperJobHandler::__construct()
 method	CancelHelperJobHandler::handle()
 method	CancelHelperJobHandler::stopLiveAttempt()
+method	CancelHelperJobTool::command()
+method	CancelHelperJobTool::present()
+method	CancelHelperJobTool::writeSchema()
 method	CancelInput::__construct()
 method	CancelKeyScript::__construct()
 method	CancelKeyScript::subject()
@@ -9195,6 +9205,9 @@ method	ContinueHelperCall::__construct()
 method	ContinueHelperController::__invoke()
 method	ContinueHelperHandler::__construct()
 method	ContinueHelperHandler::handle()
+method	ContinueHelperTool::command()
+method	ContinueHelperTool::present()
+method	ContinueHelperTool::writeSchema()
 method	ContinueStart::__construct()
 method	ContinueStart::startedAgentId()
 method	ContinueStart::subject()
@@ -10904,7 +10917,11 @@ method	HelperNotice::undeliveredFor()
 method	HelperNoticeData::__construct()
 method	HelperNoticeData::fromHelperNotice()
 method	HelperNoticeListData::__construct()
+method	HelperNotices::newest()
 method	HelperNoticesCommand::handle()
+method	HelperNoticesListTool::__construct()
+method	HelperNoticesListTool::read()
+method	HelperNoticesListTool::schema()
 method	HelperPolicy::authorize()
 method	HelperProfileMismatch::forIdentity()
 method	HelperProfileTypeConflict::forProfile()
@@ -10915,13 +10932,11 @@ method	HelperPurpose::forSubjectOnce()
 method	HelperPurpose::free()
 method	HelperPurpose::ofParent()
 method	HelperPurpose::start()
-method	HelperReader::notices()
 method	HelperReader::receiptOf()
 method	HelperReceipt::__construct()
 method	HelperReceiptData::__construct()
 method	HelperReceiptData::fromHelperReceipt()
 method	HelperRecords::__construct()
-method	HelperRecords::notices()
 method	HelperRecords::receiptOf()
 method	HelperRequestConflict::forRequest()
 method	HelperRetired::forIdentity()
@@ -10942,6 +10957,8 @@ method	HelperWork::__construct()
 method	HelperWork::described()
 method	HelperWork::fingerprint()
 method	HelperWork::sourceSnapshot()
+method	HelperWorkArguments::work()
+method	HelperWorkArguments::writeSchema()
 method	HelperWorkUncertified::for()
 method	HelpersDomain::commands()
 method	HelpersDomain::description()
@@ -15952,6 +15969,9 @@ method	SendHelperCall::__construct()
 method	SendHelperController::__invoke()
 method	SendHelperHandler::__construct()
 method	SendHelperHandler::handle()
+method	SendHelperTool::command()
+method	SendHelperTool::present()
+method	SendHelperTool::writeSchema()
 method	SendMessage::__construct()
 method	SendMessage::subject()
 method	SendMessageCall::__construct()
@@ -17482,6 +17502,8 @@ method	StartHelperCall::__construct()
 method	StartHelperController::__invoke()
 method	StartHelperHandler::__construct()
 method	StartHelperHandler::handle()
+method	StartHelperTool::command()
+method	StartHelperTool::present()
 method	StartMaterial::__construct()
 method	StartMaterialMissing::forRequest()
 method	StartOwnedAgent::__construct()
@@ -17785,6 +17807,9 @@ method	SteerHelperCall::__construct()
 method	SteerHelperController::__invoke()
 method	SteerHelperHandler::__construct()
 method	SteerHelperHandler::handle()
+method	SteerHelperTool::command()
+method	SteerHelperTool::present()
+method	SteerHelperTool::writeSchema()
 method	SteerReceipt::__construct()
 method	SteerReceipt::kept()
 method	SteerReceipt::steered()
@@ -19832,6 +19857,7 @@ parameter	$endpointVersion
 parameter	$endsOptionsAtDoubleDash
 parameter	$engine
 parameter	$engineFrame
+parameter	$engineListeners
 parameter	$enteredAt
 parameter	$entrance
 parameter	$entries
@@ -23917,6 +23943,7 @@ property	HelperNoticeData::$text
 property	HelperNoticeListData::$notices
 property	HelperNoticesCommand::$description
 property	HelperNoticesCommand::$signature
+property	HelperNoticesListTool::$notices
 property	HelperReceipt::$identityId
 property	HelperReceipt::$isNewJob
 property	HelperReceipt::$jobId
@@ -28983,6 +29010,7 @@ trait	HasLinkRecords
 trait	HasNumber
 trait	HasNumberedModels
 trait	HasStates
+trait	HelperWorkArguments
 trait	Linkable
 trait	MeasuresBody
 trait	NamedByRuleScope
@@ -29863,6 +29891,7 @@ variable	$none
 variable	$normalized
 variable	$normalizedDefault
 variable	$notice
+variable	$notices
 variable	$now
 variable	$npm
 variable	$npmOptions
