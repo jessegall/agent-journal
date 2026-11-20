@@ -7,6 +7,7 @@ from engine.checkout.checkout import Checkout
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.removable import Removable
 from engine.model.model import Model
+from engine.model.move import Move
 from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
@@ -62,8 +63,13 @@ class Worktree(Removable, EnvironmentScoped, Model):
         return self.moved(WorktreeLifecycle.cut, base_commit=base_commit, cut_at=timestamp, task_count=task_count)
 
     def change_libraries(self, dropped_at: Timestamp | None) -> "Worktree":
-        move = WorktreeLifecycle.change_delivered_libraries if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.change_cut_libraries
-        return self.moved(move, libraries_dropped_at=dropped_at)
+        return self.moved(self.library_change(), libraries_dropped_at=dropped_at)
+
+    def can_change_libraries(self) -> bool:
+        return self.state in self.library_change().sources
+
+    def library_change(self) -> Move:
+        return WorktreeLifecycle.change_delivered_libraries if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.change_cut_libraries
 
     def transferred(self, worker_id: int) -> "Worktree":
         move = WorktreeLifecycle.transfer_delivered if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.transfer_cut

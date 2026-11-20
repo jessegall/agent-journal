@@ -26,6 +26,8 @@ class StoppedWorkerLibraries:
         workers = {worker.id: worker for worker in queries.query(Agent).all_environments(TIMED_JOB_REASON).find_many(list(dict.fromkeys(row.session_agent_id for row in worktrees)))}
         dropped = False
         for worktree in worktrees:
+            if not worktree.can_change_libraries():
+                continue
             links, copies = json.loads(worktree.library_links), json.loads(worktree.library_copies)
             worker = workers[worktree.session_agent_id]
             if not (links or copies) or worktree.libraries_dropped_at is not None or worker.ended_at is None or worker.ended_at.elapsed_seconds(stamp) < STOPPED_SECONDS:
