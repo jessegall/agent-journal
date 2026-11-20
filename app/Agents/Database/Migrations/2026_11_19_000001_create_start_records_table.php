@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('owner_reference', 128)->nullable()->index();
             $table->string('context_reference', 128)->nullable();
             $table->string('conversation_mode', 16);
+            $table->string('conversation_target', 200)->nullable();
+            $table->boolean('conversation_resumed')->nullable();
             $table->string('payload_digest', 64);
             $table->string('disposition', 16);
             $table->ulid('session_id')->nullable()->index();

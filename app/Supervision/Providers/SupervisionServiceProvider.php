@@ -6,6 +6,7 @@ namespace App\Supervision\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Agents\Contracts\MergeAdmission;
 use App\Autoload\Support\FolderClasses;
 use App\Engine\Support\EngineListenerSet;
 use App\Links\Support\LinkTypeRegistry;
@@ -14,6 +15,7 @@ use App\Profiles\Values\AskTypeKey;
 use App\Supervision\Contracts\AskAdmission;
 use App\Supervision\Contracts\AskReader;
 use App\Supervision\Contracts\SupervisorDispatch;
+use App\Supervision\Contracts\WorkRepair;
 use App\Supervision\Enums\AskAbility;
 use App\Supervision\Enums\SupervisorAbility;
 use App\Supervision\Models\Ask;
@@ -27,8 +29,11 @@ use App\Supervision\Readers\AskRecords;
 use App\Supervision\Support\AdvanceDueAsksOnTick;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Support\CurrentAskAdmission;
+use App\Supervision\Support\HandOffCodeReviewsOnTick;
+use App\Supervision\Support\ReviewMergeAdmission;
 use App\Supervision\Support\SupervisorRouting;
 use App\Supervision\Support\UnavailableSupervisorDispatch;
+use App\Supervision\Support\UnavailableWorkRepair;
 use App\Supervision\Types\CodeReviewType;
 use App\Supervision\Types\MergeReadyType;
 use App\Supervision\Types\QuestionType;
@@ -48,6 +53,9 @@ final class SupervisionServiceProvider extends ServiceProvider
         $this->app->bind(AskReader::class, AskRecords::class);
         $this->app->singleton(AskTypeRegistry::class);
         $this->app->bindIf(SupervisorDispatch::class, UnavailableSupervisorDispatch::class);
+        $this->app->bindIf(WorkRepair::class, UnavailableWorkRepair::class);
+        // The contract belongs to Agents, which never names Supervision; supervision admits merges.
+        $this->app->bind(MergeAdmission::class, ReviewMergeAdmission::class);
     }
 
     public function boot(
@@ -58,6 +66,7 @@ final class SupervisionServiceProvider extends ServiceProvider
         EngineListenerSet $engineListeners,
     ): void {
         $engineListeners->add(AdvanceDueAsksOnTick::class);
+        $engineListeners->add(HandOffCodeReviewsOnTick::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/asks.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->callAfterResolving(

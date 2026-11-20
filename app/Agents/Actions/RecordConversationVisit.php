@@ -53,6 +53,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
 
         ConversationVisit::appendOnce($session, $conversation, $eventId, $observedAt);
         $session->enterConversation($conversation);
+        StartRecord::confirmConversation($session->id, $nativeId);
 
         if ($start !== null) {
             $this->outputs->map($session, $conversation, $start, $transcriptPath);

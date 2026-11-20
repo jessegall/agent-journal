@@ -119,8 +119,11 @@ final class HelperCompletionTest extends TestCase
         $this->certifyPassedStops('pass-1');
         $start->session->endAt(CarbonImmutable::now());
 
-        $reservation = WorkReservation::query()->sole();
-        $this->assertSame([$start->agent->id, '/workspace'], [$reservation->actor_id, $reservation->checkout]);
+        $reservation = WorkReservation::query()->with('certifiedWork')->sole();
+        $this->assertSame(
+            [$start->agent->id, '/workspace'],
+            [$reservation->actor_id, $reservation->certifiedWork->worktree],
+        );
         Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
         $this->assertThrows(
             fn () => $this->app->make(StartReservations::class)->reserve(ActorIdentity::of($start->agent)),

@@ -33,9 +33,11 @@ use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\ExpiresNavigation;
+use App\Agents\Contracts\HelperCommitImport as HelperCommitImportContract;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
+use App\Agents\Contracts\MergeAdmission;
 use App\Agents\Contracts\NavigationReader;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\ReadGrant as ReadGrantContract;
@@ -93,12 +95,14 @@ use App\Agents\Support\NavigationRecords;
 use App\Agents\Support\NavigationRequestProvider;
 use App\Agents\Support\PendingNavigationWork;
 use App\Agents\Support\PendingWorkSources;
+use App\Agents\Support\ProtectedMerge;
 use App\Agents\Support\ReadGrant;
 use App\Agents\Support\RequestSession;
 use App\Agents\Support\RetainedWorkspaceReads;
 use App\Agents\Support\SessionProvenance;
 use App\Agents\Support\SessionToolDiscovery;
 use App\Agents\Support\TerminalViews;
+use App\Agents\Support\UnavailableMergeAdmission;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Enums\AssignmentPurpose;
@@ -149,6 +153,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->alias(RequestSession::class, AgentCallContext::class);
         $this->app->bind(ToolDiscovery::class, SessionToolDiscovery::class);
         $this->app->bind(WorkspaceReader::class, RetainedWorkspaceReads::class);
+        $this->app->bindIf(MergeAdmission::class, UnavailableMergeAdmission::class);
         $this->app->bind(NavigationReader::class, NavigationRecords::class);
         $this->app->bind(TerminalViewCloser::class, TerminalViews::class);
         $this->app->bind(StartExecutor::class, fn () => new HostStartExecutor(
@@ -192,6 +197,11 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(
             HelperCommitImport::class,
             fn () => new HelperCommitImport($this->app->make(Factory::class), base_path()),
+        );
+        $this->app->alias(HelperCommitImport::class, HelperCommitImportContract::class);
+        $this->app->bind(
+            ProtectedMerge::class,
+            fn () => new ProtectedMerge($this->app->make(Factory::class), base_path()),
         );
         $this->app->bind(
             HostCapabilities::class,

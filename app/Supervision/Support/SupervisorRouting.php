@@ -17,6 +17,7 @@ use App\Profiles\Values\SupervisorTarget;
 use App\Supervision\Commands\ChangeSupervisor;
 use App\Supervision\Contracts\AskType;
 use App\Supervision\Exceptions\SupervisorRouteRefused;
+use App\Supervision\Models\Ask;
 use App\Supervision\Models\SupervisorChange;
 use App\Supervision\Models\SupervisorLink;
 use App\Supervision\Values\SupervisorChangeReceipt;
@@ -88,6 +89,27 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
         $link = SupervisorLink::ofActor($requester, $profile->supervisor);
 
         return new SupervisorRoute($link->routes->targetFor($type), $link->versionFor($type));
+    }
+
+    /**
+     * The route an ask follows: the route of the profile it was opened on, such as a merge that follows the role a
+     * review was first sent to, else its requester's own.
+     */
+    public function routeOf(Ask $ask): SupervisorRoute
+    {
+        return $ask->route_profile === null
+            ? $this->routeFor($ask->requester(), $ask->typeKey())
+            : $this->routeForProfile(ProfileKey::from($ask->route_profile), $ask->typeKey());
+    }
+
+    /**
+     * The route a profile's own definition gives an ask type, whatever actor of it or after it asks.
+     */
+    public function routeForProfile(ProfileKey $key, AskTypeKey $type): SupervisorRoute
+    {
+        $this->types->get($type);
+
+        return new SupervisorRoute($this->profiles->snapshotFor($key)->supervisorTargetFor($type), 0);
     }
 
     private function workingActor(ActorIdentity $actor): Agent

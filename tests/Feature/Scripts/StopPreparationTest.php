@@ -49,6 +49,7 @@ final class StopPreparationTest extends TestCase
     use StartsAgentRequests;
 
     private const array TABLES = [
+        'active_accounts', 'account_notices', 'accounts', 'process_starts', 'agent_runtimes',
         'profile_step_results',
         'profile_runs',
         'workspace_reads',

@@ -16,6 +16,15 @@ return [
     | parameters and their rules. The host registers exactly these names and versions
     | (tools/journal-agent/keyscripts/scripts, recorded()); nothing else runs (doc 40, section 26).
     */
+    /*
+     * Where reviewed helper work is merged: the integration branch of this checkout, and the branches no merge
+     * ever writes to.
+     */
+    'merge' => [
+        'target_branch' => env('JOURNAL_MERGE_TARGET', 'version-6'),
+        'protected_branches' => ['main'],
+    ],
+
     'key_scripts' => [
         'ChangeModel' => ['version' => 2, 'parameters' => ['model' => 'required|string|max:200']],
         'ChangeEffort' => ['version' => 1, 'parameters' => ['effort' => 'required|string|max:200']],

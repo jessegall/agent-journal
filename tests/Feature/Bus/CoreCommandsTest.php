@@ -7,6 +7,7 @@ namespace Tests\Feature\Bus;
 use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\FenceProfileRevision;
+use App\Agents\Commands\MergeReviewedWork;
 use App\Agents\Commands\ReconcileStarts;
 use App\Agents\Commands\ReportCleanup;
 use App\Agents\Commands\ReportFailure;
@@ -81,9 +82,11 @@ use App\Skills\Commands\PublishSkills;
 use App\Skills\Commands\RecordSkillRead;
 use App\Skills\Commands\RefreshSkills;
 use App\Skills\Commands\RetrySkillPublication;
+use App\Supervision\Commands\ApproveCodeReview;
 use App\Supervision\Commands\AskSupervisor;
 use App\Supervision\Commands\ChangeSupervisor;
 use App\Supervision\Commands\ReplyToAsk;
+use App\Supervision\Commands\ReturnCodeReview;
 use App\Supervision\Commands\RouteAsk;
 use App\Supervision\Commands\WithdrawAsk;
 use App\Web\Commands\RecordUserHeartbeat;
@@ -123,6 +126,7 @@ final class CoreCommandsTest extends CommandBusTestCase
 
         $this->assertEqualsCanonicalizing([
             ClaimStart::class,
+            MergeReviewedWork::class,
             ReportRunning::class,
             ReportStopped::class,
             RecordStopResults::class,
@@ -197,6 +201,8 @@ final class CoreCommandsTest extends CommandBusTestCase
             AskSupervisor::class,
             ChangeSupervisor::class,
             ReplyToAsk::class,
+            ApproveCodeReview::class,
+            ReturnCodeReview::class,
             RouteAsk::class,
             WithdrawAsk::class,
         ], CoreCommands::privateCommands());

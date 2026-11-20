@@ -69,6 +69,14 @@ final class CertifiedWork extends Model implements ReadableModel
     }
 
     /**
+     * The work the certificate is for.
+     */
+    public function work(): RecordIdentity
+    {
+        return new RecordIdentity($this->work_type, $this->work_id);
+    }
+
+    /**
      * The parent repository's ref the commits are imported under: one per certificate, never a branch.
      */
     public function importRef(): string

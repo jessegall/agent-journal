@@ -78,7 +78,7 @@ final readonly class AskRouter
             $this->writer->reassignForJournal($assignment, $current);
         }
 
-        $route = $this->routes->routeFor($ask->requester(), $ask->typeKey());
+        $route = $this->routes->routeOf($ask);
         $this->attention->retainHop($ask->accept($recipient, $route->version));
 
         return AskRouteStatus::Assigned;

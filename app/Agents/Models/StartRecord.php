@@ -44,6 +44,8 @@ use PhpOption\Option;
  * @property string|null $owner_reference
  * @property string|null $context_reference
  * @property ConversationModeType $conversation_mode
+ * @property string|null $conversation_target
+ * @property bool|null $conversation_resumed
  * @property string $payload_digest
  * @property StartDisposition $disposition
  * @property string|null $session_id
@@ -67,6 +69,8 @@ use PhpOption\Option;
     'owner_reference',
     'context_reference',
     'conversation_mode',
+    'conversation_target',
+    'conversation_resumed',
     'payload_digest',
     'disposition',
     'session_id',
@@ -88,6 +92,7 @@ final class StartRecord extends Model implements ReadableModel
             'profile_revision' => 'integer',
             'origin_type' => StartOriginType::class,
             'conversation_mode' => ConversationModeType::class,
+            'conversation_resumed' => 'boolean',
             'disposition' => StartDisposition::class,
         ];
     }
@@ -128,6 +133,7 @@ final class StartRecord extends Model implements ReadableModel
             'owner_reference' => $request->ownerReference,
             'context_reference' => $request->contextReference,
             'conversation_mode' => $request->conversationMode,
+            'conversation_target' => $request->conversationTarget,
             'payload_digest' => $request->digest(),
             'disposition' => StartDisposition::Accepted,
             'reply_inbox_id' => $replyInboxId->getOrElse(null),
@@ -156,6 +162,30 @@ final class StartRecord extends Model implements ReadableModel
             ->where('origin_type', StartOriginType::OwnerRequest->value)
             ->whereNotNull('owner_reference')
             ->first());
+    }
+
+    /**
+     * The native conversation the session's start chose to continue, if it chose one.
+     */
+    public static function conversationTargetOf(string $sessionId): string|null
+    {
+        return self::query()->where('session_id', $sessionId)->value('conversation_target');
+    }
+
+    /**
+     * Records whether the session went on in the conversation its start chose: a session that entered another one,
+     * or a fresh one, never counts as resumed.
+     */
+    public static function confirmConversation(string $sessionId, string $nativeId): void
+    {
+        $start = self::query()->where('session_id', $sessionId)->whereNull('conversation_resumed')->first();
+
+        if ($start === null || $start->conversation_mode !== ConversationModeType::Resume) {
+            return;
+        }
+
+        $start->conversation_resumed = $start->conversation_target === $nativeId;
+        $start->save();
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Agents\Exceptions\StartClaimRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
+use App\Agents\Models\StartRecord;
 use App\Agents\Support\AccountStartSettings;
 use App\Agents\Support\ClaimedStart;
 use App\Contracts\CommandHandler;
@@ -52,6 +53,7 @@ final readonly class ClaimStartHandler implements CommandHandler
             $start->directory,
             $start->account_generation,
             $settings->recipeFor($program, $start->transport_profile),
+            StartRecord::conversationTargetOf($start->session_id),
         );
     }
 }

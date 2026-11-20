@@ -110,6 +110,20 @@ final readonly class KeywordRegistry implements ScriptKeywordRegistration
     }
 
     /**
+     * The ports a statement of this keyword leaves by; other keywords leave by none.
+     *
+     * @return list<string>
+     */
+    public function portsOf(KeywordDefinition $keyword): array
+    {
+        if ($keyword->category !== KeywordCategory::Statement) {
+            return [];
+        }
+
+        return $this->statement($keyword)->flow()->ports;
+    }
+
+    /**
      * The statement that runs an instruction of this keyword.
      */
     public function statementFor(string $token): ScriptStatement

@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Supervision\Support;
+
+use App\Agents\Models\WorkReservation;
+use App\Bus\Contracts\CommandBus;
+use App\Engine\Contracts\EngineListener;
+use App\Engine\Events\EngineTicked;
+use App\Supervision\Commands\HandOffCodeReview;
+use Throwable;
+
+/**
+ * Hands off at most five reserved works on every engine pass, each as its own command. This is the one boundary where
+ * a handoff that cannot go on is reported and skipped, so it never holds back the works after it; the next pass tries
+ * it again.
+ */
+final readonly class HandOffCodeReviewsOnTick implements EngineListener
+{
+    /**
+     * The most works one pass hands off.
+     */
+    private const int PASS_LIMIT = 5;
+
+    public function __construct(private CommandBus $commands) {}
+
+    public function maintenanceScope(): string
+    {
+        return HandOffCodeReview::MAINTENANCE_SCOPE;
+    }
+
+    public function __invoke(EngineTicked $event): void
+    {
+        foreach (WorkReservation::awaitingHandoff(self::PASS_LIMIT) as $reservation) {
+            try {
+                $this->commands->run(new HandOffCodeReview($reservation->certificate));
+            } catch (Throwable $failure) {
+                report($failure);
+            }
+        }
+    }
+}

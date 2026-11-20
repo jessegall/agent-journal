@@ -34,6 +34,9 @@ type ClaimedStart struct {
 	Directory  string        `json:"directory"`
 	Generation int           `json:"generation"`
 	Recipe     AccountRecipe `json:"recipe"`
+	// ConversationTarget is the native conversation the journal chose for a resume, empty for a fresh one. The host
+	// resumes it only when its transcript is in this account's folder for the start's own workspace.
+	ConversationTarget string `json:"conversation_target"`
 }
 
 // ErrIncompleteClaim is returned when a claim's answer lacks its key, folder or recipe: the host never starts a

@@ -6,6 +6,7 @@ namespace App\Supervision\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Commands\MergeReviewedWork;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\JournalAssignableProvider;
 use App\Assignments\Support\AssigneeIdentity;
@@ -13,7 +14,10 @@ use App\Assignments\Support\JournalAssignment;
 use App\Bus\Support\CommandNesting;
 use App\Records\Support\RecordIdentity;
 use App\Supervision\Commands\AdvanceAsk;
+use App\Supervision\Commands\ApproveCodeReview;
+use App\Supervision\Commands\HandOffCodeReview;
 use App\Supervision\Commands\ReplyToAsk;
+use App\Supervision\Commands\ReturnCodeReview;
 use App\Supervision\Commands\RouteAsk;
 use App\Supervision\Commands\WithdrawAsk;
 use App\Supervision\Exceptions\AskRefused;
@@ -22,6 +26,29 @@ use App\Supervision\Values\AskReference;
 
 final readonly class AskAssignments implements JournalAssignableProvider
 {
+    /**
+     * The commands that route an ask to its first holder: routing it, and the review chain opening its own asks; a
+     * handoff runs for the engine, on the worker's route.
+     */
+    private const array ROUTING_COMMANDS = [
+        RouteAsk::class,
+        HandOffCodeReview::class,
+        ApproveCodeReview::class,
+        ReturnCodeReview::class,
+        MergeReviewedWork::class,
+    ];
+
+    /**
+     * The commands that end an ask for its holder: an answer, a withdrawal, a review decision or a merge's outcome.
+     */
+    private const array ANSWERING_COMMANDS = [
+        ReplyToAsk::class,
+        WithdrawAsk::class,
+        ApproveCodeReview::class,
+        ReturnCodeReview::class,
+        MergeReviewedWork::class,
+    ];
+
     public function __construct(
         private AskRecords $asks,
         private CurrentActor $actors,
@@ -40,15 +67,22 @@ final readonly class AskAssignments implements JournalAssignableProvider
             return;
         }
 
-        if (! $this->nesting->runs(RouteAsk::class)) {
+        if (! $this->runsAny(self::ROUTING_COMMANDS)) {
             throw AskRefused::routeChanged();
         }
 
         $this->graph->acquire();
-        $ask = $this->asks->lock(new AskReference($assignment->record->id));
-        $this->requireRouteEditor($ask);
+        $handsOff = $this->nesting->runs(HandOffCodeReview::class);
+        $ask = $handsOff
+            ? Ask::lockedForMaintenance($assignment->record->id)
+            : $this->asks->lock(new AskReference($assignment->record->id));
+
+        if (! $handsOff) {
+            $this->requireRouteEditor($ask);
+        }
+
         $pending = $ask->requirePending($assignment->expectedVersion);
-        $route = $this->routes->routeFor($ask->requester(), $ask->typeKey());
+        $route = $this->routes->routeOf($ask);
         $recipient = $this->recipients->resolve($route->target);
 
         $isRecipient = $recipient
@@ -71,7 +105,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
     {
         $escalates = $this->nesting->runs(AdvanceAsk::class);
 
-        if (! $escalates && ! $this->nesting->runs(ReplyToAsk::class) && ! $this->nesting->runs(WithdrawAsk::class)) {
+        if (! $escalates && ! $this->runsAny(self::ANSWERING_COMMANDS)) {
             throw AskRefused::routeChanged();
         }
 
@@ -119,6 +153,14 @@ final readonly class AskAssignments implements JournalAssignableProvider
         if (! $isRecipient) {
             throw AskRefused::routeChanged();
         }
+    }
+
+    /**
+     * @param  list<class-string>  $commands
+     */
+    private function runsAny(array $commands): bool
+    {
+        return array_any($commands, fn (string $command) => $this->nesting->runs($command));
     }
 
     private function requireRouteEditor(Ask $ask): void

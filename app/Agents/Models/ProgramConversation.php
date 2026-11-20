@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Links\Support\Linkable;
+use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -50,6 +51,22 @@ final class ProgramConversation extends Model implements ReadableModel
             'agent_id' => $session->agent_id,
             'context_reference' => $context,
         ]);
+    }
+
+    /**
+     * The native id of the agent's latest conversation under this context in this program, the one a resume
+     * continues; none when it never had one there.
+     */
+    public static function lastUnder(string $agentId, string $contextReference, HookProgram $program): string|null
+    {
+        $conversation = self::query()
+            ->where('agent_id', $agentId)
+            ->where('context_reference', $contextReference)
+            ->where('program', $program->value)
+            ->latest()
+            ->first();
+
+        return $conversation?->native_id;
     }
 
     /**

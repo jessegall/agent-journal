@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Contracts\HelperCommitImport as HelperCommitImportContract;
 use App\Agents\Exceptions\HelperImportFailed;
+use App\Agents\Exceptions\HelperWorkUncertified;
 use App\Agents\Models\CertifiedWork;
+use App\Agents\Values\HelperImportReceipt;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Process\Factory;
 
@@ -14,7 +18,7 @@ use Illuminate\Process\Factory;
  * operation: no hook, config include, credential helper or remote transport runs, and no branch is merged, rebased
  * or pushed. An import that already happened changes nothing.
  */
-final readonly class HelperCommitImport
+final readonly class HelperCommitImport implements HelperCommitImportContract
 {
     /**
      * The longest one git step of an import may take.
@@ -39,13 +43,54 @@ final readonly class HelperCommitImport
     ) {}
 
     /**
-     * Imports the work's commits once and answers the commits its ref holds that the parent's current branch lacks.
+     * Imports the commits of certified work once and answers its ref, the parent's head it is compared with, its own
+     * head, and the commits it holds that the parent's current branch lacks.
      *
+     * @throws HelperWorkUncertified
+     * @throws HelperImportFailed
+     */
+    public function importCertified(RecordIdentity $work, string $certificate): HelperImportReceipt
+    {
+        $certified = CertifiedWork::of($work, $certificate);
+        $commits = $this->import($certified);
+
+        return new HelperImportReceipt(
+            $certified->importRef(),
+            $this->revision('HEAD'),
+            $this->revision($certified->importRef()),
+            $commits,
+        );
+    }
+
+    /**
+     * Copies a commit of the parent repository into the certified work's checkout under refs/journal/repair/<source>,
+     * the same protected way the import works in the other direction; nothing in the checkout is reset or merged.
+     *
+     * @throws HelperWorkUncertified
+     * @throws HelperImportFailed
+     */
+    public function transferTarget(RecordIdentity $work, string $certificate, string $commit, string $source): string
+    {
+        $certified = CertifiedWork::of($work, $certificate);
+        $ref = "refs/journal/repair/{$source}";
+        $fetch = $this->git(
+            ['fetch', '--no-tags', '--quiet', $this->repository, "{$commit}:{$ref}"],
+            $certified->worktree,
+        );
+
+        if ($fetch->failed()) {
+            throw HelperImportFailed::for($this->repository, trim($fetch->errorOutput()));
+        }
+
+        return $ref;
+    }
+
+    /**
      * @return list<string>
      *
      * @throws HelperImportFailed
      */
-    public function import(CertifiedWork $work): array
+    private function import(CertifiedWork $work): array
     {
         $ref = $work->importRef();
 
@@ -70,18 +115,29 @@ final readonly class HelperCommitImport
         return array_values(array_filter(explode("\n", trim($commits))));
     }
 
+    private function revision(string $name): string
+    {
+        return trim($this->git(['rev-parse', '--verify', '--quiet', $name])->output());
+    }
+
     /**
      * @param  list<string>  $arguments
      */
-    private function git(array $arguments): ProcessResult
+    private function git(array $arguments, string|null $folder = null): ProcessResult
     {
-        $settings = array_merge(...array_map(fn (string $setting) => ['-c', $setting], self::SAFE_SETTINGS));
-
         return $this->processes
             ->newPendingProcess()
-            ->path($this->repository)
+            ->path($folder ?? $this->repository)
             ->timeout(self::TIMEOUT_SECONDS)
             ->env(['GIT_CONFIG_NOSYSTEM' => '1', 'GIT_CONFIG_GLOBAL' => '/dev/null', 'GIT_TERMINAL_PROMPT' => '0'])
-            ->run(['git', ...$settings, ...$arguments]);
+            ->run(['git', ...$this->settings(), ...$arguments]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function settings(): array
+    {
+        return array_merge(...array_map(fn (string $setting) => ['-c', $setting], self::SAFE_SETTINGS));
     }
 }

@@ -47,6 +47,14 @@ final readonly class Instruction
         return $this->operand->text;
     }
 
+    /**
+     * How the instruction reads in a flowchart: its keyword and its operand.
+     */
+    public function label(): string
+    {
+        return "{$this->keyword} {$this->operand->label()}";
+    }
+
     public function seconds(): int
     {
         return $this->operand instanceof NamedCommand ? $this->operand->timeoutSeconds : 0;

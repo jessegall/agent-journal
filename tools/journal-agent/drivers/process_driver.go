@@ -36,10 +36,13 @@ type ProcessRuntime struct {
 	Credential     string
 	ProfilePin     []string
 	ConversationID string
-	SettingsFolder string
-	WorkingFolder  string
-	HookCommand    string
-	Profile        profilecontracts.ProgramProfile
+	// ResumesConversation is set when ConversationID names an earlier conversation the host verified, so even the
+	// first turn resumes it.
+	ResumesConversation bool
+	SettingsFolder      string
+	WorkingFolder       string
+	HookCommand         string
+	Profile             profilecontracts.ProgramProfile
 	// Environment is the prepared start's clean environment the child starts from; the host's own never reaches it.
 	Environment []string
 	// Account is the saved account each child signs in with.
@@ -141,7 +144,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 		Mode:           recording.ProcessMode,
 		SettingsFolder: driver.runtime.SettingsFolder,
 		SessionID:      driver.runtime.ConversationID,
-		Resume:         driver.turns > 0,
+		Resume:         driver.turns > 0 || driver.runtime.ResumesConversation,
 		Prompt:         prompt,
 		HookCommand:    driver.runtime.HookCommand,
 		Model:          driver.model,

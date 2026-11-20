@@ -10,6 +10,7 @@ use App\Comments\Calls\CommentCalls;
 use App\Communication\Calls\CommunicationCalls;
 use App\Processes\Calls\ProcessCalls;
 use App\Records\Calls\RecordCalls;
+use App\Scripts\Calls\ScriptCalls;
 use App\Sharing\Calls\SharingCalls;
 use App\Supervision\Calls\SupervisionCalls;
 use App\Text\Calls\TextCalls;
@@ -26,6 +27,7 @@ final readonly class JournalClient
         public CommunicationCalls $communication,
         public ProcessCalls $processes,
         public RecordCalls $records,
+        public ScriptCalls $scripts,
         public SharingCalls $sharing,
         public SupervisionCalls $supervision,
         public TextCalls $text,

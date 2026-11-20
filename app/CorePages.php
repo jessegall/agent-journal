@@ -6,12 +6,13 @@ namespace App;
 
 use App\Processes\Pages\ProcessPages;
 use App\Profiles\Pages\ProfilesPages;
+use App\Scripts\Pages\ScriptsPages;
 use App\Sharing\Pages\SharingPages;
 use App\Ui\Declarations\DomainUi;
 use App\Web\Pages\WebPages;
 
 /**
- * Core's own page declarations, served beside the domains': Web's, Sharing's, Processes' and Profiles'.
+ * Core's own page declarations, served beside the domains': Web's, Sharing's, Processes', Profiles' and Scripts'.
  */
 final class CorePages
 {
@@ -25,6 +26,7 @@ final class CorePages
             new SharingPages()->declarations(),
             new ProcessPages()->declarations(),
             new ProfilesPages()->declarations(),
+            new ScriptsPages()->declarations(),
         ];
     }
 }

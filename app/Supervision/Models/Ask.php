@@ -11,6 +11,7 @@ use App\Agents\Values\WorkReference;
 use App\Assignments\Contracts\Assignable;
 use App\Links\Support\Linkable;
 use App\Profiles\Values\AskTypeKey;
+use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\SupervisorTarget;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -40,6 +41,7 @@ use PhpOption\Option;
  * @property string $work
  * @property string|null $head
  * @property string|null $pending_target
+ * @property string|null $route_profile
  * @property int $version
  * @property bool $open
  * @property UnansweredReason|null $outcome
@@ -93,6 +95,7 @@ final class Ask extends Model implements Assignable, ReadableModel
         AskSubject $subject,
         SupervisorTarget $target,
         AskOriginType $origin = AskOriginType::Internal,
+        ProfileKey|null $routeProfile = null,
     ): self {
         $work = $subject->work->isFree() ? 'free' : $subject->work->key;
         $digest = hash('sha256', json_encode([$type->key, $body, $work], JSON_THROW_ON_ERROR));
@@ -111,6 +114,7 @@ final class Ask extends Model implements Assignable, ReadableModel
             'work' => $subject->work->key,
             'head' => $subject->head,
             'pending_target' => $target->key,
+            'route_profile' => $routeProfile?->key,
             'version' => 0,
             'open' => true,
             'created_at' => $now,

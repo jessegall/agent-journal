@@ -6,7 +6,6 @@ namespace App\Agents\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Values\WorkReference;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -14,26 +13,28 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
  * Certified work that must be reviewed, holding its actor and checkout until the review chain releases it: no other
  * job may take that actor or checkout, and cleanup keeps the checkout. It is retained with the certificate, in the
- * same transaction, so no handoff that is lost later can leave the work unreserved.
+ * same transaction, so a handoff that is lost later can never leave the work unreserved; it is handed off once its
+ * review is open.
  *
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
- * @property string $checkout
- * @property string $work
  * @property int $generation
  * @property string $certificate
+ * @property Carbon|null $handed_off_at
  * @property Carbon|null $released_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read CertifiedWork $certifiedWork
  */
 #[Table('work_reservations')]
-#[Fillable(['actor_type', 'actor_id', 'checkout', 'work', 'generation', 'certificate', 'released_at'])]
+#[Fillable(['actor_type', 'actor_id', 'generation', 'certificate', 'handed_off_at', 'released_at'])]
 final class WorkReservation extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -45,25 +46,40 @@ final class WorkReservation extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['generation' => 'integer', 'released_at' => 'datetime'];
+        return ['generation' => 'integer', 'handed_off_at' => 'datetime', 'released_at' => 'datetime'];
     }
 
     /**
      * Reserves the actor and checkout of certified work, once per certificate.
      */
-    public static function retain(
-        ActorIdentity $actor,
-        string $checkout,
-        WorkReference $work,
-        int $generation,
-        string $certificate,
-    ): self {
-        return self::query()->firstOrCreate(['certificate' => $certificate], [
-            ...$actor->asColumns('actor'),
-            'checkout' => $checkout,
-            'work' => $work->key,
-            'generation' => $generation,
-        ]);
+    public static function retain(CertifiedWork $work, ActorIdentity $actor, int $generation): self
+    {
+        return self::query()->firstOrCreate(
+            ['certificate' => $work->certificate],
+            [...$actor->asColumns('actor'), 'generation' => $generation],
+        );
+    }
+
+    /**
+     * Reserved work whose review is not open yet, the one tried longest ago first, so a failing import never holds
+     * back the others.
+     *
+     * @return list<self>
+     */
+    public static function awaitingHandoff(int $limit): array
+    {
+        return array_values(self::query()
+            ->whereNull('handed_off_at')
+            ->whereNull('released_at')
+            ->orderBy('updated_at')
+            ->readLimit($limit)
+            ->get()
+            ->all());
+    }
+
+    public static function lockedFor(string $certificate): self
+    {
+        return self::query()->with('certifiedWork')->where('certificate', $certificate)->lockForUpdate()->firstOrFail();
     }
 
     /**
@@ -78,15 +94,14 @@ final class WorkReservation extends Model implements ReadableModel
             return [];
         }
 
-        return array_values(self::query()
+        return array_values(array_unique(self::query()
             ->where('actor_type', ActorType::Agent->value)
             ->whereIn('actor_id', $agentIds)
             ->whereNull('released_at')
-            ->readLimit(count($agentIds))
-            ->distinct()
+            ->readAll('the open reservations of these agents, a few at most for each')
             ->pluck('actor_id')
             ->map(fn (mixed $agentId): string => (string) $agentId)
-            ->all());
+            ->all()));
     }
 
     public static function holds(ActorIdentity $actor): bool
@@ -96,5 +111,47 @@ final class WorkReservation extends Model implements ReadableModel
             ->where('actor_id', $actor->id)
             ->whereNull('released_at')
             ->exists();
+    }
+
+    /**
+     * Marks the review of this work open, so the handoff runs no more.
+     */
+    public function handOff(): void
+    {
+        if ($this->handed_off_at !== null) {
+            return;
+        }
+
+        $this->handed_off_at = Carbon::now();
+        $this->save();
+    }
+
+    /**
+     * Ends the reservation when the work's chain ends, so its actor and checkout go back to normal cleanup.
+     */
+    public function release(): void
+    {
+        if ($this->released_at !== null) {
+            return;
+        }
+
+        $this->released_at = Carbon::now();
+        $this->save();
+    }
+
+    /**
+     * The actor whose certified work is reserved.
+     */
+    public function actor(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+    }
+
+    /**
+     * @return BelongsTo<CertifiedWork, $this>
+     */
+    public function certifiedWork(): BelongsTo
+    {
+        return $this->belongsTo(CertifiedWork::class, 'certificate', 'certificate');
     }
 }

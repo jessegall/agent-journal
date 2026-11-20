@@ -238,23 +238,24 @@ func (opener runtimeOpener) processRuntime(
 	if err := host.RequireNoLinks(opener.stateFolder, settingsFolder); err != nil {
 		return nil, err
 	}
-	conversationID, err := newConversationID()
+	conversationID, resumes, err := conversationOf(prepared, grant.Runtime.Folder)
 	if err != nil {
 		return nil, err
 	}
 	driver := drivers.NewProcessDriver(drivers.ProcessRuntime{
-		JournalURL:     opener.journalURL,
-		Credential:     grant.Token,
-		ProfilePin:     grant.ProfileEnvironment(),
-		ConversationID: conversationID,
-		SettingsFolder: settingsFolder,
-		WorkingFolder:  grant.Runtime.Folder,
-		HookCommand:    opener.hookCommand,
-		Profile:        profile,
-		Environment:    environment,
-		Account:        accountOf(prepared, opener.installationFolder, runtimeID),
-		RelayVariables: prepared.RelayVariables(settingsFolder),
-		Executable:     installedProgram(opener.installationFolder, profile),
+		JournalURL:          opener.journalURL,
+		Credential:          grant.Token,
+		ProfilePin:          grant.ProfileEnvironment(),
+		ConversationID:      conversationID,
+		ResumesConversation: resumes,
+		SettingsFolder:      settingsFolder,
+		WorkingFolder:       grant.Runtime.Folder,
+		HookCommand:         opener.hookCommand,
+		Profile:             profile,
+		Environment:         environment,
+		Account:             accountOf(prepared, opener.installationFolder, runtimeID),
+		RelayVariables:      prepared.RelayVariables(settingsFolder),
+		Executable:          installedProgram(opener.installationFolder, profile),
 	}, grant.Runtime.ProcessGeneration)
 	identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
 	if grant.Runtime.Model != nil {
@@ -606,6 +607,16 @@ func terminalSize() (uint16, uint16) {
 		return 40, 120
 	}
 	return uint16(rows), uint16(columns)
+}
+
+// conversationOf is the conversation a start runs in: the one the journal chose to resume when its transcript is in
+// the start's own account folder for its own workspace, else a new one.
+func conversationOf(prepared host.PreparedStart, workFolder string) (string, bool, error) {
+	if resumed, ok := prepared.ResumableConversation(workFolder); ok {
+		return resumed, true, nil
+	}
+	conversationID, err := newConversationID()
+	return conversationID, false, err
 }
 
 // newConversationID is a random UUID: Claude Code takes the exact session id it is given and never picks the latest.

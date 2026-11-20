@@ -153,6 +153,7 @@ use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
+use App\Agents\Contracts\ActorGuidance;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Contracts\CallingProgram;
@@ -1072,9 +1073,13 @@ use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 use App\Skills\Values\StartProfile;
 use App\Supervision\Commands\AdvanceAsk;
+use App\Supervision\Commands\HandOffCodeReview;
 use App\Supervision\Contracts\SupervisorDispatch;
+use App\Supervision\Contracts\WorkRepair;
 use App\Supervision\Enums\SupervisorDispatchOutcome;
+use App\Supervision\Enums\WorkRepairOutcome;
 use App\Supervision\Values\SupervisorRequest;
+use App\Supervision\Values\WorkRepairRequest;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
@@ -1336,6 +1341,8 @@ final class CoreApi
                 AdmittedRecipients::class,
                 JournalAdmission::class,
                 SupervisorDispatch::class,
+                WorkRepair::class,
+                ActorGuidance::class,
                 UserInterfaceUpdater::class,
                 CountResolver::class,
                 NavigationChildren::class,
@@ -1399,6 +1406,7 @@ final class CoreApi
                 WorkReference::class,
                 HelperImportReceipt::class,
                 SupervisorRequest::class,
+                WorkRepairRequest::class,
                 PaginationData::class,
                 NavigationUncertainty::class,
                 EventCommands::class,
@@ -1558,6 +1566,7 @@ final class CoreApi
                 ContextStartType::class,
                 SessionTransferType::class,
                 SupervisorDispatchOutcome::class,
+                WorkRepairOutcome::class,
                 FileEditRequested::class,
                 FileChanges::class,
                 FileChange::class,
@@ -1981,6 +1990,7 @@ final class CoreApi
                 EndTerminalViews::class,
                 EnforceLaunchLimits::class,
                 AdvanceAsk::class,
+                HandOffCodeReview::class,
                 ExpireNavigationRequests::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,

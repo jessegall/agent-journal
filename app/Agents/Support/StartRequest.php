@@ -25,6 +25,7 @@ final readonly class StartRequest
         public string|null $parentSessionId,
         public StartPolicy $policy,
         public RecordIdentity|null $authorizedSource = null,
+        public string|null $conversationTarget = null,
     ) {}
 
     public function execution(): ExecutionPolicy
@@ -56,6 +57,7 @@ final readonly class StartRequest
             $this->parentSessionId,
             $this->policy->digest(),
             $this->authorizedSource,
+            $this->conversationTarget,
         ], JSON_THROW_ON_ERROR));
     }
 }

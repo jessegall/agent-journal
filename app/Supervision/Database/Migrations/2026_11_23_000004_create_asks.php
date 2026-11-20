@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('work');
             $table->string('head')->nullable();
             $table->string('pending_target')->nullable();
+            $table->string('route_profile', 64)->nullable();
             $table->unsignedInteger('version');
             $table->boolean('open')->default(true);
             $table->string('outcome', 32)->nullable();

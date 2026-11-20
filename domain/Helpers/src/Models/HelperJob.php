@@ -192,6 +192,18 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         $this->save();
     }
 
+    /**
+     * Opens finished, reviewed work again for repair on the same helper and checkout: its history and certificate
+     * stay, the findings join its steering, and it is unfinished until a new stop certifies it.
+     */
+    public function reopenForRepair(string $findings): void
+    {
+        $this->state = JobState::Accepted;
+        $this->finished_at = null;
+        $this->steering = [...$this->steering, $findings];
+        $this->save();
+    }
+
     public function wasDispatchedAs(string $payloadDigest): bool
     {
         return $this->payload_digest === $payloadDigest;

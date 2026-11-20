@@ -13,8 +13,8 @@ use JsonSerializable;
 final readonly class NamedCommand implements JsonSerializable
 {
     /**
-     * @param list<string> $arguments
-     * @param non-empty-list<AccessType> $effects
+     * @param  list<string>  $arguments
+     * @param  non-empty-list<AccessType>  $effects
      */
     private function __construct(
         public string $key,
@@ -76,6 +76,14 @@ final readonly class NamedCommand implements JsonSerializable
         }
 
         return $access;
+    }
+
+    /**
+     * How the command reads in a flowchart: by its key.
+     */
+    public function label(): string
+    {
+        return $this->key;
     }
 
     /**

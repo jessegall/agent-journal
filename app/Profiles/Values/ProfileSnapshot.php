@@ -36,6 +36,14 @@ final class ProfileSnapshot extends Data
     ) {}
 
     /**
+     * Where the profile's own routes send an ask of this type.
+     */
+    public function supervisorTargetFor(AskTypeKey $type): SupervisorTarget
+    {
+        return $this->supervisor->targetFor($type);
+    }
+
+    /**
      * What this revision lets a start run, from its access declaration.
      */
     public function processGrants(): ProcessGrants

@@ -59,7 +59,10 @@ final readonly class ScriptChecker implements ScriptChecks
         return array_values(array_filter($lines, fn (ScriptLine $line) => ! $line->isBlank()));
     }
 
-    private function catalogueDigest(): string
+    /**
+     * The digest of every registered keyword and object with its availability, which a check is made against.
+     */
+    public function catalogueDigest(): string
     {
         $keywords = array_map(
             fn (RegisteredKeyword $keyword) => [$keyword, $this->keywords->isAvailable($keyword)],

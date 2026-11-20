@@ -9,7 +9,6 @@ use App\Agents\Models\CertifiedWork;
 use App\Agents\Models\StartRecord;
 use App\Agents\Models\WorkReservation;
 use App\Agents\Support\StartPolicy;
-use App\Agents\Values\WorkReference;
 use App\Hooks\Events\HelperCompletionCertified;
 use App\Hooks\Models\StopAttempt;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -39,16 +38,10 @@ final readonly class StopCertification
 
     private function certifyFor(StartRecord $start, StopAttempt $attempt, StartPolicy $policy): void
     {
-        CertifiedWork::record($start, $attempt->id);
+        $work = CertifiedWork::record($start, $attempt->id);
 
         if ($policy->requiresReview) {
-            WorkReservation::retain(
-                StopAttempt::agentOf($attempt->reference()),
-                $policy->execution->worktree,
-                WorkReference::forRecord($start->ownerWork()),
-                $attempt->workspace_generation,
-                $attempt->id,
-            );
+            WorkReservation::retain($work, StopAttempt::agentOf($attempt->reference()), $attempt->workspace_generation);
         }
 
         $this->events->dispatch(new HelperCompletionCertified($start->ownerWork(), $attempt->reference()));

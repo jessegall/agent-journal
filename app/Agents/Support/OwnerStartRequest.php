@@ -8,6 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\StartOriginType;
+use App\Agents\Models\ProgramConversation;
 use App\Records\Support\RecordIdentity;
 
 /**
@@ -39,8 +40,7 @@ final readonly class OwnerStartRequest
     public function startRequest(
         string|null $parentSessionId,
         RecordIdentity|null $authorizedSource = null,
-    ): StartRequest
-    {
+    ): StartRequest {
         return new StartRequest(
             $this->requestId,
             $this->agent->id,
@@ -52,6 +52,9 @@ final readonly class OwnerStartRequest
             $parentSessionId,
             $this->policy,
             $authorizedSource,
+            $this->conversationMode === ConversationModeType::Resume
+                ? ProgramConversation::lastUnder($this->agent->id, $this->contextReference, $this->selection->program)
+                : null,
         );
     }
 }
