@@ -53,14 +53,15 @@ class ExecutionQueue:
                 self.changed.notify_all()
 
     def wait_start(self, queued: QueuedTicket, wait_limit_seconds: float | None) -> None:
+        wait_limit = None if queued.ticket.priority.is_unlimited else wait_limit_seconds
         while not self.can_start(queued):
             if not queued.is_client_waiting():
                 raise ClientGoneError(queued.ticket.line)
             THREAD_TURN_COUNT.refuse_wait(f"the wait for an instant lane place for {queued.ticket.line}")
             waited = self.clock.unix_seconds() - queued.entered_at
-            if wait_limit_seconds is not None and waited >= wait_limit_seconds and not queued.ticket.priority.is_unlimited:
+            if wait_limit is not None and waited >= wait_limit:
                 raise PoolBusyError.waited(waited, self.holders())
-            self.changed.wait(RECHECK_SECONDS if wait_limit_seconds is None else max(0.0, min(RECHECK_SECONDS, wait_limit_seconds - waited)))
+            self.changed.wait(RECHECK_SECONDS if wait_limit is None else min(RECHECK_SECONDS, wait_limit - waited))
 
     # a waited child starts at once, since its parent holds its place; a session's tickets go one at a time and in
     # the order they asked; of the rest the one decision picks
