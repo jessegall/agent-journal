@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\Operation;
@@ -60,11 +59,6 @@ final readonly class DeclaredCommand
     public function needsRepeatableRead(): bool
     {
         return $this->reflection()->getAttributes(RepeatableRead::class) !== [];
-    }
-
-    public function allowsEngine(): bool
-    {
-        return $this->reflection()->getAttributes(AllowsEngine::class) !== [];
     }
 
     public function effect(): CommandEffectType

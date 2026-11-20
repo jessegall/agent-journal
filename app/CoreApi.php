@@ -292,6 +292,9 @@ use App\Agents\Support\StartReceipt;
 use App\Agents\Support\StartRecordDetails;
 use App\Agents\Support\StartRequest;
 use App\Agents\Support\TerminalViewReceipt;
+use App\Agents\Values\WorkspaceReadReference;
+use App\Agents\Values\WorkReference;
+use App\Agents\Values\NavigationUncertainty;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\ClassGrant;
@@ -558,6 +561,7 @@ use App\Engine\Values\FrameSettlement;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
+use App\Hooks\Stack\StackVerdict;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\WorkRecordState;
@@ -756,7 +760,6 @@ use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Commands\SaveProfileDraft;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
@@ -772,6 +775,8 @@ use App\Profiles\Commands\SubmitSignInCode;
 use App\Profiles\Commands\SwitchAccount;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
+use App\Profiles\Enums\SupervisorCoverageType;
+use App\Profiles\Enums\CommandDirectory;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
@@ -799,6 +804,17 @@ use App\Profiles\Support\OperationRule;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
+use App\Profiles\Values\SupervisorTarget;
+use App\Profiles\Values\SupervisorOverride;
+use App\Profiles\Values\ExpectedDraftRevision;
+use App\Profiles\Values\SupervisorRoutes;
+use App\Profiles\Values\SupervisorProfile;
+use App\Profiles\Values\SupervisorCoverage;
+use App\Profiles\Values\ScriptDiff;
+use App\Profiles\Values\ProfileRevisionReference;
+use App\Profiles\Values\NamedCommand;
+use App\Profiles\Values\DraftExpectations;
+use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\AbilityGrant;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\FieldOrigin;
@@ -1042,11 +1058,6 @@ use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 use App\Skills\Values\StartProfile;
-use App\Supervision\Commands\AskSupervisor;
-use App\Supervision\Commands\ChangeSupervisor;
-use App\Supervision\Commands\ReplyToAsk;
-use App\Supervision\Commands\RouteAsk;
-use App\Supervision\Commands\WithdrawAsk;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
@@ -1347,6 +1358,23 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                SupervisorTarget::class,
+                SupervisorOverride::class,
+                ExpectedDraftRevision::class,
+                SupervisorRoutes::class,
+                SupervisorProfile::class,
+                SupervisorCoverage::class,
+                ScriptDiff::class,
+                ProfileRevisionReference::class,
+                NamedCommand::class,
+                DraftExpectations::class,
+                AskTypeKey::class,
+                SupervisorCoverageType::class,
+                CommandDirectory::class,
+                StackVerdict::class,
+                WorkspaceReadReference::class,
+                WorkReference::class,
+                NavigationUncertainty::class,
                 EventCommands::class,
                 StackWide::class,
                 FolderClasses::class,
@@ -1840,7 +1868,6 @@ final class CoreApi
             )
             ->commands(
                 ActivateProfiles::class,
-                SaveProfileDraft::class,
                 RevokeProfiles::class,
                 StartProfileMain::class,
                 SwitchAccount::class,
@@ -1875,11 +1902,6 @@ final class CoreApi
                 ReleaseMessageClaim::class,
                 RequireMessageAnswer::class,
                 DismissMessage::class,
-                ChangeSupervisor::class,
-                RouteAsk::class,
-                AskSupervisor::class,
-                ReplyToAsk::class,
-                WithdrawAsk::class,
                 RetireAgent::class,
                 StartAgent::class,
                 StartOwnedAgent::class,

@@ -6,6 +6,7 @@ namespace App\Supervision\Models;
 
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -20,7 +21,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['ask_id', 'actor_type', 'actor_id', 'type_key', 'version', 'route_version', 'accepted_at'])]
 final class AskHop extends Model implements ReadableModel
 {
-    use BoundedReads, HasActorColumns, HasUlids;
+    use BoundedReads, HasActorColumns, HasUlids, Linkable;
+
+    public const string LINK_TYPE = 'core.ask-hop';
 
     protected function casts(): array
     {

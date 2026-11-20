@@ -7,7 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Models\Agent;
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecordForMaintenance;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
 use App\Assignments\Models\AssignmentRecord;
@@ -36,16 +36,20 @@ final class EngineAssignmentTest extends TestCase
         $record = Task::factory()->create()->assignmentIdentity();
         $holder = Agent::named('Recipient', 'writing-helper')->assigneeIdentity();
         $this->actAsEngine();
-        $this->app->make(EngineAccess::class)->grantMaintenance(AssignRecord::MAINTENANCE_SCOPE);
+        $this->app->make(EngineAccess::class)->grantMaintenance(AssignRecordForMaintenance::FILL_SCOPE);
         $this->app->make(RequestKey::class)->set('engine-fill');
         $bus = $this->app->make(CommandBus::class);
+        $this->assertThrows(
+            fn () => $bus->run(new AssignRecordForMaintenance($record, $holder)),
+            CommandNotRegistered::class,
+        );
 
         $this->app->make(CommandEntrance::class)->through(CommandEntry::EngineMaintenance, function () use (
             $bus,
             $record,
             $holder,
         ): void {
-            $result = $bus->run(new AssignRecord($record, $holder));
+            $result = $bus->run(new AssignRecordForMaintenance($record, $holder));
             $assignment = $result->outcomes[0]->current;
             $this->assertNotNull($assignment);
             $this->assertTrue($assignment->holder()->isSameAs($holder));
@@ -68,13 +72,13 @@ final class EngineAssignmentTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         $assign = fn () => $this->app->make(CommandEntrance::class)->through(
             CommandEntry::EngineMaintenance,
-            fn () => $bus->run(new AssignRecord($record, $holder)),
+            fn () => $bus->run(new AssignRecordForMaintenance($record, $holder)),
         );
         $this->app->make(RequestKey::class)->set('missing-scope');
         $this->assertThrows($assign, EngineAccessRefused::class);
         $this->app->make(EngineAccess::class)->grantMaintenance('another.scope');
         $this->app->make(RequestKey::class)->set('different-scope');
-        $this->assertThrows($assign, EngineAccessRefused::class, AssignRecord::MAINTENANCE_SCOPE);
+        $this->assertThrows($assign, EngineAccessRefused::class, AssignRecordForMaintenance::FILL_SCOPE);
         $this->assertFalse(AssignmentRecord::query()->forRecord($record)->exists());
     }
 

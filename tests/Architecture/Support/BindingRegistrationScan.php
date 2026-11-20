@@ -15,7 +15,7 @@ final readonly class BindingRegistrationScan implements FileScan
 {
     public function key(): string
     {
-        return 'binding-registrations-1';
+        return 'binding-registrations-2';
     }
 
     public function findingsIn(ParsedFile $file): array

@@ -11,7 +11,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ask_requesters', function (Blueprint $table): void {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('actor_type', 16);
             $table->string('actor_id');
             $table->timestampsTz();
