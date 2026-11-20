@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 
 /**
@@ -18,6 +19,7 @@ final class ToolResult extends Data
      */
     public function __construct(
         public readonly string $status,
+        #[MapName('payload')]
         public readonly array $responseFields,
         #[DataCollectionOf(NextAction::class)]
         public readonly array $nextActions,
@@ -43,7 +45,7 @@ final class ToolResult extends Data
     {
         return [
             'status' => $this->status,
-            ...$this->payload,
+            ...$this->responseFields,
             'next_actions' => array_map(
                 fn (NextAction $action): array => $action->structuredContent(),
                 $this->nextActions,

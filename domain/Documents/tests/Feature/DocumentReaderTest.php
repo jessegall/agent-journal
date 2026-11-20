@@ -42,12 +42,12 @@ final class DocumentReaderTest extends TestCase
             new CreateDocument('Guide', 'How to use a request key.', $body),
         )->number;
 
-        $summary = $this->read($id, ['view' => 'summary'])->payload;
+        $summary = $this->read($id, ['view' => 'summary'])->responseFields;
         $this->assertSame(['1 Guide', '2 Retry', '3 Examples'], $summary['outline']);
         $this->assertSame('How to use a request key.', $summary['abstract']);
         $this->assertArrayNotHasKey('body', $summary);
 
-        $section = $this->read($id, ['view' => 'body', 'section' => 'Retry'])->payload;
+        $section = $this->read($id, ['view' => 'body', 'section' => 'Retry'])->responseFields;
         $this->assertSame([1, 4, 6], [$section['revision'], $section['line_start'], $section['line_end']]);
         $this->assertSame("## Retry\nKeep your key.\n", $section['body']);
     }
@@ -63,7 +63,7 @@ final class DocumentReaderTest extends TestCase
 
         $current = $this->read($number, $range);
         $pinned = $this->read($number, [...$range, 'revision' => 2]);
-        $this->assertSame(str_repeat('a', 4096), $pinned->payload['body']);
+        $this->assertSame(str_repeat('a', 4096), $pinned->responseFields['body']);
         $this->publish($number, 'Replacement.');
 
         $currentCursor = $current->nextActions[0]->arguments['continuation'];
@@ -74,11 +74,11 @@ final class DocumentReaderTest extends TestCase
         $pinnedCursor = $pinned->nextActions[0]->arguments['continuation'];
         $continued = $this->read($number, ['continuation' => $pinnedCursor]);
         $this->assertSame([2, 2, 4096], [
-            $continued->payload['revision'],
-            $continued->payload['line_start'],
-            $continued->payload['character_offset'],
+            $continued->responseFields['revision'],
+            $continued->responseFields['line_start'],
+            $continued->responseFields['character_offset'],
         ]);
-        $this->assertSame(str_repeat('a', 4096), $continued->payload['body']);
+        $this->assertSame(str_repeat('a', 4096), $continued->responseFields['body']);
     }
 
     public function test_a_sealed_attachment_can_only_be_read_in_its_own_session(): void
@@ -92,7 +92,7 @@ final class DocumentReaderTest extends TestCase
         $bus->run(new CommitUpload($id));
 
         $answer = $this->app->make(AttachmentReader::class)->attachment($id, null);
-        $this->assertSame($text, $answer->payload['body']);
+        $this->assertSame($text, $answer->responseFields['body']);
         TestStart::start()->startRequest($this->app);
         $this->assertThrows(
             fn () => $this->app->make(AttachmentReader::class)->attachment($id, null),

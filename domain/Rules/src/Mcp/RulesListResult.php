@@ -23,9 +23,9 @@ final readonly class RulesListResult
         return $this->pages->answer(
             self::TOOL,
             $arguments,
-            fn (ToolArguments $first) => [
-                'state' => $first->enumOr('state', RuleState::Active)->value,
-                'page' => $first->positiveIntegerOr('page', 1),
+            fn (ToolArguments $initialArguments) => [
+                'state' => $initialArguments->enumOr('state', RuleState::Active)->value,
+                'page' => $initialArguments->positiveIntegerOr('page', 1),
             ],
             fn (ToolArguments $filters) => $this->page(new RuleFilters(
                 page: $filters->positiveInteger('page'),

@@ -117,10 +117,10 @@ final readonly class BuiltinSteps
     /**
      * The format applied to its arguments, again for each set of arguments left over, as the shell's printf does.
      */
-    private function printed(string $format, string ...$values): string
+    private function printed(string $format, string ...$operands): string
     {
         $pattern = strtr($format, ['\\n' => "\n", '\\t' => "\t", '\\\\' => '\\']);
-        $arguments = array_values($values);
+        $arguments = array_values($operands);
         $perPass = max(1, preg_match_all('/%[sd]/', $pattern));
         $output = '';
         do {

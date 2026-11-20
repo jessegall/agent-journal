@@ -19,6 +19,6 @@ final readonly class SetStringChoiceHandler implements CommandHandler
     public function handle(SetStringChoice $command): SettingsChange
     {
 
-        return $this->options->choose($command->setting, $command->value, $command->expectedRevision);
+        return $this->options->choose($command->setting, $command->selectedKey, $command->expectedRevision);
     }
 }

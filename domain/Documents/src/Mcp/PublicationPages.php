@@ -27,25 +27,25 @@ final readonly class PublicationPages
     public function summary(
         MarkdownText $body,
         string $abstract,
-        Continuation $read,
+        Continuation $position,
         string $key,
         DocumentReadCard|ReportReadCard $card,
     ): ToolResult {
         $outline = $body->outline();
         $entries = [];
         $length = strlen(json_encode($abstract, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
-        foreach (array_slice($outline, $read->offset - 1, self::OUTLINE_ENTRIES) as $heading) {
-            $short = mb_strcut($heading, 0, 70);
-            $length += strlen(json_encode($short, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)) + 1;
+        foreach (array_slice($outline, $position->offset - 1, self::OUTLINE_ENTRIES) as $heading) {
+            $excerpt = mb_strcut($heading, 0, 70);
+            $length += strlen(json_encode($excerpt, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)) + 1;
             if ($entries !== [] && $length > 6200) {
                 break;
             }
 
-            $entries[] = $short;
+            $entries[] = $excerpt;
         }
-        $next = $read->offset + count($entries);
+        $next = $position->offset + count($entries);
         $actions = $next <= count($outline) ? [$this->continuations->link(new Continuation(
-            $read->tool, $read->selector, $read->filters, $next, revision: $read->revision,
+            $position->tool, $position->selector, $position->filters, $next, revision: $position->revision,
         ), $key)] : [];
 
         return ToolResult::ok([
@@ -57,17 +57,17 @@ final readonly class PublicationPages
 
     public function comments(
         RecordIdentity $record,
-        Continuation $read,
+        Continuation $position,
         string $key,
         DocumentReadCard|ReportReadCard $card,
     ): ToolResult {
-        $page = $this->comments->list($record, new Page($read->filters['after_comment'] ?? null, 1));
-        $entry = $page->items[0] ?? null;
+        $page = $this->comments->list($record, new Page($position->filters['after_comment'] ?? null, 1));
+        $entry = $page->comments[0] ?? null;
         if ($entry === null) {
             return ToolResult::ok([...$card->toArray(), 'comments' => []]);
         }
         $comment = $entry->comment;
-        $answer = $this->chunks->page($comment->body, $read, $key, [
+        $commentPage = $this->chunks->page($comment->body, $position, $key, [
             ...$card->toArray(),
             'comment' => [
                 'id' => $comment->id,
@@ -76,16 +76,16 @@ final readonly class PublicationPages
                 'created_at' => $comment->createdAt,
             ],
         ]);
-        if ($answer->nextActions !== [] || $page->nextAfter === null) {
-            return $answer;
+        if ($commentPage->nextActions !== [] || $page->nextAfter === null) {
+            return $commentPage;
         }
 
-        return ToolResult::ok($answer->payload, [$this->continuations->link(new Continuation(
-            $read->tool,
-            $read->selector,
-            [...$read->filters, 'after_comment' => $page->nextAfter],
+        return ToolResult::ok($commentPage->responseFields, [$this->continuations->link(new Continuation(
+            $position->tool,
+            $position->selector,
+            [...$position->filters, 'after_comment' => $page->nextAfter],
             1,
-            revision: $read->revision,
+            revision: $position->revision,
         ), $key)]);
     }
 }

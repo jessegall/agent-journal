@@ -180,12 +180,12 @@ final class CallGroups
             return ' = \\'.ltrim((string) $parameter->getDefaultValueConstantName(), '\\');
         }
 
-        $value = $parameter->getDefaultValue();
+        $defaultArgument = $parameter->getDefaultValue();
 
         return match (true) {
-            $value instanceof UnitEnum => ' = \\'.$value::class.'::'.$value->name,
-            is_object($value) => ' = new \\'.$value::class.'()',
-            default => ' = '.str_replace(["array (\n)", 'NULL'], ['[]', 'null'], var_export($value, true)),
+            $defaultArgument instanceof UnitEnum => ' = \\'.$defaultArgument::class.'::'.$defaultArgument->name,
+            is_object($defaultArgument) => ' = new \\'.$defaultArgument::class.'()',
+            default => ' = '.str_replace(["array (\n)", 'NULL'], ['[]', 'null'], var_export($defaultArgument, true)),
         };
     }
 

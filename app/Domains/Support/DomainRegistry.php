@@ -84,17 +84,17 @@ final readonly class DomainRegistry
      */
     public function all(): array
     {
-        return array_values($this->entries);
+        return array_values($this->domainsByName);
     }
 
     public function has(string $name): bool
     {
-        return array_key_exists($name, $this->entries);
+        return array_key_exists($name, $this->domainsByName);
     }
 
     public function get(string $name): DomainEntry
     {
-        return $this->entries[$name] ?? throw DomainNotFound::for($name);
+        return $this->domainsByName[$name] ?? throw DomainNotFound::for($name);
     }
 
     /**
@@ -229,7 +229,11 @@ final readonly class DomainRegistry
         }
 
         foreach ($entry->requires as $requiredClass) {
-            self::refuseCycleFrom($domainsByName, $domainsByName[DomainEntry::nameOf($requiredClass)], [...$path, $entry->name]);
+            self::refuseCycleFrom(
+                $domainsByName,
+                $domainsByName[DomainEntry::nameOf($requiredClass)],
+                [...$path, $entry->name],
+            );
         }
     }
 

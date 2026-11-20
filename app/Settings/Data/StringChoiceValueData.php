@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Settings\Data;
 
 use App\Settings\Contracts\CatalogueValue;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -16,7 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class StringChoiceValueData extends Data implements CatalogueValue
 {
     public function __construct(
-        public readonly string $value,
+        #[MapName('value')]
+        public readonly string $selectedKey,
         #[LiteralTypeScriptType("'stringChoice'")]
         public readonly string $type = 'stringChoice',
     ) {}

@@ -20,11 +20,11 @@ final class ReadMeterTest extends TestCase
 
     public function test_a_measurement_counts_the_queries_of_its_work_and_keeps_its_value(): void
     {
-        User::factory()->create();
+        $user = User::factory()->create();
 
-        $measurement = $this->meter()->measure('count users', fn () => User::query()->count());
+        $measurement = $this->meter()->measure('count users', fn () => User::query()->whereKey($user->id)->count());
 
-        $this->assertSame(1, $measurement->value);
+        $this->assertSame(1, $measurement->measuredAnswer);
         $this->assertSame(1, $measurement->counts->queriesRun);
         $this->assertSame(['read' => 1, 'write' => 0], $measurement->counts->queriesByCategory);
     }

@@ -6,6 +6,7 @@ namespace App\Text\Data;
 
 use App\Text\Support\Section;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -16,11 +17,12 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class TextSections extends Data
 {
     /**
-     * @param  list<Section>  $items
+     * @param  list<Section>  $sections
      */
     public function __construct(
+        #[MapName('items')]
         #[DataCollectionOf(Section::class)]
-        public readonly array $items,
+        public readonly array $sections,
         public readonly int|null $nextAfterSection,
     ) {}
 }

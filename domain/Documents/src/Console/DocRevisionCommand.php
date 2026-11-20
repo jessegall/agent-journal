@@ -29,10 +29,10 @@ final class DocRevisionCommand extends Command
                 (string) $this->argument('number'),
                 (int) $this->argument('revision'),
             );
-            $historical = $revision->historical ? ' (historical)' : '';
+            $historicalLabel = $revision->historical ? ' (historical)' : '';
 
             return CommandReport::ending(self::SUCCESS)
-                ->line("doc {$revision->documentNumber}, revision {$revision->number}{$historical}: {$revision->title}")
+                ->line("doc {$revision->documentNumber}, revision {$revision->number}{$historicalLabel}: {$revision->title}")
                 ->line((string) $revision->abstract)
                 ->line('')
                 ->line((string) $revision->body);

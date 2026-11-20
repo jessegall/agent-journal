@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Calls;
 
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 
 /**
@@ -24,6 +25,7 @@ final class PartSummary extends Data
         public int|null $code,
         public string $capture,
         public array $bytes,
+        #[MapName('result')]
         public array $partSummary,
     ) {}
 }

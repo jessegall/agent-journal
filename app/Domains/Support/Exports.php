@@ -64,7 +64,7 @@ final class Exports
         return DeclaredExports::make()
             ->events(...array_map(fn (string $name) => $check->event($name), $exports->events))
             ->contracts(...array_map(fn (string $name) => $check->contract($name), $exports->contracts))
-            ->values(...array_map(fn (string $name) => $check->value($name), $exports->values))
+            ->values(...array_map(fn (string $name) => $check->value($name), $exports->valueClasses))
             ->commands(...array_map(fn (string $name) => $check->command($name), $exports->commands))
             ->exceptions(...array_map(fn (string $name) => $check->exception($name), $exports->exceptions))
             ->support(...array_map(fn (string $name) => $check->support($name), $exports->support))

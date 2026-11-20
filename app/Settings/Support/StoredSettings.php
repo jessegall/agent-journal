@@ -76,7 +76,11 @@ final readonly class StoredSettings
         }
 
         $enabled = $this->document->toggle($group->key)
-            ->map(fn (EncodedToggle $toggle) => $this->codec->decodeToggle($this->owner, $group, $toggle->value))
+            ->map(fn (EncodedToggle $toggle) => $this->codec->decodeToggle(
+                $this->owner,
+                $group,
+                $toggle->encodedToggle,
+            ))
             ->getOrElse($group->defaultEnabled);
 
         return $enabled
@@ -90,7 +94,11 @@ final readonly class StoredSettings
     public function string(StringSetting $setting): string
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeString($this->owner, $setting, $stored->value))
+            ->map(fn (EncodedSetting $stored) => $this->codec->decodeString(
+                $this->owner,
+                $setting,
+                $stored->encodedSetting,
+            ))
             ->getOrElse($setting->default);
     }
 
@@ -100,7 +108,11 @@ final readonly class StoredSettings
     public function boolean(BooleanSetting $setting): bool
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeBoolean($this->owner, $setting, $stored->value))
+            ->map(fn (EncodedSetting $stored) => $this->codec->decodeBoolean(
+                $this->owner,
+                $setting,
+                $stored->encodedSetting,
+            ))
             ->getOrElse($setting->default);
     }
 
@@ -110,7 +122,11 @@ final readonly class StoredSettings
     public function integer(IntegerSetting $setting): int
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeInteger($this->owner, $setting, $stored->value))
+            ->map(fn (EncodedSetting $stored) => $this->codec->decodeInteger(
+                $this->owner,
+                $setting,
+                $stored->encodedSetting,
+            ))
             ->getOrElse($setting->default);
     }
 
@@ -120,7 +136,11 @@ final readonly class StoredSettings
     public function decimal(DecimalSetting $setting): Decimal
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeDecimal($this->owner, $setting, $stored->value))
+            ->map(fn (EncodedSetting $stored) => $this->codec->decodeDecimal(
+                $this->owner,
+                $setting,
+                $stored->encodedSetting,
+            ))
             ->getOrElse($setting->default);
     }
 
@@ -135,7 +155,11 @@ final readonly class StoredSettings
     public function choice(ChoiceSetting $setting): string|int
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeChoice($this->owner, $setting, $stored->value))
+            ->map(fn (EncodedSetting $stored) => $this->codec->decodeChoice(
+                $this->owner,
+                $setting,
+                $stored->encodedSetting,
+            ))
             ->getOrElse($setting->default);
     }
 
@@ -150,7 +174,11 @@ final readonly class StoredSettings
     public function enum(EnumSetting $setting): BackedEnum
     {
         return $this->document->setting($setting->key)
-            ->map(fn (EncodedSetting $stored) => $this->codec->decodeEnum($this->owner, $setting, $stored->value))
+            ->map(fn (EncodedSetting $stored) => $this->codec->decodeEnum(
+                $this->owner,
+                $setting,
+                $stored->encodedSetting,
+            ))
             ->getOrElse($setting->default);
     }
 }

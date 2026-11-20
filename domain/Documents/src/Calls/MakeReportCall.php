@@ -27,13 +27,14 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 final class MakeReportCall extends Data implements JournalCall
 {
     /**
-     * @param  list<string>  $about
+     * @param  list<string>  $relatedRecords
      */
     public function __construct(
         public string $title,
         public string $abstract,
         #[PresentList]
-        public array $about,
+        #[MapName('about')]
+        public array $relatedRecords,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,

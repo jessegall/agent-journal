@@ -39,7 +39,7 @@ final class StartProgramTest extends TestCase
     {
         $exports = CoreApi::exports();
 
-        $this->assertContains(ProgramKey::class, $exports->values);
-        $this->assertContains(ProviderKey::class, $exports->values);
+        $this->assertContains(ProgramKey::class, $exports->valueClasses);
+        $this->assertContains(ProviderKey::class, $exports->valueClasses);
     }
 }

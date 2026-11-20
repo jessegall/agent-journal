@@ -45,7 +45,10 @@ final readonly class NavigationRecords implements NavigationRecordsContract
             array_push($navigationLinks, ...$this->visible($root, $visited));
         }
 
-        return NavigationData::from(['items' => $navigationLinks, 'current' => $this->current($request, $navigationLinks)]);
+        return NavigationData::from([
+            'items' => $navigationLinks,
+            'current' => $this->current($request, $navigationLinks),
+        ]);
     }
 
     /**
@@ -57,7 +60,9 @@ final readonly class NavigationRecords implements NavigationRecordsContract
 
         foreach ($this->countedItems($this->declarations->navigation()) as $navigation) {
             try {
-                $counts[$navigation->key] = $this->container->make((string) $navigation->item->count)->count();
+                $counts[$navigation->key] = $this->container
+                    ->make((string) $navigation->navigationItem->count)
+                    ->count();
             } catch (Throwable $failure) {
                 $this->log->error(
                     "The count of {$navigation->key} failed: {$failure->getMessage()}",
@@ -97,13 +102,13 @@ final readonly class NavigationRecords implements NavigationRecordsContract
         // A value the item does not have is left out, so its key is absent in the browser.
         return [NavigationItemData::from(array_filter([
             'key' => $navigation->key,
-            'label' => $navigation->item->label,
+            'label' => $navigation->navigationItem->label,
             'children' => $children,
-            'atFoot' => $navigation->item->atFoot,
-            'counted' => $navigation->item->count !== null,
-            'icon' => $navigation->item->icon,
+            'atFoot' => $navigation->navigationItem->atFoot,
+            'counted' => $navigation->navigationItem->count !== null,
+            'icon' => $navigation->navigationItem->icon,
             'url' => $navigation->page === null ? $firstChildUrl : $this->urlOf($navigation),
-            'group' => $navigation->item->group,
+            'group' => $navigation->navigationItem->group,
         ], fn (mixed $optionalField) => $optionalField !== null))];
     }
 
@@ -111,7 +116,7 @@ final readonly class NavigationRecords implements NavigationRecordsContract
     {
         return $this->owners->isAvailable($navigation->owner)
             && ($navigation->page === null || $this->owners->isAvailable($navigation->page->owner))
-            && $this->visibility->allow(array_filter([$navigation->item->visibility]))
+            && $this->visibility->allow(array_filter([$navigation->navigationItem->visibility]))
             && ($navigation->page === null || $this->visibility->allow($navigation->page->visibilityChecks()));
     }
 
@@ -120,11 +125,11 @@ final readonly class NavigationRecords implements NavigationRecordsContract
      */
     private function childrenOf(RegisteredNavigation $navigation): array
     {
-        if ($navigation->item->childrenResolver === null) {
+        if ($navigation->navigationItem->childrenResolver === null) {
             return $navigation->children;
         }
 
-        $resolver = $this->container->make($navigation->item->childrenResolver);
+        $resolver = $this->container->make($navigation->navigationItem->childrenResolver);
 
         return [
             ...$navigation->children,
@@ -137,9 +142,11 @@ final readonly class NavigationRecords implements NavigationRecordsContract
 
     private function urlOf(RegisteredNavigation $navigation): string
     {
-        $url = $this->urls->route($navigation->page->routeName(), $navigation->item->routeValues, false);
+        $url = $this->urls->route($navigation->page->routeName(), $navigation->navigationItem->routeValues, false);
 
-        return $navigation->item->queryValues === [] ? $url : $url.'?'.http_build_query($navigation->item->queryValues);
+        $query = $navigation->navigationItem->queryValues;
+
+        return $query === [] ? $url : $url.'?'.http_build_query($query);
     }
 
     /**
@@ -153,20 +160,20 @@ final readonly class NavigationRecords implements NavigationRecordsContract
         $groupPositions = [];
 
         foreach ($roots as $root) {
-            $group = (string) $root->item->group;
-            $groupPositions[$group] = min($groupPositions[$group] ?? PHP_INT_MAX, $root->item->position);
+            $group = (string) $root->navigationItem->group;
+            $groupPositions[$group] = min($groupPositions[$group] ?? PHP_INT_MAX, $root->navigationItem->position);
         }
 
         usort($roots, fn (RegisteredNavigation $one, RegisteredNavigation $other) => [
             $one->page
-                ?->key !== 'web.home', $groupPositions[(string) $one->item->group], $one
-                ->item
+                ?->key !== 'web.home', $groupPositions[(string) $one->navigationItem->group], $one
+                ->navigationItem
                 ->position, $one
                 ->key,
         ] <=> [
             $other->page
-                ?->key !== 'web.home', $groupPositions[(string) $other->item->group], $other
-                ->item
+                ?->key !== 'web.home', $groupPositions[(string) $other->navigationItem->group], $other
+                ->navigationItem
                 ->position, $other
                 ->key,
         ]);
@@ -227,7 +234,7 @@ final readonly class NavigationRecords implements NavigationRecordsContract
             return -1;
         }
 
-        $routeArguments = [...$navigation->item->routeValues, ...$navigation->item->queryValues];
+        $routeArguments = [...$navigation->navigationItem->routeValues, ...$navigation->navigationItem->queryValues];
         $actual = [...$request->query->all(), ...$request->route()->parameters()];
 
         foreach ($routeArguments as $name => $optionalField) {
@@ -259,7 +266,9 @@ final readonly class NavigationRecords implements NavigationRecordsContract
                 continue;
             }
 
-            if ($navigation->item->count !== null && is_subclass_of($navigation->item->count, CountResolver::class)) {
+            $countResolver = $navigation->navigationItem->count;
+
+            if ($countResolver !== null && is_subclass_of($countResolver, CountResolver::class)) {
                 $counted[] = $navigation;
             }
 

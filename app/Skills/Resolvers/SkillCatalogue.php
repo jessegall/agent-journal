@@ -104,11 +104,11 @@ final readonly class SkillCatalogue implements SkillResolver
 
     public function all(): array
     {
-        return array_values($this->entries);
+        return array_values($this->skillsByKey);
     }
 
     public function find(SkillKey $key): SkillEntry
     {
-        return $this->entries[$key->key] ?? throw SkillMissing::for($key);
+        return $this->skillsByKey[$key->key] ?? throw SkillMissing::for($key);
     }
 }

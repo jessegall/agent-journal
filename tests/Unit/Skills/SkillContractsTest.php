@@ -57,7 +57,7 @@ final class SkillContractsTest extends TestCase
             SkillContext::class,
             Conditions::class,
         ] as $value) {
-            $this->assertContains($value, $exports->values);
+            $this->assertContains($value, $exports->valueClasses);
         }
 
         foreach ([

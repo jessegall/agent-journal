@@ -12,11 +12,11 @@ namespace App\Reads\Values;
 final readonly class Measurement
 {
     /**
-     * @param  TValue  $value
+     * @param  TValue  $measuredAnswer
      */
     public function __construct(
         public string $label,
         public ReadCounts $counts,
-        public mixed $value,
+        public mixed $measuredAnswer,
     ) {}
 }

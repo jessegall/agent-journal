@@ -17,7 +17,7 @@ final readonly class Exports
     /**
      * @param  list<class-string<Event>>  $events
      * @param  list<class-string>  $contracts
-     * @param  list<class-string>  $values
+     * @param  list<class-string>  $valueClasses
      * @param  list<class-string>  $commands
      * @param  list<class-string<Throwable>>  $exceptions
      * @param  list<class-string>  $support
@@ -25,7 +25,7 @@ final readonly class Exports
     private function __construct(
         public array $events,
         public array $contracts,
-        public array $values,
+        public array $valueClasses,
         public array $commands,
         public array $exceptions,
         public array $support,
@@ -46,7 +46,7 @@ final readonly class Exports
         $lists = [
             'events' => $builder->events,
             'contracts' => $builder->contracts,
-            'values' => $builder->values,
+            'values' => $builder->valueClasses,
             'commands' => $builder->commands,
             'exceptions' => $builder->exceptions,
             'support' => $builder->support,
@@ -72,7 +72,7 @@ final readonly class Exports
         return new self(
             $builder->events,
             $builder->contracts,
-            $builder->values,
+            $builder->valueClasses,
             $builder->commands,
             $builder->exceptions,
             $builder->support,
@@ -89,7 +89,7 @@ final readonly class Exports
         return [
             ...$this->events,
             ...$this->contracts,
-            ...$this->values,
+            ...$this->valueClasses,
             ...$this->commands,
             ...$this->exceptions,
             ...$this->support,

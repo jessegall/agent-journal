@@ -56,8 +56,8 @@ final readonly class DocumentCalls
         string $mode,
         string|null $section,
         string|null $body,
-        string|null $old,
-        string|null $new,
+        string|null $originalText,
+        string|null $replacementText,
         string|null $title,
         string|null $abstract,
         CallKey $requestKey = new CallKey(),
@@ -70,8 +70,8 @@ final readonly class DocumentCalls
             'mode' => $mode,
             'section' => $section,
             'body' => $body,
-            'old' => $old,
-            'new' => $new,
+            'old' => $originalText,
+            'new' => $replacementText,
             'title' => $title,
             'abstract' => $abstract,
             'requestKey' => $requestKey,
@@ -144,12 +144,12 @@ final readonly class DocumentCalls
     }
 
     /**
-     * @param  list<string>  $about
+     * @param  list<string>  $relatedRecords
      */
     public function makeDocument(
         string $title,
         string $abstract,
-        array $about,
+        array $relatedRecords,
         CallKey $requestKey = new CallKey(),
         string|null $body = null,
         string|null $uploadId = null,
@@ -157,7 +157,7 @@ final readonly class DocumentCalls
         return $this->sender->send(MakeDocumentCall::from([
             'title' => $title,
             'abstract' => $abstract,
-            'about' => $about,
+            'about' => $relatedRecords,
             'requestKey' => $requestKey,
             'body' => $body,
             'uploadId' => $uploadId,
@@ -165,12 +165,12 @@ final readonly class DocumentCalls
     }
 
     /**
-     * @param  list<string>  $about
+     * @param  list<string>  $relatedRecords
      */
     public function makeReport(
         string $title,
         string $abstract,
-        array $about,
+        array $relatedRecords,
         CallKey $requestKey = new CallKey(),
         string|null $body = null,
         string|null $uploadId = null,
@@ -178,7 +178,7 @@ final readonly class DocumentCalls
         return $this->sender->send(MakeReportCall::from([
             'title' => $title,
             'abstract' => $abstract,
-            'about' => $about,
+            'about' => $relatedRecords,
             'requestKey' => $requestKey,
             'body' => $body,
             'uploadId' => $uploadId,

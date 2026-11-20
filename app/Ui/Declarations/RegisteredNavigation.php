@@ -21,7 +21,7 @@ final readonly class RegisteredNavigation
      */
     private function __construct(
         public DomainUi $owner,
-        public NavigationItem $item,
+        public NavigationItem $navigationItem,
         public string $key,
         public RegisteredPage|null $page,
         public array $children,
@@ -30,14 +30,14 @@ final readonly class RegisteredNavigation
     /**
      * @param  array<string, RegisteredPage>  $pages  the pages of every installed domain by full key
      */
-    public static function of(DomainUi $owner, NavigationItem $item, array $pages): self
+    public static function of(DomainUi $owner, NavigationItem $navigationItem, array $pages): self
     {
-        $key = $owner->fullKey('navigation', $item->key);
+        $key = $owner->fullKey('navigation', $navigationItem->key);
 
         $namedClasses = [
-            NavigationChildren::class => $item->childrenResolver,
-            CountResolver::class => $item->count,
-            VisibilityCheck::class => $item->visibility,
+            NavigationChildren::class => $navigationItem->childrenResolver,
+            CountResolver::class => $navigationItem->count,
+            VisibilityCheck::class => $navigationItem->visibility,
         ];
 
         foreach (array_filter($namedClasses) as $interface => $className) {
@@ -46,10 +46,13 @@ final readonly class RegisteredNavigation
 
         return new self(
             owner: $owner,
-            item: $item,
+            navigationItem: $navigationItem,
             key: $key,
-            page: self::checkedPage($owner, $key, $item, $pages),
-            children: array_map(fn (NavigationItem $child) => self::of($owner, $child, $pages), $item->children),
+            page: self::checkedPage($owner, $key, $navigationItem, $pages),
+            children: array_map(
+                fn (NavigationItem $child) => self::of($owner, $child, $pages),
+                $navigationItem->children,
+            ),
         );
     }
 
@@ -69,14 +72,14 @@ final readonly class RegisteredNavigation
     private static function checkedPage(
         DomainUi $owner,
         string $key,
-        NavigationItem $item,
+        NavigationItem $navigationItem,
         array $pages,
     ): RegisteredPage|null {
-        if ($item->page === null) {
+        if ($navigationItem->page === null) {
             return null;
         }
 
-        $pageKey = $owner->fullKey('page', $item->page);
+        $pageKey = $owner->fullKey('page', $navigationItem->page);
 
         if (! array_key_exists($pageKey, $pages)) {
             throw InvalidNavigationDeclaration::pageMissing($key, $pageKey);
@@ -84,7 +87,7 @@ final readonly class RegisteredNavigation
 
         $page = $pages[$pageKey];
 
-        if (! $page->path->isFilledBy(array_keys($item->routeValues))) {
+        if (! $page->path->isFilledBy(array_keys($navigationItem->routeValues))) {
             throw InvalidNavigationDeclaration::routeValuesMismatch($key, $pageKey, $page->path->path);
         }
 

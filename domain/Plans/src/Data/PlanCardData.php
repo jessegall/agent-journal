@@ -50,6 +50,6 @@ final class PlanCardData extends Data
             'totalTasks' => $card->progress->total,
             'phase' => $card->currentPhase === null ? null : (string) $card->currentPhase,
             'holder' => $card->holder->map(AssignmentData::ofHolder(...))->getOrElse(null),
-        ], fn (mixed $value) => $value !== null));
+        ], fn (mixed $fieldValue) => $fieldValue !== null));
     }
 }

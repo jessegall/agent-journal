@@ -41,7 +41,7 @@ final class PlansServiceProvider extends ServiceProvider
         if ($exceptions instanceof Handler) {
             $exceptions->map(
                 PlanMissing::class,
-                fn (PlanMissing $missing) => new NotFoundHttpException(previous: $missing),
+                fn (PlanMissing $missingPlan) => new NotFoundHttpException(previous: $missingPlan),
             );
             $exceptions->renderable(fn (StartDenied $denied) => $this->app->make(Redirector::class)
                 ->back(303)

@@ -36,58 +36,62 @@ interface SettingCommands
     /**
      * @throws SettingHandleUnknown
      */
-    public function string(StringSetting $setting, string $value, int $expectedRevision): SetStringSetting;
+    public function string(StringSetting $setting, string $settingInput, int $expectedRevision): SetStringSetting;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function boolean(BooleanSetting $setting, bool $value, int $expectedRevision): SetBooleanSetting;
+    public function boolean(BooleanSetting $setting, bool $settingInput, int $expectedRevision): SetBooleanSetting;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function integer(IntegerSetting $setting, int $value, int $expectedRevision): SetIntegerSetting;
+    public function integer(IntegerSetting $setting, int $settingInput, int $expectedRevision): SetIntegerSetting;
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function decimal(DecimalSetting $setting, Decimal $value, int $expectedRevision): SetDecimalSetting;
+    public function decimal(DecimalSetting $setting, Decimal $settingInput, int $expectedRevision): SetDecimalSetting;
 
     /**
      * @param  ChoiceSetting<string>  $setting
      *
      * @throws SettingHandleUnknown
      */
-    public function stringChoice(ChoiceSetting $setting, string $value, int $expectedRevision): SetStringChoice;
+    public function stringChoice(ChoiceSetting $setting, string $settingInput, int $expectedRevision): SetStringChoice;
 
     /**
      * @param  ChoiceSetting<int>  $setting
      *
      * @throws SettingHandleUnknown
      */
-    public function integerChoice(ChoiceSetting $setting, int $value, int $expectedRevision): SetIntegerChoice;
+    public function integerChoice(ChoiceSetting $setting, int $settingInput, int $expectedRevision): SetIntegerChoice;
 
     /**
      * @template TEnum of BackedEnum
      *
      * @param  EnumSetting<TEnum>  $setting
-     * @param  TEnum  $value
+     * @param  TEnum  $settingInput
      *
      * @throws SettingHandleUnknown
      * @throws SettingValueInvalid
      */
-    public function enumString(EnumSetting $setting, BackedEnum $value, int $expectedRevision): SetStringChoice;
+    public function enumString(EnumSetting $setting, BackedEnum $settingInput, int $expectedRevision): SetStringChoice;
 
     /**
      * @template TEnum of BackedEnum
      *
      * @param  EnumSetting<TEnum>  $setting
-     * @param  TEnum  $value
+     * @param  TEnum  $settingInput
      *
      * @throws SettingHandleUnknown
      * @throws SettingValueInvalid
      */
-    public function enumInteger(EnumSetting $setting, BackedEnum $value, int $expectedRevision): SetIntegerChoice;
+    public function enumInteger(
+        EnumSetting $setting,
+        BackedEnum $settingInput,
+        int $expectedRevision,
+    ): SetIntegerChoice;
 
     /**
      * @throws SettingHandleUnknown

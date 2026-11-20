@@ -25,7 +25,7 @@ final readonly class TakeNextMessagesController
                 'firstRead' => $messageRead->firstRead,
                 'takenUp' => $messageRead->takenUp,
             ],
-            $batch->results,
+            $batch->messageReads,
         )]);
     }
 }

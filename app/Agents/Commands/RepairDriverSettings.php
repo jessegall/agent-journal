@@ -30,7 +30,7 @@ final readonly class RepairDriverSettings extends Command implements AuthorizedC
     public function __construct(
         public string $requestId,
         public int $expectedRowVersion,
-        public string $value,
+        public string $replacementText,
         public string $reason,
     ) {}
 

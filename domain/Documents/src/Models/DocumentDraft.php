@@ -75,17 +75,17 @@ final class DocumentDraft extends Model implements ReadableModel
     /**
      * Opens the draft of a locked document for this editor, starting from its current revision.
      */
-    public static function openFor(Document $document, DocumentRevision $base, ActorIdentity $editor): self
+    public static function openFor(Document $document, DocumentRevision $baseRevision, ActorIdentity $editor): self
     {
         return self::query()->create([
             'document_id' => $document->id,
             'token' => Str::random(40),
             'author_type' => $editor->type,
             'author_id' => $editor->id,
-            'base_revision_number' => $base->number,
-            'title' => $base->title,
-            'abstract' => $base->abstract,
-            'body' => $base->body,
+            'base_revision_number' => $baseRevision->number,
+            'title' => $baseRevision->title,
+            'abstract' => $baseRevision->abstract,
+            'body' => $baseRevision->body,
             'opened_at' => CarbonImmutable::now(),
         ]);
     }
@@ -153,9 +153,9 @@ final class DocumentDraft extends Model implements ReadableModel
         return "{$this->author_type->value} {$this->author_id}";
     }
 
-    public function hasChangesFrom(DocumentRevision $base): bool
+    public function hasChangesFrom(DocumentRevision $baseRevision): bool
     {
-        return $this->title !== $base->title || $this->abstract !== $base->abstract || $this->body !== $base->body;
+        return $this->title !== $baseRevision->title || $this->abstract !== $baseRevision->abstract || $this->body !== $baseRevision->body;
     }
 
     public function reference(Document $document): DraftReference
@@ -176,19 +176,19 @@ final class DocumentDraft extends Model implements ReadableModel
      */
     public function closeInto(
         Document $document,
-        DocumentRevision $base,
+        DocumentRevision $baseRevision,
         CloseCause $cause,
         Actor|null $closer,
         string|null $reason,
     ): DocumentClose {
-        $published = $this->hasChangesFrom($base);
+        $published = $this->hasChangesFrom($baseRevision);
         $resultNumber = $published ? $document->addRevision(
             $this->title,
             $this->abstract,
             $this->body,
             $this->author_type,
             $this->author_id,
-        )->number : $base->number;
+        )->number : $baseRevision->number;
         $close = DocumentClose::record($this, $resultNumber, $cause, $closer, $reason, $published);
 
         if ($published) {

@@ -44,7 +44,9 @@ final readonly class OperationsResolver
 
     private function page(Operation $operation, int $offset): ToolResult
     {
-        $receiptFields = is_array($operation->result) ? $operation->result : ['value' => $operation->result];
+        $receiptFields = is_array($operation->commandReply)
+            ? $operation->commandReply
+            : ['value' => $operation->commandReply];
         $outcomes = is_array($receiptFields['outcomes'] ?? null) ? array_values($receiptFields['outcomes']) : [];
         unset($receiptFields['outcomes']);
 

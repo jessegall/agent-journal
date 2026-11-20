@@ -37,7 +37,7 @@ final class DiscardUploadTool extends JournalWriteTool
         return new DiscardUpload($arguments->ulid('upload_id'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $commandResult): ToolResult
     {
         return ToolResult::ok([]);
     }

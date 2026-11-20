@@ -35,8 +35,8 @@ final class AnswerMessageTool extends JournalWriteTool
         return new AnswerMessage($arguments->ulid('message_id'), $arguments->ulid('reply_id'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $replyId): ToolResult
     {
-        return ToolResult::ok(['reply_id' => $result]);
+        return ToolResult::ok(['reply_id' => $replyId]);
     }
 }

@@ -30,7 +30,7 @@ final readonly class SetDecimalSettingHandler implements CommandHandler
 
         return $this->writer->setValue(
             $setting,
-            $this->codec->encodeDecimal($command->setting->owner, $setting, $command->value),
+            $this->codec->encodeDecimal($command->setting->owner, $setting, $command->settingDecimal),
             $command->expectedRevision,
         );
     }

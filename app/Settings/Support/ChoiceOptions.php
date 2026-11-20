@@ -52,20 +52,20 @@ final readonly class ChoiceOptions
         $optionCatalog = [];
 
         foreach ($options as $option) {
-            if (get_debug_type($option->value) !== get_debug_type($default)) {
+            if (get_debug_type($option->optionKey) !== get_debug_type($default)) {
                 throw SettingDeclarationInvalid::mixedOptionTypes($key);
             }
 
-            if (is_int($option->value)
-                && ($option->value < IntegerSetting::SMALLEST || $option->value > IntegerSetting::LARGEST)) {
+            if (is_int($option->optionKey)
+                && ($option->optionKey < IntegerSetting::SMALLEST || $option->optionKey > IntegerSetting::LARGEST)) {
                 throw SettingDeclarationInvalid::badBounds($key);
             }
 
-            if (in_array($option->value, $optionCatalog, true)) {
+            if (in_array($option->optionKey, $optionCatalog, true)) {
                 throw SettingDeclarationInvalid::optionTwice($key);
             }
 
-            $optionCatalog[] = $option->value;
+            $optionCatalog[] = $option->optionKey;
         }
 
         $checked = new self($options);
@@ -80,10 +80,10 @@ final readonly class ChoiceOptions
     /**
      * Whether one option has exactly this value.
      */
-    public function contains(string|int $value): bool
+    public function contains(string|int $optionKey): bool
     {
         foreach ($this->options as $option) {
-            if ($option->value === $value) {
+            if ($option->optionKey === $optionKey) {
                 return true;
             }
         }
@@ -94,11 +94,11 @@ final readonly class ChoiceOptions
     /**
      * A choice value as the catalogue shows it: a whole-number choice or a text choice.
      */
-    public static function valueData(string|bool|int|Decimal|BackedEnum $value): CatalogueValue
+    public static function valueData(string|bool|int|Decimal|BackedEnum $optionKey): CatalogueValue
     {
-        return is_int($value)
-            ? IntegerChoiceValueData::from(['value' => $value])
-            : StringChoiceValueData::from(['value' => $value]);
+        return is_int($optionKey)
+            ? IntegerChoiceValueData::from(['value' => $optionKey])
+            : StringChoiceValueData::from(['value' => $optionKey]);
     }
 
     /**
@@ -108,9 +108,9 @@ final readonly class ChoiceOptions
      */
     public static function constraintsData(array $options): CatalogueConstraints
     {
-        $shown = array_map(fn (Choice $option) => ['value' => $option->value, 'label' => $option->label], $options);
+        $shown = array_map(fn (Choice $option) => ['value' => $option->optionKey, 'label' => $option->label], $options);
 
-        return is_int($options[0]->value)
+        return is_int($options[0]->optionKey)
             ? IntegerChoiceConstraintsData::from(['options' => IntegerChoiceOptionData::collect($shown)])
             : StringChoiceConstraintsData::from(['options' => StringChoiceOptionData::collect($shown)]);
     }

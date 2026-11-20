@@ -90,7 +90,7 @@ final class CommentsAndReadsTest extends TestCase
         $this->comment('Looks right.', WholeRecord::Record);
         $this->comment('Which editor?', TextRange::quote('1', 2, 2, 'the editor', 5, 15));
 
-        $items = $this->comments()->list($this->document(), new Page())->items;
+        $items = $this->comments()->list($this->document(), new Page())->comments;
 
         $this->assertSame(['Looks right.', 'Which editor?'], array_map(fn ($item) => $item->comment->body, $items));
         $this->assertInstanceOf(RecordCommentView::class, $items[0]);
@@ -166,7 +166,7 @@ final class CommentsAndReadsTest extends TestCase
         try {
             $this->comment('Hm.', TextRange::quote('1', 2, 2, 'the plan', 5, 13));
         } finally {
-            $this->assertSame([], $this->comments()->list($this->document(), new Page())->items);
+            $this->assertSame([], $this->comments()->list($this->document(), new Page())->comments);
         }
     }
 
@@ -181,7 +181,7 @@ final class CommentsAndReadsTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $comment = $this->comments()->list($this->document(), new Page())->items[0]->comment;
+        $comment = $this->comments()->list($this->document(), new Page())->comments[0]->comment;
         $this->assertSame([ActorType::Agent, $agent->id], [$comment->authorType, $comment->authorId]);
     }
 
@@ -191,7 +191,7 @@ final class CommentsAndReadsTest extends TestCase
 
         $this->assertStringNotContainsString(
             '<script>',
-            $this->comments()->list($this->document(), new Page())->items[0]->comment->bodyHtml,
+            $this->comments()->list($this->document(), new Page())->comments[0]->comment->bodyHtml,
         );
     }
 

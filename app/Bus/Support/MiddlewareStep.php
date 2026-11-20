@@ -46,7 +46,7 @@ final readonly class MiddlewareStep
             $this->assertValidReplacement($call, $passed, $name);
 
             try {
-                return $record->result = $next($passed);
+                return $record->continuationReply = $next($passed);
             } catch (Throwable $failure) {
                 $record->failure = $failure;
 
@@ -62,7 +62,7 @@ final readonly class MiddlewareStep
             throw MiddlewareSwallowedFailure::by($name, $record->failure);
         }
 
-        if ($middlewareReply !== $record->result) {
+        if ($middlewareReply !== $record->continuationReply) {
             throw CommandResultChanged::by($name);
         }
 

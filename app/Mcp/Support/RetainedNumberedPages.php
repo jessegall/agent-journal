@@ -73,7 +73,7 @@ final readonly class RetainedNumberedPages implements NumberedPages
      */
     private function fit(Continuation $continuation, ListedPage $page, RetainedEntries $retainedCards): ToolResult
     {
-        $cards = $retainedCards->entries;
+        $cards = $retainedCards->records;
         $count = count($cards);
 
         while ($count > 1 && ! $this->budget->payloadFits(

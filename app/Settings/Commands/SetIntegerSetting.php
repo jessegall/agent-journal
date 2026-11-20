@@ -30,7 +30,7 @@ final readonly class SetIntegerSetting extends Command implements AuthorizedComm
 {
     public function __construct(
         public SettingReference $setting,
-        public int $value,
+        public int $settingNumber,
         public int $expectedRevision,
     ) {}
 

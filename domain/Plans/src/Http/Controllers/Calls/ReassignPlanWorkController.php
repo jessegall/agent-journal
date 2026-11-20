@@ -21,8 +21,12 @@ final readonly class ReassignPlanWorkController
         AssigneeResolver $assignees,
     ): PlanWorkResultData {
         $root = $call->rootRecord();
-        $result = $commands->run(new ReassignPlanWork($root, $call->expected(), $call->recipient()));
+        $assignmentResult = $commands->run(new ReassignPlanWork($root, $call->expected(), $call->recipient()));
 
-        return PlanWorkResultData::of($root, $result, $assignees->holdersOf($result->currentAssignments()));
+        return PlanWorkResultData::of(
+            $root,
+            $assignmentResult,
+            $assignees->holdersOf($assignmentResult->currentAssignments()),
+        );
     }
 }

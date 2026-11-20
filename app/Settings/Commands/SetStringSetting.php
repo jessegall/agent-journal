@@ -30,7 +30,7 @@ final readonly class SetStringSetting extends Command implements AuthorizedComma
 {
     public function __construct(
         public SettingReference $setting,
-        public string $value,
+        public string $settingText,
         public int $expectedRevision,
     ) {}
 

@@ -28,11 +28,11 @@ final readonly class SystemAuthorizerProvider implements AuthorizerProvider
         $authority = $this->actors->authority();
         $entry = $authority instanceof TrustedEntryAuthority ? $authority->entry : '';
 
-        if (! $this->entries->has($entry)) {
+        if (! $this->systemPolicies->has($entry)) {
             throw ActorNotAllowed::outsideTrustedEntry($authority->description());
         }
 
-        return new SystemEntryAuthorizer($this->entries->of($entry));
+        return new SystemEntryAuthorizer($this->systemPolicies->of($entry));
     }
 
     /**

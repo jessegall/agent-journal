@@ -36,11 +36,11 @@ final readonly class DocumentSearch implements SearchContribution
             'page' => $page,
             'perPage' => self::PAGE_SIZE,
         ]));
-        $hits = array_map(fn (DocumentCard $doc) => SearchHit::matching(
+        $hits = array_map(fn (DocumentCard $document) => SearchHit::matching(
             $this->recordType(),
-            $doc->id,
-            $doc->title,
-            $doc->title."\n".(is_string($doc->snippet) ? $doc->snippet : $doc->abstract),
+            $document->id,
+            $document->title,
+            $document->title."\n".(is_string($document->snippet) ? $document->snippet : $document->abstract),
             $query,
         ), $matches->rows);
 

@@ -38,9 +38,9 @@ final readonly class ResultBudget
      */
     public function fit(ToolResult $toolResult): ResponseFactory
     {
-        if (! $this->payloadFits($toolResult->payload)) {
+        if (! $this->payloadFits($toolResult->responseFields)) {
             throw ResultTooLarge::for('payload', self::payloadBytes(
-                $toolResult->payload,
+                $toolResult->responseFields,
             ), self::RESULT_BYTES - self::RECOVERY_BYTES);
         }
 

@@ -39,7 +39,10 @@ final readonly class RecordStopResults extends Command
      */
     public function submissionDigest(): string
     {
-        $fingerprints = array_map(fn (StopResultReport $stopReport): array => $stopReport->fingerprint(), $this->results);
+        $fingerprints = array_map(
+            fn (StopResultReport $stopReport): array => $stopReport->fingerprint(),
+            $this->stopReports,
+        );
         sort($fingerprints);
 
         return hash('sha256', json_encode(
@@ -57,7 +60,7 @@ final readonly class RecordStopResults extends Command
     {
         $hashes = [];
 
-        foreach ($this->results as $stopReport) {
+        foreach ($this->stopReports as $stopReport) {
             $hashes[$stopReport->conditionKey] = $stopReport->definitionHash;
         }
 
@@ -69,6 +72,6 @@ final readonly class RecordStopResults extends Command
      */
     public function isEachConditionReportedOnce(): bool
     {
-        return count($this->definitionHashes()) === count($this->results);
+        return count($this->definitionHashes()) === count($this->stopReports);
     }
 }

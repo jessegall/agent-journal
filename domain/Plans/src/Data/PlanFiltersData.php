@@ -57,7 +57,7 @@ final class PlanFiltersData extends Data
      */
     public function toQuery(): array
     {
-        return array_filter($this->toArray(), fn (mixed $value) => $value !== '' && $value !== 1);
+        return array_filter($this->toArray(), fn (mixed $filterValue) => $filterValue !== '' && $filterValue !== 1);
     }
 
     public function toDomain(): PlanFilters

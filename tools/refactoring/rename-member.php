@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 /**
- * Rename a method, a property or a constant of a class with every reference to it, or a variable within a folder.
+ * Rename a class member and its references, or a variable within a folder, file or function.
  *
  *   php tools/refactoring/rename-member.php method   App\\Core\\Actors\\Support\\ActorIdentity isSameAs matches
  *   php tools/refactoring/rename-member.php property App\\Core\\Actors\\Support\\ActorIdentity kind type
  *   php tools/refactoring/rename-member.php constant App\\Core\\Web\\Pages\\LoginPage COMPONENT PAGE
  *   php tools/refactoring/rename-member.php variable app/Core/Assignments kind type
- *   php tools/refactoring/rename-member.php variable app/Core/Assignments/Assignment.php kind type
+ *   php tools/refactoring/rename-member.php variable app/Example.php:17 count itemCount
  *   php tools/refactoring/rename-member.php --list=tools/refactoring/members.txt
  *   php tools/refactoring/rename-member.php ... --dry-run
  *   php tools/refactoring/rename-member.php --test
@@ -19,7 +19,8 @@ declare(strict_types=1);
  * argument. Instance calls and accesses are found by name, because their receiver's class is not always written, so
  * the rename is refused when another unrelated project class declares a member of the same name: name it with
  * --with=App\\Other\\Class to rename it as well. A variable is renamed wherever it is used in the PHP files under the
- * folder, including closure uses and @param lines. Strings that spell the old name are listed for checking by hand,
+ * folder or file, including closure uses and @param lines. A line selects a parameter of the closure there.
+ * Strings that spell the old name are listed for checking by hand,
  * never changed. A list file holds one rename per line in the same words; blank lines and # lines are skipped.
  */
 
@@ -41,7 +42,19 @@ final class RenameRefused extends RuntimeException
 {
     public static function malformed(): self
     {
-        return new self('a rename is: method|property|constant <class> <old> <new>, or variable <folder> <old> <new>');
+        return new self(
+            'a rename is: method|property|constant <class> <old> <new>, or variable <folder|file[:line]> <old> <new>',
+        );
+    }
+
+    public static function closureParameterMissing(string $path, int $line, string $parameter): self
+    {
+        return new self(sprintf(
+            '%s:%d must identify one closure with parameter $%s and no nested functions',
+            $path,
+            $line,
+            $parameter,
+        ));
     }
 
     public static function undeclaredClass(string $class): self
@@ -136,7 +149,8 @@ if ($words !== []) {
 }
 
 if ($renames === []) {
-    fwrite(STDERR, "Usage: rename-member.php method|property|constant <class> <old> <new> | variable <folder> <old> <new> [--with=<class>] [--dry-run]\n");
+    fwrite(STDERR, "Usage: rename-member.php method|property|constant <class> <old> <new>\n"
+        ."    or: rename-member.php variable <folder|file[:line]> <old> <new> [--dry-run]\n");
     exit(2);
 }
 
@@ -193,9 +207,21 @@ function renameMember(string $root, array $rename, array $with, bool $dry): arra
         throw RenameRefused::malformed();
     }
 
-    $files = parsedFiles($root, $what === 'variable' ? [$owner] : SEARCHED);
+    $scope = explode(':', $owner, 2);
+    $path = $scope[0];
+    $line = 0;
+
+    if (isset($scope[1])) {
+        $line = (int) $scope[1];
+
+        if ($what !== 'variable' || ! ctype_digit($scope[1]) || $line < 1 || ! is_file($root.'/'.$path)) {
+            throw RenameRefused::malformed();
+        }
+    }
+
+    $files = parsedFiles($root, $what === 'variable' ? [$path] : SEARCHED);
     $edits = $what === 'variable'
-        ? variableEdits($files, $old, $new)
+        ? variableEdits($files, $old, $new, $line)
         : memberEdits($files, $what, ltrim($owner, '\\'), $old, $new, $with);
 
     if (! $dry) {
@@ -221,15 +247,15 @@ function parsedFiles(string $root, array $folders): array
     foreach ($folders as $folder) {
         $path = $root.'/'.$folder;
 
-        if (! file_exists($path)) {
+        if (! is_dir($path) && ! is_file($path)) {
             continue;
         }
 
-        $sourceFiles = is_file($path)
-            ? [new SplFileInfo($path)]
+        $entries = is_file($path)
+            ? new ArrayIterator([new SplFileInfo($path)])
             : new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
 
-        foreach ($sourceFiles as $file) {
+        foreach ($entries as $file) {
             $name = $file->getPathname();
 
             if ($file->getExtension() !== 'php' || array_filter(SKIPPED, static fn (string $skip): bool => str_contains($name, '/'.$skip.'/')) !== []) {
@@ -512,24 +538,25 @@ function promotedVariableSites(array $statements, string $old, string $new, arra
 }
 
 /**
- * The edits renaming a variable in every PHP file under the folder, with its closure uses and @param lines.
+ * The edits renaming a variable and its closure uses and @param lines.
  *
  * @param  array<string, array{code: string, statements: list<Node>}>  $files
  * @return array<string, list<array{int, int, string}>>
  */
-function variableEdits(array $files, string $old, string $new): array
+function variableEdits(array $files, string $old, string $new, int $line): array
 {
     $edits = [];
     $finder = new NodeFinder();
 
     foreach ($files as $path => $file) {
         $found = [];
+        $statements = $line > 0 ? closureScope($file['statements'], $path, $line, $old) : $file['statements'];
 
-        foreach ($finder->find($file['statements'], static fn (Node $node) => isVariableNamed($node, $old)) as $variable) {
+        foreach ($finder->find($statements, static fn (Node $node) => isVariableNamed($node, $old)) as $variable) {
             $found[] = [$variable->getStartFilePos(), $variable->getEndFilePos(), '$'.$new];
         }
 
-        foreach ($finder->find($file['statements'], static fn (Node $node) => $node instanceof Node\FunctionLike) as $function) {
+        foreach ($finder->find($statements, static fn (Node $node) => $node instanceof Node\FunctionLike) as $function) {
             array_push($found, ...docSites($function->getDocComment(), $old, $new));
         }
 
@@ -539,6 +566,30 @@ function variableEdits(array $files, string $old, string $new): array
     }
 
     return $edits;
+}
+
+/**
+ * @param  list<Node>  $statements
+ * @return list<Node>
+ */
+function closureScope(array $statements, string $path, int $line, string $parameter): array
+{
+    $finder = new NodeFinder();
+    $closures = $finder->find(
+        $statements,
+        static fn (Node $node) => ($node instanceof Node\Expr\Closure || $node instanceof Node\Expr\ArrowFunction)
+            && $node->getStartLine() === $line,
+    );
+    $function = $closures[0] ?? null;
+
+    if (count($finder->findInstanceOf($closures, Node\FunctionLike::class)) !== 1
+        || ! $function instanceof Node\FunctionLike
+        || ! array_any($function->getParams(), static fn (Node\Param $param) => isVariableNamed($param->var, $parameter))
+    ) {
+        throw RenameRefused::closureParameterMissing($path, $line, $parameter);
+    }
+
+    return $closures;
 }
 
 /**
@@ -662,6 +713,16 @@ function testCases(): array
 {
     $identity = "<?php\nnamespace App\\Ids;\nfinal class Identity\n{\n    public const KIND_COUNT = 2;\n\n    /**\n     * @param  string  \$kind  the kind\n     */\n    public function __construct(public string \$kind, public int \$id)\n    {\n        \$this->check(\$kind);\n    }\n\n    public function isSameAs(self \$other): bool\n    {\n        return \$this->kind === \$other->kind && self::KIND_COUNT > 0;\n    }\n\n    private function check(string \$kind): void {}\n}\n";
     $user = "<?php\nnamespace App\\Use;\nuse App\\Ids\\Identity;\nfunction run(Identity \$one): string\n{\n    \$kind = \$one->kind;\n    \$two = new Identity(kind: 'a', id: 1);\n\n    return \$two->isSameAs(\$one) ? \$kind.Identity::KIND_COUNT : 'kind';\n}\n";
+    $closures = <<<'PHP'
+        <?php
+        $repeat = fn (int $count) => array_fill(0, $count, 'text');
+        $join = fn (array $count) => implode(', ', $count);
+        PHP;
+    $renamedClosure = <<<'PHP'
+        <?php
+        $repeat = fn (int $copyCount) => array_fill(0, $copyCount, 'text');
+        $join = fn (array $count) => implode(', ', $count);
+        PHP;
 
     return [
         ['a property, its promoted parameter, accesses and named arguments', ['property', 'App\\Ids\\Identity', 'kind', 'type'], [],
@@ -677,9 +738,18 @@ function testCases(): array
         ['a variable in a folder, its parameter and its @param line', ['variable', 'app/Use', 'kind', 'type'], [],
             ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
             ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => str_replace(['$kind = ', '? $kind.'], ['$type = ', '? $type.'], $user)], false],
-        ['a variable rename scoped to one file', ['variable', 'app/Use/run.php', 'kind', 'type'], [],
-            ['app/Use/other.php' => $user, 'app/Use/run.php' => $user],
-            ['app/Use/other.php' => $user, 'app/Use/run.php' => str_replace(['$kind = ', '? $kind.'], ['$type = ', '? $type.'], $user)], false],
+        ['a variable in one file leaves its neighbour alone', ['variable', 'app/Use/one.php', 'count', 'itemCount'], [],
+            ['app/Use/one.php' => $closures, 'app/Use/two.php' => $closures],
+            [
+                'app/Use/one.php' => str_replace('$count', '$itemCount', $closures),
+                'app/Use/two.php' => $closures,
+            ], false],
+        ['a variable in one closure leaves its neighbour alone', ['variable', 'app/Use/one.php:2', 'count', 'copyCount'], [],
+            ['app/Use/one.php' => $closures], ['app/Use/one.php' => $renamedClosure], false],
+        ['a closure rename refuses a malformed line', ['variable', 'app/Use/one.php:line', 'count', 'copyCount'], [],
+            ['app/Use/one.php' => $closures], ['app/Use/one.php' => $closures], true],
+        ['a closure rename refuses a name outside its parameters', ['variable', 'app/Use/one.php:2', 'join', 'joinText'], [],
+            ['app/Use/one.php' => $closures], ['app/Use/one.php' => $closures], true],
         ['a property another class also declares is refused', ['property', 'App\\Ids\\Identity', 'kind', 'type'], [],
             ['app/Ids/Identity.php' => $identity, 'app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$kind = '';\n}\n"],
             ['app/Ids/Identity.php' => $identity], true],

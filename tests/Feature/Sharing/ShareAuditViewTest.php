@@ -95,10 +95,10 @@ final class ShareAuditViewTest extends TestCase
         $first = $resolver->page(Share::query()->findOrFail($this->share->id), null);
         $second = $resolver->page(Share::query()->findOrFail($this->share->id), $first->nextAfter);
 
-        $this->assertCount(50, $first->entries);
+        $this->assertCount(50, $first->auditEntries);
         $this->assertNotNull($first->nextAfter);
-        $this->assertCount(3, $second->entries);
-        $this->assertSame(ShareAuditActor::Owner, $second->entries[2]->actor);
+        $this->assertCount(3, $second->auditEntries);
+        $this->assertSame(ShareAuditActor::Owner, $second->auditEntries[2]->actor);
         $this->assertSame(7, $first->prunedAllowedReads);
         $this->assertNotNull($first->lastPrunedAt);
     }

@@ -50,11 +50,11 @@ final class SettingsDocumentCast implements CastsAttributes
 
         return new SettingsDocument(
             array_map(
-                fn (array $entry) => new EncodedSetting(...$entry),
+                fn (array $entry) => new EncodedSetting($entry['key'], $entry['value']),
                 $this->entries($owner, 'settings', $envelope->settings),
             ),
             array_map(
-                fn (array $entry) => new EncodedToggle(...$entry),
+                fn (array $entry) => new EncodedToggle($entry['key'], $entry['value']),
                 $this->entries($owner, 'toggles', $envelope->toggles),
             ),
         );

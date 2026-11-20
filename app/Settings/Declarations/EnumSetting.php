@@ -96,9 +96,9 @@ final readonly class EnumSetting implements OptionSetting
     /**
      * Whether a value is exactly the backing value of one of the cases.
      */
-    public function accepts(string|int $value): bool
+    public function accepts(string|int $settingInput): bool
     {
-        return $this->options->contains($value);
+        return $this->options->contains($settingInput);
     }
 
     /**
@@ -106,9 +106,9 @@ final readonly class EnumSetting implements OptionSetting
      *
      * @return TEnum|null
      */
-    public function caseOf(string|int $value): BackedEnum|null
+    public function caseOf(string|int $settingInput): BackedEnum|null
     {
-        return ($this->enum)::tryFrom($value);
+        return ($this->enum)::tryFrom($settingInput);
     }
 
     /**
@@ -124,9 +124,9 @@ final readonly class EnumSetting implements OptionSetting
         return $this->default;
     }
 
-    public function catalogueValue(string|bool|int|Decimal|BackedEnum $value): CatalogueValue
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $settingInput): CatalogueValue
     {
-        return ChoiceOptions::valueData($value instanceof BackedEnum ? $value->value : $value);
+        return ChoiceOptions::valueData($settingInput instanceof BackedEnum ? $settingInput->value : $settingInput);
     }
 
     public function catalogueConstraints(): CatalogueConstraints|Optional

@@ -18,11 +18,11 @@ final readonly class PinnableMessages
     /**
      * @throws MessageMissing
      */
-    public function requireIn(ConversationPair $pair, string $messageId): MessageView
+    public function requireIn(ConversationPair $conversation, string $messageId): MessageView
     {
         $message = $this->messages->detail($messageId);
 
-        if (! $pair->holds($message->sourceInboxId, $message->destinationInboxId)) {
+        if (! $conversation->holds($message->sourceInboxId, $message->destinationInboxId)) {
             throw MessageMissing::forId($messageId);
         }
 

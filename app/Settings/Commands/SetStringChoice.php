@@ -30,7 +30,7 @@ final readonly class SetStringChoice extends Command implements AuthorizedComman
 {
     public function __construct(
         public SettingReference $setting,
-        public string $value,
+        public string $selectedKey,
         public int $expectedRevision,
     ) {}
 

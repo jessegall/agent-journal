@@ -14,9 +14,9 @@ final readonly class OptionGrammar
 {
     /**
      * @param  list<string>  $names
-     * @param  list<OperandType>  $value  empty for a flag, one type for an option that takes a value
+     * @param  list<OperandType>  $operandTypes  empty for a flag, one type for an option that takes a value
      */
-    private function __construct(public array $names, public array $value, public bool $isRequired) {}
+    private function __construct(public array $names, public array $operandTypes, public bool $isRequired) {}
 
     public static function flag(string ...$names): self
     {
@@ -35,7 +35,7 @@ final readonly class OptionGrammar
     {
         return [
             'names' => $this->names,
-            'value' => array_map(fn (OperandType $type): string => $type->value, $this->value),
+            'value' => array_map(fn (OperandType $type): string => $type->value, $this->operandTypes),
             'required' => $this->isRequired,
         ];
     }
@@ -50,12 +50,12 @@ final readonly class OptionGrammar
 
     public function required(): self
     {
-        return new self($this->names, $this->value, true);
+        return new self($this->names, $this->operandTypes, true);
     }
 
     public function takesValue(): bool
     {
-        return $this->value !== [];
+        return $this->operandTypes !== [];
     }
 
     /**

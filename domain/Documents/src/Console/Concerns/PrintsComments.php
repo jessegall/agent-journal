@@ -26,36 +26,36 @@ trait PrintsComments
 
         return $this->runReport(function () use ($call): CommandReport {
             $list = $this->sendCall($call);
-            $report = $this->commentsReport(CommandReport::ending(self::SUCCESS), $list->items);
+            $report = $this->commentsReport(CommandReport::ending(self::SUCCESS), $list->comments);
 
             return $list->nextAfter === null ? $report : $report->line("More: --after={$list->nextAfter}");
         });
     }
 
     /**
-     * @param  list<RecordCommentView|TextCommentView>  $items
+     * @param  list<RecordCommentView|TextCommentView>  $comments
      */
-    private function commentsReport(CommandReport $start, array $items): CommandReport
+    private function commentsReport(CommandReport $start, array $comments): CommandReport
     {
-        if ($items === []) {
+        if ($comments === []) {
             return $start->line('No comments.');
         }
 
         $report = $start;
 
-        foreach ($items as $item) {
-            $place = $item instanceof TextCommentView ? $item->anchor->description() : 'on the whole record';
-            $report = $this->commentReport($report, $item->comment, $place);
+        foreach ($comments as $commentView) {
+            $anchorDescription = $commentView instanceof TextCommentView ? $commentView->anchor->description() : 'on the whole record';
+            $report = $this->commentReport($report, $commentView->comment, $anchorDescription);
         }
 
         return $report;
     }
 
-    private function commentReport(CommandReport $report, CommentDetails $comment, string $place): CommandReport
+    private function commentReport(CommandReport $report, CommentDetails $comment, string $anchorDescription): CommandReport
     {
         return $report
             ->line("{$comment->authorType->value} {$comment->authorId}  {$comment->createdAt}")
-            ->line("  {$place}")
+            ->line("  {$anchorDescription}")
             ->line('  '.str_replace("\n", "\n  ", $comment->body));
     }
 }

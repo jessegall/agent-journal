@@ -91,7 +91,7 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         $job->request_id = $launch->requestId;
         $job->payload_digest = $launch->payloadDigest;
         $job->profile_revision = $launch->profileRevision;
-        $job->identity_new = $launch->identityNew;
+        $job->identity_new = $launch->isNewIdentity;
         $job->independent = $launch->independent;
         $job->conversation_mode = $launch->conversationMode;
         $job->conversation_reason = $launch->conversationReason;
@@ -119,12 +119,12 @@ final class HelperJob extends Model implements Assignable, ReadableModel
     /**
      * The job's dispatch receipt, with the profile type it was launched under and Core's start for it.
      */
-    public function receipt(string $profileType, OwnerStartReceipt $start, bool $jobNew): HelperReceipt
+    public function receipt(string $profileType, OwnerStartReceipt $start, bool $isNewJob): HelperReceipt
     {
         return new HelperReceipt(
             $this->helper_identity_id,
             $this->id,
-            $jobNew,
+            $isNewJob,
             $profileType,
             $this->state,
             $this->launch(),

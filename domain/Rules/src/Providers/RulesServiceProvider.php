@@ -35,7 +35,7 @@ final class RulesServiceProvider extends ServiceProvider
         if ($exceptions instanceof Handler) {
             $exceptions->map(
                 RuleMissing::class,
-                fn (RuleMissing $missing) => new NotFoundHttpException(previous: $missing),
+                fn (RuleMissing $missingRule) => new NotFoundHttpException(previous: $missingRule),
             );
             $exceptions->renderable(
                 fn (RuleNotProposed $settled) => $this->app->make(Redirector::class)->back(303)->withErrors(

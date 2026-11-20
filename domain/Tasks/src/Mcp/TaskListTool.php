@@ -41,11 +41,11 @@ abstract class TaskListTool extends JournalReadTool
         return $this->pages->answer(
             $this->name(),
             $arguments,
-            fn (ToolArguments $first) => [
-                'search' => $first->textOr('search', ''),
-                'states' => $first->enumValues('states', TaskState::class),
-                'page' => $first->positiveIntegerOr('page', 1),
-                'per_page' => $first->positiveIntegerOr('per_page', 20, NumberedPage::LARGEST_SIZE),
+            fn (ToolArguments $initialArguments) => [
+                'search' => $initialArguments->textOr('search', ''),
+                'states' => $initialArguments->enumValues('states', TaskState::class),
+                'page' => $initialArguments->positiveIntegerOr('page', 1),
+                'per_page' => $initialArguments->positiveIntegerOr('per_page', 20, NumberedPage::LARGEST_SIZE),
             ],
             fn (ToolArguments $filters) => $this->page(new TaskFilters(
                 search: $filters->text('search'),
@@ -59,10 +59,10 @@ abstract class TaskListTool extends JournalReadTool
 
     private function page(TaskFilters $filters): ListedPage
     {
-        $list = $this->tasks($filters);
+        $taskPage = $this->tasks($filters);
         $cards = [];
 
-        foreach ($list->cards as $card) {
+        foreach ($taskPage->cards as $card) {
             $cards[$card->id] = [
                 'id' => $card->id,
                 'title' => $card->title,
@@ -76,6 +76,6 @@ abstract class TaskListTool extends JournalReadTool
             ];
         }
 
-        return new ListedPage($cards, $list->page->number, $list->page->size, $list->total);
+        return new ListedPage($cards, $taskPage->page->number, $taskPage->page->size, $taskPage->total);
     }
 }

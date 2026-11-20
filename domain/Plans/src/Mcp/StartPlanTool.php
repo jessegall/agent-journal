@@ -34,7 +34,7 @@ final class StartPlanTool extends PlanWriteTool
         return new StartPlan($arguments->ulid('plan_id'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $commandResult): ToolResult
     {
         return ToolResult::ok(['state' => PlanState::Started->value]);
     }

@@ -26,9 +26,9 @@ final class ProfilesExportsTest extends TestCase
         $exports = CoreApi::exports();
 
         $this->assertContains(ProfileResolver::class, $exports->contracts);
-        $this->assertContains(ProfileKey::class, $exports->values);
-        $this->assertContains(ProfileBase::class, $exports->values);
-        $this->assertContains(ProfileSnapshot::class, $exports->values);
+        $this->assertContains(ProfileKey::class, $exports->valueClasses);
+        $this->assertContains(ProfileBase::class, $exports->valueClasses);
+        $this->assertContains(ProfileSnapshot::class, $exports->valueClasses);
         $this->assertContains(ProfileKeyInvalid::class, $exports->exceptions);
         $this->assertContains(ProfileMissing::class, $exports->exceptions);
     }

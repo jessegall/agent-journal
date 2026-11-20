@@ -26,6 +26,6 @@ final readonly class FinishedToolCalls
             return;
         }
 
-        $this->events->dispatch(new ToolCallFinished($target, $input->result));
+        $this->events->dispatch(new ToolCallFinished($target, $input->finishedTool));
     }
 }

@@ -32,7 +32,7 @@ final readonly class StateEventOriginGuard
         }
 
         foreach ($this->selector->forEvent($stack->get(), $origin->dispatch->event) as $selection) {
-            if ($origin->result->matches($selection)) {
+            if ($origin->listenerResult->matches($selection)) {
                 return CommandOriginStatus::Eligible;
             }
         }

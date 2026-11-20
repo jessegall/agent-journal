@@ -53,7 +53,11 @@ final readonly class InboxNotices implements InboxNoticesContract
         return $this->call->within(None::create(), fn (): string => $this->accepted->independently(
             fn (): string => $this->key->independently(
                 $key,
-                fn (): string => $this->entries->runAsJournal(CommandEntry::Application, self::SYSTEM_ENTRY, $message),
+                fn (): string => $this->entryDispatchers->runAsJournal(
+                    CommandEntry::Application,
+                    self::SYSTEM_ENTRY,
+                    $message,
+                ),
             ),
         ));
     }

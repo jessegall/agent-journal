@@ -43,33 +43,33 @@ final readonly class RegisteredSettingCommands implements SettingCommands
     /**
      * @throws SettingHandleUnknown
      */
-    public function string(StringSetting $setting, string $value, int $expectedRevision): SetStringSetting
+    public function string(StringSetting $setting, string $settingInput, int $expectedRevision): SetStringSetting
     {
-        return new SetStringSetting($this->settingReference($setting), $value, $expectedRevision);
+        return new SetStringSetting($this->settingReference($setting), $settingInput, $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function boolean(BooleanSetting $setting, bool $value, int $expectedRevision): SetBooleanSetting
+    public function boolean(BooleanSetting $setting, bool $settingInput, int $expectedRevision): SetBooleanSetting
     {
-        return new SetBooleanSetting($this->settingReference($setting), $value, $expectedRevision);
+        return new SetBooleanSetting($this->settingReference($setting), $settingInput, $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function integer(IntegerSetting $setting, int $value, int $expectedRevision): SetIntegerSetting
+    public function integer(IntegerSetting $setting, int $settingInput, int $expectedRevision): SetIntegerSetting
     {
-        return new SetIntegerSetting($this->settingReference($setting), $value, $expectedRevision);
+        return new SetIntegerSetting($this->settingReference($setting), $settingInput, $expectedRevision);
     }
 
     /**
      * @throws SettingHandleUnknown
      */
-    public function decimal(DecimalSetting $setting, Decimal $value, int $expectedRevision): SetDecimalSetting
+    public function decimal(DecimalSetting $setting, Decimal $settingInput, int $expectedRevision): SetDecimalSetting
     {
-        return new SetDecimalSetting($this->settingReference($setting), $value, $expectedRevision);
+        return new SetDecimalSetting($this->settingReference($setting), $settingInput, $expectedRevision);
     }
 
     /**
@@ -77,9 +77,9 @@ final readonly class RegisteredSettingCommands implements SettingCommands
      *
      * @throws SettingHandleUnknown
      */
-    public function stringChoice(ChoiceSetting $setting, string $value, int $expectedRevision): SetStringChoice
+    public function stringChoice(ChoiceSetting $setting, string $settingInput, int $expectedRevision): SetStringChoice
     {
-        return new SetStringChoice($this->settingReference($setting), $value, $expectedRevision);
+        return new SetStringChoice($this->settingReference($setting), $settingInput, $expectedRevision);
     }
 
     /**
@@ -87,9 +87,9 @@ final readonly class RegisteredSettingCommands implements SettingCommands
      *
      * @throws SettingHandleUnknown
      */
-    public function integerChoice(ChoiceSetting $setting, int $value, int $expectedRevision): SetIntegerChoice
+    public function integerChoice(ChoiceSetting $setting, int $settingInput, int $expectedRevision): SetIntegerChoice
     {
-        return new SetIntegerChoice($this->settingReference($setting), $value, $expectedRevision);
+        return new SetIntegerChoice($this->settingReference($setting), $settingInput, $expectedRevision);
     }
 
     /**
@@ -98,17 +98,17 @@ final readonly class RegisteredSettingCommands implements SettingCommands
      * @template TEnum of BackedEnum
      *
      * @param  EnumSetting<TEnum>  $setting
-     * @param  TEnum  $value
+     * @param  TEnum  $settingInput
      *
      * @throws SettingHandleUnknown
      * @throws SettingValueInvalid
      */
-    public function enumString(EnumSetting $setting, BackedEnum $value, int $expectedRevision): SetStringChoice
+    public function enumString(EnumSetting $setting, BackedEnum $settingInput, int $expectedRevision): SetStringChoice
     {
         $reference = $this->settingReference($setting);
-        $backing = $value->value;
+        $backing = $settingInput->value;
 
-        if (! $value instanceof $setting->enum || ! is_string($backing)) {
+        if (! $settingInput instanceof $setting->enum || ! is_string($backing)) {
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 
@@ -121,17 +121,17 @@ final readonly class RegisteredSettingCommands implements SettingCommands
      * @template TEnum of BackedEnum
      *
      * @param  EnumSetting<TEnum>  $setting
-     * @param  TEnum  $value
+     * @param  TEnum  $settingInput
      *
      * @throws SettingHandleUnknown
      * @throws SettingValueInvalid
      */
-    public function enumInteger(EnumSetting $setting, BackedEnum $value, int $expectedRevision): SetIntegerChoice
+    public function enumInteger(EnumSetting $setting, BackedEnum $settingInput, int $expectedRevision): SetIntegerChoice
     {
         $reference = $this->settingReference($setting);
-        $backing = $value->value;
+        $backing = $settingInput->value;
 
-        if (! $value instanceof $setting->enum || ! is_int($backing)) {
+        if (! $settingInput instanceof $setting->enum || ! is_int($backing)) {
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 

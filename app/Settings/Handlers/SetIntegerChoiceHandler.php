@@ -19,6 +19,6 @@ final readonly class SetIntegerChoiceHandler implements CommandHandler
     public function handle(SetIntegerChoice $command): SettingsChange
     {
 
-        return $this->options->choose($command->setting, $command->value, $command->expectedRevision);
+        return $this->options->choose($command->setting, $command->selectedKey, $command->expectedRevision);
     }
 }

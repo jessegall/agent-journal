@@ -38,8 +38,8 @@ final class CommentOnDocumentTool extends JournalWriteTool
         return new CommentOnDocument((string) $arguments->recordReference('doc_id'), $arguments->text('body'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $commentId): ToolResult
     {
-        return ToolResult::ok(['comment_id' => $result]);
+        return ToolResult::ok(['comment_id' => $commentId]);
     }
 }

@@ -29,8 +29,8 @@ final class DocRevisionsCommand extends Command
             $report = CommandReport::ending(self::SUCCESS);
 
             foreach ($page->revisions as $revision) {
-                $by = "by {$revision->authorType} {$revision->authorId}";
-                $line = "revision {$revision->number}  {$revision->title}  {$by}  {$revision->closedAt}";
+                $authorLabel = "by {$revision->authorType} {$revision->authorId}";
+                $line = "revision {$revision->number}  {$revision->title}  {$authorLabel}  {$revision->closedAt}";
                 $report = $report->line($line);
             }
 

@@ -65,13 +65,13 @@ final readonly class ChatWindowResolver implements PageResolver
 
     private function conversationIn(SessionOption $session): ConversationData
     {
-        $own = $this->ownInboxes->preferredFor($this->actors->actor())->inboxId();
+        $actorInboxId = $this->ownInboxes->preferredFor($this->actors->actor())->inboxId();
         $agent = AssigneeIdentity::ofActorIdentity($session->target->actorIdentity());
-        $theirs = $this->destinations->resolve($agent)->inboxId();
-        $page = $this->messages->between($own, $theirs, null, MessagePage::DEFAULT_LIMIT);
+        $agentInboxId = $this->destinations->resolve($agent)->inboxId();
+        $page = $this->messages->between($actorInboxId, $agentInboxId, null, MessagePage::DEFAULT_LIMIT);
 
-        $docked = $this->records->visibleCards($this->docked->docked(new ConversationPair($own, $theirs)));
+        $docked = $this->records->visibleCards($this->docked->docked(new ConversationPair($actorInboxId, $agentInboxId)));
 
-        return ConversationData::fromPage($own, $theirs, $page, (string) $session->sessionId, $docked);
+        return ConversationData::fromPage($actorInboxId, $agentInboxId, $page, (string) $session->sessionId, $docked);
     }
 }

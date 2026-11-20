@@ -35,7 +35,7 @@ final readonly class CreateReport extends Command implements AuthorizedCommand
     public const int MOST_LINKS = 50;
 
     /**
-     * @param  list<RecordIdentity>  $about  the records it is about, linked with it or not created at all
+     * @param  list<RecordIdentity>  $relatedRecords  the records it is about, linked with it or not created at all
      */
     public function __construct(
         #[Required, OneLine, Max(Document::TITLE_CHARACTERS)]
@@ -44,7 +44,7 @@ final readonly class CreateReport extends Command implements AuthorizedCommand
         public string $abstract,
         public string|null $body,
         #[Max(self::MOST_LINKS)]
-        public array $about = [],
+        public array $relatedRecords = [],
         public string|null $uploadId = null,
     ) {}
 

@@ -26,17 +26,17 @@ final readonly class MessageReadResult
         $details = $cursor === null
             ? $this->messages->message($messageId, $arguments->enumOr('view', $this->defaultView($tool)))
             : $this->messages->context($messageId, $cursor);
-        $payload = ['message' => self::card($details->message)];
+        $messageResponse = ['message' => self::card($details->message)];
         $body = $details->body;
         if ($body !== null) {
-            $payload += [
+            $messageResponse += [
                 'body' => $body->text,
                 'line_start' => $body->lineStart,
                 'character_offset' => $body->characterStart,
             ];
         }
 
-        return ToolResult::ok($payload, $details->continuation === null ? [] : [new NextAction($tool, [
+        return ToolResult::ok($messageResponse, $details->continuation === null ? [] : [new NextAction($tool, [
             'message_id' => $messageId,
             'continuation' => $details->continuation,
         ])]);

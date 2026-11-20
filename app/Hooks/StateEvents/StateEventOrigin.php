@@ -25,7 +25,7 @@ final readonly class StateEventOrigin
      */
     public function commands(): array
     {
-        return $this->result->commandList();
+        return $this->listenerResult->commandList();
     }
 
     public function logDrop(LoggerInterface $log, CommandOriginStatus $status): void
@@ -34,7 +34,7 @@ final readonly class StateEventOrigin
             'dispatch' => $this->dispatch->id,
             'event' => $this->dispatch->event::class,
             'target' => $this->target->description(),
-            'frame' => $this->result->frameId(),
+            'frame' => $this->listenerResult->frameId(),
             'status' => $status->value,
         ]);
     }

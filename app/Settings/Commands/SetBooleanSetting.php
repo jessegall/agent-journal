@@ -30,7 +30,7 @@ final readonly class SetBooleanSetting extends Command implements AuthorizedComm
 {
     public function __construct(
         public SettingReference $setting,
-        public bool $value,
+        public bool $enabled,
         public int $expectedRevision,
     ) {}
 

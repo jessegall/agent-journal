@@ -85,7 +85,7 @@ final readonly class PageProps
         array $query,
         Route|null $route = null,
     ): Data {
-        return $this->results->result(
+        return $this->windowResults->result(
             $page->key,
             $page->visibilityChecks(),
             $page->resolver,
@@ -117,7 +117,10 @@ final readonly class PageProps
             Request::create(
                 '/'.strtr(
                     $record->uri,
-                    array_combine(array_map(fn (string $name) => '{'.$name.'}', $record->path->parameters), $routeArguments),
+                    array_combine(
+                        array_map(fn (string $name) => '{'.$name.'}', $record->path->parameters),
+                        $routeArguments,
+                    ),
                 ),
             ),
         );
@@ -133,7 +136,7 @@ final readonly class PageProps
             return null;
         }
 
-        return $this->results->result(
+        return $this->windowResults->result(
             $section->key,
             $section->visibilityChecks(),
             $section->resolver,
