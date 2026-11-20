@@ -6,6 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\SubmitSignInCode;
@@ -86,6 +87,7 @@ final class SignInSecretTest extends TestCase
     private function attempt(HookProgram $program, SignInMethod $method, string $requestKey): SignInAttempt
     {
         return SignInAttempt::forNewAccount(
+            ActorIdentity::system(),
             $program,
             $method,
             AccountLabel::from('Work'),

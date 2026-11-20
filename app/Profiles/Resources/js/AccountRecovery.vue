@@ -7,9 +7,9 @@ import { formSendingHooks } from '@kit/usePageChanges';
 import { cleanupProblemText, programName } from './accountLooks';
 
 /**
- * The unfinished new-account sign-ins whose folder still waits for its cleanup. No account row exists for them, so
- * each is retried by its own attempt, even when its folder is already gone: the host still shows the program's
- * sign-in is removed before the cleanup ends.
+ * The unfinished sign-ins, of new accounts and reconnects, whose staging folder still waits for its cleanup. Each is
+ * retried by its own attempt, even when its folder is already gone: the host still shows the program's sign-in is
+ * removed before the cleanup ends. A reconnect's saved account folder is never part of it.
  */
 defineProps<{ cleanups: PendingAttemptCleanupData[] }>();
 

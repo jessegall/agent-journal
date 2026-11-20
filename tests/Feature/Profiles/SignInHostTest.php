@@ -55,6 +55,8 @@ final class SignInHostTest extends TestCase
         'users',
     ];
 
+    private User|null $owner = null;
+
     private string $root;
 
     protected function setUp(): void
@@ -111,8 +113,7 @@ final class SignInHostTest extends TestCase
 
     public function test_the_challenge_reaches_only_the_owner_no_store_and_a_typed_code_reaches_the_host_once(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->owner();
         $host = $this->enrollHost();
         $this->actingAs($owner)->post('/accounts/sign-ins', [
             'program' => 'claude-code',
@@ -142,8 +143,7 @@ final class SignInHostTest extends TestCase
 
     public function test_a_code_with_a_control_character_and_a_cancelled_sign_in_give_the_host_nothing(): void
     {
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $owner = $this->owner();
         $host = $this->enrollHost();
         $attemptId = $this->begin();
         $this->signed($host, '/host/sign-ins/claim');
@@ -213,9 +213,21 @@ final class SignInHostTest extends TestCase
         $this->assertSame([SignInOutcome::Failed], $host->outcomes);
     }
 
+    /**
+     * The journal's owner, made once per test, as the web sign-in admits them.
+     */
+    private function owner(): User
+    {
+        $this->owner ??= User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+
+        return $this->owner;
+    }
+
     private function begin(): string
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $owner = ActorContext::forUser($this->owner()->id);
+        $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
 
         $begin = new BeginSignIn('claude-code', (string) Str::ulid(), 'Work');
         $started = $this->app->make(CommandBus::class)->run($begin);

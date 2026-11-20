@@ -21,12 +21,18 @@ use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
+use App\Profiles\Enums\SignInMethod;
+use App\Profiles\Enums\SignInState;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
+use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\SignInIdentity;
+use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -48,6 +54,7 @@ final class SignInAgainTest extends TestCase
     use WithActiveAccount;
 
     private const array TABLES = [
+        'users',
         'accounts',
         'active_accounts',
         'sign_in_attempts',
@@ -63,8 +70,12 @@ final class SignInAgainTest extends TestCase
     {
         parent::setUp();
 
+        User::factory()->create(['id' => TestIds::of(1)]);
+        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
+
         Bus::fake([SignInDeadline::class]);
         $this->account = $this->chooseActiveAccounts()['codex'];
+        $this->account->forceFill(['subject' => 'subject-1'])->save();
     }
 
     public function test_two_tabs_start_one_writer_and_new_starts_wait(): void
@@ -103,12 +114,123 @@ final class SignInAgainTest extends TestCase
         $generation = $this->account->refresh()->sign_in_generation;
         SignInAttempt::query()->whereKey($attemptId)->sole()->waitForUser();
 
-        $this->asHost(new CompleteSignIn($attemptId, $generation, SignInIdentity::shown('me@example.com')));
+        $this->asHost(new CompleteSignIn($attemptId, $generation, self::proved('subject-1')));
 
         $this->account->refresh();
         $this->assertSame($generation + 1, $this->account->sign_in_generation);
         $this->assertFalse($this->account->maintenance);
         $this->assertSame($this->account->id, $this->chosen());
+    }
+
+    public function test_the_same_principal_moves_the_account_to_its_staging_folder_and_owes_the_old_one(): void
+    {
+        $saved = (string) $this->account->directory;
+        [$attemptId, $staging] = $this->waitingReconnect();
+
+        $generation = SignInAttempt::query()->whereKey($attemptId)->sole()->generation;
+        $this->asHost(new CompleteSignIn($attemptId, $generation, self::proved('subject-1')));
+
+        $this->assertSame($staging, $this->account->refresh()->directory);
+        $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
+        $this->assertSame(SignInState::Complete, $attempt->state);
+        $this->assertSame($saved, $attempt->directory);
+        $this->assertTrue($attempt->cleanup_pending);
+        $this->assertSame($attemptId, SignInAttempt::nextToClean()?->id);
+    }
+
+    public function test_another_principal_or_none_replaces_nothing_and_ends_as_a_different_account(): void
+    {
+        $saved = (string) $this->account->directory;
+
+        foreach ([self::proved('subject-2'), SignInIdentity::shown('me@example.com')] as $identity) {
+            [$attemptId] = $this->waitingReconnect();
+            $generation = SignInAttempt::query()->whereKey($attemptId)->sole()->generation;
+
+            $this->asHost(new CompleteSignIn($attemptId, $generation, $identity));
+
+            $state = SignInAttempt::query()->whereKey($attemptId)->sole()->state;
+            $this->assertSame(SignInState::DifferentAccount, $state);
+            $this->assertSame($saved, $this->account->refresh()->directory);
+            $this->assertNull($this->account->live_writer_attempt_id);
+            $this->account->forceFill(['maintenance' => false, 'check_requested_generation' => null])->save();
+        }
+    }
+
+    public function test_replace_key_swaps_a_key_account_to_its_new_key_without_a_subject(): void
+    {
+        $keyAccount = ['method' => SignInMethod::ApiKey, 'fingerprint' => 'old', 'subject' => null];
+        $this->account->forceFill($keyAccount)->save();
+        [$attemptId, $staging] = $this->waitingReconnect();
+        $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
+        $attempt->keepFingerprint('new');
+
+        $this->asHost(new CompleteSignIn($attemptId, $attempt->generation, SignInIdentity::unproved()));
+
+        $this->account->refresh();
+        $this->assertSame(SignInMethod::ApiKey, $attempt->method);
+        $this->assertSame([$staging, 'new'], [$this->account->directory, $this->account->fingerprint]);
+        $this->assertSame($this->account->id, $this->chosen());
+    }
+
+    public function test_a_key_another_account_already_holds_ends_already_added(): void
+    {
+        $this->account->forceFill(['method' => SignInMethod::ApiKey, 'fingerprint' => 'old'])->save();
+        $other = Account::signedIn(HookProgram::Codex, AccountLabel::from('Other'), '/journal/accounts/other');
+        $other->forceFill(['fingerprint' => 'shared'])->save();
+        $saved = $this->account->directory;
+        [$attemptId] = $this->waitingReconnect();
+        $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
+        $attempt->keepFingerprint('shared');
+
+        $this->asHost(new CompleteSignIn($attemptId, $attempt->generation, SignInIdentity::unproved()));
+
+        $this->assertSame(SignInState::AlreadyAdded, $attempt->refresh()->state);
+        $this->assertSame($saved, $this->account->refresh()->directory);
+    }
+
+    public function test_no_cleanup_is_handed_out_for_a_folder_an_account_still_uses(): void
+    {
+        [$attemptId] = $this->waitingReconnect();
+        $this->cancel($attemptId);
+        $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
+        $this->account->forceFill(['directory' => $attempt->directory])->save();
+
+        $this->assertNull(SignInAttempt::nextToClean());
+    }
+
+    /**
+     * A reconnect of the account, waiting for the user, and its staging folder.
+     *
+     * @return array{string, string}
+     */
+    private function waitingReconnect(): array
+    {
+        $attemptId = $this->again('tab-'.bin2hex(random_bytes(3)));
+        $attempt = SignInAttempt::query()->whereKey($attemptId)->sole();
+        $attempt->waitForUser();
+
+        return [$attemptId, (string) $attempt->directory];
+    }
+
+    private static function proved(string $subject): SignInIdentity
+    {
+        return new SignInIdentity('me@example.com', $subject, null);
+    }
+
+    public function test_a_reconnect_signs_in_to_its_own_staging_folder_and_a_cancel_cleans_only_that(): void
+    {
+        $saved = $this->account->directory;
+        $attemptId = $this->again('tab-1');
+        $staging = (string) SignInAttempt::query()->whereKey($attemptId)->sole()->directory;
+
+        $this->cancel($attemptId);
+
+        $this->assertNotSame($saved, $staging);
+        $this->assertStringStartsWith(config('accounts.root').'/', $staging);
+        $this->assertSame($saved, $this->account->refresh()->directory);
+        $pending = array_map(fn (SignInAttempt $attempt) => $attempt->id, SignInAttempt::pendingCleanups());
+        $this->assertSame([$attemptId], $pending);
+        $this->assertSame($attemptId, SignInAttempt::nextToClean()?->id);
     }
 
     public function test_a_cancelled_sign_in_of_a_valid_account_survives_its_certain_check(): void

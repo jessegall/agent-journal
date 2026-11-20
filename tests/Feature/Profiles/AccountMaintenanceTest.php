@@ -6,6 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\EnrollHost;
@@ -113,7 +114,14 @@ final class AccountMaintenanceTest extends TestCase
 
     public function test_a_live_sign_in_writer_keeps_maintenance_from_settling(): void
     {
-        $attempt = SignInAttempt::forAccount($this->account, SignInMethod::OAuth, 'request-1', CarbonImmutable::now()->addMinutes(10));
+        $attempt = SignInAttempt::forAccount(
+            ActorIdentity::system(),
+            $this->account,
+            SignInMethod::OAuth,
+            '/journal/accounts/staging-request-1',
+            'request-1',
+            CarbonImmutable::now()->addMinutes(10),
+        );
         $attempt->writeFolderOf($this->account);
 
         $progress = $this->maintenance()->advance($this->account->id);

@@ -6,6 +6,7 @@ namespace Tests\Feature\Profiles;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
@@ -75,8 +76,22 @@ final class AccountStorageTest extends TestCase
     public function test_a_second_start_rejoins_the_writer_and_only_a_new_writer_starts_a_generation(): void
     {
         $account = $this->account('Work');
-        $first = SignInAttempt::forAccount($account, SignInMethod::OAuth, 'request-1', CarbonImmutable::now()->addMinutes(10));
-        $second = SignInAttempt::forAccount($account, SignInMethod::OAuth, 'request-2', CarbonImmutable::now()->addMinutes(10));
+        $first = SignInAttempt::forAccount(
+            ActorIdentity::system(),
+            $account,
+            SignInMethod::OAuth,
+            '/journal/accounts/staging-request-1',
+            'request-1',
+            CarbonImmutable::now()->addMinutes(10),
+        );
+        $second = SignInAttempt::forAccount(
+            ActorIdentity::system(),
+            $account,
+            SignInMethod::OAuth,
+            '/journal/accounts/staging-request-2',
+            'request-2',
+            CarbonImmutable::now()->addMinutes(10),
+        );
 
         $this->assertSame($first->id, $account->writerFor($first));
         $this->assertSame($first->id, $account->writerFor($second));
@@ -145,6 +160,7 @@ final class AccountStorageTest extends TestCase
     {
         $account = $this->account('Work');
         $attempt = SignInAttempt::forNewAccount(
+            ActorIdentity::system(),
             HookProgram::Codex,
             SignInMethod::OAuth,
             AccountLabel::from('Home'),

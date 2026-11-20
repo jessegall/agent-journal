@@ -136,11 +136,27 @@ final class AccountRemovalTest extends TestCase
         $host = new RecordingSignInHost(null);
         $protocols = new SignInProtocols($this->app);
         $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
-        $host->nextCleanup = new ClaimedCleanup(CleanupTarget::Account, 'account', 'codex', $directory, 1, false);
+        $host->nextCleanup = new ClaimedCleanup(
+            CleanupTarget::Account,
+            'account',
+            'codex',
+            SignInMethod::OAuth,
+            $directory,
+            1,
+            false,
+        );
         $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null);
 
         $this->assertTrue($runner->cleanNext());
-        $host->nextCleanup = new ClaimedCleanup(CleanupTarget::Account, 'other', 'unknown', $directory.'-x', 1, false);
+        $host->nextCleanup = new ClaimedCleanup(
+            CleanupTarget::Account,
+            'other',
+            'unknown',
+            SignInMethod::OAuth,
+            $directory.'-x',
+            1,
+            false,
+        );
         mkdir($directory.'-x');
         $runner->cleanNext();
 
@@ -160,7 +176,15 @@ final class AccountRemovalTest extends TestCase
         $host = new RecordingSignInHost(null);
         $protocols = new SignInProtocols($this->app);
         $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
-        $host->nextCleanup = new ClaimedCleanup(CleanupTarget::Account, 'account', 'codex', $directory, 1, false);
+        $host->nextCleanup = new ClaimedCleanup(
+            CleanupTarget::Account,
+            'account',
+            'codex',
+            SignInMethod::OAuth,
+            $directory,
+            1,
+            false,
+        );
         $stillRunning = new class implements AccountOwnerDrain
         {
             public function drain(string $directory): bool

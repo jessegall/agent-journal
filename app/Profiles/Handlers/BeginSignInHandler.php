@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Handlers;
 
+use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Enums\SignInMethod;
@@ -18,7 +19,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Bus\Dispatcher as JobDispatcher;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Support\Str;
 
 /**
  * Starts or rejoins a new account's sign-in under the program's selection lock: one attempt at a time writes a new
@@ -55,8 +55,9 @@ final readonly class BeginSignInHandler implements CommandHandler
 
         $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
         $label = AccountLabel::from($command->label);
-        $directory = $this->config->string('accounts.root').'/'.Str::lower((string) Str::ulid());
+        $directory = SignInAttempt::newFolderIn($this->config->string('accounts.root'));
         $attempt = SignInAttempt::forNewAccount(
+            ActorIdentity::of($command->dispatchedBy()),
             $program,
             self::METHOD,
             $label,

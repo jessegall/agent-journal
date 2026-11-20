@@ -90,6 +90,7 @@ final readonly class SignedSignInHost implements SignInHost
         return new ClaimedAccountCheck(
             (string) $response->json('account_id'),
             (string) $response->json('program'),
+            SignInMethod::from((string) $response->json('method')),
             (string) $response->json('directory'),
             (int) $response->json('generation'),
         );
@@ -122,6 +123,7 @@ final readonly class SignedSignInHost implements SignInHost
             CleanupTarget::from((string) $response->json('target')),
             (string) $response->json('id'),
             (string) $response->json('program'),
+            SignInMethod::from((string) $response->json('method')),
             (string) $response->json('directory'),
             (int) $response->json('generation'),
             (bool) $response->json('store_removed'),

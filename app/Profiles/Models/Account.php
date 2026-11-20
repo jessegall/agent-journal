@@ -11,6 +11,7 @@ use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Models\Support\AccountOwnerScope;
@@ -45,6 +46,7 @@ use Illuminate\Support\Str;
  * @property string|null $identity
  * @property string|null $subject
  * @property string|null $workspace
+ * @property SignInMethod $method
  * @property string|null $fingerprint
  * @property CarbonImmutable|null $expires_at
  * @property bool $maintenance
@@ -90,6 +92,7 @@ final class Account extends Model implements ReadableModel
             'cleanup_tries' => 'integer',
             'cleanup_problem' => CleanupProblem::class,
             'check_requested_generation' => 'integer',
+            'method' => SignInMethod::class,
             'checked_at' => 'immutable_datetime',
             'expires_at' => 'immutable_datetime',
         ];
@@ -112,6 +115,25 @@ final class Account extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * Whether another account of the attempt's program, not removed, already signs in by the key or token the attempt
+     * was given; an attempt without a key holds none.
+     */
+    public static function holdsKeyOf(SignInAttempt $attempt): bool
+    {
+        if ($attempt->fingerprint === null) {
+            return false;
+        }
+
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('program', $attempt->program)
+            ->where('fingerprint', $attempt->fingerprint)
+            ->where('state', '!=', AccountState::Removed->value)
+            ->when($attempt->account_id !== null, fn ($accounts) => $accounts->whereKeyNot($attempt->account_id))
+            ->exists();
+    }
 
     /**
      * The account the owner may change, locked for the rest of the transaction; a removed account keeps its name for
@@ -252,12 +274,17 @@ final class Account extends Model implements ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * The account signed in by the attempt that holds its folder: signed in, checked now, its writer released. Signed
+     * The account signed in by the attempt that holds its folder, now kept in the folder the attempt signed in to:
+     * signed in, checked now, its writer released. Signed
      * in again, it starts a new sign-in generation, so a report or check from before is out of date, and starts may
      * use it again.
      */
-    public function signedInAgain(SignInAttempt $attempt, SignInIdentity $identity, CarbonImmutable $checkedAt): void
-    {
+    public function signedInAgain(
+        SignInAttempt $attempt,
+        SignInIdentity $identity,
+        string $directory,
+        CarbonImmutable $checkedAt,
+    ): void {
         if ($this->live_writer_attempt_id === $attempt->id) {
             $this->sign_in_generation++;
             $this->maintenance = false;
@@ -265,6 +292,9 @@ final class Account extends Model implements ReadableModel
         }
 
         $this->state = AccountState::SignedIn;
+        $this->directory = $directory;
+        $this->method = $attempt->method;
+        $this->fingerprint = $attempt->fingerprint;
         $this->identity = $identity->display;
         $this->subject = $identity->subject;
         $this->workspace = $identity->workspace;
@@ -494,6 +524,17 @@ final class Account extends Model implements ReadableModel
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * Whether a verified sign-in proved the same principal this account holds: both subjects named and equal, in the
+     * same workspace. The email or label never decide, and a sign-in that proved no subject is never the same.
+     */
+    public function isSamePrincipal(SignInIdentity $identity): bool
+    {
+        return $this->subject !== null
+            && $identity->subject === $this->subject
+            && $identity->workspace === $this->workspace;
+    }
 
     /**
      * The account as the start it is chosen for runs with it.

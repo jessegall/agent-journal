@@ -25,6 +25,7 @@ final readonly class ClaimCleanupController
                 'target' => $claimed->target->value,
                 'id' => $claimed->id,
                 'program' => $claimed->program,
+                'method' => $claimed->method->value,
                 'directory' => $claimed->directory,
                 'generation' => $claimed->generation,
                 'store_removed' => $claimed->isStoreRemoved,

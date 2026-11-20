@@ -839,9 +839,11 @@ case	SignInMethod::ProviderToken
 case	SignInOutcome::Failed
 case	SignInOutcome::Verified
 case	SignInOutcome::Waiting
+case	SignInState::AlreadyAdded
 case	SignInState::Cancelled
 case	SignInState::Checking
 case	SignInState::Complete
+case	SignInState::DifferentAccount
 case	SignInState::Expired
 case	SignInState::Failed
 case	SignInState::Interrupted
@@ -5307,7 +5309,6 @@ constant	AuthenticateAgent::UNAUTHENTICATED
 constant	AuthenticateHost::WINDOW_SECONDS
 constant	AutoAssignmentInput::LARGEST_SIZE
 constant	AwaitingSkillsStateReference::TYPE_KEY
-constant	BeginSignInAgainHandler::METHOD
 constant	BeginSignInHandler::METHOD
 constant	BeginUpload::MAX_BYTES
 constant	BindingRules::BINDING_METHODS
@@ -6622,9 +6623,11 @@ method	Account::endSignInAgain()
 method	Account::finishRemoval()
 method	Account::hasLiveWriter()
 method	Account::holdForMaintenance()
+method	Account::holdsKeyOf()
 method	Account::isBeingRemoved()
 method	Account::isGeneration()
 method	Account::isHeldForCheck()
+method	Account::isSamePrincipal()
 method	Account::listed()
 method	Account::lockedForChange()
 method	Account::lockedForJournal()
@@ -17276,6 +17279,7 @@ method	SignInAttempt::awaitsCleanupRetry()
 method	SignInAttempt::begin()
 method	SignInAttempt::casts()
 method	SignInAttempt::claimFor()
+method	SignInAttempt::displace()
 method	SignInAttempt::end()
 method	SignInAttempt::expiredLiveIds()
 method	SignInAttempt::finish()
@@ -17284,11 +17288,13 @@ method	SignInAttempt::forNewAccount()
 method	SignInAttempt::found()
 method	SignInAttempt::isExpiredAt()
 method	SignInAttempt::isLive()
+method	SignInAttempt::isPublishedIn()
 method	SignInAttempt::keepFingerprint()
 method	SignInAttempt::liveFor()
 method	SignInAttempt::lockedForJournal()
 method	SignInAttempt::lockedForOwner()
 method	SignInAttempt::lostBy()
+method	SignInAttempt::newFolderIn()
 method	SignInAttempt::nextToClean()
 method	SignInAttempt::ofProgram()
 method	SignInAttempt::pendingCleanups()
@@ -17297,6 +17303,7 @@ method	SignInAttempt::recentFor()
 method	SignInAttempt::releaseForHost()
 method	SignInAttempt::retryCleanup()
 method	SignInAttempt::runBy()
+method	SignInAttempt::starter()
 method	SignInAttempt::type()
 method	SignInAttempt::waitForUser()
 method	SignInAttempt::waitingForUsesIds()
@@ -17332,6 +17339,8 @@ method	SignInCodeInvalid::refusalCode()
 method	SignInCodeInvalid::status()
 method	SignInCompletion::__construct()
 method	SignInCompletion::complete()
+method	SignInCompletion::endWithout()
+method	SignInCompletion::starterMayStillAdd()
 method	SignInDeadline::__construct()
 method	SignInDeadline::handle()
 method	SignInHost::claim()
@@ -21455,6 +21464,7 @@ parameter	$sample
 parameter	$sampledAt
 parameter	$samples
 parameter	$savedAt
+parameter	$savedDirectory
 parameter	$savedPreview
 parameter	$savedRevision
 parameter	$sawThisPurpose
@@ -23011,11 +23021,13 @@ property	ClaimStartHandler::$events
 property	ClaimedAccountCheck::$accountId
 property	ClaimedAccountCheck::$directory
 property	ClaimedAccountCheck::$generation
+property	ClaimedAccountCheck::$method
 property	ClaimedAccountCheck::$program
 property	ClaimedCleanup::$directory
 property	ClaimedCleanup::$generation
 property	ClaimedCleanup::$id
 property	ClaimedCleanup::$isStoreRemoved
+property	ClaimedCleanup::$method
 property	ClaimedCleanup::$program
 property	ClaimedCleanup::$target
 property	ClaimedGatewayOperation::$operation
@@ -28479,6 +28491,7 @@ property	SignInChallenge::$code
 property	SignInChallenges::$cache
 property	SignInChallenges::$encrypter
 property	SignInCode::$code
+property	SignInCompletion::$authorizer
 property	SignInCompletion::$events
 property	SignInDeadline::$attemptId
 property	SignInIdentity::$display
@@ -30447,6 +30460,7 @@ variable	$isRelative
 variable	$isSameAgent
 variable	$isSameFailure
 variable	$isScoped
+variable	$isServed
 variable	$isSignedIn
 variable	$isSignedOut
 variable	$isSingleton
@@ -31109,6 +31123,7 @@ variable	$sql
 variable	$sqlite
 variable	$stack
 variable	$staged
+variable	$staging
 variable	$stale
 variable	$stalled
 variable	$standing

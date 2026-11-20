@@ -97,13 +97,13 @@ final readonly class PrivateSignInProcesses
             return false;
         }
 
-        if (! $this->protocols->supports($claimed->program)) {
+        if (! $this->protocols->supports($claimed->program, $claimed->method)) {
             $this->host->reportCheck($claimed, AccountCheckResult::Unknown);
 
             return true;
         }
 
-        $verification = $this->protocols->for($claimed->program)->verify($claimed->directory);
+        $verification = $this->protocols->for($claimed->program, $claimed->method)->verify($claimed->directory);
 
         $accountCheck = match (true) {
             ! $verification->isCertain => AccountCheckResult::Unknown,
@@ -136,11 +136,13 @@ final readonly class PrivateSignInProcesses
 
     private function removeStore(ClaimedCleanup $claimed): bool
     {
-        if (! $this->protocols->supports($claimed->program) || ! $this->owners->drain($claimed->directory)) {
+        $isServed = $this->protocols->supports($claimed->program, $claimed->method);
+
+        if (! $isServed || ! $this->owners->drain($claimed->directory)) {
             return false;
         }
 
-        $protocol = $this->protocols->for($claimed->program);
+        $protocol = $this->protocols->for($claimed->program, $claimed->method);
 
         $protocol->signOut($claimed->directory);
         $verification = $protocol->verify($claimed->directory);

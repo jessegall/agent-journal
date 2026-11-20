@@ -97,7 +97,13 @@ final class AccountChecksTest extends TestCase
     public function test_the_runner_reports_the_programs_own_certain_answer(): void
     {
         $host = new RecordingSignInHost(null);
-        $host->nextCheck = new ClaimedAccountCheck($this->account->id, 'codex', sys_get_temp_dir(), 1);
+        $host->nextCheck = new ClaimedAccountCheck(
+            $this->account->id,
+            'codex',
+            SignInMethod::OAuth,
+            sys_get_temp_dir(),
+            1,
+        );
         $protocols = new SignInProtocols($this->app);
         $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
 

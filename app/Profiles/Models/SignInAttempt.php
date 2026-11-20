@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Models;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
@@ -24,6 +27,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * One run of a program's own sign-in: for a new account, or to sign an existing one in again. Its private folder,
@@ -35,6 +39,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $account_id
  * @property string|null $label
  * @property SignInMethod $method
+ * @property ActorType $actor_type
+ * @property string $actor_id
  * @property string|null $fingerprint
  * @property SignInState $state
  * @property string $request_key
@@ -52,7 +58,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Account|null $account
  */
-#[Fillable(['program', 'method', 'label'])]
+#[Fillable(['program', 'method', 'actor_type', 'actor_id', 'label'])]
 final class SignInAttempt extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -73,6 +79,7 @@ final class SignInAttempt extends Model implements ReadableModel
     {
         return [
             'method' => SignInMethod::class,
+            'actor_type' => ActorType::class,
             'state' => SignInState::class,
             'generation' => 'integer',
             'cleanup_pending' => 'boolean',
@@ -85,9 +92,10 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * A new attempt to sign in a new account under a name, by one of its program's methods.
+     * A new attempt, started by an actor, to sign in a new account under a name by one of its program's methods.
      */
     public static function forNewAccount(
+        ActorIdentity $starter,
         HookProgram $program,
         SignInMethod $method,
         AccountLabel $label,
@@ -95,7 +103,12 @@ final class SignInAttempt extends Model implements ReadableModel
         string $requestKey,
         CarbonImmutable $expiresAt,
     ): self {
-        $attempt = new self(['program' => $program->value, 'method' => $method, 'label' => $label->label]);
+        $attempt = new self([
+            'program' => $program->value,
+            'method' => $method,
+            ...$starter->asColumns('actor'),
+            'label' => $label->label,
+        ]);
         $attempt->directory = $directory;
         $attempt->begin($requestKey, $expiresAt);
 
@@ -103,19 +116,26 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * A new attempt to sign an existing account in again by a method, in the sign-in generation the account is in. No host takes
-     * it while a process may still run on the account's folder.
+     * A new attempt, started by an actor, to sign an existing account in again by a method, into its own new staging
+     * folder, in the sign-in generation the account is in. No host takes it while a process may still run on the
+     * account's folder.
      */
     public static function forAccount(
+        ActorIdentity $starter,
         Account $account,
         SignInMethod $method,
+        string $directory,
         string $requestKey,
         CarbonImmutable $expiresAt,
     ): self {
-        $attempt = new self(['program' => $account->program, 'method' => $method]);
+        $attempt = new self([
+            'program' => $account->program,
+            'method' => $method,
+            ...$starter->asColumns('actor'),
+        ]);
         $attempt->account_id = $account->id;
         $attempt->generation = $account->sign_in_generation;
-        $attempt->directory = $account->directory;
+        $attempt->directory = $directory;
         $attempt->waits_for_uses = true;
         $attempt->begin($requestKey, $expiresAt);
 
@@ -148,6 +168,14 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * A new, unused staging folder under the accounts root, one for every attempt.
+     */
+    public static function newFolderIn(string $root): string
+    {
+        return $root.'/'.Str::lower((string) Str::ulid());
+    }
 
     /**
      * The earliest attempt still signing in a new account of the program, or this account, which a second start
@@ -291,24 +319,26 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * The ended attempt whose new account's folder a host has still to clean; an attempt for a saved account never
-     * owes more than its own traces, so it is never handed out.
+     * The ended attempt whose staging folder a host has still to clean, for a new account or a reconnect alike; a
+     * reconnect never touched the account's saved folder, so only its own staging folder is cleaned.
      */
     public static function nextToClean(): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->where('cleanup_pending', true)
-            ->whereNull('account_id')
             ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
             ->whereNotNull('directory')
+            ->whereNotExists(fn ($accounts) => $accounts->from('accounts')
+                ->whereColumn('accounts.directory', 'sign_in_attempts.directory')
+                ->where('accounts.state', '!=', AccountState::Removed->value))
             ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('updated_at')
             ->first();
     }
 
     /**
-     * The owner's unfinished new-account sign-ins whose folder still waits for its cleanup, oldest first.
+     * The owner's unfinished sign-ins whose staging folder still waits for its cleanup, oldest first.
      *
      * @return list<self>
      */
@@ -316,7 +346,6 @@ final class SignInAttempt extends Model implements ReadableModel
     {
         $attempts = self::query()
             ->where('cleanup_pending', true)
-            ->whereNull('account_id')
             ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('created_at')
             ->readLimit(50)
@@ -346,6 +375,18 @@ final class SignInAttempt extends Model implements ReadableModel
     // ----------[ Mutations ]----------
 
     /**
+     * A completed reconnect hands the account its staging folder and keeps the folder it displaced, owing that
+     * folder's cleanup, in the same transaction.
+     */
+    public function displace(string $savedDirectory): void
+    {
+        $this->state = SignInState::Complete;
+        $this->directory = $savedDirectory;
+        $this->cleanup_pending = true;
+        $this->save();
+    }
+
+    /**
      * Keeps the keyed fingerprint of the key or token the owner gave, never the value itself.
      */
     public function keepFingerprint(string $fingerprint): void
@@ -360,7 +401,7 @@ final class SignInAttempt extends Model implements ReadableModel
     public function end(SignInState $state): void
     {
         $this->state = $state;
-        $this->cleanup_pending = $this->account_id === null && $state !== SignInState::Complete;
+        $this->cleanup_pending = $state !== SignInState::Complete;
         $this->save();
     }
 
@@ -389,11 +430,11 @@ final class SignInAttempt extends Model implements ReadableModel
 
     /**
      * Applies what a host proved of the attempt's cleanup: its store's proof is kept, and the cleanup ends only once
-     * the folder is gone too. A completed attempt's folder belongs to its account and is never cleaned here.
+     * the folder is gone too: its own staging folder, or the folder a completed reconnect displaced.
      */
     public function applyCleanup(CleanupProgress $progress): bool
     {
-        if (! $this->cleanup_pending || $this->state === SignInState::Complete) {
+        if (! $this->cleanup_pending) {
             return false;
         }
 
@@ -414,12 +455,12 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * The owner asks for the cleanup of an unfinished new account's sign-in again, by the attempt alone, even when its
-     * folder is already gone: the host still has to show the program's sign-in is gone.
+     * The owner asks for the cleanup of an unfinished sign-in's staging folder again, by the attempt alone, even when
+     * its folder is already gone: the host still has to show the program's sign-in is gone.
      */
     public function retryCleanup(): void
     {
-        if (! $this->cleanup_pending || $this->account_id !== null) {
+        if (! $this->cleanup_pending) {
             return;
         }
 
@@ -437,6 +478,25 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * The actor that started the attempt, whose current authority its publication needs.
+     */
+    public function starter(): ActorIdentity
+    {
+        return new ActorIdentity($this->actor_type, $this->actor_id);
+    }
+
+    /**
+     * Whether the completion itself already ended the attempt in this generation, so a repeated report of the same
+     * result changes nothing.
+     */
+    public function isPublishedIn(int $generation): bool
+    {
+        $published = [SignInState::Complete, SignInState::DifferentAccount, SignInState::AlreadyAdded];
+
+        return in_array($this->state, $published, true) && $this->generation === $generation;
+    }
 
     public function type(): SignInType
     {

@@ -17,6 +17,7 @@ use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\SignInState;
+use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
@@ -24,7 +25,10 @@ use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInStarted;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -42,11 +46,14 @@ final class SignInAttemptTest extends TestCase
     use CommitsHookRows;
     use WithActiveAccount;
 
-    private const array TABLES = ['accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts', 'links'];
+    private const array TABLES = ['users', 'accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts', 'links'];
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        User::factory()->create(['id' => TestIds::of(1)]);
+        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
 
         Bus::fake([SignInDeadline::class]);
         $this->actAsOwner();
@@ -75,9 +82,33 @@ final class SignInAttemptTest extends TestCase
         $this->assertSame([AccountState::SignedIn, 'Work'], [$account->state, $account->label]);
         $this->assertSame($account->id, ActiveAccount::query()->sole()->account_id);
         $this->assertSame(SignInState::Complete, SignInAttempt::query()->sole()->state);
-        $this->expectException(SignInAttemptStale::class);
+    }
+
+    public function test_the_same_verified_report_twice_publishes_once_and_an_older_generation_is_refused(): void
+    {
+        $started = $this->begin('request-1');
+        SignInAttempt::query()->whereKey($started->attemptId)->sole()->waitForUser();
+        $this->complete($started->attemptId, 0, 'work@example.test');
+        Event::fake([AccountsChanged::class]);
 
         $this->complete($started->attemptId, 0, 'work@example.test');
+
+        $this->assertSame(1, Account::query()->count());
+        Event::assertNotDispatched(AccountsChanged::class);
+        $this->expectException(SignInAttemptStale::class);
+        $this->complete($started->attemptId, 1, 'work@example.test');
+    }
+
+    public function test_a_starter_that_lost_its_grant_before_the_report_adds_no_account(): void
+    {
+        $started = $this->begin('request-1');
+        SignInAttempt::query()->whereKey($started->attemptId)->sole()->waitForUser();
+        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(2)));
+
+        $this->complete($started->attemptId, 0, 'work@example.test');
+
+        $this->assertSame(0, Account::query()->count());
+        $this->assertSame(SignInState::Failed, SignInAttempt::query()->sole()->state);
     }
 
     public function test_a_cancelled_attempt_ignores_a_late_result_and_owes_its_folder_cleanup(): void

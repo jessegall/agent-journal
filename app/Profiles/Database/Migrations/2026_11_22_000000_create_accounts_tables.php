@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('accounts', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('program', 64);
+            $table->string('method', 32)->default('oauth');
             $table->string('label', 80);
             $table->string('label_key', 80);
             $table->string('state', 32);
@@ -53,6 +54,8 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('program', 64);
             $table->string('method', 32);
+            $table->string('actor_type', 16);
+            $table->string('actor_id', 64);
             $table->string('fingerprint', 64)->nullable();
             $table->ulid('account_id')->nullable();
             $table->string('label', 80)->nullable();

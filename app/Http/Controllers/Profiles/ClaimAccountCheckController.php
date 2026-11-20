@@ -24,6 +24,7 @@ final readonly class ClaimAccountCheckController
             : new JsonResponse([
                 'account_id' => $claimed->accountId,
                 'program' => $claimed->program,
+                'method' => $claimed->method->value,
                 'directory' => $claimed->directory,
                 'generation' => $claimed->generation,
             ]);

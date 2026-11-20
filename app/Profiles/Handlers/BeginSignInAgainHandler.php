@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Handlers;
 
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\AccountUses;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\BeginSignInAgain;
-use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
@@ -26,11 +26,6 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class BeginSignInAgainHandler implements CommandHandler
 {
-    /**
-     * A reconnect signs in again by OAuth until the account records the method it was added by.
-     */
-    private const SignInMethod METHOD = SignInMethod::OAuth;
-
     public function __construct(
         private Repository $config,
         private Dispatcher $events,
@@ -57,7 +52,15 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
 
         $account->holdForMaintenance();
         $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
-        $attempt = SignInAttempt::forAccount($account, self::METHOD, $command->requestKey, $expiresAt);
+        $directory = SignInAttempt::newFolderIn($this->config->string('accounts.root'));
+        $attempt = SignInAttempt::forAccount(
+            ActorIdentity::of($command->dispatchedBy()),
+            $account,
+            $account->method,
+            $directory,
+            $command->requestKey,
+            $expiresAt,
+        );
         $attempt->writeFolderOf($account);
 
         if ($this->uses->counts([$account->recordIdentity()])->isEmpty()) {
