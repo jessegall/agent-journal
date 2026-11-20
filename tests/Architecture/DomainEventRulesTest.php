@@ -7,9 +7,12 @@ namespace Tests\Architecture;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\DomainRegistry;
+use App\Domains\Support\ListenerOwnership;
 use App\Domains\Support\ListenerPolicy;
+use App\Domains\Support\StateListenerDeclarations;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Stack\StateTypes;
+use App\Pipelines\Contracts\PipelineRunner;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\EventCallScan;
@@ -71,12 +74,14 @@ final class DomainEventRulesTest extends TestCase
     public function test_state_event_permissions_and_manual_registration_use_the_listener_policy(): void
     {
         $registry = DomainRegistry::from([TasksDomain::class, PlansDomain::class]);
-        $policy = new ListenerPolicy($registry, CoreApi::exports(), CoreApi::listenerFolders());
+        $ownership = new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders());
+        $states = new StateListenerDeclarations($ownership);
+        $policy = new ListenerPolicy($this->app->make(PipelineRunner::class), $ownership);
         $declaration = new StateMethods()->forState(PlanState::class)[self::TASK_CLOSED];
 
-        $this->assertSame('Plans', $policy->checkStateEvent(self::TASK_CLOSED, $declaration));
+        $this->assertSame('Plans', $states->ownerOf(self::TASK_CLOSED, $declaration));
         $this->expectException(InvalidListener::class);
-        $policy->check([self::TASK_CLOSED => [PlanState::class.'@onTaskClosed']]);
+        $policy->discover([self::TASK_CLOSED => [PlanState::class.'@onTaskClosed']]);
     }
 
     public function test_a_state_listener_cannot_raise_the_event_it_received(): void
@@ -93,7 +98,9 @@ final class DomainEventRulesTest extends TestCase
     public function test_the_installed_loaders_declare_valid_states(): void
     {
         $registry = $this->app->make(DomainRegistry::class);
-        $policy = new ListenerPolicy($registry, CoreApi::exports(), CoreApi::listenerFolders());
+        $states = new StateListenerDeclarations(
+            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders()),
+        );
         $methods = new StateMethods();
         $loaders = $this->app->make(StateTypes::class)->registry()->loaders();
 
@@ -102,7 +109,7 @@ final class DomainEventRulesTest extends TestCase
         foreach ($loaders as $loader) {
             foreach ($methods->forLoader($loader) as $input => $method) {
                 if ($input !== $method->name) {
-                    $policy->checkStateEvent($input, $method);
+                    $states->ownerOf($input, $method);
                 }
             }
         }

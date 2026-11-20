@@ -13,11 +13,12 @@ use App\Processes\Values\TreeDiagnostic;
 /**
  * Splits one shell line into tokens without running anything (doc 21 revision 3, section 5). Quoting is decided here:
  * a quoted separator is data, an escaped $ is literal, single quotes expand nothing. Here-document bodies are read
- * after
- * the line that names them, in order. It keeps no state between calls; every call runs its own LexerScan.
+ * after the line that names them, in order. Each call starts a fresh cursor.
  */
-final class ShellLexer
+final readonly class ShellLexer
 {
+    public function __construct(private LexerScan $scan) {}
+
     public function lex(string $source, ShellDialect $dialect): LexedLine
     {
         if (AnalysisLimit::SourceBytes->isPassedBy(strlen($source))) {
@@ -31,7 +32,7 @@ final class ShellLexer
         }
 
         try {
-            return new LexedLine(ParseOutcome::Complete, new LexerScan($source, $dialect, new TimeBudget())->tokens());
+            return new LexedLine(ParseOutcome::Complete, $this->scan->tokens($source, $dialect));
         } catch (ShellLineUnreadable $unreadable) {
             return new LexedLine(
                 $unreadable->isLimit ? ParseOutcome::LimitExceeded : ParseOutcome::Invalid,
