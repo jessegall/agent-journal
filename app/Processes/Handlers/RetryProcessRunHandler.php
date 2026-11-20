@@ -38,6 +38,7 @@ final readonly class RetryProcessRunHandler implements CommandHandler
         if (! hash_equals($lost->source_digest, hash('sha256', $command->line))) {
             throw RetryRefused::otherLine($lost->id);
         }
+
         $context = new ExecutionContext($lost->dialect, $lost->working_folder, $lost->working_folder);
         $admission = $this->admissions->admit($command->line, $lost->dialect, $context, $command->requestKey);
         $refusal = $admission->decision;

@@ -28,6 +28,7 @@ final readonly class SettleSampleHandler implements CommandHandler
         if ($request->state !== RequestState::CapturingSample) {
             throw SampleRefused::notReady($request->nextStep()->command);
         }
+
         $permit = EvidencePermit::query()
             ->sampling($request)
             ->orderByDesc('consumed_at')

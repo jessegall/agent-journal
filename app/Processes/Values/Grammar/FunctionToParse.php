@@ -28,6 +28,7 @@ final readonly class FunctionToParse
         for ($skipped = 0; $skipped < $tokens; $skipped++) {
             $cursor->advance();
         }
+
         $cursor->skip(TokenType::Newline);
 
         if (! CompoundToParse::opensAt($cursor)) {

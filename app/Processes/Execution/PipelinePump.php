@@ -37,9 +37,11 @@ final class PipelinePump
 
                     continue;
                 }
+
                 $readers["{$index}:{$descriptor}"] = $pipe;
             }
         }
+
         $waiting = array_fill(0, count($commands), '');
 
         while ($readers !== [] && ! $stop->isRequested()) {
@@ -83,6 +85,7 @@ final class PipelinePump
                     $written = @fwrite($input, $waiting[$index - 1]);
                     $waiting[$index - 1] = $written === false ? '' : substr($waiting[$index - 1], $written);
                 }
+
                 $producerDone = ! isset($readers[($index - 1).':1']);
 
                 if ($consumerEnded || ($producerDone && $waiting[$index - 1] === '')) {

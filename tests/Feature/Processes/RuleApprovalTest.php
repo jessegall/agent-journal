@@ -107,6 +107,7 @@ final class RuleApprovalTest extends TestCase
         } catch (ClassificationRuleRefused $refusal) {
             $this->assertStringContainsString('is at revision 1', $refusal->getMessage());
         }
+
         $this->assertSame(2, $this->saveOrdinary('save-3', 1)->revision);
     }
 

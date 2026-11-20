@@ -114,6 +114,7 @@ trait RunsAcmeRequests
             $tail = ['part' => 1, 'stream' => 'stdout', 'lines' => 50];
             $this->signed($this->start, "/agent/processes/runs/{$runId}/output/tail", $tail)->assertOk();
         }
+
         $this->runAsAgent(new SettleSample($this->requestId));
 
         return $runId;

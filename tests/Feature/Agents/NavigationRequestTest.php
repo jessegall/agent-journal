@@ -125,6 +125,7 @@ final class NavigationRequestTest extends TestCase
                 $this->addToAssertionCount(1);
             }
         }
+
         $this->assertSame(NavigationState::Proven, $navigation->fresh()?->state);
     }
 

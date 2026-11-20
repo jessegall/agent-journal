@@ -42,6 +42,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
         if ($rule->active_revision !== $command->expectedRevision) {
             throw ClassificationRuleRefused::stale($rule->rule_id, $command->expectedRevision, $rule->active_revision);
         }
+
         $earlier = RuleRevision::query()
             ->ofProject($rule->project_key)
             ->ofRule($rule->scope, $rule->rule_id)

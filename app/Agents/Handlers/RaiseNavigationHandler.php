@@ -82,6 +82,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
         if ($command->attempt !== $request->attempt_version) {
             throw HostReportRefused::staleAttempt($request->id, $command->attempt, $request->attempt_version);
         }
+
         $request->setRelation('runtime', $runtime);
 
         return $request;

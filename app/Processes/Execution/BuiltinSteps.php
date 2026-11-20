@@ -103,6 +103,7 @@ final readonly class BuiltinSteps
             if (! str_contains($argument, '=')) {
                 continue;
             }
+
             [$name, $assignmentText] = explode('=', $argument, 2);
             $assignments[$name] = $assignmentText;
         }

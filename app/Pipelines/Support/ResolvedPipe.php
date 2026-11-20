@@ -31,6 +31,7 @@ final readonly class ResolvedPipe
         if (! $pipe instanceof Pipe) {
             throw NotAPipelineStep::named($pipe::class);
         }
+
         $type = new ReflectionMethod($pipe, 'handle')->getParameters()[0]->getType();
 
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {

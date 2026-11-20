@@ -24,6 +24,7 @@ final readonly class PlaceWord implements Pipe
         if (! $toParse->isBeforeArguments || ! $toParse->word->isAssignment()) {
             return $toParse->placedAs(WordPlace::Argument);
         }
+
         $draft = $toParse->draft();
         $assignment = $draft->add(NodeType::Assignment, $toParse->word->range, $toParse->command);
         $draft->setWords($assignment, [$toParse->word]);

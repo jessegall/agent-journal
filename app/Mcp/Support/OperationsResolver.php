@@ -73,6 +73,7 @@ final readonly class OperationsResolver
 
             $pageFields['outcomes'] = $page;
         }
+
         $next = $offset + count($pageFields['outcomes']);
 
         return ToolResult::ok($pageFields, $next < count($outcomes) ? [new NextAction(self::TOOL, [

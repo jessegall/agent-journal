@@ -708,6 +708,7 @@ final class AgentDriverLedgerTest extends TestCase
             ));
             $request->refresh();
         }
+
         $attempt = $resumed->attempt_version;
 
         $this->asOwner(new ResumeKeyScript($resumed->id, $resumed->row_version, 'done typing'));
@@ -739,6 +740,7 @@ final class AgentDriverLedgerTest extends TestCase
         foreach (range(1, 12) as $number) {
             $this->deliver($opened, "work-{$number}", "Work {$number}");
         }
+
         $this->asOwner(new InterruptAgent($this->agentIdOf($opened), $opened->sessionId, 'interrupt-1'));
         $this->asOwner(new StopAgent($this->agentIdOf($opened), $opened->sessionId, 'stop-1'));
 

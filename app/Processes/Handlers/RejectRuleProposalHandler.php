@@ -37,6 +37,7 @@ final readonly class RejectRuleProposalHandler implements CommandHandler
         if ($request !== null) {
             $request->reject();
         }
+
         $rejected = RuleRejected::forProposal($proposal, $command->reason);
         $this->events->dispatch($rejected);
 

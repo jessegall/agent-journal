@@ -26,6 +26,7 @@ final readonly class WithdrawCommandRequestHandler implements CommandHandler
         if (! $this->administration->isGrantedToCaller() && ! $request->isByActor($actor)) {
             throw RequestTransitionRefused::notTheRequester();
         }
+
         $request->withdraw();
 
         return $request->id;

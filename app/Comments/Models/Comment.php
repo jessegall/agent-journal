@@ -226,6 +226,7 @@ final class Comment extends Model implements ReadableModel, Shareable
         if ($type === null) {
             throw IncompleteTextAnchor::withoutType();
         }
+
         $column = fn (string $field, string $name): string|int => $this->getAttribute($name)
             ?? throw IncompleteTextAnchor::missing($type->value, $field);
         $isQuote = $type === TextAnchorType::Quote;

@@ -91,6 +91,7 @@ final class ClassificationRule extends Model implements ReadableModel
         if ($this->state !== ClassificationState::Active) {
             throw ClassificationRuleRefused::notActive($this->rule_id, $this->state);
         }
+
         $this->state = ClassificationState::Retired;
         $this->state_reason = $reason;
         $this->save();
@@ -111,6 +112,7 @@ final class ClassificationRule extends Model implements ReadableModel
         if ($revision->revision <= $this->active_revision) {
             throw ClassificationRuleRefused::notNewer($this->rule_id, $revision->revision, $this->active_revision);
         }
+
         $this->point($revision, "Revision {$revision->revision} approved.");
     }
 

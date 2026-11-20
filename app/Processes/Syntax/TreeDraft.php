@@ -152,6 +152,7 @@ final class TreeDraft
         foreach ($this->nodes as $id => $node) {
             $nodes[$id] = $node->finished($id);
         }
+
         $outcome = $this->unsupportedReason === null ? ParseOutcome::Complete : ParseOutcome::Unsupported;
         $diagnostic = $this->unsupportedReason === null ? null : new TreeDiagnostic(
             $this->unsupportedAt,

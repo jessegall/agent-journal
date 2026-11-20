@@ -70,6 +70,7 @@ final readonly class ExecutableCheck
                 "{$program->family} resolves to {$resolved}, not the approved project tool.",
             );
         }
+
         $digest = is_file($resolved) ? hash_file('sha256', $resolved) : false;
 
         if ($digest !== $binding->contentDigest) {

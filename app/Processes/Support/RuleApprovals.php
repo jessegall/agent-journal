@@ -64,6 +64,7 @@ final readonly class RuleApprovals
         } elseif ($request !== null) {
             $request->approveOrdinary();
         }
+
         $this->events->dispatch(RuleActivated::forRevision($approved, $approval->reason));
 
         return ApprovalReceipt::of($approved);
@@ -106,6 +107,7 @@ final readonly class RuleApprovals
         if (count($readers) !== 1) {
             throw ApprovalRefused::proofMissing($rule->id);
         }
+
         $proof = ReaderProof::query()
             ->whereKey($readers[0]->proofId)
             ->where('reader_revision_id', $readers[0]->readerRevisionId)
@@ -114,6 +116,7 @@ final readonly class RuleApprovals
         if ($proof === null || ! $this->provesSameDeclaration($proof, $declaration)) {
             throw ApprovalRefused::proofMismatch($readers[0]->proofId);
         }
+
         $covered = array_map(fn (ProvenBranch $branch): int => $branch->status, $proof->proven_branches);
         $admitted = array_map(fn (ExitBranch $branch): int => $branch->status, $rule->contracts[0]->exits->branches);
 
@@ -131,6 +134,7 @@ final readonly class RuleApprovals
         if ($proof->rule_proposal_revision_id === $declaration->id) {
             return true;
         }
+
         $proven = RuleProposalRevision::query()->whereKey($proof->rule_proposal_revision_id)->sole();
 
         return $proven->payload->digest() === $declaration->payload->digest();

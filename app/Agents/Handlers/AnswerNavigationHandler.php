@@ -44,6 +44,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
         if ($sent !== null) {
             return $sent->receipt();
         }
+
         $this->checkAnswerable($navigation, $command);
 
         $round = NavigationRound::answering(
@@ -57,6 +58,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
         if ($navigation->state === NavigationState::Open) {
             $this->recordAnswered($navigation);
         }
+
         $navigation->answer();
 
         return $request->receipt();
@@ -82,6 +84,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
         if (! in_array($navigation->state, [NavigationState::Open, NavigationState::Answering], true)) {
             throw NavigationAnswerRefused::notAnswerable($navigation->id, $navigation->state->value);
         }
+
         $this->answering->assertCurrentVersion($navigation, $command->expectedRowVersion);
 
         if ($navigation->screen->generation !== $command->generation) {
@@ -91,6 +94,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
                 $navigation->screen->generation,
             );
         }
+
         $parameter = $command->answer->typeParameter;
 
         if ($parameter !== null && ! array_key_exists($parameter, $navigation->goal_parameters)) {

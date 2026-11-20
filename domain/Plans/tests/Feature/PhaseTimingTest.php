@@ -87,6 +87,7 @@ final class PhaseTimingTest extends TestCase
         for ($number = 2; $number <= 500; $number++) {
             $this->plan->addPhase("Phase {$number}");
         }
+
         $task = Task::factory()->create(['title' => 'Finish the plan']);
         $phase = $this->plan->addPhase('Finish');
         $phase->addTasks([$task->id]);
@@ -103,6 +104,7 @@ final class PhaseTimingTest extends TestCase
         foreach ($this->tasks as $task) {
             $task->block('Waits.');
         }
+
         $later = Task::factory()->create(['title' => 'Wait for the build']);
         $this->plan->addPhase('Later')->addTasks([$later->id]);
 

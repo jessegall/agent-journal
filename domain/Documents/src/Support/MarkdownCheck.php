@@ -57,6 +57,7 @@ final class MarkdownCheck
             if (substr_count(str_replace('\`', '', $line), '`') === 1) {
                 $problems[] = $index + 1;
             }
+
             $next = $lines[$index + 1] ?? '';
 
             if (self::hasTableCells($line, $next, $columns)) {
@@ -81,6 +82,7 @@ final class MarkdownCheck
                 if ($level > $headingLevel + 1 || ($heading[2] !== '' && ! ctype_space($heading[2][0]))) {
                     $problems[] = $index + 1;
                 }
+
                 $headingLevel = $level;
             }
         }

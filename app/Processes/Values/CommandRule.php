@@ -102,6 +102,7 @@ final readonly class CommandRule implements StoredValue
         if ($purpose->outputRequirement() !== OutputRequirement::Full) {
             throw CommandRuleInvalid::contractWithoutCheck($id);
         }
+
         $binding = self::usualBinding($program);
         $contract = VerificationContract::unproven(implode(' ', [$program->family, ...$subcommands]), $tool, $binding);
 

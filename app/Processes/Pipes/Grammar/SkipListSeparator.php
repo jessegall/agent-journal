@@ -26,6 +26,7 @@ final readonly class SkipListSeparator implements Pipe
         if ($cursor->is(TokenType::Semicolon)) {
             $this->stepPastSemicolon($cursor, $listCursor->mayTakeSemicolon);
         }
+
         $cursor->skip(TokenType::Newline, TokenType::Comment);
 
         return $listCursor;
@@ -43,6 +44,7 @@ final readonly class SkipListSeparator implements Pipe
         if (! $mayTakeSemicolon) {
             throw ShellGrammarStopped::invalid('A ; stands where a command should be.', $cursor->position());
         }
+
         $cursor->advance();
     }
 }

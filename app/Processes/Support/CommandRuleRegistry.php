@@ -136,6 +136,7 @@ final readonly class CommandRuleRegistry
 
             return new UnresolvedFact(UnresolvedType::UnknownProgram, $node, $problem);
         }
+
         $problem = "No rule of {$program->family} accepts these words.";
         $closest = new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem);
         $closestLength = -1;
@@ -146,6 +147,7 @@ final readonly class CommandRuleRegistry
             if ($length < 0) {
                 continue;
             }
+
             $refusals = $rule->arguments->check(array_slice($words, $length), $node);
 
             if ($refusals === []) {
@@ -242,6 +244,7 @@ final readonly class CommandRuleRegistry
             if (isset($byId[$rule->id])) {
                 throw CommandRuleConflict::sameId($byId[$rule->id], $rule);
             }
+
             $byId[$rule->id] = $rule;
         }
     }

@@ -75,6 +75,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
                 if ($this->settledWithoutWork($request, $runtimes->get($runtimeId))) {
                     continue;
                 }
+
                 $request->stage($now);
                 $claimed[] = $request->claimed();
 

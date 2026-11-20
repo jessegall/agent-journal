@@ -62,6 +62,7 @@ final class SpawnedProcess
         if (! is_resource($process)) {
             return $error === '' ? "{$command[0]} could not be started" : $error;
         }
+
         $status = proc_get_status($process);
 
         return new self($process, $pipes, (int) $status['pid']);
@@ -115,6 +116,7 @@ final class SpawnedProcess
                     unset($streams[$descriptor]);
                 }
             }
+
             $deadline ??= $this->hasEnded() ? microtime(true) + $seconds : null;
 
             if ($deadline !== null && $streams !== [] && microtime(true) > $deadline) {
@@ -125,6 +127,7 @@ final class SpawnedProcess
                 return false;
             }
         }
+
         $emitOutput(1, 1);
         $emitOutput(2, 1);
 
@@ -140,6 +143,7 @@ final class SpawnedProcess
         while (! $this->hasEnded()) {
             usleep(10_000);
         }
+
         $status = $this->endStatus;
         proc_close($this->process);
 
@@ -176,6 +180,7 @@ final class SpawnedProcess
         while (! $this->hasEnded() && microtime(true) < $deadline) {
             usleep(20_000);
         }
+
         posix_kill(-$this->pid, SIGKILL);
         $deadline = microtime(true) + 1;
 

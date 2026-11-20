@@ -87,6 +87,7 @@ final readonly class ReaderDefinition
             if (! is_array($rule) || ! is_string($rule['role'] ?? null) || ! is_string($rule['pattern'] ?? null)) {
                 throw ReaderDefinitionInvalid::field('rules');
             }
+
             $rules[] = RecordRule::of(RecordRole::from($rule['role']), $rule['pattern']);
         }
 

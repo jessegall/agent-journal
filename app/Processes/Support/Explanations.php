@@ -87,6 +87,7 @@ final readonly class Explanations
                 if ($contract->reader->isProven() || $this->rules->approvedFor($contract->operation) !== []) {
                     continue;
                 }
+
                 $reason = RequestHoldReason::ReaderRequired->value;
                 $held[] = new HeldPartData($part->node, 'reader_required', $contract->operation, $reason);
             }
@@ -145,6 +146,7 @@ final readonly class Explanations
             if ($node->type !== NodeType::HereDocument || ! $inside) {
                 continue;
             }
+
             $text .= substr($tree->source, $at, $node->range->start - $at).'(here-document body left out)';
             $at = $node->range->end;
         }

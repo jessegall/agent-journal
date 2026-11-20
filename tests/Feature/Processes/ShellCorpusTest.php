@@ -44,6 +44,7 @@ final class ShellCorpusTest extends TestCase
                 "{$name} does not match the manifest",
             );
         }
+
         $cases = $this->cases();
         $this->assertSame($manifest->counts->cases, count($cases));
         $this->assertSame(
@@ -69,6 +70,7 @@ final class ShellCorpusTest extends TestCase
                     $this->sortedParts($tree->executableParts()),
                 );
             }
+
             $wanted = ['outcome' => $expected->outcome];
 
             if ($expected->isComplete()) {
@@ -102,6 +104,7 @@ final class ShellCorpusTest extends TestCase
             if (! $case->expected->isComplete()) {
                 continue;
             }
+
             $actual = $classifier->classify(
                 $syntax->parse($case->source, $case->dialect),
                 $context,

@@ -36,6 +36,7 @@ final readonly class CloseSimpleCommandNode implements Pipe
         if ($parts->isEmpty() && ! $context->draft->hasChildren($parts->node)) {
             throw ShellGrammarStopped::invalid('A command is missing here.', $parts->start);
         }
+
         $context->draft->finish($parts->node, $parts->range(), $parts->arguments, $parts->redirects);
 
         return new NodeRead($parts->node);

@@ -24,6 +24,7 @@ final readonly class ContractSnapshot
         foreach (DiscoveryProfile::cases() as $profile) {
             $profiles[$profile->value] = $this->catalogue->toolDefinitionsFor($profile);
         }
+
         $versions = array_unique([...ProtocolVersion::serverSupported(), ...ProtocolVersion::initializeSupported()]);
         sort($versions);
         $refusals = array_column(RefusalCode::cases(), 'value');

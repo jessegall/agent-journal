@@ -140,6 +140,7 @@ final class PartRun extends Model implements ReadableModel
         if (! $this->end()->hasEnded()) {
             throw PartTransitionRefused::notDrained();
         }
+
         $this->moveTo(LifecycleState::Ended);
         $this->streams_drained = true;
         $this->ended_at = CarbonImmutable::now();
@@ -280,6 +281,7 @@ final class PartRun extends Model implements ReadableModel
         if (! $this->lifecycle->canMoveTo($next)) {
             throw PartTransitionRefused::between($this->lifecycle, $next);
         }
+
         $this->lifecycle = $next;
     }
 

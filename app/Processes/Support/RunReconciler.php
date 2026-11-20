@@ -32,6 +32,7 @@ final readonly class RunReconciler
             foreach ($open as $part) {
                 $part->lose();
             }
+
             $run->markLost();
         }
 

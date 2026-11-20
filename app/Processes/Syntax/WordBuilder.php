@@ -29,6 +29,7 @@ final class WordBuilder
         if ($this->literal === null) {
             $this->literalStart = $position;
         }
+
         $this->literal .= $character;
     }
 
@@ -57,6 +58,7 @@ final class WordBuilder
                 new SourceRange($this->literalStart, $position),
             );
         }
+
         $this->literal = null;
     }
 }

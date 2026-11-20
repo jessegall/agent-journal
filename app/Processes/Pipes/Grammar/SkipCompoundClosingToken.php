@@ -26,6 +26,7 @@ final readonly class SkipCompoundClosingToken implements Pipe
         if (! $cursor->is($reading->closing)) {
             throw ShellGrammarStopped::invalid("The {$reading->name()} opened here is not closed.", $start);
         }
+
         $end = $cursor->currentEnd();
         $cursor->advance();
 

@@ -41,6 +41,7 @@ final readonly class Word
         if ($bytes === 0) {
             return $this;
         }
+
         $segments = array_map(fn (WordSegment $segment) => $segment->shiftedBy($bytes), $this->segments);
 
         return new self($segments, $this->range->shiftedBy($bytes));
@@ -89,6 +90,7 @@ final readonly class Word
         if (preg_match('/^\$\{?([1-9])\}?$/', $segment->text, $match) !== 1) {
             return $segment;
         }
+
         $index = (int) $match[1] - 1;
 
         if (! isset($positional[$index])) {

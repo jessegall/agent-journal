@@ -37,8 +37,10 @@ final readonly class ShellExpansionScanner
                 if ($cursor->source[$close - 1] !== '\\') {
                     break;
                 }
+
                 $close++;
             }
+
             $cursor->position = $close + 1;
 
             return new WordSegment(
@@ -72,6 +74,7 @@ final readonly class ShellExpansionScanner
             if ($nameStart === '' || ! ($zshFlags || ctype_alnum($nameStart) || str_contains('_@*#?$!-', $nameStart))) {
                 throw ShellLineUnreadable::badSubstitution($start);
             }
+
             $cursor->position = $this->closingBrace($cursor, $start) + 1;
 
             return new WordSegment(
@@ -80,6 +83,7 @@ final readonly class ShellExpansionScanner
                 new SourceRange($start, $cursor->position),
             );
         }
+
         $nameLength = strspn(
             $cursor->source,
             'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_',
@@ -93,6 +97,7 @@ final readonly class ShellExpansionScanner
         if ($nameLength === 0) {
             return null;
         }
+
         $cursor->position = $start + 1 + $nameLength;
 
         return new WordSegment(
@@ -138,6 +143,7 @@ final readonly class ShellExpansionScanner
                 if ($close === false) {
                     throw ShellLineUnreadable::unfinished($what, $start);
                 }
+
                 $index = $close + 1;
 
                 continue;
@@ -178,6 +184,7 @@ final readonly class ShellExpansionScanner
                     new SourceRange($start, $cursor->position),
                 );
             }
+
             $index++;
         }
 
@@ -221,6 +228,7 @@ final readonly class ShellExpansionScanner
             } elseif ($character === '}' && --$depth === 0) {
                 return $index;
             }
+
             $index++;
         }
 
@@ -251,6 +259,7 @@ final readonly class ShellExpansionScanner
         if ($quote === '"') {
             return $this->closingQuote($cursor, '"', $index + 1, $start, $what);
         }
+
         $close = strpos($cursor->source, "'", $index + 1);
 
         if ($close === false) {
@@ -280,6 +289,7 @@ final readonly class ShellExpansionScanner
             if ($cursor->source[$position] === $quote) {
                 return $position;
             }
+
             $position++;
         }
 
@@ -325,6 +335,7 @@ final readonly class ShellExpansionScanner
 
                 continue;
             }
+
             $isBareEsac = $this->startsWord($cursor, $position, 'esa') === false
                 && substr_compare($cursor->source, 'esac', $position, 4) === 0
                 && in_array($cursor->at($position + 4), ['', ')', ' ', ';', "\n"], true)
@@ -334,10 +345,12 @@ final readonly class ShellExpansionScanner
                 if (--$depth === 0) {
                     return $position + 4;
                 }
+
                 $position += 4;
 
                 continue;
             }
+
             $position++;
         }
 
@@ -362,11 +375,13 @@ final readonly class ShellExpansionScanner
         if ($delimiter === '') {
             return $index + 2;
         }
+
         $lineEnd = strpos($cursor->source, "\n", $delimiterStart);
 
         if ($lineEnd === false) {
             return $delimiterStart + $delimiterLength;
         }
+
         $lineStart = $lineEnd + 1;
         $length = strlen($cursor->source);
 
@@ -382,6 +397,7 @@ final readonly class ShellExpansionScanner
             if ($next === $length) {
                 break;
             }
+
             $lineStart = $next + 1;
         }
 

@@ -175,6 +175,7 @@ final class AnswerNavigationTest extends TestCase
         foreach ($refused as $name => [$command, $refusal]) {
             $this->assertThrows(fn () => $this->asAgent($this->main, $command), $refusal, null);
         }
+
         $this->assertSame(NavigationState::Answering, $navigation->fresh()?->state);
     }
 

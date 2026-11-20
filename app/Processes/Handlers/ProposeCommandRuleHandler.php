@@ -36,6 +36,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
         if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {
             throw RuleProposalRefused::notTheRequester($request->id);
         }
+
         $this->checks->check($command->proposed->rule, $request->hold_reason->needsReader());
 
         $proposal = RuleProposal::open(

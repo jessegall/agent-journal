@@ -39,6 +39,7 @@ final readonly class ManifestCheck
                 } elseif (hash_file('sha256', $path) !== $chunk->checksum) {
                     $state = CaptureState::Corrupt;
                 }
+
                 $next[$stream] = $chunk->offset + $chunk->length;
             }
         });

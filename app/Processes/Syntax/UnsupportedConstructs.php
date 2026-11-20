@@ -45,6 +45,7 @@ final readonly class UnsupportedConstructs
         if ($construct->needsClosing()) {
             throw ShellGrammarStopped::invalid("The '{$opener}' opened here is not closed by '{$terminator}'.", $start);
         }
+
         $context->draft->markUnsupported($reason, $start);
 
         return $context->draft->add(NodeType::Unsupported, new SourceRange($start, $end), null);

@@ -55,6 +55,7 @@ final class DocumentEditTest extends TestCase
         foreach (str_split($replacement, TextUpload::CHUNK_BYTES) as $index => $chunk) {
             $bus->run(new AppendUpload($id, $index, $chunk, hash('sha256', $chunk)));
         }
+
         $bus->run(new CommitUpload($id));
         $this->assertThrows(
             fn () => $bus->run(new EditDocument($target, 'Missing section', null, $id)),

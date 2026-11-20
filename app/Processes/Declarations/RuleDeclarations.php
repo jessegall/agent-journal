@@ -80,6 +80,7 @@ final readonly class RuleDeclarations
                 $this->fieldErrors(array_map(array_values(...), $validator->errors()->messages())),
             );
         }
+
         $declared = RuleDeclarationFile::from($validator->validated())->toProposals();
         $this->checkPurposes($declared);
 

@@ -115,6 +115,7 @@ final class RuleRevision extends Model implements ReadableModel
         if (! $rule->hasContract() && $readers !== []) {
             throw RuleRevisionInvalid::readerWithoutContract($rule->id);
         }
+
         $latest = self::query()->ofProject($projectKey)->ofRule($rule->scope, $rule->id)->max('revision');
         $approved = $rule->ownedBy($rule->scope, (int) $latest + 1);
 

@@ -26,6 +26,7 @@ final readonly class ReadOutputLive implements Listener
         if ($part === null || $this->assessments->pairOf($part) === []) {
             return;
         }
+
         $this->commands->run(new ReadPartLive($part->id));
     }
 }

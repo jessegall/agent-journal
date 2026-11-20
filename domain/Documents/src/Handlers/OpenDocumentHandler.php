@@ -31,6 +31,7 @@ final readonly class OpenDocumentHandler extends DocumentCommandHandler
         if ($command->expectedRevision !== null) {
             $this->assertDocumentRevision($document, $command->expectedRevision);
         }
+
         $baseRevision = $document->currentRevisionOrFail();
 
         $editor = $this->editors->editor();

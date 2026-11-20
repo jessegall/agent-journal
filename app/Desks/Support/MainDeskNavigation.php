@@ -46,11 +46,13 @@ final readonly class MainDeskNavigation implements MainDesk
         if (! NavigationRequest::query()->acrossActors()->open()->exists()) {
             return 0;
         }
+
         $seated = $this->occupant()->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($actor));
 
         if (! $seated->getOrElse(false)) {
             return 0;
         }
+
         $held = AssignmentRecord::query()->heldRecordIds(
             NavigationRequest::LINK_TYPE,
             $this->main()->assigneeIdentity(),

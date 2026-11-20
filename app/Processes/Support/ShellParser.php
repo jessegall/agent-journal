@@ -91,6 +91,7 @@ final readonly class ShellParser implements ShellCommandParser
             if ($join !== null && ! $this->isLastChild($parent, $current)) {
                 return $join;
             }
+
             $current = $parent;
         }
 

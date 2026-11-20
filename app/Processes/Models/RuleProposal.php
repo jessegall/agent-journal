@@ -132,6 +132,7 @@ final class RuleProposal extends Model implements ReadableModel
         if (! $this->state->canAcceptRevision()) {
             throw RuleProposalRefused::ended($this->id, $this->state);
         }
+
         $this->state = ProposalState::Withdrawn;
         $this->save();
     }
@@ -248,6 +249,7 @@ final class RuleProposal extends Model implements ReadableModel
         if (! $this->state->canAcceptRevision()) {
             throw RuleProposalRefused::ended($this->id, $this->state);
         }
+
         $this->state = $state;
         $this->save();
     }

@@ -49,6 +49,7 @@ final readonly class ReaderProofCheck
 
                 continue;
             }
+
             $run = $runs->get($runId) ?? throw new ModelNotFoundException()->setModel(ProcessRun::class, [$runId]);
             $part = $this->samplePart($request, $run);
             $runFailures = $this->runFailures($request, $run, $part);
@@ -65,6 +66,7 @@ final readonly class ReaderProofCheck
                 $failures[] = "run {$runId}: {$failure}";
             }
         }
+
         $unproven = $this->unprovenStatuses($contract, $proven);
 
         if ($failures !== [] || $unproven !== []) {
@@ -91,6 +93,7 @@ final readonly class ReaderProofCheck
         if (! $run->hasEnded() || ! $part->end()->hasStatus()) {
             return ['the run has not ended with its own exit status'];
         }
+
         $manifest = $this->manifests->stateOf($part);
 
         if (! $part->capture_state->isComplete() || ! $manifest->isComplete()) {

@@ -61,6 +61,7 @@ final class ProcessEvent extends Model implements ReadableModel
         if ($existing->type === $type && $existing->payload === $fields) {
             return $existing;
         }
+
         $next = (int) self::query()->ofRun($run)->max('sequence') + 1;
 
         return self::query()->create(

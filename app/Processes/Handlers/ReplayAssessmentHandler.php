@@ -46,11 +46,13 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
         if ($part->lifecycle !== LifecycleState::Ended) {
             throw ReplayRefused::notEnded($part->id);
         }
+
         $pairs = $this->assessments->pairOf($part);
 
         if ($pairs === []) {
             throw ReplayRefused::noPair($part->operation);
         }
+
         $this->checkSameContract($part, $pairs[0]);
 
         return $this->assessments->assess($part, $pairs[0]);
@@ -66,6 +68,7 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
         if ($previous === null) {
             return;
         }
+
         $assessedUnder = RuleRevision::query()->findOrFail($previous->rule_revision_id)->payload->contracts;
 
         if ($assessedUnder === [] || $assessedUnder[0]->digest() !== $pair->contract->digest()) {

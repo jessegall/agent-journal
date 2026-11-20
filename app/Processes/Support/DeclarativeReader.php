@@ -49,6 +49,7 @@ final readonly class DeclarativeReader
 
                 break;
             }
+
             $this->readFrame($builder, $frame);
         }
 
@@ -69,6 +70,7 @@ final readonly class DeclarativeReader
                 'The part has not ended, so its output is not whole.',
             );
         }
+
         $checkpoint = $builder->build();
         $summaries = $checkpoint->recordsOf(RecordRole::Summary);
         $this->checkSummaries($builder, $summaries);
@@ -96,6 +98,7 @@ final readonly class DeclarativeReader
 
             return;
         }
+
         $expected = $builder->offsetOf($frame->stream);
 
         if ($frame->end() <= $expected) {
@@ -107,6 +110,7 @@ final readonly class DeclarativeReader
             $builder->problem(ProblemCode::OutputIncomplete, $frame->stream, $expected, $frame->offset, $explanation);
             $expected = $frame->offset;
         }
+
         $pending = $builder->pendingOf($frame->stream);
         $bytes = $pending.substr($frame->bytes, $expected - $frame->offset);
         $this->readLines($builder, $frame->stream, $expected - strlen($pending), $bytes);
@@ -123,6 +127,7 @@ final readonly class DeclarativeReader
             $this->readLine($builder, $stream, $start + $lineStart, substr($bytes, $lineStart, $newline - $lineStart));
             $lineStart = $newline + 1;
         }
+
         $rest = substr($bytes, $lineStart);
 
         if (strlen($rest) > $this->definition->maxRecordBytes) {
@@ -136,6 +141,7 @@ final readonly class DeclarativeReader
             );
             $rest = '';
         }
+
         $builder->holdUntilMore($stream, $rest, $start + strlen($bytes));
     }
 
@@ -154,6 +160,7 @@ final readonly class DeclarativeReader
 
             return;
         }
+
         $this->readLine($builder, $stream, $start, $rest);
     }
 
@@ -178,11 +185,13 @@ final readonly class DeclarativeReader
 
             return;
         }
+
         $line = $this->lineOf($this->normalizer->normalize($bytes));
 
         if (trim($line) === '') {
             return;
         }
+
         $rule = $this->normalizer->hasUnsupportedControl($line) ? null : $this->definition->ruleFor($line);
 
         if ($rule === null) {
@@ -196,6 +205,7 @@ final readonly class DeclarativeReader
 
             return;
         }
+
         $builder->record(new OutputRecord($stream, $start, $end, $rule->role, $rule->captures($line)));
     }
 
@@ -208,11 +218,13 @@ final readonly class DeclarativeReader
         if ($this->contract->framing !== FramingType::JsonLines) {
             return $line;
         }
+
         $fields = json_decode($line, true);
 
         if (! is_array($fields)) {
             return "\x01".$line;
         }
+
         $pairs = [];
 
         foreach ($fields as $key => $configuredField) {
@@ -230,6 +242,7 @@ final readonly class DeclarativeReader
         if ($summaries === [] && $this->contract->summary === SummaryRule::RequiredTerminalRecord) {
             $builder->problemOfWholeOutput(ProblemCode::SummaryMissing, 'The output has no terminal summary.');
         }
+
         $distinct = array_unique(array_map(fn (OutputRecord $summary) => serialize($summary->captures), $summaries));
 
         if (count($distinct) > 1) {
@@ -247,6 +260,7 @@ final readonly class DeclarativeReader
         if ($summary === null) {
             return [];
         }
+
         $counts = [];
 
         foreach ([...$this->definition->countFields, $this->definition->totalField] as $field) {
@@ -256,6 +270,7 @@ final readonly class DeclarativeReader
                 $counts[$field] = $count;
             }
         }
+
         $total = $this->definition->totalField;
 
         if ($total !== null && isset($counts[$total])) {
@@ -282,12 +297,14 @@ final readonly class DeclarativeReader
         if ($records === []) {
             return ReadProgress::none();
         }
+
         $last = $records[array_key_last($records)];
         $progress = new ReadProgress($last->count('completed') ?? count($records), $last->count('total'));
 
         if ($progress->isPastItsTotal()) {
             $builder->problemOfWholeOutput(ProblemCode::CountsInvalid, 'Progress counts more steps than its total.');
         }
+
         $summaryTotal = $this->definition->totalField === null ? null : $summary?->count($this->definition->totalField);
 
         if ($progress->total !== null && $summaryTotal !== null && $progress->total !== $summaryTotal) {

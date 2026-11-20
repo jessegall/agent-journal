@@ -66,6 +66,7 @@ final readonly class ToolRules
                 $rules[] = CommandRule::forProgram($id, $gh, [$group, $verb], $this->ghWriting(), $write);
             }
         }
+
         $api = ArgumentGrammar::operands(OperandType::Text)->withOptions(
             OptionGrammar::valued(OperandType::Text, '--jq', '-q'),
             OptionGrammar::flag('--paginate'),

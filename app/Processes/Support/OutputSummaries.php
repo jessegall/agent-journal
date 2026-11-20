@@ -62,11 +62,13 @@ final readonly class OutputSummaries
         if ($run->mode === RunMode::Evidence) {
             return PartResult::evidenceOnly();
         }
+
         $receipt = $this->receipts->forPart($part->id);
 
         if ($receipt->isDefined()) {
             return PartResult::receipted($receipt->get()->outcome->value, $receipt->get()->receiptId);
         }
+
         $assessment = OutputAssessment::latestOf($part);
 
         if ($assessment === null) {

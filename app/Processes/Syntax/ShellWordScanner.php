@@ -32,6 +32,7 @@ final readonly class ShellWordScanner
 
             return;
         }
+
         $word = $this->readWord($cursor);
 
         $cursor->hereDocuments->takeDelimiter(count($cursor->tokens()) - 1);
@@ -77,6 +78,7 @@ final readonly class ShellWordScanner
             if (str_contains(self::WORD_ENDS, $character)) {
                 break;
             }
+
             match (true) {
                 $character === '\\' => $this->readEscape($cursor, $word),
                 $character === "'" => $word->add($cursor->position, $this->readSingleQuoted($cursor)),
@@ -99,6 +101,7 @@ final readonly class ShellWordScanner
 
             return;
         }
+
         $escapeStart = $cursor->position;
         $cursor->position += min(2, strlen($cursor->source) - $cursor->position);
         $word->add(
@@ -121,6 +124,7 @@ final readonly class ShellWordScanner
         if ($close === false) {
             throw ShellLineUnreadable::unfinished('a single-quoted string', $cursor->position);
         }
+
         $segment = new WordSegment(
             WordSegmentType::SingleQuoted,
             substr($cursor->source, $cursor->position + 1, $close - $cursor->position - 1),
@@ -145,6 +149,7 @@ final readonly class ShellWordScanner
 
             return;
         }
+
         $word->add($expansion->range->start, $expansion);
     }
 
@@ -174,6 +179,7 @@ final readonly class ShellWordScanner
                 if ($close === false) {
                     throw ShellLineUnreadable::unfinished('a single-quoted string', $index);
                 }
+
                 $index = $close + 1;
 
                 continue;
@@ -185,6 +191,7 @@ final readonly class ShellWordScanner
 
                 continue;
             }
+
             $closes = $character === ']' && $cursor->at($index + 1) === ']' && in_array(
                 $cursor->source[$index - 1],
                 [' ', "\t"],
@@ -197,6 +204,7 @@ final readonly class ShellWordScanner
 
                 return;
             }
+
             $index++;
         }
 
@@ -225,21 +233,25 @@ final readonly class ShellWordScanner
             if ($cursor->position >= $length) {
                 throw ShellLineUnreadable::unfinished('a double-quoted string', $open);
             }
+
             $character = $cursor->source[$cursor->position];
 
             if ($character === '"') {
                 break;
             }
+
             $next = $cursor->at($cursor->position + 1);
 
             if ($character === '\\' && in_array($next, ['$', '`', '"', '\\', "\n"], true)) {
                 if ($next !== "\n") {
                     $text .= $next;
                 }
+
                 $cursor->position += 2;
 
                 continue;
             }
+
             $startsExpansion = ($character === '$' && $next !== "'") || $character === '`';
             $expansion = $startsExpansion ? $this->expansions->read($cursor) : null;
 
@@ -251,12 +263,14 @@ final readonly class ShellWordScanner
                         new SourceRange($textStart, $expansion->range->start),
                     );
                 }
+
                 $segments[] = $expansion;
                 $text = '';
                 $textStart = $cursor->position;
 
                 continue;
             }
+
             $text .= $character;
             $cursor->position++;
         }
@@ -268,6 +282,7 @@ final readonly class ShellWordScanner
                 new SourceRange($segments === [] ? $open : $textStart, $cursor->position + 1),
             );
         }
+
         $cursor->position++;
 
         return $segments;

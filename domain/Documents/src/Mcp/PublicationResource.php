@@ -52,6 +52,7 @@ abstract class PublicationResource extends JournalResource
         if ($page->nextActions === []) {
             return Response::text($body);
         }
+
         $body .= $page->responseFields['ends_line'] ? "\n" : '';
         $path = strtok((string) $request->uri(), '?');
         $next = $path.'?continuation='.rawurlencode($page->nextActions[0]->arguments['continuation']);

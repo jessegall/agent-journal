@@ -71,6 +71,7 @@ final class PlanCascadeToolsTest extends TestCase
             $outcomes = [...$outcomes, ...$receipt['outcomes']];
             $actions = $receipt['next_actions'];
         }
+
         $this->assertSame([], $actions);
 
         $this->assertEqualsCanonicalizing(

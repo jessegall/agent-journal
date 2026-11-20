@@ -34,6 +34,7 @@ final readonly class CleanProcessOutputHandler implements CommandHandler
                 throw CleanRefused::notEnded($run->id);
             }
         }
+
         $parts = PartRun::query()->whereIn('process_run_id', $runs->modelKeys())->readLimit(5_000)->get();
         $chunks = OutputChunk::query()->whereIn('part_run_id', $parts->modelKeys())->readLimit(100_000)->get();
         $preview = new CleanPreview(
@@ -46,6 +47,7 @@ final readonly class CleanProcessOutputHandler implements CommandHandler
         if ($command->preview) {
             return $preview;
         }
+
         $disk = $this->disks->disk(SpoolRecorder::DISK);
 
         foreach ($chunks as $chunk) {

@@ -86,6 +86,7 @@ final readonly class EvidenceRuns
         if ($permit->wasStartedBy($requestId)) {
             return ProcessRun::ofAnyActor($permit->process_run_id);
         }
+
         $this->checkedClassification(
             $permit->source_line,
             $permit->working_folder,
@@ -97,11 +98,13 @@ final readonly class EvidenceRuns
         if (! $timing->isAllowed()) {
             throw PhaseTimingRefused::by($timing);
         }
+
         $verdict = $this->outputs->check($classification);
 
         if (! $verdict->isAllowed()) {
             throw EvidencePermitRefused::changed();
         }
+
         $plan = $this->planner->plan($classification->tree, $classification);
         $run = ProcessRun::admit($runner, new RunAdmission(
             "evidence-{$permit->id}",
@@ -135,6 +138,7 @@ final readonly class EvidenceRuns
         if (! $classification->isKnown()) {
             throw EvidencePermitRefused::unknown();
         }
+
         $permissions = $this->permissions->forActor($runner);
 
         foreach ($classification->parts as $part) {
@@ -175,6 +179,7 @@ final readonly class EvidenceRuns
         if ($tree->outcome !== ParseOutcome::Complete) {
             throw EvidencePermitRefused::unknown();
         }
+
         $classifier = array_reduce(
             $candidates,
             fn (CommandClassifier $known, CommandRule $rule): CommandClassifier => $known->withCandidate($rule),

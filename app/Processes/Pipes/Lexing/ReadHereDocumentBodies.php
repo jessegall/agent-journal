@@ -72,6 +72,7 @@ final readonly class ReadHereDocumentBodies implements Pipe
                 if ($lineEnd === $length) {
                     break;
                 }
+
                 $lineStart = $lineEnd + 1;
             }
 
@@ -110,6 +111,7 @@ final readonly class ReadHereDocumentBodies implements Pipe
 
                 continue;
             }
+
             $expansion = ($character === '`' || ($character === '$' && $cursor->at(
                 $cursor->position + 1,
             ) === '(')) ? $this->expansions->read($cursor) : null;
@@ -119,6 +121,7 @@ final readonly class ReadHereDocumentBodies implements Pipe
 
                 continue;
             }
+
             $cursor->position++;
         }
 

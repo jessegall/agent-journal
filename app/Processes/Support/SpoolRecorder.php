@@ -57,6 +57,7 @@ final readonly class SpoolRecorder implements OutputRecorder
         if (! is_dir(dirname($path))) {
             mkdir(dirname($path), 0700, true);
         }
+
         $file = is_file($path) ? false : fopen($path, 'xb');
         $written = $file === false ? 0 : (int) fwrite($file, $bytes);
 

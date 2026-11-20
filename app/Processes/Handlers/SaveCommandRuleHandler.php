@@ -36,6 +36,7 @@ final readonly class SaveCommandRuleHandler implements CommandHandler
         if ($rule->hasContract()) {
             throw ApprovalRefused::checkWithoutRequest($rule->id);
         }
+
         $this->checks->check($rule, false);
         $projectKey = $this->projects->current();
         $proposal = RuleProposal::open($projectKey, $owner, $command->requestId, $command->proposed, null);

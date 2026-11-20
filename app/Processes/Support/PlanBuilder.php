@@ -123,6 +123,7 @@ final class PlanBuilder
         if ($program !== null && array_key_exists(basename($program), self::SHELLS)) {
             return $this->shell($node, $context, $argv, $redirects, $children, self::SHELLS[basename($program)]);
         }
+
         $type = in_array($program, self::BUILTINS, true) ? StepType::Builtin : StepType::Command;
 
         return PlanStep::from([
@@ -158,12 +159,14 @@ final class PlanBuilder
         if ($source === null || in_array(null, $literals, true)) {
             throw ExecutionPlanRefused::unsupportedNode('shell without a literal -c source', $node->id);
         }
+
         $arguments = array_values(array_filter(array_slice($literals, 3), 'is_string'));
         $inner = $this->syntax->parse($source, $dialect);
 
         if ($inner->outcome !== ParseOutcome::Complete) {
             throw ExecutionPlanRefused::incomplete();
         }
+
         $child = new self($inner, $this->syntax, array_slice($arguments, 1))->root();
 
         return PlanStep::from([
@@ -190,6 +193,7 @@ final class PlanBuilder
             if ($child->type !== NodeType::Assignment) {
                 continue;
             }
+
             $word = $this->planWord($child->words[0], $node, $substitutions);
             $text = (string) $word->pieces[0];
             $name = strstr($text, '=', true);
@@ -197,6 +201,7 @@ final class PlanBuilder
             if ($name === false) {
                 throw ExecutionPlanRefused::dynamicWord($child->id);
             }
+
             $assignments[$name] = new PlanWord([substr($text, strlen($name) + 1), ...array_slice($word->pieces, 1)]);
         }
 
@@ -219,6 +224,7 @@ final class PlanBuilder
 
                 continue;
             }
+
             $substitution = array_values(
                 array_filter(
                     $substitutions,
@@ -229,6 +235,7 @@ final class PlanBuilder
             if ($substitution === []) {
                 throw ExecutionPlanRefused::dynamicWord($node->id);
             }
+
             $pieces[] = $substitution[0]->id;
         }
 

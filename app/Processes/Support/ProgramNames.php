@@ -31,6 +31,7 @@ final readonly class ProgramNames
                 'The program name is only known when the command runs.',
             );
         }
+
         $name = basename($original);
 
         foreach ($spellings as $family) {

@@ -21,6 +21,7 @@ final readonly class NoteNegation implements Pipe
         if (! $cursor->is(TokenType::Bang)) {
             return new PipedCommandsToParse($toParse, null);
         }
+
         $start = $cursor->position();
         $cursor->advance();
 

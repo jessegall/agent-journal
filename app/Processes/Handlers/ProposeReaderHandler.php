@@ -39,11 +39,13 @@ final readonly class ProposeReaderHandler implements CommandHandler
         if (! $request->state->isOpen()) {
             throw ReaderProposalRefused::closed($request->id);
         }
+
         $declaration = RuleProposalRevision::query()->answering($request, $command->declarationRevision)->first();
 
         if ($declaration === null) {
             throw ReaderProposalRefused::declarationMissing($request->id, $command->declarationRevision);
         }
+
         $contracts = $declaration->payload->contracts;
 
         if ($contracts === []) {

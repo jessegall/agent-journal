@@ -36,6 +36,7 @@ final readonly class JournalRoutes
                 $routes[$name] = $attributes[0]->newInstance();
             }
         }
+
         ksort($routes);
 
         return new self($routes);

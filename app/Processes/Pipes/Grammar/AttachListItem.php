@@ -32,6 +32,7 @@ final readonly class AttachListItem implements Pipe
 
             return new ListItems($toParse, false);
         }
+
         $toParse->draft()->adopt($toParse->parent, $parsedCommand->node);
 
         if (! $this->endsCommand($cursor)) {

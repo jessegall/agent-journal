@@ -40,11 +40,13 @@ final readonly class MenuStep
                 throw MenuStepRefused::unexpectedField($index, (string) $field);
             }
         }
+
         $fingerprint = $sent['fingerprint'] ?? null;
 
         if (! is_string($fingerprint) || preg_match(self::FINGERPRINT, $fingerprint) !== 1) {
             throw MenuStepRefused::fingerprintMalformed($index);
         }
+
         $choose = self::text($index, $sent['choose'] ?? null);
         $key = self::text($index, $sent['key'] ?? null);
 

@@ -149,6 +149,7 @@ final class DocumentToolsTest extends TestCase
                 'request_key' => $key.'-part-'.$index,
             ])->assertJsonPath('result.isError', false);
         }
+
         $this->callMcpTool($caller, 'uploads_commit', ['upload_id' => $upload, 'request_key' => $key.'-commit'])
             ->assertJsonPath('result.structuredContent.attachment_id', $upload);
 

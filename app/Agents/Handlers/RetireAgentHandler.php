@@ -63,6 +63,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         foreach (ProcessStart::cancelPendingOfAgent($target->id) as $account) {
             $this->events->dispatch(new AccountUseChanged($account));
         }
+
         $released = $this->store->releaseAll(AssigneeIdentity::of($target));
         $this->facts->publish($caller, AssignmentReason::Retired, $released);
 

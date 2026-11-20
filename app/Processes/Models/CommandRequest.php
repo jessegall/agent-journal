@@ -246,6 +246,7 @@ final class CommandRequest extends Model implements ReadableModel
         if ($this->state !== RequestState::AwaitingApproval) {
             throw $this->refusal(RequestState::Active);
         }
+
         $this->moveTo(RequestState::Active);
     }
 
@@ -312,6 +313,7 @@ final class CommandRequest extends Model implements ReadableModel
         if (! $this->state->allows($next)) {
             throw $this->refusal($next);
         }
+
         $this->state = $next;
         $this->save();
     }

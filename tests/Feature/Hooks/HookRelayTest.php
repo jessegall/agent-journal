@@ -288,6 +288,7 @@ final class HookRelayTest extends TestCase
         foreach ($request->headers() as $name => $values) {
             $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $values[0];
         }
+
         $server['CONTENT_TYPE'] = 'application/json';
         $this->app->forgetScopedInstances();
 

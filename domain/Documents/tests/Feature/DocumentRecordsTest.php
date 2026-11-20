@@ -47,6 +47,7 @@ final class DocumentRecordsTest extends TestCase
             $origins = $links->linkedOfType($record, 'core.agent-session');
             $this->assertSame([$author->session->id], array_column($origins, 'id'));
         }
+
         $this->assertSame('Public text.', trim(
             $this->app->make(DraftResolver::class)->current($document->number)->body,
         ));

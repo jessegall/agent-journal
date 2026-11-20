@@ -43,6 +43,7 @@ final class KeyScriptListsTest extends TestCase
             if (str_ends_with($file, '_test.go')) {
                 continue;
             }
+
             preg_match_all(self::HOST_SCRIPT, (string) file_get_contents($file), $matches, PREG_SET_ORDER);
 
             foreach ($matches as [, $name, $version, $parameters]) {

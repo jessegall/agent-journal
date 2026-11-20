@@ -101,6 +101,7 @@ final class UnsupportedConstruct
 
             return;
         }
+
         $this->nesting--;
     }
 }

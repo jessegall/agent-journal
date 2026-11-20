@@ -141,6 +141,7 @@ final class HookRetentionTest extends TestCase
         foreach (['a', 'b', 'c', 'd', 'e'] as $hookId) {
             $this->recordCall(1, $hookId);
         }
+
         $this->moveDays(8);
 
         $this->artisan('hooks:prune')->expectsOutput('Removed 5 hook calls and 0 closed stacks, and the raw output of 0 stop results.')->assertSuccessful();

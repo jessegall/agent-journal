@@ -38,6 +38,7 @@ final readonly class ParseRedirectTarget implements Pipe
 
             return new RedirectParts($redirect, $toParse->nothingToRead($operatorRange));
         }
+
         $start = $operatorRange->start;
         $target = $this->target($cursor, $start);
         $range = new SourceRange($start, $target->range->end);
@@ -45,6 +46,7 @@ final readonly class ParseRedirectTarget implements Pipe
         if ($type === RedirectType::HereDocument) {
             return $this->hereDocument($toParse, $operator->descriptor, $range);
         }
+
         $redirect = new Redirect($operator->descriptor, $type, $target, $range);
 
         return new RedirectParts($redirect, $toParse->substitutions($target, $toParse->owner));
@@ -58,6 +60,7 @@ final readonly class ParseRedirectTarget implements Pipe
         if (! $cursor->is(TokenType::Word)) {
             throw ShellGrammarStopped::invalid('A redirect has no target.', $start);
         }
+
         $target = $cursor->word('A redirect has no target.');
         $cursor->advance();
 

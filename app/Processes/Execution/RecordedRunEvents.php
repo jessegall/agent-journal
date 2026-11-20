@@ -37,6 +37,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partQueued($part))) {
             return;
         }
+
         $this->parts[$part->name()] = PartRun::queue($this->run, $part);
     }
 
@@ -45,6 +46,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partStarted($part, $pid))) {
             return;
         }
+
         $this->part($part)->start($host, $pid);
     }
 
@@ -53,6 +55,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partStartedInside($part))) {
             return;
         }
+
         $this->part($part)->start($host);
     }
 
@@ -66,6 +69,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partEnded($part, $end))) {
             return;
         }
+
         $record = $this->part($part);
         $record->finishProcess($end);
         $record->finishDraining();
@@ -81,6 +85,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partSkipped($part, $controllingResult))) {
             return;
         }
+
         $this->part($part)->skip($controllingResult);
     }
 
@@ -89,6 +94,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partStartFailed($part, $reason))) {
             return;
         }
+
         $this->part($part)->failToSpawn($reason);
     }
 
@@ -97,6 +103,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partStopped($part, $reason))) {
             return;
         }
+
         $this->part($part)->stop($reason);
     }
 
@@ -105,6 +112,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::partLost($part))) {
             return;
         }
+
         $this->part($part)->lose();
     }
 
@@ -118,6 +126,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note(ProcessEventFacts::runStopped($reason))) {
             return;
         }
+
         $this->run->markStopped($reason);
     }
 

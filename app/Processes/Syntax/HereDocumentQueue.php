@@ -35,6 +35,7 @@ final class HereDocumentQueue
         if ($this->delimiterStripsTabs === null) {
             return;
         }
+
         $this->waiting[] = new WaitingHereDocument($redirectIndex, $this->delimiterStripsTabs);
         $this->delimiterStripsTabs = null;
     }

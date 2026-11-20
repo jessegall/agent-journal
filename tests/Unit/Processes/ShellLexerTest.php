@@ -222,6 +222,7 @@ final class ShellLexerTest extends TestCase
                 return $token;
             }
         }
+
         $this->fail('The line has no here-document body.');
     }
 }

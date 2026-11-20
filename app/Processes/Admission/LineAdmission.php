@@ -139,6 +139,7 @@ final readonly class LineAdmission implements ShellAdmission
                 $correction,
             );
         }
+
         $permissions = $this->permissions->forActor($actor);
 
         foreach ($classification->parts as $part) {
@@ -148,6 +149,7 @@ final readonly class LineAdmission implements ShellAdmission
                 return $refusal;
             }
         }
+
         $timing = $classification->hasVerification() ? $this->timing->forCaller() : null;
 
         if ($timing !== null && ! $timing->isAllowed()) {
@@ -195,6 +197,7 @@ final readonly class LineAdmission implements ShellAdmission
         if ($part->unresolved === []) {
             return $this->partRefusal(AdmissionRefusalCode::CommandUnknown, $tree, $part, 'The part is not known.');
         }
+
         $first = $part->unresolved[0];
 
         return $this->partRefusal(AdmissionRefusalCode::ofUnresolved($first->type), $tree, $part, $first->reason);
@@ -212,6 +215,7 @@ final readonly class LineAdmission implements ShellAdmission
         if ($permissions->admits($classes, $argv)) {
             return null;
         }
+
         $code = $permissions->deniedPatterns->matchesAny($argv)
             ? AdmissionRefusalCode::CommandDenied
             : AdmissionRefusalCode::ClassDenied;

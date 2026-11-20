@@ -132,6 +132,7 @@ final class DocumentDraft extends Model implements ReadableModel
         if ($published) {
             $document->reactivate();
         }
+
         $this->delete();
 
         return $close;

@@ -39,6 +39,7 @@ final readonly class ProveNavigationHandler implements CommandHandler
         if (! $navigation->isAnswering()) {
             throw NavigationAnswerRefused::notAnswerable($navigation->id, $navigation->state->value);
         }
+
         $this->answering->assertCurrentVersion($navigation, $command->expectedRowVersion);
         $proof = NavigationProof::against($command->proof, $navigation->raise_rows);
         $nextStep = $command->completes === NavigationCompletion::Step ? $navigation->stalled_step + 1 : null;

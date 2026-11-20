@@ -99,6 +99,7 @@ class DomainServiceProvider extends ServiceProvider
                 $policies->register($entry->name, $policy);
             }
         }
+
         $this->app->booted(function (): void {
             $this->app->make(CommandRegistry::class);
             $this->app->make(SettingRegistry::class);

@@ -103,6 +103,7 @@ final class ReaderProofTest extends TestCase
         } catch (ReaderProofFailed $refusal) {
             return $refusal;
         }
+
         $this->fail('The reader was proven.');
     }
 }

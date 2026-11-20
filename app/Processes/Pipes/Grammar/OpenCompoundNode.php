@@ -25,6 +25,7 @@ final readonly class OpenCompoundNode implements Pipe
         if (AnalysisLimit::Depth->isPassedBy($toParse->depth + 1)) {
             throw ShellGrammarStopped::pastLimit(AnalysisLimit::Depth, $cursor->position());
         }
+
         $open = $cursor->current();
         $cursor->advance();
         $node = $toParse->draft()->add($toParse->type, $open->range, null);

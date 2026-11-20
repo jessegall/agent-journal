@@ -186,6 +186,7 @@ final class RuleProposalCommandsTest extends TestCase
             $this->assertCount(2, $refusal->fields);
             $this->assertStringContainsString('declarations.0.rule.purpose', implode(' ', $refusal->fields));
         }
+
         $this->assertSame(0, RuleProposal::query()->count());
     }
 

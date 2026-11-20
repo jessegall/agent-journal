@@ -9,12 +9,13 @@ declare(strict_types=1);
  *   php tools/refactoring/blank-line-after-block.php --check app domain tests
  *       lists each place instead and fails while there is one.
  *
- * A brace followed by else, catch, finally, another closing brace or bracket, a chained call or a comment keeps its
- * place, and a brace inside a string or heredoc is no block.
+ * A brace followed by else, catch, finally, another closing brace or bracket, a chained call, a comment or a trait
+ * use keeps its place, and a brace inside a string or heredoc is no block.
  */
 require_once __DIR__.'/php-files.php';
 
-const KEEPS_ITS_PLACE = '/^(\}|\)|\]|else\b|elseif\b|catch\b|finally\b|while\b|->|\?->|\/\/|\/\*|\*|#|case\b|default\b|\?>)/';
+const KEEPS_ITS_PLACE = '/^(\}|\)|\]|else\b|elseif\b|catch\b|finally\b|while\b|->|\?->'
+    .'|\/\/|\/\*|\*|#|case\b|default\b|use\b|\?>)/';
 
 /**
  * The line numbers, counted from 1, of each code brace that closes a block alone on its line.

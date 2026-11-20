@@ -100,6 +100,7 @@ final class ProfilesServiceProvider extends ServiceProvider
         foreach (BuiltInAuthorizations::ORIENTATION_READS as $read) {
             $reads->declare($read, ReadEntitlement::named());
         }
+
         $policies->register('Core', new PolicyRegistration(
             ProfileAdministrationPolicy::class,
             [AccessType::Create, AccessType::Edit],

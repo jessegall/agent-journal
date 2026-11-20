@@ -48,6 +48,7 @@ final readonly class EvidenceValidator
         if ($part->end_type !== PartEndType::Exited) {
             return new OutputValidation($problems, AssessmentOutcome::Unavailable);
         }
+
         $outcome = $contract->exits->outcomeOf($part->end_code);
 
         if ($outcome === Outcome::ExecutionError) {
@@ -56,6 +57,7 @@ final readonly class EvidenceValidator
             $claim = "The output claims {$read->claimed->value} but exit {$part->end_code} means {$outcome->value}.";
             $problems[] = $this->problem(ProblemCode::OutcomeConflict, $claim);
         }
+
         $empty = $read->records === [];
 
         if ($empty && $contract->output->isEmptyRefused()) {
@@ -82,6 +84,7 @@ final readonly class EvidenceValidator
         if (! $assessment->isValid() || $this->runProblems($run, $part) !== []) {
             throw EvidenceRejected::notValid($assessment->id);
         }
+
         $declaration = RuleRevision::query()->findOrFail($assessment->rule_revision_id);
         $manifest = hash('sha256', json_encode($part->manifestDigests(), JSON_THROW_ON_ERROR));
 
@@ -102,6 +105,7 @@ final readonly class EvidenceValidator
         if ($part->lifecycle !== LifecycleState::Ended || $part->end_type !== PartEndType::Exited) {
             $problems[] = $this->problem(ProblemCode::ExitUnavailable, 'The part did not end with its own exit.');
         }
+
         $manifest = $this->manifests->stateOf($part);
 
         if (! $part->capture_state->isComplete() || ! $manifest->isComplete()) {

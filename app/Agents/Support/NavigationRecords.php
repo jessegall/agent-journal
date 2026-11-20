@@ -142,6 +142,7 @@ final readonly class NavigationRecords implements NavigationReader
         if ($navigation->stale_entry_id === null) {
             return null;
         }
+
         $entry = MenuEntry::query()->acrossActors()->findOrFail($navigation->stale_entry_id);
 
         return ['id' => $entry->id, 'steps' => array_map(fn (MenuStep $step) => $step->toStored(), $entry->steps())];

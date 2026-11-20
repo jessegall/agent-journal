@@ -152,6 +152,7 @@ final readonly class ArgumentGrammar
 
                     return [new UnresolvedFact(UnresolvedType::UnknownOption, $node, $problem)];
                 }
+
                 $seen = [...$seen, ...$options];
                 $last = $options[array_key_last($options)];
                 $index += $last->takesNextWord((string) $text) ? 1 : 0;
@@ -164,6 +165,7 @@ final readonly class ArgumentGrammar
 
                 return [new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem)];
             }
+
             $operandCount++;
         }
 
@@ -237,6 +239,7 @@ final readonly class ArgumentGrammar
         if (preg_match('/^-[A-Za-z0-9]{2,}$/', $text) !== 1) {
             return [];
         }
+
         $first = $this->shortOption($text[1]);
 
         if ($first !== [] && $first[0]->takesValue()) {
@@ -259,6 +262,7 @@ final readonly class ArgumentGrammar
             if ($option === [] || ($option[0]->takesValue() && $position < strlen($letters) - 1)) {
                 return [];
             }
+
             $options[] = $option[0];
         }
 

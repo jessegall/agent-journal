@@ -40,6 +40,7 @@ final readonly class FindNextSubstitution implements Pipe
 
                 continue;
             }
+
             $substitution = $this->substitutionOf($next);
 
             if ($substitution !== null) {
@@ -69,6 +70,7 @@ final readonly class FindNextSubstitution implements Pipe
         if ($segment->type !== WordSegmentType::Expansion) {
             return null;
         }
+
         $line = $next->toParse->draft()->line;
 
         if (substr($line, $start, 2) === '${') {
@@ -104,12 +106,14 @@ final readonly class FindNextSubstitution implements Pipe
         if ($lexed->outcome !== ParseOutcome::Complete) {
             throw ShellGrammarStopped::fromLexedLine($lexed, $offset);
         }
+
         $inside = [];
 
         foreach ($lexed->tokens as $token) {
             if ($token->word === null) {
                 continue;
             }
+
             $word = $next->toParse->inside($token->word->shiftedBy($offset));
             $inside = [...$inside, ...PendingSegment::allOf($word)];
         }
@@ -128,6 +132,7 @@ final readonly class FindNextSubstitution implements Pipe
         if ($segment->type !== WordSegmentType::Expansion) {
             return null;
         }
+
         $draft = $next->toParse->draft();
         $opening = substr($draft->line, $segment->range->start, 2);
         $isBacktick = str_starts_with($opening, '`');
@@ -145,6 +150,7 @@ final readonly class FindNextSubstitution implements Pipe
             $reason = 'A backtick substitution nested inside another is not supported.';
             $draft->markUnsupported($reason, $segment->range->start);
         }
+
         $substitution = $draft->add($type, $segment->range, $next->toParse->owner);
         $innerStart = $segment->range->start + ($isBacktick ? 1 : 2);
 

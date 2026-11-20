@@ -47,6 +47,7 @@ final class ReportTest extends TestCase
         foreach (str_split($findings, TextUpload::CHUNK_BYTES) as $index => $part) {
             $bus->run(new AppendUpload($upload, $index, $part, hash('sha256', $part)));
         }
+
         $bus->run(new CommitUpload($upload));
         $id = $this->signed($reviewer, '/agent/reports/make', [
             'title' => 'Review',

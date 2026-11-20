@@ -42,6 +42,7 @@ final readonly class PartAssessments
         if ($approved === [] || $approved[0]->payload->contracts === [] || $approved[0]->reader_approvals === []) {
             return [];
         }
+
         $reader = ReaderRevision::query()->findOrFail($approved[0]->reader_approvals[0]->readerRevisionId);
 
         return [new ApprovedPair($approved[0], $approved[0]->payload->contracts[0], $reader)];

@@ -45,6 +45,7 @@ final class TextUploadTest extends TestCase
         for ($index = 0; $index < 32; $index++) {
             $bus->run(new AppendUpload($id, $index, $part, $chunkDigest));
         }
+
         $bus->run(new AppendUpload($id, 0, $part, $chunkDigest));
         $this->assertSame(32, TextUploadChunk::query()->count());
         $this->assertThrows(

@@ -37,6 +37,7 @@ final readonly class MarkMenuEntryStaleHandler implements CommandHandler
         if (count($command->rows) > self::MOST_ROWS) {
             throw NavigationRaiseRefused::tooManyRows(count($command->rows), self::MOST_ROWS);
         }
+
         $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
         $entry = MenuEntry::query()
             ->ownedBy(ActorIdentity::of($this->admission->owner()))

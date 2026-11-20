@@ -46,6 +46,7 @@ final class NavigationRoundReportData extends Data
         if (count($this->steps) > self::STEP_LIMIT) {
             throw MenuStepRefused::tooMany(count($this->steps), self::STEP_LIMIT);
         }
+
         $steps = array_map(
             fn (int $index, array $step) => MenuStep::fromHost($index + 1, $step),
             array_keys($this->steps),

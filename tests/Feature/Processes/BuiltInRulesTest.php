@@ -140,6 +140,7 @@ final class BuiltInRulesTest extends TestCase
 
             return;
         }
+
         $this->assertTrue($classification->isKnown(), $line);
         $this->assertSame($classes, $classification->requiredClasses()->classes, $line);
     }

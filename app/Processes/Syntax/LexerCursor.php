@@ -159,6 +159,7 @@ final class LexerCursor
             if ($type === TokenType::Bang && ! $this->isNegation()) {
                 return false;
             }
+
             $this->position += strlen($text);
 
             if ($type === TokenType::Redirect) {
@@ -167,6 +168,7 @@ final class LexerCursor
 
                 return true;
             }
+
             $this->emit($type, $start, $this->position);
 
             return true;
@@ -224,12 +226,14 @@ final class LexerCursor
             if ($type === null || substr_compare($this->source, $text, $this->position, strlen($text)) !== 0) {
                 continue;
             }
+
             $this->position += strlen($text);
 
             if ($type->isDuplicate() && $this->at($this->position) === '-') {
                 $this->position++;
                 $type = RedirectType::Close;
             }
+
             $this->emitRedirect($type, $descriptor ?? ($text[0] === '<' ? 0 : 1), $start);
 
             if ($type === RedirectType::HereDocument) {

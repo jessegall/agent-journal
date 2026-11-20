@@ -130,6 +130,7 @@ final class NavigationRaiseRouteTest extends TestCase
             [, , $different] = $this->stalledScript("Model {$number}");
             $this->navigationFor($different);
         }
+
         [$host, $opened, $request] = $this->stalledScript();
 
         $answer = $this->raise($host, $opened, $request)->assertOk();

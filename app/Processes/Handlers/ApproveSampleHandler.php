@@ -34,11 +34,13 @@ final readonly class ApproveSampleHandler implements CommandHandler
         if ($command->commandDigest !== $request->source_digest) {
             throw SampleRefused::otherCommand($request->id);
         }
+
         $declaration = RuleProposalRevision::query()->answering($request, $command->expectedRevision)->first();
 
         if ($declaration === null) {
             throw SampleRefused::declarationMissing($request->id, $command->expectedRevision);
         }
+
         $proposal = RuleProposal::query()->whereKey($declaration->rule_proposal_id)->sole();
 
         if ($proposal->current_revision !== $command->expectedRevision) {

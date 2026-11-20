@@ -60,6 +60,7 @@ final readonly class ClaimRequestsController
             if (! $claimed->isEmpty() || $version() !== $knownVersion || microtime(true) >= $deadline) {
                 return $claimed;
             }
+
             usleep(250_000);
         } while (true);
     }

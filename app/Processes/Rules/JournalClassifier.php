@@ -48,6 +48,7 @@ final readonly class JournalClassifier implements ProgramClassifier
                 "{$program->original} is not this installation's journal.",
             );
         }
+
         $name = implode(
             ':',
             array_map(fn (Word $word): string => (string) $word->literal(), array_slice($words, 1, 2)),
@@ -62,6 +63,7 @@ final readonly class JournalClassifier implements ProgramClassifier
                 "journal has no route {$name}; the registered routes are listed by journal --help.",
             );
         }
+
         $origin = new RuleOrigin("core.journal.{$name}", 1);
         $classes = $route[0]->classes();
         $facts = array_map(
@@ -81,6 +83,7 @@ final readonly class JournalClassifier implements ProgramClassifier
         if (! str_contains($program->original, '/')) {
             return true;
         }
+
         $written = str_starts_with($program->original, '/') ? $program->original : rtrim(
             $context->workingFolder,
             '/',

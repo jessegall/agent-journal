@@ -36,6 +36,7 @@ final readonly class ReportDriverTurnHandler implements CommandHandler
                 $runtime->process_generation,
             );
         }
+
         $runtime->observeSettings($command->model, $command->effort, $now);
 
         if ($command->finished) {

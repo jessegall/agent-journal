@@ -45,6 +45,7 @@ final readonly class NavigationRoundReports
         if ($round->navigationRound()?->proof !== null) {
             $this->settleProof($navigation, $report);
         }
+
         $this->dispatch->deliver($navigation);
     }
 
@@ -62,6 +63,7 @@ final readonly class NavigationRoundReports
         if ($report->steps !== []) {
             $evidence = 'proven, saved as menu entry '.$this->library->save($navigation, $report->steps)->id;
         }
+
         $stalled = DriverRequest::query()->whereKey($navigation->driver_request_id)->lockForUpdate()->firstOrFail();
         $runtime = AgentRuntime::query()->whereKey($navigation->agent_runtime_id)->lockForUpdate()->firstOrFail();
         $runtime->holdFor(HoldReason::None);

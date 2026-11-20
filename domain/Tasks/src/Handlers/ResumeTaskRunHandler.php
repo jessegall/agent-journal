@@ -32,6 +32,7 @@ final readonly class ResumeTaskRunHandler extends TaskCommandHandler
         if ($run->isFinished()) {
             throw TaskRunFinished::forRun($run->id);
         }
+
         $this->claims->take(
             $run->assignmentIdentity(),
             $task->assignmentIdentity(),

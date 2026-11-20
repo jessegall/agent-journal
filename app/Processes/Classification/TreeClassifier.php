@@ -125,6 +125,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 [],
             );
         }
+
         $parts = [];
         $syntaxFacts = [];
 
@@ -192,6 +193,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 $unresolved === [] ? CommandType::Ordinary : CommandType::Unknown,
             );
         }
+
         $part = $this->classifyWords($node->words, $node->id, $depth, $context);
 
         return new PartClassification(
@@ -230,27 +232,32 @@ final readonly class TreeClassifier implements CommandClassifier
                 CommandType::Unknown,
             );
         }
+
         $boundWords = array_map(fn (Word $word): Word => $word->boundTo($context->positional), $words);
         $program = $this->names->canonical($boundWords[0], $node, $this->rules->spellings());
 
         if ($program instanceof UnresolvedFact) {
             return new PartClassification($node, [], [$program], CommandType::Unknown);
         }
+
         $alias = $this->aliasOf($program, $boundWords, $context);
 
         if ($alias->isFound) {
             return $this->aliasPart($program, $alias, $boundWords, $node, $depth, $context);
         }
+
         $programClassifiers = $this->programClassifiers->for($program);
 
         if ($programClassifiers !== []) {
             return $programClassifiers[0]->classify($boundWords, $node, $program, $context);
         }
+
         $scripts = $this->scripts->scriptOf($program->family, $boundWords, $context->projectRoot);
 
         if ($scripts !== []) {
             return $this->scriptPart($program, $scripts[0], $node, $depth, $context);
         }
+
         $wrapper = $this->wrappers->byFamily()[$program->family] ?? null;
 
         return match (true) {
@@ -362,6 +369,7 @@ final readonly class TreeClassifier implements CommandClassifier
 
                 continue;
             }
+
             $source = str_starts_with($line, '@') ? $this->referencedCommand(
                 $program->family,
                 substr($line, 1),
@@ -434,6 +442,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 "The saved aliases {$loop} run each other in a loop.",
             );
         }
+
         $arguments = array_slice($words, 3);
         $literalArguments = array_map(fn (Word $word): string|null => $word->literal(), $arguments);
 
@@ -448,6 +457,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 ).').',
             );
         }
+
         $inner = $this->classifyTree(
             $this->syntax->parse($alias->body, ShellDialect::Bash),
             $depth + 1,
@@ -548,6 +558,7 @@ final readonly class TreeClassifier implements CommandClassifier
             if ($text === null || ! str_starts_with($text, '-') || $text === '-') {
                 break;
             }
+
             $option = $wrapper->optionFor($text);
 
             if ($option === []) {
@@ -558,8 +569,10 @@ final readonly class TreeClassifier implements CommandClassifier
                     "{$wrapper->family} has no declared option {$text}.",
                 );
             }
+
             $index += $option[0]->takesValue() && ! $option[0]->carriesValue($text) ? 2 : 1;
         }
+
         $child = array_slice($words, $index + $wrapper->leadingOperands);
 
         if ($child === []) {
@@ -603,6 +616,7 @@ final readonly class TreeClassifier implements CommandClassifier
         if ($wrapper->family !== 'xargs') {
             return ChildCommand::join($node, $program, $own, $unresolved, []);
         }
+
         $echo = new Word([new WordSegment(WordSegmentType::Literal, 'echo', $programWord->range)], $programWord->range);
 
         return ChildCommand::join(
@@ -641,6 +655,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 "{$program->family} runs a script, a here-document or its input, which are not read here.",
             );
         }
+
         $source = ($words[$index + 1] ?? null)?->literal();
 
         if ($source === null) {
@@ -651,6 +666,7 @@ final readonly class TreeClassifier implements CommandClassifier
                 "The source given to {$program->family} -c is only known when it runs.",
             );
         }
+
         $inner = $this->classifyTree(
             $this->syntax->parse($source, self::SHELL_DIALECTS[$program->family]),
             $depth + 1,
@@ -698,6 +714,7 @@ final readonly class TreeClassifier implements CommandClassifier
                         "find {$text} has no command ended by ; or +.",
                     );
                 }
+
                 $children[] = $this->classifyWords(
                     array_slice($words, $index + 1, $end - $index - 1),
                     $node,
@@ -708,6 +725,7 @@ final readonly class TreeClassifier implements CommandClassifier
 
                 continue;
             }
+
             $own = [...$own, ...$this->findActionFacts($text, $node, $origin)];
         }
 

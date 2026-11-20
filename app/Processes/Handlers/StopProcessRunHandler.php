@@ -33,6 +33,7 @@ final readonly class StopProcessRunHandler implements CommandHandler
         if ($run->lifecycle->isFinal()) {
             throw StopRefused::ended($run->id);
         }
+
         $run->markStale("stopped: {$command->reason}");
         $run->markStopped($command->reason);
 

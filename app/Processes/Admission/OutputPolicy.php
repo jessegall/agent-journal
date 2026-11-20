@@ -72,11 +72,13 @@ final readonly class OutputPolicy
             if ($node->isRoot) {
                 return $hidden;
             }
+
             $parent = $tree->node($node->parent);
 
             if ($parent->type === NodeType::Pipeline && $this->isBeforeTheLastCommand($tree, $parent, $node)) {
                 $hidden[] = new HiddenOutput($part->node, 'output and exit status', 'the pipe', $correction);
             }
+
             $node = $parent;
         }
     }
@@ -89,11 +91,13 @@ final readonly class OutputPolicy
         if (! in_array($redirect->descriptor, [1, 2], true)) {
             return [];
         }
+
         $stream = $redirect->descriptor === 1 ? 'standard output' : 'standard error';
 
         if (in_array($redirect->type, self::HIDING_REDIRECTS, true)) {
             return [$stream];
         }
+
         $merged = $redirect->type === RedirectType::DuplicateOutput;
         $requiresSeparateStreams = array_any(
             $part->contracts,

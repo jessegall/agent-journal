@@ -46,6 +46,7 @@ final readonly class ShellTree
             $text .= $this->textOf(new SourceRange($at, $redirect->range->start));
             $at = $redirect->range->end;
         }
+
         $text .= $this->textOf(new SourceRange($at, $node->range->end));
 
         return trim((string) preg_replace('/\s+/', ' ', $text));
@@ -84,6 +85,7 @@ final readonly class ShellTree
             if ($node->type->isExecutable()) {
                 $parts[] = $node;
             }
+
             array_unshift($pending, ...$node->children);
         }
 

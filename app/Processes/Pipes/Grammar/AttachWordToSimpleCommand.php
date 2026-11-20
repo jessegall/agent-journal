@@ -39,6 +39,7 @@ final readonly class AttachWordToSimpleCommand extends PipelineAdapter
         if ($parsedWord->isArrayAssignment()) {
             return $input->asArrayAssignment();
         }
+
         $input->toParse->cursor()->advance();
 
         return $input->withWord($parsedWord);

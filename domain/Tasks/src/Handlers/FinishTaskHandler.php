@@ -34,6 +34,7 @@ final readonly class FinishTaskHandler extends TaskCommandHandler
             $run->finish($command->note);
             $this->claims->release($run->assignmentIdentity());
         }
+
         $this->events->dispatch(new TaskFinished($command->taskId));
     }
 }

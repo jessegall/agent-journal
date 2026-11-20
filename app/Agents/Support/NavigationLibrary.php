@@ -34,6 +34,7 @@ final readonly class NavigationLibrary
             MenuEntry::query()->acrossActors()->whereKey($navigation->stale_entry_id)->lockForUpdate()->first()
                 ?->supersededBy($entry);
         }
+
         $navigation->savedAs($entry);
 
         return $entry;

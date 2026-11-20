@@ -44,6 +44,7 @@ final readonly class ReplyToMessageHandler implements CommandHandler
         if ($original->isDismissed()) {
             throw AnswerImpossible::forMessage($original->id);
         }
+
         $now = CarbonImmutable::now();
         $original->acknowledge($membership, $now);
         $reply = $this->sending->reply($original, $command->body, $command->dispatchedBy());

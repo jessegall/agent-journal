@@ -33,6 +33,7 @@ final readonly class NavigationProof
         if (trim($text) === '' || mb_strlen($text) > self::MOST_CHARACTERS) {
             throw NavigationProofRefused::empty(self::MOST_CHARACTERS);
         }
+
         $proof = new self($text);
 
         if ($proof->seenIn($raiseRows)) {
@@ -71,6 +72,7 @@ final readonly class NavigationProof
             if (! self::continuesWord($before) && ! self::continuesWord($after)) {
                 return true;
             }
+
             $offset = $at + 1;
         }
 

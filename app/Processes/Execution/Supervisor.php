@@ -125,6 +125,7 @@ final readonly class Supervisor
 
                 continue;
             }
+
             $operator = $runsOnSuccess ? '&&' : '||';
             $this->skip($step, $state, "the step before {$operator} ended with status {$outcome->status}");
         }
@@ -153,6 +154,7 @@ final readonly class Supervisor
             if ($command->type !== StepType::Command || $command->children !== []) {
                 throw SupervisorRefused::stepNotRun($command->type);
             }
+
             $part = $this->queued($command, $state);
             $input = $index > 0 ? ['pipe', 'r'] : ['file', '/dev/null', 'r'];
             $process = $this->spawn($part, $command, [], $context, $state, $input);
@@ -160,8 +162,10 @@ final readonly class Supervisor
             if (is_string($process)) {
                 return new StepOutcome(127, $context);
             }
+
             $commands[] = [$part, $process];
         }
+
         $stdout = '';
         $pump = function (int $index, OutputStream $stream, string $bytes) use ($commands, $state, &$stdout): void {
             $state->events->output($commands[$index][0], $stream, $bytes);
@@ -193,6 +197,7 @@ final readonly class Supervisor
         if ($child->type !== StepType::Command || $child->children !== []) {
             throw SupervisorRefused::stepNotRun($child->type);
         }
+
         $part = $this->queued($child, $state);
         $process = $this->spawn($part, $child, [], $context, $state, ['file', '/dev/null', 'r']);
 
@@ -224,6 +229,7 @@ final readonly class Supervisor
 
             return new StepOutcome(0, $context->withEnvironment([...$context->environment, ...$assignments]));
         }
+
         $part = $this->queued($step, $state);
 
         if ($step->type === StepType::Builtin) {
@@ -231,11 +237,13 @@ final readonly class Supervisor
 
             return $this->builtin($part, $argv, $context, $state);
         }
+
         $process = $this->spawn($part, $step, $environmentAssignments, $context, $state, ['file', '/dev/null', 'r']);
 
         if (is_string($process)) {
             return new StepOutcome(127, $context);
         }
+
         $stdout = '';
         $drained = $process->drain(function (OutputStream $stream, string $bytes) use ($part, $state, &$stdout): void {
             $state->events->output($part, $stream, $bytes);
@@ -254,6 +262,7 @@ final readonly class Supervisor
         if ($this->staleSkip($part, $state) !== '') {
             return new StepOutcome(127, $context);
         }
+
         $state->events->startedInside($part, gethostname() ?: 'unknown');
         $builtinExecution = $this->builtins->run($argv[0], array_slice($argv, 1), $context);
         $this->capture($part, OutputStream::Stdout, $builtinExecution->stdout, $state);
@@ -283,11 +292,13 @@ final readonly class Supervisor
         if ($stale !== '') {
             return $stale;
         }
+
         $descriptors = [0 => $input, 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
 
         foreach ($step->redirects as $redirect) {
             $descriptors[$redirect->descriptor] = $this->descriptor($redirect, $environmentAssignments, $context);
         }
+
         $assigned = array_map(fn (PlanWord $word) => $this->text($word, $environmentAssignments), $step->assignments);
         $environment = array_diff_key([...$context->environment, ...$assigned], array_flip(self::SECRET_VARIABLES));
         $argv = array_map(fn (PlanWord $word) => $this->text($word, $environmentAssignments), $step->argv);
@@ -298,6 +309,7 @@ final readonly class Supervisor
 
             return $process;
         }
+
         $state->events->started($part, $process->pid, gethostname() ?: 'unknown');
 
         return $process;
@@ -332,6 +344,7 @@ final readonly class Supervisor
 
             return 130;
         }
+
         $process->drain(fn (OutputStream $stream, string $bytes) => $state->events->output($part, $stream, $bytes));
         $end = $process->wait();
         $state->events->ended($part, $end, $drained);

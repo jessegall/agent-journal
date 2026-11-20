@@ -129,6 +129,7 @@ final class ShellGrammarTest extends TestCase
             $this->assertSame(ParseOutcome::LimitExceeded, $tree->outcome);
             $this->assertSame([], $tree->executableParts());
         }
+
         $this->assertNotNull($tooMany->diagnostic);
         $this->assertNotNull($tooDeep->diagnostic);
         $this->assertStringContainsString('1024', $tooMany->diagnostic->reason);
@@ -151,6 +152,7 @@ final class ShellGrammarTest extends TestCase
                 return $node;
             }
         }
+
         $this->fail("The tree has no {$type->value} node.");
     }
 }

@@ -163,6 +163,7 @@ final class AutoAssignmentStorageTest extends TestCase
                 0,
             ));
         }
+
         $off = new AutoAssignmentKey(TestActors::agentIdentity(2), 'tasks.task');
         $this->write(fn (DatabaseAutoAssignments $writer) => $writer->disable($off, 1));
 
