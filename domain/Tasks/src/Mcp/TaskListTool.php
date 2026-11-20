@@ -59,10 +59,10 @@ abstract class TaskListTool extends JournalReadTool
 
     private function page(TaskFilters $filters): ListedPage
     {
-        $list = $this->tasks($filters);
+        $taskPage = $this->tasks($filters);
         $cards = [];
 
-        foreach ($list->cards as $card) {
+        foreach ($taskPage->cards as $card) {
             $cards[$card->id] = [
                 'id' => $card->id,
                 'title' => $card->title,
@@ -76,6 +76,6 @@ abstract class TaskListTool extends JournalReadTool
             ];
         }
 
-        return new ListedPage($cards, $list->page->number, $list->page->size, $list->total);
+        return new ListedPage($cards, $taskPage->page->number, $taskPage->page->size, $taskPage->total);
     }
 }

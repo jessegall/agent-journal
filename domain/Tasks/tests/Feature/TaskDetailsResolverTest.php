@@ -123,9 +123,9 @@ final class TaskDetailsResolverTest extends TestCase
             $agentReads += str_contains($query->sql, 'from "agents"') ? 1 : 0;
         });
 
-        $list = $this->app->make(TaskListResolver::class)->list(new TaskFilters(page: new NumberedPage(1, 20)));
+        $taskPage = $this->app->make(TaskListResolver::class)->list(new TaskFilters(page: new NumberedPage(1, 20)));
 
-        $this->assertCount(20, array_filter($list->cards, fn ($card) => $card->execution?->actorLabel === 'Runner'));
+        $this->assertCount(20, array_filter($taskPage->cards, fn ($card) => $card->execution?->actorLabel === 'Runner'));
         // One read for the holders' names, now that starting a task gives it to its starter, and one for the runners.
         $this->assertSame(2, $agentReads);
     }

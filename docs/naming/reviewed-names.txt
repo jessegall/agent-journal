@@ -18678,7 +18678,6 @@ parameter	$limit
 parameter	$line
 parameter	$lines
 parameter	$links
-parameter	$list
 parameter	$markdownIssue
 parameter	$matchingRevision
 parameter	$material
@@ -26399,7 +26398,6 @@ variable	$lineEnd
 variable	$lineStart
 variable	$lines
 variable	$link
-variable	$list
 variable	$listing
 variable	$literal
 variable	$markdownIssue
