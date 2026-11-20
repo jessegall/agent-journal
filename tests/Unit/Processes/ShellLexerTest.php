@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
+use App\Pipelines\Support\PipelineRunner;
 use App\Processes\Enums\AnalysisLimit;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\RedirectType;
@@ -11,8 +12,10 @@ use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\TokenType;
 use App\Processes\Enums\WordSegmentType;
 use App\Processes\Syntax\LexedLine;
+use App\Processes\Syntax\LexerScan;
 use App\Processes\Syntax\ShellLexer;
 use App\Processes\Syntax\Token;
+use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -20,6 +23,15 @@ use PHPUnit\Framework\TestCase;
  */
 final class ShellLexerTest extends TestCase
 {
+    private ShellLexer $lexer;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->lexer = new ShellLexer(new LexerScan(new PipelineRunner(new Container())));
+    }
+
     public function test_a_quoted_separator_stays_inside_one_word(): void
     {
         $line = $this->lex('echo "a > b; c" \'d && e\'');
@@ -148,10 +160,35 @@ final class ShellLexerTest extends TestCase
         $this->assertSame(ParseOutcome::Invalid, $this->lex("cat <<EOF\nhello")->outcome);
     }
 
+    public function test_the_scan_keeps_token_order_through_a_continuation_comment_and_here_document(): void
+    {
+        $source = " \t\\\necho # note\ncat <<EOF\nbody\nEOF\nnext";
+        $line = $this->lex($source);
+
+        $this->assertSame(ParseOutcome::Complete, $line->outcome);
+        $this->assertSame(
+            ['echo', '# note', "\n", 'cat', '<<', 'EOF', "\n", "body\n", 'next'],
+            array_map(fn (Token $token) => $token->range->slice($source), $line->tokens),
+        );
+        $this->assertSame(TokenType::HereDocumentBody, $line->tokens[7]->type);
+        $this->assertSame(['again'], array_map(
+            fn (Token $token) => $token->range->slice('again'),
+            $this->lex('again')->tokens,
+        ));
+    }
+
+    public function test_end_of_source_checks_the_body_waiting_without_a_newline(): void
+    {
+        $line = $this->lex('cat <<EOF');
+
+        $this->assertSame(ParseOutcome::Invalid, $line->outcome);
+        $this->assertSame(4, $line->diagnostic?->position);
+    }
+
     public function test_process_substitution_belongs_to_bash_and_zsh_only(): void
     {
         $bash = $this->lex('diff <(git show HEAD:a) b');
-        $sh = new ShellLexer()->lex('diff <(git show HEAD:a) b', ShellDialect::Sh);
+        $sh = $this->lexer->lex('diff <(git show HEAD:a) b', ShellDialect::Sh);
 
         $this->assertSame(WordSegmentType::Expansion, $bash->tokens[1]->word->segments[0]->type ?? null);
         $this->assertSame(TokenType::Redirect, $sh->tokens[1]->type);
@@ -167,7 +204,7 @@ final class ShellLexerTest extends TestCase
 
     private function lex(string $source): LexedLine
     {
-        return new ShellLexer()->lex($source, ShellDialect::Bash);
+        return $this->lexer->lex($source, ShellDialect::Bash);
     }
 
     /**
