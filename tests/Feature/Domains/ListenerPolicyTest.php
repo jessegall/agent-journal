@@ -8,7 +8,9 @@ use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Support\DomainRegistry;
+use App\Domains\Support\ListenerOwnership;
 use App\Domains\Support\ListenerPolicy;
+use App\Pipelines\Contracts\PipelineRunner;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;
@@ -38,46 +40,50 @@ final class ListenerPolicyTest extends TestCase
 
     public function test_a_listener_on_an_event_its_owner_does_not_export_is_refused(): void
     {
-        $policy = $this->policyFor([EventCallsTasksDomain::class, EventCallsPlansDomain::class]);
+        $policy = $this->policyFor(DomainRegistry::from([EventCallsTasksDomain::class, EventCallsPlansDomain::class]));
 
         $this->expectExceptionObject(
             InvalidListener::privateEvent(QuietListener::class.'@handle', 'handle', TaskClosed::class, 'Tasks'),
         );
 
-        $policy->check([TaskClosed::class => [QuietListener::class.'@handle']]);
+        $policy->discover([TaskClosed::class => [QuietListener::class.'@handle']]);
     }
 
     public function test_a_listener_on_an_event_of_a_domain_it_does_not_require_is_refused(): void
     {
-        $policy = $this->policyFor([TasksDomain::class, ChatDomain::class, PlansDomain::class]);
+        $policy = $this->policyFor(DomainRegistry::from([TasksDomain::class, ChatDomain::class, PlansDomain::class]));
 
         $this->expectExceptionObject(
             InvalidListener::notRequired(HearsMessage::class.'@handle', MessageSent::class, 'Chat'),
         );
 
-        $policy->check([MessageSent::class => [HearsMessage::class.'@handle']]);
+        $policy->discover([MessageSent::class => [HearsMessage::class.'@handle']]);
     }
 
     public function test_a_listener_of_the_user_interface_marker_hears_each_exported_ui_event_instead(): void
     {
-        $policy = new ListenerPolicy(
-            $this->app->make(DomainRegistry::class),
-            CoreApi::exports(),
-            CoreApi::listenerFolders(),
-        );
-
-        $expanded = $policy->expand([UserInterfaceUpdater::class => [BroadcastPageChange::class.'@handle']]);
+        $policy = $this->policyFor($this->app->make(DomainRegistry::class));
+        $expanded = $policy->discover([UserInterfaceUpdater::class => [BroadcastPageChange::class.'@handle']]);
 
         $this->assertArrayNotHasKey(UserInterfaceUpdater::class, $expanded);
         $this->assertSame([BroadcastPageChange::class.'@handle'], $expanded[PlanProgressChanged::class]);
-        $this->assertSame($expanded, $policy->check($expanded));
     }
 
-    /**
-     * @param  list<class-string>  $domainClasses
-     */
-    private function policyFor(array $domainClasses): ListenerPolicy
+    public function test_a_cached_listener_with_a_missing_method_is_refused(): void
     {
-        return new ListenerPolicy(DomainRegistry::from($domainClasses), CoreApi::exports(), CoreApi::listenerFolders());
+        $policy = $this->policyFor($this->app->make(DomainRegistry::class));
+        $listener = BroadcastPageChange::class.'@missing';
+
+        $this->expectExceptionObject(InvalidListener::staleCache($listener, PlanProgressChanged::class));
+
+        $policy->registerCached([PlanProgressChanged::class => [$listener]]);
+    }
+
+    private function policyFor(DomainRegistry $registry): ListenerPolicy
+    {
+        return new ListenerPolicy(
+            $this->app->make(PipelineRunner::class),
+            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders()),
+        );
     }
 }

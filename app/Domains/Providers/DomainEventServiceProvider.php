@@ -9,11 +9,14 @@ use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\AvailableListener;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\FailureLoggingListener;
+use App\Domains\Support\ListenerOwnership;
 use App\Domains\Support\ListenerPolicy;
+use App\Domains\Support\StateListenerDeclarations;
 use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\StateEvents\StateEventBridge;
+use App\Pipelines\Contracts\PipelineRunner;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 
@@ -69,13 +72,15 @@ final class DomainEventServiceProvider extends EventServiceProvider
     public function getEvents(): array
     {
         if (! $this->app->eventsAreCached()) {
-            return $this->policy()->gated(array_merge_recursive($this->discoverOrdinaryEvents(), $this->listens()));
+            $events = array_merge_recursive($this->discoverOrdinaryEvents(), $this->listens());
+
+            return $this->policy()->registerDiscovered($events);
         }
 
         $events = $this->cachedEvents();
         unset($events[self::STATE_EVENTS]);
 
-        return $this->policy()->gated($this->policy()->check($events));
+        return $this->policy()->registerCached($events);
     }
 
     private function registerStateBridges(): void
@@ -100,7 +105,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
 
     private function stateEvents(): StateEvents
     {
-        return $this->policy()->stateEvents(
+        return new StateListenerDeclarations($this->listenerOwnership())->declarations(
             $this->app->make(StateTypes::class)->registrationSnapshot(),
             $this->app->make(StateMethods::class),
         );
@@ -111,9 +116,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
      */
     private function discoverOrdinaryEvents(): array
     {
-        $policy = $this->policy();
-
-        return $policy->check($policy->expand(parent::discoverEvents()));
+        return $this->policy()->discover(parent::discoverEvents());
     }
 
     /**
@@ -142,7 +145,12 @@ final class DomainEventServiceProvider extends EventServiceProvider
 
     private function policy(): ListenerPolicy
     {
-        return new ListenerPolicy(
+        return new ListenerPolicy($this->app->make(PipelineRunner::class), $this->listenerOwnership());
+    }
+
+    private function listenerOwnership(): ListenerOwnership
+    {
+        return new ListenerOwnership(
             $this->app->make(DomainRegistry::class),
             CoreApi::exports(),
             $this->coreListenerFolders(),

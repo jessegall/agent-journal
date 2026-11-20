@@ -4,311 +4,56 @@ declare(strict_types=1);
 
 namespace App\Domains\Support;
 
-use App\Contracts\Event;
-use App\Contracts\ListenerFailureLog;
-use App\Domains\Exceptions\InvalidListener;
-use App\Exports\Support\Exports;
-use App\Hooks\Declarations\StateEventDeclaration;
-use App\Hooks\Declarations\StateEvents;
-use App\Hooks\Declarations\StateMethod;
-use App\Hooks\Declarations\StateMethods;
-use App\Hooks\States\AgentState;
-use App\Hooks\States\Support\StateTypeRegistry;
-use App\Ui\Contracts\UserInterfaceUpdater;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
-use ReflectionUnionType;
+use App\Domains\Pipes\CheckListenerPairs;
+use App\Domains\Pipes\ExpandUiUpdaterListeners;
+use App\Domains\Pipes\GateListenersByDomain;
+use App\Domains\Values\GatedListeners;
+use App\Domains\Values\ListenerDeclarations;
+use App\Pipelines\Contracts\PipelineRunner;
 
 /**
- * Decides which event and listener pairs the application may register: an owner listens to its own events, a domain
- * listens to an event of a domain it requires only when that event is exported under events, and any domain listens to
- * Core's exported events. It holds declarations only, never request or actor state.
+ * Runs the steps for discovering, checking and registering ordinary event listeners.
  */
 final readonly class ListenerPolicy
 {
-    private const string CORE = 'Core';
+    public function __construct(private PipelineRunner $runner, private ListenerOwnership $ownership) {}
 
     /**
-     * @param  list<string>  $coreListenerFolders
-     */
-    public function __construct(
-        private DomainRegistry $registry,
-        private Exports $coreExports,
-        private array $coreListenerFolders,
-    ) {}
-
-    /**
-     * Turns a listener of UserInterfaceUpdater into a listener of each exported event that implements it.
-     *
      * @param  array<string, list<string>>  $events
      * @return array<string, list<string>>
      */
-    public function expand(array $events): array
+    public function discover(array $events): array
     {
-        $listeners = $events[UserInterfaceUpdater::class] ?? [];
-        unset($events[UserInterfaceUpdater::class]);
-
-        if ($listeners === []) {
-            return $events;
-        }
-
-        foreach ($this->exportedEvents() as $event) {
-            if (is_subclass_of($event, UserInterfaceUpdater::class)) {
-                $events[$event] = array_values(array_unique([...$events[$event] ?? [], ...$listeners]));
-            }
-        }
-
-        return $events;
+        return $this->runner->runSteps(
+            [ExpandUiUpdaterListeners::class, CheckListenerPairs::class],
+            new ListenerDeclarations($events, $this->ownership),
+            ListenerDeclarations::class,
+        )->events;
     }
 
     /**
-     * The same map, after every pair in it is allowed; the first pair that is not stops the application.
-     *
-     * @param  array<string, list<string>>  $events
-     * @return array<string, list<string>>
-     *
-     * @throws InvalidListener
-     */
-    public function check(array $events): array
-    {
-        foreach ($events as $event => $listeners) {
-            foreach ($listeners as $listener) {
-                $this->checkPair($event, $listener);
-            }
-        }
-
-        return $events;
-    }
-
-    /**
-     * The checked map as the dispatcher runs it: each domain's listener gated by that domain's availability, Core's
-     * listeners as they are. The map itself keeps every declaration.
-     *
      * @param  array<string, list<string>>  $events
      * @return array<string, list<string|AvailableListener|FailureLoggingListener>>
-     *
-     * @throws InvalidListener
      */
-    public function gated(array $events): array
+    public function registerCached(array $events): array
     {
-        $gated = [];
-
-        foreach ($events as $event => $listeners) {
-            foreach ($listeners as $listener) {
-                $class = explode('@', $listener, 2)[0];
-
-                if (! class_exists($class)) {
-                    throw InvalidListener::staleCache($listener, $event);
-                }
-
-                $file = (string) new ReflectionClass($class)->getFileName();
-                $domain = array_find(
-                    $this->registry->all(),
-                    fn (DomainEntry $entry) => $entry->holdsListenerFile($file),
-                );
-                $available = $domain === null ? $listener : new AvailableListener($domain->name, $listener);
-                $gated[$event][] = is_subclass_of($event, ListenerFailureLog::class)
-                    ? new FailureLoggingListener($event, $available)
-                    : $available;
-            }
-        }
-
-        return $gated;
-    }
-
-    private function checkPair(string $event, string $listener): void
-    {
-        [$class, $method] = array_pad(explode('@', $listener, 2), 2, 'handle');
-
-        if (is_subclass_of($class, AgentState::class)) {
-            throw InvalidListener::stateRegisteredByHand($listener, $event);
-        }
-
-        if (! class_exists($class)
-            || ! method_exists($class, $method)
-            || ! $this->firstParameterAccepts(new ReflectionMethod($class, $method), $event)) {
-            throw InvalidListener::staleCache($listener, $event);
-        }
-
-        if (! class_exists($event)
-            || ! is_subclass_of($event, Event::class)
-            || new ReflectionClass($event)->isAbstract()) {
-            throw InvalidListener::notAConcreteEvent($listener, $event);
-        }
-
-        $listenerDomain = $this->listenerDomain($class, $listener, $event);
-        $this->checkOwnership($event, $listener, $method, $listenerDomain);
-    }
-
-    public function stateEvents(StateTypeRegistry $types, StateMethods $methods): StateEvents
-    {
-        $declarations = [];
-
-        foreach ($types->loaders() as $loader) {
-            foreach ($methods->eventsForLoader($loader) as $event => $method) {
-                $owner = $this->checkStateEvent($event, $method);
-                $declaration = new StateEventDeclaration($event, $method, $owner);
-                $declarations[$declaration->cacheEntry()] = $declaration;
-            }
-        }
-
-        return new StateEvents(array_values($declarations));
-    }
-
-    public function checkStateEvent(string $event, StateMethod $method): string
-    {
-        $listener = $method->stateClass.'@'.$method->name;
-        $listenerDomain = $this->stateDomain($method->stateClass, $listener, $event);
-        $declaring = $this->stateDomain($method->declaringClass, $listener, $event);
-
-        if ($declaring !== $listenerDomain) {
-            $this->checkOwnership($event, $listener, $method->name, $declaring);
-        }
-
-        $file = new ReflectionMethod($method->stateClass, $method->name)->getFileName();
-        $source = $this->stateSource($file, $listener, $event);
-
-        if ($source !== $listenerDomain && $source !== $declaring) {
-            $this->checkOwnership($event, $listener, $method->name, $source);
-        }
-
-        $this->checkOwnership($event, $listener, $method->name, $listenerDomain);
-
-        return $listenerDomain->name ?? self::CORE;
-    }
-
-    private function checkOwnership(
-        string $event,
-        string $listener,
-        string $method,
-        DomainEntry|null $listenerDomain,
-    ): void {
-        $owner = $this->eventDomain($event, $listener);
-
-        if ($owner === null) {
-            $isCoreListener = $listenerDomain === null;
-            if (! $isCoreListener && ! $this->coreExports->hasEvent($event)) {
-                throw InvalidListener::privateEvent($listener, $method, $event, self::CORE);
-            }
-
-            return;
-        }
-
-        if ($listenerDomain === null) {
-            $isExportedUiEvent = $owner->exportsEvent($event) && is_subclass_of($event, UserInterfaceUpdater::class);
-            if (! $isExportedUiEvent) {
-                throw InvalidListener::privateEvent($listener, $method, $event, $owner->name);
-            }
-
-            return;
-        }
-
-        if ($listenerDomain === $owner) {
-            return;
-        }
-
-        if (! $listenerDomain->requiresDomain($owner)) {
-            throw InvalidListener::notRequired($listener, $event, $owner->name);
-        }
-
-        if (! $owner->exportsEvent($event)) {
-            throw InvalidListener::privateEvent($listener, $method, $event, $owner->name);
-        }
+        return $this->runner->runSteps(
+            [CheckListenerPairs::class, GateListenersByDomain::class],
+            new ListenerDeclarations($events, $this->ownership),
+            GatedListeners::class,
+        )->events;
     }
 
     /**
-     * @param  class-string  $class
+     * @param  array<string, list<string>>  $events
+     * @return array<string, list<string|AvailableListener|FailureLoggingListener>>
      */
-    private function stateDomain(string $class, string $listener, string $event): DomainEntry|null
+    public function registerDiscovered(array $events): array
     {
-        $file = new ReflectionClass($class)->getFileName();
-        $domain = $this->stateSource($file, $listener, $event);
-        $ownsClass = $domain === null ? str_starts_with($class, 'App\\') : $domain->ownsName($class);
-
-        if (! $ownsClass) {
-            throw InvalidListener::unknownOwner($listener, $event);
-        }
-
-        return $domain;
-    }
-
-    private function stateSource(string|false $file, string $listener, string $event): DomainEntry|null
-    {
-        if ($file === false) {
-            throw InvalidListener::unknownOwner($listener, $event);
-        }
-
-        $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsFile($file));
-
-        if ($domain === null && ! str_starts_with($file, dirname(__DIR__, 2).DIRECTORY_SEPARATOR)) {
-            throw InvalidListener::unknownOwner($listener, $event);
-        }
-
-        return $domain;
-    }
-
-    /**
-     * The domain whose Listeners folder holds the listener, or none for a listener in one of Core's folders.
-     *
-     * @param  class-string  $class
-     *
-     * @throws InvalidListener
-     */
-    private function listenerDomain(string $class, string $listener, string $event): DomainEntry|null
-    {
-        $file = (string) new ReflectionClass($class)->getFileName();
-        $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsListenerFile($file));
-        $isCoreListener = array_any(
-            $this->coreListenerFolders,
-            fn (string $folder) => str_starts_with($file, $folder.DIRECTORY_SEPARATOR),
-        );
-
-        if ($domain === null && ! $isCoreListener) {
-            throw InvalidListener::unknownOwner($listener, $event);
-        }
-
-        return $domain;
-    }
-
-    /**
-     * The domain that owns the event, or none for an event of Core.
-     *
-     * @throws InvalidListener
-     */
-    private function eventDomain(string $event, string $listener): DomainEntry|null
-    {
-        $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->ownsName($event));
-
-        if ($domain === null && stripos($event, 'App\\') !== 0) {
-            throw InvalidListener::unknownOwner($listener, $event);
-        }
-
-        return $domain;
-    }
-
-    private function firstParameterAccepts(ReflectionMethod $method, string $event): bool
-    {
-        $type = ($method->getParameters()[0] ?? null)?->getType();
-        $arms = $type instanceof ReflectionUnionType ? $type->getTypes() : [$type];
-
-        return array_any(
-            $arms,
-            fn (mixed $arm) => $arm instanceof ReflectionNamedType && is_a($event, $arm->getName(), true),
-        );
-    }
-
-    /**
-     * @return list<class-string<Event>>
-     */
-    private function exportedEvents(): array
-    {
-        return [
-            ...$this->coreExports->events,
-            ...array_merge(
-                [],
-                ...array_map(fn (DomainEntry $entry) => $entry->exports->events, $this->registry->all()),
-            ),
-        ];
+        return $this->runner->runSteps(
+            [GateListenersByDomain::class],
+            new ListenerDeclarations($events, $this->ownership),
+            GatedListeners::class,
+        )->events;
     }
 }
