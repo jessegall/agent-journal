@@ -7,7 +7,7 @@ namespace Domain\Tasks\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Api\TaskTextLimits;
+use Domain\Tasks\Api\TaskTextLimit;
 use Domain\Tasks\Commands\CreateTask;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -25,8 +25,8 @@ final class CreateTaskTool extends TaskWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'title' => $schema->string()->max(TaskTextLimits::TITLE)->required(),
-            'brief' => $schema->string()->max(TaskTextLimits::NOTE)->required(),
+            'title' => $schema->string()->max(TaskTextLimit::Title->value)->required(),
+            'brief' => $schema->string()->max(TaskTextLimit::Note->value)->required(),
         ];
     }
 

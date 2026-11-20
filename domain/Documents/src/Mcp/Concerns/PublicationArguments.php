@@ -27,7 +27,9 @@ trait PublicationArguments
         );
     }
 
-    /** @return list<RecordIdentity> */
+    /**
+     * @return list<RecordIdentity>
+     */
     protected function sources(ToolArguments $arguments): array
     {
         $sources = $arguments->optionalList('source_references');

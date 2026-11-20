@@ -28,6 +28,8 @@ interface McpToolProvider
      */
     public function overviewContributions(): array;
 
-    /** @return list<class-string<SearchContribution>> */
+    /**
+     * @return list<class-string<SearchContribution>>
+     */
     public function searchContributions(): array;
 }

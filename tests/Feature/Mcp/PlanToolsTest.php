@@ -153,7 +153,9 @@ final class PlanToolsTest extends TestCase
         ])->assertJsonPath('result.isError', false);
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function resource(string $uri): array
     {
         return json_decode(

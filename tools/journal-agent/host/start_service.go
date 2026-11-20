@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"journal-agent/client"
+	"journal-agent/profiles/contracts"
 )
 
 // StartJournal is what preparing a start asks the journal: the runtime's one-use grant and its account claim.
@@ -26,6 +27,26 @@ type PreparedStart struct {
 // ProgramBuild is the build of the program the grant starts.
 func (prepared PreparedStart) ProgramBuild() string {
 	return prepared.Grant.ProgramBuild()
+}
+
+func (prepared PreparedStart) Runtime() client.RuntimeStart {
+	return prepared.Grant.Runtime
+}
+
+func (prepared PreparedStart) Transport() contracts.TransportProfile {
+	recipe := prepared.Claim.Recipe
+	return contracts.TransportProfile(recipe.TransportProfile)
+}
+
+func (prepared PreparedStart) AccountStart(server *contracts.JournalServer, reference string) *contracts.AccountStart {
+	claim := prepared.Claim
+	return &contracts.AccountStart{
+		Folder:          claim.Directory,
+		Protection:      claim.Recipe.ProtectionSettings,
+		Transport:       prepared.Transport(),
+		JournalServer:   server,
+		LaunchReference: reference,
+	}
 }
 
 // RelayVariables tell the program's hook relay the start's key and where its sealed output grants are.

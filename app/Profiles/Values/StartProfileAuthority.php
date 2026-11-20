@@ -22,4 +22,9 @@ final readonly class StartProfileAuthority implements AuthoritySource
     {
         return true;
     }
+
+    public function profileKey(): string
+    {
+        return (string) $this->profile->key;
+    }
 }

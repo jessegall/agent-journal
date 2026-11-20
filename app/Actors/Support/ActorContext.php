@@ -44,6 +44,11 @@ final readonly class ActorContext implements Actor
         return $this->type;
     }
 
+    public function isAgent(): bool
+    {
+        return $this->type->isAgent();
+    }
+
     public function actorId(): string
     {
         return $this->id;

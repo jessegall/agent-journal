@@ -36,7 +36,9 @@ final readonly class AddressedStackPush
         $this->eventScope->admit([$target], fn () => $this->statePush->push($target, $stack, $state));
     }
 
-    /** @param list<AgentStackRow> $stacks */
+    /**
+     * @param list<AgentStackRow> $stacks
+     */
     public function offer(array $stacks, StateReference $state): void
     {
         $restored = array_map(fn (AgentStackRow $stack) => $this->restorer->restore($stack->frames), $stacks);

@@ -13,16 +13,24 @@ final class ScriptGraph
 {
     private const int EXECUTION_BUDGET = 900;
 
-    /** @var array<string, Instruction> */
+    /**
+     * @var array<string, Instruction>
+     */
     private array $instructions = [];
 
-    /** @var array<string, int> */
+    /**
+     * @var array<string, int>
+     */
     private array $seconds = [];
 
-    /** @var array<string, mixed> */
+    /**
+     * @var array<string, mixed>
+     */
     private array $definitions = [];
 
-    /** @param list<string> $ports */
+    /**
+     * @param list<string> $ports
+     */
     public function add(Instruction $instruction, array $ports): string
     {
         $actual = array_keys($instruction->successors);
@@ -58,7 +66,9 @@ final class ScriptGraph
         $this->seconds[$terminal] = 0;
     }
 
-    /** @param array<string, mixed> $handlers */
+    /**
+     * @param array<string, mixed> $handlers
+     */
     public function compiled(array $handlers, string $sourceHash): CompiledScript
     {
         ksort($this->definitions);

@@ -20,7 +20,9 @@ use App\Communication\Policies\MessagePolicy;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
-/** @extends Command<string> */
+/**
+ * @extends Command<string>
+ */
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 #[Effect(CommandEffectType::Recovery)]
@@ -31,7 +33,9 @@ final readonly class AnswerMessage extends Command implements AuthorizedCommand
 {
     public function __construct(public string $messageId, public string $replyId) {}
 
-    /** @return class-string */
+    /**
+     * @return class-string
+     */
     public function subject(): string
     {
         return Message::class;

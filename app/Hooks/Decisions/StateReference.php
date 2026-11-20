@@ -26,6 +26,11 @@ final readonly class StateReference
         return $this->typeKey === $other->typeKey && $this->subject == $other->subject;
     }
 
+    public function isForWork(WorkReference $work): bool
+    {
+        return $this->workReference()->key === $work->key;
+    }
+
     public function workReference(): WorkReference
     {
         $work = WorkOccurrence::of($this);

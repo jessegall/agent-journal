@@ -16,7 +16,9 @@ use Domain\Documents\Handlers\DiscardUploadHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
-/** @extends Command<void> */
+/**
+ * @extends Command<void>
+ */
 #[HandledBy(DiscardUploadHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 #[Operation('discard_upload', ResourceAreaType::JournalContent, AccessType::Edit)]

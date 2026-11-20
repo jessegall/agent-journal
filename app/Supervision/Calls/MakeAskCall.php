@@ -19,7 +19,9 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Data;
 
-/** @implements JournalCall<AskCard> */
+/**
+ * @implements JournalCall<AskCard>
+ */
 #[Endpoint('asks/make', 'POST', AskCard::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class MakeAskCall extends Data implements JournalCall
 {

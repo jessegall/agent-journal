@@ -10,7 +10,9 @@ use App\Agents\Contracts\RequestSource;
 use App\Communication\Models\Message;
 use App\Records\Support\RecordIdentity;
 
-/** Resolves the calling session's selected message while it remains visible. */
+/**
+ * Resolves the calling session's selected message while it remains visible.
+ */
 final readonly class SelectedMessages implements RequestSource
 {
     public function __construct(private CurrentSession $session) {}

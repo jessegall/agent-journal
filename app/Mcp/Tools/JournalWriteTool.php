@@ -45,10 +45,14 @@ abstract class JournalWriteTool extends JournalTool
         });
     }
 
-    /** @return array<string, \Illuminate\JsonSchema\Types\Type> */
+    /**
+     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     */
     abstract protected function writeSchema(JsonSchema $schema): array;
 
-    /** @return Command<mixed> */
+    /**
+     * @return Command<mixed>
+     */
     abstract protected function command(ToolArguments $arguments): Command;
 
     abstract protected function present(mixed $result): ToolResult;

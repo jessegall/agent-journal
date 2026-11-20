@@ -16,7 +16,9 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
-/** Shows who a skill reaches, or one agent's selection. */
+/**
+ * Shows who a skill reaches, or one agent's selection.
+ */
 #[IsReadOnly]
 #[VisibleToProfiles]
 #[Name('skills_preview')]

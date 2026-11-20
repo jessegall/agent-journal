@@ -14,7 +14,7 @@ use App\Scripts\Values\ParsedStatement;
 use App\Scripts\Values\RunContext;
 use App\Scripts\Values\StepOutcome;
 
-final readonly class IfKeyword implements ScriptStatement
+final readonly class ConditionalKeyword implements ScriptStatement
 {
     public static function definition(): KeywordDefinition
     {

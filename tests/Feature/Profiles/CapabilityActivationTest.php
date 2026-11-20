@@ -59,14 +59,7 @@ final class CapabilityActivationTest extends TestCase
         $commands = $this->app->make(CommandBus::class);
         $commands->run($this->activation());
         $profile = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from(self::PROFILE));
-        $policy = new StartPolicy(
-            $profile->start->access,
-            $profile->start->stopConditions,
-            $profile->start->execution,
-            $profile->key->key,
-            $profile->revision,
-            $profile->start->configurationHash(),
-        );
+        $policy = $profile->start->freeze((string) $profile->key, $profile->revision);
         $first = $commands->run($this->start($policy));
         $this->assertTrue($first->newSession);
 

@@ -12,15 +12,13 @@ use App\Mcp\Support\ToolArguments;
 use App\Records\Support\RecordIdentity;
 use App\Text\Support\MarkdownText;
 use Domain\Documents\Contracts\ReportReader;
-use Domain\Documents\Contracts\ReportResolver;
-use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Data\ReportList;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\PublicationView;
 use Domain\Documents\Enums\ReportState;
 use Domain\Documents\Mcp\PublicationChunks;
 use Domain\Documents\Mcp\PublicationPages;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Values\ReportReadCard;
 
 final readonly class ReportPages implements ReportReader
 {
@@ -29,16 +27,10 @@ final readonly class ReportPages implements ReportReader
     private const string KEY = 'report_id';
 
     public function __construct(
-        private ReportResolver $reports,
         private Continuations $continuations,
         private PublicationChunks $chunks,
         private PublicationPages $pages,
     ) {}
-
-    public function list(string $search, ReportState $state, int $page, int $size = 8): ReportList
-    {
-        return $this->reports->list(new DocumentFilters($state->attention(), $page, $size, $search));
-    }
 
     public function report(int|string $id, ToolArguments $arguments): ToolResult
     {
@@ -51,11 +43,8 @@ final readonly class ReportPages implements ReportReader
             1,
             revision: 1,
         ) : $this->continuations->open($cursor, self::TOOL, (string) $id);
-        $card = [
-            'report_id' => $report->number,
-            'record_id' => $report->id,
-            'state' => ($report->attention === AttentionState::Active ? ReportState::Open : ReportState::Closed)->value,
-        ];
+        $state = $report->attention === AttentionState::Active ? ReportState::Open : ReportState::Closed;
+        $card = new ReportReadCard($report->number, $report->id, $state);
 
         return match (PublicationView::from($read->filters['view'])) {
             PublicationView::Summary => $this->pages->summary(
@@ -65,7 +54,7 @@ final readonly class ReportPages implements ReportReader
                 $report->body,
                 $cursor === null ? $this->chunks->range($read, MarkdownText::body($report->body), $arguments) : $read,
                 self::KEY,
-                $card,
+                $card->toArray(),
             ),
             PublicationView::Comments => $this->pages->comments(
                 new RecordIdentity(Report::LINK_TYPE, $report->id), $read, self::KEY, $card,

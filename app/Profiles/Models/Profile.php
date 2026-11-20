@@ -57,7 +57,7 @@ final class Profile extends Model implements ReadableModel
     public static function activate(
         ProfileDefinition $definition,
         ActorIdentity $author,
-        ScriptSource $source = new ScriptSource(),
+        ScriptSource $source = new ScriptSource(''),
         CompiledScript|null $compiled = null,
     ): ProfileRevision {
         $profile = self::query()->withKey($definition->key)->lockForUpdate()->first()

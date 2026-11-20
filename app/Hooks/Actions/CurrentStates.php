@@ -55,12 +55,16 @@ final readonly class CurrentStates implements CurrentState
         });
     }
 
-    /** @return Option<RecordIdentity> */
+    /**
+     * @return Option<RecordIdentity>
+     */
     private function workRecord(Frame $frame): Option
     {
         $subject = $frame->reference->subject;
 
-        if (! $frame->isLive() || ! $subject instanceof SubjectReference || ! $frame->state instanceof WorkRecordState) {
+        if (! $frame->isLive()
+            || ! $subject instanceof SubjectReference
+            || ! $frame->state instanceof WorkRecordState) {
             return None::create();
         }
 

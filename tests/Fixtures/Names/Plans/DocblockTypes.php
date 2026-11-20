@@ -40,7 +40,9 @@ final class DocblockTypes
             return null;
         }
 
-        /** @var Message $message */
+        /**
+         * @var Message $message
+         */
         $message = $shape['message'];
 
         return $message;

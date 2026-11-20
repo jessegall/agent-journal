@@ -62,6 +62,10 @@ func (markers Markers) Remove(runtimeID string) error {
 
 // Reconcile reads every marker after a restart and says, per runtime, what still runs. It never starts anything.
 func (markers Markers) Reconcile() (map[string]Reconciliation, error) {
+	return markers.reconcile(startIdentityOf)
+}
+
+func (markers Markers) reconcile(identityOf func(int) (string, error)) (map[string]Reconciliation, error) {
 	entries, err := os.ReadDir(markers.Folder)
 	if errors.Is(err, os.ErrNotExist) {
 		return map[string]Reconciliation{}, nil
@@ -83,7 +87,7 @@ func (markers Markers) Reconcile() (map[string]Reconciliation, error) {
 			outcomes[strings.TrimSuffix(entry.Name(), ".json")] = NeedsAttention
 			continue
 		}
-		outcomes[marker.RuntimeID] = reconcile(marker)
+		outcomes[marker.RuntimeID] = reconcile(marker, identityOf)
 	}
 	return outcomes, nil
 }
@@ -94,14 +98,14 @@ func MayStartAgain(marker StartMarker, journalGeneration int) bool {
 	return journalGeneration > marker.ProcessGeneration
 }
 
-func reconcile(marker StartMarker) Reconciliation {
+func reconcile(marker StartMarker, identityOf func(int) (string, error)) Reconciliation {
 	if marker.ProcessID == 0 || marker.StartIdentity == "" {
 		return NeedsAttention
 	}
 	if processGone(marker.ProcessID) {
 		return Exited
 	}
-	identity, err := startIdentityOf(marker.ProcessID)
+	identity, err := identityOf(marker.ProcessID)
 	if err != nil || identity != marker.StartIdentity {
 		return NeedsAttention
 	}
@@ -119,7 +123,7 @@ func (markers Markers) pathOf(runtimeID string) string {
 
 // startIdentityOf reads when the process started, which together with its id tells it apart from a later process
 // that reused the id.
-var startIdentityOf = func(processID int) (string, error) {
+func startIdentityOf(processID int) (string, error) {
 	output, err := exec.Command("ps", "-o", "lstart=", "-p", strconv.Itoa(processID)).Output()
 	identity := strings.TrimSpace(string(output))
 	if err != nil || identity == "" {

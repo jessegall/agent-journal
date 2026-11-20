@@ -52,7 +52,9 @@ final readonly class PublicationChunks
         );
     }
 
-    /** @param array<string, mixed> $card */
+    /**
+     * @param array<string, mixed> $card
+     */
     public function page(string $text, Continuation $read, string $selectorName, array $card): ToolResult
     {
         $chunk = $this->chunk($text, $read);

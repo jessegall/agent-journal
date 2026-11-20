@@ -26,7 +26,7 @@ final readonly class WaitForOpenNavigation implements Pipe
             $raise->owner,
             $raise->runtime,
             $raise->request->scriptGoal(),
-            $raise->command->uncertainty->fingerprint,
+            $raise->fingerprint(),
         )) {
             return NavigationRaiseAnswer::wait($this->retryAfterSeconds);
         }

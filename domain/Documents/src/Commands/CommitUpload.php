@@ -16,7 +16,9 @@ use Domain\Documents\Handlers\CommitUploadHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
-/** @extends Command<string> */
+/**
+ * @extends Command<string>
+ */
 #[HandledBy(CommitUploadHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 #[Operation('commit_upload', ResourceAreaType::JournalContent, AccessType::Edit)]

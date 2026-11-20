@@ -6,6 +6,8 @@ namespace App\Domains\Contracts;
 
 interface ScriptObjectProvider
 {
-    /** @return list<class-string> */
+    /**
+     * @return list<class-string>
+     */
     public function scriptObjects(): array;
 }

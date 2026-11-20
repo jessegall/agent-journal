@@ -67,7 +67,9 @@ final class RequestKey implements RequestKeyContract
         return $this->key;
     }
 
-    /** @param class-string $command */
+    /**
+     * @param class-string $command
+     */
     public function requireFor(string $command): string
     {
         if ($this->key === null) {

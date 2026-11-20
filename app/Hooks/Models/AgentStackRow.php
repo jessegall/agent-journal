@@ -185,7 +185,9 @@ final class AgentStackRow extends Model implements ReadableModel
         return $row !== null && $row->isActive() ? new Some($row) : None::create();
     }
 
-    /** @param Builder<self> $query */
+    /**
+     * @param Builder<self> $query
+     */
     #[Scope]
     protected function historyOf(Builder $query, ActorIdentity $actor): void
     {

@@ -28,13 +28,6 @@ final readonly class ProfileSelection
     {
         $source = $this->selection->source;
 
-        return new StartPolicy(
-            $this->start->access,
-            $this->start->stopConditions,
-            $this->start->execution,
-            $source->profileKey,
-            $source->profileRevision,
-            $this->start->configurationHash(),
-        );
+        return $this->start->freeze($source->profileKey, $source->profileRevision);
     }
 }

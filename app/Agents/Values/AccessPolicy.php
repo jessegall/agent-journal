@@ -62,6 +62,11 @@ final readonly class AccessPolicy
      * Decides one operation: an explicit denial or a protected resource refuses first, an exact grant allows, and
      * otherwise every access it needs must be granted on every area it touches.
      */
+    public function allows(Operation $operation): bool
+    {
+        return $this->decide($operation)->allowed;
+    }
+
     public function decide(Operation $operation): AccessDecision
     {
         if (in_array($operation->name, $this->denials, true)) {

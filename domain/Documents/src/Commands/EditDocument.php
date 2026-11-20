@@ -18,7 +18,9 @@ use Domain\Documents\Handlers\EditDocumentHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
-/** @extends Command<DraftReference> */
+/**
+ * @extends Command<DraftReference>
+ */
 #[HandledBy(EditDocumentHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 #[Operation('edit_document', ResourceAreaType::JournalDocuments, AccessType::Edit)]

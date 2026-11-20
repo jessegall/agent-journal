@@ -10,7 +10,9 @@ use App\Scripts\Exceptions\ScriptSyntaxError;
 
 final readonly class Instruction
 {
-    /** @param array<string, string> $successors */
+    /**
+     * @param array<string, string> $successors
+     */
     public function __construct(
         public string $keyword,
         public ScriptRange $source,
@@ -50,7 +52,9 @@ final readonly class Instruction
         return $this->operand instanceof NamedCommand ? $this->operand->timeoutSeconds : 0;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     public function stored(): array
     {
         $operand = $this->operand;

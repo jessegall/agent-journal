@@ -18,7 +18,9 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;
 
-/** @implements JournalCall<AskCard> */
+/**
+ * @implements JournalCall<AskCard>
+ */
 #[Endpoint('asks/withdraw', 'POST', AskCard::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class WithdrawAskCall extends Data implements JournalCall
 {

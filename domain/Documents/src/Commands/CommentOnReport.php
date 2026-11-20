@@ -16,7 +16,9 @@ use Domain\Documents\Handlers\CommentOnReportHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
-/** @extends Command<string> */
+/**
+ * @extends Command<string>
+ */
 #[HandledBy(CommentOnReportHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 #[Operation('comment_on_report', ResourceAreaType::JournalContent, AccessType::Create)]

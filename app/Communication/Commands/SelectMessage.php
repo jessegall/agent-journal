@@ -17,7 +17,9 @@ use App\Communication\Policies\MessagePolicy;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
-/** @extends Command<string> */
+/**
+ * @extends Command<string>
+ */
 #[HandledBy(SelectMessageHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
@@ -26,7 +28,9 @@ final readonly class SelectMessage extends Command implements AuthorizedCommand
 {
     public function __construct(public string $messageId) {}
 
-    /** @return class-string */
+    /**
+     * @return class-string
+     */
     public function subject(): string
     {
         return Message::class;

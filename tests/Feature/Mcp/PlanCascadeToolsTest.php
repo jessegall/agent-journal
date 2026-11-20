@@ -147,7 +147,9 @@ final class PlanCascadeToolsTest extends TestCase
         ];
     }
 
-    /** @return array{id: string, holder: array{type: string, id: string}} */
+    /**
+     * @return array{id: string, holder: array{type: string, id: string}}
+     */
     private function reference(Plan $plan): array
     {
         $holder = $this->callMcpTool(

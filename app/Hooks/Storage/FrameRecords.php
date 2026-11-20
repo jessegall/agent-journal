@@ -33,8 +33,11 @@ final readonly class FrameRecords
         $entered = null;
 
         foreach ($this->records as $frame) {
-            if ($frame->reference->workReference()->key === $work->key
-                && ($entered === null || $frame->enteredAt->lessThan($entered))) {
+            if (! $frame->reference->isForWork($work)) {
+                continue;
+            }
+
+            if ($entered === null || $frame->enteredAt->lessThan($entered)) {
                 $entered = $frame->enteredAt;
             }
         }

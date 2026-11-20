@@ -20,7 +20,9 @@ use App\Supervision\Models\Ask;
 use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Values\AskReference;
 
-/** @extends Command<AskReference> */
+/**
+ * @extends Command<AskReference>
+ */
 #[RepeatableRead]
 #[HandledBy(AskSupervisorHandler::class)]
 #[Authorize(AskPolicy::class, AskAbility::Work)]
@@ -38,7 +40,9 @@ final readonly class AskSupervisor extends Command implements AuthorizedCommand
         return $this->type ?? CoreAskType::Question->key();
     }
 
-    /** @return class-string<Ask> */
+    /**
+     * @return class-string<Ask>
+     */
     public function subject(): string
     {
         return Ask::class;

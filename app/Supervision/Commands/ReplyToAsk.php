@@ -20,7 +20,9 @@ use App\Supervision\Models\Ask;
 use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Values\AskReference;
 
-/** @extends Command<AskReference> */
+/**
+ * @extends Command<AskReference>
+ */
 #[RepeatableRead]
 #[HandledBy(ReplyToAskHandler::class)]
 #[Effect(CommandEffectType::AssignmentChange)]
@@ -30,7 +32,9 @@ final readonly class ReplyToAsk extends Command implements AuthorizedCommand
 {
     public function __construct(public AskReference $ask, public string $body) {}
 
-    /** @return class-string<Ask> */
+    /**
+     * @return class-string<Ask>
+     */
     public function subject(): string
     {
         return Ask::class;

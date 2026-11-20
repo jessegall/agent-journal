@@ -27,9 +27,9 @@ final readonly class RulesListResult
                 'state' => $first->enumOr('state', RuleState::Active)->value,
                 'page' => $first->positiveIntegerOr('page', 1),
             ],
-            fn (array $filters) => $this->page(new RuleFilters(
-                page: $filters['page'],
-                state: RuleState::from($filters['state']),
+            fn (ToolArguments $filters) => $this->page(new RuleFilters(
+                page: $filters->positiveInteger('page'),
+                state: $filters->enum('state', RuleState::class),
             )),
         );
     }

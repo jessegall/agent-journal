@@ -56,7 +56,9 @@ final class AssignmentConflict extends RuntimeException implements CodedRefusal,
         ])->toArray()];
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     protected function details(): array
     {
         return $this->refusalDetails();

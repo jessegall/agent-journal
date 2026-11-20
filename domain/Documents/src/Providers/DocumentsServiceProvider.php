@@ -84,7 +84,9 @@ final class DocumentsServiceProvider extends ServiceProvider
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
     }
 
-    /** @param Builder<RetainedDraft> $drafts */
+    /**
+     * @param Builder<RetainedDraft> $drafts
+     */
     private function limitDrafts(Builder $drafts): void
     {
         if ($this->app->make(RetainedDrafts::class)->mayAdminister()) {
