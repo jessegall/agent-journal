@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Values;
+
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Commands\RaiseNavigation;
+use App\Agents\Models\AgentRuntime;
+use App\Agents\Models\DriverRequest;
+use App\Agents\Support\NavigationDispatch;
+
+/**
+ * The locked runtime and driver request with the owner and dispatcher for this raise.
+ */
+final readonly class NavigationAdmission
+{
+    public function __construct(
+        public RaiseNavigation $command,
+        public AgentRuntime $runtime,
+        public DriverRequest $request,
+        public ActorIdentity $owner,
+        public NavigationDispatch $dispatch,
+    ) {}
+}

@@ -8,11 +8,14 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\WorkStacks;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Support\AssigneeIdentity;
+use App\Assignments\Support\Page;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Values\TimingVerdict;
 use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Api\TaskSummary;
+use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
 
 /**
@@ -21,11 +24,14 @@ use Domain\Tasks\Contracts\TaskResolver;
  */
 final readonly class PhaseTiming implements VerificationTiming
 {
+    private const int PHASE_BATCH_SIZE = 100;
+
     public function __construct(
         private CurrentActor $actors,
         private WorkStacks $workStacks,
         private AssignmentResolver $assignments,
         private TaskResolver $tasks,
+        private TaskProgressCounter $taskCounts,
     ) {}
 
     public function forCaller(): TimingVerdict
@@ -35,15 +41,27 @@ final readonly class PhaseTiming implements VerificationTiming
             return TimingVerdict::allowed();
         }
 
-        $caller = $this->actors->actor();
-        $heldIds = $this->assignments->allRecordIdsFor(Plan::LINK_TYPE, AssigneeIdentity::of($caller));
-        $started = Plan::query()->amongIds($heldIds)->inStates([PlanState::Started])->readLimit(500)->get();
-        foreach ($started as $plan) {
-            $verdict = $this->verdictOf($plan);
-            if (! $verdict->isAllowed()) {
-                return $verdict;
+        $holder = AssigneeIdentity::of($this->actors->actor());
+        $afterId = null;
+
+        do {
+            $page = $this->assignments->recordIdsFor(
+                Plan::LINK_TYPE,
+                $holder,
+                new Page($afterId, Page::LARGEST_LIMIT),
+            );
+            $started = Plan::query()->amongIds($page->ids)->inStates([PlanState::Started])
+                ->orderBy('id')->readLimit(count($page->ids))->get();
+
+            foreach ($started as $plan) {
+                $verdict = $this->verdictOf($plan);
+                if (! $verdict->isAllowed()) {
+                    return $verdict;
+                }
             }
-        }
+
+            $afterId = $page->nextAfterId;
+        } while ($afterId !== null);
 
         return TimingVerdict::allowed();
     }
@@ -53,23 +71,52 @@ final readonly class PhaseTiming implements VerificationTiming
      */
     private function verdictOf(Plan $plan): TimingVerdict
     {
-        foreach ($plan->phases()->readLimit(500)->get() as $phase) {
-            $summaries = $this->tasks->summaries($phase->taskIds());
-            if (array_all($summaries, fn (TaskSummary $task): bool => $task->state->hasEnded())) {
-                continue;
-            }
-            $unfinished = array_filter(
-                $summaries,
-                fn (TaskSummary $task): bool => $task->state->isHoldingChecks(),
-            );
-            if ($unfinished === []) {
-                return TimingVerdict::allowed();
-            }
-            $numbers = array_values(array_map(fn (TaskSummary $task): int => $task->number, $unfinished));
+        $afterNumber = 0;
 
-            return TimingVerdict::refused($plan->number, $phase->number, $numbers);
-        }
+        do {
+            $phases = $plan->phases()->where('number', '>', $afterNumber)->readLimit(self::PHASE_BATCH_SIZE)->get();
+            $taskIdsByPhase = PhaseTask::taskIdsByPhase($phases->modelKeys());
+            $progressByPhase = $this->taskCounts->progressByGroup($taskIdsByPhase);
+
+            foreach ($phases as $phase) {
+                $afterNumber = $phase->number;
+                $taskIds = $taskIdsByPhase[$phase->id];
+                $progress = $progressByPhase[$phase->id];
+
+                if ($progress->total !== count($taskIds)) {
+                    $this->tasks->requireAllVisible($taskIds);
+                }
+
+                if ($progress->unfinished() === 0) {
+                    continue;
+                }
+
+                if ($progress->unfinished() === $progress->blocked) {
+                    return TimingVerdict::allowed();
+                }
+
+                return $this->verdictForPhase($plan->number, $phase->number, $taskIds);
+            }
+        } while ($phases->count() === self::PHASE_BATCH_SIZE);
 
         return TimingVerdict::allowed();
+    }
+
+    /**
+     * @param  list<string>  $taskIds
+     */
+    private function verdictForPhase(int $planNumber, int $phaseNumber, array $taskIds): TimingVerdict
+    {
+        $holding = array_filter(
+            $this->tasks->summaries($taskIds),
+            fn (TaskSummary $task): bool => $task->state->isHoldingChecks(),
+        );
+        if ($holding === []) {
+            return TimingVerdict::allowed();
+        }
+
+        $numbers = array_values(array_map(fn (TaskSummary $task): int => $task->number, $holding));
+
+        return TimingVerdict::refused($planNumber, $phaseNumber, $numbers);
     }
 }

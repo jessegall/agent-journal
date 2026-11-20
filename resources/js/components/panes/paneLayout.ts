@@ -1,9 +1,8 @@
 import type { IconName } from '@/components/kit/Icon.vue';
 
 /**
- * The arrangement of Home's windows, as version 5's pane grid keeps it (panes/PaneGrid.vue): a tree whose leaves are
- * panes holding window keys as tabs, and whose inner nodes split their space in two at a ratio. Every function returns
- * a new layout and leaves the one it was given unchanged.
+ * Home lays out windows in a tree. Leaves are panes that hold windows as tabs. Each split divides the available
+ * space between its two children at a ratio.
  */
 export type Pane = {
     type: 'pane';
@@ -81,7 +80,7 @@ export function pane(windows: string[], id: string = newId('pane')): Pane {
 }
 
 /**
- * Version 5's Default preset: the chat alone on the left, every other window as a tab on the right.
+ * The default layout puts chat on the left and the other windows in tabs on the right.
  */
 export function defaultLayout(
     chatWindow: string,
@@ -153,7 +152,7 @@ export function activate(
 }
 
 /**
- * Version 5's Limit width: the pane's window keeps to a readable width in the middle of the pane, or uses it all again.
+ * Switches the pane between centred content at a readable width and full-width content.
  */
 export function toggleLimitWidth(node: LayoutNode, paneId: string): LayoutNode {
     return mapNodes(node, (each) =>
@@ -164,8 +163,7 @@ export function toggleLimitWidth(node: LayoutNode, paneId: string): LayoutNode {
 }
 
 /**
- * Takes a window out of whatever pane holds it. The pane stays, empty if it was the last window, as version 5 shows
- * "Nothing is open in this pane".
+ * Removes a window from its pane. The pane stays in the grid even when its last window closes.
  */
 export function closeWindow(node: LayoutNode, windowKey: string): LayoutNode {
     return mapNodes(node, (each) => {
@@ -256,7 +254,7 @@ export function splitPane(
 }
 
 /**
- * Puts a window in a new pane at the right of the whole grid, as version 5 docks a window that has no pane to go to.
+ * Puts a window in a new pane at the right of the grid.
  */
 export function addPaneAtRight(
     node: LayoutNode,
@@ -273,8 +271,8 @@ export function addPaneAtRight(
 }
 
 /**
- * The zone of a pane a pointer aims at, as version 5 reads it: over the tab strip, or on an empty pane, it is the
- * centre; otherwise the nearest side when within a quarter of the pane from it, else the centre.
+ * A drop on the tab strip or an empty pane aims at the centre. Elsewhere, it aims at the nearest edge within a
+ * quarter of the pane's size, or the centre outside that range.
  */
 export function zoneAt(
     box: { left: number; top: number; width: number; height: number },

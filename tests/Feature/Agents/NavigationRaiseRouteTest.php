@@ -36,6 +36,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsDesks;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -117,6 +118,25 @@ final class NavigationRaiseRouteTest extends TestCase
         $this->assertSame(1, NavigationRequest::query()->acrossActors()->count());
     }
 
+    #[TimeLimit(seconds: 30, reason: 'It opens fifty runtimes with different goals before the matching raise.')]
+    public function test_an_exact_open_goal_is_found_behind_fifty_different_goals(): void
+    {
+        $this->seat(Agent::named('Main', 'main-agent'));
+        [, , $matching] = $this->stalledScript();
+        $this->navigationFor($matching);
+        $this->travel(1)->seconds();
+        for ($number = 1; $number <= 50; $number++) {
+            [, , $different] = $this->stalledScript("Model {$number}");
+            $this->navigationFor($different);
+        }
+        [$host, $opened, $request] = $this->stalledScript();
+
+        $answer = $this->raise($host, $opened, $request)->assertOk();
+
+        $this->assertSame('wait', $answer->json('answer'));
+        $this->assertSame(51, NavigationRequest::query()->acrossActors()->count());
+    }
+
     public function test_the_main_agents_own_runtime_is_held_for_the_user(): void
     {
         [$host, $opened, $request] = $this->stalledScript();
@@ -173,6 +193,50 @@ final class NavigationRaiseRouteTest extends TestCase
             $answer->json('guarded'),
             $answer->json('entry.id'),
         ]);
+    }
+
+    public function test_build_proof_wins_over_twenty_newer_guarded_entries(): void
+    {
+        $this->seat(Agent::named('Main', 'main-agent'));
+        $entry = $this->libraryEntry('2.1.323');
+        $this->travel(1)->seconds();
+        $this->addPaths($this->librarySource('2.1.300'));
+        [$host, $opened, $request] = $this->stalledScript();
+
+        $answer = $this->raise($host, $opened, $request)->assertOk();
+
+        $this->assertSame($entry->id, $answer->json('entry.id'));
+        $this->assertFalse($answer->json('guarded'));
+    }
+
+    public function test_a_guarded_entry_is_found_behind_twenty_newer_stale_entries(): void
+    {
+        $this->seat(Agent::named('Main', 'main-agent'));
+        $entry = $this->libraryEntry('2.1.300');
+        $this->travel(1)->seconds();
+        $this->addPaths($this->librarySource('2.1.323'), ['2.1.323']);
+        [$host, $opened, $request] = $this->stalledScript();
+
+        $answer = $this->raise($host, $opened, $request)->assertOk();
+
+        $this->assertSame($entry->id, $answer->json('entry.id'));
+        $this->assertTrue($answer->json('guarded'));
+    }
+
+    public function test_saving_reuses_the_exact_path_behind_twenty_newer_paths(): void
+    {
+        $entry = $this->libraryEntry('2.1.300');
+        $this->travel(1)->seconds();
+        $navigation = $this->librarySource('2.1.323');
+        $this->addPaths($navigation);
+
+        $saved = $this->app->make(AssignmentTransaction::class)->run(
+            fn () => $this->app->make(NavigationLibrary::class)->save($navigation, $entry->steps()),
+        );
+
+        $this->assertSame($entry->id, $saved->id);
+        $this->assertTrue($saved->isCurrentOn('2.1.323'));
+        $this->assertSame(21, MenuEntry::query()->acrossActors()->count());
     }
 
     public function test_a_stale_or_retired_entry_is_not_answered(): void
@@ -261,17 +325,44 @@ final class NavigationRaiseRouteTest extends TestCase
      */
     private function libraryEntry(string $build): MenuEntry
     {
+        $source = $this->librarySource($build);
+        $steps = [new MenuStep(self::FINGERPRINT, 'GPT-6', null, null)];
+
+        return MenuEntry::proven($source->owner(), $source, $steps, NavigationCompletion::Goal, 'GPT-6');
+    }
+
+    private function librarySource(string $build): NavigationRequest
+    {
         [, $opened] = $this->openRuntime(build: $build);
         $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));
         $request = DriverRequest::query()->with('runtime')->findOrFail($receipt->requestId);
+        $source = $this->navigationFor($request);
+        $source->cancel();
+
+        return $source;
+    }
+
+    private function navigationFor(DriverRequest $request): NavigationRequest
+    {
         $screen = new NavigationScreen(['Model: GPT-5', '❯ GPT-6'], 1, 7);
         $uncertainty = new NavigationUncertainty(NavigationReason::LabelMissing, 2, self::FINGERPRINT, $screen);
         $owner = new ActorIdentity(ActorType::User, 'owner');
-        $source = NavigationRequest::raised($request, $owner, $uncertainty, 'source', CarbonImmutable::now());
-        $source->cancel();
-        $steps = [new MenuStep(self::FINGERPRINT, 'GPT-6', null, null)];
 
-        return MenuEntry::proven($owner, $source, $steps, NavigationCompletion::Goal, 'GPT-6');
+        return NavigationRequest::raised($request, $owner, $uncertainty, 'source', CarbonImmutable::now());
+    }
+
+    /**
+     * @param  list<string>  $staleBuilds
+     */
+    private function addPaths(NavigationRequest $source, array $staleBuilds = []): void
+    {
+        for ($number = 1; $number <= 20; $number++) {
+            $steps = [new MenuStep(self::FINGERPRINT, "Path {$number}", null, null)];
+            $entry = MenuEntry::proven($source->owner(), $source, $steps, NavigationCompletion::Goal, 'GPT-6');
+            foreach ($staleBuilds as $build) {
+                $entry->markStaleOn($build, 'label-missing', []);
+            }
+        }
     }
 
     /**
@@ -279,12 +370,12 @@ final class NavigationRaiseRouteTest extends TestCase
      *
      * @return array{EnrolledHost, OpenedRuntime, DriverRequest}
      */
-    private function stalledScript(): array
+    private function stalledScript(string $model = 'GPT-6'): array
     {
         [$host, $opened] = $this->openRuntime();
-        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));
+        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => $model]));
 
-        return [$host, $opened, DriverRequest::query()->findOrFail($receipt->requestId)];
+        return [$host, $opened, DriverRequest::query()->with('runtime')->findOrFail($receipt->requestId)];
     }
 
     /**
