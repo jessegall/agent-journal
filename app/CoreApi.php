@@ -189,7 +189,6 @@ use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\LaunchCandidateRank;
 use App\Agents\Enums\MenuEntryState;
-use App\Agents\Enums\MenuStaleReason;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Enums\NavigationKey;
@@ -1644,7 +1643,6 @@ final class CoreApi
                 EntryGoalAnswer::class,
                 ScriptGoal::class,
                 NavigationReason::class,
-                MenuStaleReason::class,
                 MenuEntryState::class,
                 NavigationRound::class,
                 NavigationRoundReport::class,

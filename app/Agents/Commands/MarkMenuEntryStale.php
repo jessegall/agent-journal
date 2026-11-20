@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Enums\MenuStaleReason;
+use App\Agents\Enums\NavigationReason;
 use App\Agents\Handlers\MarkMenuEntryStaleHandler;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
@@ -29,7 +29,7 @@ final readonly class MarkMenuEntryStale extends Command
         public string $hostId,
         public string $entryId,
         public string $runtimeId,
-        public MenuStaleReason $reason,
+        public NavigationReason $reason,
         public int $step,
         public string $build,
         public array $rows,

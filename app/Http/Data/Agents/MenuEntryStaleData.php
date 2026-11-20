@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Agents;
 
-use App\Agents\Enums\MenuStaleReason;
+use App\Agents\Enums\NavigationReason;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -22,7 +22,7 @@ final class MenuEntryStaleData extends Data
     public function __construct(
         public readonly string $runtimeId,
         public readonly string $operationKey,
-        public readonly MenuStaleReason $reason,
+        public readonly NavigationReason $reason,
         public readonly int $step,
         public readonly string $build,
         public readonly array $rows = [],
