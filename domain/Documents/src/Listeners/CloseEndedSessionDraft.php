@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Listeners;
 
 use App\Agents\Events\SessionClosed;
+use App\Agents\Support\SessionProvenance;
 use App\Contracts\Listener;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\DraftClosing;
@@ -16,11 +17,12 @@ use Domain\Documents\Support\DraftClosing;
  */
 final readonly class CloseEndedSessionDraft implements Listener
 {
-    public function __construct(private DraftClosing $drafts) {}
+    public function __construct(private DraftClosing $drafts, private SessionProvenance $provenance) {}
 
     public function handle(SessionClosed $event): void
     {
-        $draft = DocumentDraft::query()->with('document')->heldByAgent($event->agentId)->first();
+        $drafts = DocumentDraft::query()->with('document')->heldByAgent($event->agentId);
+        $draft = $this->provenance->fromSession($drafts, $event->sessionId)->first();
 
         if ($draft !== null) {
             $this->drafts->closeEnded($draft);

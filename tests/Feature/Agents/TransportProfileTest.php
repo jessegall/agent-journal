@@ -26,7 +26,8 @@ final class TransportProfileTest extends TestCase
     public function test_switching_transport_applies_at_registration_and_existing_mcp_still_answers(): void
     {
         $this->mock(IdentityLinks::class)->shouldReceive('link')->times(3);
-        $account = new SelectedAccount(new RecordIdentity('accounts', (string) Str::ulid()), 'claude', '/account', 1);
+        $reference = new RecordIdentity('profiles.account', (string) Str::ulid());
+        $account = new SelectedAccount($reference, 'claude', '/account', 1);
         $starts = $this->app->make(RegisterPendingStart::class);
         $config = $this->app->make(Repository::class);
         $caller = TestStart::start();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
+use App\Agents\Support\SessionProvenance;
 use App\Contracts\CommandHandler;
 use App\Records\Contracts\RecordLinker;
 use App\Text\Support\MarkdownText;
@@ -18,12 +19,15 @@ final readonly class CreateDocumentHandler implements CommandHandler
     public function __construct(
         private Dispatcher $events,
         private RecordLinker $links,
+        private SessionProvenance $provenance,
     ) {}
 
     public function handle(CreateDocument $command): CreatedRecord
     {
         $actor = $command->dispatchedBy();
         $document = Document::publish($command->title, $command->abstract, MarkdownText::body($command->body), $actor);
+        $this->provenance->record($document);
+        $this->provenance->record($document->currentRevisionOrFail());
         $this->links->linkFrom($document, $command->about);
         $this->events->dispatch(new DocumentCreated($document->id, $document->number, $actor));
 

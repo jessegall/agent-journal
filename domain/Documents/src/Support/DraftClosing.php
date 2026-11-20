@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Actors\Contracts\Actor;
+use App\Agents\Support\SessionProvenance;
 use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Api\Events\DocumentClosed;
@@ -24,14 +25,18 @@ final readonly class DraftClosing
 {
     use RefusesOtherDrafts;
 
-    public function __construct(private RequestEditor $editors, private Dispatcher $events) {}
+    public function __construct(
+        private RequestEditor $editors,
+        private Dispatcher $events,
+        private SessionProvenance $provenance,
+    ) {}
 
     /**
      * The editor closes their own draft.
      */
     public function closeOwn(DraftTarget $target): CloseResult
     {
-        $requireEditor = fn (DocumentDraft $draft) => $this->refuseUnlessDraftEditor($draft, $this->editors->editor());
+        $requireEditor = fn (DocumentDraft $draft) => $this->refuseUnlessDraftEditor($draft, $this->editors);
 
         return $this->closeTarget($target, $requireEditor, CloseCause::Author, null, null);
     }
@@ -89,6 +94,7 @@ final readonly class DraftClosing
         $this->events->dispatch(new DocumentClosed($document->id, $document->number, $close->result_revision_number));
 
         if ($close->published) {
+            $this->provenance->inherit($document->currentRevisionOrFail(), $draft);
             $this->events->dispatch(
                 new DocumentPublished($document->id, $document->number, $close->result_revision_number),
             );

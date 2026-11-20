@@ -7,6 +7,7 @@ namespace Tests\Unit\Domains;
 use App\Domains\Support\Domain;
 use Domain\Access\AccessDomain;
 use Domain\Chat\ChatDomain;
+use Domain\Documents\DocumentsDomain;
 use Domain\Helpers\HelpersDomain;
 use Domain\Memory\MemoryDomain;
 use Domain\Plans\PlansDomain;
@@ -19,6 +20,14 @@ use PHPUnit\Framework\TestCase;
 
 final class DomainClassesTest extends TestCase
 {
+    public function test_documents_are_registered_without_a_required_domain(): void
+    {
+        $domains = require dirname(__DIR__, 3).'/bootstrap/domains.php';
+
+        $this->assertContains(DocumentsDomain::class, $domains);
+        $this->assertSame([], new DocumentsDomain()->requires());
+    }
+
     /**
      * Hooks, Agents and Links are the core in app, which every domain uses without declaring it. Each domain's
      * export list is pinned by short class name, so publishing a type is a visible decision.

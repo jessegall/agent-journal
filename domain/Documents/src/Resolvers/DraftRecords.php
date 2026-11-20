@@ -29,7 +29,7 @@ final readonly class DraftRecords implements DraftResolver
         )->first() ?? throw DraftMissing::forDocument($documentNumber);
         $draft = $document->draft ?? throw DraftMissing::forDocument($documentNumber);
 
-        if (! $draft->isEditedBy($this->editors->editor())) {
+        if (! $this->editors->isEditing($draft)) {
             throw DraftMissing::forDocument($documentNumber);
         }
 
@@ -48,9 +48,7 @@ final readonly class DraftRecords implements DraftResolver
             return DraftState::from(['state' => EditingState::Free]);
         }
 
-        $editor = $this->editors->editor();
-
-        if (! $draft->isEditedBy($editor)) {
+        if (! $this->editors->isEditing($draft)) {
             $held = ['state' => EditingState::Held, 'holder' => $draft->holderLabel()];
 
             $administer = [DocumentAbility::Administer];

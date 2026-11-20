@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
+use App\Agents\Support\SessionProvenance;
 use App\Contracts\CommandHandler;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\Events\DocumentOpened;
@@ -16,7 +17,11 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class OpenDocumentHandler implements CommandHandler
 {
-    public function __construct(private RequestEditor $editors, private Dispatcher $events) {}
+    public function __construct(
+        private RequestEditor $editors,
+        private Dispatcher $events,
+        private SessionProvenance $provenance,
+    ) {}
 
     public function handle(OpenDocument $command): DraftReference
     {
@@ -25,7 +30,7 @@ final readonly class OpenDocumentHandler implements CommandHandler
         $held = DocumentDraft::query()->where('document_id', $document->id)->first();
 
         if ($held !== null) {
-            if (! $held->isEditedBy($editor)) {
+            if (! $this->editors->isEditing($held)) {
                 throw DraftHeld::byOther($held->holderLabel());
             }
 
@@ -42,6 +47,7 @@ final readonly class OpenDocumentHandler implements CommandHandler
         }
 
         $draft = DocumentDraft::openFor($document, $document->currentRevisionOrFail(), $editor);
+        $this->provenance->record($draft);
         $this->events->dispatch(new DocumentOpened($document->id, $document->number));
 
         return $draft->reference($document);
