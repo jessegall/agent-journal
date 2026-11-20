@@ -125,4 +125,20 @@ final class SessionPolicy extends Model implements ReadableModel
 
         return $deadlines;
     }
+
+    /**
+     * The label of each stop condition the session must pass, by condition key.
+     *
+     * @return array<string, string>
+     */
+    public function stopConditionLabels(): array
+    {
+        $labels = [];
+
+        foreach ($this->stop_conditions->conditions as $condition) {
+            $labels[$condition->key] = $condition->label;
+        }
+
+        return $labels;
+    }
 }

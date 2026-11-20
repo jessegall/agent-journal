@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Models;
 
 use App\Hooks\Enums\StopResultType;
+use App\Hooks\Values\StopResultLine;
 use App\Hooks\Values\StopResultReport;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -101,5 +102,25 @@ final class StopResult extends Model implements ReadableModel
     public static function forgetOutputBefore(CarbonImmutable $before): int
     {
         return self::query()->whereNotNull('output')->where('created_at', '<', $before)->update(['output' => null]);
+    }
+
+    /**
+     * This result as an inspection shows it, under its condition's label; its raw output stays out.
+     */
+    public function line(string $label): StopResultLine
+    {
+        $duration = $this->ended_at === null
+            ? null
+            : (int) $this->started_at->diffInMilliseconds($this->ended_at);
+
+        return new StopResultLine(
+            $label,
+            $this->status,
+            $duration,
+            $this->exit_code,
+            $this->signal,
+            $this->truncated,
+            $this->summary,
+        );
     }
 }

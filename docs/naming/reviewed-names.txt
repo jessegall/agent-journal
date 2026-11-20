@@ -4185,6 +4185,8 @@ class	SequencesSkill
 class	SessionClosed
 class	SessionEndDetails
 class	SessionEnded
+class	SessionInspection
+class	SessionInspections
 class	SessionOpened
 class	SessionOption
 class	SessionOptionData
@@ -4726,6 +4728,7 @@ class	StopRefused
 class	StopRequested
 class	StopResult
 class	StopResultData
+class	StopResultLine
 class	StopResultReport
 class	StopResultsController
 class	StopResultsRefused
@@ -16018,6 +16021,10 @@ method	SessionEnded::leavesAgentIdle()
 method	SessionEnded::methodName()
 method	SessionEnded::recordTurn()
 method	SessionEnded::recordVisit()
+method	SessionInspection::__construct()
+method	SessionInspection::of()
+method	SessionInspections::lastStop()
+method	SessionInspections::of()
 method	SessionOpened::__construct()
 method	SessionOption::__construct()
 method	SessionOptionData::__construct()
@@ -16035,6 +16042,7 @@ method	SessionPolicy::booted()
 method	SessionPolicy::casts()
 method	SessionPolicy::freeze()
 method	SessionPolicy::policy()
+method	SessionPolicy::stopConditionLabels()
 method	SessionPolicy::wallDeadlinesOf()
 method	SessionPolicyFrozen::forSession()
 method	SessionPolicyReader::isFrozenFor()
@@ -17892,9 +17900,11 @@ method	StopRequested::recordVisit()
 method	StopResult::attempt()
 method	StopResult::casts()
 method	StopResult::forgetOutputBefore()
+method	StopResult::line()
 method	StopResult::record()
 method	StopResultData::__construct()
 method	StopResultData::report()
+method	StopResultLine::__construct()
 method	StopResultReport::__construct()
 method	StopResultReport::fingerprint()
 method	StopResultType::refusesStop()
@@ -19808,6 +19818,7 @@ parameter	$driverEnvelope
 parameter	$driverType
 parameter	$due
 parameter	$duration
+parameter	$durationMilliseconds
 parameter	$each
 parameter	$earlier
 parameter	$edges
@@ -20231,6 +20242,7 @@ parameter	$lastPage
 parameter	$lastPrunedAt
 parameter	$lastServedAt
 parameter	$lastStatus
+parameter	$lastStop
 parameter	$lastTriedAt
 parameter	$lastVisitedAt
 parameter	$later
@@ -20925,6 +20937,7 @@ parameter	$responses
 parameter	$responsibilities
 parameter	$restored
 parameter	$restorer
+parameter	$result	app/Hooks/Readers/SessionInspections.php
 parameter	$resultNote
 parameter	$resultNumber
 parameter	$resultReference
@@ -27344,6 +27357,14 @@ property	SessionClosed::$sessionId
 property	SessionEndDetails::$reason
 property	SessionEnded::$end
 property	SessionEnded::$hook
+property	SessionInspection::$configurationHash
+property	SessionInspection::$executionMode
+property	SessionInspection::$imageReference
+property	SessionInspection::$lastStop
+property	SessionInspection::$profileKey
+property	SessionInspection::$profileRevision
+property	SessionInspection::$stopConditions
+property	SessionInspection::$wallSeconds
 property	SessionOpened::$agentId
 property	SessionOpened::$authorizedSource
 property	SessionOpened::$sessionId
@@ -28287,6 +28308,13 @@ property	StopResultData::$startedAt
 property	StopResultData::$status
 property	StopResultData::$summary
 property	StopResultData::$truncated
+property	StopResultLine::$durationMilliseconds
+property	StopResultLine::$exitCode
+property	StopResultLine::$guidance
+property	StopResultLine::$label
+property	StopResultLine::$signal
+property	StopResultLine::$status
+property	StopResultLine::$truncated
 property	StopResultReport::$conditionKey
 property	StopResultReport::$definitionHash
 property	StopResultReport::$endedAt
