@@ -1277,6 +1277,7 @@ class	AmbiguousDomainRoot
 class	AnchorMismatch
 class	AndOrChain
 class	AndOrLink
+class	AnnounceEndedLaunch
 class	AnnounceUnavailableStart
 class	AnswerHookPipeline
 class	AnswerImpossible
@@ -1550,6 +1551,8 @@ class	CancelAccountUsesHandler
 class	CancelDriverRequest
 class	CancelDriverRequestCommand
 class	CancelDriverRequestHandler
+class	CancelHelperJob
+class	CancelHelperJobHandler
 class	CancelInput
 class	CancelKeyScript
 class	CancelKeyScriptCommand
@@ -1874,6 +1877,8 @@ class	ContinuationPayload
 class	ContinuationRecord
 class	ContinuationStale
 class	Continuations
+class	ContinueHelper
+class	ContinueHelperHandler
 class	ContinueStart
 class	ContinueStartController
 class	ContinueStartHandler
@@ -2365,10 +2370,13 @@ class	HelperDispatch
 class	HelperIdentity
 class	HelperIdentityFixed
 class	HelperJob
+class	HelperJobAlreadyEnded
 class	HelperJobAssignments
 class	HelperJobFinished
 class	HelperJobUnfinished
 class	HelperLaunchUncertain
+class	HelperMessage
+class	HelperNotice
 class	HelperPolicy
 class	HelperProfileMismatch
 class	HelperProfileTypeConflict
@@ -2378,6 +2386,7 @@ class	HelperReceipt
 class	HelperRecords
 class	HelperRequestConflict
 class	HelperRetired
+class	HelperStarts
 class	HelperStopHeld
 class	HelperUnavailable
 class	HelperWork
@@ -2557,6 +2566,7 @@ class	LaravelCommandBus
 class	LaunchCancelled
 class	LaunchCandidateFacts
 class	LaunchCandidateQuery
+class	LaunchEnded
 class	LaunchProfileKey
 class	Layout
 class	LayoutData
@@ -3478,6 +3488,7 @@ class	ReconcileStartsController
 class	ReconcileStartsHandler
 class	RecordAccountFailure
 class	RecordAccountFailureHandler
+class	RecordAttemptEnded
 class	RecordCalls
 class	RecordCard
 class	RecordChanges
@@ -4621,6 +4632,9 @@ class	StateTypeUnknown
 class	StateTypes
 class	StateTypesFrozen
 class	StateTypesRequested
+class	SteerHelper
+class	SteerHelperHandler
+class	SteerReceipt
 class	Step
 class	StepOutOfOrder
 class	StepOutcome
@@ -5462,6 +5476,7 @@ constant	ReadsIdempotencyKey::IDEMPOTENCY_HEADER
 constant	ReadyState::TYPE_KEY
 constant	ReceiptRetention::STANDARD_DAYS
 constant	ReconcileAccountsHandler::BATCH
+constant	RecordAttemptEnded::ENDED_REFERENCE
 constant	RecordConversationVisit::HOST_SETTINGS
 constant	RecordIdentity::ALIAS_PATTERN
 constant	RecordNotFound::CODE
@@ -7027,6 +7042,8 @@ method	AndOrChain::isAtAndOr()
 method	AndOrChain::linkedBy()
 method	AndOrLink::__construct()
 method	AndOrLink::joinedWith()
+method	AnnounceEndedLaunch::__construct()
+method	AnnounceEndedLaunch::handle()
 method	AnnounceUnavailableStart::__construct()
 method	AnnounceUnavailableStart::handle()
 method	Answer::type()
@@ -7970,6 +7987,11 @@ method	CancelDriverRequest::subject()
 method	CancelDriverRequestCommand::handle()
 method	CancelDriverRequestHandler::__construct()
 method	CancelDriverRequestHandler::handle()
+method	CancelHelperJob::__construct()
+method	CancelHelperJob::subject()
+method	CancelHelperJobHandler::__construct()
+method	CancelHelperJobHandler::handle()
+method	CancelHelperJobHandler::stopLiveAttempt()
 method	CancelInput::__construct()
 method	CancelKeyScript::__construct()
 method	CancelKeyScript::subject()
@@ -9017,6 +9039,10 @@ method	Continuations::issue()
 method	Continuations::link()
 method	Continuations::open()
 method	Continuations::signatureOf()
+method	ContinueHelper::__construct()
+method	ContinueHelper::subject()
+method	ContinueHelperHandler::__construct()
+method	ContinueHelperHandler::handle()
 method	ContinueStart::__construct()
 method	ContinueStart::startedAgentId()
 method	ContinueStart::subject()
@@ -10647,13 +10673,14 @@ method	HelperCandidates::resumes()
 method	HelperCompletionCertified::__construct()
 method	HelperDispatch::__construct()
 method	HelperDispatch::admittedProfile()
+method	HelperDispatch::assertNoOpenJob()
 method	HelperDispatch::candidatesFor()
+method	HelperDispatch::continueJob()
 method	HelperDispatch::isRepeat()
 method	HelperDispatch::launch()
 method	HelperDispatch::newHelper()
 method	HelperDispatch::purposeOf()
 method	HelperDispatch::repeated()
-method	HelperDispatch::requireNoOpenJob()
 method	HelperDispatch::reserve()
 method	HelperDispatch::send()
 method	HelperDispatch::start()
@@ -10679,14 +10706,20 @@ method	HelperJob::markUnfinished()
 method	HelperJob::moveTo()
 method	HelperJob::ofIdentities()
 method	HelperJob::open()
+method	HelperJob::parent()
 method	HelperJob::receipt()
+method	HelperJob::reopenForAttempt()
 method	HelperJob::wasDispatchedAs()
+method	HelperJobAlreadyEnded::withSendCommand()
 method	HelperJobAssignments::finishedRecords()
 method	HelperJobAssignments::requireAssignable()
 method	HelperJobAssignments::visibleRecords()
 method	HelperJobFinished::forJob()
 method	HelperJobUnfinished::onJob()
 method	HelperLaunchUncertain::forIdentity()
+method	HelperMessage::keep()
+method	HelperNotice::casts()
+method	HelperNotice::leave()
 method	HelperPolicy::authorize()
 method	HelperProfileMismatch::forIdentity()
 method	HelperProfileTypeConflict::forProfile()
@@ -10703,6 +10736,12 @@ method	HelperRecords::__construct()
 method	HelperRecords::receiptOf()
 method	HelperRequestConflict::forRequest()
 method	HelperRetired::forIdentity()
+method	HelperStarts::__construct()
+method	HelperStarts::continueCommand()
+method	HelperStarts::hasRequest()
+method	HelperStarts::lastModel()
+method	HelperStarts::of()
+method	HelperStarts::sendCommand()
 method	HelperStopHeld::__construct()
 method	HelperUnavailable::toYou()
 method	HelperWork::__construct()
@@ -11125,6 +11164,7 @@ method	JobPermissionReader::allowsRead()
 method	JobPermissionReader::isVisible()
 method	JobPermissionReader::profileKey()
 method	JobState::isFinal()
+method	JobState::isLive()
 method	JobStopEvidence::openJobs()
 method	JobStopEvidence::referenceOf()
 method	JournalAccessDenied::forUser()
@@ -11226,6 +11266,7 @@ method	LaunchCandidateFacts::rankingFinish()
 method	LaunchCandidateQuery::__construct()
 method	LaunchCandidateRank::reason()
 method	LaunchCandidates::rank()
+method	LaunchEnded::__construct()
 method	LaunchProfileKey::__construct()
 method	Layout::casts()
 method	Layout::saveFor()
@@ -14108,6 +14149,8 @@ method	ReconcileStartsHandler::__construct()
 method	ReconcileStartsHandler::handle()
 method	RecordAccountFailure::__construct()
 method	RecordAccountFailureHandler::handle()
+method	RecordAttemptEnded::__construct()
+method	RecordAttemptEnded::handle()
 method	RecordCalls::__construct()
 method	RecordCalls::addLink()
 method	RecordCalls::removeLink()
@@ -17501,6 +17544,13 @@ method	StateTypes::registry()
 method	StateTypes::ticking()
 method	StateTypesFrozen::forKey()
 method	StateTypesRequested::__construct()
+method	SteerHelper::__construct()
+method	SteerHelper::subject()
+method	SteerHelperHandler::__construct()
+method	SteerHelperHandler::handle()
+method	SteerReceipt::__construct()
+method	SteerReceipt::kept()
+method	SteerReceipt::steered()
 method	Step::chosen()
 method	Step::repeated()
 method	Step::resolvedBy()
@@ -20753,6 +20803,7 @@ parameter	$selector
 parameter	$selectorName
 parameter	$selfMeasured
 parameter	$send
+parameter	$sendCommand
 parameter	$sender
 parameter	$senderSessionId
 parameter	$sending
@@ -20941,6 +20992,7 @@ parameter	$substitution
 parameter	$substitutions
 parameter	$successor
 parameter	$successors
+parameter	$suggestedCommand
 parameter	$suggestions
 parameter	$summaries
 parameter	$summary
@@ -21558,6 +21610,7 @@ property	AndOrChain::$node
 property	AndOrChain::$toParse
 property	AndOrLink::$chain
 property	AndOrLink::$type
+property	AnnounceEndedLaunch::$events
 property	AnnounceUnavailableStart::$events
 property	AnswerMessage::$messageId
 property	AnswerMessage::$replyId
@@ -22026,6 +22079,10 @@ property	CancelDriverRequest::$requestId
 property	CancelDriverRequestCommand::$description
 property	CancelDriverRequestCommand::$signature
 property	CancelDriverRequestHandler::$recovery
+property	CancelHelperJob::$idempotencyKey
+property	CancelHelperJob::$jobId
+property	CancelHelperJobHandler::$commands
+property	CancelHelperJobHandler::$starts
 property	CancelInput::$messageId
 property	CancelInput::$reason
 property	CancelKeyScript::$expectedRowVersion
@@ -22580,6 +22637,14 @@ property	ContinuationRecord::$continuationReply
 property	ContinuationRecord::$failure
 property	Continuations::$agent
 property	Continuations::$encrypter
+property	ContinueHelper::$identityId
+property	ContinueHelper::$jobId
+property	ContinueHelper::$model
+property	ContinueHelper::$programKey
+property	ContinueHelper::$requestId
+property	ContinueHelperHandler::$dispatch
+property	ContinueHelperHandler::$records
+property	ContinueHelperHandler::$starts
 property	ContinueStart::$agentId
 property	ContinueStart::$sessionId
 property	ContinueStartHandler::$commands
@@ -23555,6 +23620,7 @@ property	HelperReceipt::$profileType
 property	HelperReceipt::$start
 property	HelperReceipt::$state
 property	HelperRecords::$starts
+property	HelperStarts::$starts
 property	HelperStopHeld::$attempt
 property	HelperStopHeld::$work
 property	HelperWork::$brief
@@ -23834,6 +23900,7 @@ property	LaunchCandidateQuery::$model
 property	LaunchCandidateQuery::$profile
 property	LaunchCandidateQuery::$program
 property	LaunchCandidateQuery::$purposeReference
+property	LaunchEnded::$work
 property	LaunchProfileKey::$key
 property	LayoutData::$id
 property	LayoutData::$name
@@ -25615,6 +25682,7 @@ property	ReconcileStarts::$stoppedStartKeys
 property	ReconcileStartsHandler::$events
 property	RecordAccountFailure::$accountId
 property	RecordAccountFailure::$generation
+property	RecordAttemptEnded::$starts
 property	RecordCalls::$sender
 property	RecordCard::$abstract
 property	RecordCard::$id
@@ -27780,6 +27848,12 @@ property	StateTypes::$events
 property	StateTypes::$readyStates
 property	StateTypes::$registry
 property	StateTypesRequested::$registry
+property	SteerHelper::$identityId
+property	SteerHelper::$text
+property	SteerHelperHandler::$starts
+property	SteerReceipt::$jobId
+property	SteerReceipt::$messageId
+property	SteerReceipt::$suggestedCommand
 property	StepOutcome::$context
 property	StepOutcome::$evidence
 property	StepOutcome::$output
@@ -29905,6 +29979,7 @@ variable	$subjects
 variable	$submission
 variable	$substituted
 variable	$substitution
+variable	$suggestedCommand
 variable	$summaries
 variable	$summary
 variable	$summaryTotal
