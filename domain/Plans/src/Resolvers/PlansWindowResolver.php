@@ -25,14 +25,14 @@ final readonly class PlansWindowResolver implements PageResolver
     public function read(): PlanListData
     {
         $filters = $this->request->filters();
-        $list = $this->records->list($filters->toDomain());
+        $planPage = $this->records->list($filters->toDomain());
 
         return PlanListData::from([
-            'rows' => PlanCardData::collect($list->cards),
-            'filters' => $filters->onPage($list->page),
-            'pagination' => PlanPaginationData::fromPlanList($list),
-            'selectionMissing' => $list->selection->isMissing(),
-            'selected' => PlanReaderData::ofSelection($list->selection),
+            'rows' => PlanCardData::collect($planPage->cards),
+            'filters' => $filters->onPage($planPage->page),
+            'pagination' => PlanPaginationData::fromPlanList($planPage),
+            'selectionMissing' => $planPage->selection->isMissing(),
+            'selected' => PlanReaderData::ofSelection($planPage->selection),
         ]);
     }
 }

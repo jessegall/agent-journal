@@ -80,6 +80,10 @@ final class AssignedListCommandsTest extends TestCase
             ])
             ->expectsOutputToContain('Page 1: 1 of 1')
             ->assertExitCode(0);
+        $this->artisan('plan:assigned')
+            ->expectsOutputToContain('Release')
+            ->expectsOutputToContain('Page 1: 1 of 1')
+            ->assertExitCode(0);
         $this->artisan('plan:assigned', ['--json' => true])
             ->expectsOutputToContain('"title":"Release"')
             ->assertExitCode(0);

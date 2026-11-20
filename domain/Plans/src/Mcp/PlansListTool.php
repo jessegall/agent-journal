@@ -61,13 +61,13 @@ final class PlansListTool extends JournalReadTool
 
     private function page(PlanFilters $filters): ListedPage
     {
-        $list = $this->plans->list($filters);
+        $planPage = $this->plans->list($filters);
         $cards = [];
 
-        foreach ($list->cards as $card) {
+        foreach ($planPage->cards as $card) {
             $cards[$card->id] = PlanCardData::fromPlanCard($card)->toArray();
         }
 
-        return new ListedPage($cards, $list->page, $list->perPage, $list->total);
+        return new ListedPage($cards, $planPage->page, $planPage->perPage, $planPage->total);
     }
 }

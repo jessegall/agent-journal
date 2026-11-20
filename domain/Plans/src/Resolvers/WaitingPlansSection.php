@@ -29,12 +29,12 @@ final readonly class WaitingPlansSection implements SectionResolver
     {
         $this->sessions->requireActive((string) $context->id);
         $filters = new PlanFilters(states: PlanStateGroup::Waiting->states());
-        $list = $this->records->list($filters);
+        $planPage = $this->records->list($filters);
 
         return PlanListData::from([
-            'rows' => PlanCardData::collect($list->cards),
-            'filters' => ['q' => '', 'page' => $list->page, 'state' => PlanStateGroup::Waiting],
-            'pagination' => PlanPaginationData::fromPlanList($list),
+            'rows' => PlanCardData::collect($planPage->cards),
+            'filters' => ['q' => '', 'page' => $planPage->page, 'state' => PlanStateGroup::Waiting],
+            'pagination' => PlanPaginationData::fromPlanList($planPage),
             'selectionMissing' => false,
         ]);
     }
