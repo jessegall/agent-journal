@@ -17,9 +17,14 @@ trait RegistersNoteStates
 {
     private function providerWithNotes(): DomainEventServiceProvider
     {
-        $classes = DomainRegistry::installedClasses(base_path());
-        $registry = DomainRegistry::from([...$classes, CardsDomain::class, NotesDomain::class]);
-        $this->app->instance(DomainRegistry::class, $registry);
+        $registry = $this->app->make(DomainRegistry::class);
+
+        if (! $registry->has('Notes')) {
+            $classes = DomainRegistry::installedClasses(base_path());
+            $registry = DomainRegistry::from([...$classes, CardsDomain::class, NotesDomain::class]);
+            $this->app->instance(DomainRegistry::class, $registry);
+        }
+
         $this->app->make(RegisterStates::class)($registry->get('Notes'));
 
         return new DomainEventServiceProvider($this->app);

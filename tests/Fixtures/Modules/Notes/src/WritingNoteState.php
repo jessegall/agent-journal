@@ -29,6 +29,6 @@ final class WritingNoteState extends AgentState
             throw NoteWorkFailed::whileListening();
         }
 
-        return EventCommands::none()->withContext('A note was written.');
+        return EventCommands::of(...$event->marked)->withContext('A note was written.');
     }
 }

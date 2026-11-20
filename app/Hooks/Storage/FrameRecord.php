@@ -22,6 +22,14 @@ final readonly class FrameRecord
         public CarbonImmutable $enteredAt,
     ) {}
 
+    public function isSameOccurrenceAs(self $other): bool
+    {
+        return $this->id === $other->id
+            && $this->schemaVersion === $other->schemaVersion
+            && $this->enteredAt->equalTo($other->enteredAt)
+            && $this->reference->isSameAs($other->reference);
+    }
+
     /**
      * The frame named in words with the version it was stored in, for a message.
      */

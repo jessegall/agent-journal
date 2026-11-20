@@ -56,7 +56,8 @@ final class StateMethods
         $name = $method->getName();
         $parameterClass = $this->argumentClass($method);
         $returnType = $method->getReturnType();
-        $returnsCommands = $returnType instanceof ReflectionNamedType && $returnType->getName() === EventCommands::class;
+        $returnsCommands = $returnType instanceof ReflectionNamedType
+            && $returnType->getName() === EventCommands::class;
         $takesEvent = $parameterClass !== null && is_a($parameterClass, Event::class, true);
         if (method_exists(AgentState::class, $name) || method_exists(TickableState::class, $name)) {
             if ($takesEvent || $returnsCommands) {

@@ -6,7 +6,10 @@ namespace App\Bus\Support;
 
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\GuardedCommandBus;
+use App\Bus\Enums\CommandOriginStatus;
 use App\Bus\Exceptions\CommandNotRegistered;
+use Closure;
 use Illuminate\Bus\Dispatcher;
 use Illuminate\Contracts\Container\Container;
 
@@ -16,24 +19,28 @@ use Illuminate\Contracts\Container\Container;
  * The shared dispatcher keeps the container it was
  * booted with under Octane, so commands never go through it.
  */
-final readonly class LaravelCommandBus implements CommandBus
+final readonly class LaravelCommandBus implements CommandBus, GuardedCommandBus
 {
     private function __construct(
         private Dispatcher $dispatcher,
         private CommandRegistry $registry,
         private Container $container,
+        private CommandOriginChecks $origins,
     ) {}
 
     /**
      * The bus of one request: its own dispatcher with that request's container, mapped and piped.
      */
-    public static function forRequest(Container $container, CommandRegistry $registry): self
-    {
+    public static function forRequest(
+        Container $container,
+        CommandRegistry $registry,
+        CommandOriginChecks $origins,
+    ): self {
         $dispatcher = new Dispatcher($container);
         $dispatcher->map($registry->handlerMap());
         $dispatcher->pipeThrough([$container->make(MiddlewareRunner::class)]);
 
-        return new self($dispatcher, $registry, $container);
+        return new self($dispatcher, $registry, $container, $origins);
     }
 
     public function run(Command $command): mixed
@@ -46,6 +53,11 @@ final readonly class LaravelCommandBus implements CommandBus
             $command,
             new DeferredCommandHandler($this->container, $this->registry->handlerOf($command::class)),
         );
+    }
+
+    public function runGuarded(Command $command, Closure $check): CommandOriginStatus
+    {
+        return $this->origins->during(new CommandOriginCheck($command, $check), fn () => $this->run($command));
     }
 
     /**

@@ -14,6 +14,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Contracts\RunsAsActor;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
@@ -50,6 +51,7 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->singleton(SystemEntryPolicies::class);
         $this->app->bind(CurrentActor::class, ActorStore::class);
         $this->app->bind(CurrentActorSetter::class, ActorStore::class);
+        $this->app->bind(RunsAsActor::class, ActorStore::class);
         $this->app->singleton(PolicyCatalogue::class, RegisteredPolicies::class);
         $this->app->bind(ActorContext::class, fn (Application $app) => $app->make(CurrentActor::class)->actor());
         $this->app->singleton(PresenceWindow::class, fn (Application $app) => new PresenceWindow(

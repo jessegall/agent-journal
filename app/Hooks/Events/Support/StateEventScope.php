@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Hooks\Events\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Agents\Support\AgentContext;
+use App\Agents\Contracts\AgentCallContext;
 use App\Agents\Support\StackTarget;
 use App\Contracts\Event;
+use App\Engine\Support\FrameGrant;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 use PhpOption\None;
@@ -29,7 +32,10 @@ final class StateEventScope
      */
     private array $dispatches = [];
 
-    public function __construct(private readonly CurrentActor $actors) {}
+    public function __construct(
+        private readonly CurrentActor $actors,
+        private readonly AgentCallContext $session,
+    ) {}
 
     /**
      * @template TResult
@@ -39,8 +45,29 @@ final class StateEventScope
      */
     public function admit(array $targets, Closure $work): mixed
     {
+        return $this->withinAudience($this->audienceFor($targets, None::create()), $work);
+    }
+
+    /**
+     * @template TResult
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    public function admitFrame(FrameGrant $grant, Closure $work): mixed
+    {
+        return $this->withinAudience($this->audienceFor([$grant->target], new Some($grant)), $work);
+    }
+
+    /**
+     * @template TResult
+     * @param list<StateEventAudience> $audiences
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    private function withinAudience(array $audiences, Closure $work): mixed
+    {
         $before = $this->audiences;
-        $this->audiences = $this->audienceFor($targets);
+        $this->audiences = $audiences;
 
         try {
             return $work();
@@ -108,15 +135,21 @@ final class StateEventScope
 
     /**
      * @param list<StackTarget> $targets
+     * @param Option<FrameGrant> $grant
      * @return list<StateEventAudience>
      */
-    private function audienceFor(array $targets): array
+    private function audienceFor(array $targets, Option $grant): array
     {
         if ($targets === [] || ! $this->actors->hasActor()) {
             return [];
         }
 
-        return [new StateEventAudience($this->actors->actor(), $this->actors->authority(), $targets)];
+        $actor = $this->actors->actor();
+        $session = $this->session->context()->filter(
+            fn (AgentContext $context) => $actor->type->isAgent() && $context->actorId() === $actor->id,
+        );
+
+        return [new StateEventAudience($actor, $this->actors->authority(), $targets, $session, $grant)];
     }
 
     private function isCurrent(StateEventAudience $audience): bool

@@ -320,7 +320,9 @@ final class AgentSession extends Model implements ReadableModel
 
     public static function lockRunningTarget(StackTarget $target): bool
     {
-        return self::query()->runningFor($target->agentId)->whereKey($target->sessionId)->sharedLock()->first() !== null;
+        $running = self::query()->runningFor($target->agentId)->whereKey($target->sessionId)->sharedLock()->first();
+
+        return $running !== null;
     }
 
     /**

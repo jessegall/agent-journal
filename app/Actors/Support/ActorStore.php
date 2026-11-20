@@ -8,6 +8,7 @@ use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\AuthoritySource;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Contracts\RunsAsActor;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Values\TrustedEntryAuthority;
 use Closure;
@@ -19,7 +20,7 @@ use Illuminate\Container\Attributes\Scoped;
  * reader and the middleware that fills it always share it and a long-running worker never carries it to the next one.
  */
 #[Scoped]
-final class ActorStore implements CurrentActor, CurrentActorSetter
+final class ActorStore implements CurrentActor, CurrentActorSetter, RunsAsActor
 {
     /**
      * The acting actor with the source of its authority, installed and cleared together; empty when none acts.
@@ -65,8 +66,18 @@ final class ActorStore implements CurrentActor, CurrentActorSetter
      */
     public function actAsSystem(string $entry, Closure $work): mixed
     {
+        return $this->within(ActorContext::of(new SystemActor()), new TrustedEntryAuthority($entry), $work);
+    }
+
+    /**
+     * @template TResult
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    public function within(ActorContext $actor, AuthoritySource $authority, Closure $work): mixed
+    {
         $before = $this->installed;
-        $this->installed = [[ActorContext::of(new SystemActor()), new TrustedEntryAuthority($entry)]];
+        $this->set($actor, $authority);
 
         try {
             return $work();

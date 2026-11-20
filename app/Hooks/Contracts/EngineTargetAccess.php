@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Contracts;
 
 use App\Agents\Support\StackTarget;
+use App\Engine\Support\FrameGrant;
+use Closure;
+use PhpOption\Option;
 
 /**
  * Whether the engine, acting in this operation, was granted the stack it is about to change; the engine supplies it.
@@ -12,9 +15,16 @@ use App\Agents\Support\StackTarget;
 interface EngineTargetAccess
 {
     /**
-     * @return list<StackTarget> The target of a frame grant, when active.
+     * @return Option<FrameGrant>
      */
-    public function frameTargets(): array;
+    public function frameGrant(): Option;
+
+    /**
+     * @template TResult
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    public function withinFrameGrant(FrameGrant $grant, Closure $work): mixed;
 
     /**
      * Refuses a target the engine's current grant does not cover.

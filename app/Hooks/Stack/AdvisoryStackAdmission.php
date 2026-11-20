@@ -71,8 +71,7 @@ final class AdvisoryStackAdmission implements StackAdmission
     public function admitCaller(OperationDeadline $deadline, Closure $work): mixed
     {
         $sessions = $this->workStacks->sessionsToAdmit();
-        $targets = $this->targetsFor($sessions);
-        $admitted = fn () => $this->eventScope->admit($targets, $work);
+        $admitted = fn () => $this->withEventTargets($sessions, $work);
 
         foreach (array_reverse($sessions) as $sessionId) {
             $inner = $admitted;
@@ -83,22 +82,32 @@ final class AdvisoryStackAdmission implements StackAdmission
     }
 
     /**
+     * @template TResult
      * @param list<string> $sessions
-     * @return list<StackTarget>
+     * @param Closure(): TResult $work
+     * @return TResult
      */
-    private function targetsFor(array $sessions): array
+    private function withEventTargets(array $sessions, Closure $work): mixed
     {
         if (! $this->actors->hasActor()) {
-            return [];
+            return $this->eventScope->admit([], $work);
         }
 
         $actor = $this->actors->actor();
 
-        return match ($actor->actorType()) {
-            ActorType::Agent => array_map(fn (string $session) => new StackTarget($actor->id, $session), $sessions),
-            ActorType::Engine => $this->engine->frameTargets(),
-            ActorType::User, ActorType::System => [],
-        };
+        if ($actor->type === ActorType::Engine) {
+            $grant = $this->engine->frameGrant();
+
+            return $grant->isDefined()
+                ? $this->eventScope->admitFrame($grant->get(), $work)
+                : $this->eventScope->admit([], $work);
+        }
+
+        $targets = $actor->type->isAgent()
+            ? array_map(fn (string $session) => new StackTarget($actor->id, $session), $sessions)
+            : [];
+
+        return $this->eventScope->admit($targets, $work);
     }
 
     /**

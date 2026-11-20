@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Agents\Support\StackTarget;
+use App\Contracts\Event;
 use App\Hooks\Contracts\ConditionalState;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
@@ -12,6 +13,7 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
 use App\Hooks\Storage\FrameRecord;
+use App\Hooks\Values\EventCommands;
 use Carbon\CarbonImmutable;
 
 /**
@@ -109,6 +111,11 @@ final readonly class Frame
     public function answer(HookInput $input): Decision
     {
         return $this->state->before($input) ?? $input->answerBy($this->state);
+    }
+
+    public function answerEvent(Event $event, string $method): EventCommands
+    {
+        return $this->state->{$method}($event);
     }
 
     private function lifecycleContext(StackTarget $target): LifecycleContext

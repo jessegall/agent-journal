@@ -4,25 +4,47 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Contracts\AgentCallContext;
 use App\Agents\Contracts\CurrentSession;
-use Illuminate\Container\Attributes\Scoped;
-use Illuminate\Contracts\Container\Container;
+use App\Agents\Exceptions\AgentContextMissing;
+use Closure;
+use PhpOption\Option;
 
 /**
- * The session of the signed agent call this request carries, read from its agent context.
+ * The session of a signed agent call and the binding that holds it.
  */
-#[Scoped]
-final readonly class RequestSession implements CurrentSession
+final readonly class RequestSession implements CurrentSession, AgentCallContext
 {
-    public function __construct(private Container $container) {}
+    /**
+     * @param Closure(): Option<AgentContext> $readContext
+     * @param Closure(Option<AgentContext>): void $installContext
+     */
+    public function __construct(private Closure $readContext, private Closure $installContext) {}
 
     public function hasSession(): bool
     {
-        return $this->container->resolved(AgentContext::class);
+        return $this->context()->isDefined();
     }
 
     public function sessionId(): string
     {
-        return $this->container->make(AgentContext::class)->sessionId;
+        return $this->context()->getOrThrow(AgentContextMissing::forRequest())->sessionId;
+    }
+
+    public function context(): Option
+    {
+        return ($this->readContext)();
+    }
+
+    public function within(Option $context, Closure $work): mixed
+    {
+        $before = $this->context();
+        ($this->installContext)($context);
+
+        try {
+            return $work();
+        } finally {
+            ($this->installContext)($before);
+        }
     }
 }

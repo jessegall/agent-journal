@@ -13,10 +13,19 @@ use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
  */
 final class WatchingNoteState extends AgentState
 {
-    public function __construct(private readonly EventCommands $result) {}
+    /**
+     * @param list<string> $context
+     */
+    public function __construct(private readonly array $context) {}
 
     public function onNoteWritten(NoteWritten $event): EventCommands
     {
-        return $this->result;
+        $result = EventCommands::of(...$event->ordinary);
+
+        foreach ($this->context as $line) {
+            $result = $result->withContext($line);
+        }
+
+        return $result;
     }
 }

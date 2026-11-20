@@ -56,6 +56,7 @@ use Tests\Fixtures\Modules\Notes\Commands\KeepNote;
 use Tests\Fixtures\Modules\Notes\Commands\LimitNote;
 use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 use Tests\Fixtures\Modules\Notes\Commands\PinNote;
+use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\RetainNote;
 use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
@@ -198,6 +199,7 @@ final class NotesDomain extends Domain implements
             PinNote::class,
             CopyNote::class,
             RefuseNote::class,
+            RecordNoteEffect::class,
             IgnoreFailedNote::class,
             OpenTransactionNote::class,
             UserNote::class,

@@ -8,6 +8,10 @@ use App\Agents\Support\StackTarget;
 use App\Engine\Contracts\EngineGrant;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Hooks\Contracts\EngineTargetAccess;
+use Closure;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * What the engine may address in this operation, one grant at a time: a frame's target or a listener's declared
@@ -32,9 +36,21 @@ final class EngineAccess implements EngineTargetAccess
         $this->grant = new MaintenanceGrant($capability);
     }
 
-    public function frameTargets(): array
+    public function frameGrant(): Option
     {
-        return $this->grant instanceof FrameGrant ? [$this->grant->target] : [];
+        return $this->grant instanceof FrameGrant ? new Some($this->grant) : None::create();
+    }
+
+    public function withinFrameGrant(FrameGrant $grant, Closure $work): mixed
+    {
+        $before = $this->grant;
+        $this->grant = $grant;
+
+        try {
+            return $work();
+        } finally {
+            $this->grant = $before;
+        }
     }
 
     public function clear(): void

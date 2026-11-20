@@ -28,6 +28,7 @@ use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\AgentResolver;
+use App\Agents\Contracts\AgentCallContext;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\ExpiresNavigation;
 use App\Agents\Contracts\HelperImages;
@@ -98,6 +99,9 @@ use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * Gives each request its own agent context, which only the agent middleware fills; without it, asking for one fails.
@@ -112,7 +116,22 @@ final class AgentsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(AgentResolver::class, AgentLabels::class);
-        $this->app->bind(CurrentSession::class, RequestSession::class);
+        $this->app->scoped(RequestSession::class, static fn (Container $app) => new RequestSession(
+            static fn (): Option => $app->resolved(AgentContext::class)
+                ? new Some($app->make(AgentContext::class))
+                : None::create(),
+            static function (Option $context) use ($app): void {
+                if ($context->isEmpty()) {
+                    $app->forgetInstance(AgentContext::class);
+
+                    return;
+                }
+
+                $app->instance(AgentContext::class, $context->get());
+            },
+        ));
+        $this->app->alias(RequestSession::class, CurrentSession::class);
+        $this->app->alias(RequestSession::class, AgentCallContext::class);
         $this->app->bind(StartReadiness::class, SessionReadiness::class);
         $this->app->bind(NavigationReader::class, NavigationRecords::class);
         $this->app->bind(TerminalViewCloser::class, TerminalViews::class);

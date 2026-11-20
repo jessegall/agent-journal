@@ -89,9 +89,9 @@ final readonly class AgentStack
             throw BottomStateCannotFinish::for($frame->typeKey());
         }
 
-        return clone ($this, [
-            'frames' => array_values(array_filter($this->frames, fn (Frame $candidate) => $candidate->id !== $frame->id)),
-        ]);
+        $kept = array_filter($this->frames, fn (Frame $candidate) => $candidate->id !== $frame->id);
+
+        return clone ($this, ['frames' => array_values($kept)]);
     }
 
     /**

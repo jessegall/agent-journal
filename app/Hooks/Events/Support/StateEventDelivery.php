@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Hooks\Events\Support;
 
 use App\Agents\Support\StackTarget;
+use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Support\CommandRegistry;
 use App\Hooks\Declarations\StateEvents;
+use App\Hooks\Exceptions\StateEventCommandRefused;
 use App\Hooks\Exceptions\StateEventMethodUnregistered;
 use App\Hooks\Stack\SelectedStateMethod;
 use App\Hooks\Stack\StateMethodSelector;
@@ -27,6 +29,7 @@ final readonly class StateEventDelivery
         private StateEvents $declarations,
         private CommandRegistry $commands,
         private AgentMessageDelivery $messages,
+        private StateEventEffects $effects,
         private LoggerInterface $log,
     ) {}
 
@@ -38,13 +41,19 @@ final readonly class StateEventDelivery
 
         $targets = $dispatch->audience->get()->targets;
 
-        $this->transaction->runForTargets($targets, function () use ($targets, $dispatch): void {
+        $collected = $this->transaction->runForTargets($targets, function () use ($targets, $dispatch): array {
             $results = array_map(fn (StackTarget $target) => $this->collect($dispatch, $target), $targets);
 
             foreach ($results as $result) {
                 $this->messages->retainEvent($result->target, $dispatch, $result->context());
             }
+
+            return $results;
         });
+
+        foreach ($collected as $result) {
+            $this->effects->apply($dispatch, $result);
+        }
     }
 
     private function collect(StateEventDispatch $dispatch, StackTarget $target): StateEventResults
@@ -86,11 +95,15 @@ final readonly class StateEventDelivery
             'selection' => $selection->reason->value,
         ]);
 
-        $commands = $selection->frame->state->{$method->name}($event);
+        $commands = $selection->answerEvent($event);
 
         foreach ($commands->all() as $command) {
             if (! $this->commands->has($command::class)) {
                 throw CommandNotRegistered::for($command::class);
+            }
+
+            if ($this->commands->entryOf($command::class) !== CommandEntry::Application) {
+                throw StateEventCommandRefused::for($command::class);
             }
         }
 

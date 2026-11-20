@@ -7,10 +7,12 @@ namespace App\Bus\Providers;
 use App\Bus\Console\PruneReceiptsCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
+use App\Bus\Contracts\GuardedCommandBus;
 use App\Bus\Contracts\MapsRefusals;
 use App\Bus\Contracts\OperationResolver;
 use App\Bus\Resolvers\CallerOperations;
 use App\Bus\Support\AcceptedReceipt;
+use App\Bus\Support\CommandOriginChecks;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\ConsoleOwner;
 use App\Bus\Support\LaravelCommandBus;
@@ -43,9 +45,15 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->app->scoped(AcceptedReceipt::class);
         $this->app->scoped(CommandTransaction::class, RunningCommandTransaction::class);
         $this->app->scoped(
-            CommandBus::class,
-            fn ($app): CommandBus => LaravelCommandBus::forRequest($app, $app->make(CommandRegistry::class)),
+            LaravelCommandBus::class,
+            fn ($app) => LaravelCommandBus::forRequest(
+                $app,
+                $app->make(CommandRegistry::class),
+                $app->make(CommandOriginChecks::class),
+            ),
         );
+        $this->app->alias(LaravelCommandBus::class, CommandBus::class);
+        $this->app->alias(LaravelCommandBus::class, GuardedCommandBus::class);
     }
 
     /**

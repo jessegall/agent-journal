@@ -9,7 +9,6 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
-use App\Hooks\Values\EventCommands;
 
 /**
  * Builds ordinary note listeners whose subject, when present, supplies their context.
@@ -23,15 +22,12 @@ final readonly class WatchingNoteStateFactory implements StateLoader
 
     public function statesFor(StateReferences $references): StateSet
     {
-        return StateSet::build($references, function (StateReference $reference): WatchingNoteState {
-            $result = EventCommands::none();
-
-            if ($reference->subject instanceof SubjectReference) {
-                $result = $result->withContext($reference->subject->id);
-            }
-
-            return new WatchingNoteState($result);
-        });
+        return StateSet::build(
+            $references,
+            fn (StateReference $reference) => new WatchingNoteState(
+                $reference->subject instanceof SubjectReference ? [$reference->subject->id] : [],
+            ),
+        );
     }
 
     public function schemaVersion(): int

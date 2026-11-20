@@ -8,6 +8,7 @@ use App\Bus\CommandMiddleware\AdmitStack;
 use App\Bus\CommandMiddleware\AuthorizeCommand;
 use App\Bus\CommandMiddleware\BindDispatcher;
 use App\Bus\CommandMiddleware\CheckEntry;
+use App\Bus\CommandMiddleware\GuardCommandOrigin;
 use App\Bus\CommandMiddleware\LogCommand;
 use App\Bus\CommandMiddleware\RecordReceipt;
 use App\Bus\CommandMiddleware\RecordRefusalReceipt;
@@ -50,5 +51,5 @@ final class CommandFrame
      *
      * @var list<class-string<CommandMiddleware>>
      */
-    public const array INSIDE = [AuthorizeCommand::class, RecordReceipt::class];
+    public const array INSIDE = [GuardCommandOrigin::class, AuthorizeCommand::class, RecordReceipt::class];
 }
