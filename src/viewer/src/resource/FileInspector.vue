@@ -111,4 +111,9 @@ const copyPath = () => copying(props.path, "the path", (text) => (said.value = t
     flex-direction: column;
     min-height: 0;
 }
+
+.file-inspector-body > :deep(.window) {
+    flex: 1;
+    min-height: 0;
+}
 </style>
