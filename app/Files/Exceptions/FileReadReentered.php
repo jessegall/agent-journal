@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Files\Exceptions;
 
-use App\Files\Values\FilePath;
 use LogicException;
 
 /**
@@ -13,10 +12,10 @@ use LogicException;
  */
 final class FileReadReentered extends LogicException
 {
-    public static function inside(FilePath $outer, FilePath $inner): self
+    public static function inside(string $outer, string $inner): self
     {
         return new self(
-            "{$inner->label()} was read while {$outer->label()} was still being read; read the two one after the other.",
+            "{$inner} was read while {$outer} was still being read; read the two one after the other.",
         );
     }
 }

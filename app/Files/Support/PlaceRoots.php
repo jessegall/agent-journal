@@ -6,7 +6,10 @@ namespace App\Files\Support;
 
 use App\Files\Enums\Place;
 use App\Files\Exceptions\FileOutsidePlaces;
+use App\Files\Exceptions\FilePathInvalid;
+use App\Files\Exceptions\FolderClosed;
 use App\Files\Exceptions\PlaceUnavailable;
+use App\Files\Values\FilePath;
 use Illuminate\Contracts\Config\Repository;
 
 /**
@@ -21,7 +24,7 @@ final readonly class PlaceRoots
     {
         $root = $this->existingRoot($place);
 
-        if ($root === false) {
+        if ($root === null) {
             throw PlaceUnavailable::for($place);
         }
 
@@ -35,13 +38,43 @@ final readonly class PlaceRoots
      */
     public function available(): array
     {
-        return array_values(array_filter(Place::cases(), fn (Place $place) => $this->existingRoot($place) !== false));
+        return array_values(array_filter(Place::cases(), fn (Place $place) => $this->existingRoot($place) !== null));
+    }
+
+    /**
+     * The file path of an absolute path given from outside, such as a command's --file, in the open place that holds
+     * it; a private place's file is never reached this way.
+     */
+    public function filePathOf(string $absolutePath): FilePath
+    {
+        if (str_contains($absolutePath, "\0")) {
+            throw FilePathInvalid::nulByte();
+        }
+
+        $real = $this->realPathOf($absolutePath);
+        $place = $this->innermostPlaceOf($real);
+
+        if ($place->isPrivate()) {
+            throw FolderClosed::privatePlace($place);
+        }
+
+        return FilePath::in($place, ltrim(substr($real, strlen($this->root($place))), '/'));
+    }
+
+    /**
+     * Whether a real path is the place's root or lies beneath it.
+     */
+    public function isWithin(string $real, Place $place): bool
+    {
+        $root = $this->root($place);
+
+        return $real === $root || str_starts_with($real, rtrim($root, '/').'/');
     }
 
     /**
      * The place whose root lies closest above a real path, so a private place inside the project is the one found.
      */
-    public function innermostPlaceOf(string $real): Place
+    private function innermostPlaceOf(string $real): Place
     {
         $holders = array_filter($this->available(), fn (Place $place) => $this->isWithin($real, $place));
 
@@ -57,7 +90,7 @@ final readonly class PlaceRoots
     /**
      * The real path of a path, or of its folder followed by its name when the file does not exist yet.
      */
-    public function realPathOf(string $path): string
+    private function realPathOf(string $path): string
     {
         $real = realpath($path);
 
@@ -74,26 +107,16 @@ final readonly class PlaceRoots
         return $folder.'/'.basename($path);
     }
 
-    /**
-     * Whether a real path is the place's root or lies beneath it.
-     */
-    public function isWithin(string $real, Place $place): bool
-    {
-        $root = $this->root($place);
-
-        return $real === $root || str_starts_with($real, rtrim($root, '/').'/');
-    }
-
-    private function existingRoot(Place $place): string|false
+    private function existingRoot(Place $place): string|null
     {
         $configured = $this->config->get($place->rootSetting());
 
         if (! is_string($configured) || $configured === '') {
-            return false;
+            return null;
         }
 
         $real = realpath($configured);
 
-        return $real !== false && is_dir($real) ? $real : false;
+        return $real !== false && is_dir($real) ? $real : null;
     }
 }

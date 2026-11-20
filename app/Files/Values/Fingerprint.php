@@ -29,7 +29,7 @@ final readonly class Fingerprint
         $stat = @stat($realPath);
 
         if ($stat === false) {
-            throw FileMissing::at($file);
+            throw FileMissing::at($file->label());
         }
 
         return new self($realPath, $stat['ino'], $stat['size'], $stat['mtime'], $stat['ctime']);
@@ -44,7 +44,7 @@ final readonly class Fingerprint
         $stat = @lstat($path);
 
         if ($stat === false) {
-            throw FileMissing::at($link);
+            throw FileMissing::at($link->label());
         }
 
         return new self($path, $stat['ino'], $stat['size'], $stat['mtime'], $stat['ctime']);

@@ -33,23 +33,25 @@ final readonly class PathConfinement
         $root = $this->roots->root($file->place);
         $real = $this->freshRealPath($root, $file);
 
-        if ($real === false) {
-            throw $this->loopOf($file, $root) ?? FileMissing::at($file);
+        if ($real === null) {
+            throw $this->isLinkLoop($file, $root)
+                ? LinkLoop::at($file->label())
+                : FileMissing::at($file->label());
         }
 
         return $this->confined($file, $root, $real);
     }
 
     /**
-     * The real path of what is at a path, or false when nothing is; a link out of the place is still refused.
+     * The real path of what is at a path, none when nothing is; a link out of the place is still refused.
      */
-    public function existingRealPath(FilePath $file): string|false
+    public function existingRealPath(FilePath $file): string|null
     {
         $this->closed->assertNotClosed($file);
         $root = $this->roots->root($file->place);
         $real = $this->freshRealPath($root, $file);
 
-        return $real === false ? false : $this->confined($file, $root, $real);
+        return $real === null ? null : $this->confined($file, $root, $real);
     }
 
     /**
@@ -61,12 +63,14 @@ final readonly class PathConfinement
         $root = $this->roots->root($folder->place);
         $real = $this->freshRealPath($root, $folder);
 
-        if ($real === false) {
-            throw $this->loopOf($folder, $root) ?? FolderMissing::at($folder);
+        if ($real === null) {
+            throw $this->isLinkLoop($folder, $root)
+                ? LinkLoop::at($folder->label())
+                : FolderMissing::at($folder->label());
         }
 
         if (! is_dir($real)) {
-            throw FolderMissing::at($folder);
+            throw FolderMissing::at($folder->label());
         }
 
         return $this->confined($folder, $root, $real);
@@ -92,7 +96,7 @@ final readonly class PathConfinement
         $real = realpath($existing);
 
         if ($real === false) {
-            throw LinkLeavesPlace::from($file);
+            throw LinkLeavesPlace::from($file->label());
         }
 
         $confined = $this->confined($file, $root, $real);
@@ -112,21 +116,21 @@ final readonly class PathConfinement
         $checked = @lstat($real);
 
         if ($checked === false) {
-            throw FileMissing::at($file);
+            throw FileMissing::at($file->label());
         }
 
         if (is_link($real)) {
-            throw LinkLeavesPlace::from($file);
+            throw LinkLeavesPlace::from($file->label());
         }
 
         if (! is_file($real)) {
-            throw FileUnreadable::at($file);
+            throw FileUnreadable::at($file->label());
         }
 
         $handle = @fopen($real, $mode);
 
         if ($handle === false) {
-            throw FileUnreadable::at($file);
+            throw FileUnreadable::at($file->label());
         }
 
         $opened = fstat($handle);
@@ -134,7 +138,7 @@ final readonly class PathConfinement
         if ($opened === false || $opened['ino'] !== $checked['ino'] || $opened['dev'] !== $checked['dev']) {
             fclose($handle);
 
-            throw LinkLeavesPlace::from($file);
+            throw LinkLeavesPlace::from($file->label());
         }
 
         return $handle;
@@ -148,12 +152,13 @@ final readonly class PathConfinement
     /**
      * The real path, read past PHP's realpath and stat caches, so a link re-pointed while the worker runs is seen.
      */
-    private function freshRealPath(string $root, FilePath $file): string|false
+    private function freshRealPath(string $root, FilePath $file): string|null
     {
         $path = $this->absolutePath($root, $file);
         clearstatcache(true, $path);
+        $real = realpath($path);
 
-        return realpath($path);
+        return $real === false ? null : $real;
     }
 
     /**
@@ -162,7 +167,7 @@ final readonly class PathConfinement
     private function confined(FilePath $file, string $root, string $real): string
     {
         if (! $this->roots->isWithin($real, $file->place)) {
-            throw LinkLeavesPlace::from($file);
+            throw LinkLeavesPlace::from($file->label());
         }
 
         $this->closed->assertNotClosed(FilePath::in($file->place, ltrim(substr($real, strlen($root)), '/')));
@@ -171,10 +176,10 @@ final readonly class PathConfinement
     }
 
     /**
-     * The loop a path that does not resolve runs into, if its links lead round in one; none when a name on its way is
-     * missing. The links are walked by hand, since PHP reports no reason when a path does not resolve.
+     * Whether a path that does not resolve fails because its links lead round in a loop, rather than because a name
+     * on its way is missing. The links are walked by hand, since PHP reports no reason when a path does not resolve.
      */
-    private function loopOf(FilePath $file, string $root): LinkLoop|null
+    private function isLinkLoop(FilePath $file, string $root): bool
     {
         $names = explode('/', $file->relative);
         $current = $root;
@@ -199,12 +204,12 @@ final readonly class PathConfinement
             }
 
             if (! file_exists($next)) {
-                return null;
+                return false;
             }
 
             $current = $next;
         }
 
-        return $links > self::LINK_LIMIT ? LinkLoop::at($file) : null;
+        return $links > self::LINK_LIMIT;
     }
 }

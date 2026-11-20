@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Files\Exceptions;
 
-use App\Files\Values\FilePath;
 use RuntimeException;
 use Throwable;
 
@@ -13,8 +12,8 @@ use Throwable;
  */
 final class FileJsonInvalid extends RuntimeException
 {
-    public static function at(FilePath $file, string $error, Throwable|null $previous = null): self
+    public static function at(string $path, string $error, Throwable|null $previous = null): self
     {
-        return new self("{$file->label()} holds no valid JSON object or list: {$error}.", 0, $previous);
+        return new self("{$path} holds no valid JSON object or list: {$error}.", 0, $previous);
     }
 }

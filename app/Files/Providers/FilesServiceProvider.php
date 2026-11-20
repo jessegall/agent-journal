@@ -9,7 +9,7 @@ use App\Files\Support\LocalFiles;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Core's file funnel: one LocalFiles for the life of the application, shared by boot code and every request, so they
+ * Core's file funnel: one LocalFiles for the life of the application, shared by the boot and every request, so they
  * share one content cache and one read flag.
  */
 final class FilesServiceProvider extends ServiceProvider

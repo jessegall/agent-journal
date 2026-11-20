@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Files;
 
-use App\Files\Enums\EntryKind;
+use App\Files\Enums\EntryType;
 use App\Files\Enums\Place;
 use App\Files\Exceptions\FilePathInvalid;
 use App\Files\Exceptions\FolderMissing;
@@ -78,7 +78,7 @@ final class FolderWalkerTest extends TestCase
         $entries = iterator_to_array($this->walker()->walk($this->path(''), Depth::levels(3), '*'));
         $linked = array_values(array_filter($entries, fn (FolderEntry $entry) => $entry->path->relative === 'linked'));
 
-        $this->assertSame(EntryKind::Link, $linked[0]->kind);
+        $this->assertSame(EntryType::Link, $linked[0]->type);
         $this->assertNotContains('linked/c.php', array_map(fn (FolderEntry $entry) => $entry->path->relative, $entries));
     }
 
@@ -89,13 +89,13 @@ final class FolderWalkerTest extends TestCase
 
         $entries = iterator_to_array($this->walker()->walk($this->path('empty'), Depth::levels(16), '*'));
 
-        $this->assertSame([EntryKind::Link, EntryKind::Link], array_map(fn (FolderEntry $entry) => $entry->kind, $entries));
+        $this->assertSame([EntryType::Link, EntryType::Link], array_map(fn (FolderEntry $entry) => $entry->type, $entries));
     }
 
     public function test_an_empty_folder_lists_as_empty_and_a_missing_one_is_refused(): void
     {
         $this->assertTrue($this->walker()->walk($this->path('empty'), Depth::one(), '*')->isEmpty());
-        $this->expectExceptionObject(FolderMissing::at($this->path('none')));
+        $this->expectExceptionObject(FolderMissing::at($this->path('none')->label()));
 
         $this->walker()->walk($this->path('none'), Depth::one(), '*');
     }
@@ -104,7 +104,7 @@ final class FolderWalkerTest extends TestCase
     {
         $entries = iterator_to_array($this->walker()->walk($this->path('sub'), Depth::one(), '*'));
 
-        $this->assertSame([EntryKind::File, EntryKind::Folder], array_map(fn (FolderEntry $entry) => $entry->kind, $entries));
+        $this->assertSame([EntryType::File, EntryType::Folder], array_map(fn (FolderEntry $entry) => $entry->type, $entries));
         $this->assertSame(1, $entries[0]->fingerprint->size);
     }
 

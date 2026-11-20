@@ -7,7 +7,7 @@ namespace App\Files\Values;
 use App\Files\Exceptions\DepthTooDeep;
 
 /**
- * How many folder levels a list or walk descends: one, the folder's own entries, unless the call asks for more.
+ * How many folder levels a list or walk descends: one level, the folder's own entries, unless the call asks for more.
  */
 final readonly class Depth
 {

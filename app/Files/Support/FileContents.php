@@ -52,10 +52,8 @@ final class FileContents
      */
     public function kept(Fingerprint $fingerprint, Closure $loader): string
     {
-        $file = $this->keptUnder($fingerprint);
-
-        if ($file !== null) {
-            return $file->bytes;
+        if ($this->holds($fingerprint)) {
+            return $this->touched($fingerprint)->bytes;
         }
 
         $bytes = $this->fresh($fingerprint, $loader);
@@ -73,17 +71,17 @@ final class FileContents
      */
     public function decoded(Fingerprint $fingerprint, Closure $parser, Closure $loader): array
     {
-        $file = $this->keptUnder($fingerprint);
-
-        if ($file?->decoded !== null) {
-            return $file->decoded;
+        if (! $this->holds($fingerprint)) {
+            return $this->keptDecoded($fingerprint, $this->fresh($fingerprint, $loader), $parser);
         }
 
-        $bytes = $file === null ? $this->fresh($fingerprint, $loader) : $file->bytes;
-        $decoded = $parser($bytes);
-        $this->keep(new KeptFile($fingerprint, $bytes, $decoded));
+        $file = $this->touched($fingerprint);
 
-        return $decoded;
+        if ($file->decoded === null) {
+            return $this->keptDecoded($fingerprint, $file->bytes, $parser);
+        }
+
+        return $file->decoded;
     }
 
     /**
@@ -105,28 +103,25 @@ final class FileContents
      */
     public function digest(Fingerprint $fingerprint, Closure $hasher): string
     {
-        $digest = $this->digests[$fingerprint->realPath] ?? null;
+        $path = $fingerprint->realPath;
 
-        if ($digest !== null && $digest->fingerprint->key() === $fingerprint->key()) {
-            return $digest->digest;
+        if (isset($this->digests[$path]) && $this->digests[$path]->fingerprint->key() === $fingerprint->key()) {
+            return $this->digests[$path]->digest;
         }
 
         $hashed = $this->fresh($fingerprint, $hasher);
-        $this->digests[$fingerprint->realPath] = new KeptDigest($fingerprint, $hashed);
+        $this->digests[$path] = new KeptDigest($fingerprint, $hashed);
 
         return $hashed;
     }
 
+    /**
+     * Forgets the kept bytes, decoded JSON and digest of a file, as a write to it must.
+     */
     public function drop(string $realPath): void
     {
         unset($this->digests[$realPath]);
-
-        if (! isset($this->kept[$realPath])) {
-            return;
-        }
-
-        $this->keptBytes -= $this->kept[$realPath]->size();
-        unset($this->kept[$realPath]);
+        $this->forget($realPath);
     }
 
     public function openCount(string $realPath): int
@@ -135,29 +130,56 @@ final class FileContents
     }
 
     /**
-     * The kept file under this very fingerprint, moved to the most recently read; a kept copy of an older
-     * fingerprint is dropped.
+     * Whether a copy is kept under this very fingerprint.
      */
-    private function keptUnder(Fingerprint $fingerprint): KeptFile|null
+    private function holds(Fingerprint $fingerprint): bool
     {
-        $file = $this->kept[$fingerprint->realPath] ?? null;
-        $this->drop($fingerprint->realPath);
+        $path = $fingerprint->realPath;
 
-        if ($file === null || $file->fingerprint->key() !== $fingerprint->key()) {
-            return null;
-        }
+        return isset($this->kept[$path]) && $this->kept[$path]->fingerprint->key() === $fingerprint->key();
+    }
 
+    /**
+     * The kept file, moved to the most recently read.
+     */
+    private function touched(Fingerprint $fingerprint): KeptFile
+    {
+        $file = $this->kept[$fingerprint->realPath];
+        unset($this->kept[$fingerprint->realPath]);
         $this->kept[$fingerprint->realPath] = $file;
-        $this->keptBytes += $file->size();
 
         return $file;
     }
 
+    /**
+     * @param  Closure(string): array<array-key, mixed>  $parser
+     * @return array<array-key, mixed>
+     */
+    private function keptDecoded(Fingerprint $fingerprint, string $bytes, Closure $parser): array
+    {
+        $decoded = $parser($bytes);
+        $this->keep(new KeptFile($fingerprint, $bytes, $decoded));
+
+        return $decoded;
+    }
+
+    private function forget(string $realPath): void
+    {
+        if (! isset($this->kept[$realPath])) {
+            return;
+        }
+
+        $this->keptBytes -= $this->kept[$realPath]->size();
+        unset($this->kept[$realPath]);
+    }
+
     private function keep(KeptFile $file): void
     {
-        $this->drop($file->fingerprint->realPath);
+        $this->forget($file->fingerprint->realPath);
 
-        if ($file->size() > $this->fileByteLimit || ! $file->fingerprint->isSettled(CarbonImmutable::now()->getTimestamp())) {
+        $isSettled = $file->fingerprint->isSettled(CarbonImmutable::now()->getTimestamp());
+
+        if ($file->size() > $this->fileByteLimit || ! $isSettled) {
             return;
         }
 
@@ -165,7 +187,7 @@ final class FileContents
         $this->keptBytes += $file->size();
 
         while ($this->keptBytes > $this->byteLimit) {
-            $this->drop((string) array_key_first($this->kept));
+            $this->forget((string) array_key_first($this->kept));
         }
     }
 }

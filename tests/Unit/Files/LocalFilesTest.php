@@ -165,7 +165,7 @@ final class LocalFilesTest extends TestCase
             $this->whileReading($outer, fn () => $this->files->readJson($inner));
             $this->fail('A read inside a read was allowed.');
         } catch (FileReadReentered $refusal) {
-            $this->assertEquals(FileReadReentered::inside($outer, $inner), $refusal);
+            $this->assertEquals(FileReadReentered::inside($outer->label(), $inner->label()), $refusal);
         }
     }
 
@@ -201,14 +201,14 @@ final class LocalFilesTest extends TestCase
         $file = $this->write('docs/locked.txt', 'locked');
         chmod("{$this->folder}/project/docs/locked.txt", 0o000);
 
-        $this->expectExceptionObject(FileUnreadable::at($file));
+        $this->expectExceptionObject(FileUnreadable::at($file->label()));
 
         $this->files->read($file);
     }
 
     public function test_a_folder_read_as_a_file_is_refused(): void
     {
-        $this->expectExceptionObject(FileUnreadable::at($this->path('docs')));
+        $this->expectExceptionObject(FileUnreadable::at($this->path('docs')->label()));
 
         $this->files->read($this->path('docs'));
     }

@@ -573,7 +573,7 @@ use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
 use App\Files\Contracts\Files;
-use App\Files\Enums\EntryKind;
+use App\Files\Enums\EntryType;
 use App\Files\Enums\Place;
 use App\Files\Exceptions\FileJsonInvalid;
 use App\Files\Exceptions\FileMissing;
@@ -1441,7 +1441,7 @@ final class CoreApi
                 Fingerprint::class,
                 FolderEntries::class,
                 FolderEntry::class,
-                EntryKind::class,
+                EntryType::class,
                 TextPreview::class,
                 CommentPolicy::class,
                 SupervisorTarget::class,

@@ -7,7 +7,7 @@ namespace App\Files\Enums;
 /**
  * What a folder entry is: a file, a folder, or a link, which a list shows and never follows.
  */
-enum EntryKind: string
+enum EntryType: string
 {
     case File = 'file';
     case Folder = 'folder';

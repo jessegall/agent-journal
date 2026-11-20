@@ -19,14 +19,17 @@ final readonly class FolderEntries implements Countable, IteratorAggregate
     /**
      * @param  list<FolderEntry>  $entries
      */
-    private function __construct(private array $entries) {}
+    private function __construct(public array $entries) {}
 
     /**
      * @param  list<FolderEntry>  $entries
      */
     public static function sorted(array $entries): self
     {
-        usort($entries, fn (FolderEntry $one, FolderEntry $other) => strcmp($one->path->relative, $other->path->relative));
+        usort(
+            $entries,
+            fn (FolderEntry $one, FolderEntry $other) => strcmp($one->path->relative, $other->path->relative),
+        );
 
         return new self($entries);
     }

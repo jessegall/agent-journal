@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Files\Exceptions;
 
-use App\Files\Values\FilePath;
 use RuntimeException;
 
 /**
@@ -12,8 +11,8 @@ use RuntimeException;
  */
 final class LinkLeavesPlace extends RuntimeException
 {
-    public static function from(FilePath $file): self
+    public static function from(string $path): self
     {
-        return new self("{$file->label()} leads out of its place through a link, so it is not opened.");
+        return new self("{$path} leads out of its place through a link, so it is not opened.");
     }
 }

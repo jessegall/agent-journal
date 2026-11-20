@@ -79,14 +79,14 @@ final class PathConfinementTest extends TestCase
         symlink("{$this->folder}/project/b", "{$this->folder}/project/a");
         symlink('a', "{$this->folder}/project/b");
 
-        $this->expectExceptionObject(LinkLoop::at(FilePath::in(Place::Project, 'a/x')));
+        $this->expectExceptionObject(LinkLoop::at(FilePath::in(Place::Project, 'a/x')->label()));
 
         $this->confinement()->resolved(FilePath::in(Place::Project, 'a/x'));
     }
 
     public function test_a_missing_file_is_named_missing(): void
     {
-        $this->expectExceptionObject(FileMissing::at(FilePath::in(Place::Project, 'none.md')));
+        $this->expectExceptionObject(FileMissing::at(FilePath::in(Place::Project, 'none.md')->label()));
 
         $this->confinement()->resolved(FilePath::in(Place::Project, 'none.md'));
     }
@@ -131,7 +131,7 @@ final class PathConfinementTest extends TestCase
         unlink($real);
         symlink("{$this->folder}/outside/secret.txt", $real);
 
-        $this->expectExceptionObject(LinkLeavesPlace::from($file));
+        $this->expectExceptionObject(LinkLeavesPlace::from($file->label()));
 
         $this->confinement()->opened($file, $real, 'rb');
     }
@@ -156,7 +156,7 @@ final class PathConfinementTest extends TestCase
     {
         symlink("{$this->folder}/outside", "{$this->folder}/project/out");
 
-        $this->expectExceptionObject(LinkLeavesPlace::from(FilePath::in(Place::Project, 'out/new.txt')));
+        $this->expectExceptionObject(LinkLeavesPlace::from(FilePath::in(Place::Project, 'out/new.txt')->label()));
 
         $this->confinement()->resolvedForWrite(FilePath::in(Place::Project, 'out/new.txt'));
     }

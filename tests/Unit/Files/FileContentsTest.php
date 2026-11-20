@@ -157,6 +157,25 @@ final class FileContentsTest extends TestCase
         $this->assertSame(2, $this->loads);
     }
 
+    public function test_a_read_of_a_kept_file_keeps_its_digest(): void
+    {
+        $contents = new FileContents(100, 50);
+        $this->write('a.txt', 'first');
+        $hashes = 0;
+        $hasher = function () use (&$hashes) {
+            $hashes++;
+
+            return hash('sha256', 'first');
+        };
+
+        $contents->digest($this->fingerprint('a.txt'), $hasher);
+        $this->read($contents, 'a.txt');
+        $this->read($contents, 'a.txt');
+        $contents->digest($this->fingerprint('a.txt'), $hasher);
+
+        $this->assertSame(1, $hashes);
+    }
+
     private function write(string $name, string $bytes, int|null $modifiedAt = null): void
     {
         file_put_contents("{$this->folder}/{$name}", $bytes);

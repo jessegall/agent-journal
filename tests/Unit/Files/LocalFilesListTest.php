@@ -74,7 +74,7 @@ final class LocalFilesListTest extends TestCase
 
     public function test_a_missing_folder_is_refused_by_name(): void
     {
-        $this->expectExceptionObject(FolderMissing::at($this->path('none')));
+        $this->expectExceptionObject(FolderMissing::at($this->path('none')->label()));
 
         $this->files->list($this->path('none'));
     }

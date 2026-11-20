@@ -9,26 +9,24 @@ use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Files\Exceptions\PlaceUnavailable;
 use App\Files\Support\LocalFiles;
-use App\Files\Support\ProcessFiles;
 use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
 use Tests\Support\Files\UsesTemporaryPlaces;
 use Tests\TestCase;
 
 /**
- * The application holds one Files, shared by boot code and every class that asks for it; a test points a place at
+ * The application holds one Files, shared by every class that asks for it; a test points a place at
  * a folder of its own, and a place without a root fails only when it is used.
  */
 final class FilesServiceTest extends TestCase
 {
     use UsesTemporaryPlaces;
 
-    public function test_boot_code_and_the_container_share_one_files(): void
+    public function test_the_application_holds_one_files_for_every_class_that_asks(): void
     {
         $files = $this->app->make(Files::class);
 
         $this->assertInstanceOf(LocalFiles::class, $files);
-        $this->assertSame($files, ProcessFiles::instance());
         $this->assertSame($files, $this->app->make(Files::class));
     }
 

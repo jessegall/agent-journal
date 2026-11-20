@@ -35,6 +35,11 @@ final class LocalFiles implements Files
         private readonly FolderWalker $walker,
     ) {}
 
+    public function filePathOf(string $absolutePath): FilePath
+    {
+        return $this->roots->filePathOf($absolutePath);
+    }
+
     public function read(FilePath $file): string
     {
         return $this->whileReading($file, function () use ($file) {
@@ -85,14 +90,14 @@ final class LocalFiles implements Files
     {
         $real = $this->confinement->existingRealPath($file);
 
-        return $real !== false && is_file($real);
+        return $real !== null && is_file($real);
     }
 
     public function isFolder(FilePath $folder): bool
     {
         $real = $this->confinement->existingRealPath($folder);
 
-        return $real !== false && is_dir($real);
+        return $real !== null && is_dir($real);
     }
 
     public function fingerprint(FilePath $file): Fingerprint
@@ -137,7 +142,7 @@ final class LocalFiles implements Files
     private function whileReading(FilePath $file, Closure $read): mixed
     {
         if ($this->reading !== null) {
-            throw FileReadReentered::inside($this->reading, $file);
+            throw FileReadReentered::inside($this->reading->label(), $file->label());
         }
 
         $this->reading = $file;
@@ -163,7 +168,7 @@ final class LocalFiles implements Files
         }
 
         if ($bytes === false) {
-            throw FileUnreadable::at($file);
+            throw FileUnreadable::at($file->label());
         }
 
         return $bytes;
@@ -191,11 +196,11 @@ final class LocalFiles implements Files
         try {
             $decoded = json_decode($bytes, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $error) {
-            throw FileJsonInvalid::at($file, $error->getMessage(), $error);
+            throw FileJsonInvalid::at($file->label(), $error->getMessage(), $error);
         }
 
         if (! is_array($decoded)) {
-            throw FileJsonInvalid::at($file, 'it holds a single '.get_debug_type($decoded));
+            throw FileJsonInvalid::at($file->label(), 'it holds a single '.get_debug_type($decoded));
         }
 
         return $decoded;

@@ -1,3 +1,4 @@
+=======
 case	AccessRuleType::ExplicitDenial
 case	AccessRuleType::NotGranted
 case	AccessRuleType::OperationGrant
@@ -281,6 +282,9 @@ case	EmptyPolicy::AllowedSuccess
 case	EmptyPolicy::Invalid
 case	EmptySelection::AllowedEmpty
 case	EmptySelection::ConfigurationProblem
+case	EntryType::File
+case	EntryType::Folder
+case	EntryType::Link
 case	EventArgument::ClassName
 case	EventArgument::ListenerParameter
 case	EventArgument::Other
@@ -2330,14 +2334,17 @@ class	FileChanges
 class	FileContents
 class	FileDeclaresNoClass
 class	FileEditRequested
+class	FileJsonInvalid
 class	FileMissing
 class	FileOutsideAutoload
 class	FileOutsideEveryDomain
 class	FileOutsidePlaces
 class	FilePath
 class	FilePathInvalid
+class	FileReadReentered
 class	FileRules
 class	FileUnreadable
+class	FilesServiceProvider
 class	FindNextSubstitution
 class	FindReplay
 class	Fingerprint
@@ -2359,7 +2366,12 @@ class	FlowNodeData
 class	FlowShape
 class	FolderClasses
 class	FolderClosed
+class	FolderEntries
+class	FolderEntry
+class	FolderLoop
+class	FolderMissing
 class	FolderTrustRefused
+class	FolderWalker
 class	FollowingSequenceState
 class	FollowingSequenceStateFactory
 class	FollowingSequenceStateReference
@@ -2659,6 +2671,7 @@ class	JournalVisibility
 class	JournalWriteTool
 class	JudgedCall
 class	KeepNavigationAnswer
+class	KeptDigest
 class	KeptFile
 class	KeyScriptRefused
 class	KeyedWriteWithoutReceipt
@@ -2752,6 +2765,7 @@ class	ListenerOwnership
 class	ListenerPolicy
 class	LiveShareStatus
 class	LoadMigrations
+class	LocalFiles
 class	LocateCommentCall
 class	LocateCommentController
 class	LockStack
@@ -6111,6 +6125,7 @@ enum	DriverType
 enum	EditingState
 enum	EmptyPolicy
 enum	EmptySelection
+enum	EntryType
 enum	EventArgument
 enum	EvidenceSource
 enum	ExampleType
@@ -6410,6 +6425,7 @@ interface	Event
 interface	ExpiresNavigation
 interface	FactOrigin
 interface	FileAccessPolicy
+interface	Files
 interface	GroupDeclaration
 interface	GuardedCommandBus
 interface	HelperCommitImport
@@ -10594,6 +10610,7 @@ method	EntryDispatchers::runAsJournal()
 method	EntryGoalAnswer::__construct()
 method	EntryGoalAnswer::of()
 method	EntryReplayedData::__construct()
+method	EntryType::at()
 method	EnumSetting::__construct()
 method	EnumSetting::accepts()
 method	EnumSetting::caseOf()
@@ -10824,12 +10841,17 @@ method	FileChanges::operations()
 method	FileChanges::paths()
 method	FileContents::__construct()
 method	FileContents::decoded()
+method	FileContents::digest()
 method	FileContents::drop()
+method	FileContents::forget()
 method	FileContents::fresh()
+method	FileContents::holds()
 method	FileContents::keep()
 method	FileContents::kept()
+method	FileContents::keptDecoded()
 method	FileContents::keptUnder()
 method	FileContents::openCount()
+method	FileContents::touched()
 method	FileDeclaresNoClass::withoutClass()
 method	FileDeclaresNoClass::withoutNamespace()
 method	FileEditRequested::__construct()
@@ -10841,6 +10863,7 @@ method	FileEditRequested::leavesAgentIdle()
 method	FileEditRequested::methodName()
 method	FileEditRequested::recordTurn()
 method	FileEditRequested::recordVisit()
+method	FileJsonInvalid::at()
 method	FileMissing::at()
 method	FileOperation::accessTypes()
 method	FileOperation::fromPatchAction()
@@ -10855,11 +10878,26 @@ method	FilePath::label()
 method	FilePath::ofAbsolute()
 method	FilePathInvalid::climbs()
 method	FilePathInvalid::nulByte()
+method	FilePathInvalid::recursivePattern()
+method	FileReadReentered::inside()
 method	FileRules::all()
 method	FileRules::flags()
 method	FileRules::paths()
 method	FileRules::rule()
 method	FileUnreadable::at()
+method	Files::digest()
+method	Files::exists()
+method	Files::filePathOf()
+method	Files::fingerprint()
+method	Files::freeSpace()
+method	Files::isFolder()
+method	Files::list()
+method	Files::matching()
+method	Files::read()
+method	Files::readAtMost()
+method	Files::readCount()
+method	Files::readJson()
+method	FilesServiceProvider::register()
 method	FindNextSubstitution::__construct()
 method	FindNextSubstitution::handle()
 method	FindNextSubstitution::insideOf()
@@ -10871,6 +10909,7 @@ method	Fingerprint::__construct()
 method	Fingerprint::isSettled()
 method	Fingerprint::key()
 method	Fingerprint::of()
+method	Fingerprint::ofLink()
 method	FinishCertifiedJob::handle()
 method	FinishPlan::__construct()
 method	FinishPlanCall::__construct()
@@ -10909,11 +10948,29 @@ method	FolderClasses::in()
 method	FolderClasses::read()
 method	FolderClosed::at()
 method	FolderClosed::privatePlace()
+method	FolderEntries::__construct()
+method	FolderEntries::count()
+method	FolderEntries::getIterator()
+method	FolderEntries::isEmpty()
+method	FolderEntries::paths()
+method	FolderEntries::sorted()
+method	FolderEntry::__construct()
+method	FolderEntry::isFolder()
+method	FolderEntry::name()
+method	FolderLoop::at()
+method	FolderMissing::at()
 method	FolderTrustRefused::notEmpty()
 method	FolderTrustRefused::outsideWorkingRoots()
 method	FolderType::ofFolder()
 method	FolderType::requirement()
 method	FolderType::requirementNotMetBy()
+method	FolderWalker::__construct()
+method	FolderWalker::entering()
+method	FolderWalker::entry()
+method	FolderWalker::expand()
+method	FolderWalker::namesIn()
+method	FolderWalker::namesMatching()
+method	FolderWalker::walk()
 method	FollowingSequenceState::__construct()
 method	FollowingSequenceState::isFinished()
 method	FollowingSequenceState::onCompaction()
@@ -11791,6 +11848,7 @@ method	KeepNavigationAnswer::handle()
 method	KeepsCleanupTries::hasUsedEveryCleanupTry()
 method	KeepsCleanupTries::recordCleanupTry()
 method	KeepsCleanupTries::resetCleanupTries()
+method	KeptDigest::__construct()
 method	KeptFile::__construct()
 method	KeptFile::size()
 method	KeyScriptRefused::parameters()
@@ -12015,6 +12073,23 @@ method	ListenerPolicy::registerDiscovered()
 method	LiveShareStatus::isPubliclyShared()
 method	LoadMigrations::__construct()
 method	LoadMigrations::__invoke()
+method	LocalFiles::__construct()
+method	LocalFiles::decoded()
+method	LocalFiles::digest()
+method	LocalFiles::exists()
+method	LocalFiles::filePathOf()
+method	LocalFiles::fingerprint()
+method	LocalFiles::freeSpace()
+method	LocalFiles::hashed()
+method	LocalFiles::isFolder()
+method	LocalFiles::list()
+method	LocalFiles::loaded()
+method	LocalFiles::matching()
+method	LocalFiles::read()
+method	LocalFiles::readAtMost()
+method	LocalFiles::readCount()
+method	LocalFiles::readJson()
+method	LocalFiles::whileReading()
 method	LocateCommentCall::__construct()
 method	LocateCommentController::__invoke()
 method	LockStack::handle()
@@ -13258,8 +13333,12 @@ method	PasswordValidationRules::passwordRules()
 method	PathConfinement::__construct()
 method	PathConfinement::absolutePath()
 method	PathConfinement::confined()
+method	PathConfinement::existingRealPath()
+method	PathConfinement::freshRealPath()
+method	PathConfinement::isLinkLoop()
 method	PathConfinement::opened()
 method	PathConfinement::resolved()
+method	PathConfinement::resolvedFolder()
 method	PathConfinement::resolvedForWrite()
 method	PathConfinement::unresolved()
 method	PendingAgentMessage::casts()
@@ -13401,6 +13480,7 @@ method	Place::rootSetting()
 method	PlaceRoots::__construct()
 method	PlaceRoots::available()
 method	PlaceRoots::existingRoot()
+method	PlaceRoots::filePathOf()
 method	PlaceRoots::innermostPlaceOf()
 method	PlaceRoots::isWithin()
 method	PlaceRoots::realPathOf()
@@ -19800,6 +19880,7 @@ method	YieldKeyword::definition()
 method	YieldKeyword::execute()
 method	YieldKeyword::flow()
 parameter	$above
+parameter	$absolutePath
 parameter	$abstract
 parameter	$accepted
 parameter	$acceptsNumericOptions
@@ -20218,6 +20299,7 @@ parameter	$configurationId
 parameter	$configurationRevision
 parameter	$configurationVersion
 parameter	$configured
+parameter	$confinement
 parameter	$confirm
 parameter	$conflict
 parameter	$conflicts
@@ -20453,10 +20535,12 @@ parameter	$engine
 parameter	$engineFrame
 parameter	$engineListeners
 parameter	$enrolled
+parameter	$entered
 parameter	$enteredAt
 parameter	$entitlement
 parameter	$entrance
 parameter	$entries
+parameter	$entries	app/Files/Values/FolderEntries.php
 parameter	$entries	app/Sharing/Support/ShareAuditPage.php
 parameter	$entries	app/Skills/Handlers/RefreshSkillsHandler.php
 parameter	$entries	app/Skills/Resolvers/Support/SkillStatusResolver.php
@@ -20660,6 +20744,7 @@ parameter	$hasNextPage
 parameter	$hasObservedProof
 parameter	$hasOpenWork
 parameter	$hash
+parameter	$hasher
 parameter	$head
 parameter	$header
 parameter	$headers
@@ -22125,6 +22210,7 @@ parameter	$wakes
 parameter	$walk
 parameter	$walkTop
 parameter	$walked
+parameter	$walker
 parameter	$wallSeconds
 parameter	$wanted
 parameter	$wasRequested
@@ -24490,6 +24576,7 @@ property	FileChange::$operation
 property	FileChange::$path
 property	FileChanges::$changes
 property	FileContents::$byteLimit
+property	FileContents::$digests
 property	FileContents::$fileByteLimit
 property	FileContents::$kept
 property	FileContents::$keptBytes
@@ -24534,6 +24621,13 @@ property	FlowNodeData::$order
 property	FlowNodeData::$rank
 property	FlowNodeData::$type
 property	FlowShape::$ports
+property	FolderEntries::$entries
+property	FolderEntry::$fingerprint
+property	FolderEntry::$path
+property	FolderEntry::$type
+property	FolderWalker::$closed
+property	FolderWalker::$confinement
+property	FolderWalker::$roots
 property	FollowingSequenceState::$sequence
 property	FollowingSequenceStateFactory::$runs
 property	Frame::$admittedAt
@@ -25000,6 +25094,8 @@ property	JournalToolCall::$reply
 property	JournalTools::$names
 property	JudgedCall::$input
 property	JudgedCall::$render
+property	KeptDigest::$digest
+property	KeptDigest::$fingerprint
 property	KeptFile::$bytes
 property	KeptFile::$decoded
 property	KeptFile::$fingerprint
@@ -25165,6 +25261,11 @@ property	ListenerOwnership::$registry
 property	ListenerPolicy::$ownership
 property	ListenerPolicy::$runner
 property	LoadMigrations::$app
+property	LocalFiles::$confinement
+property	LocalFiles::$contents
+property	LocalFiles::$reading
+property	LocalFiles::$roots
+property	LocalFiles::$walker
 property	LocateCommentCall::$comment
 property	LocateCommentCall::$firstLine
 property	LocateCommentCall::$lastLine
@@ -29898,6 +29999,9 @@ property	WalkStep::$contextCount
 property	WalkStep::$denialReason
 property	WalkStep::$frameId
 property	WalkStep::$hookMethod
+property	WalkStep::$levels
+property	WalkStep::$path
+property	WalkStep::$realPath
 property	WalkStep::$selectionReason
 property	WalkStep::$stateType
 property	WalkStep::$transition
@@ -30483,6 +30587,7 @@ variable	$entered
 variable	$entitlement
 variable	$entries
 variable	$entries	app/Bus/Support/DeclaredCommand.php
+variable	$entries	app/Files/Support/FolderWalker.php
 variable	$entry
 variable	$envelopes
 variable	$environment
@@ -30552,6 +30657,7 @@ variable	$filters
 variable	$final
 variable	$finder
 variable	$findings
+variable	$fingerprint
 variable	$fingerprints
 variable	$finished
 variable	$finishedTool
@@ -30627,6 +30733,8 @@ variable	$hasRuntime
 variable	$hasSeatInConversation
 variable	$hasSeenSubject
 variable	$hash
+variable	$hashed
+variable	$hasher
 variable	$hashes
 variable	$header
 variable	$headers
@@ -30733,6 +30841,7 @@ variable	$isSameAgent
 variable	$isSameFailure
 variable	$isScoped
 variable	$isServed
+variable	$isSettled
 variable	$isSignedIn
 variable	$isSignedOut
 variable	$isSingleton
@@ -31015,6 +31124,7 @@ variable	$parent
 variable	$parentRuntime
 variable	$parentSessionId
 variable	$parsed
+variable	$parser
 variable	$part
 variable	$partFacts
 variable	$partial

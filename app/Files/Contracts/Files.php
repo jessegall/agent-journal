@@ -16,6 +16,12 @@ use App\Files\Values\FolderEntries;
  */
 interface Files
 {
+    /**
+     * The file path of an absolute path given from outside, such as a command's --file, in the open place that
+     * holds it; FileOutsidePlaces when no open place does, FolderClosed when a private place does.
+     */
+    public function filePathOf(string $absolutePath): FilePath;
+
     public function read(FilePath $file): string;
 
     /**

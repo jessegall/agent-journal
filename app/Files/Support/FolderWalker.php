@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Files\Support;
 
-use App\Files\Enums\EntryKind;
+use App\Files\Enums\EntryType;
 use App\Files\Exceptions\FilePathInvalid;
 use App\Files\Exceptions\FileUnreadable;
 use App\Files\Exceptions\FolderLoop;
@@ -97,7 +97,9 @@ final readonly class FolderWalker
             $found = $next;
         }
 
-        return FolderEntries::sorted(array_map(fn (WalkStep $step) => $this->entry($step->path, $step->realPath), $found));
+        return FolderEntries::sorted(
+            array_map(fn (WalkStep $step) => $this->entry($step->path, $step->realPath), $found),
+        );
     }
 
     /**
@@ -112,13 +114,13 @@ final readonly class FolderWalker
         $stat = @stat($step->realPath);
 
         if ($stat === false) {
-            throw FileUnreadable::at($step->path);
+            throw FileUnreadable::at($step->path->label());
         }
 
         $identity = "{$stat['dev']}:{$stat['ino']}";
 
         if (isset($entered[$identity])) {
-            throw FolderLoop::at($step->path);
+            throw FolderLoop::at($step->path->label());
         }
 
         return [...$entered, $identity => true];
@@ -134,7 +136,7 @@ final readonly class FolderWalker
         $names = @scandir($realPath);
 
         if ($names === false) {
-            throw FileUnreadable::at($folder);
+            throw FileUnreadable::at($folder->label());
         }
 
         return array_values(array_diff($names, ['.', '..']));
@@ -159,9 +161,11 @@ final readonly class FolderWalker
 
     private function entry(FilePath $path, string $realPath): FolderEntry
     {
-        $kind = EntryKind::at($realPath);
-        $fingerprint = $kind === EntryKind::Link ? Fingerprint::ofLink($path, $realPath) : Fingerprint::of($path, $realPath);
+        $type = EntryType::at($realPath);
+        $fingerprint = $type === EntryType::Link
+            ? Fingerprint::ofLink($path, $realPath)
+            : Fingerprint::of($path, $realPath);
 
-        return new FolderEntry($path, $kind, $fingerprint);
+        return new FolderEntry($path, $type, $fingerprint);
     }
 }

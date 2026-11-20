@@ -60,7 +60,7 @@ final class PlaceRootsTest extends TestCase
         $roots = $this->roots();
 
         $this->assertSame(realpath(base_path()), $roots->root(Place::Project));
-        $this->assertSame(Place::Project, FilePath::ofAbsolute(base_path('composer.json'), $roots)->place);
+        $this->assertSame(Place::Project, $roots->filePathOf(base_path('composer.json'))->place);
         $this->expectExceptionObject(PlaceUnavailable::for(Place::Accounts));
 
         $roots->root(Place::Accounts);
@@ -79,11 +79,11 @@ final class PlaceRootsTest extends TestCase
     {
         $this->assertEquals(
             FilePath::in(Place::Project, 'app/Files/Values/FilePath.php'),
-            FilePath::ofAbsolute(base_path('app/Files/../Files/Values/FilePath.php'), $this->roots()),
+            $this->roots()->filePathOf(base_path('app/Files/../Files/Values/FilePath.php')),
         );
         $this->assertEquals(
             FilePath::in(Place::Project, 'notes-not-written-yet.md'),
-            FilePath::ofAbsolute(base_path('notes-not-written-yet.md'), $this->roots()),
+            $this->roots()->filePathOf(base_path('notes-not-written-yet.md')),
         );
     }
 
@@ -91,7 +91,7 @@ final class PlaceRootsTest extends TestCase
     {
         $this->expectExceptionObject(FileOutsidePlaces::given());
 
-        FilePath::ofAbsolute('/etc/hosts', $this->roots());
+        $this->roots()->filePathOf('/etc/hosts');
     }
 
     public function test_an_absolute_path_inside_a_private_place_is_refused_as_closed(): void
@@ -100,14 +100,7 @@ final class PlaceRootsTest extends TestCase
 
         $this->expectExceptionObject(FolderClosed::privatePlace(Place::Accounts));
 
-        FilePath::ofAbsolute("{$this->folder}/accounts/settings.json", $this->roots());
-    }
-
-    public function test_a_private_root_inside_an_open_place_is_found_as_the_private_place(): void
-    {
-        config(['accounts.root' => "{$this->folder}/accounts"]);
-
-        $this->assertSame(Place::Accounts, $this->roots()->innermostPlaceOf(realpath("{$this->folder}/accounts")));
+        $this->roots()->filePathOf("{$this->folder}/accounts/settings.json");
     }
 
     private function roots(): PlaceRoots

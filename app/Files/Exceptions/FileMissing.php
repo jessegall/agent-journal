@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Files\Exceptions;
 
-use App\Files\Values\FilePath;
 use RuntimeException;
 
 /**
@@ -12,8 +11,8 @@ use RuntimeException;
  */
 final class FileMissing extends RuntimeException
 {
-    public static function at(FilePath $file): self
+    public static function at(string $path): self
     {
-        return new self("No file is at {$file->label()}.");
+        return new self("No file is at {$path}.");
     }
 }
