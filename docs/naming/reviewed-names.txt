@@ -85,6 +85,7 @@ case	AskOriginType::Supervisor
 case	AskRouteStatus::Assigned
 case	AskRouteStatus::NoOwner
 case	AskRouteStatus::PendingProfile
+case	AskRouteStatus::Unavailable
 case	AssessmentOutcome::AllowedEmpty
 case	AssessmentOutcome::Findings
 case	AssessmentOutcome::Passed
@@ -938,6 +939,8 @@ case	SupervisorAbility::ChangeRoute
 case	SupervisorCoverageType::Supported
 case	SupervisorCoverageType::Unknown
 case	SupervisorCoverageType::Unsupported
+case	SupervisorDispatchOutcome::Started
+case	SupervisorDispatchOutcome::Unavailable
 case	SyntaxForm::Block
 case	SyntaxForm::CommandKey
 case	SyntaxForm::ElseBlock
@@ -2419,6 +2422,7 @@ class	HelperStarts
 class	HelperSteerCommand
 class	HelperSteerData
 class	HelperStopHeld
+class	HelperSupervisorDispatch
 class	HelperUnavailable
 class	HelperWork
 class	HelperWorkUncertified
@@ -4790,6 +4794,7 @@ class	SupervisorPolicy
 class	SupervisorProfile
 class	SupervisorRecipients
 class	SupervisorRefused
+class	SupervisorRequest
 class	SupervisorRoute
 class	SupervisorRouteInvalid
 class	SupervisorRouteRefused
@@ -5000,6 +5005,7 @@ class	UnassignRecordController
 class	UnassignRecordHandler
 class	UnassignRecordRequest
 class	UnassignRecordTool
+class	UnavailableSupervisorDispatch
 class	UnconfiguredAccounts
 class	UnjudgedCall
 class	UnknownAccessType
@@ -6041,6 +6047,7 @@ enum	StreamUse
 enum	SummaryRule
 enum	SupervisorAbility
 enum	SupervisorCoverageType
+enum	SupervisorDispatchOutcome
 enum	SyntaxForm
 enum	TableType
 enum	TaskAbility
@@ -6372,6 +6379,7 @@ interface	StopTime
 interface	StopTimes
 interface	StoredValue
 interface	SupervisorDefinitions
+interface	SupervisorDispatch
 interface	TargetAuthorizer
 interface	TargetsAgentStack
 interface	TaskAssignmentResolver
@@ -10841,6 +10849,7 @@ method	HelperDispatch::admittedProfile()
 method	HelperDispatch::assertNoOpenJob()
 method	HelperDispatch::candidatesFor()
 method	HelperDispatch::continueJob()
+method	HelperDispatch::designatedHolder()
 method	HelperDispatch::isRepeat()
 method	HelperDispatch::launch()
 method	HelperDispatch::newActor()
@@ -10931,6 +10940,9 @@ method	HelperSteerCommand::handle()
 method	HelperSteerData::__construct()
 method	HelperSteerData::fromSteerReceipt()
 method	HelperStopHeld::__construct()
+method	HelperSupervisorDispatch::__construct()
+method	HelperSupervisorDispatch::start()
+method	HelperSupervisorDispatch::startFor()
 method	HelperUnavailable::toYou()
 method	HelperWork::__construct()
 method	HelperWork::described()
@@ -18108,6 +18120,7 @@ method	SupervisorCoverageReader::__construct()
 method	SupervisorCoverageReader::forRoutes()
 method	SupervisorCoverageReader::forType()
 method	SupervisorDefinitions::validate()
+method	SupervisorDispatch::startFor()
 method	SupervisorGraph::__construct()
 method	SupervisorGraph::follow()
 method	SupervisorGraph::requireAcyclic()
@@ -18129,6 +18142,7 @@ method	SupervisorRecipients::resolve()
 method	SupervisorRefused::stepNotRun()
 method	SupervisorRefused::unsupportedBuiltin()
 method	SupervisorRefused::unsupportedRedirect()
+method	SupervisorRequest::__construct()
 method	SupervisorRoute::__construct()
 method	SupervisorRouteInvalid::askType()
 method	SupervisorRouteInvalid::missingDefault()
@@ -18883,6 +18897,7 @@ method	UnassignRecordHandler::handle()
 method	UnassignRecordRequest::rules()
 method	UnassignRecordTool::command()
 method	UnassignRecordTool::writeSchema()
+method	UnavailableSupervisorDispatch::startFor()
 method	UnconfiguredAccounts::forStart()
 method	UnjudgedCall::__construct()
 method	UnjudgedCall::replyWith()
@@ -22009,6 +22024,7 @@ property	AskRecords::$current
 property	AskRecords::$owner
 property	AskReference::$id
 property	AskRouter::$attention
+property	AskRouter::$dispatch
 property	AskRouter::$recipients
 property	AskRouter::$routes
 property	AskRouter::$writer
@@ -23900,6 +23916,7 @@ property	HelperCompletionCertified::$work
 property	HelperContinueCommand::$description
 property	HelperContinueCommand::$signature
 property	HelperDispatch::$actors
+property	HelperDispatch::$admission
 property	HelperDispatch::$callingProgram
 property	HelperDispatch::$candidates
 property	HelperDispatch::$commands
@@ -23958,6 +23975,9 @@ property	HelperSteerData::$reachedLiveJob
 property	HelperSteerData::$suggestedCommand
 property	HelperStopHeld::$attempt
 property	HelperStopHeld::$work
+property	HelperSupervisorDispatch::$admission
+property	HelperSupervisorDispatch::$commands
+property	HelperSupervisorDispatch::$database
 property	HelperWork::$brief
 property	HelperWork::$independent
 property	HelperWork::$purposeId
@@ -28467,6 +28487,10 @@ property	SupervisorProfile::$access
 property	SupervisorProfile::$key
 property	SupervisorProfile::$routes
 property	SupervisorRecipients::$owner
+property	SupervisorRequest::$askId
+property	SupervisorRequest::$body
+property	SupervisorRequest::$cause
+property	SupervisorRequest::$profileKey
 property	SupervisorRoute::$target
 property	SupervisorRoute::$version
 property	SupervisorRoutes::$default

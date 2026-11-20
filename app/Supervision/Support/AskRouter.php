@@ -9,8 +9,11 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\JournalAssignment;
 use App\Profiles\Values\SupervisorTarget;
+use App\Supervision\Contracts\SupervisorDispatch;
 use App\Supervision\Enums\AskRouteStatus;
+use App\Supervision\Enums\SupervisorDispatchOutcome;
 use App\Supervision\Models\Ask;
+use App\Supervision\Values\SupervisorRequest;
 
 /**
  * Assigns an ask to the actor its pending target names and records the hop, for a first route and an escalation
@@ -23,6 +26,7 @@ final readonly class AskRouter
         private SupervisorRouting $routes,
         private JournalAssignmentWriter $writer,
         private AskAttention $attention,
+        private SupervisorDispatch $dispatch,
     ) {}
 
     /**
@@ -46,6 +50,16 @@ final readonly class AskRouter
     private function assign(Ask $ask, SupervisorTarget $target, AssignmentReference|null $current): AskRouteStatus
     {
         $found = $this->recipients->resolve($target);
+
+        if ($found->isEmpty() && $target->isProfile()) {
+            $request = new SupervisorRequest($target->profileKey()->key, $ask->id, $ask->body, $ask->requester());
+
+            if ($this->dispatch->startFor($request) === SupervisorDispatchOutcome::Unavailable) {
+                return AskRouteStatus::Unavailable;
+            }
+
+            $found = $this->recipients->resolve($target);
+        }
 
         if ($found->isEmpty()) {
             return $target->isOwner() ? AskRouteStatus::NoOwner : AskRouteStatus::PendingProfile;

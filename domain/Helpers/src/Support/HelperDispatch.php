@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\JournalAdmission;
+use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\StartOwnedAgent;
@@ -67,6 +69,7 @@ final readonly class HelperDispatch
         private ResponsibilityWriter $responsibilities,
         private HelperRecords $records,
         private CommandBus $commands,
+        private JournalAdmission $admission,
     ) {}
 
     public function start(DispatchRequest $request): HelperReceipt
@@ -259,12 +262,25 @@ final readonly class HelperDispatch
 
         return HelperIdentity::designatedFor($request->profileKey)->getOrCall(
             fn () => HelperIdentity::declareDesignated(
-                $request->parent,
+                $this->designatedHolder($request),
                 $this->newActor($request, $profile),
                 $request->profileKey,
                 $profile->base->key,
             ),
         );
+    }
+
+    /**
+     * Who holds a designated helper: the installation's owner, so a manual and an automatic request reach the same
+     * helper; the requester only when no owner is configured.
+     */
+    private function designatedHolder(DispatchRequest $request): ActorIdentity
+    {
+        try {
+            return ActorIdentity::of($this->admission->owner());
+        } catch (ConsoleOwnerMissing) {
+            return $request->parent;
+        }
     }
 
     private function newActor(DispatchRequest $request, ProfileSelection $profile): ActorIdentity

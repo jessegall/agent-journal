@@ -6,9 +6,11 @@ namespace Domain\Helpers\Providers;
 
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
+use App\Supervision\Contracts\SupervisorDispatch;
 use Domain\Helpers\Contracts\HelperReader;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Readers\HelperRecords;
+use Domain\Helpers\Support\HelperSupervisorDispatch;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +23,8 @@ final class HelpersServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(HelperReader::class, HelperRecords::class);
+        // The implementation belongs to a higher area; a Bind attribute here would create a reverse dependency.
+        $this->app->bind(SupervisorDispatch::class, HelperSupervisorDispatch::class);
     }
 
     public function boot(LinkTypeRegistry $links): void

@@ -13,6 +13,7 @@ use App\Profiles\Contracts\SupervisorDefinitions;
 use App\Profiles\Values\AskTypeKey;
 use App\Supervision\Contracts\AskAdmission;
 use App\Supervision\Contracts\AskReader;
+use App\Supervision\Contracts\SupervisorDispatch;
 use App\Supervision\Enums\AskAbility;
 use App\Supervision\Enums\SupervisorAbility;
 use App\Supervision\Models\Ask;
@@ -27,6 +28,7 @@ use App\Supervision\Support\AdvanceDueAsksOnTick;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Support\CurrentAskAdmission;
 use App\Supervision\Support\SupervisorRouting;
+use App\Supervision\Support\UnavailableSupervisorDispatch;
 use App\Supervision\Types\CodeReviewType;
 use App\Supervision\Types\MergeReadyType;
 use App\Supervision\Types\QuestionType;
@@ -45,6 +47,7 @@ final class SupervisionServiceProvider extends ServiceProvider
         $this->app->bind(AskAdmission::class, CurrentAskAdmission::class);
         $this->app->bind(AskReader::class, AskRecords::class);
         $this->app->singleton(AskTypeRegistry::class);
+        $this->app->bindIf(SupervisorDispatch::class, UnavailableSupervisorDispatch::class);
     }
 
     public function boot(

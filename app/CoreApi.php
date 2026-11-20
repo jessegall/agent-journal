@@ -1070,6 +1070,9 @@ use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 use App\Skills\Values\StartProfile;
 use App\Supervision\Commands\AdvanceAsk;
+use App\Supervision\Contracts\SupervisorDispatch;
+use App\Supervision\Enums\SupervisorDispatchOutcome;
+use App\Supervision\Values\SupervisorRequest;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
@@ -1330,6 +1333,7 @@ final class CoreApi
                 CommandMiddlewareProvider::class,
                 AdmittedRecipients::class,
                 JournalAdmission::class,
+                SupervisorDispatch::class,
                 UserInterfaceUpdater::class,
                 CountResolver::class,
                 NavigationChildren::class,
@@ -1392,6 +1396,7 @@ final class CoreApi
                 WorkspaceReadReference::class,
                 WorkReference::class,
                 HelperImportReceipt::class,
+                SupervisorRequest::class,
                 PaginationData::class,
                 NavigationUncertainty::class,
                 EventCommands::class,
@@ -1550,6 +1555,7 @@ final class CoreApi
                 CompactionDetails::class,
                 ContextStartType::class,
                 SessionTransferType::class,
+                SupervisorDispatchOutcome::class,
                 FileEditRequested::class,
                 FileChanges::class,
                 FileChange::class,
