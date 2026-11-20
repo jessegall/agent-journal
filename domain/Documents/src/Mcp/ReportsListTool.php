@@ -6,7 +6,7 @@ namespace Domain\Documents\Mcp;
 
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Documents\Enums\ReportState;
+use Domain\Documents\Enums\AttentionFilter;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -23,7 +23,7 @@ final class ReportsListTool extends PublicationReadTool
     {
         return [
             'search' => $schema->string()->max(200),
-            'state' => $schema->string()->enum(array_column(ReportState::cases(), 'value')),
+            'state' => $schema->string()->enum(array_column(AttentionFilter::cases(), 'value')),
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
         ];

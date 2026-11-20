@@ -8,7 +8,7 @@ use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 use Domain\Documents\Contracts\ReportResolver;
-use Domain\Documents\Enums\ReportState;
+use Domain\Documents\Enums\AttentionFilter;
 
 final readonly class OpenReportsOverview implements OverviewContribution
 {
@@ -24,7 +24,7 @@ final readonly class OpenReportsOverview implements OverviewContribution
         return OverviewSection::from([
             'title' => 'Open reports',
             'counts' => ['open' => $this->reports->openCount()],
-            'nextAction' => new NextAction('reports_list', ['state' => ReportState::Open->value]),
+            'nextAction' => new NextAction('reports_list', ['state' => AttentionFilter::Active->value]),
         ]);
     }
 }

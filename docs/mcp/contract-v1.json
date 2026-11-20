@@ -2203,8 +2203,8 @@
                         },
                         "state": {
                             "enum": [
-                                "open",
-                                "closed",
+                                "active",
+                                "settled",
                                 "all"
                             ],
                             "type": "string"
@@ -3302,8 +3302,8 @@
                         },
                         "state": {
                             "enum": [
-                                "open",
-                                "closed",
+                                "active",
+                                "settled",
                                 "all"
                             ],
                             "type": "string"
@@ -4555,8 +4555,8 @@
                         },
                         "state": {
                             "enum": [
-                                "open",
-                                "closed",
+                                "active",
+                                "settled",
                                 "all"
                             ],
                             "type": "string"

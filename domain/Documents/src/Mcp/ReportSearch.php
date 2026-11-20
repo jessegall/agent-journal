@@ -12,7 +12,7 @@ use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\ReportCard;
-use Domain\Documents\Enums\ReportState;
+use Domain\Documents\Enums\AttentionFilter;
 
 final readonly class ReportSearch implements SearchContribution
 {
@@ -31,7 +31,7 @@ final readonly class ReportSearch implements SearchContribution
     public function search(string $query, int $page): SearchPage
     {
         $matches = $this->reports->list(DocumentFilters::from([
-            'attention' => ReportState::All->attention(),
+            'attention' => AttentionFilter::All,
             'query' => $query,
             'page' => $page,
             'perPage' => self::PAGE_SIZE,

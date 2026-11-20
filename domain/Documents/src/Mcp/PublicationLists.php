@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Mcp;
 
+use App\Mcp\Contracts\Continuations;
+use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Contracts\Continuations;
 use App\Mcp\Support\ToolArguments;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\ReportResolver;
@@ -14,7 +15,6 @@ use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\ReportCard;
 use Domain\Documents\Enums\AttentionFilter;
-use Domain\Documents\Enums\ReportState;
 
 final readonly class PublicationLists
 {
@@ -34,9 +34,9 @@ final readonly class PublicationLists
 
     public function reports(ToolArguments $arguments): ToolResult
     {
-        $position = $this->position('reports_list', $arguments, $arguments->enumOr('state', ReportState::Open));
-        $state = ReportState::from($position->filters['state']);
-        $page = $this->reports->list($this->filters($position, $state->attention()));
+        $position = $this->position('reports_list', $arguments, $arguments->enumOr('state', AttentionFilter::Active));
+        $state = AttentionFilter::from($position->filters['state']);
+        $page = $this->reports->list($this->filters($position, $state));
 
         return $this->page($page->rows, $page->hasNextPage, $position);
     }
@@ -51,7 +51,7 @@ final readonly class PublicationLists
         ]);
     }
 
-    private function position(string $tool, ToolArguments $arguments, ReportState|null $state = null): Continuation
+    private function position(string $tool, ToolArguments $arguments, AttentionFilter|null $state = null): Continuation
     {
         $cursor = $arguments->continuation();
         if ($cursor !== null) {
@@ -65,7 +65,7 @@ final readonly class PublicationLists
     }
 
     /**
-     * @param list<DocumentCard|ReportCard> $cards
+     * @param  list<DocumentCard|ReportCard>  $cards
      */
     private function page(array $cards, bool $hasNext, Continuation $position): ToolResult
     {
@@ -75,9 +75,12 @@ final readonly class PublicationLists
             'title' => mb_strcut($card->title, 0, 100),
             'abstract' => mb_strcut($card->abstract, 0, 120),
         ], $cards);
-        $next = $hasNext ? [new \App\Mcp\Data\NextAction($position->tool, [
+        $next = $hasNext ? [new NextAction($position->tool, [
             'continuation' => $this->continuations->issue(new Continuation(
-                $position->tool, '', $position->filters, $position->offset + 1,
+                $position->tool,
+                '',
+                $position->filters,
+                $position->offset + 1,
             )),
         ])] : [];
 

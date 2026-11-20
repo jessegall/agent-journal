@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents;
 
-use Domain\Documents\Mcp\DocumentSearch;
-use Domain\Documents\Mcp\ReportSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
@@ -37,7 +35,6 @@ use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
-use Domain\Documents\Api\RetainedDraftView;
 use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Api\Events\DocumentDraftSaved;
@@ -46,24 +43,25 @@ use Domain\Documents\Api\Events\DocumentPublished;
 use Domain\Documents\Api\Events\DraftKept;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Api\Events\ReportFiled;
+use Domain\Documents\Api\RetainedDraftView;
 use Domain\Documents\Commands\ChangeDocumentDetails;
 use Domain\Documents\Commands\CloseDocument;
+use Domain\Documents\Commands\CloseReport;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Commands\EditDocument;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\RecoverDocument;
-use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Commands\ReplaceDocumentBody;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
-use Domain\Documents\Commands\CloseReport;
-use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\AttachmentReader;
 use Domain\Documents\Contracts\DocumentReader;
+use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Contracts\DraftResolver;
-use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Contracts\ReportReader;
+use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\DockData;
@@ -86,7 +84,6 @@ use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\AttentionState;
-use Domain\Documents\Enums\ReportState;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Enums\EditingState;
@@ -107,10 +104,12 @@ use Domain\Documents\Http\Controllers\SettleDocumentPageController;
 use Domain\Documents\Http\Controllers\SettleReportPageController;
 use Domain\Documents\Links\DocumentLinkRecords;
 use Domain\Documents\Links\ReportLinkRecords;
+use Domain\Documents\Mcp\DocumentSearch;
+use Domain\Documents\Mcp\OpenReportsOverview;
+use Domain\Documents\Mcp\ReportSearch;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Mcp\OpenReportsOverview;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Domain\Documents\Resolvers\DocumentDockResolver;
 use Domain\Documents\Resolvers\DocumentWindowResolver;
@@ -190,7 +189,6 @@ final class DocumentsDomain extends Domain implements
                 ReportCard::class,
                 ReportView::class,
                 ReportList::class,
-                ReportState::class,
             )
             ->commands(
                 CreateDocument::class,
