@@ -94,6 +94,15 @@ final class OrientationToolsTest extends TestCase
         $this->assertContains('overview_read', $result['tools']);
     }
 
+    public function test_a_profile_that_edits_documents_reads_their_drafts_and_a_read_only_helper_does_not(): void
+    {
+        $tools = fn (TestStart $start) => $this->callMcpTool($start, 'capabilities_read', [])
+            ->json('result.structuredContent.tools');
+
+        $this->assertContains('docs_drafts_read', $tools($this->caller));
+        $this->assertNotContains('docs_drafts_read', $tools(TestStart::start('read-only-helper')));
+    }
+
     public function test_the_overview_resource_gives_the_same_content(): void
     {
         $tool = $this->callTool('overview_read')->json('result.structuredContent');

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Providers;
 
+use App\Operations\Enums\AccessType;
+use Domain\Documents\Policies\DocumentPolicy;
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\CurrentSession;
@@ -59,7 +61,7 @@ final class DocumentsServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links, ReadEntitlements $reads): void
     {
-        $reads->declare('docs_drafts_read', ReadEntitlement::named());
+        $reads->declare('docs_drafts_read', ReadEntitlement::grant(DocumentPolicy::class, AccessType::Edit));
         $links->register([
             Document::LINK_TYPE => Document::class,
             DocumentRevision::LINK_TYPE => DocumentRevision::class,
