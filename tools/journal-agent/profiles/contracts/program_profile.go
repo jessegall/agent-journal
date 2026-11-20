@@ -31,11 +31,22 @@ type Start struct {
 	Account *AccountStart
 }
 
+// JournalServer is how a start runs the journal's MCP server: the protected PHP binary running the protected
+// installation's bin/journal-mcp, both by absolute path, with no token or placeholder.
+type JournalServer struct {
+	Command string
+	Relay   string
+}
+
 // AccountStart is what a start on a saved account adds to the profile's own settings: the account's folder on the
 // host and the native protection settings its adapter checked, as JSON, merged into the start's settings.
 type AccountStart struct {
 	Folder     string
 	Protection string
+	// JournalServer is the journal's own MCP server the start loads; an account start is refused without it.
+	JournalServer *JournalServer
+	// LaunchReference names the launch to the journal's relays; it is no secret.
+	LaunchReference string
 }
 
 // SettingsFile is one generated file of the isolated settings folder: its name and content. A sign-in is never one:

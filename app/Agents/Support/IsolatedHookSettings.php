@@ -6,7 +6,7 @@ namespace App\Agents\Support;
 
 /**
  * The settings file a started program reads from its own isolated settings folder: only the journal's hooks and
- * the journal's tool rules, never anything from the user's own configuration (rule 2).
+ * the journal's tool rules, allowed and denied, never anything from the user's own configuration (rule 2).
  */
 final class IsolatedHookSettings
 {
@@ -19,6 +19,11 @@ final class IsolatedHookSettings
      * @var list<string>
      */
     private array $deniedTools = [];
+
+    /**
+     * @var list<string>
+     */
+    private array $allowedTools = [];
 
     public function addHook(string $eventName, string $command): void
     {
@@ -34,6 +39,14 @@ final class IsolatedHookSettings
         $this->deniedTools[] = $toolName;
     }
 
+    /**
+     * Lets the program call a tool without a native prompt, such as the journal's own MCP tools.
+     */
+    public function allowTool(string $toolRule): void
+    {
+        $this->allowedTools[] = $toolRule;
+    }
+
     public function hasHooks(): bool
     {
         return $this->hookCommands !== [];
@@ -42,7 +55,7 @@ final class IsolatedHookSettings
     public function content(): string
     {
         return (string) json_encode(
-            IsolatedSettingsFile::of($this->hookCommands, $this->deniedTools),
+            IsolatedSettingsFile::of($this->hookCommands, $this->allowedTools, $this->deniedTools),
             JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
         );
     }

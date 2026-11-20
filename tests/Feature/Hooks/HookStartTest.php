@@ -75,7 +75,10 @@ final class HookStartTest extends TestCase
             [['hooks' => [['type' => 'command', 'command' => 'journal-hook claude-code']]]],
             $settings['hooks']['Stop'],
         );
-        $this->assertSame(['deny' => HookProgram::ClaudeCode->nativeChildTools()], $settings['permissions']);
+        $this->assertSame(
+            ['allow' => ['mcp__journal__*'], 'deny' => HookProgram::ClaudeCode->nativeChildTools()],
+            $settings['permissions'],
+        );
     }
 
     public function test_each_start_gets_its_own_session_credential_and_stack(): void

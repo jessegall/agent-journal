@@ -57,6 +57,21 @@ enum HookProgram: string
         };
     }
 
+    /**
+     * The allow rules that let the program call the journal's own MCP tools without a native prompt: the literal
+     * journal server prefix and never a wildcard for another server. Codex approves its journal entry in its account
+     * configuration instead.
+     *
+     * @return list<string>
+     */
+    public function journalToolRules(): array
+    {
+        return match ($this) {
+            self::ClaudeCode => ['mcp__journal__*'],
+            self::Codex => [],
+        };
+    }
+
     public function programKey(): ProgramKey
     {
         return ProgramKey::from($this->value);
