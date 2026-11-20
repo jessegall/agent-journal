@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\States;
 
+use App\Hooks\Attributes\StackWide;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
@@ -21,6 +22,7 @@ final class WorkingOnTaskState extends AgentState
         return ! $this->task->needsWork();
     }
 
+    #[StackWide]
     public function onStop(StopRequested $input): Decision
     {
         return Decision::deny($this->task->unfinishedReason());

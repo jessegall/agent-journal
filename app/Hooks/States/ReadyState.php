@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\States;
 
 use App\Agents\Values\Operation;
+use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ContextCompacted;
@@ -43,11 +44,13 @@ class ReadyState extends AgentState
         return Decision::allow();
     }
 
+    #[StackWide]
     public function onFileEdit(FileEditRequested $input): Decision
     {
         return $this->decide($input->changes->operations());
     }
 
+    #[StackWide]
     public function onToolRequested(ToolRequested $input): Decision
     {
         return $this->decide([$input->operation]);

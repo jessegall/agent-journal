@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\States;
 
+use App\Hooks\Attributes\StackWide;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
@@ -25,6 +26,7 @@ final class AwaitingSkillsState extends AgentState
         return ! $this->publication->awaitsDelivery();
     }
 
+    #[StackWide]
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
         if (! $input->command->mayChangeFiles()) {
@@ -34,6 +36,7 @@ final class AwaitingSkillsState extends AgentState
         return Decision::deny($this->reason());
     }
 
+    #[StackWide]
     public function onFileEdit(FileEditRequested $input): Decision
     {
         return Decision::deny($this->reason());
@@ -42,7 +45,8 @@ final class AwaitingSkillsState extends AgentState
     private function reason(): string
     {
         return sprintf(
-            'Your journal skill set is %s, not delivered yet, so file changes wait. Reading still works: php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
+            'Your journal skill set is %s, not delivered yet, so file changes wait. Reading still works: '
+            .'php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
             $this->publication->value,
         );
     }

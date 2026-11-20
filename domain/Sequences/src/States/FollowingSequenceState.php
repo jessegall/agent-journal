@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\States;
 
+use App\Hooks\Attributes\StackWide;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\StopRequested;
@@ -22,11 +23,13 @@ final class FollowingSequenceState extends AgentState
         return ! $this->sequence->needsWork();
     }
 
+    #[StackWide]
     public function onCompaction(ContextCompacted $input): Decision
     {
         return Decision::addContext($this->sequence->currentInstruction());
     }
 
+    #[StackWide]
     public function onStop(StopRequested $input): Decision
     {
         return Decision::deny($this->sequence->currentInstruction());

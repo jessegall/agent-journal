@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\States;
 
+use App\Hooks\Attributes\StackWide;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\SessionStarted;
@@ -24,11 +25,13 @@ final class AnsweringMessageState extends AgentState
         return ! $this->claimStands;
     }
 
+    #[StackWide]
     public function onSessionStart(SessionStarted $input): Decision
     {
         return Decision::addContext($this->instruction());
     }
 
+    #[StackWide]
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
         if (! $input->command->mayChangeFiles()) {
@@ -38,11 +41,13 @@ final class AnsweringMessageState extends AgentState
         return Decision::deny($this->instruction());
     }
 
+    #[StackWide]
     public function onFileEdit(FileEditRequested $input): Decision
     {
         return Decision::deny($this->instruction());
     }
 
+    #[StackWide]
     public function onStop(StopRequested $input): Decision
     {
         return Decision::deny($this->instruction());

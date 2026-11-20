@@ -57,7 +57,7 @@ final class TransparentFramesTest extends TestCase
         $edit = $stack->answer($this->input('file edit'));
         $read = $stack->answer($this->readOnlyShellLine());
 
-        $this->assertSame(['message'], $this->visited($edit->steps));
+        $this->assertSame(['message', 'ready'], $this->visited($edit->steps));
         $this->assertSame(['message'], $this->visited($read->steps));
         $this->assertSame('message', $stack->top()->id);
         $this->assertSame(['ready', 'plan', 'task', 'message'], $read->stack->frameIds());

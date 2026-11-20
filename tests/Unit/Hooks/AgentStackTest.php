@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Agents\Enums\AccessRuleType;
+use App\Agents\Values\AccessDecision;
 use App\Communication\States\AnsweringMessageState;
 use App\Hooks\Contracts\HookInput;
+use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -18,13 +21,17 @@ use App\Hooks\Exceptions\BottomStateDelegated;
 use App\Hooks\Exceptions\InvalidHookAnswer;
 use App\Hooks\Exceptions\MissingBottomState;
 use App\Hooks\Exceptions\StateBelowTopPushed;
+use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\Frame;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\WalkStep;
+use App\Skills\Enums\PublicationState;
+use App\Skills\States\AwaitingSkillsState;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\States\FollowingSequenceState;
@@ -43,12 +50,15 @@ use Tests\TestCase;
 
 final class AgentStackTest extends TestCase
 {
-    public function test_the_task_and_message_example_answers_one_obligation_at_a_time(): void
+    public function test_live_task_and_message_obligations_both_answer_a_stop(): void
     {
         $stop = $this->stop();
         $both = $this->exampleStack(TaskWorkState::Active, messageWaits: true);
 
-        $this->assertSame(['message-95 deny keep'], $this->stepsOf($both->answer($stop)));
+        $this->assertSame(
+            ['message-95 deny keep', 'task-42 deny keep'],
+            $this->stepsOf($both->answer($stop)),
+        );
 
         $answered = $this->exampleStack(TaskWorkState::Active, messageWaits: false)->withoutExposedInactive();
 
@@ -92,8 +102,9 @@ final class AgentStackTest extends TestCase
         $answer = $stack->answer($this->stop());
 
         $this->assertSame(['ready', 'task-42', 'pushed-1'], $stack->frameIds());
-        $this->assertSame(['pushed-1 deny keep'], $this->stepsOf($answer));
-        $this->assertStringContainsString('step 3', $answer->decision->refusalReason());
+        $this->assertSame(['pushed-1 deny keep', 'task-42 deny keep'], $this->stepsOf($answer));
+        $this->assertStringContainsString('step 3', (string) $answer->steps[0]->denialReason);
+        $this->assertStringContainsString('Task 42 still needs work', $answer->decision->refusalReason());
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
@@ -105,10 +116,67 @@ final class AgentStackTest extends TestCase
 
         $answer = $stack->answer($input);
 
-        $this->assertSame(['top delegate keep'], $this->stepsOf($answer));
+        $expected = $input instanceof FileEditRequested || $input instanceof ToolRequested
+            ? ['top delegate keep', 'ready allow keep']
+            : ['top delegate keep'];
+        $this->assertSame($expected, $this->stepsOf($answer));
         $this->assertTrue($answer->isAllowed());
         $this->assertSame([1, 0], [$top->askedCount, $middle->askedCount]);
         $this->assertSame($input->methodName(), $answer->steps[0]->hookMethod);
+    }
+
+    public function test_file_policy_and_pending_skill_guards_are_enforced_under_a_matching_allow(): void
+    {
+        $allowed = $this->frame('guide', new ScriptedState(Decision::allow()));
+        $stack = $this->stack($this->ready(mayChangeFiles: false), $allowed);
+
+        $file = $stack->answer(HookInputs::all()['file edit']);
+
+        $this->assertStringContainsString('grants no changes to workspace files', $file->decision->refusalReason());
+        $this->assertSame(['guide allow keep', 'ready deny keep'], $this->stepsOf($file));
+
+        $pending = $this->frame('skills', new AwaitingSkillsState(PublicationState::Pending));
+        $guarded = $this->stack($this->ready(), $pending, $allowed);
+        $shell = $guarded->answer(HookInputs::all()['shell command']);
+        $edit = $guarded->answer(HookInputs::all()['file edit']);
+
+        $this->assertSame(['guide allow keep', 'skills deny keep'], $this->stepsOf($shell));
+        $this->assertSame(['guide allow keep', 'skills deny keep', 'ready allow keep'], $this->stepsOf($edit));
+    }
+
+    public function test_a_matching_tool_handler_cannot_hide_the_operation_policy(): void
+    {
+        $policy = $this->createStub(OperationPolicy::class);
+        $policy->method('assess')->willReturn(AccessDecision::refused(AccessRuleType::NotGranted, 'Tool refused.'));
+        $ready = new Frame(
+            'ready',
+            $this->reference('ready'),
+            new ReadyState($policy),
+            CarbonImmutable::now(),
+            bottom: true,
+        );
+        $stack = $this->stack($ready, $this->frame('guide', ScriptedState::delegating()));
+
+        $answer = $stack->answer(HookInputs::all()['tool requested']);
+
+        $this->assertSame('Tool refused.', $answer->decision->refusalReason());
+        $this->assertSame(['guide delegate keep', 'ready deny keep'], $this->stepsOf($answer));
+    }
+
+    public function test_hidden_message_and_sequence_guards_keep_their_observation_context(): void
+    {
+        $top = $this->frame('guide', new ScriptedState(Decision::allow()));
+        $work = new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running);
+        $sequence = new FollowingSequenceState($work);
+        $stack = $this->stack($this->ready(), $this->frame('sequence', $sequence), $this->answeringFrame(true), $top);
+
+        $session = $stack->answer(HookInputs::all()['session start']);
+        $compaction = $stack->answer(HookInputs::all()['compaction']);
+
+        $this->assertSame(['guide allow keep', 'message-95 delegate keep'], $this->stepsOf($session));
+        $this->assertStringContainsString('reply to it before other work', $session->context[0]);
+        $this->assertSame(['guide allow keep', 'sequence delegate keep'], $this->stepsOf($compaction));
+        $this->assertStringContainsString('Run the phase tests.', $compaction->context[0]);
     }
 
     public function test_no_state_below_the_answering_state_is_asked(): void
@@ -434,12 +502,12 @@ final class AgentStackTest extends TestCase
         return new AgentStack(array_values($frames), new InMemoryStateFactory());
     }
 
-    private function ready(): Frame
+    private function ready(bool $mayChangeFiles = true): Frame
     {
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedOperationPolicy()),
+            new ReadyState(new FixedOperationPolicy($mayChangeFiles)),
             CarbonImmutable::now(),
             bottom: true,
         );
