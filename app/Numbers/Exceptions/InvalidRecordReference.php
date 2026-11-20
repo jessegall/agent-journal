@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Numbers\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
+use App\Bus\Exceptions\Concerns\RendersRefusal;
 use InvalidArgumentException;
 
 /**
  * Text that does not name a record the way people name one, such as 'plan 0' or 'task 1e3'.
  */
-final class InvalidRecordReference extends InvalidArgumentException
+final class InvalidRecordReference extends InvalidArgumentException implements CodedRefusal
 {
+    use RendersRefusal;
+
     public static function number(string $text): self
     {
         return new self(
@@ -21,8 +26,23 @@ final class InvalidRecordReference extends InvalidArgumentException
         );
     }
 
+    public static function parentMissing(string $type, string $parent): self
+    {
+        return new self("A {$type} number is counted within its {$parent}: name the {$parent} too.");
+    }
+
     public static function unreadable(string $text): self
     {
         return new self("{$text} names no record: write its type and number, such as plan 12.");
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
+    }
+
+    protected function status(): int
+    {
+        return 422;
     }
 }

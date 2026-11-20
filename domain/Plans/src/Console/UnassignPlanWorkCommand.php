@@ -25,7 +25,8 @@ final class UnassignPlanWorkCommand extends Command
 
     protected $signature = 'plan:unassign-work
         {type : plans.plan or plans.phase}
-        {id}
+        {id : The plan or phase number, or its id}
+        {--plan= : The plan number a phase number is counted in}
         {--assignment= : The root assignment row id it has now}
         {--holder= : The root holder now as type:id}
         {--request-key= : Send again under the key a failed attempt printed}
@@ -39,6 +40,7 @@ final class UnassignPlanWorkCommand extends Command
             $call = UnassignPlanWorkCall::from([
                 'rootType' => (string) $this->argument('type'),
                 'rootId' => (string) $this->argument('id'),
+                'rootPlan' => $this->option('plan') === null ? null : (string) $this->option('plan'),
                 'assignmentId' => (string) $this->option('assignment'),
                 ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder'),
                 'requestKey' => $this->requestKey(),

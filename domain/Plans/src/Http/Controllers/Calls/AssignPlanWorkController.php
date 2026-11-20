@@ -6,6 +6,7 @@ namespace Domain\Plans\Http\Controllers\Calls;
 
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Bus\Contracts\CommandBus;
+use App\Records\Contracts\RecordResolver;
 use Domain\Plans\Calls\AssignPlanWorkCall;
 use Domain\Plans\Commands\AssignPlanWork;
 use Domain\Plans\Http\Data\PlanWorkResultData;
@@ -18,9 +19,10 @@ final readonly class AssignPlanWorkController
     public function __invoke(
         AssignPlanWorkCall $call,
         CommandBus $commands,
+        RecordResolver $records,
         AssigneeResolver $assignees,
     ): PlanWorkResultData {
-        $root = $call->rootRecord();
+        $root = $call->rootRecord($records);
         $assignmentResult = $commands->run(new AssignPlanWork($root, $call->recipient()));
 
         return PlanWorkResultData::of(

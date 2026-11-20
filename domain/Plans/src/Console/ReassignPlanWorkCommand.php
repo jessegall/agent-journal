@@ -25,7 +25,8 @@ final class ReassignPlanWorkCommand extends Command
 
     protected $signature = 'plan:reassign-work
         {type : plans.plan or plans.phase}
-        {id}
+        {id : The plan or phase number, or its id}
+        {--plan= : The plan number a phase number is counted in}
         {--assignment= : The root assignment row id it has now}
         {--holder= : The root holder now as type:id}
         {--to= : The new holder as type:id}
@@ -40,6 +41,7 @@ final class ReassignPlanWorkCommand extends Command
             $call = ReassignPlanWorkCall::from([
                 'rootType' => (string) $this->argument('type'),
                 'rootId' => (string) $this->argument('id'),
+                'rootPlan' => $this->option('plan') === null ? null : (string) $this->option('plan'),
                 'assignmentId' => (string) $this->option('assignment'),
                 ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder'),
                 ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient'),

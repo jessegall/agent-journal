@@ -10,6 +10,7 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
@@ -54,6 +55,20 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     protected function casts(): array
     {
         return ['number' => 'integer', 'revision' => 'integer'];
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The phase with this number in the plan, counted within the plan; none is refused as unavailable.
+     *
+     * @throws RecordUnavailable
+     */
+    public static function numberedIn(string $planId, int $number): self
+    {
+        return self::query()->where('plan_id', $planId)->where('number', $number)->firstOr(
+            fn () => throw RecordUnavailable::numbered('phase', $number),
+        );
     }
 
     // ----------[ Mutations ]----------

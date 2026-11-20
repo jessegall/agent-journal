@@ -17,6 +17,7 @@ use Domain\Plans\Calls\Concerns\NamesPlanWorkRoot;
 use Domain\Plans\Http\Data\PlanWorkResultData;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\In;
+use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
@@ -39,7 +40,7 @@ final class AssignPlanWorkCall extends Data implements JournalCall
     public function __construct(
         #[In('plans.plan', 'plans.phase')]
         public string $rootType,
-        #[Ulid]
+        #[Max(40)]
         public string $rootId,
         public ActorType $recipientType,
         #[Ulid]
@@ -47,5 +48,7 @@ final class AssignPlanWorkCall extends Data implements JournalCall
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
+        #[Max(20)]
+        public string|null $rootPlan = null,
     ) {}
 }

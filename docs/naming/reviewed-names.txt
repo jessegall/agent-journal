@@ -11475,6 +11475,9 @@ method	InvalidRecordIds::notUlids()
 method	InvalidRecordIds::repeated()
 method	InvalidRecordIds::tooMany()
 method	InvalidRecordReference::number()
+method	InvalidRecordReference::parentMissing()
+method	InvalidRecordReference::refusalCode()
+method	InvalidRecordReference::status()
 method	InvalidRecordReference::unreadable()
 method	InvalidScript::__construct()
 method	InvalidScript::withDiagnostics()
@@ -13085,6 +13088,7 @@ method	Phase::casts()
 method	Phase::details()
 method	Phase::holdingTask()
 method	Phase::numberHolder()
+method	Phase::numberedIn()
 method	Phase::plan()
 method	Phase::taskIds()
 method	Phase::withTasks()
@@ -21298,6 +21302,7 @@ parameter	$room
 parameter	$root
 parameter	$rootId
 parameter	$rootMigrationFolder
+parameter	$rootPlan
 parameter	$rootReference
 parameter	$rootTitle
 parameter	$rootType
@@ -22382,6 +22387,7 @@ property	AssignPlanWorkCall::$recipientId
 property	AssignPlanWorkCall::$recipientType
 property	AssignPlanWorkCall::$requestKey
 property	AssignPlanWorkCall::$rootId
+property	AssignPlanWorkCall::$rootPlan
 property	AssignPlanWorkCall::$rootType
 property	AssignPlanWorkCommand::$description
 property	AssignPlanWorkCommand::$signature
@@ -26490,6 +26496,7 @@ property	ReassignPlanWorkCall::$recipientId
 property	ReassignPlanWorkCall::$recipientType
 property	ReassignPlanWorkCall::$requestKey
 property	ReassignPlanWorkCall::$rootId
+property	ReassignPlanWorkCall::$rootPlan
 property	ReassignPlanWorkCall::$rootType
 property	ReassignPlanWorkCommand::$description
 property	ReassignPlanWorkCommand::$signature
@@ -29378,6 +29385,7 @@ property	UnassignPlanWorkCall::$holderId
 property	UnassignPlanWorkCall::$holderType
 property	UnassignPlanWorkCall::$requestKey
 property	UnassignPlanWorkCall::$rootId
+property	UnassignPlanWorkCall::$rootPlan
 property	UnassignPlanWorkCall::$rootType
 property	UnassignPlanWorkCommand::$description
 property	UnassignPlanWorkCommand::$signature

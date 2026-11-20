@@ -25,7 +25,8 @@ final class AssignPlanWorkCommand extends Command
 
     protected $signature = 'plan:assign-work
         {type : plans.plan or plans.phase}
-        {id}
+        {id : The plan or phase number, or its id}
+        {--plan= : The plan number a phase number is counted in}
         {--to= : The new holder as type:id}
         {--request-key= : Send again under the key a failed attempt printed}
         {--json}';
@@ -38,6 +39,7 @@ final class AssignPlanWorkCommand extends Command
             $call = AssignPlanWorkCall::from([
                 'rootType' => (string) $this->argument('type'),
                 'rootId' => (string) $this->argument('id'),
+                'rootPlan' => $this->option('plan') === null ? null : (string) $this->option('plan'),
                 ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient'),
                 'requestKey' => $this->requestKey(),
             ]);

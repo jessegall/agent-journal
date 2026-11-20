@@ -137,6 +137,27 @@ final class PlanWorkCommandsTest extends TestCase
         $this->assertSame(0, AssignmentRecord::query()->withoutGlobalScopes()->count());
     }
 
+    public function test_a_plan_and_a_phase_are_named_by_number_and_a_bad_number_is_refused(): void
+    {
+        $assign = fn (array $root) => $this->signed($this->main, '/agent/plans/work/assign', [
+            ...$root,
+            'recipient_type' => 'agent',
+            'recipient_id' => $this->helper->agent->id,
+            'request_key' => (string) Str::ulid(),
+        ]);
+
+        $assign(['root_type' => Plan::LINK_TYPE, 'root_id' => (string) $this->plan->number])->assertOk();
+        $assign(['root_type' => 'plans.phase', 'root_id' => '1', 'root_plan' => (string) $this->plan->number])
+            ->assertOk();
+        $assign(['root_type' => 'plans.phase', 'root_id' => '1'])->assertStatus(422);
+
+        foreach (['0', '-1', '1e3', '9223372036854775808'] as $number) {
+            $assign(['root_type' => Plan::LINK_TYPE, 'root_id' => $number])
+                ->assertStatus(422)
+                ->assertSee($number);
+        }
+    }
+
     public function test_the_commands_say_they_covered_the_whole_plan(): void
     {
         $this->runCommandsAs($this->main);
