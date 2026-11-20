@@ -29,11 +29,21 @@ final readonly class PlaceRoots
     }
 
     /**
+     * The places whose root folder exists now.
+     *
+     * @return list<Place>
+     */
+    public function available(): array
+    {
+        return array_values(array_filter(Place::cases(), fn (Place $place) => $this->existingRoot($place) !== false));
+    }
+
+    /**
      * The place whose root lies closest above a real path, so a private place inside the project is the one found.
      */
     public function innermostPlaceOf(string $real): Place
     {
-        $holders = array_filter(Place::cases(), fn (Place $place) => $this->isWithin($real, $place));
+        $holders = array_filter($this->available(), fn (Place $place) => $this->isWithin($real, $place));
 
         if ($holders === []) {
             throw FileOutsidePlaces::given();
@@ -64,11 +74,14 @@ final readonly class PlaceRoots
         return $folder.'/'.basename($path);
     }
 
-    private function isWithin(string $real, Place $place): bool
+    /**
+     * Whether a real path is the place's root or lies beneath it.
+     */
+    public function isWithin(string $real, Place $place): bool
     {
-        $root = $this->existingRoot($place);
+        $root = $this->root($place);
 
-        return $root !== false && ($real === $root || str_starts_with($real, rtrim($root, '/').'/'));
+        return $real === $root || str_starts_with($real, rtrim($root, '/').'/');
     }
 
     private function existingRoot(Place $place): string|false

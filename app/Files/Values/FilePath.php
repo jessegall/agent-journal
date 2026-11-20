@@ -57,4 +57,12 @@ final readonly class FilePath
     {
         return self::in($this->place, $this->relative === '' ? $name : "{$this->relative}/{$name}");
     }
+
+    /**
+     * The path as a message names it: the relative path and its place, never the folder on the host.
+     */
+    public function label(): string
+    {
+        return "{$this->relative} in the place {$this->place->value}";
+    }
 }
