@@ -2012,6 +2012,38 @@ def test_a_worker_past_its_time_limit_is_stopped_and_the_end_of_its_run_kept(app
     assert ended.state == WorkerState.UNFINISHED and "stopped after" in ended.run_end and "half done" in ended.run_end, "stopped at its limit, it keeps what it printed as the end of its run, its task still held"
 
 
+def test_a_run_launched_while_its_dispatch_is_marked_keeps_its_process_and_start(app: App, monkeypatch):
+    from journal.features.workers.support.worker_launch import WorkerLaunch
+    from journal.models.worker import Worker
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    hook(app, "SessionStart")
+    dispatched(app.console(), ["Lady Lovelace", "say hello", "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    workers, began = app.container.get(Workers), timing.time()
+    def racing(worker: Worker, time: float) -> Worker:
+        workers.save(workers.find(worker.row_id).running_as(4242, began), Actor.system())
+        return Worker.dispatched(worker, time)
+    app.container.get(WorkerLaunch).launched(workers.find(1), Actor.system(), move=racing)
+    worker = workers.find(1)
+    assert (worker.pid, worker.began) == (4242, began) and worker.moves.latest(("dispatched",)) == "dispatched", "the run's thread records its process while the dispatch is marked: the mark writes only what it changes, so the run keeps its start and is not stopped at once as past its time limit"
+
+
+def test_a_run_whose_row_lost_its_start_is_not_stopped_as_past_its_time_limit(app: App, monkeypatch):
+    from journal.support.actor import Actor as A
+    hook(app, "SessionStart")
+    dispatched(app.console(), ["Lady Lovelace", "say hello", "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    user_set(app, WorkersOptions.TIMEOUT.key, 120)
+    workers, runner = app.container.get(Workers), app.container.get(WorkerRunner)
+    assert runner.remaining_seconds(workers.find(1)) is None and runner.start_remaining_seconds(workers.find(1)) is None, "a worker not launched yet has no time limit running"
+    recorded = WorkerRunner.session_recorded
+    def lost(self, worker, actor):
+        workers.save(workers.find(worker.row_id).with_(pid=0, began=0.0), A.system())
+        return recorded(self, worker, actor)
+    monkeypatch.setattr(WorkerRunner, "session_recorded", lost)
+    started_run(runner, workers, workers.find(1), ["sh", "-c", "sleep 1; echo done"], A.agent("s1"))
+    ended = workers.find(1)
+    assert "stopped after" not in ended.run_end and ended.run_end.endswith("done"), "a run whose row was written back without its start runs on to its own end, timed from its launch, not stopped at once"
+
+
 HOOK_LINE = json.dumps({"type": "system", "subtype": "hook_response", "session_id": "stalled-session"})
 
 

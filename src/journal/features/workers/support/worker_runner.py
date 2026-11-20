@@ -70,7 +70,8 @@ class WorkerRunner:
     def start(self, worker: Worker, actor: Actor) -> None:
         provider, token = self.providers.lookup(worker.provider), AgentToken.random()
         provider.folder_trusted(self.config.root, self.branch.place(worker))
-        worker = self.workers.save(worker.with_(session=provider.worker_session(worker.resume), token_hash=token.digest()), actor)
+        session, digest = provider.worker_session(worker.resume), token.digest()
+        worker = self.workers.rewritten(worker, actor, lambda current: current.with_(session=session, token_hash=digest))
         command = [*provider.worker_command(self.instructed(worker), worker.model, worker.resume, worker.session), *provider.worker_settings_flags(self.hook_settings(worker))]
         threading.Thread(target=self.run_scoped, args=(worker, command, actor, token), name=f"worker-{worker.id}", daemon=True).start()
 
@@ -100,7 +101,8 @@ class WorkerRunner:
         except OSError as error:
             self.reports.file(worker, f"could not start: {error}", actor)
             return
-        worker = self.workers.save(self.workers.find(worker.row_id).running_as(process.pid, self.time_source.seconds()), actor)
+        began = self.time_source.seconds()
+        worker = self.workers.rewritten(worker, actor, lambda current: current.running_as(process.pid, began))
         self.supervisor.group(worker.environment_id, process.pid)
         self.ended(worker, self.waited(worker, process, actor), actor)
 
@@ -124,11 +126,13 @@ class WorkerRunner:
         return {**self.setup.variables(self.environments.find(worker.environment_id).name, Actor.worker(worker.id), token), LOCKOUT_VARIABLE: str(self.settings.integer(LOCKOUT_OPTION))}
 
     def waited(self, worker: Worker, process: subprocess.Popen, actor: Actor) -> int:
+        began = worker.began
         while True:
             try:
                 return process.wait(timeout=self.wait_step(worker))
             except subprocess.TimeoutExpired:
-                worker = self.workers.find(worker.row_id)
+                current = self.workers.find(worker.row_id)
+                worker = current if current.began > 0 else current.with_(pid=process.pid, began=began)
                 if self.remaining_seconds(worker) == 0:
                     return self.killed(process, TIMEOUT_STATUS)
                 if self.is_start_stalled(worker):
@@ -152,7 +156,7 @@ class WorkerRunner:
 
     def start_remaining_seconds(self, worker: Worker) -> float | None:
         limit = self.start_minutes() * 60
-        return max(0.0, limit - (self.time_source.seconds() - worker.began)) if limit else None
+        return max(0.0, limit - (self.time_source.seconds() - worker.began)) if limit and worker.began > 0 else None
 
     def is_start_stalled(self, worker: Worker) -> bool:
         run = (worker.pid, worker.began)
@@ -254,7 +258,7 @@ class WorkerRunner:
 
     def remaining_seconds(self, worker: Worker) -> float | None:
         limit = self.minutes() * 60
-        return max(0.0, limit - (self.time_source.seconds() - worker.began)) if limit else None
+        return max(0.0, limit - (self.time_source.seconds() - worker.began)) if limit and worker.began > 0 else None
 
     def minutes(self) -> float:
         return self.settings.decimal(WorkersOptions.TIMEOUT)
