@@ -9,7 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use App\Records\Support\RecordIdentity;
+use App\Records\Models\Support\HasWorkColumns;
 use App\Supervision\Enums\RepairRequestState;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -50,6 +50,7 @@ final class RepairRequest extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use HasWorkColumns;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -105,11 +106,6 @@ final class RepairRequest extends Model implements ReadableModel
             ->where('work_id', $this->work_id)
             ->whereKeyNot($this->id)
             ->count();
-    }
-
-    public function work(): RecordIdentity
-    {
-        return new RecordIdentity($this->work_type, $this->work_id);
     }
 
     public function worker(): ActorIdentity

@@ -108,7 +108,7 @@ final class EvidencePermit extends Model implements ReadableModel
         CommandRule $proposed,
         PermitLimits $limits,
     ): self {
-        $permit = self::filled($request->project_key, $line, $request->opener(), $limits);
+        $permit = self::filled($request->project_key, $line, $request->actor(), $limits);
         $permit->command_request_id = $request->id;
         $permit->candidate_rules = [$proposed];
         $permit->save();

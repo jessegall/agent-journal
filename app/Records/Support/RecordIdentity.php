@@ -35,6 +35,18 @@ final readonly class RecordIdentity
     /**
      * @throws InvalidRecordIdentity
      */
+    /**
+     * The records whose id is among the found ones, in their own order.
+     *
+     * @param  list<self>  $records
+     * @param  array<mixed>  $found  the ids a query found, as it plucked them
+     * @return list<self>
+     */
+    public static function among(array $records, array $found): array
+    {
+        return array_values(array_filter($records, fn (self $record) => in_array($record->id, $found, true)));
+    }
+
     public static function assertKnownType(string $type): void
     {
         if (preg_match(self::ALIAS_PATTERN, $type) !== 1) {

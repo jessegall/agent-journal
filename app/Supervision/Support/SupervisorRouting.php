@@ -98,7 +98,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
     public function routeOf(Ask $ask): SupervisorRoute
     {
         return $ask->route_profile === null
-            ? $this->routeFor($ask->requester(), $ask->typeKey())
+            ? $this->routeFor($ask->actor(), $ask->typeKey())
             : $this->routeForProfile(ProfileKey::from($ask->route_profile), $ask->typeKey());
     }
 

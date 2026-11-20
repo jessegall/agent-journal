@@ -135,7 +135,7 @@ final class MenuEntry extends Model implements ReadableModel
      */
     public static function lockForPath(NavigationRequest $navigation, array $steps): self|null
     {
-        return self::query()->ownedBy($navigation->owner())->current()->forProgram($navigation->program)
+        return self::query()->ownedBy($navigation->actor())->current()->forProgram($navigation->program)
             ->matching($steps[0]->fingerprint, $navigation->goal())
             ->whereRaw('steps::jsonb = ?::jsonb', [json_encode(self::storedSteps($steps), JSON_THROW_ON_ERROR)])
             ->lockForUpdate()

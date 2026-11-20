@@ -99,7 +99,7 @@ final readonly class SignInCompletion
     {
         try {
             $accesses = $this->authorizer->filterActions(
-                $attempt->starter(),
+                $attempt->actor(),
                 AccountPolicy::class,
                 Account::class,
                 [AccessType::Create],

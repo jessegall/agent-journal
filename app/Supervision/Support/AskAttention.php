@@ -25,14 +25,14 @@ final readonly class AskAttention
 
     public function retainHop(AskHop $hop): void
     {
-        $holder = $hop->holder();
+        $holder = $hop->actor();
         $this->offerNext($holder);
         $hop->recordWake($this->wake($holder, AttentionOrigin::ask($hop->ask_id, $hop->version)));
     }
 
     public function retainReply(Ask $ask, AskHop $hop, string $body): void
     {
-        $hop->answer($body, $this->wake($ask->requester(), AttentionOrigin::askReply($ask->id)));
+        $hop->answer($body, $this->wake($ask->actor(), AttentionOrigin::askReply($ask->id)));
     }
 
     public function offerNext(ActorIdentity $holder): void
@@ -64,7 +64,7 @@ final readonly class AskAttention
     {
         $ask = Ask::forAttention($hop->ask_id);
         if ($hop->attention === AskHop::PENDING_DELIVERY) {
-            $requester = $ask->requester();
+            $requester = $ask->actor();
             $hop->recordAttention($this->wake($requester, AttentionOrigin::askReply($ask->id)));
         }
 
@@ -72,7 +72,7 @@ final readonly class AskAttention
             return;
         }
 
-        $holder = $hop->holder();
+        $holder = $hop->actor();
         $this->offerNext($holder);
 
         if ($hop->wake === AskHop::PENDING_DELIVERY) {

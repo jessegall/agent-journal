@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Casts\NavigationScreenCast;
 use App\Agents\Enums\NavigationCompletion;
@@ -91,6 +91,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
+    use HasActorColumns;
     use HasUlids;
     use Linkable;
 
@@ -203,14 +204,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     }
 
     // ----------[ Answers ]----------
-
-    /**
-     * The user the request belongs to.
-     */
-    public function owner(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
-    }
 
     /**
      * The proven path was saved as the menu entry.

@@ -195,6 +195,14 @@ final class HelperJob extends Model implements Assignable, ReadableModel
 
     // ----------[ Answers ]----------
 
+    /**
+     * The actor whose helper this job is, the parent that started it.
+     */
+    public function actor(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+    }
+
     public function launch(): JobLaunch
     {
         return new JobLaunch(
@@ -262,14 +270,6 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         }
 
         return implode(PHP_EOL, $lines);
-    }
-
-    /**
-     * The parent the job belongs to.
-     */
-    public function parent(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
     public function wasDispatchedAs(string $payloadDigest): bool

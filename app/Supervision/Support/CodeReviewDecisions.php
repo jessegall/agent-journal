@@ -50,7 +50,7 @@ final readonly class CodeReviewDecisions
         $this->attention->retainReply($ask, $hop, "Review {$decision->value}: {$findings}");
         $this->assignments->releaseForJournal($ask->assignmentIdentity());
         $ask->close();
-        $this->attention->finishAnswering($hop->holder());
+        $this->attention->finishAnswering($hop->actor());
 
         if ($decision === ReviewDecisionType::Returned) {
             $review->settle(CodeReviewState::Returned);

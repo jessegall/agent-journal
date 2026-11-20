@@ -349,7 +349,7 @@ final class AgentRuntime extends Model implements ReadableModel
      */
     public function observationAge(CarbonImmutable $now): int|null
     {
-        return $this->last_observed_at === null ? null : (int) $this->last_observed_at->diffInSeconds($now, true);
+        return self::secondsSince($this->last_observed_at, $now);
     }
 
     /**
@@ -357,10 +357,7 @@ final class AgentRuntime extends Model implements ReadableModel
      */
     public function status(CarbonImmutable $now): RuntimeStatus
     {
-        $settingsAge = $this->settings_observed_at === null ? null : (int) $this->settings_observed_at->diffInSeconds(
-            $now,
-            true,
-        );
+        $settingsAge = self::secondsSince($this->settings_observed_at, $now);
 
         return RuntimeStatus::from([
             'runtimeId' => $this->id,
@@ -468,6 +465,14 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     // ----------[ Internals ]----------
+
+    /**
+     * Whole seconds from a moment to now, or null for a moment that never came.
+     */
+    private static function secondsSince(CarbonImmutable|null $moment, CarbonImmutable $now): int|null
+    {
+        return $moment === null ? null : (int) $moment->diffInSeconds($now, true);
+    }
 
     /**
      * The live terminal views of any viewer, which is what a runtime's watcher count counts.

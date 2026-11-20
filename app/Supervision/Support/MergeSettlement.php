@@ -45,7 +45,7 @@ final readonly class MergeSettlement
         if ($attempt->state === MergeAttemptState::Merged || $attempt->refusal?->needsRepair() === true) {
             $this->assignments->releaseForJournal($ask->assignmentIdentity());
             $ask->close();
-            $this->attention->finishAnswering($hop->holder());
+            $this->attention->finishAnswering($hop->actor());
         }
 
         if ($attempt->state === MergeAttemptState::Merged) {
@@ -60,7 +60,7 @@ final readonly class MergeSettlement
             $this->repairs->send(
                 "merge:{$attempt->id}",
                 $review,
-                $attempt->admittedActor(),
+                $attempt->actor(),
                 (string) $attempt->evidence,
                 $attempt->target_before,
             );

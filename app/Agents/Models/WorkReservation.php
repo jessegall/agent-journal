@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Actors\Enums\ActorType;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -38,6 +39,7 @@ use Illuminate\Support\Carbon;
 final class WorkReservation extends Model implements ReadableModel
 {
     use BoundedReads;
+    use HasActorColumns;
     use HasUlids;
     use Linkable;
 
@@ -146,14 +148,6 @@ final class WorkReservation extends Model implements ReadableModel
     }
 
     // ----------[ Answers ]----------
-
-    /**
-     * The actor whose certified work is reserved.
-     */
-    public function actor(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
-    }
 
     // ----------[ Relations ]----------
 

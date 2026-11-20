@@ -328,7 +328,7 @@ final class NavigationRaiseRouteTest extends TestCase
         $source = $this->librarySource($build);
         $steps = [new MenuStep(self::FINGERPRINT, 'GPT-6', null, null)];
 
-        return MenuEntry::proven($source->owner(), $source, $steps, NavigationCompletion::Goal, 'GPT-6');
+        return MenuEntry::proven($source->actor(), $source, $steps, NavigationCompletion::Goal, 'GPT-6');
     }
 
     private function librarySource(string $build): NavigationRequest
@@ -358,7 +358,7 @@ final class NavigationRaiseRouteTest extends TestCase
     {
         for ($number = 1; $number <= 20; $number++) {
             $steps = [new MenuStep(self::FINGERPRINT, "Path {$number}", null, null)];
-            $entry = MenuEntry::proven($source->owner(), $source, $steps, NavigationCompletion::Goal, 'GPT-6');
+            $entry = MenuEntry::proven($source->actor(), $source, $steps, NavigationCompletion::Goal, 'GPT-6');
             foreach ($staleBuilds as $build) {
                 $entry->markStaleOn($build, 'label-missing', []);
             }

@@ -15,6 +15,7 @@ use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Models\Support\AccountOwnerScope;
+use App\Profiles\Models\Support\KeepsCleanupTries;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\CleanupProgress;
 use App\Profiles\Values\SignInIdentity;
@@ -67,6 +68,7 @@ use Illuminate\Support\Str;
 final class Account extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
+    use KeepsCleanupTries;
 
     public const string LINK_TYPE = 'core.account';
 
@@ -357,15 +359,13 @@ final class Account extends Model implements ReadableModel
             return;
         }
 
-        $this->live_writer_attempt_id = null;
-
         if ($this->state === AccountState::SignedIn) {
             $this->check_requested_generation = $this->sign_in_generation;
         } else {
             $this->maintenance = false;
         }
 
-        $this->save();
+        $this->releaseWriter($attempt);
     }
 
     /**
@@ -512,8 +512,7 @@ final class Account extends Model implements ReadableModel
             return;
         }
 
-        $this->cleanup_tries = 0;
-        $this->save();
+        $this->resetCleanupTries();
     }
 
     /**
@@ -535,17 +534,12 @@ final class Account extends Model implements ReadableModel
             return false;
         }
 
-        $this->store_removed = $this->store_removed || $progress->isStoreRemoved;
-
-        if (! $this->store_removed || ! $progress->isDirectoryRemoved) {
-            $this->cleanup_tries++;
-            $this->cleanup_problem = CleanupProblem::of($this->store_removed);
+        if (! $this->recordCleanupTry($progress)) {
             $this->save();
 
             return false;
         }
 
-        $this->cleanup_problem = null;
         $this->finishRemoval();
 
         return true;
@@ -652,7 +646,7 @@ final class Account extends Model implements ReadableModel
      */
     public function awaitsCleanupRetry(): bool
     {
-        return $this->state === AccountState::Removing && $this->cleanup_tries >= CleanupProgress::MOST_TRIES;
+        return $this->state === AccountState::Removing && $this->hasUsedEveryCleanupTry();
     }
 
     public function isBeingRemoved(): bool

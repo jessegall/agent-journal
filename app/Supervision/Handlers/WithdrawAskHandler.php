@@ -24,7 +24,7 @@ final readonly class WithdrawAskHandler implements CommandHandler
         $ask = $this->asks->lock($command->ask);
         $actor = ActorIdentity::of($command->dispatchedBy());
 
-        if (! $ask->open || ! $ask->requester()->isSameAs($actor)) {
+        if (! $ask->open || ! $ask->actor()->isSameAs($actor)) {
             throw AskRefused::cannotWithdraw();
         }
 

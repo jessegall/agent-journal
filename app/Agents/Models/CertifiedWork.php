@@ -8,6 +8,7 @@ use App\Agents\Exceptions\HelperWorkUncertified;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Records\Models\Support\HasWorkColumns;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -34,6 +35,7 @@ final class CertifiedWork extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use HasWorkColumns;
     use Linkable;
 
     // ----------[ Queries ]----------
@@ -71,14 +73,6 @@ final class CertifiedWork extends Model implements ReadableModel
     }
 
     // ----------[ Answers ]----------
-
-    /**
-     * The work the certificate is for.
-     */
-    public function work(): RecordIdentity
-    {
-        return new RecordIdentity($this->work_type, $this->work_id);
-    }
 
     /**
      * The parent repository's ref the commits are imported under: one per certificate, never a branch.

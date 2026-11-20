@@ -31,7 +31,7 @@ final readonly class WorkChainEnd
             $this->attention->retainReply($ask, $hop, "The work's chain ended: {$ending->value}.");
             $this->assignments->releaseForJournal($ask->assignmentIdentity());
             $ask->close();
-            $this->attention->finishAnswering($hop->holder());
+            $this->attention->finishAnswering($hop->actor());
         }
 
         WorkReservation::lockedFor($review->certificate)->release();

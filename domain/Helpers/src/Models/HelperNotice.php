@@ -56,7 +56,7 @@ final class HelperNotice extends Model implements ReadableModel
         $notice->helper_job_id = $job->id;
         $notice->job_state = $job->state;
         $notice->text = $text;
-        $notice->belongTo($job->parent());
+        $notice->belongTo($job->actor());
         $notice->save();
 
         return $notice;

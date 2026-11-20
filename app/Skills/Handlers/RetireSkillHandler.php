@@ -24,7 +24,7 @@ final readonly class RetireSkillHandler implements CommandHandler
             "retire|{$skillId}|{$command->expectedRevision}",
         ), function () use ($command, $skillId) {
             $skill = Skill::lockVisible($skillId, SkillContextResolver::ENVIRONMENT);
-            $skill->checkWritableAt($command->expectedRevision);
+            $skill->assertWritableAt($command->expectedRevision);
 
             return $skill->retireBy($this->writes->author());
         });

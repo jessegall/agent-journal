@@ -66,7 +66,7 @@ final readonly class EvidenceRuns
      */
     public function issueForRequest(CommandRequest $request, CommandRule $proposed): EvidencePermit
     {
-        $permitted = $this->permitted($request->source_line, $request->working_folder, $request->opener(), [$proposed]);
+        $permitted = $this->permitted($request->source_line, $request->working_folder, $request->actor(), [$proposed]);
 
         return EvidencePermit::forRequest($request, $permitted, $proposed, PermitLimits::forSample());
     }

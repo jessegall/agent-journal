@@ -284,11 +284,13 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
      */
     public function firstRead(): MessageReader|Optional
     {
-        if ($this->read_at === null || $this->read_by_type === null || $this->read_by_id === null) {
+        $reader = $this->firstReader();
+
+        if ($reader === null || $this->read_at === null) {
             return Optional::create();
         }
 
-        return new MessageReader($this->read_by_type, $this->read_by_id, $this->read_at->toIso8601String());
+        return new MessageReader($reader->type->value, $reader->id, $this->read_at->toIso8601String());
     }
 
     public function isWrittenBy(ActorIdentity $actor): bool

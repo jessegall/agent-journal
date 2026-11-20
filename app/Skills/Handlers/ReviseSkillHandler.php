@@ -24,7 +24,7 @@ final readonly class ReviseSkillHandler implements CommandHandler
             "{$skillId}|{$command->expectedRevision}|".$command->draft->digest(),
         ), function () use ($command, $skillId) {
             $skill = Skill::lockVisible($skillId, SkillContextResolver::ENVIRONMENT);
-            $skill->checkWritableAt($command->expectedRevision);
+            $skill->assertWritableAt($command->expectedRevision);
             $draft = $command->draft;
 
             return $skill->appendRevision(

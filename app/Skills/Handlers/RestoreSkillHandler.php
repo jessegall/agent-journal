@@ -25,7 +25,7 @@ final readonly class RestoreSkillHandler implements CommandHandler
             "{$skillId}|{$command->revision}|{$command->expectedRevision}",
         ), function () use ($command, $skillId) {
             $skill = Skill::lockVisible($skillId, SkillContextResolver::ENVIRONMENT);
-            $skill->checkWritableAt($command->expectedRevision);
+            $skill->assertWritableAt($command->expectedRevision);
             $earlier = SkillRevision::numbered($skill, $command->revision);
 
             return $skill->restoreFrom(

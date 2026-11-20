@@ -149,7 +149,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
         $ids = array_map(fn (RecordIdentity $record) => $record->id, $records);
         $found = $this->asks->visible()->whereKey($ids)->readLimit(count($ids))->pluck('id')->all();
 
-        return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $found, true)));
+        return RecordIdentity::among($records, $found);
     }
 
     public function finishedRecords(array $records): array
@@ -189,7 +189,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
     {
         $actor = ActorIdentity::of($this->actors->actor());
 
-        if (! $ask->requester()->isSameAs($actor) && ! $this->owner->resolve()->endsAt($actor)) {
+        if (! $ask->actor()->isSameAs($actor) && ! $this->owner->resolve()->endsAt($actor)) {
             throw AskRefused::routeChanged();
         }
     }

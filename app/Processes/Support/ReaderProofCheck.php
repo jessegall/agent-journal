@@ -39,7 +39,7 @@ final readonly class ReaderProofCheck
         array $runIds,
     ): array {
         $samples = EvidencePermit::query()->sampling($request)->readLimit(100)->pluck('process_run_id')->all();
-        $runs = ProcessRun::query()->ownedBy($request->opener())->whereKey($runIds)->readLimit(100)->get()->keyBy('id');
+        $runs = ProcessRun::query()->ownedBy($request->actor())->whereKey($runIds)->readLimit(100)->get()->keyBy('id');
         $failures = [];
         $proven = [];
         foreach ($runIds as $runId) {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Scripts\Models;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Values\WorkReference;
 use App\Links\Support\Linkable;
@@ -67,6 +67,7 @@ final class ProfileRun extends Model implements ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
+    use HasActorColumns;
     use HasUlids;
     use Linkable;
 
@@ -230,14 +231,6 @@ final class ProfileRun extends Model implements ReadableModel
         $result = $this->results()->where('step_reference', $stepReference)->first();
 
         return $result === null ? None::create() : new Some($result->outcome());
-    }
-
-    /**
-     * The actor whose stop the run prepares.
-     */
-    public function actor(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
     // ----------[ Relations ]----------

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Models;
 
 use App\Actors\Enums\ActorType;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountState;
@@ -14,6 +15,7 @@ use App\Profiles\Enums\SignInState;
 use App\Profiles\Enums\SignInType;
 use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Models\Support\AccountOwnerScope;
+use App\Profiles\Models\Support\KeepsCleanupTries;
 use App\Profiles\Values\CleanupProgress;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
@@ -60,6 +62,8 @@ use Illuminate\Support\Str;
 final class SignInAttempt extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
+    use HasActorColumns;
+    use KeepsCleanupTries;
 
     public const string LINK_TYPE = 'core.sign-in-attempt';
 
@@ -434,15 +438,9 @@ final class SignInAttempt extends Model implements ReadableModel
             return false;
         }
 
-        $this->store_removed = $this->store_removed || $progress->isStoreRemoved;
-
-        if ($this->store_removed && $progress->isDirectoryRemoved) {
+        if ($this->recordCleanupTry($progress)) {
             $this->cleanup_pending = false;
-            $this->cleanup_problem = null;
             $this->directory = null;
-        } else {
-            $this->cleanup_tries++;
-            $this->cleanup_problem = CleanupProblem::of($this->store_removed);
         }
 
         $this->save();
@@ -460,8 +458,7 @@ final class SignInAttempt extends Model implements ReadableModel
             return;
         }
 
-        $this->cleanup_tries = 0;
-        $this->save();
+        $this->resetCleanupTries();
     }
 
     /**
@@ -474,14 +471,6 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     // ----------[ Answers ]----------
-
-    /**
-     * The actor that started the attempt, whose current authority its publication needs.
-     */
-    public function starter(): ActorIdentity
-    {
-        return new ActorIdentity($this->actor_type, $this->actor_id);
-    }
 
     /**
      * Whether the completion itself already ended the attempt in this generation, so a repeated report of the same
@@ -524,7 +513,7 @@ final class SignInAttempt extends Model implements ReadableModel
 
     public function awaitsCleanupRetry(): bool
     {
-        return $this->cleanup_pending && $this->cleanup_tries >= CleanupProgress::MOST_TRIES;
+        return $this->cleanup_pending && $this->hasUsedEveryCleanupTry();
     }
 
     /**

@@ -52,7 +52,7 @@ final readonly class AskRouter
         $found = $this->recipients->resolve($target);
 
         if ($found->isEmpty() && $target->isProfile()) {
-            $request = new SupervisorRequest($target->profileKey()->key, $ask->id, $ask->body, $ask->requester());
+            $request = new SupervisorRequest($target->profileKey()->key, $ask->id, $ask->body, $ask->actor());
 
             if ($this->dispatch->startFor($request) === SupervisorDispatchOutcome::Unavailable) {
                 return AskRouteStatus::Unavailable;

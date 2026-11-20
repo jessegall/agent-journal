@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Agents\Enums\MergeAttemptState;
 use App\Agents\Enums\MergeRefusalReason;
 use App\Agents\Values\ApprovedHead;
@@ -13,7 +12,7 @@ use App\Agents\Values\MergeOutcome;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use App\Records\Support\RecordIdentity;
+use App\Records\Models\Support\HasWorkColumns;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -73,7 +72,9 @@ use Illuminate\Support\Carbon;
 final class MergeAttempt extends Model implements ReadableModel
 {
     use BoundedReads;
+    use HasActorColumns;
     use HasUlids;
+    use HasWorkColumns;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -229,15 +230,5 @@ final class MergeAttempt extends Model implements ReadableModel
     public function resultRef(): string
     {
         return "refs/journal/merge/{$this->id}";
-    }
-
-    public function work(): RecordIdentity
-    {
-        return new RecordIdentity($this->work_type, $this->work_id);
-    }
-
-    public function admittedActor(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 }

@@ -11,6 +11,7 @@ use App\Agents\Values\HelperImportReceipt;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Records\Models\Support\HasWorkColumns;
 use App\Records\Support\RecordIdentity;
 use App\Supervision\Enums\CodeReviewState;
 use App\Supervision\Exceptions\CodeReviewRefused;
@@ -65,6 +66,7 @@ final class CodeReview extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use HasWorkColumns;
     use Linkable;
 
     /**
@@ -168,11 +170,6 @@ final class CodeReview extends Model implements ReadableModel
     public function hasImportAttemptsLeft(): bool
     {
         return $this->import_attempts < self::IMPORT_ATTEMPT_LIMIT;
-    }
-
-    public function work(): RecordIdentity
-    {
-        return new RecordIdentity($this->work_type, $this->work_id);
     }
 
     public function worker(): ActorIdentity

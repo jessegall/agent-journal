@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Supervision\Models;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
@@ -35,6 +34,7 @@ use Illuminate\Database\Eloquent\Model;
 final class AskHop extends Model implements ReadableModel
 {
     use BoundedReads, HasActorColumns, HasUlids, Linkable;
+    use HasActorColumns;
 
     public const string LINK_TYPE = 'core.ask-hop';
 
@@ -188,14 +188,9 @@ final class AskHop extends Model implements ReadableModel
 
     // ----------[ Answers ]----------
 
-    public function holder(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
-    }
-
     public function isHeldByAgent(): bool
     {
-        return $this->holder()->type->isAgent();
+        return $this->actor()->type->isAgent();
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Models;
 
 use App\Actors\Enums\ActorType;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Casts\PoolReferenceCast;
 use App\Assignments\Support\AutoAssignmentFact;
@@ -45,6 +46,7 @@ use PhpOption\Option;
 final class AutoAssignment extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids;
+    use HasActorColumns;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -152,7 +154,7 @@ final class AutoAssignment extends Model implements ReadableModel
     {
         return new AutoAssignmentFact(
             $this->id,
-            new AutoAssignmentKey(new ActorIdentity($this->actor_type, $this->actor_id), $this->assignable_type),
+            new AutoAssignmentKey($this->actor(), $this->assignable_type),
             $this->enabled,
             $this->pool,
             $this->size,

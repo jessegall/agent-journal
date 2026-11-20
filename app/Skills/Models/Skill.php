@@ -174,7 +174,7 @@ final class Skill extends Model implements Numbered, ReadableModel
      * @throws SkillRetired
      * @throws SkillRevisionConflict
      */
-    public function checkWritableAt(int $expectedRevision): void
+    public function assertWritableAt(int $expectedRevision): void
     {
         if ($this->isRetired()) {
             throw SkillRetired::for($this->key);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Supervision\Models;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Values\WorkReference;
 use App\Assignments\Contracts\Assignable;
@@ -52,6 +52,7 @@ use PhpOption\Option;
 final class Ask extends Model implements Assignable, ReadableModel
 {
     use BelongsToOneActor, BoundedReads, HasUlids, Linkable;
+    use HasActorColumns;
 
     public const string LINK_TYPE = 'core.ask';
 
@@ -234,11 +235,6 @@ final class Ask extends Model implements Assignable, ReadableModel
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
-    }
-
-    public function requester(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
     public function typeKey(): AskTypeKey

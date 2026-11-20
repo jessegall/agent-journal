@@ -30,7 +30,7 @@ final readonly class MessageClaimProvider implements AssignableProvider
             ->pluck('id')
             ->all();
 
-        return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $found, true)));
+        return RecordIdentity::among($records, $found);
     }
 
     public function finishedRecords(array $records): array

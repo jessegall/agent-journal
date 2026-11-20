@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actors\Models\Support;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,11 +26,20 @@ trait HasActorColumns
     }
 
     /**
+     * The actor the row names, read from its stored columns whether or not the model casts them.
+     */
+    public function actor(): ActorIdentity
+    {
+        $columns = $this->getAttributes();
+
+        return new ActorIdentity(ActorType::from((string) $columns['actor_type']), (string) $columns['actor_id']);
+    }
+
+    /**
      * Whether the row names this actor.
      */
     public function isByActor(ActorIdentity $actor): bool
     {
-        return $this->getAttribute('actor_type') === $actor->type->value
-            && $this->getAttribute('actor_id') === $actor->id;
+        return $this->actor()->isSameAs($actor);
     }
 }

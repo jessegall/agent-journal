@@ -1222,6 +1222,7 @@ class	AgentContextMissing
 class	AgentHoldReleased
 class	AgentInbox
 class	AgentInboxCounts
+class	AgentInspection
 class	AgentLabel
 class	AgentLabels
 class	AgentLaunchCandidates
@@ -7058,9 +7059,10 @@ method	AgentContextMissing::forRequest()
 method	AgentHoldReleased::__construct()
 method	AgentInbox::__construct()
 method	AgentInboxCounts::__construct()
+method	AgentInspection::__construct()
+method	AgentInspection::seesEveryAgent()
 method	AgentLabel::__construct()
 method	AgentLabels::__construct()
-method	AgentLabels::inspectsAgents()
 method	AgentLabels::labelsFor()
 method	AgentLabels::namesOf()
 method	AgentLaunchCandidates::agentsLastOnModel()
@@ -7148,6 +7150,7 @@ method	AgentRuntime::releaseHold()
 method	AgentRuntime::requestEffort()
 method	AgentRuntime::requestModel()
 method	AgentRuntime::requests()
+method	AgentRuntime::secondsSince()
 method	AgentRuntime::session()
 method	AgentRuntime::sessionOfHostRuntime()
 method	AgentRuntime::setting()
@@ -7470,7 +7473,6 @@ method	Ask::openFor()
 method	Ask::openSubmissions()
 method	Ask::reference()
 method	Ask::replay()
-method	Ask::requester()
 method	Ask::requirePending()
 method	Ask::submission()
 method	Ask::submit()
@@ -7510,7 +7512,6 @@ method	AskHop::casts()
 method	AskHop::currentFor()
 method	AskHop::currentHops()
 method	AskHop::hasHeld()
-method	AskHop::holder()
 method	AskHop::holderKey()
 method	AskHop::isHeldByAgent()
 method	AskHop::lastAnswerTimes()
@@ -8342,7 +8343,6 @@ method	CatalogueOnFirstRead::find()
 method	CertifiedWork::importRef()
 method	CertifiedWork::of()
 method	CertifiedWork::record()
-method	CertifiedWork::work()
 method	CertifyPassedStopsHandler::__construct()
 method	CertifyPassedStopsHandler::handle()
 method	CertifyPassedStopsOnTick::__construct()
@@ -8749,7 +8749,6 @@ method	CodeReview::open()
 method	CodeReview::openFor()
 method	CodeReview::retain()
 method	CodeReview::settle()
-method	CodeReview::work()
 method	CodeReview::worker()
 method	CodeReviewDecisions::__construct()
 method	CodeReviewDecisions::decide()
@@ -9011,7 +9010,6 @@ method	CommandRequest::moveTo()
 method	CommandRequest::nextStep()
 method	CommandRequest::ofProject()
 method	CommandRequest::open()
-method	CommandRequest::opener()
 method	CommandRequest::propose()
 method	CommandRequest::prove()
 method	CommandRequest::refusal()
@@ -11003,6 +11001,7 @@ method	HandleInertiaRequests::version()
 method	HandledBy::__construct()
 method	HandlerInOtherOwner::for()
 method	HandlerServesTwoCommands::for()
+method	HasActorColumns::actor()
 method	HasActorColumns::byActor()
 method	HasActorColumns::isByActor()
 method	HasAssignables::bootstrappersHasAssignables()
@@ -11015,6 +11014,7 @@ method	HasNumber::idOfNumber()
 method	HasNumber::numberHolder()
 method	HasNumberedModels::bootstrappersHasNumberedModels()
 method	HasStates::bootstrappersHasStates()
+method	HasWorkColumns::work()
 method	HeartbeatReportController::__invoke()
 method	HeldAccountUses::__construct()
 method	HeldPartData::__construct()
@@ -11083,6 +11083,7 @@ method	HelperImages::isVerified()
 method	HelperImportFailed::for()
 method	HelperImportReceipt::__construct()
 method	HelperJob::accept()
+method	HelperJob::actor()
 method	HelperJob::addSteering()
 method	HelperJob::assignmentIdentity()
 method	HelperJob::cancel()
@@ -11099,7 +11100,6 @@ method	HelperJob::markUnfinished()
 method	HelperJob::moveTo()
 method	HelperJob::ofIdentities()
 method	HelperJob::open()
-method	HelperJob::parent()
 method	HelperJob::receipt()
 method	HelperJob::reopenForAttempt()
 method	HelperJob::reopenForRepair()
@@ -11677,6 +11677,9 @@ method	JudgedCall::__construct()
 method	JudgedCall::forFinishedTool()
 method	JudgedCall::replyWith()
 method	KeepNavigationAnswer::handle()
+method	KeepsCleanupTries::hasUsedEveryCleanupTry()
+method	KeepsCleanupTries::recordCleanupTry()
+method	KeepsCleanupTries::resetCleanupTries()
 method	KeyScriptRefused::parameters()
 method	KeyScriptRefused::unknown()
 method	KeyedWriteWithoutReceipt::for()
@@ -12176,7 +12179,6 @@ method	MenuStepRefused::tooMany()
 method	MenuStepRefused::unexpectedField()
 method	MergeAdmission::requireApproval()
 method	MergeAttempt::acknowledge()
-method	MergeAttempt::admittedActor()
 method	MergeAttempt::apply()
 method	MergeAttempt::becomeUncertain()
 method	MergeAttempt::casts()
@@ -12189,7 +12191,6 @@ method	MergeAttempt::resolveByOwner()
 method	MergeAttempt::resultRef()
 method	MergeAttempt::retain()
 method	MergeAttempt::unacknowledged()
-method	MergeAttempt::work()
 method	MergeAttemptState::isTerminal()
 method	MergeAttemptState::terminalValues()
 method	MergeOutcome::__construct()
@@ -12604,7 +12605,6 @@ method	NavigationRequest::isSameMenuOpenElsewhere()
 method	NavigationRequest::markProven()
 method	NavigationRequest::moveTo()
 method	NavigationRequest::open()
-method	NavigationRequest::owner()
 method	NavigationRequest::prove()
 method	NavigationRequest::raised()
 method	NavigationRequest::raisedForOperation()
@@ -13902,7 +13902,6 @@ method	ProfileRevisionReference::__construct()
 method	ProfileRevisionRevoked::__construct()
 method	ProfileRevisionUnreadable::forRevision()
 method	ProfileRevokeCommand::handle()
-method	ProfileRun::actor()
 method	ProfileRun::casts()
 method	ProfileRun::completeStep()
 method	ProfileRun::finish()
@@ -14774,6 +14773,7 @@ method	RecordHeartbeatHandler::handle()
 method	RecordHolderData::__construct()
 method	RecordHolderData::of()
 method	RecordIdentity::__construct()
+method	RecordIdentity::among()
 method	RecordIdentity::assertKnownType()
 method	RecordIds::__construct()
 method	RecordImmutable::for()
@@ -15211,7 +15211,6 @@ method	RepairRequest::casts()
 method	RepairRequest::earlierRounds()
 method	RepairRequest::retain()
 method	RepairRequest::settle()
-method	RepairRequest::work()
 method	RepairRequest::worker()
 method	RepairRouting::__construct()
 method	RepairRouting::cap()
@@ -16029,7 +16028,6 @@ method	RuntimeLivenessReportData::__construct()
 method	RuntimeRecords::__construct()
 method	RuntimeRecords::folderOf()
 method	RuntimeRecords::forSession()
-method	RuntimeRecords::inspectsAgents()
 method	RuntimeRecords::page()
 method	RuntimeRecords::requestsOf()
 method	RuntimeRecords::visibleRuntimeOf()
@@ -16424,7 +16422,6 @@ method	SessionProvenance::parentSessionOf()
 method	SessionProvenance::record()
 method	SessionRecords::__construct()
 method	SessionRecords::active()
-method	SessionRecords::inspectsAgents()
 method	SessionRecords::lockEligibleSessionOf()
 method	SessionRecords::optionOf()
 method	SessionRecords::requireActive()
@@ -17317,7 +17314,6 @@ method	SignInAttempt::recentFor()
 method	SignInAttempt::releaseForHost()
 method	SignInAttempt::retryCleanup()
 method	SignInAttempt::runBy()
-method	SignInAttempt::starter()
 method	SignInAttempt::type()
 method	SignInAttempt::waitForUser()
 method	SignInAttempt::waitingForUsesIds()
@@ -17454,8 +17450,8 @@ method	SizeAssignmentRoom::available()
 method	Skill::activeIn()
 method	Skill::allForMaintenance()
 method	Skill::appendRevision()
+method	Skill::assertWritableAt()
 method	Skill::casts()
-method	Skill::checkWritableAt()
 method	Skill::condition()
 method	Skill::description()
 method	Skill::isRetired()
@@ -19560,7 +19556,6 @@ method	WorkReference::free()
 method	WorkReference::isFree()
 method	WorkRepair::reopen()
 method	WorkRepairRequest::__construct()
-method	WorkReservation::actor()
 method	WorkReservation::awaitingHandoff()
 method	WorkReservation::casts()
 method	WorkReservation::certifiedWork()
@@ -19603,7 +19598,6 @@ method	WorkingOnTaskStateReference::forTask()
 method	WorkspaceFacts::__construct()
 method	WorkspaceObject::__construct()
 method	WorkspaceObject::facts()
-method	WorkspaceRead::actor()
 method	WorkspaceRead::answer()
 method	WorkspaceRead::byReference()
 method	WorkspaceRead::casts()
@@ -22302,10 +22296,11 @@ property	AgentInbox::$page
 property	AgentInbox::$total
 property	AgentInboxCounts::$pending
 property	AgentInboxCounts::$unread
+property	AgentInspection::$authorizer
 property	AgentLabel::$agentId
 property	AgentLabel::$name
 property	AgentLabels::$actors
-property	AgentLabels::$authorizer
+property	AgentLabels::$inspection
 property	AgentMessageCard::$answerId
 property	AgentMessageCard::$author
 property	AgentMessageCard::$dismissalReason
@@ -27746,7 +27741,7 @@ property	RuntimeLivenessReportData::$evidence
 property	RuntimeLivenessReportData::$processGeneration
 property	RuntimeLivenessReportData::$runtimeId
 property	RuntimeRecords::$actors
-property	RuntimeRecords::$authorizer
+property	RuntimeRecords::$inspection
 property	RuntimeScreen::$cache
 property	RuntimeSetting::$observed
 property	RuntimeSetting::$observedAgeSeconds
@@ -28081,7 +28076,7 @@ property	SessionProvenance::$links
 property	SessionProvenance::$policies
 property	SessionProvenance::$session
 property	SessionRecords::$actors
-property	SessionRecords::$authorizer
+property	SessionRecords::$inspection
 property	SessionSkillStatus::$deliveredGeneration
 property	SessionSkillStatus::$deliveryState
 property	SessionSkillStatus::$generatedDigest
@@ -28661,8 +28656,8 @@ property	SkillStatusCommand::$description
 property	SkillStatusCommand::$signature
 property	SkillStatusResolver::$actors
 property	SkillStatusResolver::$adapters
-property	SkillStatusResolver::$authorizer
 property	SkillStatusResolver::$contexts
+property	SkillStatusResolver::$inspection
 property	SkillStatusResolver::$selection
 property	SkillStatusResolver::$skills
 property	SkillTables::$schema
@@ -29777,7 +29772,9 @@ trait	HasLinkRecords
 trait	HasNumber
 trait	HasNumberedModels
 trait	HasStates
+trait	HasWorkColumns
 trait	HelperWorkArguments
+trait	KeepsCleanupTries
 trait	Linkable
 trait	MeasuresBody
 trait	NamedByRuleScope
@@ -30445,7 +30442,6 @@ variable	$innermost
 variable	$input
 variable	$inputs
 variable	$inside
-variable	$inspect
 variable	$inspectors
 variable	$install
 variable	$installation

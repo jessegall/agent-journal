@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Models;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
@@ -64,6 +63,7 @@ use Illuminate\Support\Carbon;
 final class CommandRequest extends Model implements ReadableModel
 {
     use BoundedReads;
+    use HasActorColumns;
     use HasActorColumns, HasUlids, Linkable;
 
     public const int EXCERPT_LENGTH = 200;
@@ -137,7 +137,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function hasReadEvidence(ProcessRun $run): bool
     {
-        $reads = EvidenceRead::query()->ofRunReadBy($run, $this->opener())->readLimit(1_000)->get();
+        $reads = EvidenceRead::query()->ofRunReadBy($run, $this->actor())->readLimit(1_000)->get();
         if (! $reads->contains(fn (EvidenceRead $read): bool => $read->source === EvidenceSource::Envelope)) {
             return false;
         }
@@ -149,11 +149,6 @@ final class CommandRequest extends Model implements ReadableModel
                     && $read->source === EvidenceSource::of($stream),
             ),
         ));
-    }
-
-    public function opener(): ActorIdentity
-    {
-        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
     /**
