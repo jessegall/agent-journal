@@ -572,6 +572,24 @@ use App\Engine\Values\FrameSettlement;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
+use App\Files\Contracts\Files;
+use App\Files\Enums\EntryType;
+use App\Files\Enums\Place;
+use App\Files\Exceptions\FileJsonInvalid;
+use App\Files\Exceptions\FileMissing;
+use App\Files\Exceptions\FileOutsidePlaces;
+use App\Files\Exceptions\FilePathInvalid;
+use App\Files\Exceptions\FileUnreadable;
+use App\Files\Exceptions\FolderClosed;
+use App\Files\Exceptions\FolderMissing;
+use App\Files\Exceptions\LinkLeavesPlace;
+use App\Files\Exceptions\LinkLoop;
+use App\Files\Exceptions\PlaceUnavailable;
+use App\Files\Values\Depth;
+use App\Files\Values\FilePath;
+use App\Files\Values\Fingerprint;
+use App\Files\Values\FolderEntries;
+use App\Files\Values\FolderEntry;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Commands\CertifyPassedStops;
 use App\Hooks\Contracts\ActorWorkStacks;
@@ -1210,6 +1228,7 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                Files::class,
                 ReadEntitlements::class,
                 JobPermissionReader::class,
                 TextFields::class,
@@ -1416,6 +1435,13 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                FilePath::class,
+                Place::class,
+                Depth::class,
+                Fingerprint::class,
+                FolderEntries::class,
+                FolderEntry::class,
+                EntryType::class,
                 TextPreview::class,
                 CommentPolicy::class,
                 SupervisorTarget::class,
@@ -2073,6 +2099,16 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                FileMissing::class,
+                FileUnreadable::class,
+                FileJsonInvalid::class,
+                FileOutsidePlaces::class,
+                FilePathInvalid::class,
+                FolderClosed::class,
+                FolderMissing::class,
+                LinkLeavesPlace::class,
+                LinkLoop::class,
+                PlaceUnavailable::class,
                 GrantShapeInvalid::class,
                 EndpointDeclarationInvalid::class,
                 CommandStopped::class,
