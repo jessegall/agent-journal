@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('stop_conditions');
             $table->json('execution_policy');
             $table->char('policy_digest', 64);
+            $table->boolean('requires_review')->default(false);
             $table->timestampsTz();
         });
     }

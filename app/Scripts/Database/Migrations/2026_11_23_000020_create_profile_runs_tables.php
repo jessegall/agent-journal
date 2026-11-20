@@ -22,8 +22,13 @@ return new class extends Migration
             $table->string('state', 16);
             $table->unsignedInteger('cursor')->default(0);
             $table->string('awaited_step', 200)->nullable();
+            $table->unsignedInteger('generation')->nullable();
+            $table->unsignedInteger('unchanged_returns')->default(0);
+            $table->text('message')->nullable();
+            $table->unsignedInteger('sequence')->default(0);
             $table->timestampsTz();
             $table->unique(['actor_type', 'actor_id', 'trigger_reference']);
+            $table->unique(['actor_type', 'actor_id', 'work', 'sequence']);
         });
 
         Schema::create('profile_step_results', function (Blueprint $table) {

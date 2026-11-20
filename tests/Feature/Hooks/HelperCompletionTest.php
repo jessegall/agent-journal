@@ -8,14 +8,18 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Commands\CancelLaunch;
+use App\Agents\Contracts\StartReservations;
+use App\Agents\Enums\CleanupStep;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Events\LaunchCancelled;
+use App\Agents\Exceptions\AgentReservedForReview;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\SessionPolicy;
 use App\Agents\Models\StartRecord;
+use App\Agents\Models\WorkReservation;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\StartPolicy;
@@ -41,6 +45,7 @@ use App\Hooks\Models\StopAttempt;
 use App\Hooks\Support\StopAttemptGate;
 use App\Hooks\Values\StopResultReport;
 use App\Records\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use PhpOption\None;
@@ -56,7 +61,7 @@ use Tests\TestCase;
 /**
  * A started helper's work is complete only on stop evidence (task 415): a passed stop certifies it once, a reader
  * with no conditions finishes on its stack checks alone, a failed stop refuses and the third unchanged failure ends
- * the turn with one held notice, a passed stop that never comes back is certified once by the engine, and a cancel
+ * the turn with one held notice, reviewed work keeps its actor and checkout from the certificate on, a passed stop that never comes back is certified once by the engine, and a cancel
  * stops the runtime and tells the owner while the workspace stays.
  */
 #[TimeLimit(seconds: 5, reason: 'It starts test agent sessions, opens a runtime and empties the hook tables.')]
@@ -101,6 +106,30 @@ final class HelperCompletionTest extends TestCase
 
         $this->assertNotNull(StopAttempt::query()->withoutGlobalScopes()->sole()->certified_at);
         Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
+    }
+
+    public function test_reviewed_work_holds_its_actor_and_checkout_even_when_the_handoff_is_lost(): void
+    {
+        Event::fake([HelperCompletionCertified::class]);
+        $start = $this->helperWithConditions(requiresReview: true);
+        $this->startedFor($start);
+        $this->stop($start, 'stop-1');
+        $this->settle('stop-1', StopResultType::Passed, 'clean');
+
+        $this->certifyPassedStops('pass-1');
+        $start->session->endAt(CarbonImmutable::now());
+
+        $reservation = WorkReservation::query()->sole();
+        $this->assertSame([$start->agent->id, '/workspace'], [$reservation->actor_id, $reservation->checkout]);
+        Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
+        $this->assertThrows(
+            fn () => $this->app->make(StartReservations::class)->reserve(ActorIdentity::of($start->agent)),
+            AgentReservedForReview::class,
+        );
+        $this->assertNotContains(
+            'checkout',
+            array_map(fn (CleanupStep $step) => $step->value, CleanupStep::cases()),
+        );
     }
 
     public function test_a_dirty_writer_cannot_finish_while_its_checks_run_or_fail(): void
@@ -178,7 +207,7 @@ final class HelperCompletionTest extends TestCase
         Event::assertDispatched(LaunchCancelled::class, fn (LaunchCancelled $event) => $event->work->id === $work->id);
     }
 
-    private function helperWithConditions(): TestStart
+    private function helperWithConditions(bool $requiresReview = false): TestStart
     {
         $start = TestStart::start('writing-helper');
         $policy = StartPolicy::mainOnHost('/workspace');
@@ -189,6 +218,7 @@ final class HelperCompletionTest extends TestCase
             'writing-helper',
             1,
             null,
+            $requiresReview,
         ));
 
         return $start;

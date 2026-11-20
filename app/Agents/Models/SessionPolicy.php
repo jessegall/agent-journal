@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property StoredStopConditions $stop_conditions
  * @property StoredExecutionPolicy $execution_policy
  * @property string $policy_digest
+ * @property bool $requires_review
  */
 #[Table('session_policies')]
 #[Fillable([
@@ -42,6 +43,7 @@ use Illuminate\Database\Eloquent\Model;
     'stop_conditions',
     'execution_policy',
     'policy_digest',
+    'requires_review',
 ])]
 final class SessionPolicy extends Model implements ReadableModel
 {
@@ -57,6 +59,7 @@ final class SessionPolicy extends Model implements ReadableModel
             'access_policy' => StoredAccessPolicy::class,
             'stop_conditions' => StoredStopConditions::class,
             'execution_policy' => StoredExecutionPolicy::class,
+            'requires_review' => 'boolean',
         ];
     }
 
@@ -75,6 +78,7 @@ final class SessionPolicy extends Model implements ReadableModel
         $frozen->profile_key = $policy->profileKey;
         $frozen->profile_revision = $policy->profileRevision;
         $frozen->configuration_hash = $policy->configurationHash;
+        $frozen->requires_review = $policy->requiresReview;
         $frozen->access_policy = StoredAccessPolicy::fromAccessPolicy($policy->access);
         $frozen->stop_conditions = StoredStopConditions::fromStopConditions($policy->stopConditions);
         $frozen->execution_policy = StoredExecutionPolicy::fromExecutionPolicy($policy->execution);
@@ -93,6 +97,7 @@ final class SessionPolicy extends Model implements ReadableModel
             $this->profile_key,
             $this->profile_revision,
             $this->configuration_hash,
+            $this->requires_review,
         );
     }
 

@@ -14,7 +14,8 @@ use App\Processes\Values\ProcessGrants;
 
 /**
  * The policy a start runs under, frozen with the session it starts: what the agent may reach, when it may stop, how
- * it runs, and the profile revision and configuration it came from, or none for a main start without a profile.
+ * it runs, the profile revision and configuration it came from, or none for a main start without a profile, and
+ * whether its finished work must be reviewed before anything else may take its actor or checkout.
  */
 final readonly class StartPolicy
 {
@@ -25,6 +26,7 @@ final readonly class StartPolicy
         public string|null $profileKey,
         public int|null $profileRevision,
         public string|null $configurationHash,
+        public bool $requiresReview = false,
     ) {}
 
     /**
@@ -65,6 +67,7 @@ final readonly class StartPolicy
             $this->profileKey,
             $this->profileRevision,
             $this->configurationHash,
+            $this->requiresReview,
         ], JSON_THROW_ON_ERROR));
     }
 }

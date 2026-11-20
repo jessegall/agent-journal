@@ -224,6 +224,7 @@ use App\Agents\Exceptions\AccountUseMissing;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
+use App\Agents\Exceptions\AgentReservedForReview;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Exceptions\ContainerUnavailable;
@@ -2206,6 +2207,7 @@ final class CoreApi
                 ProgramUnsupported::class,
                 StartRequestConflict::class,
                 AgentBusy::class,
+                AgentReservedForReview::class,
                 StartRefused::class,
                 StartRecordMissing::class,
                 ConversationIncompatible::class,

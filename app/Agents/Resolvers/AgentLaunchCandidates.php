@@ -11,6 +11,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\ProgramConversation;
+use App\Agents\Models\WorkReservation;
 use App\Agents\Support\LaunchCandidateFacts;
 use App\Agents\Support\LaunchCandidateQuery;
 use App\Agents\Support\RankedLaunchCandidate;
@@ -18,7 +19,7 @@ use App\Agents\Support\RankedLaunchCandidate;
 /**
  * Ranks an owner's helpers from Agents' own records: the agent row, its running sessions and unresolved starts, and
  * the conversations it kept under the purpose with the model of each one's last visit. An actor with no agent row is
- * never offered.
+ * never offered, nor is one whose certified work is held for review.
  */
 final readonly class AgentLaunchCandidates implements LaunchCandidates
 {
@@ -30,7 +31,7 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
         ));
         $agentIds = array_map(fn (LaunchCandidateFacts $helper) => $helper->actor->id, $helpers);
         $agents = Agent::byIds($agentIds);
-        $busy = $this->busyAgents($agentIds);
+        $busy = [...$this->busyAgents($agentIds), ...WorkReservation::reservedAgentIds($agentIds)];
         $purposeConversations = ProgramConversation::query()
             ->whereIn('agent_id', $agentIds)
             ->where('context_reference', $query->purposeReference)

@@ -1261,6 +1261,7 @@ class	AgentPolicy
 class	AgentProfileMissing
 class	AgentReferences
 class	AgentRequestClient
+class	AgentReservedForReview
 class	AgentRetirementDenied
 class	AgentRuntime
 class	AgentRuntimeReassigned
@@ -5129,6 +5130,7 @@ class	WorkLockSet
 class	WorkOccurrence
 class	WorkOccurrenceStale
 class	WorkReference
+class	WorkReservation
 class	WorkStackPushes
 class	WorkingOnPlanState
 class	WorkingOnPlanStateFactory
@@ -7004,6 +7006,7 @@ method	AgentRequestClient::prepare()
 method	AgentRequestClient::prepareWithId()
 method	AgentRequestClient::request()
 method	AgentRequestClient::sendPrepared()
+method	AgentReservedForReview::forAgent()
 method	AgentResolver::labelsFor()
 method	AgentRetirementDenied::forCaller()
 method	AgentRetirementDenied::refusalCode()
@@ -17991,6 +17994,7 @@ method	StopAttemptResult::failureSummary()
 method	StopAttemptState::settledBy()
 method	StopCertification::__construct()
 method	StopCertification::certify()
+method	StopCertification::certifyFor()
 method	StopCondition::__construct()
 method	StopCondition::cleanWorktree()
 method	StopCondition::definitionHash()
@@ -19291,6 +19295,10 @@ method	WorkReference::__construct()
 method	WorkReference::forRecord()
 method	WorkReference::free()
 method	WorkReference::isFree()
+method	WorkReservation::casts()
+method	WorkReservation::holds()
+method	WorkReservation::reservedAgentIds()
+method	WorkReservation::retain()
 method	WorkStackProvider::sessionsOf()
 method	WorkStackProvider::sessionsToAdmit()
 method	WorkStackPushes::__construct()
@@ -19684,6 +19692,7 @@ parameter	$check
 parameter	$checkAddress
 parameter	$checkId
 parameter	$checkedAt
+parameter	$checkout
 parameter	$checkpoint
 parameter	$checkpoints
 parameter	$checks
@@ -21084,6 +21093,7 @@ parameter	$requirement
 parameter	$requirements
 parameter	$requires
 parameter	$requiresRequestKey
+parameter	$requiresReview
 parameter	$reservations
 parameter	$resolve
 parameter	$resolved
@@ -25758,6 +25768,7 @@ property	ProfileStartPolicy::$execution
 property	ProfileStartPolicy::$program
 property	ProfileStartPolicy::$programPinned
 property	ProfileStartPolicy::$provenance
+property	ProfileStartPolicy::$requiresReview
 property	ProfileStartPolicy::$stopConditions
 property	Profiles::$keys
 property	ProgramCapabilities::$hookMethods
@@ -28285,6 +28296,7 @@ property	StartPolicy::$configurationHash
 property	StartPolicy::$execution
 property	StartPolicy::$profileKey
 property	StartPolicy::$profileRevision
+property	StartPolicy::$requiresReview
 property	StartPolicy::$stopConditions
 property	StartProfile::$snapshot
 property	StartProfileAuthority::$profile
@@ -28472,6 +28484,7 @@ property	StopAttemptResult::$state
 property	StopAttemptResult::$statuses
 property	StopAttemptResult::$summaries
 property	StopCertification::$events
+property	StopCertification::$policies
 property	StopCondition::$accessTypes
 property	StopCondition::$arguments
 property	StopCondition::$directory
