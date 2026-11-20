@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -23,6 +26,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<HelperReceipt>
  */
 #[HandledBy(StartHelperHandler::class)]
+#[Operation('start_helper', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(HelperPolicy::class, HelperAbility::Dispatch)]
 final readonly class StartHelper extends Command implements HasAuthorizationSubject
 {

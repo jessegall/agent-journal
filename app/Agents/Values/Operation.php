@@ -31,4 +31,10 @@ final readonly class Operation
     {
         return array_any($this->resources, fn (ResourceRequest $resource): bool => $resource->area === $area);
     }
+
+    /** @param list<AccessType> $accessTypes */
+    public static function journal(string $name, ResourceAreaType $area, array $accessTypes): self
+    {
+        return new self('journal', $name, $accessTypes, [new ResourceRequest($area, '')], [], 1);
+    }
 }

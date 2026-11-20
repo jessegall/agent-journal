@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
@@ -24,6 +27,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<DraftReference>
  */
 #[HandledBy(ChangeDocumentDetailsHandler::class)]
+#[Operation('change_document_details', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 final readonly class ChangeDocumentDetails extends Command implements HasAuthorizationSubject
 {

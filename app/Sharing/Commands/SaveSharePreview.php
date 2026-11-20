@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -21,6 +24,7 @@ use App\Sharing\Support\SavedSharePreview;
  * @extends Command<SavedSharePreview>
  */
 #[HandledBy(SaveSharePreviewHandler::class)]
+#[Operation('save_share_preview', ResourceAreaType::JournalControl, AccessType::Create)]
 #[Authorize(SharingPolicy::class, SharingAbility::Administer)]
 final readonly class SaveSharePreview extends Command implements HasAuthorizationSubject
 {

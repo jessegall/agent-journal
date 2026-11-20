@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -19,6 +22,7 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(SwitchAccountHandler::class)]
+#[Operation('switch_account', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
 final readonly class SwitchAccount extends Command implements HasAuthorizationSubject
 {

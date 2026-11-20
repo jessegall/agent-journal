@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -17,6 +20,7 @@ use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
  * @extends Command<string>
  */
 #[HandledBy(ShuffleDeckHandler::class)]
+#[Operation('shuffle_deck', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(DeckPolicy::class, DeckAbility::Work)]
 final readonly class ShuffleDeck extends Command implements HasAuthorizationSubject
 {

@@ -6,6 +6,7 @@ namespace App\Mcp\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Support\ReadGrant;
+use App\Agents\Values\Operation;
 use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandRegistry;
 use App\Mcp\Attributes\WritesCommand;
@@ -57,6 +58,14 @@ final readonly class JobPermissionReader
         $profile = DiscoveryProfile::from($authority->profile->base->key);
 
         if (! $profile->includesWrite($write->readOnlyHelper)) {
+            return false;
+        }
+
+        $declaration = $this->commands->operationOf($write->command);
+
+        if ($declaration !== null && ! $authority->profile->start->access->decide(
+            Operation::journal($declaration->name, $declaration->area, $declaration->accessTypes),
+        )->allowed) {
             return false;
         }
 

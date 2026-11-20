@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Contracts\StartsAgent;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\StartOwnedAgentHandler;
@@ -23,6 +26,7 @@ use App\Bus\Support\Command;
  * @extends Command<OwnerStartReceipt>
  */
 #[HandledBy(StartOwnedAgentHandler::class)]
+#[Operation('start_owned_agent', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 final readonly class StartOwnedAgent extends Command implements HasAuthorizationSubject, StartsAgent
 {

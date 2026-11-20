@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -19,6 +22,7 @@ use Domain\Rules\Policies\RulePolicy;
  * @extends Command<null>
  */
 #[HandledBy(RemoveRuleHandler::class)]
+#[Operation('remove_rule', ResourceAreaType::JournalContent, AccessType::Delete)]
 #[Authorize(RulePolicy::class, RuleAbility::Remove)]
 final readonly class RemoveRule extends Command implements HasAuthorizationSubject
 {

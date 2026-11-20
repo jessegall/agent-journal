@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\CancelAccountUsesHandler;
 use App\Agents\Models\Agent;
@@ -20,6 +23,7 @@ use App\Records\Support\RecordIdentity;
  * @extends Command<int>
  */
 #[HandledBy(CancelAccountUsesHandler::class)]
+#[Operation('cancel_account_uses', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::MaintainAccountUses)]
 final readonly class CancelAccountUses extends Command implements HasAuthorizationSubject
 {

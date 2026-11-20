@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Desks\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Assignments\Support\AssignmentReference;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
@@ -22,6 +25,7 @@ use App\Desks\Policies\DeskPolicy;
  * @extends Command<null>
  */
 #[HandledBy(ReleaseSeatHandler::class)]
+#[Operation('release_seat', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]

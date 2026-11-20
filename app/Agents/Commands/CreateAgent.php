@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\CreateAgentHandler;
@@ -22,6 +25,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<ActorIdentity>
  */
 #[HandledBy(CreateAgentHandler::class)]
+#[Operation('create_agent', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 final readonly class CreateAgent extends Command implements HasAuthorizationSubject
 {

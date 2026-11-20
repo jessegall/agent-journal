@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Comments\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -21,6 +24,7 @@ use App\Records\Support\RecordIdentity;
  * @extends Command<string> the comment's id
  */
 #[HandledBy(PostCommentHandler::class)]
+#[Operation('post_comment', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(CommentPolicy::class, CommentAbility::Work)]
 final readonly class PostComment extends Command implements HasAuthorizationSubject
 {

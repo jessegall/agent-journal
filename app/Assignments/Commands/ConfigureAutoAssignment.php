@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Assignments\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Handlers\ConfigureAutoAssignmentHandler;
 use App\Assignments\Models\AssignmentRecord;
@@ -22,6 +25,7 @@ use App\Bus\Support\Command;
  * @extends Command<AutoAssignmentChange>
  */
 #[HandledBy(ConfigureAutoAssignmentHandler::class)]
+#[Operation('configure_auto_assignment', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
 #[RepeatableRead]
 final readonly class ConfigureAutoAssignment extends Command implements HasAuthorizationSubject

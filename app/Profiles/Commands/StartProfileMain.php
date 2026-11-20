@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\StartReceipt;
 use App\Bus\Attributes\Authorize;
@@ -23,6 +26,7 @@ use App\Profiles\Values\ProfileKey;
  * @extends Command<StartReceipt>
  */
 #[HandledBy(StartProfileMainHandler::class)]
+#[Operation('start_profile_main', ResourceAreaType::JournalControl, AccessType::Create)]
 #[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
 final readonly class StartProfileMain extends Command implements HasAuthorizationSubject
 {

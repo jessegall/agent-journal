@@ -383,8 +383,10 @@ use App\Assignments\Support\PoolReference;
 use App\Assignments\Support\RecordIds;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
+use App\Bus\Attributes\Operation as CommandOperationDeclaration;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -398,6 +400,7 @@ use App\Bus\Contracts\OperationResolver;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Enums\CommandScopeType;
+use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
@@ -1592,6 +1595,9 @@ final class CoreApi
                 CommandScope::class,
                 MiddlewareDeclaration::class,
                 Authorize::class,
+                Effect::class,
+                CommandOperationDeclaration::class,
+                CommandEffectType::class,
                 CommandCall::class,
                 CurrentUser::class,
                 ActionRoute::class,

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Assignments\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Handlers\ReassignRecordHandler;
 use App\Assignments\Models\AssignmentRecord;
@@ -25,6 +28,7 @@ use App\Records\Support\RecordIdentity;
  * @extends Command<AssignmentResult>
  */
 #[HandledBy(ReassignRecordHandler::class)]
+#[Operation('reassign_record', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Skills\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -20,6 +23,7 @@ use App\Skills\Values\SkillRevisionResult;
  * @extends Command<SkillRevisionResult>
  */
 #[HandledBy(RestoreSkillHandler::class)]
+#[Operation('skills_restore', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
 final readonly class RestoreSkill extends Command implements HasAuthorizationSubject
 {

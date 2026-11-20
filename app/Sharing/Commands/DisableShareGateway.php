@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresRequestKey;
@@ -22,6 +25,7 @@ use App\Sharing\Support\GatewayConfiguration;
  * @extends Command<GatewayConfiguration>
  */
 #[HandledBy(DisableShareGatewayHandler::class)]
+#[Operation('disable_share_gateway', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(SharingPolicy::class, SharingAbility::Administer)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 final readonly class DisableShareGateway extends Command implements HasAuthorizationSubject

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\ResumeKeyScriptHandler;
 use App\Agents\Models\Agent;
@@ -20,6 +23,7 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(ResumeKeyScriptHandler::class)]
+#[Operation('resume_key_script', ResourceAreaType::Workspace, AccessType::Execute)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
 final readonly class ResumeKeyScript extends Command implements HasAuthorizationSubject
 {

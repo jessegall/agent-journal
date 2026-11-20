@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -19,6 +22,7 @@ use Domain\Sequences\Policies\SequencePolicy;
  * @extends Command<null>
  */
 #[HandledBy(StartSequenceHandler::class)]
+#[Operation('start_sequence', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(SequencePolicy::class, SequenceAbility::Work)]
 final readonly class StartSequence extends Command implements HasAuthorizationSubject
 {

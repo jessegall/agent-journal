@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -19,6 +22,7 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(StartSampleHandler::class)]
+#[Operation('start_sample', ResourceAreaType::Workspace, AccessType::Test)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
 final readonly class StartSample extends Command implements HasAuthorizationSubject
 {

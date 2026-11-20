@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
@@ -22,6 +25,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<string>
  */
 #[HandledBy(AddPhaseHandler::class)]
+#[Operation('add_phase', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
 final readonly class AddPhase extends Command implements HasAuthorizationSubject
 {

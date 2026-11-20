@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Desks\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Bus\Attributes\Authorize;
@@ -24,6 +27,7 @@ use App\Desks\Support\SeatChangeResult;
  * @extends Command<SeatChangeResult>
  */
 #[HandledBy(ReplaceSeatOccupantHandler::class)]
+#[Operation('replace_seat_occupant', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -21,6 +24,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<string>
  */
 #[HandledBy(ProposeRuleHandler::class)]
+#[Operation('propose_rule', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(RulePolicy::class, RuleAbility::Propose)]
 final readonly class ProposeRule extends Command implements HasAuthorizationSubject
 {

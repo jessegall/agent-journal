@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -21,6 +24,7 @@ use Domain\Chat\Support\ConversationPair;
  * @extends Command<null>
  */
 #[HandledBy(PinMessageHandler::class)]
+#[Operation('pin_message', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(MessagePinPolicy::class, MessagePinAbility::Work)]
 #[RetainedActorRequestKey]
 final readonly class PinMessage extends Command implements HasAuthorizationSubject

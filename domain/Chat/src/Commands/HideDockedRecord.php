@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -22,6 +25,7 @@ use Domain\Chat\Support\ConversationPair;
  * @extends Command<null>
  */
 #[HandledBy(HideDockedRecordHandler::class)]
+#[Operation('hide_docked_record', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(DockedRecordPolicy::class, DockedRecordAbility::Work)]
 #[RetainedActorRequestKey]
 final readonly class HideDockedRecord extends Command implements HasAuthorizationSubject

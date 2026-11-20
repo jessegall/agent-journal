@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\MenuEntryState;
 use App\Agents\Handlers\RetireMenuEntryHandler;
@@ -21,6 +24,7 @@ use App\Bus\Support\Command;
  * @extends Command<null>
  */
 #[HandledBy(RetireMenuEntryHandler::class)]
+#[Operation('menu_retire', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
 final readonly class RetireMenuEntry extends Command implements HasAuthorizationSubject
 {

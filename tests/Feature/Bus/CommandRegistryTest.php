@@ -113,6 +113,14 @@ final class CommandRegistryTest extends TestCase
         $this->assertFalse($registry->isExported(RemoveItem::class));
     }
 
+    public function test_an_exported_application_command_needs_an_operation_declaration(): void
+    {
+        $this->expectException(CommandDeclarationInvalid::class);
+        $this->expectExceptionMessage('an exported application command needs Operation');
+
+        $this->registryOf([$this->shop([RemoveItem::class], exports: [RemoveItem::class])]);
+    }
+
     public function test_a_command_listed_twice_is_refused(): void
     {
         $this->expectException(CommandListedTwice::class);

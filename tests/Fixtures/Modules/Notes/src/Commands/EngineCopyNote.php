@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -19,6 +22,7 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<int>
  */
 #[HandledBy(EngineCopyNoteHandler::class)]
+#[Operation('engine_copy_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
 final readonly class EngineCopyNote extends Command implements HasAuthorizationSubject
 {

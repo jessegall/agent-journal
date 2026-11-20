@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\OpenTerminalViewHandler;
 use App\Agents\Models\Agent;
@@ -21,6 +24,7 @@ use App\Bus\Support\Command;
  * @extends Command<TerminalViewReceipt>
  */
 #[HandledBy(OpenTerminalViewHandler::class)]
+#[Operation('open_terminal_view', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AgentPolicy::class, AgentAbility::Inspect)]
 final readonly class OpenTerminalView extends Command implements HasAuthorizationSubject
 {

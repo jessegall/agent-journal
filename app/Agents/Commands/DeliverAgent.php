@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Contracts\TargetsAgentStack;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\DeliverAgentHandler;
@@ -22,6 +25,7 @@ use App\Bus\Support\Command;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(DeliverAgentHandler::class)]
+#[Operation('deliver_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 final readonly class DeliverAgent extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {

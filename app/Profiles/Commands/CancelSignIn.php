@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -20,6 +23,7 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(CancelSignInHandler::class)]
+#[Operation('cancel_sign_in', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
 final readonly class CancelSignIn extends Command implements HasAuthorizationSubject
 {

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
@@ -22,6 +25,7 @@ use Domain\Tasks\Policies\TaskPolicy;
  * @extends Command<int>
  */
 #[HandledBy(ResumeTaskRunHandler::class)]
+#[Operation('resume_task_run', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(TaskPolicy::class, TaskAbility::Start)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]

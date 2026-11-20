@@ -32,7 +32,7 @@ final readonly class ReadRequest
 
     public function operation(): Operation
     {
-        return new Operation('journal', $this->name, [AccessType::Read], [new ResourceRequest($this->area, '')], [], 1);
+        return Operation::journal($this->name, $this->area, [AccessType::Read]);
     }
 
     public function matchesRecovery(RecoveryCall $recovery): bool

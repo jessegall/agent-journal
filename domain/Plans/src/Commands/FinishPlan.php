@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -21,6 +24,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<null>
  */
 #[HandledBy(FinishPlanHandler::class)]
+#[Operation('finish_plan', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
 final readonly class FinishPlan extends Command implements HasAuthorizationSubject
 {

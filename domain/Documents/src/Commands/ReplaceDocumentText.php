@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -21,6 +24,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
  * @extends Command<DraftReference>
  */
 #[HandledBy(ReplaceDocumentTextHandler::class)]
+#[Operation('replace_document_text', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 final readonly class ReplaceDocumentText extends Command implements HasAuthorizationSubject
 {

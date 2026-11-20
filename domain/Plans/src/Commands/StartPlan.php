@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -19,6 +22,7 @@ use Domain\Plans\Policies\PlanPolicy;
  * @extends Command<null>
  */
 #[HandledBy(StartPlanHandler::class)]
+#[Operation('start_plan', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
 final readonly class StartPlan extends Command implements HasAuthorizationSubject
 {

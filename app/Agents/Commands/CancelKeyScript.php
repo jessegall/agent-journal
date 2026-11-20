@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\CancelKeyScriptHandler;
 use App\Agents\Models\Agent;
@@ -19,6 +22,7 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(CancelKeyScriptHandler::class)]
+#[Operation('cancel_key_script', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
 final readonly class CancelKeyScript extends Command implements HasAuthorizationSubject
 {

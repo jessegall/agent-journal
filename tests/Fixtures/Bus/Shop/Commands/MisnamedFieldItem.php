@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -20,6 +23,7 @@ use Tests\Fixtures\Bus\Shop\Handlers\MisnamedFieldItemHandler;
  * @extends Command<mixed>
  */
 #[HandledBy(MisnamedFieldItemHandler::class)]
+#[Operation('misnamed_field_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
 final readonly class MisnamedFieldItem extends Command implements HasAuthorizationSubject
 {

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -23,6 +26,7 @@ use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
  * @extends Command<string>
  */
 #[HandledBy(EditMemoryHandler::class)]
+#[Operation('edit_memory', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
 final readonly class EditMemory extends Command implements HasAuthorizationSubject
 {

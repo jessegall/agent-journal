@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Communication\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Effect;
 use App\Bus\Enums\CommandEffectType;
@@ -25,6 +28,7 @@ use App\Communication\Policies\MessagePolicy;
  */
 #[HandledBy(DismissMessageHandler::class)]
 #[Effect(CommandEffectType::Recovery)]
+#[Operation('messages_dismiss', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]

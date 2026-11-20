@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\Attributes\Operation;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\CommandEntry;
 
@@ -26,6 +27,7 @@ final readonly class RegisteredCommand
         public bool $exported,
         public bool $repeatableRead,
         public CommandEffectType $effect,
+        public Operation|null $operation,
         public bool $requiresRequestKey,
         public bool $actorScopedReceipt,
         public ReceiptRetention $retention,

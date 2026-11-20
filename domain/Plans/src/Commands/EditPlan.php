@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
@@ -23,6 +26,7 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  * @extends Command<int>
  */
 #[HandledBy(EditPlanHandler::class)]
+#[Operation('edit_plan', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
 final readonly class EditPlan extends Command implements HasAuthorizationSubject
 {

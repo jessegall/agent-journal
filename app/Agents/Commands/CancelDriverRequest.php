@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\CancelDriverRequestHandler;
 use App\Agents\Models\Agent;
@@ -20,6 +23,7 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(CancelDriverRequestHandler::class)]
+#[Operation('cancel_driver_request', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
 final readonly class CancelDriverRequest extends Command implements HasAuthorizationSubject
 {

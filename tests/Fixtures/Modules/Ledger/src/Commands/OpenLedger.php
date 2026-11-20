@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -19,6 +22,7 @@ use Tests\Fixtures\Modules\Ledger\Policies\LedgerPolicy;
  * @extends Command<string>
  */
 #[HandledBy(OpenLedgerHandler::class)]
+#[Operation('open_ledger', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(LedgerPolicy::class, LedgerAbility::Work)]
 final readonly class OpenLedger extends Command implements HasAuthorizationSubject
 {

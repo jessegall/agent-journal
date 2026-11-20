@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Skills\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -20,6 +23,7 @@ use App\Skills\Policies\SkillAuthoringPolicy;
  * @extends Command<bool>
  */
 #[HandledBy(RecordSkillReadHandler::class)]
+#[Operation('record_skill_read', ResourceAreaType::JournalContent, AccessType::Read)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Work)]
 final readonly class RecordSkillRead extends Command implements HasAuthorizationSubject
 {

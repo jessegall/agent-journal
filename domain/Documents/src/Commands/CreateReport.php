@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
@@ -25,6 +28,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<CreatedRecord>
  */
 #[HandledBy(CreateReportHandler::class)]
+#[Operation('create_report', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 final readonly class CreateReport extends Command implements HasAuthorizationSubject
 {

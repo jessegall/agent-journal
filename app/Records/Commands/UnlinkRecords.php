@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Records\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -20,6 +23,7 @@ use App\Records\Support\RecordIdentity;
  * @extends Command<null>
  */
 #[HandledBy(UnlinkRecordsHandler::class)]
+#[Operation('unlink_records', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(RecordLinkPolicy::class, RecordLinkAbility::Work)]
 final readonly class UnlinkRecords extends Command implements HasAuthorizationSubject
 {

@@ -6,11 +6,11 @@ namespace App\Bus\CommandMiddleware;
 
 use App\Bus\Contracts\CommandAdmission;
 use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Enums\CommandAdmissionStage;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandNesting;
 use App\Bus\Support\CommandRegistry;
-use App\Bus\Values\EffectiveCommand;
 use Closure;
 
 final readonly class CheckJobGrant implements CommandMiddleware
@@ -27,7 +27,7 @@ final readonly class CheckJobGrant implements CommandMiddleware
             return $next($call);
         }
 
-        $command = new EffectiveCommand($call->command(), $this->registry->effectOf($call->name()));
+        $command = $this->registry->effective($call, CommandAdmissionStage::BeforeMiddleware);
         $this->admission->assess($command)->requireAllowed();
 
         return $next($call);

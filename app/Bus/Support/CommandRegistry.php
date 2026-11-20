@@ -9,6 +9,7 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
+use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -16,6 +17,7 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Contracts\DeclaresClassLevelAbilities;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Enums\CommandAdmissionStage;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\CommandScopeType;
@@ -31,6 +33,7 @@ use App\Bus\Exceptions\HandlerServesTwoCommands;
 use App\Bus\Exceptions\MiddlewareDeclarationInvalid;
 use App\Bus\Exceptions\MiddlewareListedTwice;
 use App\Bus\Support\Command as BaseCommand;
+use App\Bus\Values\EffectiveCommand;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Container\Container;
@@ -94,6 +97,7 @@ final readonly class CommandRegistry
                 exported: $owner->exportsCommand($command),
                 repeatableRead: $reflection->getAttributes(RepeatableRead::class) !== [],
                 effect: self::effectDeclaredBy($reflection),
+                operation: self::operationDeclaredBy($reflection, $owner),
                 requiresRequestKey: self::requiresKey($reflection),
                 actorScopedReceipt: $reflection->getAttributes(RetainedActorRequestKey::class) !== [],
                 retention: self::declaredRetentionOf($reflection),
@@ -184,6 +188,18 @@ final readonly class CommandRegistry
     public function effectOf(string $command): CommandEffectType
     {
         return $this->entry($command)->effect;
+    }
+
+    public function effective(CommandCall $call, CommandAdmissionStage $stage): EffectiveCommand
+    {
+        $registered = $this->entry($call->name());
+
+        return new EffectiveCommand($call->command(), $registered->effect, $registered->operation, $stage);
+    }
+
+    public function operationOf(string $command): Operation|null
+    {
+        return $this->entry($command)->operation;
     }
 
     public function requiresRequestKey(string $command): bool
@@ -301,6 +317,7 @@ final readonly class CommandRegistry
         $attributes = [
             RepeatableRead::class,
             Effect::class,
+            Operation::class,
             RequiresRequestKey::class,
             RetainedActorRequestKey::class,
             Authorize::class,
@@ -411,6 +428,28 @@ final readonly class CommandRegistry
         }
 
         return CommandEffectType::StateChange;
+    }
+
+    /**
+     * @param  ReflectionClass<object>  $command
+     */
+    private static function operationDeclaredBy(ReflectionClass $command, CommandOwner $owner): Operation|null
+    {
+        foreach ($command->getAttributes(Operation::class) as $declared) {
+            $operation = $declared->newInstance();
+
+            if ($operation->name === '') {
+                throw CommandDeclarationInvalid::for($command->getName(), 'its Operation needs a name');
+            }
+
+            return $operation;
+        }
+
+        if ($owner->exportsCommand($command->getName()) && self::entryDeclaredBy($command) === CommandEntry::Application) {
+            throw CommandDeclarationInvalid::for($command->getName(), 'an exported application command needs Operation');
+        }
+
+        return null;
     }
 
     /**

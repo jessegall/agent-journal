@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Contracts\StartsAgent;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\DriverType;
@@ -24,6 +27,7 @@ use App\Bus\Support\Command;
  * @extends Command<OpenedRuntime>
  */
 #[HandledBy(OpenAgentRuntimeHandler::class)]
+#[Operation('open_agent_runtime', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 final readonly class OpenAgentRuntime extends Command implements HasAuthorizationSubject, StartsAgent
 {

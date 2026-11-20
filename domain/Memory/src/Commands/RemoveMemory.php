@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -19,6 +22,7 @@ use Domain\Memory\Policies\MemoryPolicy;
  * @extends Command<string>
  */
 #[HandledBy(RemoveMemoryHandler::class)]
+#[Operation('remove_memory', ResourceAreaType::JournalContent, AccessType::Delete)]
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
 final readonly class RemoveMemory extends Command implements HasAuthorizationSubject
 {
