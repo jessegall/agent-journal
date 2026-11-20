@@ -24,8 +24,8 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
  * @extends Command<DraftReference>
  */
 #[HandledBy(ReplaceDocumentBodyHandler::class)]
-#[Operation('replace_document_body', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
+#[Operation('replace_document_body', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class ReplaceDocumentBody extends Command implements HasAuthorizationSubject
 {
     public function __construct(

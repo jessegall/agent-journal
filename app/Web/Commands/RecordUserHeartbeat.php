@@ -22,8 +22,8 @@ use App\Web\Policies\PresencePolicy;
  * @extends Command<null>
  */
 #[HandledBy(RecordUserHeartbeatHandler::class)]
-#[Operation('record_user_heartbeat', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(PresencePolicy::class, PresenceAbility::Work)]
+#[Operation('record_user_heartbeat', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class RecordUserHeartbeat extends Command implements HasAuthorizationSubject
 {
     /**

@@ -16,8 +16,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<void>
  */
-#[HandledBy(ReportRuntimeExitHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReportRuntimeExitHandler::class)]
 final readonly class ReportRuntimeExit extends Command
 {
     public function __construct(

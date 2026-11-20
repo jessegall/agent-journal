@@ -25,8 +25,8 @@ use App\Bus\Support\Command;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(AnswerNavigationHandler::class)]
-#[Operation('navigation_answer', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Navigate)]
+#[Operation('navigation_answer', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class AnswerNavigation extends Command implements HasAuthorizationSubject
 {
     public function __construct(

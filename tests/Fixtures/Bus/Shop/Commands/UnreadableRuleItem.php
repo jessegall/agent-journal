@@ -24,8 +24,8 @@ use Tests\Fixtures\Bus\Shop\Handlers\UnreadableRuleItemHandler;
  * @extends Command<mixed>
  */
 #[HandledBy(UnreadableRuleItemHandler::class)]
-#[Operation('unreadable_rule_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('unreadable_rule_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class UnreadableRuleItem extends Command implements HasAuthorizationSubject
 {
     public function __construct(

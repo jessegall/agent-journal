@@ -23,8 +23,8 @@ use App\Skills\Values\SkillRevisionResult;
  * @extends Command<SkillRevisionResult>
  */
 #[HandledBy(RetireSkillHandler::class)]
-#[Operation('skills_retire', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
+#[Operation('skills_retire', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class RetireSkill extends Command implements HasAuthorizationSubject
 {
     public function __construct(

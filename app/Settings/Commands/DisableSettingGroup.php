@@ -24,8 +24,8 @@ use App\Settings\Values\SettingsChange;
  * @extends Command<SettingsChange>
  */
 #[HandledBy(DisableSettingGroupHandler::class)]
-#[Operation('disable_setting_group', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
+#[Operation('disable_setting_group', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class DisableSettingGroup extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -15,6 +15,6 @@ use App\Desks\Handlers\InstallDesksHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(InstallDesksHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(InstallDesksHandler::class)]
 final readonly class InstallDesks extends Command {}

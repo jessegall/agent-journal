@@ -20,8 +20,8 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<void>
  */
 #[HandledBy(RecordNoteEffectHandler::class)]
-#[Operation('record_note_effect', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('record_note_effect', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RecordNoteEffect extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $label) {}

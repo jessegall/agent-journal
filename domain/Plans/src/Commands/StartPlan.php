@@ -22,8 +22,8 @@ use Domain\Plans\Policies\PlanPolicy;
  * @extends Command<null>
  */
 #[HandledBy(StartPlanHandler::class)]
-#[Operation('start_plan', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
+#[Operation('start_plan', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class StartPlan extends Command implements HasAuthorizationSubject
 {
     public function __construct(

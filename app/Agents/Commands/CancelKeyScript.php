@@ -22,8 +22,8 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(CancelKeyScriptHandler::class)]
-#[Operation('cancel_key_script', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('cancel_key_script', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class CancelKeyScript extends Command implements HasAuthorizationSubject
 {
     public function __construct(

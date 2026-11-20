@@ -17,8 +17,8 @@ use App\Sharing\Support\ClaimedGatewayOperation;
  *
  * @extends Command<ClaimedGatewayOperation|null>
  */
-#[HandledBy(ClaimGatewayOperationHandler::class)]
 #[Entry(CommandEntry::ShareGateway)]
+#[HandledBy(ClaimGatewayOperationHandler::class)]
 final readonly class ClaimGatewayOperation extends Command
 {
     public function __construct(

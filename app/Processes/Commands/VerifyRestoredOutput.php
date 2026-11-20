@@ -23,8 +23,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<array<string, string>>
  */
 #[HandledBy(VerifyRestoredOutputHandler::class)]
-#[Operation('verify_restored_output', ResourceAreaType::Workspace, AccessType::Test)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('verify_restored_output', ResourceAreaType::Workspace, AccessType::Test)]
 final readonly class VerifyRestoredOutput extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $runId) {}

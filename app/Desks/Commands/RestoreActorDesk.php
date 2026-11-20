@@ -26,11 +26,11 @@ use App\Desks\Support\SeatChangeResult;
  *
  * @extends Command<SeatChangeResult>
  */
-#[HandledBy(RestoreActorDeskHandler::class)]
-#[Operation('restore_actor_desk', ResourceAreaType::JournalControl, AccessType::Create)]
-#[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(RestoreActorDeskHandler::class)]
+#[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
+#[Operation('restore_actor_desk', ResourceAreaType::JournalControl, AccessType::Create)]
 final readonly class RestoreActorDesk extends Command implements HasAuthorizationSubject
 {
     public function __construct(public ActorIdentity $actor) {}

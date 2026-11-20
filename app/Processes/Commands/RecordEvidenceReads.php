@@ -23,8 +23,8 @@ use App\Processes\Values\EvidenceRange;
  * @extends Command<int>
  */
 #[HandledBy(RecordEvidenceReadsHandler::class)]
-#[Operation('record_evidence_reads', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('record_evidence_reads', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class RecordEvidenceReads extends Command implements HasAuthorizationSubject
 {
     /**

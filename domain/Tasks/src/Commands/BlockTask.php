@@ -23,8 +23,8 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  * @extends Command<null>
  */
 #[HandledBy(BlockTaskHandler::class)]
-#[Operation('block_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(TaskPolicy::class, TaskAbility::Block)]
+#[Operation('block_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class BlockTask extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -24,8 +24,8 @@ use App\Processes\Values\ProposedRule;
  * @extends Command<ProposalReceipt>
  */
 #[HandledBy(ReviseRuleProposalHandler::class)]
-#[Operation('revise_rule_proposal', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('revise_rule_proposal', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ReviseRuleProposal extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -17,8 +17,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<null>
  */
-#[HandledBy(InterruptNavigationHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(InterruptNavigationHandler::class)]
 final readonly class InterruptNavigation extends Command
 {
     public function __construct(

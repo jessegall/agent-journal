@@ -15,6 +15,6 @@ use App\Processes\Handlers\ReconcileLostRunsHandler;
  *
  * @extends Command<int>
  */
-#[HandledBy(ReconcileLostRunsHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReconcileLostRunsHandler::class)]
 final readonly class ReconcileLostRuns extends Command {}

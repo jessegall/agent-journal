@@ -25,8 +25,8 @@ use App\Processes\Values\ProposedRule;
  * @extends Command<ApprovalReceipt>
  */
 #[HandledBy(SaveCommandRuleHandler::class)]
-#[Operation('save_command_rule', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('save_command_rule', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class SaveCommandRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(

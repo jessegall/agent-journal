@@ -22,8 +22,8 @@ use Domain\Plans\Policies\PlanPolicy;
  * @extends Command<null>
  */
 #[HandledBy(AddPhaseTasksHandler::class)]
-#[Operation('add_phase_tasks', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
+#[Operation('add_phase_tasks', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class AddPhaseTasks extends Command implements HasAuthorizationSubject
 {
     /**

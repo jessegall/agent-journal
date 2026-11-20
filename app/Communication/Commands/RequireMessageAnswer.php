@@ -23,11 +23,11 @@ use App\Communication\Policies\MessagePolicy;
  *
  * @extends Command<null>
  */
-#[HandledBy(RequireMessageAnswerHandler::class)]
-#[Operation('require_message_answer', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(RequireMessageAnswerHandler::class)]
+#[Authorize(MessagePolicy::class, MessageAbility::Work)]
+#[Operation('require_message_answer', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RequireMessageAnswer extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $messageId) {}

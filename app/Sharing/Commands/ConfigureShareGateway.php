@@ -26,9 +26,9 @@ use App\Sharing\Support\GatewayConfiguration;
  * @extends Command<GatewayConfiguration>
  */
 #[HandledBy(ConfigureShareGatewayHandler::class)]
-#[Operation('configure_share_gateway', ResourceAreaType::JournalControl, AccessType::Create)]
-#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
+#[Operation('configure_share_gateway', ResourceAreaType::JournalControl, AccessType::Create)]
 final readonly class ConfigureShareGateway extends Command implements HasAuthorizationSubject
 {
     /**

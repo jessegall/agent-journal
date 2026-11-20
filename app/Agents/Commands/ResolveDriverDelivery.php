@@ -23,8 +23,8 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(ResolveDriverDeliveryHandler::class)]
-#[Operation('resolve_driver_delivery', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('resolve_driver_delivery', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ResolveDriverDelivery extends Command implements HasAuthorizationSubject
 {
     public function __construct(

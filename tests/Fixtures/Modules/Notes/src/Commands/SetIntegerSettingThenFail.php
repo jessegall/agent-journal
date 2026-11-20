@@ -23,8 +23,8 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<null>
  */
 #[HandledBy(SetIntegerSettingThenFailHandler::class)]
-#[Operation('set_integer_setting_then_fail', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('set_integer_setting_then_fail', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class SetIntegerSettingThenFail extends Command implements HasAuthorizationSubject
 {
     public function __construct(

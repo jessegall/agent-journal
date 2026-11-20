@@ -19,8 +19,8 @@ use App\Hooks\Values\StopResultReport;
  *
  * @extends Command<StopAttemptState>
  */
-#[HandledBy(RecordStopResultsHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(RecordStopResultsHandler::class)]
 final readonly class RecordStopResults extends Command
 {
     /**

@@ -24,8 +24,8 @@ use App\Profiles\Values\ProfileKey;
  * @extends Command<int>
  */
 #[HandledBy(RevokeProfilesHandler::class)]
-#[Operation('revoke_profiles', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
+#[Operation('revoke_profiles', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class RevokeProfiles extends Command implements HasAuthorizationSubject
 {
     /**

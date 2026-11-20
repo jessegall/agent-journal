@@ -18,8 +18,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<int>
  */
-#[HandledBy(ReconcileStartsHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReconcileStartsHandler::class)]
 final readonly class ReconcileStarts extends Command
 {
     /**

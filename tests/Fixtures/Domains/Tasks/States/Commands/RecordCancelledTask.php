@@ -14,6 +14,6 @@ use Tests\Fixtures\Domains\Tasks\States\Policies\TaskWatchPolicy;
 use Tests\Fixtures\Domains\Tasks\States\TaskWatchAbility;
 
 #[HandledBy(RecordCancelledTaskHandler::class)]
-#[Operation('record_cancelled_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(TaskWatchPolicy::class, TaskWatchAbility::Record)]
+#[Operation('record_cancelled_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RecordCancelledTask extends TaskWatchRecord {}

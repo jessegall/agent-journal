@@ -26,8 +26,8 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  * @extends Command<int>
  */
 #[HandledBy(EditPlanHandler::class)]
-#[Operation('edit_plan', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
+#[Operation('edit_plan', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class EditPlan extends Command implements HasAuthorizationSubject
 {
     public function __construct(

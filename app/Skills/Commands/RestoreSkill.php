@@ -23,8 +23,8 @@ use App\Skills\Values\SkillRevisionResult;
  * @extends Command<SkillRevisionResult>
  */
 #[HandledBy(RestoreSkillHandler::class)]
-#[Operation('skills_restore', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
+#[Operation('skills_restore', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class RestoreSkill extends Command implements HasAuthorizationSubject
 {
     public function __construct(

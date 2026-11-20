@@ -28,12 +28,12 @@ use App\Records\Support\RecordIdentity;
  *
  * @extends Command<AssignmentResult>
  */
-#[HandledBy(AssignRecordHandler::class)]
-#[Effect(CommandEffectType::AssignmentChange)]
-#[Operation('assign_record', ResourceAreaType::JournalWork, AccessType::Create)]
-#[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(AssignRecordHandler::class)]
+#[Effect(CommandEffectType::AssignmentChange)]
+#[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
+#[Operation('assign_record', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class AssignRecord extends Command implements HasAuthorizationSubject
 {
     public function __construct(

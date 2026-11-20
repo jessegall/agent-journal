@@ -20,8 +20,8 @@ use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
  * @extends Command<string>
  */
 #[HandledBy(ShuffleDeckHandler::class)]
-#[Operation('shuffle_deck', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(DeckPolicy::class, DeckAbility::Work)]
+#[Operation('shuffle_deck', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ShuffleDeck extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $deck) {}

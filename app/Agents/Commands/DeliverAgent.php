@@ -25,8 +25,8 @@ use App\Bus\Support\Command;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(DeliverAgentHandler::class)]
-#[Operation('deliver_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('deliver_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class DeliverAgent extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(

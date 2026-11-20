@@ -24,8 +24,8 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
  * @extends Command<DraftReference>
  */
 #[HandledBy(OpenDocumentHandler::class)]
-#[Operation('open_document', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
+#[Operation('open_document', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class OpenDocument extends Command implements HasAuthorizationSubject
 {
     public function __construct(public int $documentNumber) {}

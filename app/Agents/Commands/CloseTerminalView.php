@@ -22,8 +22,8 @@ use App\Bus\Support\Command;
  * @extends Command<void>
  */
 #[HandledBy(CloseTerminalViewHandler::class)]
-#[Operation('close_terminal_view', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Inspect)]
+#[Operation('close_terminal_view', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class CloseTerminalView extends Command implements HasAuthorizationSubject
 {
     public function __construct(

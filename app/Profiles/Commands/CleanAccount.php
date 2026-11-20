@@ -18,8 +18,8 @@ use App\Profiles\Values\CleanupProgress;
  *
  * @extends Command<bool>
  */
-#[HandledBy(CleanAccountHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(CleanAccountHandler::class)]
 final readonly class CleanAccount extends Command
 {
     public function __construct(

@@ -25,8 +25,8 @@ use App\Profiles\Values\ProfileActivation;
  * @extends Command<ProfileActivation>
  */
 #[HandledBy(ActivateProfilesHandler::class)]
-#[Operation('activate_profiles', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
+#[Operation('activate_profiles', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class ActivateProfiles extends Command implements HasAuthorizationSubject
 {
     public function __construct(

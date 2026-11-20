@@ -24,8 +24,8 @@ use App\Processes\Values\OwnerApproval;
  * @extends Command<ApprovalReceipt>
  */
 #[HandledBy(ApproveRuleProposalHandler::class)]
-#[Operation('approve_rule_proposal', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('approve_rule_proposal', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ApproveRuleProposal extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $proposalId, public OwnerApproval $approval) {}

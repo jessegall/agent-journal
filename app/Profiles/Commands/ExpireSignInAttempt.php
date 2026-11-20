@@ -16,8 +16,8 @@ use App\Profiles\Handlers\ExpireSignInAttemptHandler;
  *
  * @extends Command<bool>
  */
-#[HandledBy(ExpireSignInAttemptHandler::class)]
 #[Entry(CommandEntry::AccountMaintenance)]
+#[HandledBy(ExpireSignInAttemptHandler::class)]
 final readonly class ExpireSignInAttempt extends Command
 {
     public function __construct(public string $attemptId) {}

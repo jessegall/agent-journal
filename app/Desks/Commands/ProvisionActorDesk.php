@@ -16,8 +16,8 @@ use App\Desks\Handlers\ProvisionActorDeskHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(ProvisionActorDeskHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ProvisionActorDeskHandler::class)]
 final readonly class ProvisionActorDesk extends Command
 {
     public function __construct(

@@ -29,8 +29,8 @@ final class OpenDocumentCall extends Data implements JournalCall
     public function __construct(
         #[Max(32)]
         public string $number,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

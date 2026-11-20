@@ -40,8 +40,8 @@ final class ProposeRuleCall extends Data implements JournalCall
         #[InPath, FromRouteParameter('commandRequest')]
         public string $commandRequest,
         public array $declaration,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

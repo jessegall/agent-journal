@@ -22,8 +22,8 @@ use Tests\Fixtures\Modules\Ledger\Policies\LedgerPolicy;
  * @extends Command<string>
  */
 #[HandledBy(OpenLedgerHandler::class)]
-#[Operation('open_ledger', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(LedgerPolicy::class, LedgerAbility::Work)]
+#[Operation('open_ledger', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class OpenLedger extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $title) {}

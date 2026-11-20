@@ -20,8 +20,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  *
  * @implements JournalCall<RecordHolderData>
  */
-#[Endpoint('assignments/show', 'POST', RecordHolderData::class, CallEffect::Read)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('assignments/show', 'POST', RecordHolderData::class, CallEffect::Read)]
 final class ShowAssignmentCall extends Data implements JournalCall
 {
     use NamesAssignedRecord;

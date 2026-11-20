@@ -17,8 +17,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<ClaimedRequests>
  */
-#[HandledBy(ClaimDriverRequestsHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ClaimDriverRequestsHandler::class)]
 final readonly class ClaimDriverRequests extends Command
 {
     public function __construct(

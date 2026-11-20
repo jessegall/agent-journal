@@ -32,6 +32,20 @@ var nativeHookEvents = []string{"SessionStart", "UserPromptSubmit", "PreToolUse"
 // answer a prompt: reading and editing files, the journal's own commands and read-only git. Anything else is refused.
 var claudeCodeAllowedWithoutAsking = []string{"Read", "Edit", "Write", "NotebookEdit", "Bash(journal:*)", "Bash(ls:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"}
 
+// claudeCodeJournalTools is the one MCP allow rule of a launch: the journal's own server, never a wildcard for others.
+const claudeCodeJournalTools = "mcp__journal__*"
+
+// The client's MCP timeouts in milliseconds: to start the server, and for one tool call.
+const (
+	claudeCodeMcpStartTimeout = "15000"
+	claudeCodeMcpToolTimeout  = "30000"
+	claudeCodeJournalTimeout  = 30000
+)
+
+// errUnresolvedLaunchSetting refuses a launch whose generated settings would hold an empty, relative or placeholder
+// path: the program would resolve it from a folder the model controls.
+var errUnresolvedLaunchSetting = errors.New("the launch has an unresolved setting")
+
 // claudeCodeNestedPrograms are agent programs a shell command could start as an unseen child; Bash may not run them.
 var claudeCodeNestedPrograms = []string{"Bash(claude:*)", "Bash(codex:*)", "Bash(*claude -p*)", "Bash(*codex exec*)"}
 
@@ -95,17 +109,23 @@ func (profile ClaudeCode) Arguments(start contracts.Start) ([]string, error) {
 	return arguments, nil
 }
 
-// Environment drops every inherited Claude Code variable: one from the starting session marks the program as its
-// child (no transcript, the parent's permission mode) and others could turn on agent teams or forked skills.
-func (ClaudeCode) Environment(inherited []string, _ contracts.Start) []string {
-	kept := make([]string, 0, len(inherited))
+// Environment drops every inherited Claude Code and MCP variable: one from the starting session marks the program as
+// its child (no transcript, the parent's permission mode) and others could turn on agent teams or forked skills. A
+// start with the journal's server gets the client's MCP timeouts, and a launch its reference.
+func (ClaudeCode) Environment(inherited []string, start contracts.Start) []string {
+	kept := make([]string, 0, len(inherited)+3)
 
 	for _, entry := range inherited {
 		name := strings.SplitN(entry, "=", 2)[0]
-		if strings.HasPrefix(name, "CLAUDE_CODE_") || name == "CLAUDECODE" {
+		if strings.HasPrefix(name, "CLAUDE_CODE_") || name == "CLAUDECODE" || strings.HasPrefix(name, "MCP_") ||
+			name == "JOURNAL_LAUNCH_REF" {
 			continue
 		}
 		kept = append(kept, entry)
+	}
+	if start.Account != nil {
+		kept = append(kept, "MCP_TIMEOUT="+claudeCodeMcpStartTimeout, "MCP_TOOL_TIMEOUT="+claudeCodeMcpToolTimeout,
+			"JOURNAL_LAUNCH_REF="+start.Account.LaunchReference)
 	}
 
 	return kept
@@ -135,6 +155,17 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 		content, err := json.MarshalIndent(settings, "", "  ")
 		return []contracts.SettingsFile{{Name: "settings.json", Content: content}}, err
 	}
+	descriptor, err := journalDescriptor(start)
+	if err != nil {
+		return nil, err
+	}
+	if start.HookCommand != "" {
+		if err := requireAbsoluteCommand(start.HookCommand); err != nil {
+			return nil, err
+		}
+	}
+	permissions, _ := settings["permissions"].(map[string]any)
+	permissions["allow"] = append(slices.Clone(claudeCodeAllowedWithoutAsking), claudeCodeJournalTools)
 	if err := mergeProtection(settings, start.Account.Protection); err != nil {
 		return nil, err
 	}
@@ -148,8 +179,42 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 
 	return []contracts.SettingsFile{
 		{Name: "settings.json", Content: content},
-		{Name: "mcp.json", Content: []byte(`{"mcpServers":{}}`)},
+		{Name: "mcp.json", Content: descriptor},
 	}, nil
+}
+
+// journalDescriptor is the launch's MCP configuration: the journal's server alone, started by absolute path, with
+// no token, environment or placeholder in it.
+func journalDescriptor(start contracts.Start) ([]byte, error) {
+	server := start.Account.JournalServer
+	if server == nil {
+		return nil, fmt.Errorf("%w: no journal MCP server", errUnresolvedLaunchSetting)
+	}
+	for _, path := range []string{server.Command, server.Relay} {
+		if !isResolvedPath(path) {
+			return nil, fmt.Errorf("%w: the journal MCP path %q", errUnresolvedLaunchSetting, path)
+		}
+	}
+	return json.MarshalIndent(map[string]any{"mcpServers": map[string]any{"journal": map[string]any{
+		"type":    "stdio",
+		"command": server.Command,
+		"args":    []string{server.Relay},
+		"timeout": claudeCodeJournalTimeout,
+	}}}, "", "  ")
+}
+
+// requireAbsoluteCommand refuses a hook command whose program is not named by an absolute, resolved path.
+func requireAbsoluteCommand(command string) error {
+	fields := strings.Fields(command)
+	if len(fields) == 0 || !isResolvedPath(fields[0]) {
+		return fmt.Errorf("%w: the hook command %q", errUnresolvedLaunchSetting, command)
+	}
+	return nil
+}
+
+// isResolvedPath answers whether a path is absolute, clean and free of any variable or placeholder.
+func isResolvedPath(path string) bool {
+	return filepath.IsAbs(path) && filepath.Clean(path) == path && !strings.ContainsAny(path, "$%{}<>")
 }
 
 // mergeProtection adds the account's checked protection settings to the start's own: permission lists are joined,
@@ -219,7 +284,7 @@ func joinRules(own any, account []any) []string {
 
 func (ClaudeCode) RejectContrary(extraArguments []string) error {
 	for _, argument := range extraArguments {
-		for _, refused := range []string{"--dangerously-skip-permissions", "--allowedTools", "--allowed-tools", "--tools", "--agents", "--setting-sources", "--continue", "-c", "--mcp-config"} {
+		for _, refused := range []string{"--dangerously-skip-permissions", "--allowedTools", "--allowed-tools", "--tools", "--agents", "--setting-sources", "--continue", "-c", "--mcp-config", "--bare", "--permission-mode"} {
 			if argument == refused || strings.HasPrefix(argument, refused+"=") {
 				return fmt.Errorf("the argument %s would undo the claude profile", argument)
 			}

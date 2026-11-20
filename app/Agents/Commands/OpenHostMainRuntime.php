@@ -18,8 +18,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<OpenedRuntime>
  */
-#[HandledBy(OpenHostMainRuntimeHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(OpenHostMainRuntimeHandler::class)]
 final readonly class OpenHostMainRuntime extends Command
 {
     public function __construct(

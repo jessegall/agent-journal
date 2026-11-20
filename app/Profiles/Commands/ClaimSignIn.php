@@ -17,8 +17,8 @@ use App\Profiles\Values\ClaimedSignIn;
  *
  * @extends Command<ClaimedSignIn|null>
  */
-#[HandledBy(ClaimSignInHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ClaimSignInHandler::class)]
 final readonly class ClaimSignIn extends Command
 {
     public function __construct(public string $hostId) {}

@@ -25,8 +25,8 @@ use App\Bus\Support\Command;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(InterruptAgentHandler::class)]
-#[Operation('interrupt_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('interrupt_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class InterruptAgent extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(

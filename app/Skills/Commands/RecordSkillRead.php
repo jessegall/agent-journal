@@ -23,8 +23,8 @@ use App\Skills\Policies\SkillAuthoringPolicy;
  * @extends Command<bool>
  */
 #[HandledBy(RecordSkillReadHandler::class)]
-#[Operation('record_skill_read', ResourceAreaType::JournalContent, AccessType::Read)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Work)]
+#[Operation('record_skill_read', ResourceAreaType::JournalContent, AccessType::Read)]
 final readonly class RecordSkillRead extends Command implements HasAuthorizationSubject
 {
     public function __construct(

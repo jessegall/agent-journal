@@ -20,8 +20,8 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<int>
  */
 #[HandledBy(UserNoteHandler::class)]
-#[Operation('user_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('user_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class UserNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $text) {}

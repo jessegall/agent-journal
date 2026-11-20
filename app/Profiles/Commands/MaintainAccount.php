@@ -23,8 +23,8 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(MaintainAccountHandler::class)]
-#[Operation('maintain_account', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('maintain_account', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class MaintainAccount extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $accountId) {}

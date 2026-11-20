@@ -24,8 +24,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(ReplayAssessmentHandler::class)]
-#[Operation('replay_assessment', ResourceAreaType::Workspace, AccessType::Test)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('replay_assessment', ResourceAreaType::Workspace, AccessType::Test)]
 final readonly class ReplayAssessment extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $partRunId) {}

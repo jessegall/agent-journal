@@ -27,8 +27,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<CloseResult>
  */
 #[HandledBy(RecoverDocumentHandler::class)]
-#[Operation('recover_document', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Administer)]
+#[Operation('recover_document', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class RecoverDocument extends Command implements HasAuthorizationSubject
 {
     public function __construct(

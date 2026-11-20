@@ -22,8 +22,8 @@ use Domain\Rules\Policies\RulePolicy;
  * @extends Command<null>
  */
 #[HandledBy(RemoveRuleHandler::class)]
-#[Operation('remove_rule', ResourceAreaType::JournalContent, AccessType::Delete)]
 #[Authorize(RulePolicy::class, RuleAbility::Remove)]
+#[Operation('remove_rule', ResourceAreaType::JournalContent, AccessType::Delete)]
 final readonly class RemoveRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $ruleId) {}

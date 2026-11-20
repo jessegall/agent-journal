@@ -46,8 +46,8 @@ final class EditDocumentCall extends Data implements JournalCall
         public string|null $new,
         public string|null $title,
         public string|null $abstract,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

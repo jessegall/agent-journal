@@ -23,8 +23,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(AssessPartOutputHandler::class)]
-#[Operation('assess_part_output', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('assess_part_output', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class AssessPartOutput extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $partRunId) {}

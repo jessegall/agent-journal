@@ -23,8 +23,8 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(ResumeKeyScriptHandler::class)]
-#[Operation('resume_key_script', ResourceAreaType::Workspace, AccessType::Execute)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('resume_key_script', ResourceAreaType::Workspace, AccessType::Execute)]
 final readonly class ResumeKeyScript extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -24,8 +24,8 @@ use App\Profiles\Values\SignInStarted;
  * @extends Command<SignInStarted>
  */
 #[HandledBy(BeginSignInHandler::class)]
-#[Operation('begin_sign_in', ResourceAreaType::JournalControl, AccessType::Create)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('begin_sign_in', ResourceAreaType::JournalControl, AccessType::Create)]
 final readonly class BeginSignIn extends Command implements HasAuthorizationSubject
 {
     public function __construct(

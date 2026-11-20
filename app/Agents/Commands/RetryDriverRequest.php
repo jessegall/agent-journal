@@ -23,8 +23,8 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(RetryDriverRequestHandler::class)]
-#[Operation('retry_driver_request', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('retry_driver_request', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RetryDriverRequest extends Command implements HasAuthorizationSubject
 {
     public function __construct(

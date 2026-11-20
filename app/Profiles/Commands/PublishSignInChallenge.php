@@ -16,8 +16,8 @@ use App\Profiles\Handlers\PublishSignInChallengeHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(PublishSignInChallengeHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(PublishSignInChallengeHandler::class)]
 final readonly class PublishSignInChallenge extends Command
 {
     public function __construct(

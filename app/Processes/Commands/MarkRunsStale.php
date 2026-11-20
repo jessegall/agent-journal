@@ -23,8 +23,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<int>
  */
 #[HandledBy(MarkRunsStaleHandler::class)]
-#[Operation('mark_runs_stale', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('mark_runs_stale', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class MarkRunsStale extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $projectKey, public string $reason) {}

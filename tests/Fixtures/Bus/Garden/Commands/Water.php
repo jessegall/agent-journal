@@ -20,8 +20,8 @@ use Tests\Fixtures\Bus\Policies\FixturePolicy;
  * @extends Command<mixed>
  */
 #[HandledBy(WaterHandler::class)]
-#[Operation('water', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('water', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class Water extends Command implements HasAuthorizationSubject
 {
     public function __construct() {}

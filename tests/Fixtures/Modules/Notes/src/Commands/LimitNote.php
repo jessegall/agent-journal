@@ -23,8 +23,8 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<int>
  */
 #[HandledBy(LimitNoteHandler::class)]
-#[Operation('limit_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('limit_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class LimitNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(

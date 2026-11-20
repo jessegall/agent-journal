@@ -24,8 +24,8 @@ use Tests\Fixtures\Bus\Shop\Handlers\LimitedItemHandler;
  * @extends Command<mixed>
  */
 #[HandledBy(LimitedItemHandler::class)]
-#[Operation('limited_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('limited_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class LimitedItem extends Command implements HasAuthorizationSubject
 {
     /**

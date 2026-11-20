@@ -23,8 +23,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(ReadPartLiveHandler::class)]
-#[Operation('read_part_live', ResourceAreaType::JournalWork, AccessType::Read)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('read_part_live', ResourceAreaType::JournalWork, AccessType::Read)]
 final readonly class ReadPartLive extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $partRunId) {}

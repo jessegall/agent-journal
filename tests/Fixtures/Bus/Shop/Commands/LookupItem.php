@@ -23,8 +23,8 @@ use Tests\Fixtures\Bus\Shop\Handlers\LookupItemHandler;
  * @extends Command<mixed>
  */
 #[HandledBy(LookupItemHandler::class)]
-#[Operation('lookup_item', ResourceAreaType::JournalWork, AccessType::Read)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('lookup_item', ResourceAreaType::JournalWork, AccessType::Read)]
 final readonly class LookupItem extends Command implements HasAuthorizationSubject
 {
     public function __construct(

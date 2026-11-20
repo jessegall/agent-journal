@@ -22,8 +22,8 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(RenameAccountHandler::class)]
-#[Operation('rename_account', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('rename_account', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class RenameAccount extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -18,8 +18,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<null>
  */
-#[HandledBy(MarkMenuEntryStaleHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(MarkMenuEntryStaleHandler::class)]
 final readonly class MarkMenuEntryStale extends Command
 {
     /**

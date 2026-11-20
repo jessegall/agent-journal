@@ -25,11 +25,11 @@ use App\Communication\Policies\MessagePolicy;
  *
  * @extends Command<MessageReadBatch>
  */
-#[HandledBy(ReadMessagesHandler::class)]
-#[Operation('messages_read', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(ReadMessagesHandler::class)]
+#[Authorize(MessagePolicy::class, MessageAbility::Work)]
+#[Operation('messages_read', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ReadMessages extends Command implements HasAuthorizationSubject
 {
     /**

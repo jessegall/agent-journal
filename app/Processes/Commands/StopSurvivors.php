@@ -23,8 +23,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(StopSurvivorsHandler::class)]
-#[Operation('stop_survivors', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('stop_survivors', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class StopSurvivors extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $runId) {}

@@ -23,8 +23,8 @@ use App\Bus\Support\Command;
  * @extends Command<null>
  */
 #[HandledBy(AbandonNavigationHandler::class)]
-#[Operation('navigation_give_up', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Navigate)]
+#[Operation('navigation_give_up', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class AbandonNavigation extends Command implements HasAuthorizationSubject
 {
     public function __construct(

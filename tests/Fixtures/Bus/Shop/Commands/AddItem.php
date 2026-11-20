@@ -21,10 +21,10 @@ use Tests\Fixtures\Bus\Shop\Handlers\AddItemHandler;
 /**
  * @extends Command<int>
  */
-#[HandledBy(AddItemHandler::class)]
-#[Operation('add_item', ResourceAreaType::JournalWork, AccessType::Create)]
-#[Authorize(FixturePolicy::class, FixtureAbility::Work)]
 #[RepeatableRead]
+#[HandledBy(AddItemHandler::class)]
+#[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('add_item', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class AddItem extends Command implements HasAuthorizationSubject
 {
     /**

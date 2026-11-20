@@ -17,8 +17,8 @@ use App\Profiles\Handlers\CompleteSignInHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(CompleteSignInHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(CompleteSignInHandler::class)]
 final readonly class CompleteSignIn extends Command
 {
     public function __construct(

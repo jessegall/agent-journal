@@ -23,8 +23,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(RetryProcessRunHandler::class)]
-#[Operation('retry_process_run', ResourceAreaType::Workspace, AccessType::Execute)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('retry_process_run', ResourceAreaType::Workspace, AccessType::Execute)]
 final readonly class RetryProcessRun extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $runId, public string $line, public string $requestKey) {}

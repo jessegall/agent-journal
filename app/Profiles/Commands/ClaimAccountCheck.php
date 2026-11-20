@@ -17,8 +17,8 @@ use App\Profiles\Values\ClaimedAccountCheck;
  *
  * @extends Command<ClaimedAccountCheck|null>
  */
-#[HandledBy(ClaimAccountCheckHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ClaimAccountCheckHandler::class)]
 final readonly class ClaimAccountCheck extends Command
 {
     public function __construct(public string $hostId) {}

@@ -27,8 +27,8 @@ use App\Bus\Support\Command;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(RecordRuntimeHandler::class)]
-#[Operation('record_runtime', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('record_runtime', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RecordRuntime extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(

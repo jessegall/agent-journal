@@ -17,6 +17,6 @@ use App\Skills\Values\PrunedPublications;
  *
  * @extends Command<PrunedPublications>
  */
-#[HandledBy(PruneSkillPublicationsHandler::class)]
 #[Entry(CommandEntry::SkillPublisher)]
+#[HandledBy(PruneSkillPublicationsHandler::class)]
 final readonly class PruneSkillPublications extends Command {}

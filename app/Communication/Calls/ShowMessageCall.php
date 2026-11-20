@@ -18,8 +18,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  *
  * @implements JournalCall<MessageView>
  */
-#[Endpoint('communication/show', 'POST', MessageView::class, CallEffect::Read)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('communication/show', 'POST', MessageView::class, CallEffect::Read)]
 final class ShowMessageCall extends Data implements JournalCall
 {
     public function __construct(

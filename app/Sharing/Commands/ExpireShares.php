@@ -17,6 +17,6 @@ use App\Sharing\Support\ShareExpiry;
  *
  * @extends Command<ShareExpiry>
  */
-#[HandledBy(ExpireSharesHandler::class)]
 #[Entry(CommandEntry::ShareGateway)]
+#[HandledBy(ExpireSharesHandler::class)]
 final readonly class ExpireShares extends Command {}

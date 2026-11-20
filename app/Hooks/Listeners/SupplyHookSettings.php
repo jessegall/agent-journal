@@ -9,8 +9,8 @@ use App\Contracts\Listener;
 use App\Programs\Enums\HookProgram;
 
 /**
- * Adds the journal's hooks for a program it supports to the start's isolated settings, and turns off its child tools
- * without identity.
+ * Adds the journal's hooks for a program it supports to the start's isolated settings, allows the journal's own MCP
+ * tools and turns off its child tools without identity.
  */
 final class SupplyHookSettings implements Listener
 {
@@ -28,6 +28,10 @@ final class SupplyHookSettings implements Listener
 
         foreach ($program->nativeChildTools() as $toolName) {
             $event->settings->denyTool($toolName);
+        }
+
+        foreach ($program->journalToolRules() as $toolRule) {
+            $event->settings->allowTool($toolRule);
         }
     }
 }

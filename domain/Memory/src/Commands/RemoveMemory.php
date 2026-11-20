@@ -22,8 +22,8 @@ use Domain\Memory\Policies\MemoryPolicy;
  * @extends Command<string>
  */
 #[HandledBy(RemoveMemoryHandler::class)]
-#[Operation('remove_memory', ResourceAreaType::JournalContent, AccessType::Delete)]
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
+#[Operation('remove_memory', ResourceAreaType::JournalContent, AccessType::Delete)]
 final readonly class RemoveMemory extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $memoryId) {}

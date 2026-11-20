@@ -16,8 +16,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<EnrolledHost>
  */
-#[HandledBy(EnrollHostHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(EnrollHostHandler::class)]
 final readonly class EnrollHost extends Command
 {
     /**

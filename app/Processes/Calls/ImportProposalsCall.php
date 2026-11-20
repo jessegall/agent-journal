@@ -35,8 +35,8 @@ final class ImportProposalsCall extends Data implements JournalCall
     public function __construct(
         #[Max(1_000_000)]
         public string $declarations,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

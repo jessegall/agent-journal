@@ -24,10 +24,10 @@ use App\Bus\Support\Command;
  *
  * @extends Command<AutoAssignmentChange>
  */
-#[HandledBy(EnableAutoAssignmentHandler::class)]
-#[Operation('enable_auto_assignment', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
 #[RepeatableRead]
+#[HandledBy(EnableAutoAssignmentHandler::class)]
+#[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
+#[Operation('enable_auto_assignment', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class EnableAutoAssignment extends Command implements HasAuthorizationSubject
 {
     public function __construct(

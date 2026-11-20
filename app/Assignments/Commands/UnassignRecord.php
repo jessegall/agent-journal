@@ -26,11 +26,11 @@ use App\Records\Support\RecordIdentity;
  *
  * @extends Command<AssignmentResult>
  */
-#[HandledBy(UnassignRecordHandler::class)]
-#[Operation('unassign_record', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(UnassignRecordHandler::class)]
+#[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
+#[Operation('unassign_record', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class UnassignRecord extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -23,8 +23,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(ProveReaderHandler::class)]
-#[Operation('prove_reader', ResourceAreaType::Workspace, AccessType::Test)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('prove_reader', ResourceAreaType::Workspace, AccessType::Test)]
 final readonly class ProveReader extends Command implements HasAuthorizationSubject
 {
     /**

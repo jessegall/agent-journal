@@ -16,8 +16,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<void>
  */
-#[HandledBy(ReportRuntimeHeartbeatHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReportRuntimeHeartbeatHandler::class)]
 final readonly class ReportRuntimeHeartbeat extends Command
 {
     public function __construct(

@@ -25,9 +25,9 @@ use App\Sharing\Support\ShareSummary;
  * @extends Command<ShareSummary>
  */
 #[HandledBy(ApproveShareRequestHandler::class)]
-#[Operation('approve_share_request', ResourceAreaType::JournalControl, AccessType::Edit)]
-#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
+#[Operation('approve_share_request', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class ApproveShareRequest extends Command implements HasAuthorizationSubject
 {
     public function __construct(

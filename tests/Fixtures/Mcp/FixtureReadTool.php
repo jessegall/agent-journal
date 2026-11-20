@@ -18,9 +18,9 @@ use Tests\Fixtures\Mcp\Exceptions\FixtureRecordUnavailable;
 /**
  * A read tool whose answer the test chooses: a record, a coded refusal, an unexpected failure or a result too large.
  */
+#[IsReadOnly]
 #[Name('fixture_read')]
 #[Description('Reads a fixture record.')]
-#[IsReadOnly]
 final class FixtureReadTool extends JournalReadTool
 {
     public function schema(JsonSchema $schema): array

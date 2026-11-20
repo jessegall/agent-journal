@@ -23,8 +23,8 @@ use Tests\Fixtures\Domains\QuestionReminders\Handlers\SendQuestionReminderHandle
  * @extends Command<null>
  */
 #[HandledBy(SendQuestionReminderHandler::class)]
-#[Operation('send_question_reminder', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('send_question_reminder', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class SendQuestionReminder extends Command implements HasAuthorizationSubject
 {
     public function __construct(

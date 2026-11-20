@@ -24,11 +24,11 @@ use App\Desks\Policies\DeskPolicy;
  *
  * @extends Command<null>
  */
-#[HandledBy(ReleaseSeatHandler::class)]
-#[Operation('release_seat', ResourceAreaType::JournalControl, AccessType::Edit)]
-#[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(ReleaseSeatHandler::class)]
+#[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
+#[Operation('release_seat', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class ReleaseSeat extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -23,8 +23,8 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  * @extends Command<null>
  */
 #[HandledBy(FinishTaskHandler::class)]
-#[Operation('finish_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(TaskPolicy::class, TaskAbility::Finish)]
+#[Operation('finish_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class FinishTask extends Command implements HasAuthorizationSubject
 {
     public function __construct(

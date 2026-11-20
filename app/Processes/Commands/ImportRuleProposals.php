@@ -24,8 +24,8 @@ use App\Processes\Values\ProposalReceipt;
  * @extends Command<list<ProposalReceipt>>
  */
 #[HandledBy(ImportRuleProposalsHandler::class)]
-#[Operation('import_rule_proposals', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('import_rule_proposals', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class ImportRuleProposals extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $declarations) {}

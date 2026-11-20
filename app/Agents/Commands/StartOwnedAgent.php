@@ -26,8 +26,8 @@ use App\Bus\Support\Command;
  * @extends Command<OwnerStartReceipt>
  */
 #[HandledBy(StartOwnedAgentHandler::class)]
-#[Operation('start_owned_agent', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('start_owned_agent', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class StartOwnedAgent extends Command implements HasAuthorizationSubject, StartsAgent
 {
     public function __construct(public OwnerStartRequest $request) {}

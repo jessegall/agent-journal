@@ -22,8 +22,8 @@ use App\Bus\Support\Command;
  * @extends Command<null>
  */
 #[HandledBy(RecordHeartbeatHandler::class)]
-#[Operation('record_heartbeat', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('record_heartbeat', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RecordHeartbeat extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $sessionId) {}

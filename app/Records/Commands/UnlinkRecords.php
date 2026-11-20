@@ -23,8 +23,8 @@ use App\Records\Support\RecordIdentity;
  * @extends Command<null>
  */
 #[HandledBy(UnlinkRecordsHandler::class)]
-#[Operation('unlink_records', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(RecordLinkPolicy::class, RecordLinkAbility::Work)]
+#[Operation('unlink_records', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class UnlinkRecords extends Command implements HasAuthorizationSubject
 {
     public function __construct(public RecordIdentity $source, public RecordIdentity $target) {}

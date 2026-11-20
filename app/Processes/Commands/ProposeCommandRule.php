@@ -25,8 +25,8 @@ use App\Processes\Values\ProposedRule;
  * @extends Command<ProposalReceipt>
  */
 #[HandledBy(ProposeCommandRuleHandler::class)]
-#[Operation('propose_command_rule', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('propose_command_rule', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class ProposeCommandRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -25,11 +25,11 @@ use App\Communication\Policies\MessagePolicy;
  *
  * @extends Command<null>
  */
-#[HandledBy(ReleaseMessageClaimHandler::class)]
-#[Operation('release_message_claim', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(MessagePolicy::class, MessageAbility::Recover)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(ReleaseMessageClaimHandler::class)]
+#[Authorize(MessagePolicy::class, MessageAbility::Recover)]
+#[Operation('release_message_claim', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ReleaseMessageClaim extends Command implements HasAuthorizationSubject
 {
     public function __construct(

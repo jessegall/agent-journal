@@ -16,8 +16,8 @@ use App\Profiles\Handlers\RecordAccountFailureHandler;
  *
  * @extends Command<bool>
  */
-#[HandledBy(RecordAccountFailureHandler::class)]
 #[Entry(CommandEntry::AccountMaintenance)]
+#[HandledBy(RecordAccountFailureHandler::class)]
 final readonly class RecordAccountFailure extends Command
 {
     public function __construct(

@@ -9188,6 +9188,7 @@ method	HookPayload::toolNameText()
 method	HookPayload::toolOutcome()
 method	HookProgram::hookCommand()
 method	HookProgram::hostName()
+method	HookProgram::journalToolRules()
 method	HookProgram::keepsOutputsBesideTranscript()
 method	HookProgram::modelArguments()
 method	HookProgram::namesTranscriptOf()
@@ -9454,6 +9455,7 @@ method	InvalidTextRange::splitCharacter()
 method	InvalidValueData::__construct()
 method	InvalidateRemovedLinkMembers::handle()
 method	IsolatedHookSettings::addHook()
+method	IsolatedHookSettings::allowTool()
 method	IsolatedHookSettings::content()
 method	IsolatedHookSettings::denyTool()
 method	IsolatedHookSettings::hasHooks()
@@ -18424,8 +18426,10 @@ property	InterruptAgent::$idempotencyKey
 property	InterruptAgent::$sessionId
 property	InterruptAgentHandler::$requests
 property	InvalidValueData::$type
+property	IsolatedHookSettings::$allowedTools
 property	IsolatedHookSettings::$deniedTools
 property	IsolatedHookSettings::$hookCommands
+property	IsolatedSettingsFile::$allowedTools
 property	IsolatedSettingsFile::$deniedTools
 property	IsolatedSettingsFile::$hooks
 property	IssueEvidencePermit::$byteCap

@@ -24,8 +24,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<string>
  */
 #[HandledBy(ProposeRuleHandler::class)]
-#[Operation('propose_rule', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(RulePolicy::class, RuleAbility::Propose)]
+#[Operation('propose_rule', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class ProposeRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(

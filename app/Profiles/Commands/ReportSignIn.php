@@ -18,8 +18,8 @@ use App\Profiles\Handlers\ReportSignInHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(ReportSignInHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReportSignInHandler::class)]
 final readonly class ReportSignIn extends Command
 {
     public function __construct(

@@ -23,8 +23,8 @@ use App\Records\Support\RecordIdentity;
  * @extends Command<int>
  */
 #[HandledBy(CancelAccountUsesHandler::class)]
-#[Operation('cancel_account_uses', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::MaintainAccountUses)]
+#[Operation('cancel_account_uses', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class CancelAccountUses extends Command implements HasAuthorizationSubject
 {
     public function __construct(public RecordIdentity $account) {}

@@ -23,9 +23,9 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<int>
  */
 #[HandledBy(KeepNoteHandler::class)]
-#[Operation('keep_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[Operation('keep_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class KeepNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $text) {}

@@ -23,8 +23,8 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(CancelSignInHandler::class)]
-#[Operation('cancel_sign_in', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('cancel_sign_in', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class CancelSignIn extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $attemptId) {}

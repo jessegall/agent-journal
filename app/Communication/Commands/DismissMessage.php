@@ -26,12 +26,12 @@ use App\Communication\Policies\MessagePolicy;
  *
  * @extends Command<null>
  */
-#[HandledBy(DismissMessageHandler::class)]
-#[Effect(CommandEffectType::Recovery)]
-#[Operation('messages_dismiss', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[Effect(CommandEffectType::Recovery)]
+#[HandledBy(DismissMessageHandler::class)]
+#[Authorize(MessagePolicy::class, MessageAbility::Work)]
+#[Operation('messages_dismiss', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class DismissMessage extends Command implements HasAuthorizationSubject
 {
     public function __construct(

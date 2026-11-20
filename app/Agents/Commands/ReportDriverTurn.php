@@ -16,8 +16,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<null>
  */
-#[HandledBy(ReportDriverTurnHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReportDriverTurnHandler::class)]
 final readonly class ReportDriverTurn extends Command
 {
     public function __construct(

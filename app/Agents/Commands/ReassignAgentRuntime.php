@@ -25,8 +25,8 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(ReassignAgentRuntimeHandler::class)]
-#[Operation('reassign_agent_runtime', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('reassign_agent_runtime', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ReassignAgentRuntime extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(

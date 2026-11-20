@@ -18,8 +18,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<null>
  */
-#[HandledBy(ReportFailureHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReportFailureHandler::class)]
 final readonly class ReportFailure extends Command
 {
     public function __construct(

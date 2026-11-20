@@ -22,8 +22,8 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<int>
  */
 #[HandledBy(EngineCopyNoteHandler::class)]
-#[Operation('engine_copy_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('engine_copy_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class EngineCopyNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $text) {}

@@ -26,8 +26,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<string>
  */
 #[HandledBy(CreatePlanHandler::class)]
-#[Operation('create_plan', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
+#[Operation('create_plan', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class CreatePlan extends Command implements HasAuthorizationSubject
 {
     public function __construct(

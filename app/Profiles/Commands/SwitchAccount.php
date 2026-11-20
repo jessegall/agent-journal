@@ -22,8 +22,8 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(SwitchAccountHandler::class)]
-#[Operation('switch_account', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('switch_account', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class SwitchAccount extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $accountId) {}

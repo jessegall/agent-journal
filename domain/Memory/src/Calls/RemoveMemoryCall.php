@@ -24,15 +24,15 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<MemoryNamed>
  */
-#[Endpoint('memory/remove', 'POST', MemoryNamed::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('memory/remove', 'POST', MemoryNamed::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class RemoveMemoryCall extends Data implements JournalCall
 {
     public function __construct(
         #[Ulid]
         public string $memoryId,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

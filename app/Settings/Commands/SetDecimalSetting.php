@@ -25,8 +25,8 @@ use App\Settings\Values\SettingsChange;
  * @extends Command<SettingsChange>
  */
 #[HandledBy(SetDecimalSettingHandler::class)]
-#[Operation('set_decimal_setting', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
+#[Operation('set_decimal_setting', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class SetDecimalSetting extends Command implements HasAuthorizationSubject
 {
     public function __construct(

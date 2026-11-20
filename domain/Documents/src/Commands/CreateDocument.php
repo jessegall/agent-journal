@@ -28,8 +28,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<CreatedRecord>
  */
 #[HandledBy(CreateDocumentHandler::class)]
-#[Operation('create_document', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
+#[Operation('create_document', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class CreateDocument extends Command implements HasAuthorizationSubject
 {
     public const int MOST_LINKS = 50;

@@ -24,11 +24,11 @@ use Domain\Tasks\Policies\TaskPolicy;
  *
  * @extends Command<int>
  */
-#[HandledBy(ResumeTaskRunHandler::class)]
-#[Operation('resume_task_run', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(TaskPolicy::class, TaskAbility::Start)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(ResumeTaskRunHandler::class)]
+#[Authorize(TaskPolicy::class, TaskAbility::Start)]
+#[Operation('resume_task_run', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ResumeTaskRun extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $runId) {}

@@ -18,8 +18,8 @@ use App\Profiles\Values\ClaimedCleanup;
  *
  * @extends Command<ClaimedCleanup|null>
  */
-#[HandledBy(ClaimCleanupHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ClaimCleanupHandler::class)]
 final readonly class ClaimCleanup extends Command
 {
     public function __construct(

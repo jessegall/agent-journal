@@ -25,8 +25,8 @@ use App\Records\Support\RecordIdentity;
  * @extends Command<HeldAccountUses>
  */
 #[HandledBy(HoldAccountUsesHandler::class)]
-#[Operation('hold_account_uses', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::MaintainAccountUses)]
+#[Operation('hold_account_uses', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class HoldAccountUses extends Command implements HasAuthorizationSubject
 {
     public function __construct(public RecordIdentity $account) {}

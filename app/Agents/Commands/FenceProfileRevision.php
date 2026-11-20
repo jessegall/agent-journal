@@ -23,8 +23,8 @@ use App\Bus\Support\Command;
  * @extends Command<string>
  */
 #[HandledBy(FenceProfileRevisionHandler::class)]
-#[Operation('fence_profile_revision', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('fence_profile_revision', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class FenceProfileRevision extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $revisionReference) {}

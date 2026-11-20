@@ -42,8 +42,8 @@ final class AdmitLineCall extends Data implements JournalCall
         public ShellDialect $dialect,
         #[MapName('working_folder'), Max(4096)]
         public string $workingFolder,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

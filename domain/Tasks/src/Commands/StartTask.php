@@ -23,8 +23,8 @@ use Domain\Tasks\Policies\TaskPolicy;
  * @extends Command<int>
  */
 #[HandledBy(StartTaskHandler::class)]
-#[Operation('start_task', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(TaskPolicy::class, TaskAbility::Start)]
+#[Operation('start_task', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class StartTask extends Command implements HasAuthorizationSubject
 {
     public function __construct(

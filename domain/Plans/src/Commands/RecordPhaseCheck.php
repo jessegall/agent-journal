@@ -23,8 +23,8 @@ use Domain\Plans\Policies\PlanPolicy;
  * @extends Command<string>
  */
 #[HandledBy(RecordPhaseCheckHandler::class)]
-#[Operation('record_phase_check', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
+#[Operation('record_phase_check', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RecordPhaseCheck extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $phaseId, public string $receiptId) {}

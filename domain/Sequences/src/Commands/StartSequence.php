@@ -22,8 +22,8 @@ use Domain\Sequences\Policies\SequencePolicy;
  * @extends Command<null>
  */
 #[HandledBy(StartSequenceHandler::class)]
-#[Operation('start_sequence', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(SequencePolicy::class, SequenceAbility::Work)]
+#[Operation('start_sequence', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class StartSequence extends Command implements HasAuthorizationSubject
 {
     public function __construct(

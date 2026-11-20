@@ -24,8 +24,8 @@ use App\Processes\Values\ProposalReceipt;
  * @extends Command<ProposalReceipt>
  */
 #[HandledBy(RestoreCommandRuleHandler::class)]
-#[Operation('restore_command_rule', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('restore_command_rule', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RestoreCommandRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(

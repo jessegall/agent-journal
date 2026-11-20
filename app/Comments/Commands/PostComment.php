@@ -24,8 +24,8 @@ use App\Records\Support\RecordIdentity;
  * @extends Command<string> the comment's id
  */
 #[HandledBy(PostCommentHandler::class)]
-#[Operation('post_comment', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(CommentPolicy::class, CommentAbility::Work)]
+#[Operation('post_comment', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class PostComment extends Command implements HasAuthorizationSubject
 {
     public function __construct(

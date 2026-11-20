@@ -15,8 +15,8 @@ use App\Skills\Handlers\FailSkillPublicationHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(FailSkillPublicationHandler::class)]
 #[Entry(CommandEntry::SkillPublisher)]
+#[HandledBy(FailSkillPublicationHandler::class)]
 final readonly class FailSkillPublication extends Command
 {
     public function __construct(

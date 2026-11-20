@@ -25,9 +25,9 @@ use App\Sharing\Support\ShareProposalStatus;
  * @extends Command<ShareProposalStatus>
  */
 #[HandledBy(RequestShareHandler::class)]
-#[Operation('request_share', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(SharingPolicy::class, SharingAbility::Request)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[Operation('request_share', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class RequestShare extends Command implements HasAuthorizationSubject
 {
     public function __construct(

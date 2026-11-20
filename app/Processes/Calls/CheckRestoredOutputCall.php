@@ -36,8 +36,8 @@ final class CheckRestoredOutputCall extends Data implements JournalCall
     public function __construct(
         #[InPath, FromRouteParameter('processRun')]
         public string $processRun,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

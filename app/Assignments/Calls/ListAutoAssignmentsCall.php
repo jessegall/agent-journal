@@ -19,8 +19,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  *
  * @implements JournalCall<AutoAssignmentPageData>
  */
-#[Endpoint('assignments/auto/list', 'POST', AutoAssignmentPageData::class, CallEffect::Read)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('assignments/auto/list', 'POST', AutoAssignmentPageData::class, CallEffect::Read)]
 final class ListAutoAssignmentsCall extends Data implements JournalCall
 {
     public function __construct(

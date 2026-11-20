@@ -24,8 +24,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(OpenCommandRequestHandler::class)]
-#[Operation('open_command_request', ResourceAreaType::Workspace, AccessType::Execute)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('open_command_request', ResourceAreaType::Workspace, AccessType::Execute)]
 final readonly class OpenCommandRequest extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -22,8 +22,8 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<int>
  */
 #[HandledBy(CopyLimitNoteHandler::class)]
-#[Operation('copy_limit_note', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('copy_limit_note', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class CopyLimitNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $text) {}

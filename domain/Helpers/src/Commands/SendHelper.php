@@ -26,8 +26,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<HelperReceipt>
  */
 #[HandledBy(SendHelperHandler::class)]
-#[Operation('send_helper', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(HelperPolicy::class, HelperAbility::Dispatch)]
+#[Operation('send_helper', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class SendHelper extends Command implements HasAuthorizationSubject
 {
     public function __construct(

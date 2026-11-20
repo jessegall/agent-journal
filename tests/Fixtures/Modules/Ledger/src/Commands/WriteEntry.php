@@ -23,8 +23,8 @@ use Tests\Fixtures\Modules\Ledger\Policies\LedgerPolicy;
  * @extends Command<int>
  */
 #[HandledBy(WriteEntryHandler::class)]
-#[Operation('write_entry', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(LedgerPolicy::class, LedgerAbility::Work)]
+#[Operation('write_entry', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class WriteEntry extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $ledgerId, public string $text, public bool $refusedAfterSave = false) {}

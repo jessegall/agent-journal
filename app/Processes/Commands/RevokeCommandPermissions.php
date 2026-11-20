@@ -25,8 +25,8 @@ use App\Processes\Values\CommandPattern;
  * @extends Command<string>
  */
 #[HandledBy(RevokeCommandPermissionsHandler::class)]
-#[Operation('revoke_command_permissions', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('revoke_command_permissions', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RevokeCommandPermissions extends Command implements HasAuthorizationSubject
 {
     /**

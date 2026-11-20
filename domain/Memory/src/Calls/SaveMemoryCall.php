@@ -26,16 +26,16 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<MemoryNamed>
  */
-#[Endpoint('memory/save', 'POST', MemoryNamed::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('memory/save', 'POST', MemoryNamed::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class SaveMemoryCall extends Data implements JournalCall
 {
     public function __construct(
         public string $text,
         #[Min(Memory::LIGHTEST), Max(Memory::HEAVIEST)]
         public int $weight,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

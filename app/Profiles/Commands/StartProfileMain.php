@@ -26,8 +26,8 @@ use App\Profiles\Values\ProfileKey;
  * @extends Command<StartReceipt>
  */
 #[HandledBy(StartProfileMainHandler::class)]
-#[Operation('start_profile_main', ResourceAreaType::JournalControl, AccessType::Create)]
 #[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
+#[Operation('start_profile_main', ResourceAreaType::JournalControl, AccessType::Create)]
 final readonly class StartProfileMain extends Command implements HasAuthorizationSubject
 {
     public function __construct(

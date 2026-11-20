@@ -25,8 +25,8 @@ use App\Text\Values\TextRange;
  * @extends Command<string> the comment's id
  */
 #[HandledBy(PostTextCommentHandler::class)]
-#[Operation('post_text_comment', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(CommentPolicy::class, CommentAbility::Work)]
+#[Operation('post_text_comment', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class PostTextComment extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -27,8 +27,8 @@ use App\Bus\Support\Command;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(RunKeyScriptHandler::class)]
-#[Operation('run_key_script', ResourceAreaType::Workspace, AccessType::Execute)]
 #[Authorize(AgentPolicy::class, AgentAbility::RunKeyScript)]
+#[Operation('run_key_script', ResourceAreaType::Workspace, AccessType::Execute)]
 final readonly class RunKeyScript extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     /**

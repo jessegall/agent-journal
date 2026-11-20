@@ -26,8 +26,8 @@ use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
  * @extends Command<string>
  */
 #[HandledBy(EditMemoryHandler::class)]
-#[Operation('edit_memory', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
+#[Operation('edit_memory', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class EditMemory extends Command implements HasAuthorizationSubject
 {
     public function __construct(

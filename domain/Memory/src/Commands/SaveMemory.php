@@ -25,8 +25,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<string>
  */
 #[HandledBy(SaveMemoryHandler::class)]
-#[Operation('save_memory', ResourceAreaType::JournalWork, AccessType::Create, AccessType::Edit)]
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
+#[Operation('save_memory', ResourceAreaType::JournalWork, AccessType::Create, AccessType::Edit)]
 final readonly class SaveMemory extends Command implements HasAuthorizationSubject
 {
     public function __construct(

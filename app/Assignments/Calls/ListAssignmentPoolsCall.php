@@ -17,8 +17,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  *
  * @implements JournalCall<PoolList>
  */
-#[Endpoint('assignments/auto/pools', 'POST', PoolList::class, CallEffect::Read)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('assignments/auto/pools', 'POST', PoolList::class, CallEffect::Read)]
 final class ListAssignmentPoolsCall extends Data implements JournalCall
 {
     public function __construct(

@@ -26,8 +26,8 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<PhaseCheckRecorded>
  */
-#[Endpoint('plans/phases/check', 'POST', PhaseCheckRecorded::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('plans/phases/check', 'POST', PhaseCheckRecorded::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class RecordPhaseCheckCall extends Data implements JournalCall
 {
     use NamesPlanPhase;
@@ -39,8 +39,8 @@ final class RecordPhaseCheckCall extends Data implements JournalCall
         public int $phase,
         #[Max(26)]
         public string $receipt,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

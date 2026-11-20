@@ -18,12 +18,12 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /**
  * menu_list: the entries of the journal owner's menu library, newest first, a page at a time.
  */
+#[IsReadOnly]
 #[Name('menu_list')]
 #[Description(
     'The menu library: each entry\'s program, goal, builds proven on with a stale mark each, uses, last use and '
     .'state, newest first. Filter by program and state.',
 )]
-#[IsReadOnly]
 final class MenuListTool extends JournalReadTool
 {
     public function __construct(

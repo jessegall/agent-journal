@@ -26,8 +26,8 @@ use App\Bus\Support\Command;
  * @extends Command<void>
  */
 #[HandledBy(ReleaseAgentHoldHandler::class)]
-#[Operation('release_agent_hold', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('release_agent_hold', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ReleaseAgentHold extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(

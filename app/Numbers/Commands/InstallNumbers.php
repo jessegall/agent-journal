@@ -15,6 +15,6 @@ use App\Numbers\Handlers\InstallNumbersHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(InstallNumbersHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(InstallNumbersHandler::class)]
 final readonly class InstallNumbers extends Command {}

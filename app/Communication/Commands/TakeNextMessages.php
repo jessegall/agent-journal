@@ -25,11 +25,11 @@ use App\Communication\Policies\MessagePolicy;
  *
  * @extends Command<MessageReadBatch>
  */
-#[HandledBy(TakeNextMessagesHandler::class)]
-#[Operation('messages_take_next', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(TakeNextMessagesHandler::class)]
+#[Authorize(MessagePolicy::class, MessageAbility::Work)]
+#[Operation('messages_take_next', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class TakeNextMessages extends Command implements HasAuthorizationSubject
 {
     public const int LARGEST_LIMIT = 100;

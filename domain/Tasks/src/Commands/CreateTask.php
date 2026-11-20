@@ -24,8 +24,8 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  * @extends Command<string>
  */
 #[HandledBy(CreateTaskHandler::class)]
-#[Operation('create_task', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(TaskPolicy::class, TaskAbility::Work)]
+#[Operation('create_task', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class CreateTask extends Command implements HasAuthorizationSubject
 {
     public function __construct(

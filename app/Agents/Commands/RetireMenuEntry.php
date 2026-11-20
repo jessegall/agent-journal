@@ -24,8 +24,8 @@ use App\Bus\Support\Command;
  * @extends Command<null>
  */
 #[HandledBy(RetireMenuEntryHandler::class)]
-#[Operation('menu_retire', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('menu_retire', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RetireMenuEntry extends Command implements HasAuthorizationSubject
 {
     public function __construct(

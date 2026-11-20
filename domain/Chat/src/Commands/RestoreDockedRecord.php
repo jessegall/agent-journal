@@ -24,10 +24,10 @@ use Domain\Chat\Support\ConversationPair;
  *
  * @extends Command<null>
  */
-#[HandledBy(RestoreDockedRecordHandler::class)]
-#[Operation('restore_docked_record', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(DockedRecordPolicy::class, DockedRecordAbility::Work)]
 #[RetainedActorRequestKey]
+#[HandledBy(RestoreDockedRecordHandler::class)]
+#[Authorize(DockedRecordPolicy::class, DockedRecordAbility::Work)]
+#[Operation('restore_docked_record', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RestoreDockedRecord extends Command implements HasAuthorizationSubject
 {
     public function __construct(

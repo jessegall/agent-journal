@@ -16,8 +16,8 @@ use App\Profiles\Handlers\ReleaseAccountRemovalHandler;
  *
  * @extends Command<bool>
  */
-#[HandledBy(ReleaseAccountRemovalHandler::class)]
 #[Entry(CommandEntry::AccountMaintenance)]
+#[HandledBy(ReleaseAccountRemovalHandler::class)]
 final readonly class ReleaseAccountRemoval extends Command
 {
     public function __construct(

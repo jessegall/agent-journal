@@ -18,8 +18,8 @@ use App\Sharing\Support\GatewayOperation;
  *
  * @extends Command<null>
  */
-#[HandledBy(RecordGatewayOutcomeHandler::class)]
 #[Entry(CommandEntry::ShareGateway)]
+#[HandledBy(RecordGatewayOutcomeHandler::class)]
 final readonly class RecordGatewayOutcome extends Command
 {
     public function __construct(

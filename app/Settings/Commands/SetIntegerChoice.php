@@ -24,8 +24,8 @@ use App\Settings\Values\SettingsChange;
  * @extends Command<SettingsChange>
  */
 #[HandledBy(SetIntegerChoiceHandler::class)]
-#[Operation('set_integer_choice', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
+#[Operation('set_integer_choice', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class SetIntegerChoice extends Command implements HasAuthorizationSubject
 {
     public function __construct(

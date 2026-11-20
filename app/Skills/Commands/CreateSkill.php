@@ -25,8 +25,8 @@ use App\Skills\Values\SkillRevisionResult;
  * @extends Command<SkillRevisionResult>
  */
 #[HandledBy(CreateSkillHandler::class)]
-#[Operation('skills_make', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
+#[Operation('skills_make', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class CreateSkill extends Command implements HasAuthorizationSubject
 {
     public function __construct(

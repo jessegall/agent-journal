@@ -35,8 +35,8 @@ final class MakeDocumentCall extends Data implements JournalCall
         public string $body,
         #[PresentList]
         public array $about,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

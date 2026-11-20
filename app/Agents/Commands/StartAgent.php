@@ -26,8 +26,8 @@ use App\Bus\Support\Command;
  * @extends Command<StartReceipt>
  */
 #[HandledBy(StartAgentHandler::class)]
-#[Operation('start_agent', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('start_agent', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class StartAgent extends Command implements HasAuthorizationSubject, StartsAgent
 {
     public function __construct(public StartRequest $request) {}

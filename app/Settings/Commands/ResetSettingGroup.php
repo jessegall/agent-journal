@@ -24,8 +24,8 @@ use App\Settings\Values\SettingsChange;
  * @extends Command<SettingsChange>
  */
 #[HandledBy(ResetSettingGroupHandler::class)]
-#[Operation('reset_setting_group', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
+#[Operation('reset_setting_group', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class ResetSettingGroup extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -22,8 +22,8 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(DismissAccountNoticeHandler::class)]
-#[Operation('dismiss_account_notice', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('dismiss_account_notice', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class DismissAccountNotice extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $noticeId) {}

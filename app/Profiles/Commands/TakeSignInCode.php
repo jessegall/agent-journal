@@ -16,8 +16,8 @@ use App\Profiles\Handlers\TakeSignInCodeHandler;
  *
  * @extends Command<string|null>
  */
-#[HandledBy(TakeSignInCodeHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(TakeSignInCodeHandler::class)]
 final readonly class TakeSignInCode extends Command
 {
     public function __construct(

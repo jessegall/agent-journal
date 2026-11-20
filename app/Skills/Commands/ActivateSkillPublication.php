@@ -16,8 +16,8 @@ use App\Skills\Handlers\ActivateSkillPublicationHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(ActivateSkillPublicationHandler::class)]
 #[Entry(CommandEntry::SkillPublisher)]
+#[HandledBy(ActivateSkillPublicationHandler::class)]
 final readonly class ActivateSkillPublication extends Command
 {
     public function __construct(

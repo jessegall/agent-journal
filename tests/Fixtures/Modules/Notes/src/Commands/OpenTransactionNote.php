@@ -20,8 +20,8 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<int>
  */
 #[HandledBy(OpenTransactionNoteHandler::class)]
-#[Operation('open_transaction_note', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('open_transaction_note', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class OpenTransactionNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $text) {}

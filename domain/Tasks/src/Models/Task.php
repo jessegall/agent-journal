@@ -67,6 +67,7 @@ use PhpOption\Some;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
+#[UseFactory(TaskFactory::class)]
 #[Fillable([
     'title',
     'brief',
@@ -78,7 +79,6 @@ use PhpOption\Some;
     'block_reason',
     'cancel_reason',
 ])]
-#[UseFactory(TaskFactory::class)]
 final class Task extends Model implements Assignable, Numbered, ReadableModel
 {
     /**

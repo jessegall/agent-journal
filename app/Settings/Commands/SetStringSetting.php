@@ -24,8 +24,8 @@ use App\Settings\Values\SettingsChange;
  * @extends Command<SettingsChange>
  */
 #[HandledBy(SetStringSettingHandler::class)]
-#[Operation('set_string_setting', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
+#[Operation('set_string_setting', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class SetStringSetting extends Command implements HasAuthorizationSubject
 {
     public function __construct(

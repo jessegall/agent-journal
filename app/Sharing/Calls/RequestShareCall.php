@@ -32,8 +32,8 @@ final class RequestShareCall extends Data implements JournalCall
         public string $alias,
         #[Regex('/^[1-9][0-9]{0,18}$/')]
         public string $number,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

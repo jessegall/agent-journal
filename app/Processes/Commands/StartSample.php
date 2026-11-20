@@ -22,8 +22,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(StartSampleHandler::class)]
-#[Operation('start_sample', ResourceAreaType::Workspace, AccessType::Test)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('start_sample', ResourceAreaType::Workspace, AccessType::Test)]
 final readonly class StartSample extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $commandRequestId, public string $permitId, public string $requestKey) {}

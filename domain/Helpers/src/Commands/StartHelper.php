@@ -26,8 +26,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<HelperReceipt>
  */
 #[HandledBy(StartHelperHandler::class)]
-#[Operation('start_helper', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(HelperPolicy::class, HelperAbility::Dispatch)]
+#[Operation('start_helper', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class StartHelper extends Command implements HasAuthorizationSubject
 {
     public function __construct(

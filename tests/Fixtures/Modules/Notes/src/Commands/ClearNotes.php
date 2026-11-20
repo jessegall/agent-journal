@@ -20,8 +20,8 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  * @extends Command<null>
  */
 #[HandledBy(ClearNotesHandler::class)]
-#[Operation('clear_notes', ResourceAreaType::JournalWork, AccessType::Delete)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('clear_notes', ResourceAreaType::JournalWork, AccessType::Delete)]
 final readonly class ClearNotes extends Command implements HasAuthorizationSubject
 {
     public function __construct() {}

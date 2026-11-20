@@ -17,8 +17,8 @@ use App\Profiles\Handlers\ReconcileSignInsHandler;
  *
  * @extends Command<int>
  */
-#[HandledBy(ReconcileSignInsHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReconcileSignInsHandler::class)]
 final readonly class ReconcileSignIns extends Command
 {
     /**

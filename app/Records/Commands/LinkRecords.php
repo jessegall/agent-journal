@@ -23,8 +23,8 @@ use App\Records\Support\RecordIdentity;
  * @extends Command<null>
  */
 #[HandledBy(LinkRecordsHandler::class)]
-#[Operation('link_records', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(RecordLinkPolicy::class, RecordLinkAbility::Work)]
+#[Operation('link_records', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class LinkRecords extends Command implements HasAuthorizationSubject
 {
     public function __construct(public RecordIdentity $source, public RecordIdentity $target) {}

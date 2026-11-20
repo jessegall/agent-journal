@@ -25,9 +25,9 @@ use App\Sharing\Support\ShareSummary;
  * @extends Command<ShareSummary>
  */
 #[HandledBy(RevokeShareHandler::class)]
-#[Operation('revoke_share', ResourceAreaType::JournalControl, AccessType::Edit)]
-#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
+#[Operation('revoke_share', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class RevokeShare extends Command implements HasAuthorizationSubject
 {
     public function __construct(

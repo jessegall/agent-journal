@@ -25,8 +25,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<string>
  */
 #[HandledBy(AddPhaseHandler::class)]
-#[Operation('add_phase', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
+#[Operation('add_phase', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class AddPhase extends Command implements HasAuthorizationSubject
 {
     public function __construct(

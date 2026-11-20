@@ -17,8 +17,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<null>
  */
-#[HandledBy(ReportStoppedHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReportStoppedHandler::class)]
 final readonly class ReportStopped extends Command
 {
     public function __construct(

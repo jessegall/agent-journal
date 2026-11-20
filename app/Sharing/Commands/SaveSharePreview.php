@@ -24,8 +24,8 @@ use App\Sharing\Support\SavedSharePreview;
  * @extends Command<SavedSharePreview>
  */
 #[HandledBy(SaveSharePreviewHandler::class)]
-#[Operation('save_share_preview', ResourceAreaType::JournalControl, AccessType::Create)]
 #[Authorize(SharingPolicy::class, SharingAbility::Administer)]
+#[Operation('save_share_preview', ResourceAreaType::JournalControl, AccessType::Create)]
 final readonly class SaveSharePreview extends Command implements HasAuthorizationSubject
 {
     /**

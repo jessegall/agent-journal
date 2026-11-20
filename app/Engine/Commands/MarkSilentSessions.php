@@ -15,8 +15,8 @@ use App\Engine\Handlers\MarkSilentSessionsHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(MarkSilentSessionsHandler::class)]
 #[Entry(CommandEntry::EngineMaintenance)]
+#[HandledBy(MarkSilentSessionsHandler::class)]
 final readonly class MarkSilentSessions extends Command
 {
     /**

@@ -24,8 +24,8 @@ use Tests\Fixtures\Bus\Shop\Handlers\EnumLimitedItemHandler;
  * @extends Command<mixed>
  */
 #[HandledBy(EnumLimitedItemHandler::class)]
-#[Operation('enum_limited_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('enum_limited_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class EnumLimitedItem extends Command implements HasAuthorizationSubject
 {
     public function __construct(

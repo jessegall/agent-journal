@@ -20,10 +20,10 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 /**
  * @extends Command<string>
  */
-#[HandledBy(PinNoteHandler::class)]
-#[Operation('pin_note', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
 #[RepeatableRead]
+#[HandledBy(PinNoteHandler::class)]
+#[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('pin_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class PinNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public int $rowId) {}

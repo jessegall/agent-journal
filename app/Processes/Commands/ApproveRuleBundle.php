@@ -22,8 +22,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(ApproveRuleBundleHandler::class)]
-#[Operation('approve_rule_bundle', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('approve_rule_bundle', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ApproveRuleBundle extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $module, public string $version, public string $digest) {}

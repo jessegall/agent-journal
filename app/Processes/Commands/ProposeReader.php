@@ -24,8 +24,8 @@ use App\Processes\Values\ReaderDefinition;
  * @extends Command<string>
  */
 #[HandledBy(ProposeReaderHandler::class)]
-#[Operation('propose_reader', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('propose_reader', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class ProposeReader extends Command implements HasAuthorizationSubject
 {
     public function __construct(

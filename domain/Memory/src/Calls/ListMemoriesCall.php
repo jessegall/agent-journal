@@ -17,8 +17,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  *
  * @implements JournalCall<MemoryPage>
  */
-#[Endpoint('memory/list', 'POST', MemoryPage::class, CallEffect::Read)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('memory/list', 'POST', MemoryPage::class, CallEffect::Read)]
 final class ListMemoriesCall extends Data implements JournalCall
 {
     public function __construct(

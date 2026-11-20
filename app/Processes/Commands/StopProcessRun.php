@@ -22,8 +22,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(StopProcessRunHandler::class)]
-#[Operation('stop_process_run', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('stop_process_run', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class StopProcessRun extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $runId, public string $reason) {}

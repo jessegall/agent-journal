@@ -22,8 +22,8 @@ use Domain\Rules\Policies\RulePolicy;
  * @extends Command<null>
  */
 #[HandledBy(DenyRuleHandler::class)]
-#[Operation('deny_rule', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(RulePolicy::class, RuleAbility::Deny)]
+#[Operation('deny_rule', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class DenyRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $ruleId) {}

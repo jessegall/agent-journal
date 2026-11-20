@@ -24,8 +24,8 @@ use App\Bus\Support\Command;
  * @extends Command<TerminalViewReceipt>
  */
 #[HandledBy(OpenTerminalViewHandler::class)]
-#[Operation('open_terminal_view', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AgentPolicy::class, AgentAbility::Inspect)]
+#[Operation('open_terminal_view', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class OpenTerminalView extends Command implements HasAuthorizationSubject
 {
     public function __construct(

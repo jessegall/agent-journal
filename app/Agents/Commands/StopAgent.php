@@ -25,8 +25,8 @@ use App\Bus\Support\Command;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(StopAgentHandler::class)]
-#[Operation('stop_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('stop_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class StopAgent extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(

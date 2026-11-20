@@ -24,8 +24,8 @@ use App\Processes\Values\CleanPreview;
  * @extends Command<CleanPreview>
  */
 #[HandledBy(CleanProcessOutputHandler::class)]
-#[Operation('clean_process_output', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('clean_process_output', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class CleanProcessOutput extends Command implements HasAuthorizationSubject
 {
     /**

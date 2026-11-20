@@ -22,8 +22,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(WithdrawCommandRequestHandler::class)]
-#[Operation('withdraw_command_request', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('withdraw_command_request', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class WithdrawCommandRequest extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $requestId) {}

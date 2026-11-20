@@ -25,8 +25,8 @@ use App\Bus\Support\Command;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(WakeAgentHandler::class)]
-#[Operation('wake_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('wake_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class WakeAgent extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(

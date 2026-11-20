@@ -17,8 +17,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  *
  * @implements JournalCall<WakeStatuses>
  */
-#[Endpoint('communication/wake-status', 'POST', WakeStatuses::class, CallEffect::Read)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('communication/wake-status', 'POST', WakeStatuses::class, CallEffect::Read)]
 final class ReadWakeStatusCall extends Data implements JournalCall
 {
     public function __construct(

@@ -25,8 +25,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<ActorIdentity>
  */
 #[HandledBy(CreateAgentHandler::class)]
-#[Operation('create_agent', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('create_agent', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class CreateAgent extends Command implements HasAuthorizationSubject
 {
     public function __construct(

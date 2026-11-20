@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name'])]
 #[Unguarded]
+#[Fillable(['name'])]
 final class UnguardedModel extends Model {}

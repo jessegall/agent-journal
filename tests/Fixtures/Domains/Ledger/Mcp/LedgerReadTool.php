@@ -14,9 +14,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /**
  * Reads a ledger entry.
  */
+#[IsReadOnly]
 #[Name('ledger_read')]
 #[Description('Reads a ledger entry.')]
-#[IsReadOnly]
 final class LedgerReadTool extends JournalReadTool
 {
     protected function read(ToolArguments $arguments): ToolResult

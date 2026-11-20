@@ -23,8 +23,8 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(CancelDriverRequestHandler::class)]
-#[Operation('cancel_driver_request', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('cancel_driver_request', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class CancelDriverRequest extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -22,8 +22,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(RetireCommandRuleHandler::class)]
-#[Operation('retire_command_rule', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('retire_command_rule', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RetireCommandRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(

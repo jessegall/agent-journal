@@ -22,8 +22,8 @@ use Domain\Rules\Policies\RulePolicy;
  * @extends Command<null>
  */
 #[HandledBy(ApproveRuleHandler::class)]
-#[Operation('approve_rule', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(RulePolicy::class, RuleAbility::Approve)]
+#[Operation('approve_rule', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class ApproveRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $ruleId) {}

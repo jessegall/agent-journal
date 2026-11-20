@@ -22,8 +22,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(RejectRuleProposalHandler::class)]
-#[Operation('reject_rule_proposal', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('reject_rule_proposal', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RejectRuleProposal extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $proposalId, public string $reason) {}

@@ -24,8 +24,8 @@ use App\Processes\Values\SampleOutcome;
  * @extends Command<SampleOutcome>
  */
 #[HandledBy(SettleSampleHandler::class)]
-#[Operation('settle_sample', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('settle_sample', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class SettleSample extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $commandRequestId) {}

@@ -24,8 +24,8 @@ use App\Settings\Values\SettingsChange;
  * @extends Command<SettingsChange>
  */
 #[HandledBy(SetBooleanSettingHandler::class)]
-#[Operation('set_boolean_setting', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
+#[Operation('set_boolean_setting', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class SetBooleanSetting extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -23,8 +23,8 @@ use Tests\Fixtures\Bus\Shop\Handlers\MisnamedFieldItemHandler;
  * @extends Command<mixed>
  */
 #[HandledBy(MisnamedFieldItemHandler::class)]
-#[Operation('misnamed_field_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('misnamed_field_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class MisnamedFieldItem extends Command implements HasAuthorizationSubject
 {
     public function __construct(

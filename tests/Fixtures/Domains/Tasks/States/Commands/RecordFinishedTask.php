@@ -14,6 +14,6 @@ use Tests\Fixtures\Domains\Tasks\States\Policies\TaskWatchPolicy;
 use Tests\Fixtures\Domains\Tasks\States\TaskWatchAbility;
 
 #[HandledBy(RecordFinishedTaskHandler::class)]
-#[Operation('record_finished_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(TaskWatchPolicy::class, TaskWatchAbility::Record)]
+#[Operation('record_finished_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RecordFinishedTask extends TaskWatchRecord {}

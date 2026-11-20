@@ -27,8 +27,8 @@ use App\Bus\Support\Command;
  * @extends Command<OpenedRuntime>
  */
 #[HandledBy(OpenAgentRuntimeHandler::class)]
-#[Operation('open_agent_runtime', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('open_agent_runtime', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class OpenAgentRuntime extends Command implements HasAuthorizationSubject, StartsAgent
 {
     public function __construct(

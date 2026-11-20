@@ -24,8 +24,8 @@ use App\Settings\Values\SettingsChange;
  * @extends Command<SettingsChange>
  */
 #[HandledBy(SetIntegerSettingHandler::class)]
-#[Operation('set_integer_setting', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
+#[Operation('set_integer_setting', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class SetIntegerSetting extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -23,8 +23,8 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(SubmitSignInCodeHandler::class)]
-#[Operation('submit_sign_in_code', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('submit_sign_in_code', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class SubmitSignInCode extends Command implements HasAuthorizationSubject
 {
     public function __construct(

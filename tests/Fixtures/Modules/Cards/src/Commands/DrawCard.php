@@ -20,8 +20,8 @@ use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
  * @extends Command<string>
  */
 #[HandledBy(DrawCardHandler::class)]
-#[Operation('draw_card', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(DeckPolicy::class, DeckAbility::Work)]
+#[Operation('draw_card', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class DrawCard extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $deck) {}

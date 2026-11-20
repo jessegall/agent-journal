@@ -20,8 +20,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<null>
  */
-#[HandledBy(ReportRequestProgressHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReportRequestProgressHandler::class)]
 final readonly class ReportRequestProgress extends Command
 {
     public function __construct(

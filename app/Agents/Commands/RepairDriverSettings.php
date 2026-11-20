@@ -23,8 +23,8 @@ use App\Bus\Support\Command;
  * @extends Command<int>
  */
 #[HandledBy(RepairDriverSettingsHandler::class)]
-#[Operation('repair_driver_settings', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('repair_driver_settings', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RepairDriverSettings extends Command implements HasAuthorizationSubject
 {
     public function __construct(

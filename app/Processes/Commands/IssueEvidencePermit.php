@@ -22,8 +22,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(IssueEvidencePermitHandler::class)]
-#[Operation('issue_evidence_permit', ResourceAreaType::JournalWork, AccessType::Create)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('issue_evidence_permit', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class IssueEvidencePermit extends Command implements HasAuthorizationSubject
 {
     public function __construct(

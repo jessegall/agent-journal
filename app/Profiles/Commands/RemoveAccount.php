@@ -23,8 +23,8 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(RemoveAccountHandler::class)]
-#[Operation('remove_account', ResourceAreaType::JournalControl, AccessType::Delete)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('remove_account', ResourceAreaType::JournalControl, AccessType::Delete)]
 final readonly class RemoveAccount extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $accountId) {}

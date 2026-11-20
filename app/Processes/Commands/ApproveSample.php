@@ -23,8 +23,8 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * @extends Command<string>
  */
 #[HandledBy(ApproveSampleHandler::class)]
-#[Operation('approve_sample', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+#[Operation('approve_sample', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ApproveSample extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -26,11 +26,11 @@ use Domain\Plans\Policies\PlanPolicy;
  *
  * @extends Command<AssignmentResult>
  */
-#[HandledBy(AssignPlanWorkHandler::class)]
-#[Operation('assign_plan_work', ResourceAreaType::JournalWork, AccessType::Edit)]
-#[Authorize(PlanPolicy::class, PlanAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(AssignPlanWorkHandler::class)]
+#[Authorize(PlanPolicy::class, PlanAbility::Work)]
+#[Operation('assign_plan_work', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class AssignPlanWork extends Command implements HasAuthorizationSubject
 {
     public function __construct(

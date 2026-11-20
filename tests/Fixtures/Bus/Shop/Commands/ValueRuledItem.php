@@ -23,8 +23,8 @@ use Tests\Fixtures\Bus\Shop\Values\RuledLabel;
  * @extends Command<mixed>
  */
 #[HandledBy(ValueRuledItemHandler::class)]
-#[Operation('value_ruled_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('value_ruled_item', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ValueRuledItem extends Command implements HasAuthorizationSubject
 {
     public function __construct(public RuledLabel $label) {}

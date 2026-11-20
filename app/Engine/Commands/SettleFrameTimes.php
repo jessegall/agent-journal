@@ -16,8 +16,8 @@ use App\Engine\Values\FrameSettlement;
  *
  * @extends Command<null>
  */
-#[HandledBy(SettleFrameTimesHandler::class)]
 #[Entry(CommandEntry::EngineMaintenance)]
+#[HandledBy(SettleFrameTimesHandler::class)]
 final readonly class SettleFrameTimes extends Command
 {
     /**

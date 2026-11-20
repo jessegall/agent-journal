@@ -23,8 +23,8 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  * @extends Command<null>
  */
 #[HandledBy(CancelTaskHandler::class)]
-#[Operation('cancel_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(TaskPolicy::class, TaskAbility::Cancel)]
+#[Operation('cancel_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class CancelTask extends Command implements HasAuthorizationSubject
 {
     public function __construct(

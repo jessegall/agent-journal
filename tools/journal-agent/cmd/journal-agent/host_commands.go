@@ -246,7 +246,7 @@ func (opener runtimeOpener) processRuntime(
 		HookCommand:    opener.hookCommand,
 		Profile:        profile,
 		Environment:    environment,
-		Account:        accountOf(prepared),
+		Account:        accountOf(prepared, opener.installationFolder, runtimeID),
 		RelayVariables: prepared.RelayVariables(settingsFolder),
 		Executable:     installedProgram(opener.installationFolder, profile),
 	}, grant.Runtime.ProcessGeneration)
@@ -273,7 +273,8 @@ func (opener runtimeOpener) terminalRuntime(
 ) (serving.Runtime, error) {
 	grant := prepared.Grant
 	request, err := startOf(profile, opener.stateFolder, opener.journalURL, opener.hookCommand, runtimeID, grant,
-		environment, accountOf(prepared), prepared.RelayVariables(filepath.Join(opener.stateFolder, "runtimes", runtimeID)),
+		environment, accountOf(prepared, opener.installationFolder, runtimeID),
+		prepared.RelayVariables(filepath.Join(opener.stateFolder, "runtimes", runtimeID)),
 		installedProgram(opener.installationFolder, profile))
 	if err != nil {
 		return nil, err
@@ -409,13 +410,26 @@ func installedProgram(installationFolder string, profile contracts.ProgramProfil
 	return host.Installation{Folder: installationFolder}.Path(filepath.Join("bin", profile.Program()))
 }
 
-// accountOf is the saved account a prepared start signs in with.
-func accountOf(prepared host.PreparedStart) *contracts.AccountStart {
+// accountOf is the saved account a prepared start signs in with, the journal's MCP server from the protected
+// installation and the runtime as the launch's reference.
+func accountOf(prepared host.PreparedStart, installationFolder, runtimeID string) *contracts.AccountStart {
+	installation := host.Installation{Folder: installationFolder}
 	return &contracts.AccountStart{
 		Folder:     prepared.Claim.Directory,
 		Protection: prepared.Claim.Recipe.ProtectionSettings,
+		JournalServer: &contracts.JournalServer{
+			Command: installation.Path(installedPHP),
+			Relay:   installation.Path(installedMcpRelay),
+		},
+		LaunchReference: runtimeID,
 	}
 }
+
+// The protected installation's PHP binary and the journal's MCP relay it runs.
+const (
+	installedPHP      = "bin/php"
+	installedMcpRelay = "journal/bin/journal-mcp"
+)
 
 // cleanEnvironmentOf is the prepared start's environment: the host's platform variables, an empty home and empty
 // folders of the runtime's own, the protected installation's PATH and the account recipe's settings.
@@ -509,7 +523,8 @@ func openMainRuntime(
 		return host.AttachRequest{}, err
 	}
 	return startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, prepared.Grant,
-		environment, accountOf(prepared), prepared.RelayVariables(filepath.Join(stateFolder, "runtimes", opened.RuntimeID)),
+		environment, accountOf(prepared, installationFolder, opened.RuntimeID),
+		prepared.RelayVariables(filepath.Join(stateFolder, "runtimes", opened.RuntimeID)),
 		installedProgram(installationFolder, profile))
 }
 

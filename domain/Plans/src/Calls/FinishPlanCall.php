@@ -26,8 +26,8 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<PlanNamed>
  */
-#[Endpoint('plans/finish', 'POST', PlanNamed::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('plans/finish', 'POST', PlanNamed::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class FinishPlanCall extends Data implements JournalCall
 {
     public function __construct(
@@ -37,8 +37,8 @@ final class FinishPlanCall extends Data implements JournalCall
         public int $expectedRevision,
         #[Max(8000)]
         public string $note,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

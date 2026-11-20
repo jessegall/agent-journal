@@ -25,8 +25,8 @@ use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
  * @extends Command<int>
  */
 #[HandledBy(EditTaskHandler::class)]
-#[Operation('edit_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(TaskPolicy::class, TaskAbility::Work)]
+#[Operation('edit_task', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class EditTask extends Command implements HasAuthorizationSubject
 {
     public function __construct(

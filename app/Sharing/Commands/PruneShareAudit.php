@@ -18,6 +18,6 @@ use App\Sharing\Support\AuditPruning;
  *
  * @extends Command<AuditPruning>
  */
-#[HandledBy(PruneShareAuditHandler::class)]
 #[Entry(CommandEntry::ShareGateway)]
+#[HandledBy(PruneShareAuditHandler::class)]
 final readonly class PruneShareAudit extends Command {}

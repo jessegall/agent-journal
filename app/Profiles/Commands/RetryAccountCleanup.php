@@ -23,8 +23,8 @@ use App\Profiles\Policies\AccountPolicy;
  * @extends Command<null>
  */
 #[HandledBy(RetryAccountCleanupHandler::class)]
-#[Operation('retry_account_cleanup', ResourceAreaType::JournalControl, AccessType::Edit)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('retry_account_cleanup', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class RetryAccountCleanup extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $accountId) {}

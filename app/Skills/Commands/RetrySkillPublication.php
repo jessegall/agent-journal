@@ -16,8 +16,8 @@ use App\Skills\Handlers\RetrySkillPublicationHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(RetrySkillPublicationHandler::class)]
 #[Entry(CommandEntry::SkillPublisher)]
+#[HandledBy(RetrySkillPublicationHandler::class)]
 final readonly class RetrySkillPublication extends Command
 {
     public function __construct(

@@ -24,8 +24,8 @@ use App\Skills\Values\SkillRevisionResult;
  * @extends Command<SkillRevisionResult>
  */
 #[HandledBy(CopySkillHandler::class)]
-#[Operation('skills_copy', ResourceAreaType::JournalContent, AccessType::Create)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
+#[Operation('skills_copy', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class CopySkill extends Command implements HasAuthorizationSubject
 {
     public function __construct(

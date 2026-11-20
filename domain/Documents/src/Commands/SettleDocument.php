@@ -24,8 +24,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<null>
  */
 #[HandledBy(SettleDocumentHandler::class)]
-#[Operation('settle_document', ResourceAreaType::JournalContent, AccessType::Edit)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
+#[Operation('settle_document', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class SettleDocument extends Command implements HasAuthorizationSubject
 {
     public function __construct(

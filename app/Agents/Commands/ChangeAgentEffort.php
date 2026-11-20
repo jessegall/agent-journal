@@ -25,8 +25,8 @@ use App\Bus\Support\Command;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(ChangeAgentEffortHandler::class)]
-#[Operation('change_agent_effort', ResourceAreaType::JournalWork, AccessType::Edit)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('change_agent_effort', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ChangeAgentEffort extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(
