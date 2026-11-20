@@ -42,8 +42,10 @@ final class EditDocumentCall extends Data implements JournalCall
         public string $mode,
         public string|null $section,
         public string|null $body,
-        public string|null $old,
-        public string|null $new,
+        #[MapName('old')]
+        public string|null $originalText,
+        #[MapName('new')]
+        public string|null $replacementText,
         public string|null $title,
         public string|null $abstract,
         #[LiteralTypeScriptType('string')]

@@ -14,8 +14,8 @@ final class MarkdownCheck
     {
         try {
             $body = MarkdownText::body($text);
-        } catch (MarkdownInvalid $problem) {
-            throw DraftMarkdownInvalid::fromBody($problem);
+        } catch (MarkdownInvalid $markdownIssue) {
+            throw DraftMarkdownInvalid::fromBody($markdownIssue);
         }
 
         $problems = self::problemLines(explode("\n", $body->text));

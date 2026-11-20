@@ -21,7 +21,7 @@ trait SearchesText
     #[Scope]
     protected function matchingText(Builder $query, string $words): void
     {
-        $query->where(fn (Builder $any) => $any
+        $query->where(fn (Builder $searchableColumns) => $searchableColumns
             ->where(fn (Builder $title) => TextSearch::narrow($title, 'title', $words))
             ->orWhere(fn (Builder $abstract) => TextSearch::narrow($abstract, 'abstract', $words))
             ->orWhere(fn (Builder $body) => TextSearch::narrow($body, 'body', $words)));
@@ -34,10 +34,10 @@ trait SearchesText
     public function snippetFor(string $words): string
     {
         foreach ([$this->body, $this->abstract, $this->title] as $text) {
-            $at = mb_stripos($text, trim($words));
+            $matchOffset = mb_stripos($text, trim($words));
 
-            if ($at !== false) {
-                $start = max(0, $at - 60);
+            if ($matchOffset !== false) {
+                $start = max(0, $matchOffset - 60);
 
                 return ($start > 0 ? '…' : '').trim(mb_substr($text, $start, mb_strlen(trim($words)) + 120)).'…';
             }

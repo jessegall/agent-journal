@@ -52,12 +52,12 @@ final class MessagePin extends Model implements ReadableModel
      */
     public static function pinFor(
         ActorIdentity $owner,
-        ConversationPair $pair,
+        ConversationPair $conversation,
         string $messageId,
     ): self {
         $existing = self::query()
             ->ownedBy($owner)
-            ->inConversation($pair)
+            ->inConversation($conversation)
             ->where('message_id', $messageId)
             ->first();
 
@@ -66,8 +66,8 @@ final class MessagePin extends Model implements ReadableModel
         }
 
         $pin = new self([
-            'source_inbox_id' => $pair->sourceInboxId,
-            'destination_inbox_id' => $pair->destinationInboxId,
+            'source_inbox_id' => $conversation->sourceInboxId,
+            'destination_inbox_id' => $conversation->destinationInboxId,
             'message_id' => $messageId,
             'pinned_at' => CarbonImmutable::now(),
         ]);
@@ -82,12 +82,12 @@ final class MessagePin extends Model implements ReadableModel
      */
     public static function unpinFor(
         ActorIdentity $owner,
-        ConversationPair $pair,
+        ConversationPair $conversation,
         string $messageId,
     ): void {
         self::query()
             ->ownedBy($owner)
-            ->inConversation($pair)
+            ->inConversation($conversation)
             ->where('message_id', $messageId)
             ->delete();
     }

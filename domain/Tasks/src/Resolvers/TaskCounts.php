@@ -57,19 +57,18 @@ final readonly class TaskCounts implements TaskProgressCounter
     }
 
     /**
-     * @param  array<array-key, int>  $countOfState  how many tasks are in each state, by the state's value; a state
-     *                                               with no tasks may be left out
+     * @param array<array-key, int> $taskCountsByState Counts by state value, omitting states with no tasks.
      */
-    private static function progressOfStates(array $countOfState): TaskProgress
+    private static function progressOfStates(array $taskCountsByState): TaskProgress
     {
-        $count = [...array_fill_keys(array_column(TaskState::cases(), 'value'), 0), ...$countOfState];
+        $taskCounts = [...array_fill_keys(array_column(TaskState::cases(), 'value'), 0), ...$taskCountsByState];
 
         return new TaskProgress(
-            done: $count[TaskState::Finished->value],
-            started: $count[TaskState::Started->value],
-            blocked: $count[TaskState::Blocked->value],
-            total: array_sum($count),
-            cancelled: $count[TaskState::Cancelled->value],
+            done: $taskCounts[TaskState::Finished->value],
+            started: $taskCounts[TaskState::Started->value],
+            blocked: $taskCounts[TaskState::Blocked->value],
+            total: array_sum($taskCounts),
+            cancelled: $taskCounts[TaskState::Cancelled->value],
         );
     }
 }

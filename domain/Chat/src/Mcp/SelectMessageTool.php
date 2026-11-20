@@ -35,8 +35,8 @@ final class SelectMessageTool extends JournalWriteTool
         return new SelectMessage($arguments->ulid('message_id'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $messageId): ToolResult
     {
-        return ToolResult::ok(['message_id' => $result]);
+        return ToolResult::ok(['message_id' => $messageId]);
     }
 }

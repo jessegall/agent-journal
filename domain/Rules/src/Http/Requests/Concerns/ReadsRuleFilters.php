@@ -33,6 +33,6 @@ trait ReadsRuleFilters
             'q' => $this->string("{$keyPrefix}q")->toString(),
             'page' => $this->integer("{$keyPrefix}page", 1),
             'rule' => $this->filled('rule') ? $this->string('rule')->toString() : null,
-        ], fn (mixed $value) => $value !== null));
+        ], fn (mixed $filterValue) => $filterValue !== null));
     }
 }

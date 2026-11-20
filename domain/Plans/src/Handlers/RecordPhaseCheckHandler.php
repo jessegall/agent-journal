@@ -32,8 +32,8 @@ final readonly class RecordPhaseCheckHandler implements CommandHandler
     public function handle(RecordPhaseCheck $command): string
     {
         $phase = Phase::query()->whereKey($command->phaseId)->sole();
-        $missing = PhaseCheckRefused::noReceipt($command->receiptId);
-        $receipt = $this->receipts->find($command->receiptId)->getOrThrow($missing);
+        $missingReceipt = PhaseCheckRefused::noReceipt($command->receiptId);
+        $receipt = $this->receipts->find($command->receiptId)->getOrThrow($missingReceipt);
         if ($receipt->outcome === AssessmentOutcome::Unavailable) {
             throw PhaseCheckRefused::noReceipt($receipt->receiptId);
         }

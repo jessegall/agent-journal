@@ -41,11 +41,11 @@ final class ReadRetainedDraftTool extends PublicationReadTool
         $id = $arguments->ulid('draft_id');
         $draft = $this->drafts->draft($id);
         $cursor = $arguments->continuation();
-        $read = $cursor === null
+        $position = $cursor === null
             ? new Continuation($this->name(), $id, [], 1)
             : $this->continuations->open($cursor, $this->name(), $id);
 
-        return $this->chunks->page($draft->body, $read, 'draft_id', [
+        return $this->chunks->page($draft->body, $position, 'draft_id', [
             'draft_id' => $id,
             'document_id' => $draft->documentId,
             'base_revision' => $draft->baseRevision,

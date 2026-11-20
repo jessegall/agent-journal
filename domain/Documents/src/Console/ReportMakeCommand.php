@@ -40,7 +40,7 @@ final class ReportMakeCommand extends Command
                 title: (string) $this->argument('title'),
                 abstract: (string) $this->option('abstract'),
                 body: $body,
-                about: array_values(array_map(strval(...), (array) $this->option('about'))),
+                relatedRecords: array_values(array_map(strval(...), (array) $this->option('about'))),
             );
 
             return CommandReport::ending(self::SUCCESS)->line(

@@ -31,7 +31,7 @@ final readonly class CreateReportHandler implements CommandHandler
         $body = $this->bodies->read($command->body, $command->uploadId, UploadType::ReportBody);
         $report = Report::file($command->title, $command->abstract, MarkdownText::body($body), $actor);
         $this->provenance->record($report);
-        $this->links->linkFrom($report, $command->about);
+        $this->links->linkFrom($report, $command->relatedRecords);
         $this->events->dispatch(new ReportFiled($report->id, $report->number, $actor));
 
         return new CreatedRecord($report->id, $report->number, 'report');

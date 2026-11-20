@@ -58,10 +58,10 @@ final class DockedRecord extends Model implements ReadableModel
      */
     public static function dockFor(
         ActorIdentity $owner,
-        ConversationPair $pair,
+        ConversationPair $conversation,
         RecordIdentity $record,
     ): self {
-        $existing = self::placed($owner, $pair, $record);
+        $existing = self::placed($owner, $conversation, $record);
 
         if ($existing !== null) {
             $existing->restore();
@@ -70,8 +70,8 @@ final class DockedRecord extends Model implements ReadableModel
         }
 
         $placement = new self([
-            'source_inbox_id' => $pair->sourceInboxId,
-            'destination_inbox_id' => $pair->destinationInboxId,
+            'source_inbox_id' => $conversation->sourceInboxId,
+            'destination_inbox_id' => $conversation->destinationInboxId,
             'record_type' => $record->type,
             'record_id' => $record->id,
             'docked_at' => CarbonImmutable::now(),
@@ -87,12 +87,12 @@ final class DockedRecord extends Model implements ReadableModel
      */
     public static function placed(
         ActorIdentity $owner,
-        ConversationPair $pair,
+        ConversationPair $conversation,
         RecordIdentity $record,
     ): self|null {
         return self::query()
             ->ownedBy($owner)
-            ->inConversation($pair)
+            ->inConversation($conversation)
             ->where('record_type', $record->type)
             ->where('record_id', $record->id)
             ->lockForUpdate()

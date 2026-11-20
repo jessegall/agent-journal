@@ -51,7 +51,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
                 fn (Plan $plan) => $plan->shareCard(),
             )->all(),
         );
-        $found = array_map(fn (ShareRecordCard $card) => $card->record->id, $cards);
+        $publishedPlanIds = array_map(fn (ShareRecordCard $card) => $card->record->id, $cards);
 
         foreach ($cards as $card) {
             $budget->chargeMetadata(strlen($card->title));
@@ -60,7 +60,10 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         return new ShareRecords(
             $cards,
             array_values(
-                array_filter($read->targets, fn (RecordIdentity $target) => ! in_array($target->id, $found, true)),
+                array_filter(
+                    $read->targets,
+                    fn (RecordIdentity $target) => ! in_array($target->id, $publishedPlanIds, true),
+                ),
             ),
             null,
         );

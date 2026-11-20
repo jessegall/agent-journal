@@ -52,14 +52,14 @@ abstract class PlanCascadeTool extends JournalWriteTool
     }
 
     /**
-     * @param AssignmentResult $result
+     * @param AssignmentResult $assignmentResult
      */
-    final protected function present(mixed $result): ToolResult
+    final protected function present(mixed $assignmentResult): ToolResult
     {
         return ToolResult::ok([
-            'changed' => $result->count(AssignmentOutcomeType::Changed),
-            'unchanged' => $result->count(AssignmentOutcomeType::Unchanged),
-            'skipped_finished' => $result->count(AssignmentOutcomeType::SkippedFinished),
+            'changed' => $assignmentResult->count(AssignmentOutcomeType::Changed),
+            'unchanged' => $assignmentResult->count(AssignmentOutcomeType::Unchanged),
+            'skipped_finished' => $assignmentResult->count(AssignmentOutcomeType::SkippedFinished),
         ], [
             new NextAction('operations_read', ['request_key' => $this->key->requireFor(static::class)]),
         ]);

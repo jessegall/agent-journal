@@ -73,6 +73,7 @@ final class HelperDispatchTest extends TestCase
         $this->chooseActiveAccounts();
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $this->supportContainers();
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('plan-reviewer', ProfileBase::readOnlyHelper()),
             TestProposals::profile('journal-main', ProfileBase::mainAgent()),
@@ -87,8 +88,8 @@ final class HelperDispatchTest extends TestCase
         $receipt = $this->start('request-1', 'Review plan 7', self::SHELL_LIKE_BRIEF);
         $selection = $receipt->start->selection;
 
-        $this->assertTrue($receipt->launch->identityNew);
-        $this->assertTrue($receipt->jobNew);
+        $this->assertTrue($receipt->launch->isNewIdentity);
+        $this->assertTrue($receipt->isNewJob);
         $this->assertTrue($receipt->start->newSession);
         $this->assertSame('opus', $selection->model);
         $this->assertSame(HookProgram::Codex, $selection->program);
@@ -110,7 +111,7 @@ final class HelperDispatchTest extends TestCase
         $sent = $this->send('request-2', $first->identityId, 'Review plan 8');
 
         $this->assertSame($first->identityId, $sent->identityId);
-        $this->assertFalse($sent->launch->identityNew);
+        $this->assertFalse($sent->launch->isNewIdentity);
         $this->assertSame(ConversationModeType::New, $sent->launch->conversationMode);
     }
 
@@ -180,7 +181,7 @@ final class HelperDispatchTest extends TestCase
         $repeat = $this->start('request-1', 'Review plan 7');
 
         $this->assertSame($first->jobId, $repeat->jobId);
-        $this->assertFalse($repeat->jobNew);
+        $this->assertFalse($repeat->isNewJob);
         $this->assertSame(1, HelperJob::query()->count());
         $this->assertThrows(fn () => $this->start('request-1', 'Review plan 9'), HelperRequestConflict::class);
     }

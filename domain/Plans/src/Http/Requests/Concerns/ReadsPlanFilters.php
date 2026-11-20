@@ -37,6 +37,6 @@ trait ReadsPlanFilters
             'page' => $this->integer('page', 1),
             'plan' => $this->filled('plan') ? $this->string('plan')->toString() : null,
             'state' => $this->enum('state', PlanStateGroup::class),
-        ], fn (mixed $value) => $value !== null));
+        ], fn (mixed $filterValue) => $filterValue !== null));
     }
 }

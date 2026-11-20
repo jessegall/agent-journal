@@ -41,7 +41,7 @@ final class DismissMessageTool extends JournalWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $commandResult): ToolResult
     {
         return ToolResult::ok(['dismissed' => true]);
     }

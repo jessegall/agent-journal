@@ -14,9 +14,9 @@ use RuntimeException;
  */
 final class StaleRead extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    public static function revision(int $expected, int $actual): self
+    public static function revision(int $expectedRevision, int $currentRevision): self
     {
-        return new self("The record is at revision {$actual} now, not {$expected}; read it again from the start.");
+        return new self("The record is at revision {$currentRevision} now, not {$expectedRevision}; read it again from the start.");
     }
 
     public function refusalCode(): RefusalCode

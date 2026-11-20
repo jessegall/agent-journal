@@ -45,7 +45,7 @@ final class AppendUploadTool extends JournalWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $commandResult): ToolResult
     {
         return ToolResult::ok([]);
     }

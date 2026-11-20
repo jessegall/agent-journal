@@ -42,7 +42,7 @@ final class CancelPlanTool extends PlanWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $commandResult): ToolResult
     {
         return ToolResult::ok(['state' => PlanState::Cancelled->value]);
     }

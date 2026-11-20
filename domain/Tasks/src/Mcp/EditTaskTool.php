@@ -42,8 +42,8 @@ final class EditTaskTool extends TaskWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $revision): ToolResult
     {
-        return ToolResult::ok(['revision' => $result]);
+        return ToolResult::ok(['revision' => $revision]);
     }
 }

@@ -100,11 +100,11 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     private function addTasksUnderPlanLock(array $taskIds): void
     {
         Plan::lockStructure($this->plan_id);
-        $twice = array_keys(array_filter(array_count_values($taskIds), fn (int $count) => $count > 1));
-        $placed = PhaseTask::query()->whereIn('task_id', $taskIds)->value('task_id');
+        $duplicateTaskIds = array_keys(array_filter(array_count_values($taskIds), fn (int $count) => $count > 1));
+        $alreadyPlacedTaskId = PhaseTask::query()->whereIn('task_id', $taskIds)->value('task_id');
 
-        if ($twice !== [] || $placed !== null) {
-            throw TaskAlreadyInAPhase::forTask((string) ($twice[0] ?? $placed));
+        if ($duplicateTaskIds !== [] || $alreadyPlacedTaskId !== null) {
+            throw TaskAlreadyInAPhase::forTask((string) ($duplicateTaskIds[0] ?? $alreadyPlacedTaskId));
         }
 
         $next = PhaseTask::query()->where('phase_id', $this->id)->count() + 1;

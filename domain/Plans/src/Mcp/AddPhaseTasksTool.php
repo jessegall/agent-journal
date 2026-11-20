@@ -43,7 +43,7 @@ final class AddPhaseTasksTool extends PlanWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $commandResult): ToolResult
     {
         return ToolResult::ok([]);
     }

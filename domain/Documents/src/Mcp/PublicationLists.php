@@ -26,27 +26,27 @@ final readonly class PublicationLists
 
     public function documents(ToolArguments $arguments): ToolResult
     {
-        $read = $this->position('docs_list', $arguments);
-        $page = $this->documents->list($this->filters($read, AttentionFilter::All));
+        $position = $this->position('docs_list', $arguments);
+        $page = $this->documents->list($this->filters($position, AttentionFilter::All));
 
-        return $this->page($page->rows, $page->hasNextPage, $read);
+        return $this->page($page->rows, $page->hasNextPage, $position);
     }
 
     public function reports(ToolArguments $arguments): ToolResult
     {
-        $read = $this->position('reports_list', $arguments, $arguments->enumOr('state', ReportState::Open));
-        $state = ReportState::from($read->filters['state']);
-        $page = $this->reports->list($this->filters($read, $state->attention()));
+        $position = $this->position('reports_list', $arguments, $arguments->enumOr('state', ReportState::Open));
+        $state = ReportState::from($position->filters['state']);
+        $page = $this->reports->list($this->filters($position, $state->attention()));
 
-        return $this->page($page->rows, $page->hasNextPage, $read);
+        return $this->page($page->rows, $page->hasNextPage, $position);
     }
 
-    private function filters(Continuation $read, AttentionFilter $attention): DocumentFilters
+    private function filters(Continuation $position, AttentionFilter $attention): DocumentFilters
     {
         return DocumentFilters::from([
             'attention' => $attention,
-            'query' => $read->filters['search'],
-            'page' => $read->offset,
+            'query' => $position->filters['search'],
+            'page' => $position->offset,
             'perPage' => 8,
         ]);
     }
@@ -67,20 +67,20 @@ final readonly class PublicationLists
     /**
      * @param list<DocumentCard|ReportCard> $cards
      */
-    private function page(array $cards, bool $hasNext, Continuation $read): ToolResult
+    private function page(array $cards, bool $hasNext, Continuation $position): ToolResult
     {
-        $rows = array_map(fn (DocumentCard|ReportCard $card) => [
+        $entries = array_map(fn (DocumentCard|ReportCard $card) => [
             'id' => (int) $card->number,
             'record_id' => $card->id,
             'title' => mb_strcut($card->title, 0, 100),
             'abstract' => mb_strcut($card->abstract, 0, 120),
         ], $cards);
-        $next = $hasNext ? [new \App\Mcp\Data\NextAction($read->tool, [
+        $next = $hasNext ? [new \App\Mcp\Data\NextAction($position->tool, [
             'continuation' => $this->continuations->issue(new Continuation(
-                $read->tool, '', $read->filters, $read->offset + 1,
+                $position->tool, '', $position->filters, $position->offset + 1,
             )),
         ])] : [];
 
-        return ToolResult::ok(['cards' => $rows, 'page' => $read->offset], $next);
+        return ToolResult::ok(['cards' => $entries, 'page' => $position->offset], $next);
     }
 }

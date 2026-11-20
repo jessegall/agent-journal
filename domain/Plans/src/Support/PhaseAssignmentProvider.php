@@ -42,11 +42,14 @@ final readonly class PhaseAssignmentProvider implements AssignableProvider
     public function visibleRecords(array $records): array
     {
         $this->actors->actor();
-        $found = Phase::query()->whereKey(
+        $visiblePhaseIds = Phase::query()->whereKey(
             array_map(fn (RecordIdentity $record) => $record->id, $records),
         )->readLimit(count($records))->pluck('id')->all();
 
-        return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $found, true)));
+        return array_values(array_filter(
+            $records,
+            fn (RecordIdentity $record) => in_array($record->id, $visiblePhaseIds, true),
+        ));
     }
 
     /**

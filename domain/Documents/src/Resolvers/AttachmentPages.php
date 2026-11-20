@@ -20,10 +20,10 @@ final readonly class AttachmentPages implements AttachmentReader
     public function attachment(string $id, string|null $continuation): ToolResult
     {
         $upload = TextUpload::sealed($id);
-        $read = $continuation === null
+        $position = $continuation === null
             ? new Continuation(self::TOOL, $id, [], 1)
             : $this->continuations->open($continuation, self::TOOL, $id);
 
-        return $this->chunks->page($upload->attachmentText(), $read, 'attachment_id', ['attachment_id' => $id]);
+        return $this->chunks->page($upload->attachmentText(), $position, 'attachment_id', ['attachment_id' => $id]);
     }
 }

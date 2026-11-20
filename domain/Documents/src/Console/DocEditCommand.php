@@ -45,8 +45,8 @@ final class DocEditCommand extends Command
                 mode: $this->mode(),
                 section: $this->stringOption('section'),
                 body: $this->bodyText(),
-                old: $this->stringOption('replace'),
-                new: $this->stringOption('with'),
+                originalText: $this->stringOption('replace'),
+                replacementText: $this->stringOption('with'),
                 title: $this->stringOption('title'),
                 abstract: $this->stringOption('abstract'),
             );
@@ -71,9 +71,9 @@ final class DocEditCommand extends Command
 
     private function stringOption(string $name): string|null
     {
-        $value = $this->option($name);
+        $optionValue = $this->option($name);
 
-        return is_string($value) ? $value : null;
+        return is_string($optionValue) ? $optionValue : null;
     }
 
     /**

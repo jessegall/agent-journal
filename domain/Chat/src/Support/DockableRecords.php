@@ -24,13 +24,13 @@ final readonly class DockableRecords
      * @throws InboxUnavailable
      * @throws RecordUnavailable
      */
-    public function requireIn(ConversationPair $pair, RecordIdentity $record): void
+    public function requireIn(ConversationPair $conversation, RecordIdentity $record): void
     {
-        $sitsAtEither = $this->messages->sitsAt($pair->sourceInboxId)
-            || $this->messages->sitsAt($pair->destinationInboxId);
+        $hasSeatInConversation = $this->messages->sitsAt($conversation->sourceInboxId)
+            || $this->messages->sitsAt($conversation->destinationInboxId);
 
-        if (! $sitsAtEither) {
-            throw InboxUnavailable::forId($pair->sourceInboxId);
+        if (! $hasSeatInConversation) {
+            throw InboxUnavailable::forId($conversation->sourceInboxId);
         }
 
         $this->records->requireReadable($record);

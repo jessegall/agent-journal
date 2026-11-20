@@ -13,7 +13,7 @@ use App\Agents\Enums\ConversationModeType;
 final readonly class ConversationChoice
 {
     public function __construct(
-        public bool $identityNew,
+        public bool $isNewIdentity,
         public ConversationModeType $mode,
         public string $reason,
     ) {}

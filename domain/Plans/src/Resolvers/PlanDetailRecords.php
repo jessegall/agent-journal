@@ -62,8 +62,8 @@ final readonly class PlanDetailRecords implements PlanDetailsResolver
 
         foreach ($planPhases as $phase) {
             $taskIds = $taskIdsByPhase[$phase->id];
-            $from = max($position, $taskOffset);
-            $phases[] = $phase->withTasks(array_slice($taskIds, $from - $position, max(0, $end - $from)));
+            $sliceStart = max($position, $taskOffset);
+            $phases[] = $phase->withTasks(array_slice($taskIds, $sliceStart - $position, max(0, $end - $sliceStart)));
             $position += count($taskIds);
         }
 

@@ -41,7 +41,7 @@ final class CloseReportTool extends JournalWriteTool
         return new CloseReport((string) $arguments->recordReference('report_id'), $arguments->text('reason'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $commandResult): ToolResult
     {
         return ToolResult::ok([]);
     }

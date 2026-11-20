@@ -36,7 +36,7 @@ final readonly class ReportPages implements ReportReader
     {
         $report = ReportRecords::published($id);
         $cursor = $arguments->continuation();
-        $read = $cursor === null ? new Continuation(
+        $position = $cursor === null ? new Continuation(
             self::TOOL,
             (string) $id,
             ['view' => $arguments->enumOr('view', PublicationView::Summary)->value],
@@ -46,18 +46,18 @@ final readonly class ReportPages implements ReportReader
         $state = $report->attention === AttentionState::Active ? ReportState::Open : ReportState::Closed;
         $card = new ReportReadCard($report->number, $report->id, $state);
 
-        return match (PublicationView::from($read->filters['view'])) {
+        return match (PublicationView::from($position->filters['view'])) {
             PublicationView::Summary => $this->pages->summary(
-                MarkdownText::body($report->body), $report->abstract, $read, self::KEY, $card,
+                MarkdownText::body($report->body), $report->abstract, $position, self::KEY, $card,
             ),
             PublicationView::Body => $this->chunks->page(
                 $report->body,
-                $cursor === null ? $this->chunks->range($read, MarkdownText::body($report->body), $arguments) : $read,
+                $cursor === null ? $this->chunks->range($position, MarkdownText::body($report->body), $arguments) : $position,
                 self::KEY,
                 $card->toArray(),
             ),
             PublicationView::Comments => $this->pages->comments(
-                new RecordIdentity(Report::LINK_TYPE, $report->id), $read, self::KEY, $card,
+                new RecordIdentity(Report::LINK_TYPE, $report->id), $position, self::KEY, $card,
             ),
             PublicationView::Revisions => throw ToolArgumentInvalid::for('view', 'summary, body, or comments'),
         };

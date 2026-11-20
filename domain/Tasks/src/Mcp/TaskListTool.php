@@ -41,11 +41,11 @@ abstract class TaskListTool extends JournalReadTool
         return $this->pages->answer(
             $this->name(),
             $arguments,
-            fn (ToolArguments $first) => [
-                'search' => $first->textOr('search', ''),
-                'states' => $first->enumValues('states', TaskState::class),
-                'page' => $first->positiveIntegerOr('page', 1),
-                'per_page' => $first->positiveIntegerOr('per_page', 20, NumberedPage::LARGEST_SIZE),
+            fn (ToolArguments $initialArguments) => [
+                'search' => $initialArguments->textOr('search', ''),
+                'states' => $initialArguments->enumValues('states', TaskState::class),
+                'page' => $initialArguments->positiveIntegerOr('page', 1),
+                'per_page' => $initialArguments->positiveIntegerOr('per_page', 20, NumberedPage::LARGEST_SIZE),
             ],
             fn (ToolArguments $filters) => $this->page(new TaskFilters(
                 search: $filters->text('search'),

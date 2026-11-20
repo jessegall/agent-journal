@@ -28,9 +28,9 @@ final readonly class OpenDocumentHandler implements CommandHandler
     public function handle(OpenDocument $command): DraftReference
     {
         $document = Document::lockedForEditing(RecordReference::idOrNumber($command->documentNumber));
-        $base = $document->currentRevisionOrFail();
-        if ($command->expectedRevision !== null && $base->number !== $command->expectedRevision) {
-            throw StaleRead::revision($command->expectedRevision, $base->number);
+        $baseRevision = $document->currentRevisionOrFail();
+        if ($command->expectedRevision !== null && $baseRevision->number !== $command->expectedRevision) {
+            throw StaleRead::revision($command->expectedRevision, $baseRevision->number);
         }
 
         $editor = $this->editors->editor();
@@ -44,16 +44,16 @@ final readonly class OpenDocumentHandler implements CommandHandler
             return $held->reference($document);
         }
 
-        $elsewhere = DocumentDraft::query()->with('document')->where(
+        $otherDocumentDraft = DocumentDraft::query()->with('document')->where(
             'author_type',
             $editor->type->value,
         )->where('author_id', $editor->id)->first();
 
-        if ($elsewhere !== null) {
-            throw DraftHeld::elsewhere($elsewhere->document->number);
+        if ($otherDocumentDraft !== null) {
+            throw DraftHeld::elsewhere($otherDocumentDraft->document->number);
         }
 
-        $draft = DocumentDraft::openFor($document, $base, $editor);
+        $draft = DocumentDraft::openFor($document, $baseRevision, $editor);
         $this->provenance->record($draft);
         $this->events->dispatch(new DocumentOpened($document->id, $document->number));
 

@@ -17,7 +17,7 @@ final readonly class JobLaunch
         public string $requestId,
         public string $payloadDigest,
         public int $profileRevision,
-        public bool $identityNew,
+        public bool $isNewIdentity,
         public bool $independent,
         public ConversationModeType $conversationMode,
         public string $conversationReason,

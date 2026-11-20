@@ -35,8 +35,8 @@ final class CreateTaskTool extends TaskWriteTool
         return new CreateTask($arguments->text('title'), $arguments->text('brief'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $taskId): ToolResult
     {
-        return ToolResult::ok(['task_id' => $result]);
+        return ToolResult::ok(['task_id' => $taskId]);
     }
 }

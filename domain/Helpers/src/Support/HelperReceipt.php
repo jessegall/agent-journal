@@ -18,7 +18,7 @@ final readonly class HelperReceipt
     public function __construct(
         public string $identityId,
         public string $jobId,
-        public bool $jobNew,
+        public bool $isNewJob,
         public string $profileType,
         public JobState $state,
         public JobLaunch $launch,
