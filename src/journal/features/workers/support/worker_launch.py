@@ -17,4 +17,5 @@ class WorkerLaunch:
     def launched(self, worker: Worker, actor: Actor, repositories: tuple[str, ...] = (), branch: str = "", move: Callable[[Worker, float], Worker] = Worker.dispatched) -> Worker:
         placed = self.workers.save(worker.with_(repositories=repositories or worker.repositories, branch=branch or worker.branch), actor)
         self.runner.start(placed, actor)
-        return self.workers.save(move(self.workers.find(worker.row_id), self.time_source.seconds()), actor)
+        time = self.time_source.seconds()
+        return self.workers.rewritten(worker, actor, lambda current: move(current, time))
