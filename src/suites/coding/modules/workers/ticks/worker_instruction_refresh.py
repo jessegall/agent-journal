@@ -1,8 +1,11 @@
 from engine.container.container import Container
+from engine.errors.refusal import Refusal
+from engine.file.file_access import FileAccess
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
+from suites.coding.modules.workers.models.worktree import Worktree
 
 
 class WorkerInstructionRefresh:
@@ -12,7 +15,15 @@ class WorkerInstructionRefresh:
 
     def __call__(self, container: Container) -> bool:
         files, git = container.get(WorkerInstructionFiles), container.get(WorktreeGit)
-        # whether a refresh wrote a file, not whether a worktree is open; a worktree mid-rebase is left to its operation,
-        # and one a dispatch is still setting up has no folder yet
-        return any([files.refresh(worktree) for worktree in container.get(WorktreeQuery).open_worktrees()
-                    if worktree.state is not WorktreeState.NEW and not git.is_mid_sequence(worktree)])
+        return any([self.refresh(worktree, files, git) for worktree in container.get(WorktreeQuery).open_worktrees()])
+
+    @staticmethod
+    def refresh(worktree: Worktree, files: WorkerInstructionFiles, git: WorktreeGit) -> bool:
+        if worktree.state is WorktreeState.NEW or not FileAccess.is_dir(worktree.folder):
+            return False
+        try:
+            return not git.is_mid_sequence(worktree) and files.refresh(worktree)
+        except (FileNotFoundError, Refusal):
+            if FileAccess.is_dir(worktree.folder):
+                raise
+            return False
