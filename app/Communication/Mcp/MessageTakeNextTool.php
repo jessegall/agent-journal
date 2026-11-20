@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Bus\Contracts\Command;
 use App\Communication\Commands\TakeNextMessages;
 use App\Mcp\Attributes\Dispatches;
-use App\Mcp\Attributes\VisibleToProfiles;
-use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -20,8 +19,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Name('messages_take_next')]
 #[Dispatches(TakeNextMessages::class)]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 #[Description('Take up the oldest questions nobody has taken up in one of your inboxes.')]
+#[VisibleToProfiles]
 final class MessageTakeNextTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

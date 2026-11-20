@@ -6,7 +6,6 @@ namespace App\Skills\Mcp;
 
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Skills\Contracts\SkillResolver;
@@ -20,10 +19,10 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /** Shows who a skill reaches, or one agent's selection. */
 #[IsReadOnly]
 #[Name('skills_preview')]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description(
     'Show which visible agents a skill reaches, each with a match and reason, or show one agent’s skill selection.',
 )]
+#[VisibleToProfiles]
 final class SkillPreviewTool extends JournalReadTool
 {
     public function __construct(

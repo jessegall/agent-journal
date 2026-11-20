@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(true)]
 #[Name('messages_dismiss')]
 #[Dispatches(DismissMessage::class)]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Withdraw a message you wrote, or decline one sent to your inbox, with a reason.')]
 final class DismissMessageTool extends JournalWriteTool
 {

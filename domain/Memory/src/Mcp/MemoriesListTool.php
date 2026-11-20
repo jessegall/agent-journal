@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Agents\Values\ReadRequest;
 use App\Bus\Attributes\Authorize;
-use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
@@ -24,9 +24,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[IsReadOnly]
 #[Name('memories_list')]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
 #[Description('List your memories by weight, with text previews and revision numbers.')]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
 final class MemoriesListTool extends JournalReadTool
 {
     public function __construct(private readonly MemoryResolver $memories, private readonly NumberedPages $pages) {}

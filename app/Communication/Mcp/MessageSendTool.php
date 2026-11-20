@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Bus\Contracts\Command;
 use App\Communication\Commands\SendMessage;
 use App\Mcp\Attributes\Dispatches;
@@ -19,6 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Name('messages_send')]
 #[Dispatches(SendMessage::class)]
 #[Description('Send a note from one of your inboxes to another inbox; nobody has to answer it.')]
+#[VisibleToProfiles]
 final class MessageSendTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

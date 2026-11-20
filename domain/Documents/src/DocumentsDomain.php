@@ -15,6 +15,8 @@ use App\Domains\Contracts\LinkRecordProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
+use App\Mcp\Resources\JournalResource;
+use App\Mcp\Tools\JournalTool;
 use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
 use App\Sharing\Contracts\ShareRecordContributor;
@@ -263,12 +265,12 @@ final class DocumentsDomain extends Domain implements
 
     public function mcpTools(): array
     {
-        return [];
+        return FolderClasses::in(__DIR__.'/Mcp', JournalTool::class);
     }
 
     public function mcpResources(): array
     {
-        return [];
+        return FolderClasses::in(__DIR__.'/Mcp', JournalResource::class);
     }
 
     public function overviewContributions(): array

@@ -114,6 +114,26 @@ final readonly class ToolArguments
         return array_key_exists($name, $this->arguments) ? $this->ulid($name) : null;
     }
 
+    public function recordReference(string $name): int|string
+    {
+        $value = $this->arguments[$name] ?? null;
+        if (is_int($value)) {
+            return $this->positiveInteger($name);
+        }
+        if (is_string($value) && preg_match('/^[1-9][0-9]{0,18}$/', $value) === 1
+            && (strlen($value) < 19 || strcmp($value, (string) PHP_INT_MAX) <= 0)) {
+            return (int) $value;
+        }
+
+        return $this->ulid($name);
+    }
+
+    /** @return list<string> */
+    public function optionalList(string $name): array
+    {
+        return array_key_exists($name, $this->arguments) ? $this->list($name) : [];
+    }
+
     /** @return non-empty-list<string> */
     public function ulids(string $name): array
     {

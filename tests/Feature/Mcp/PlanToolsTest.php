@@ -106,12 +106,12 @@ final class PlanToolsTest extends TestCase
             'type' => 'fix',
             'request_key' => 'edit-plan',
         ])->assertJsonPath('result.structuredContent.revision', 2);
-        $this->callMcpTool($this->caller, 'plans_cancel', [
+        $this->signed($this->caller, '/agent/plans/cancel', [
             'plan_id' => $plan->id,
             'expected_revision' => 2,
             'reason' => 'Work moved elsewhere.',
             'request_key' => 'cancel-plan',
-        ])->assertJsonPath('result.structuredContent.state', 'cancelled');
+        ])->assertOk();
 
         $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $plan->id, 'view' => 'context'])
             ->assertJsonPath('result.structuredContent.title', 'New title')

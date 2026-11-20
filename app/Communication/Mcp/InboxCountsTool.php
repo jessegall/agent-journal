@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
-use App\Communication\Contracts\ConversationResolver;
 use App\Mcp\Attributes\VisibleToProfiles;
+use App\Communication\Contracts\ConversationResolver;
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -15,8 +14,8 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('inbox_counts')]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
 #[Description('Count what is unread in an inbox and how many questions wait, taken up or not.')]
+#[VisibleToProfiles]
 final class InboxCountsTool extends JournalReadTool
 {
     public function __construct(private readonly ConversationResolver $conversations) {}

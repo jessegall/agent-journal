@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ListedPage;
@@ -24,6 +26,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 #[Name('plans_list')]
 #[Description('Every plan, 20 to a page, with state, progress and holder. Filter by search and states and choose the page, or send only the continuation a result gave.')]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 final class PlansListTool extends JournalReadTool
 {
     public function __construct(private readonly PlanResolver $plans, private readonly NumberedPages $pages) {}

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Agents\Commands\ProveNavigation;
 use App\Agents\Enums\NavigationCompletion;
 use App\Mcp\Attributes\Dispatches;
-use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
@@ -24,12 +24,12 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Name('navigation_done')]
 #[Dispatches(ProveNavigation::class)]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description(
     'Say a navigation request is done: completes goal (the whole goal shows) or step (only the stalled step is '
     .'repaired), and a proof, text that now shows on the screen and did not when the request was raised. The host '
     .'checks the proof on the live screen before anything counts.',
 )]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 final class NavigationDoneTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
@@ -19,6 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 #[Name('skills_revision')]
 #[Description('One revision of a stored skill as saved: name, description, condition and sections.')]
+#[VisibleToProfiles]
 final class SkillRevisionTool extends JournalReadTool
 {
     public function __construct(

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Assignments\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Assignments\Mcp\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Support\AssignmentResult;
 use App\Mcp\Data\ToolResult;
@@ -14,6 +16,7 @@ use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
 
 /** Maps single-record assignment arguments and outcomes for MCP. */
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 abstract class AssignmentWriteTool extends JournalWriteTool
 {
     use ReadsAssignmentArguments;

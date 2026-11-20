@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -21,6 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Name('tasks_finish')]
 #[Dispatches(FinishTask::class)]
 #[Description('Finish your current task run with a result note.')]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
 final class FinishTaskTool extends TaskWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

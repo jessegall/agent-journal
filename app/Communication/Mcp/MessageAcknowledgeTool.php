@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Bus\Contracts\Command;
 use App\Communication\Commands\ReadMessages;
 use App\Mcp\Attributes\Dispatches;
@@ -19,6 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Name('messages_acknowledge')]
 #[Dispatches(ReadMessages::class)]
 #[Description('Mark inbox messages as read and take up any unanswered questions.')]
+#[VisibleToProfiles]
 final class MessageAcknowledgeTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

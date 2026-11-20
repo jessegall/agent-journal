@@ -15,6 +15,7 @@ use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Handlers\BeginUploadHandler;
 use Domain\Documents\Models\Document;
+use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
 /** @extends Command<string> */
@@ -23,6 +24,8 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 #[Operation('begin_upload', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class BeginUpload extends Command implements AuthorizedCommand
 {
+    public const int MAX_BYTES = TextUpload::MAX_BYTES;
+
     public function __construct(
         public UploadType $type,
         public int $bytes,

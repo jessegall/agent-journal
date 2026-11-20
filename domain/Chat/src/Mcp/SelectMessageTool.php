@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Communication\Commands\SelectMessage;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
@@ -20,6 +22,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Name('messages_select')]
 #[Dispatches(SelectMessage::class)]
 #[Description('Select a visible message as the active request for this session.')]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 final class SelectMessageTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

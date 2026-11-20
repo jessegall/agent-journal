@@ -6,7 +6,6 @@ namespace App\Skills\Mcp;
 
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Skills\Data\SkillRevisionRow;
@@ -21,8 +20,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  */
 #[IsReadOnly]
 #[Name('skills_revisions')]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
 #[Description('The revisions of a stored skill, newest first, with its source, current revision, targets, availability and delivery.')]
+#[VisibleToProfiles]
 final class SkillRevisionsTool extends JournalReadTool
 {
     private const int ROWS = 100;

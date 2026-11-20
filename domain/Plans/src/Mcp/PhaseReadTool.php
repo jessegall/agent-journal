@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\Continuations;
@@ -18,6 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 #[Name('phases_read')]
 #[Description('Read a phase and its ordered task references.')]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 final class PhaseReadTool extends JournalReadTool
 {
     public function __construct(

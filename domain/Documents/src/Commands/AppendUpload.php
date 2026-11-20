@@ -14,6 +14,7 @@ use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\AppendUploadHandler;
 use Domain\Documents\Models\Document;
+use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
 /** @extends Command<void> */
@@ -22,6 +23,8 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 #[Operation('append_upload', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class AppendUpload extends Command implements AuthorizedCommand
 {
+    public const int MAX_BYTES = TextUpload::CHUNK_BYTES;
+
     public function __construct(
         public string $uploadId,
         public int $index,

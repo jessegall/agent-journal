@@ -25,8 +25,7 @@ use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
- * The skill MCP tools read through the same reader and write through the same bus commands as the console: an agent
- * reads the catalogue, and its edit is refused exactly as the bus refuses an agent.
+ * Skills are read through their native and console surfaces, and an agent cannot edit them through the bus.
  */
 final class SkillMcpToolsTest extends TestCase
 {
@@ -58,23 +57,17 @@ final class SkillMcpToolsTest extends TestCase
         $this->caller = TestStart::start();
     }
 
-    public function test_an_agent_lists_and_shows_skills_as_the_reader_does(): void
+    public function test_skill_reads_stay_on_the_native_and_console_surfaces(): void
     {
-        $listed = $this->callMcpTool(
-            $this->caller,
-            'skills_list',
-        )->assertJsonPath('result.isError', false)->json('result.structuredContent.skills');
-        $shown = $this->callMcpTool(
-            $this->caller,
-            'skills_show',
-            ['key' => 'journal-skills'],
-        )->assertJsonPath('result.isError', false)->json('result.structuredContent');
-
-        $this->assertContains('journal-skills', array_column($listed, 'key'));
-        $this->assertSame(
-            $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'))->rendered->markdown,
-            $shown['markdown'],
-        );
+        $this->caller->startRequest($this->app);
+        $skill = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'));
+        $this->assertNotEmpty($skill->rendered->markdown);
+        $this->sendMcp($this->caller, 'tools/call', [
+            'name' => 'skills_show', 'arguments' => ['key' => 'journal-skills'],
+        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
+        $this->sendMcp($this->caller, 'tools/call', [
+            'name' => 'skills_list', 'arguments' => (object) [],
+        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
     }
 
     public function test_an_agent_edit_is_hidden_and_the_bus_refuses_the_same_write(): void

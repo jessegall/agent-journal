@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Bus\Contracts\Command;
 use App\Communication\Commands\AskMessage;
 use App\Mcp\Attributes\Dispatches;
@@ -19,6 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Dispatches(AskMessage::class)]
 #[Description('Ask a question from one of your inboxes to another inbox; it waits until someone there answers.')]
+#[VisibleToProfiles]
 final class MessageAskTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -21,6 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Name('rules_propose')]
 #[Dispatches(ProposeRule::class)]
 #[Description('Propose a new or replacement rule for the journal owner to review.')]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 final class ProposeRuleTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
