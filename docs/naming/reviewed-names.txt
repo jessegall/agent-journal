@@ -4801,6 +4801,7 @@ constant	AreaCycles::ENTRY_AREA
 constant	AreaCycles::FOUNDATION_FOLDER
 constant	Ask::LINK_TYPE
 constant	AskAttention::CARD
+constant	AskHop::LINK_TYPE
 constant	AskHop::PENDING_DELIVERY
 constant	AskRecords::PAGE_SIZE
 constant	AskTypeKey::DEFAULT_ROUTE
