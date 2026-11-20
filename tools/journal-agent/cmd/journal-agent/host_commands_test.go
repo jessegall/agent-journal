@@ -116,6 +116,7 @@ func TestAKeyScriptOfAServedTerminalRunsOnTheLiveScreenAndGate(t *testing.T) {
 	script := contracts.KeyScriptRequest{
 		Request:    contracts.RequestIdentity{RuntimeID: "runtime-1", RequestID: "request-1", Attempt: 1},
 		Script:     "ChangeModel",
+		Version:    2,
 		Parameters: map[string]string{"model": "GPT-6"},
 	}
 	result, _ := driver.RunKeyScript(context.Background(), script)

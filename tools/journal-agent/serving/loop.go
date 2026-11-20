@@ -305,6 +305,7 @@ func (loop *Loop) scriptResult(
 	result, err := runner.RunKeyScript(ctx, contracts.KeyScriptRequest{
 		Request:    identityOf(request),
 		Script:     text(request.Script),
+		Version:    whole(request.ScriptVersion),
 		Parameters: parametersOf(request),
 		ResumeStep: request.ScriptStep,
 	})
@@ -594,4 +595,13 @@ func text(value *string) string {
 		return ""
 	}
 	return *value
+}
+
+// whole is the number a request carries, or zero when it carries none.
+func whole(number *int) int {
+	if number == nil {
+		return 0
+	}
+
+	return *number
 }

@@ -51,8 +51,11 @@ type StopRequest struct{ Request RequestIdentity }
 // KeyScriptRequest asks the program to run one registered maintenance key script with its parameters, from its
 // first step, or from the step a stopped attempt reached when ResumeStep is set.
 type KeyScriptRequest struct {
-	Request    RequestIdentity
-	Script     string
+	Request RequestIdentity
+	Script  string
+	// Version is the reviewed script version the journal validated the parameters against; the host refuses to run
+	// another one.
+	Version    int
 	Parameters map[string]string
 	ResumeStep *int
 }

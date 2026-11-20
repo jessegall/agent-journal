@@ -3,6 +3,8 @@ package drivers
 import (
 	"context"
 	"errors"
+	"fmt"
+	"slices"
 	"sync"
 	"time"
 
@@ -189,6 +191,9 @@ func (driver *TerminalDriver) RunKeyScript(
 	if err != nil {
 		return failed(request.Request), err
 	}
+	if refusal := bindingRefusal(script, request); refusal != nil {
+		return failed(request.Request), refusal
+	}
 
 	result, err := driver.run(script, request)
 	if result.Outcome == keyscripts.NavigationNeeded && result.Uncertainty != nil {
@@ -329,6 +334,25 @@ func (driver *TerminalDriver) waitUntil(deadline time.Duration, condition func()
 	}
 
 	return true
+}
+
+// bindingRefusal says why a queued attempt does not match the script the host would run, before any key is sent: another
+// reviewed version, other parameters than the script names, or a resume step the script does not have.
+func bindingRefusal(script keyscripts.KeyScript, request contracts.KeyScriptRequest) error {
+	if request.Version != script.Version {
+		return fmt.Errorf("key script %s is at version %d here, not the version %d the journal reviewed",
+			script.Name, script.Version, request.Version)
+	}
+	for name := range request.Parameters {
+		if !slices.Contains(script.Parameters, name) {
+			return fmt.Errorf("key script %s has no parameter %s", script.Name, name)
+		}
+	}
+	if request.ResumeStep != nil && (*request.ResumeStep < 0 || *request.ResumeStep >= len(script.Steps)) {
+		return fmt.Errorf("key script %s has no step %d to resume from", script.Name, *request.ResumeStep)
+	}
+
+	return nil
 }
 
 func failed(request contracts.RequestIdentity) contracts.OperationResult {

@@ -191,3 +191,24 @@ func TestAKeyScriptStepGoesToTheReceiverTheLoopSet(t *testing.T) {
 		t.Fatalf("the receiver got %q in generation %d", received, driver.Generation())
 	}
 }
+
+func TestABindingThatDoesNotMatchTheScriptIsRefusedBeforeAnyKey(t *testing.T) {
+	script := keyscripts.KeyScript{Name: "ChangeModel", Version: 2, Parameters: []string{"model"}, Steps: make([]keyscripts.KeyStep, 3)}
+	step := 5
+	cases := map[string]contracts.KeyScriptRequest{
+		"another version": {Script: "ChangeModel", Version: 1, Parameters: map[string]string{"model": "opus"}},
+		"an unknown name": {Script: "ChangeModel", Version: 2, Parameters: map[string]string{"effort": "high"}},
+		"a missing step":  {Script: "ChangeModel", Version: 2, ResumeStep: &step},
+	}
+
+	for name, request := range cases {
+		if bindingRefusal(script, request) == nil {
+			t.Errorf("%s was not refused", name)
+		}
+	}
+
+	valid := contracts.KeyScriptRequest{Script: "ChangeModel", Version: 2, Parameters: map[string]string{"model": "opus"}}
+	if refusal := bindingRefusal(script, valid); refusal != nil {
+		t.Errorf("a matching attempt was refused: %v", refusal)
+	}
+}
