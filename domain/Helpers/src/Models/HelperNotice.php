@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Domain\Helpers\Models;
 
 use App\Actors\Models\Support\BelongsToOneActor;
+use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -23,20 +25,26 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $helper_job_id
  * @property JobState $job_state
  * @property string $text
+ * @property CarbonImmutable|null $delivered_at
  */
-#[Fillable(['job_state', 'text'])]
 #[Table('helper_notices')]
+#[Fillable(['job_state', 'text'])]
 final class HelperNotice extends Model implements ReadableModel
 {
     use BelongsToOneActor, BoundedReads, HasUlids;
     use Linkable;
 
     /**
+     * The most notices given to a parent at one context start.
+     */
+    public const int MOST_DELIVERED = 20;
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
-        return ['job_state' => JobState::class];
+        return ['job_state' => JobState::class, 'delivered_at' => 'immutable_datetime'];
     }
 
     public static function leave(HelperJob $job, string $text): self
@@ -50,5 +58,28 @@ final class HelperNotice extends Model implements ReadableModel
         $notice->save();
 
         return $notice;
+    }
+
+    /**
+     * The notices of this parent not yet given to it, oldest first, locked so each is given once.
+     *
+     * @return list<self>
+     */
+    public static function undeliveredFor(ActorIdentity $parent): array
+    {
+        return array_values(self::query()
+            ->ownedBy($parent)
+            ->whereNull('delivered_at')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->readLimit(self::MOST_DELIVERED)
+            ->get()
+            ->all());
+    }
+
+    public function markDelivered(): void
+    {
+        $this->delivered_at = CarbonImmutable::now();
+        $this->save();
     }
 }

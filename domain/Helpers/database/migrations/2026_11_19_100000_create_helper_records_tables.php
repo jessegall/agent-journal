@@ -76,6 +76,7 @@ return new class extends Migration
             $table->foreignUlid('helper_job_id')->constrained('helper_jobs')->cascadeOnDelete();
             $table->string('job_state', 16);
             $table->text('text');
+            $table->timestampTz('delivered_at')->nullable();
             $table->timestampsTz();
 
             $table->index(['actor_type', 'actor_id']);

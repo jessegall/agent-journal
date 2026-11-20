@@ -75,7 +75,14 @@ final class HelperJobEndingTest extends TestCase
         );
         $purpose = HelperPurpose::free($parent, 'writing-helper', 'General work '.Str::random(6));
 
-        return HelperJob::accept($helper, $purpose, $parent, 'Fix the test', [], self::launchFor((string) Str::ulid()));
+        return HelperJob::accept(
+            $helper,
+            $purpose,
+            $parent,
+            'Fix the test',
+            ['subjects' => []],
+            self::launchFor((string) Str::ulid()),
+        );
     }
 
     private function raise(object $event): void

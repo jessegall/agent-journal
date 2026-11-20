@@ -26,6 +26,24 @@ final readonly class HelperWork
     ) {}
 
     /**
+     * The work as a call or a command line describes it, with its subject written as type:id.
+     *
+     * @param  list<string>  $sourceSubjects
+     */
+    public static function described(
+        string|null $subject,
+        string|null $purposeId,
+        string|null $purposeText,
+        string $brief,
+        array $sourceSubjects,
+        bool $independent,
+    ): self {
+        $subjectRecord = $subject === null ? null : new RecordIdentity(...explode(':', $subject, 2));
+
+        return new self($subjectRecord, $purposeId, $purposeText, $brief, $sourceSubjects, $independent);
+    }
+
+    /**
      * @return array{subjects: list<string>}
      */
     public function sourceSnapshot(): array

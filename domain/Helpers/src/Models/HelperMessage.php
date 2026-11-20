@@ -23,8 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $text
  * @property string $suggested_command
  */
-#[Fillable(['text', 'suggested_command'])]
 #[Table('helper_messages')]
+#[Fillable(['text', 'suggested_command'])]
 final class HelperMessage extends Model implements ReadableModel
 {
     use BelongsToOneActor, BoundedReads, HasUlids;

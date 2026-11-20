@@ -9,7 +9,6 @@ use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\CancelLaunchHandler;
 use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
-use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
@@ -20,10 +19,10 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /**
- * Cancels the work a started agent was launched for: its runtime is stopped, its workspace stays, and the owner of
- * the work hears that it was cancelled once the stop is recorded.
+ * Cancels the work a started agent was launched for: its runtime, when one opened, is told to stop, its workspace
+ * stays, and the owner of the work hears that it was cancelled once the stop is recorded.
  *
- * @extends Command<DriverReceipt>
+ * @extends Command<bool>
  */
 #[HandledBy(CancelLaunchHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]

@@ -113,7 +113,9 @@ services:
         image: postgres:18-alpine
         # The journal's data lives on SSD-backed volumes, so a random page read costs nearly what a sequential one does;
         # at the default of 4 the planner prefers a full scan over the trigram indexes the library search needs.
-        command: ['postgres', '-c', 'random_page_cost=1.1']
+        # Rebuilding a test database drops every table in one transaction, one lock each, and the parallel suite
+        # rebuilds six at once; the default of 64 locks per transaction runs out of shared memory there.
+        command: ['postgres', '-c', 'random_page_cost=1.1', '-c', 'max_locks_per_transaction=512']
         environment:
             POSTGRES_DB: ${DB_DATABASE}
             POSTGRES_USER: ${DB_USERNAME}

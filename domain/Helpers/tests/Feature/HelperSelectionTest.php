@@ -120,7 +120,14 @@ final class HelperSelectionTest extends TestCase
     public function test_a_helper_with_open_work_is_not_offered(): void
     {
         $busy = $this->declareHelper('read-only-helper');
-        HelperJob::accept($busy, $this->review, $this->parent, 'Review', [], self::launchFor('request-busy'));
+        HelperJob::accept(
+            $busy,
+            $this->review,
+            $this->parent,
+            'Review',
+            ['subjects' => []],
+            self::launchFor('request-busy'),
+        );
 
         $this->assertSame([], $this->candidates(HookProgram::Codex, self::LUNA));
     }
@@ -170,7 +177,7 @@ final class HelperSelectionTest extends TestCase
             $this->review,
             $this->parent,
             'Review',
-            [],
+            ['subjects' => []],
             self::launchFor((string) Str::ulid()),
         );
         $this->travelTo($finishedAt);

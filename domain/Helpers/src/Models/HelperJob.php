@@ -36,7 +36,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $helper_identity_id
  * @property string $helper_purpose_id
  * @property string $brief
- * @property array<string, mixed> $source_snapshot
+ * @property array{subjects: list<string>} $source_snapshot
  * @property string $request_id
  * @property JobState $state
  * @property list<string> $steering
@@ -76,7 +76,7 @@ final class HelperJob extends Model implements Assignable, ReadableModel
     }
 
     /**
-     * @param  array<string, mixed>  $sourceSnapshot
+     * @param  array{subjects: list<string>}  $sourceSnapshot
      */
     public static function accept(
         HelperIdentity $helper,
@@ -133,6 +133,46 @@ final class HelperJob extends Model implements Assignable, ReadableModel
             $this->launch(),
             $start,
         );
+    }
+
+    /**
+     * The records the job was given as its source, written as type:id.
+     *
+     * @return list<string>
+     */
+    public function sourceSubjects(): array
+    {
+        return $this->source_snapshot['subjects'];
+    }
+
+    /**
+     * What the helper working this job must be told when its context starts: who it is, the purpose, the whole brief,
+     * the steering so far and the records it was given.
+     */
+    public function contextFor(HelperIdentity $identity, string $purposeLabel): string
+    {
+        $lines = [
+            sprintf(
+                'You are helper %s (profile %s, revision %d), on job %s for: %s',
+                $identity->id,
+                $identity->profile_key,
+                $this->profile_revision,
+                $this->id,
+                $purposeLabel,
+            ),
+            'Your brief:',
+            $this->brief,
+        ];
+
+        foreach ($this->steering as $steering) {
+            $lines[] = "Steering from your parent: {$steering}";
+        }
+
+        foreach ($this->sourceSubjects() as $subject) {
+            $lines[] = "Given as your source: {$subject}";
+        }
+
+        return implode(PHP_EOL, $lines);
     }
 
     /**
