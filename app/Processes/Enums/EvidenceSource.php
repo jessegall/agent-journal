@@ -7,6 +7,7 @@ namespace App\Processes\Enums;
 /**
  * What of a run an actor read: its terminal envelope (every part's end, status and stream sizes) or a byte range of
  * one stream of one part.
+ * It names what was read, the envelope or one stream, so it is OutputStream's streams plus the envelope by design.
  */
 enum EvidenceSource: string
 {

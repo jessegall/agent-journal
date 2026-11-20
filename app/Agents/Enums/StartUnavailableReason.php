@@ -6,6 +6,8 @@ namespace App\Agents\Enums;
 
 /**
  * Why no account could start a start of a program, safe to tell the agent that asked.
+ * It stays apart from AccountNoticeReason on purpose: an agent may learn only these three, never a rejected sign-in
+ * or a provider limit, which only the owner's account notices carry.
  */
 enum StartUnavailableReason: string
 {
