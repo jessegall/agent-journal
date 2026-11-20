@@ -12,6 +12,7 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\JournalAssignment;
 use App\Bus\Support\CommandNesting;
 use App\Records\Support\RecordIdentity;
+use App\Supervision\Commands\AdvanceAsk;
 use App\Supervision\Commands\ReplyToAsk;
 use App\Supervision\Commands\RouteAsk;
 use App\Supervision\Commands\WithdrawAsk;
@@ -33,6 +34,12 @@ final readonly class AskAssignments implements JournalAssignableProvider
 
     public function requireJournalAssignment(JournalAssignment $assignment): void
     {
+        if ($this->nesting->runs(AdvanceAsk::class)) {
+            $this->requireEscalationRecipient($assignment);
+
+            return;
+        }
+
         if (! $this->nesting->runs(RouteAsk::class)) {
             throw AskRefused::routeChanged();
         }
@@ -62,11 +69,15 @@ final readonly class AskAssignments implements JournalAssignableProvider
 
     public function assertJournalRelease(RecordIdentity $record): void
     {
-        if (! $this->nesting->runs(ReplyToAsk::class) && ! $this->nesting->runs(WithdrawAsk::class)) {
+        $escalates = $this->nesting->runs(AdvanceAsk::class);
+
+        if (! $escalates && ! $this->nesting->runs(ReplyToAsk::class) && ! $this->nesting->runs(WithdrawAsk::class)) {
             throw AskRefused::routeChanged();
         }
 
-        $ask = $this->asks->read(new AskReference($record->id));
+        $ask = $escalates
+            ? Ask::lockedForMaintenance($record->id)
+            : $this->asks->read(new AskReference($record->id));
 
         if (! $ask->open) {
             throw AskRefused::routeChanged();
@@ -91,6 +102,23 @@ final readonly class AskAssignments implements JournalAssignableProvider
             fn (Assignable $record) => $record->assignmentIdentity(),
             array_filter($records, fn (Assignable $record) => $record instanceof Ask && ! $record->open),
         ));
+    }
+
+    /**
+     * An escalation assigns the ask to the actor its pending target names, and to nobody else.
+     */
+    private function requireEscalationRecipient(JournalAssignment $assignment): void
+    {
+        $ask = Ask::lockedForMaintenance($assignment->record->id);
+        $pending = $ask->requirePending($assignment->expectedVersion);
+        $isRecipient = $this->recipients->resolve($pending)
+            ->map(fn (ActorIdentity $actor) => AssigneeIdentity::ofActorIdentity($actor))
+            ->map(fn (AssigneeIdentity $assignee) => $assignee->isSameAs($assignment->recipient))
+            ->getOrElse(false);
+
+        if (! $isRecipient) {
+            throw AskRefused::routeChanged();
+        }
     }
 
     private function requireRouteEditor(Ask $ask): void

@@ -14,9 +14,8 @@ use App\Supervision\Enums\AskOriginType;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Models\Ask;
 use App\Supervision\Models\AskRequester;
+use App\Supervision\Support\AskOpening;
 use App\Supervision\Support\AskTypeRegistry;
-use App\Supervision\Support\SupervisorGraphLock;
-use App\Supervision\Support\SupervisorRouting;
 use App\Supervision\Values\AskReference;
 
 final readonly class AskSupervisorHandler implements CommandHandler
@@ -26,8 +25,7 @@ final readonly class AskSupervisorHandler implements CommandHandler
     public function __construct(
         private ActorWorkStacks $stacks,
         private AskTypeRegistry $types,
-        private SupervisorRouting $routes,
-        private SupervisorGraphLock $graph,
+        private AskOpening $opening,
         private CommandBus $commands,
     ) {}
 
@@ -49,24 +47,17 @@ final readonly class AskSupervisorHandler implements CommandHandler
             throw AskRefused::openLimit(self::OPEN_LIMIT);
         }
 
-        $reference = Ask::newReference();
-        $work = $this->stacks->currentRecord();
-        $subject = $type->resolver()->resolve($type->subject(), $reference, $work->getOrElse(null));
-        $this->graph->acquire();
-        $route = $this->routes->routeFor($requester, $type->key());
-
-        Ask::submit(
-            $reference,
+        $work = $this->stacks->currentRecord()->getOrElse(null);
+        $ask = $this->opening->open(
             $requester,
-            $type->key(),
+            $type,
             $command->submissionKey,
             $body,
-            $subject,
-            $route->target,
+            $work,
             AskOriginType::Supervisor,
         );
-        $this->commands->run(new RouteAsk($reference, 0));
+        $this->commands->run(new RouteAsk($ask->reference(), 0));
 
-        return $reference;
+        return $ask->reference();
     }
 }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Models;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Models\AgentSession;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\Support\AgentSessionScope;
@@ -59,6 +62,17 @@ final class StopAttempt extends Model implements ReadableModel
             'state' => StopAttemptState::class,
             'certified_at' => 'datetime',
         ];
+    }
+
+    /**
+     * The agent whose session made the attempt, as the actor that asks for help when its stop is held.
+     */
+    public static function agentOf(StopAttemptReference $attempt): ActorIdentity
+    {
+        $sessionId = self::query()->withoutGlobalScope(AgentSessionScope::class)->findOrFail($attempt->attemptId)
+            ->session_id;
+
+        return new ActorIdentity(ActorType::Agent, AgentSession::byId($sessionId)->agent_id);
     }
 
     /**

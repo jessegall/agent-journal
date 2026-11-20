@@ -16,6 +16,7 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Supervision\Enums\AskOriginType;
+use App\Supervision\Enums\UnansweredReason;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Values\AskReference;
 use App\Supervision\Values\AskSubject;
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
 /**
@@ -40,17 +42,25 @@ use PhpOption\Option;
  * @property string|null $pending_target
  * @property int $version
  * @property bool $open
+ * @property UnansweredReason|null $outcome
+ * @property string|null $late_answer
+ * @property Carbon $created_at
  */
-#[Fillable(['version', 'pending_target', 'open'])]
+#[Fillable(['version', 'pending_target', 'open', 'outcome', 'late_answer'])]
 final class Ask extends Model implements Assignable, ReadableModel
 {
     use BelongsToOneActor, BoundedReads, HasUlids, Linkable;
 
     public const string LINK_TYPE = 'core.ask';
 
+    /**
+     * How long an ask may stay open, however it progresses, before it closes unanswered.
+     */
+    public const int LIFETIME_HOURS = 48;
+
     protected function casts(): array
     {
-        return ['version' => 'integer', 'open' => 'boolean'];
+        return ['version' => 'integer', 'open' => 'boolean', 'outcome' => UnansweredReason::class];
     }
 
     public static function newReference(): AskReference
@@ -144,6 +154,28 @@ final class Ask extends Model implements Assignable, ReadableModel
         return self::query()->acrossActors()->whereKey($id)->firstOrFail();
     }
 
+    /**
+     * The open asks of the ids, by id, for trusted maintenance across actors.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, self>
+     */
+    public static function openByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $asks = self::query()->acrossActors()->whereKey($ids)->where('open', true)->readLimit(count($ids))->get();
+
+        return $asks->keyBy('id')->all();
+    }
+
+    public static function lockedForMaintenance(string $id): self
+    {
+        return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
     public function typeKey(): AskTypeKey
     {
         return AskTypeKey::from($this->type_key);
@@ -168,7 +200,43 @@ final class Ask extends Model implements Assignable, ReadableModel
         $this->version++;
         $this->pending_target = null;
         $this->save();
+
         return AskHop::recordAcceptance($this, $holder, $routeVersion);
+    }
+
+    /**
+     * Names the next target of an escalation, for the routing that follows in the same transaction.
+     */
+    public function escalateTo(SupervisorTarget $target): void
+    {
+        $this->pending_target = $target->key;
+        $this->save();
+    }
+
+    public function closeUnanswered(UnansweredReason $reason): void
+    {
+        $this->outcome = $reason;
+        $this->close();
+    }
+
+    public function isUnanswered(): bool
+    {
+        return ! $this->open && $this->outcome !== null;
+    }
+
+    /**
+     * Adds the owner's late text to an unanswered ask as a new version; its outcome and time stay as they were.
+     */
+    public function answerLate(string $text): void
+    {
+        $this->late_answer = $text;
+        $this->version++;
+        $this->save();
+    }
+
+    public function hasOutlived(CarbonImmutable $now): bool
+    {
+        return CarbonImmutable::instance($this->created_at)->addHours(self::LIFETIME_HOURS) <= $now;
     }
 
     public function close(): void

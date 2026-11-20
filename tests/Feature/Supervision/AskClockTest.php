@@ -1,0 +1,181 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Supervision;
+
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Contracts\ServerClock;
+use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\TrustedEntryAuthority;
+use App\Agents\Models\Agent;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\CommandEntrance;
+use App\Bus\Support\RequestKey;
+use App\Engine\Support\EngineAccess;
+use App\Engine\Support\EngineActor;
+use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Support\ProfileProposal;
+use App\Profiles\Values\AskTypeKey;
+use App\Profiles\Values\SupervisorTarget;
+use App\Supervision\Commands\AdvanceAsk;
+use App\Supervision\Commands\ChangeSupervisor;
+use App\Supervision\Commands\ReplyToAsk;
+use App\Supervision\Commands\RouteAsk;
+use App\Supervision\Enums\UnansweredReason;
+use App\Supervision\Models\Ask;
+use App\Supervision\Models\AskHop;
+use App\Supervision\Support\AskClock;
+use App\Supervision\Support\AskTypeRegistry;
+use App\Supervision\Support\SupervisorRouting;
+use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\FixedServerClock;
+use Tests\Support\StartsAgentRequests;
+use Tests\Support\TimeLimits\TimeLimit;
+use Tests\TestCase;
+
+/**
+ * An ask's clock and its escalation (task 954): a holder that keeps answering never lets its queue escalate, the ask
+ * it answers runs out on its own allowance while those behind it wait, an overdue ask moves up to the owner, the root
+ * of the chain closes it unanswered, 48 hours close it whatever it does, and the owner's late text keeps that outcome.
+ */
+#[TimeLimit(seconds: 6, reason: 'It activates the profiles and routes several asks through the bus.')]
+final class AskClockTest extends TestCase
+{
+    use CommitsHookRows;
+    use StartsAgentRequests;
+
+    private const array TABLES = [
+        'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
+        'assignments', 'command_receipts', 'start_tokens', 'agent_sessions', 'agents', 'profile_revisions', 'profiles',
+        'agent_stacks', 'users',
+    ];
+
+    private Agent $requester;
+
+    private Agent $holder;
+
+    private User $owner;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->owner = User::factory()->create();
+        $this->startUserRequestAs($this->owner->id);
+        $this->app->make(CommandBus::class)->run(new ActivateProfiles(ProfileProposal::fromConfiguration(
+            (array) config('profiles'),
+        )));
+        $this->requester = Agent::named('Requester', 'journal-worker');
+        $this->holder = Agent::named('Reviewer', 'journal-code-reviewer');
+        $this->superviseWith($this->requester, SupervisorTarget::forActor(ActorIdentity::of($this->holder)));
+    }
+
+    public function test_a_holder_that_keeps_answering_never_lets_its_queue_escalate(): void
+    {
+        $start = CarbonImmutable::now();
+        $asks = array_map(fn (int $number) => $this->routedAsk("question {$number}"), [1, 2, 3, 4]);
+
+        $this->travelTo($start->addMinutes(10));
+        $this->answer($asks[0]);
+        $this->travelTo($start->addMinutes(20));
+        $this->answer($asks[1]);
+
+        $this->assertSame([], $this->dueAskIds($start->addMinutes(34)));
+        $this->assertSame([$asks[2]->id], $this->dueAskIds($start->addMinutes(36)));
+        $this->assertSame([$asks[2]->id, $asks[3]->id], $this->dueAskIds($start->addMinutes(51)));
+    }
+
+    public function test_an_overdue_ask_moves_up_to_the_owner_and_the_root_closes_it_unanswered(): void
+    {
+        $start = CarbonImmutable::now();
+        $ask = $this->routedAsk('question');
+        $this->superviseWith($this->holder, new SupervisorTarget());
+
+        $this->advanceAt($ask, $start->addMinutes(16));
+
+        $this->assertTrue($ask->refresh()->open);
+        $this->assertSame($this->owner->id, AskHop::currentFor($ask)->actor_id);
+
+        $this->advanceAt($ask, $start->addMinutes(32));
+
+        $this->assertSame(UnansweredReason::RootTimeout, $ask->refresh()->outcome);
+    }
+
+    public function test_two_days_close_an_ask_and_the_owners_late_text_keeps_its_outcome(): void
+    {
+        $ask = $this->routedAsk('question');
+
+        $this->advanceAt($ask, CarbonImmutable::now()->addHours(Ask::LIFETIME_HOURS));
+        $this->startUserRequestAs($this->owner->id);
+        $this->app->make(CommandBus::class)->run(new ReplyToAsk($ask->reference(), 'Late, but here it is.'));
+
+        $closed = $ask->refresh();
+        $this->assertSame(UnansweredReason::TotalExpiry, $closed->outcome);
+        $this->assertSame('Late, but here it is.', $closed->late_answer);
+        $this->assertFalse($closed->open);
+    }
+
+    private function routedAsk(string $body): Ask
+    {
+        $type = $this->app->make(AskTypeRegistry::class)->get(AskTypeKey::from('question'));
+        $reference = Ask::newReference();
+        $ask = Ask::submit(
+            $reference,
+            ActorIdentity::of($this->requester),
+            $type->key(),
+            "submission {$body}",
+            $body,
+            $type->resolver()->resolve($type->subject(), $reference, null),
+            SupervisorTarget::forActor(ActorIdentity::of($this->holder)),
+        );
+        $this->startUserRequestAs($this->owner->id);
+        $this->app->make(CommandBus::class)->run(new RouteAsk($reference, 0));
+
+        return $ask->refresh();
+    }
+
+    private function answer(Ask $ask): void
+    {
+        AskHop::currentFor($ask->refresh())->answer('Done.', 'delivered');
+        $ask->close();
+    }
+
+    /**
+     * Advances the ask as the engine does, as if it were the moment given.
+     */
+    private function advanceAt(Ask $ask, CarbonImmutable $now): void
+    {
+        $this->app->instance(ServerClock::class, new FixedServerClock($now));
+        $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
+        $this->app->make(EngineAccess::class)->grantMaintenance(AdvanceAsk::MAINTENANCE_SCOPE);
+        $this->app->make(RequestKey::class)->set('advance-'.$now->getTimestamp());
+        $bus = $this->app->make(CommandBus::class);
+        $this->app->make(CommandEntrance::class)->through(
+            CommandEntry::EngineMaintenance,
+            fn () => $bus->run(new AdvanceAsk($ask->id)),
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function dueAskIds(CarbonImmutable $now): array
+    {
+        $due = $this->app->make(AskClock::class)->dueHops($now, 5);
+
+        return array_map(fn (AskHop $hop) => $hop->ask_id, $due);
+    }
+
+    private function superviseWith(Agent $agent, SupervisorTarget $target): void
+    {
+        $this->startUserRequestAs($this->owner->id);
+        $type = AskTypeKey::from('question');
+        $actor = ActorIdentity::of($agent);
+        $version = $this->app->make(SupervisorRouting::class)->routeFor($actor, $type)->version;
+        $this->app->make(CommandBus::class)->run(new ChangeSupervisor($actor, $target, $version, $type));
+    }
+}

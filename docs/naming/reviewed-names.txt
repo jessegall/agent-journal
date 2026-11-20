@@ -1030,6 +1030,10 @@ case	TransitionType::PopSelf
 case	TransitionType::Push
 case	TransportProfileType::Cli
 case	TransportProfileType::Mcp
+case	UnansweredReason::Cycle
+case	UnansweredReason::NoOwner
+case	UnansweredReason::RootTimeout
+case	UnansweredReason::TotalExpiry
 case	UnresolvedType::DynamicWord
 case	UnresolvedType::InterpretedSource
 case	UnresolvedType::PendingReview
@@ -1225,6 +1229,9 @@ class	AdmittedRun
 class	AdmittedSeat
 class	AdmittedSeatChange
 class	AdmittedUsers
+class	AdvanceAsk
+class	AdvanceAskHandler
+class	AdvanceDueAsksOnTick
 class	AdvanceSkillContext
 class	AdvisoryEngineLock
 class	AdvisoryStackAdmission
@@ -1340,6 +1347,8 @@ class	Ask
 class	AskAssignments
 class	AskAttention
 class	AskCard
+class	AskClock
+class	AskEscalation
 class	AskHop
 class	AskInbox
 class	AskInboxResolver
@@ -1349,6 +1358,7 @@ class	AskMessageCommand
 class	AskMessageController
 class	AskMessageHandler
 class	AskMessageRequest
+class	AskOpening
 class	AskPolicy
 class	AskQuestion
 class	AskQuestionCall
@@ -1359,6 +1369,7 @@ class	AskRecords
 class	AskReference
 class	AskRefused
 class	AskRequester
+class	AskRouter
 class	AskSubject
 class	AskSupervisor
 class	AskSupervisorHandler
@@ -2955,6 +2966,7 @@ class	OpenPlansCount
 class	OpenReportsOverview
 class	OpenSimpleCommandNode
 class	OpenStartStack
+class	OpenStuckAsk
 class	OpenTaskPool
 class	OpenTaskPoolFactory
 class	OpenTerminalView
@@ -5117,6 +5129,8 @@ constant	AddPhaseTasks::MAX_TASKS
 constant	AdmissionRefusal::EXCERPT_LENGTH
 constant	AdmissionRefusal::NOTICE
 constant	AdmissionRefused::CODE
+constant	AdvanceAsk::MAINTENANCE_SCOPE
+constant	AdvanceDueAsksOnTick::PASS_LIMIT
 constant	AdvisoryStackAdmission::LOCK_NOT_AVAILABLE
 constant	AdvisoryStackAdmission::NAMESPACE
 constant	AgentMessageReader::CONTEXT_TOOL
@@ -5139,10 +5153,13 @@ constant	AppendUpload::MAX_BYTES
 constant	AreaCycles::CORE_ROOT
 constant	AreaCycles::ENTRY_AREA
 constant	AreaCycles::FOUNDATION_FOLDER
+constant	Ask::LIFETIME_HOURS
 constant	Ask::LINK_TYPE
 constant	AskAttention::CARD
+constant	AskClock::SCAN_LIMIT
 constant	AskHop::LINK_TYPE
 constant	AskHop::PENDING_DELIVERY
+constant	AskHop::URGENT_FIRST
 constant	AskRecords::PAGE_SIZE
 constant	AskRefused::BODY_LIMIT
 constant	AskRequester::LINK_TYPE
@@ -5434,6 +5451,7 @@ constant	NotAuthenticated::CODE
 constant	NumberGroup::LAST_NUMBER_LIMIT
 constant	NumberedPage::LARGEST_SIZE
 constant	OneLineRule::BREAK_INSIDE_TEXT
+constant	OpenStuckAsk::BODY
 constant	OpenTaskPoolFactory::KEY
 constant	OperationResource::TEMPLATE
 constant	OperationsResolver::OUTCOMES_PER_PAGE
@@ -6051,6 +6069,7 @@ enum	ToolOutcome
 enum	ToolType
 enum	TransitionType
 enum	TransportProfileType
+enum	UnansweredReason
 enum	UnresolvedType
 enum	UnsupportedKeyword
 enum	UploadType
@@ -6817,6 +6836,12 @@ method	AdmittedSeatChange::__construct()
 method	AdmittedSeatChange::keepsTheOccupant()
 method	AdmittedUsers::__construct()
 method	AdmittedUsers::userIds()
+method	AdvanceAsk::__construct()
+method	AdvanceAskHandler::__construct()
+method	AdvanceAskHandler::handle()
+method	AdvanceDueAsksOnTick::__construct()
+method	AdvanceDueAsksOnTick::__invoke()
+method	AdvanceDueAsksOnTick::maintenanceScope()
 method	AdvanceSkillContext::handle()
 method	AdvisoryEngineLock::__construct()
 method	AdvisoryEngineLock::acquire()
@@ -7272,11 +7297,18 @@ method	ArithmeticCommandReader::reason()
 method	ArrayAssignmentReader::reads()
 method	ArrayAssignmentReader::reason()
 method	Ask::accept()
+method	Ask::answerLate()
 method	Ask::assignmentIdentity()
 method	Ask::casts()
 method	Ask::close()
+method	Ask::closeUnanswered()
+method	Ask::escalateTo()
 method	Ask::forAttention()
+method	Ask::hasOutlived()
+method	Ask::isUnanswered()
+method	Ask::lockedForMaintenance()
 method	Ask::newReference()
+method	Ask::openByIds()
 method	Ask::openSubmissions()
 method	Ask::reference()
 method	Ask::replay()
@@ -7293,6 +7325,7 @@ method	AskAssignments::__construct()
 method	AskAssignments::assertJournalRelease()
 method	AskAssignments::finishedRecords()
 method	AskAssignments::requireAssignable()
+method	AskAssignments::requireEscalationRecipient()
 method	AskAssignments::requireJournalAssignment()
 method	AskAssignments::requireRouteEditor()
 method	AskAssignments::visibleRecords()
@@ -7305,12 +7338,24 @@ method	AskAttention::retainHop()
 method	AskAttention::retainReply()
 method	AskAttention::wake()
 method	AskCard::__construct()
+method	AskClock::__construct()
+method	AskClock::dueHops()
+method	AskClock::place()
+method	AskClock::queues()
+method	AskEscalation::__construct()
+method	AskEscalation::advance()
+method	AskEscalation::closeUnanswered()
+method	AskEscalation::nextTarget()
 method	AskHop::activeIds()
 method	AskHop::answer()
 method	AskHop::casts()
 method	AskHop::currentFor()
 method	AskHop::currentHops()
+method	AskHop::hasHeld()
 method	AskHop::holder()
+method	AskHop::holderKey()
+method	AskHop::isHeldByAgent()
+method	AskHop::lastAnswerTimes()
 method	AskHop::lockDelivery()
 method	AskHop::nextFor()
 method	AskHop::recordAcceptance()
@@ -7318,6 +7363,7 @@ method	AskHop::recordAttention()
 method	AskHop::recordWake()
 method	AskHop::recoverEach()
 method	AskHop::repliesTo()
+method	AskHop::unansweredCurrent()
 method	AskInbox::__construct()
 method	AskInboxResolver::__construct()
 method	AskInboxResolver::read()
@@ -7330,6 +7376,8 @@ method	AskMessageHandler::__construct()
 method	AskMessageHandler::handle()
 method	AskMessageRequest::command()
 method	AskMessageRequest::rules()
+method	AskOpening::__construct()
+method	AskOpening::open()
 method	AskPolicy::authorize()
 method	AskQuestion::__construct()
 method	AskQuestion::subject()
@@ -7356,6 +7404,7 @@ method	AskRefused::assertValidSubmission()
 method	AskRefused::cannotWithdraw()
 method	AskRefused::invalidBody()
 method	AskRefused::invalidKey()
+method	AskRefused::onlyOwnerAnswersLate()
 method	AskRefused::openLimit()
 method	AskRefused::operationDenied()
 method	AskRefused::refusalCode()
@@ -7365,6 +7414,10 @@ method	AskRefused::typeRepeated()
 method	AskRefused::workRequired()
 method	AskRefused::wrongOperation()
 method	AskRequester::lockSubmissions()
+method	AskRouter::__construct()
+method	AskRouter::assign()
+method	AskRouter::reroute()
+method	AskRouter::route()
 method	AskSubject::__construct()
 method	AskSubjectResolver::resolve()
 method	AskSupervisor::__construct()
@@ -9185,10 +9238,12 @@ method	CopySkillHandler::__construct()
 method	CopySkillHandler::handle()
 method	CoreApi::exports()
 method	CoreApi::listenerFolders()
+method	CoreAskType::isUrgent()
 method	CoreAskType::key()
 method	CoreAskType::minutes()
 method	CoreAskType::operation()
 method	CoreAskType::subject()
+method	CoreAskType::urgentKeys()
 method	CoreCommands::commands()
 method	CoreCommands::middleware()
 method	CoreCommands::owner()
@@ -12463,6 +12518,8 @@ method	OpenReportsOverview::section()
 method	OpenSimpleCommandNode::handle()
 method	OpenStartStack::__construct()
 method	OpenStartStack::handle()
+method	OpenStuckAsk::__construct()
+method	OpenStuckAsk::handle()
 method	OpenTaskPool::members()
 method	OpenTaskPoolFactory::describe()
 method	OpenTaskPoolFactory::open()
@@ -14836,6 +14893,7 @@ method	ReplyToAskCall::__construct()
 method	ReplyToAskCommand::handle()
 method	ReplyToAskController::__invoke()
 method	ReplyToAskHandler::__construct()
+method	ReplyToAskHandler::answerLate()
 method	ReplyToAskHandler::handle()
 method	ReplyToMessage::__construct()
 method	ReplyToMessage::subject()
@@ -17753,6 +17811,7 @@ method	StopAgent::subject()
 method	StopAgent::target()
 method	StopAgentHandler::__construct()
 method	StopAgentHandler::handle()
+method	StopAttempt::agentOf()
 method	StopAttempt::asksFor()
 method	StopAttempt::casts()
 method	StopAttempt::certify()
@@ -19732,6 +19791,7 @@ parameter	$drainSeconds
 parameter	$drained
 parameter	$driverEnvelope
 parameter	$driverType
+parameter	$due
 parameter	$duration
 parameter	$each
 parameter	$earlier
@@ -19789,6 +19849,7 @@ parameter	$epoch
 parameter	$error
 parameter	$errorDetails
 parameter	$errors
+parameter	$escalation
 parameter	$evaluation
 parameter	$evaluations
 parameter	$evaluator
@@ -21698,6 +21759,13 @@ property	AdmittedSeatChange::$newActor
 property	AdmittedSeatChange::$oldActor
 property	AdmittedSeatChange::$seat
 property	AdmittedUsers::$settings
+property	AdvanceAsk::$askId
+property	AdvanceAskHandler::$access
+property	AdvanceAskHandler::$clock
+property	AdvanceAskHandler::$escalation
+property	AdvanceDueAsksOnTick::$asks
+property	AdvanceDueAsksOnTick::$clock
+property	AdvanceDueAsksOnTick::$commands
 property	AdvisoryEngineLock::$databases
 property	AdvisoryEngineLock::$ownerBackendId
 property	AdvisoryEngineLock::$settings
@@ -21894,6 +21962,11 @@ property	AskCard::$obligation
 property	AskCard::$open
 property	AskCard::$reply
 property	AskCard::$type
+property	AskClock::$types
+property	AskEscalation::$assignments
+property	AskEscalation::$recipients
+property	AskEscalation::$router
+property	AskEscalation::$routes
 property	AskInbox::$before
 property	AskInbox::$cards
 property	AskInboxResolver::$asks
@@ -21905,6 +21978,8 @@ property	AskMessageCall::$requestKey
 property	AskMessageCommand::$description
 property	AskMessageCommand::$signature
 property	AskMessageHandler::$sending
+property	AskOpening::$graph
+property	AskOpening::$routes
 property	AskQuestion::$body
 property	AskQuestion::$relatedRecord
 property	AskQuestionCall::$body
@@ -21920,6 +21995,10 @@ property	AskRecords::$assignments
 property	AskRecords::$current
 property	AskRecords::$owner
 property	AskReference::$id
+property	AskRouter::$attention
+property	AskRouter::$recipients
+property	AskRouter::$routes
+property	AskRouter::$writer
 property	AskSubject::$head
 property	AskSubject::$type
 property	AskSubject::$work
@@ -21927,8 +22006,7 @@ property	AskSupervisor::$body
 property	AskSupervisor::$submissionKey
 property	AskSupervisor::$type
 property	AskSupervisorHandler::$commands
-property	AskSupervisorHandler::$graph
-property	AskSupervisorHandler::$routes
+property	AskSupervisorHandler::$opening
 property	AskSupervisorHandler::$stacks
 property	AskSupervisorHandler::$types
 property	AskTypeKey::$key
@@ -24793,6 +24871,9 @@ property	OpenNavigationRequest::$expireMinutes
 property	OpenPlansCount::$records
 property	OpenReportsOverview::$reports
 property	OpenStartStack::$stacks
+property	OpenStuckAsk::$commands
+property	OpenStuckAsk::$opening
+property	OpenStuckAsk::$types
 property	OpenTerminalView::$agentId
 property	OpenTerminalView::$intervalMs
 property	OpenTerminalViewHandler::$clock
@@ -26339,6 +26420,7 @@ property	ReplyToAskHandler::$admission
 property	ReplyToAskHandler::$asks
 property	ReplyToAskHandler::$assignments
 property	ReplyToAskHandler::$attention
+property	ReplyToAskHandler::$owner
 property	ReplyToMessage::$body
 property	ReplyToMessage::$expectedStateVersion
 property	ReplyToMessage::$messageId
@@ -26738,10 +26820,7 @@ property	RouteAsk::$ask
 property	RouteAsk::$current
 property	RouteAsk::$expectedVersion
 property	RouteAskHandler::$asks
-property	RouteAskHandler::$attention
-property	RouteAskHandler::$recipients
-property	RouteAskHandler::$routes
-property	RouteAskHandler::$writer
+property	RouteAskHandler::$router
 property	RoutePath::$parameters
 property	RoutePath::$path
 property	Rule::$attributes
@@ -29006,7 +29085,9 @@ variable	$allowed
 variable	$allowlist
 variable	$alreadyPlacedTaskId
 variable	$answer
+variable	$answerTimes
 variable	$answered
+variable	$answeringDeadline
 variable	$anyObject
 variable	$anyTicked
 variable	$api
@@ -29026,6 +29107,7 @@ variable	$asSources
 variable	$asTargets
 variable	$ask
 variable	$asked
+variable	$asks
 variable	$assessedUnder
 variable	$assessment
 variable	$assignables
@@ -29367,6 +29449,7 @@ variable	$error
 variable	$errorCode
 variable	$errorText
 variable	$errors
+variable	$escalates
 variable	$escape
 variable	$escapeStart
 variable	$escaped
@@ -29516,6 +29599,7 @@ variable	$historicalLabel
 variable	$hits
 variable	$holder
 variable	$holderFields
+variable	$holderKey
 variable	$holders
 variable	$holding
 variable	$hookInput
@@ -29985,6 +30069,7 @@ variable	$purposeEnd
 variable	$queries
 variable	$query
 variable	$queued
+variable	$queues
 variable	$quoted
 variable	$quotedAuthtoken
 variable	$raisedBefore

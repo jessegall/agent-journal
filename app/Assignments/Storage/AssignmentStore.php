@@ -77,7 +77,7 @@ final readonly class AssignmentStore implements AssignmentStorage
     public function replace(Assignment $current, AssigneeIdentity $holder): Assignment
     {
         $this->assertInTransaction();
-        AssignmentRecord::query()->whereKey($current->reference->id)->delete();
+        AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
 
         return AssignmentRecord::holding($current->record, $holder)->toAssignment();
     }
@@ -85,7 +85,7 @@ final readonly class AssignmentStore implements AssignmentStorage
     public function remove(Assignment $current): void
     {
         $this->assertInTransaction();
-        AssignmentRecord::query()->whereKey($current->reference->id)->delete();
+        AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
     }
 
     /**

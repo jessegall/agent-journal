@@ -33,6 +33,7 @@ use App\Engine\Support\TickDelivery;
 use App\Engine\Support\TickOrigins;
 use App\Hooks\Contracts\EngineTargetAccess;
 use App\Reads\Support\SelfMeasuredCommands;
+use App\Supervision\Support\AdvanceDueAsksOnTick;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -81,6 +82,7 @@ final class EngineServiceProvider extends ServiceProvider
         $listeners->add(EndTerminalViewsOnTick::class);
         $listeners->add(ExpireNavigationRequestsOnTick::class);
         $listeners->add(EnforceLaunchLimitsOnTick::class);
+        $listeners->add(AdvanceDueAsksOnTick::class);
         $selfMeasured->add('engine:tick');
         $this->commands([TickCommand::class]);
     }

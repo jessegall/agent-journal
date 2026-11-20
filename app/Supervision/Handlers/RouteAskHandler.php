@@ -4,54 +4,21 @@ declare(strict_types=1);
 
 namespace App\Supervision\Handlers;
 
-use App\Assignments\Contracts\JournalAssignmentWriter;
-use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\JournalAssignment;
 use App\Contracts\CommandHandler;
 use App\Supervision\Commands\RouteAsk;
 use App\Supervision\Enums\AskRouteStatus;
-use App\Supervision\Support\AskAttention;
 use App\Supervision\Support\AskRecords;
-use App\Supervision\Support\SupervisorRecipients;
-use App\Supervision\Support\SupervisorRouting;
+use App\Supervision\Support\AskRouter;
 
 final readonly class RouteAskHandler implements CommandHandler
 {
     public function __construct(
         private AskRecords $asks,
-        private SupervisorRecipients $recipients,
-        private SupervisorRouting $routes,
-        private JournalAssignmentWriter $writer,
-        private AskAttention $attention,
+        private AskRouter $router,
     ) {}
 
     public function handle(RouteAsk $command): AskRouteStatus
     {
-        $ask = $this->asks->read($command->ask);
-        $target = $ask->requirePending($command->expectedVersion);
-        $found = $this->recipients->resolve($target);
-
-        if ($found->isEmpty()) {
-            return $target->isOwner() ? AskRouteStatus::NoOwner : AskRouteStatus::PendingProfile;
-        }
-
-        $recipient = $found->get();
-
-        $assignment = new JournalAssignment(
-            $ask->assignmentIdentity(),
-            AssigneeIdentity::ofActorIdentity($recipient),
-            $command->expectedVersion,
-        );
-
-        if ($command->current === null) {
-            $this->writer->assignForJournal($assignment);
-        } else {
-            $this->writer->reassignForJournal($assignment, $command->current);
-        }
-
-        $route = $this->routes->routeFor($ask->requester(), $ask->typeKey());
-        $this->attention->retainHop($ask->accept($recipient, $route->version));
-
-        return AskRouteStatus::Assigned;
+        return $this->router->route($this->asks->read($command->ask), $command->expectedVersion, $command->current);
     }
 }

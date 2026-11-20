@@ -1067,6 +1067,7 @@ use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 use App\Skills\Values\StartProfile;
+use App\Supervision\Commands\AdvanceAsk;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
@@ -1966,6 +1967,7 @@ final class CoreApi
                 MarkSilentSessions::class,
                 EndTerminalViews::class,
                 EnforceLaunchLimits::class,
+                AdvanceAsk::class,
                 ExpireNavigationRequests::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,

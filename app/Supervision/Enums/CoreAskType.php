@@ -41,4 +41,20 @@ enum CoreAskType: string
     {
         return $this === self::ReviewReady ? 60 : 15;
     }
+
+    /**
+     * Whether an ask of this type is served before review and merge asks in its holder's queue.
+     */
+    public function isUrgent(): bool
+    {
+        return $this === self::Question || $this === self::Stuck;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function urgentKeys(): array
+    {
+        return [self::Question->value, self::Stuck->value];
+    }
 }

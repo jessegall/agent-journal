@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace App\Supervision\Models;
 
-use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Enums\ActorType;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Supervision\Enums\CoreAskType;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Closure;
 
 /**
  * @property string|null $result
@@ -27,6 +28,8 @@ use Closure;
  * @property int $version
  * @property string $actor_type
  * @property string $actor_id
+ * @property string $type_key
+ * @property CarbonImmutable $accepted_at
  */
 #[Fillable(['ask_id', 'actor_type', 'actor_id', 'type_key', 'version', 'route_version', 'accepted_at'])]
 final class AskHop extends Model implements ReadableModel
@@ -36,6 +39,11 @@ final class AskHop extends Model implements ReadableModel
     public const string LINK_TYPE = 'core.ask-hop';
 
     public const string PENDING_DELIVERY = 'pending';
+
+    /**
+     * Orders question and stuck asks before review and merge asks.
+     */
+    private const string URGENT_FIRST = 'case when ask_hops.type_key in (?, ?) then 0 else 1 end';
 
     protected function casts(): array
     {
@@ -60,7 +68,7 @@ final class AskHop extends Model implements ReadableModel
     }
 
     /**
-     * @param list<string> $asks
+     * @param  list<string>  $asks
      * @return array<string, string>
      */
     public static function repliesTo(array $asks): array
@@ -80,6 +88,19 @@ final class AskHop extends Model implements ReadableModel
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
+    public function isHeldByAgent(): bool
+    {
+        return $this->holder()->type->isAgent();
+    }
+
+    /**
+     * The holder as one text, to group the hops of one holder's queue.
+     */
+    public function holderKey(): string
+    {
+        return "{$this->actor_type}:{$this->actor_id}";
+    }
+
     public function recordWake(string $wake): void
     {
         $this->wake = $wake;
@@ -93,7 +114,7 @@ final class AskHop extends Model implements ReadableModel
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      */
     #[Scope]
     protected function currentHops(Builder $query): void
@@ -110,7 +131,7 @@ final class AskHop extends Model implements ReadableModel
     }
 
     /**
-     * @param list<string> $hops
+     * @param  list<string>  $hops
      * @return list<string>
      */
     public static function activeIds(array $hops): array
@@ -128,11 +149,59 @@ final class AskHop extends Model implements ReadableModel
         return self::query()->currentHops()
             ->where('ask_hops.actor_type', $holder->type->value)
             ->where('ask_hops.actor_id', $holder->id)
+            ->orderByRaw(self::URGENT_FIRST, CoreAskType::urgentKeys())
             ->oldest('ask_hops.accepted_at')->orderBy('ask_hops.id')->first();
     }
 
     /**
-     * @param Closure(self): void $recover
+     * The unanswered current hops of open asks, oldest first, for the ask clock.
+     *
+     * @return list<self>
+     */
+    public static function unansweredCurrent(int $limit): array
+    {
+        $hops = self::query()->currentHops()
+            ->whereNull('ask_hops.result')
+            ->oldest('ask_hops.accepted_at')
+            ->orderBy('ask_hops.id')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($hops->all());
+    }
+
+    /**
+     * When each holder last answered a hop, by holder key, so its queued asks wait from that moment.
+     *
+     * @return array<string, CarbonImmutable>
+     */
+    public static function lastAnswerTimes(): array
+    {
+        $answered = self::query()
+            ->whereNotNull('result')
+            ->groupBy('actor_type', 'actor_id')
+            ->selectRaw('actor_type, actor_id, max(updated_at) as answered_at')
+            ->readAll('one row per holder that ever answered, to start its queue clock')
+            ->get();
+        $times = [];
+
+        foreach ($answered as $row) {
+            $times[$row->holderKey()] = CarbonImmutable::parse((string) $row->getAttribute('answered_at'));
+        }
+
+        return $times;
+    }
+
+    /**
+     * Whether the actor already held a hop of the ask, which makes an escalation to it a cycle.
+     */
+    public static function hasHeld(Ask $ask, ActorIdentity $actor): bool
+    {
+        return self::query()->where('ask_id', $ask->id)->byActor($actor)->exists();
+    }
+
+    /**
+     * @param  Closure(self): void  $recover
      */
     public static function recoverEach(Closure $recover): void
     {

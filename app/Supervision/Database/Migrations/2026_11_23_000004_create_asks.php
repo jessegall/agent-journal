@@ -33,6 +33,8 @@ return new class extends Migration
             $table->string('pending_target')->nullable();
             $table->unsignedInteger('version');
             $table->boolean('open')->default(true);
+            $table->string('outcome', 32)->nullable();
+            $table->text('late_answer')->nullable();
             $table->timestampsTz();
             $table->unique(['actor_type', 'actor_id', 'submission_key']);
             $table->index(['actor_type', 'actor_id', 'origin', 'open']);

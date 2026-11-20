@@ -12,6 +12,7 @@ use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Values\StopAttemptReference;
 use App\Records\Support\RecordIdentity;
 use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Listeners\HoldFailingJob;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
@@ -22,8 +23,8 @@ use Tests\Support\RefreshHookDatabase;
 
 /**
  * A helper job ends only on what Core says about its helper's stop (task 415): a certified stop finishes it with the
- * evidence, a held stop holds it for repair, a cancelled launch cancels it, and a job that already ended or other
- * work is left alone.
+ * evidence, a held stop holds it for repair (heard by the job's listener alone; Core also opens a stuck ask), a
+ * cancelled launch cancels it, and a job that already ended or other work is left alone.
  */
 final class HelperJobEndingTest extends TestCase
 {
@@ -46,7 +47,10 @@ final class HelperJobEndingTest extends TestCase
         $held = $this->job();
         $cancelled = $this->job();
 
-        $this->raise(new HelperStopHeld($held->assignmentIdentity(), new StopAttemptReference('attempt-2')));
+        $this->actAsUser('another');
+        $this->app->make(HoldFailingJob::class)->handle(
+            new HelperStopHeld($held->assignmentIdentity(), new StopAttemptReference('attempt-2')),
+        );
         $this->raise(new LaunchCancelled($cancelled->assignmentIdentity()));
 
         $this->assertSame(JobState::Held, HelperJob::query()->acrossActors()->findOrFail($held->id)->state);

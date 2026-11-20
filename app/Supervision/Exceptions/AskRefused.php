@@ -45,6 +45,11 @@ final class AskRefused extends RuntimeException implements CodedRefusal, Command
         return new self("You already have {$limit} open asks.");
     }
 
+    public static function onlyOwnerAnswersLate(): self
+    {
+        return new self('Only the owner can add a late answer to an unanswered ask.');
+    }
+
     public static function cannotWithdraw(): self
     {
         return new self('Only the requester can withdraw an open ask.');
