@@ -24,13 +24,13 @@ final readonly class TaskRunAssignments implements AssignableProvider
 
     public function visibleRecords(array $records): array
     {
-        $found = TaskRun::query()
+        $visibleRunIds = TaskRun::query()
             ->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))
             ->readLimit(count($records))
             ->pluck('id')
             ->all();
 
-        return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $found, true)));
+        return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $visibleRunIds, true)));
     }
 
     public function finishedRecords(array $records): array

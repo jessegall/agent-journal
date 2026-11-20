@@ -44,7 +44,7 @@ final readonly class HelperCandidates
             ->readAll('the jobs of those identities, for their open work and last finishes')
             ->get()
             ->groupBy('helper_identity_id');
-        $exposed = $this->exposedIdentities($query, $identityIds);
+        $exposedIdentityIds = $this->exposedIdentities($query, $identityIds);
 
         $ranked = $this->launches->rank(new LaunchCandidateQuery(
             new LaunchProfileKey($query->profileKey),
@@ -62,9 +62,9 @@ final readonly class HelperCandidates
 
         foreach ($ranked as $candidate) {
             $identity = $identities[$candidate->actor->id];
-            $sawSubject = $candidate->sawThisPurpose || in_array($identity->id, $exposed, true);
+            $hasSeenSubject = $candidate->sawThisPurpose || in_array($identity->id, $exposedIdentityIds, true);
 
-            if ($query->independent && $sawSubject) {
+            if ($query->independent && $hasSeenSubject) {
                 continue;
             }
 

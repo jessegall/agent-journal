@@ -163,8 +163,8 @@ final readonly class HelperDispatch
                 $request->programKey,
                 $this->callingProgram->programKey(),
             );
-        } catch (ProfileMissing $missing) {
-            throw HelperProfilesUnavailable::forProfile($request->profileKey, $missing);
+        } catch (ProfileMissing $missingProfile) {
+            throw HelperProfilesUnavailable::forProfile($request->profileKey, $missingProfile);
         }
 
         if ($profile->base->isCoordinator()) {
@@ -243,7 +243,7 @@ final readonly class HelperDispatch
                 $request->requestId,
                 $request->digest(),
                 $profile->revision,
-                $conversation->identityNew,
+                $conversation->isNewIdentity,
                 $request->work->independent,
                 $conversation->mode,
                 $conversation->reason,
@@ -267,8 +267,8 @@ final readonly class HelperDispatch
     {
         try {
             $this->reservations->reserve($identity->helperActor());
-        } catch (AgentBusy $busy) {
-            throw HelperBusy::running($identity->id, $busy);
+        } catch (AgentBusy $busyAgent) {
+            throw HelperBusy::running($identity->id, $busyAgent);
         } catch (AgentNotAvailable|StartRefused $retired) {
             throw HelperRetired::forIdentity($identity->id, $retired);
         }

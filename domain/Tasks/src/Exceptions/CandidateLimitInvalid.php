@@ -11,8 +11,8 @@ use InvalidArgumentException;
  */
 final class CandidateLimitInvalid extends InvalidArgumentException
 {
-    public static function for(int $limit, int $largest): self
+    public static function for(int $limit, int $maximumTaskCount): self
     {
-        return new self("A pick of open tasks takes 1 to {$largest} tasks; {$limit} is not allowed.");
+        return new self("A pick of open tasks takes 1 to {$maximumTaskCount} tasks; {$limit} is not allowed.");
     }
 }

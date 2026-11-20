@@ -28,16 +28,16 @@ final readonly class DraftTokens
 
     public function keep(int $documentNumber, string $token, int $version): void
     {
-        $all = $this->all();
-        $all["doc {$documentNumber}"] = ['token' => $token, 'version' => $version];
-        $this->files->put($this->path(), json_encode($all, JSON_THROW_ON_ERROR));
+        $drafts = $this->all();
+        $drafts["doc {$documentNumber}"] = ['token' => $token, 'version' => $version];
+        $this->files->put($this->path(), json_encode($drafts, JSON_THROW_ON_ERROR));
     }
 
     public function forget(int $documentNumber): void
     {
-        $all = $this->all();
-        unset($all["doc {$documentNumber}"]);
-        $this->files->put($this->path(), json_encode($all, JSON_THROW_ON_ERROR));
+        $drafts = $this->all();
+        unset($drafts["doc {$documentNumber}"]);
+        $this->files->put($this->path(), json_encode($drafts, JSON_THROW_ON_ERROR));
     }
 
     /**

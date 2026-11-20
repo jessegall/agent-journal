@@ -32,7 +32,7 @@ final readonly class CreateDocumentHandler implements CommandHandler
         $document = Document::publish($command->title, $command->abstract, MarkdownText::body($body), $actor);
         $this->provenance->record($document);
         $this->provenance->record($document->currentRevisionOrFail());
-        $this->links->linkFrom($document, $command->about);
+        $this->links->linkFrom($document, $command->relatedRecords);
         $this->events->dispatch(new DocumentCreated($document->id, $document->number, $actor));
 
         return new CreatedRecord($document->id, $document->number, 'doc');

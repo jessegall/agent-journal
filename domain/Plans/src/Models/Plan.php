@@ -270,7 +270,7 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     {
         $progress = array_reduce(
             $progressOfPhase,
-            fn (PlanProgress $sum, PlanProgress $phase) => $sum->plus($phase),
+            fn (PlanProgress $combinedProgress, PlanProgress $phase) => $combinedProgress->plus($phase),
             PlanProgress::none(),
         );
         $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));

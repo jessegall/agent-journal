@@ -58,12 +58,12 @@ final readonly class TaskAssignmentRecords implements TaskAssignmentResolver
     private function statesOf(array $taskIds): array
     {
         $this->actors->actor();
-        $wanted = array_values(array_unique($taskIds));
-        $states = Task::query()->whereKey($wanted)->readLimit(
-            count($wanted),
+        $requestedTaskIds = array_values(array_unique($taskIds));
+        $states = Task::query()->whereKey($requestedTaskIds)->readLimit(
+            count($requestedTaskIds),
         )->orderBy('id')->pluck('state', 'id')->all();
 
-        foreach ($wanted as $taskId) {
+        foreach ($requestedTaskIds as $taskId) {
             if (! array_key_exists($taskId, $states)) {
                 throw TaskMissing::forId($taskId);
             }

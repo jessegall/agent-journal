@@ -23,8 +23,8 @@ trait NamesPlanPhase
 
         try {
             return $plan->phaseNumbered($this->phase);
-        } catch (PhaseMissing $missing) {
-            throw new NotFoundHttpException(previous: $missing);
+        } catch (PhaseMissing $missingPhase) {
+            throw new NotFoundHttpException(previous: $missingPhase);
         }
     }
 }

@@ -25,14 +25,14 @@ final class PlanWorkResultData extends Data
         public readonly int $skipped,
     ) {}
 
-    public static function of(RecordIdentity $root, AssignmentResult $result, AssignmentHolders $holders): self
+    public static function of(RecordIdentity $root, AssignmentResult $assignmentResult, AssignmentHolders $holders): self
     {
         return new self(
             true,
             RecordHolderData::of($root, $holders->forRecord($root)),
-            $result->count(AssignmentOutcomeType::Changed),
-            $result->count(AssignmentOutcomeType::Unchanged),
-            $result->count(AssignmentOutcomeType::SkippedFinished),
+            $assignmentResult->count(AssignmentOutcomeType::Changed),
+            $assignmentResult->count(AssignmentOutcomeType::Unchanged),
+            $assignmentResult->count(AssignmentOutcomeType::SkippedFinished),
         );
     }
 }

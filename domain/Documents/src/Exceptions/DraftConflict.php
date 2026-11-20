@@ -14,9 +14,9 @@ use RuntimeException;
  */
 final class DraftConflict extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    public static function stale(int $expected, int $actual): self
+    public static function stale(int $expectedVersion, int $currentVersion): self
     {
-        return new self("The draft is at version {$actual}, not {$expected}; read it again and repeat the edit.");
+        return new self("The draft is at version {$currentVersion}, not {$expectedVersion}; read it again and repeat the edit.");
     }
 
     public static function notYours(): self

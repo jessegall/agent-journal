@@ -37,8 +37,8 @@ final class CommitUploadTool extends JournalWriteTool
         return new CommitUpload($arguments->ulid('upload_id'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $attachmentId): ToolResult
     {
-        return ToolResult::ok(['attachment_id' => $result]);
+        return ToolResult::ok(['attachment_id' => $attachmentId]);
     }
 }

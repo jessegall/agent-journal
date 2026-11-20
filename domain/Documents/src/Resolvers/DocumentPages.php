@@ -47,32 +47,32 @@ final readonly class DocumentPages implements DocumentReader
         $document = DocumentRecords::published($id);
         $current = $document->currentRevisionOrFail();
         $cursor = $arguments->continuation();
-        $read = $cursor === null
+        $position = $cursor === null
             ? $this->firstRead((string) $id, $current->number, $arguments)
             : $this->continuations->open($cursor, self::TOOL, (string) $id);
-        if (! $read->filters['explicit_revision']) {
-            $read->assertCurrentRevision($current->number);
+        if (! $position->filters['explicit_revision']) {
+            $position->assertCurrentRevision($current->number);
         }
 
-        $revision = $read->revision === $current->number ? $current : $document->publishedRevision(
-            (string) $read->revision,
+        $revision = $position->revision === $current->number ? $current : $document->publishedRevision(
+            (string) $position->revision,
         );
-        $view = PublicationView::from($read->filters['view']);
+        $view = PublicationView::from($position->filters['view']);
         $card = ['doc_id' => $document->number, 'document_id' => $document->id, 'revision' => $revision->number];
 
         return match ($view) {
             PublicationView::Summary => $this->pages->summary(
                 MarkdownText::body($revision->body),
                 $revision->abstract,
-                $read,
+                $position,
                 self::KEY,
                 $card,
             ),
-            PublicationView::Body => $this->body($revision, $read, $arguments, $card),
-            PublicationView::Revisions => $this->revisions($document, $read, $card),
+            PublicationView::Body => $this->body($revision, $position, $arguments, $card),
+            PublicationView::Revisions => $this->revisions($document, $position, $card),
             PublicationView::Comments => $this->pages->comments(
                 new RecordIdentity(Document::LINK_TYPE, $document->id),
-                $read,
+                $position,
                 self::KEY,
                 $card,
             ),
@@ -81,8 +81,8 @@ final readonly class DocumentPages implements DocumentReader
 
     private function firstRead(string $selector, int $current, ToolArguments $arguments): Continuation
     {
-        $explicit = $arguments->optionalWholeNumber('revision');
-        if ($explicit === 0) {
+        $requestedRevision = $arguments->optionalWholeNumber('revision');
+        if ($requestedRevision === 0) {
             throw ToolArgumentInvalid::for('revision', 'a positive revision number');
         }
 
@@ -91,40 +91,40 @@ final readonly class DocumentPages implements DocumentReader
             $selector,
             [
                 'view' => $arguments->enumOr('view', PublicationView::Summary)->value,
-                'explicit_revision' => $explicit !== null,
+                'explicit_revision' => $requestedRevision !== null,
             ],
             1,
-            revision: $explicit ?? $current,
+            revision: $requestedRevision ?? $current,
         );
     }
 
     /** @param array<string, mixed> $card */
     private function body(
         DocumentRevision $revision,
-        Continuation $read,
+        Continuation $position,
         ToolArguments $arguments,
         array $card,
     ): ToolResult {
         $position = $arguments->continuation() === null
-            ? $this->chunks->range($read, MarkdownText::body($revision->body), $arguments)
-            : $read;
+            ? $this->chunks->range($position, MarkdownText::body($revision->body), $arguments)
+            : $position;
 
         return $this->chunks->page($revision->body, $position, self::KEY, $card);
     }
 
     /** @param array<string, mixed> $card */
-    private function revisions(Document $document, Continuation $read, array $card): ToolResult
+    private function revisions(Document $document, Continuation $position, array $card): ToolResult
     {
         $matching = $document->revisions()->sharedPublished()->orderBy('number')
-            ->where('number', '>=', $read->offset)->limit(self::REVISIONS + 1)->get();
+            ->where('number', '>=', $position->offset)->limit(self::REVISIONS + 1)->get();
         $page = $matching->take(self::REVISIONS);
         $last = $page->last();
         $next = $last !== null && $matching->count() > $page->count() ? [$this->continuations->link(new Continuation(
-            $read->tool,
-            $read->selector,
-            $read->filters,
+            $position->tool,
+            $position->selector,
+            $position->filters,
             $last->number + 1,
-            revision: $read->revision,
+            revision: $position->revision,
         ), self::KEY)] : [];
 
         return ToolResult::ok([

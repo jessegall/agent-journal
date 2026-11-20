@@ -167,7 +167,7 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     /**
      * The document as a search found it: its card with a snippet of the revision that holds the words.
      */
-    public function searchResult(string $words, DocumentRevision $found): DocumentCard
+    public function searchResult(string $words, DocumentRevision $matchingRevision): DocumentCard
     {
         $revision = $this->currentRevisionOrFail();
 
@@ -177,8 +177,8 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
             'title' => $revision->title,
             'abstract' => $revision->abstract,
             'attention' => $this->attention,
-            'snippet' => $found->snippetFor($words),
-            'foundIn' => "revision {$found->number}",
+            'snippet' => $matchingRevision->snippetFor($words),
+            'foundIn' => "revision {$matchingRevision->number}",
         ]);
     }
 
@@ -187,9 +187,9 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
      */
     public function foundRevision(string $relation): DocumentRevision
     {
-        $found = $relation === 'revisions' ? $this->revisions->sortByDesc('number')->first() : $this->currentRevision;
+        $matchingRevision = $relation === 'revisions' ? $this->revisions->sortByDesc('number')->first() : $this->currentRevision;
 
-        return $found ?? $this->currentRevisionOrFail();
+        return $matchingRevision ?? $this->currentRevisionOrFail();
     }
 
     /**

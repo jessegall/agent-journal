@@ -20,10 +20,10 @@ trait PlacedInConversation
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inConversation(Builder $query, ConversationPair $pair): void
+    protected function inConversation(Builder $query, ConversationPair $conversation): void
     {
-        $query->where('source_inbox_id', $pair->sourceInboxId)
-            ->where('destination_inbox_id', $pair->destinationInboxId);
+        $query->where('source_inbox_id', $conversation->sourceInboxId)
+            ->where('destination_inbox_id', $conversation->destinationInboxId);
     }
 
     public function conversation(): ConversationPair

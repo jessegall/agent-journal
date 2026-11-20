@@ -51,14 +51,14 @@ final readonly class DraftRecords implements DraftResolver
         if (! $this->editors->isEditing($draft)) {
             $held = ['state' => EditingState::Held, 'holder' => $draft->holderLabel()];
 
-            $administer = [DocumentAbility::Administer];
-            $administers = $this->authorizer->filterActions(
+            $administrativeAbilities = [DocumentAbility::Administer];
+            $mayAdminister = $this->authorizer->filterActions(
                 DocumentAdministrationPolicy::class,
                 Document::class,
-                $administer,
+                $administrativeAbilities,
             ) !== [];
 
-            return DraftState::from($administers ? [...$held, 'held' => $draft->view($document)] : $held);
+            return DraftState::from($mayAdminister ? [...$held, 'held' => $draft->view($document)] : $held);
         }
 
         return DraftState::from(['state' => EditingState::Yours, 'draft' => $draft->view($document)]);

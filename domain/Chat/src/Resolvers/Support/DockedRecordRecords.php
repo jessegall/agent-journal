@@ -27,29 +27,29 @@ final readonly class DockedRecordRecords
      * @return list<RecordIdentity>
      */
     public function docked(
-        ConversationPair $pair,
+        ConversationPair $conversation,
         bool $hidden = false,
         int $limit = DockedRecord::DEFAULT_LIMIT,
     ): array {
         $placements = DockedRecord::query()
             ->ownedBy(ActorIdentity::of($this->actors->actor()))
-            ->inConversation($pair)
+            ->inConversation($conversation)
             ->shown($hidden)
             ->orderByDesc('docked_at')
             ->orderByDesc('id')
             ->readLimit(max(1, min($limit, DockedRecord::LARGEST_LIMIT)))
             ->get();
-        $readable = [];
+        $readablePlacements = [];
 
         foreach ($placements as $placement) {
             try {
                 $this->records->requireReadable($placement->record());
-                $readable[] = $placement->record();
+                $readablePlacements[] = $placement->record();
             } catch (RecordUnavailable) {
                 continue;
             }
         }
 
-        return $readable;
+        return $readablePlacements;
     }
 }

@@ -35,8 +35,8 @@ final class CreatePhaseTool extends PlanWriteTool
         return new AddPhase($arguments->ulid('plan_id'), $arguments->text('title'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $phaseId): ToolResult
     {
-        return ToolResult::ok(['phase_id' => $result]);
+        return ToolResult::ok(['phase_id' => $phaseId]);
     }
 }

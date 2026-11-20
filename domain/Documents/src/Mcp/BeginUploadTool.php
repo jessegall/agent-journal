@@ -44,8 +44,8 @@ final class BeginUploadTool extends JournalWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $uploadId): ToolResult
     {
-        return ToolResult::ok(['upload_id' => $result]);
+        return ToolResult::ok(['upload_id' => $uploadId]);
     }
 }

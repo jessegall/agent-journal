@@ -31,12 +31,12 @@ final readonly class HistoryPageResolver implements PageResolver
         }
 
         $inboxId = $this->request->chosenInbox()->get();
-        $own = $this->messages->sitsAt($inboxId);
-        $older = $this->request->olderCursor();
-        $page = $own
-            ? $this->messages->history($inboxId, $older, MessagePage::DEFAULT_LIMIT)
-            : $this->messages->inspect($inboxId, $older, MessagePage::DEFAULT_LIMIT);
+        $isOwnInbox = $this->messages->sitsAt($inboxId);
+        $olderCursor = $this->request->olderCursor();
+        $page = $isOwnInbox
+            ? $this->messages->history($inboxId, $olderCursor, MessagePage::DEFAULT_LIMIT)
+            : $this->messages->inspect($inboxId, $olderCursor, MessagePage::DEFAULT_LIMIT);
 
-        return HistoryPageData::from(['inboxId' => $inboxId, 'isInspection' => ! $own, 'page' => $page]);
+        return HistoryPageData::from(['inboxId' => $inboxId, 'isInspection' => ! $isOwnInbox, 'page' => $page]);
     }
 }

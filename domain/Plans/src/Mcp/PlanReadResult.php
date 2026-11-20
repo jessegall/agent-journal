@@ -36,13 +36,13 @@ final readonly class PlanReadResult
             ? $this->first($planId, $arguments->enumOr('view', PlanView::Summary))
             : $this->continuations->open($cursor, self::TOOL, $planId);
         $view = PlanView::from($position->filters['view']);
-        $readsText = isset($position->filters['text_digest']);
-        $plan = $this->plans->plan($planId, $view, $readsText ? 0 : $position->offset);
+        $isTextContinuation = isset($position->filters['text_digest']);
+        $plan = $this->plans->plan($planId, $view, $isTextContinuation ? 0 : $position->offset);
         $position->assertCurrentRevision($plan->revision);
 
         $text = $this->text($plan);
 
-        if ($readsText) {
+        if ($isTextContinuation) {
             return $this->fields->page($this->summary($plan), $text, $position, 'plan_id');
         }
 

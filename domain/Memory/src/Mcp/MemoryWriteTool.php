@@ -12,8 +12,8 @@ use App\Mcp\Tools\JournalWriteTool;
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
 abstract class MemoryWriteTool extends JournalWriteTool
 {
-    final protected function present(mixed $result): ToolResult
+    final protected function present(mixed $memoryId): ToolResult
     {
-        return ToolResult::ok(['memory_id' => $result]);
+        return ToolResult::ok(['memory_id' => $memoryId]);
     }
 }

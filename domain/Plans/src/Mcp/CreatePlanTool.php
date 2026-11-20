@@ -41,8 +41,8 @@ final class CreatePlanTool extends PlanWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $planId): ToolResult
     {
-        return ToolResult::ok(['plan_id' => $result]);
+        return ToolResult::ok(['plan_id' => $planId]);
     }
 }

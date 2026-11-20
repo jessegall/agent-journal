@@ -38,11 +38,11 @@ final class CloseDocumentTool extends JournalWriteTool
         return new CloseDocument($this->target($arguments));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $publication): ToolResult
     {
         return ToolResult::ok([
-            'revision' => $result->revisionNumber,
-            'published' => $result->published,
+            'revision' => $publication->revisionNumber,
+            'published' => $publication->published,
         ]);
     }
 }

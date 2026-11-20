@@ -31,8 +31,8 @@ final class StartTaskTool extends TaskWriteTool
         return new StartTask($arguments->ulid('task_id'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $runNumber): ToolResult
     {
-        return ToolResult::ok(['run_number' => $result]);
+        return ToolResult::ok(['run_number' => $runNumber]);
     }
 }

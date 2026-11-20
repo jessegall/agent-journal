@@ -18,51 +18,51 @@ final readonly class PublicationChunks
 
     public function __construct(private Continuations $continuations) {}
 
-    public function range(Continuation $read, MarkdownText $body, ToolArguments $arguments): Continuation
+    public function range(Continuation $position, MarkdownText $body, ToolArguments $arguments): Continuation
     {
         $section = $arguments->optionalText('section');
-        $first = $arguments->optionalWholeNumber('line_start');
-        $last = $arguments->optionalWholeNumber('line_end');
+        $firstLine = $arguments->optionalWholeNumber('line_start');
+        $lastLine = $arguments->optionalWholeNumber('line_end');
         $offset = $arguments->optionalWholeNumber('character_offset');
 
-        if ($section !== null && ($first !== null || $last !== null || $offset !== null)) {
+        if ($section !== null && ($firstLine !== null || $lastLine !== null || $offset !== null)) {
             throw ToolArgumentInvalid::for('section', 'a section without line or character arguments');
         }
 
-        if ($offset !== null && ($first === null || ($last !== null && $last !== $first))) {
+        if ($offset !== null && ($firstLine === null || ($lastLine !== null && $lastLine !== $firstLine))) {
             throw ToolArgumentInvalid::for('character_offset', 'a character offset on one explicitly selected line');
         }
         if ($offset !== null) {
-            $last = $first;
+            $lastLine = $firstLine;
         }
 
         if ($section !== null) {
             $selected = $body->sectionBy($section);
-            $first = $selected->firstLine;
-            $last = $selected->lastLine;
+            $firstLine = $selected->firstLine;
+            $lastLine = $selected->lastLine;
         }
 
         return new Continuation(
-            $read->tool,
-            $read->selector,
-            [...$read->filters, 'line_end' => $last],
-            $first ?? 1,
+            $position->tool,
+            $position->selector,
+            [...$position->filters, 'line_end' => $lastLine],
+            $firstLine ?? 1,
             $offset ?? 0,
-            $read->revision,
+            $position->revision,
         );
     }
 
     /** @param array<string, mixed> $card */
-    public function page(string $text, Continuation $read, string $selectorName, array $card): ToolResult
+    public function page(string $text, Continuation $position, string $selectorName, array $card): ToolResult
     {
-        $chunk = $this->chunk($text, $read);
+        $chunk = $this->chunk($text, $position);
         $next = $chunk->hasMore ? [$this->continuations->link(new Continuation(
-            $read->tool,
-            $read->selector,
-            $read->filters,
+            $position->tool,
+            $position->selector,
+            $position->filters,
             $chunk->nextLine,
             $chunk->nextCharacter,
-            $read->revision,
+            $position->revision,
         ), $selectorName)] : [];
 
         return ToolResult::ok([
@@ -74,22 +74,22 @@ final readonly class PublicationChunks
         ], $next);
     }
 
-    private function chunk(string $text, Continuation $read): TextChunk
+    private function chunk(string $text, Continuation $position): TextChunk
     {
         $lines = explode("\n", $text);
-        $last = $read->filters['line_end'] ?? count($lines);
-        if ($read->offset < 1 || $last < $read->offset || ! isset($lines[$read->offset - 1])) {
+        $lastLine = $position->filters['line_end'] ?? count($lines);
+        if ($position->offset < 1 || $lastLine < $position->offset || ! isset($lines[$position->offset - 1])) {
             throw ToolArgumentInvalid::for('line_start', 'a line in the record and within the selected range');
         }
-        if ($read->characterOffset > mb_strlen($lines[$read->offset - 1])) {
+        if ($position->characterOffset > mb_strlen($lines[$position->offset - 1])) {
             throw ToolArgumentInvalid::for('character_offset', 'a character offset within the selected line');
         }
 
-        $selected = $last < count($lines) ? implode("\n", array_slice($lines, 0, $last)) : $text;
-        $chunk = TextChunk::of($selected, $read->offset, $read->characterOffset);
+        $selected = $lastLine < count($lines) ? implode("\n", array_slice($lines, 0, $lastLine)) : $text;
+        $chunk = TextChunk::of($selected, $position->offset, $position->characterOffset);
 
         return strlen(json_encode($chunk->text, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)) <= 5000
             ? $chunk
-            : TextChunk::of($selected, $read->offset, $read->characterOffset, self::ESCAPED_CHUNK_BYTES);
+            : TextChunk::of($selected, $position->offset, $position->characterOffset, self::ESCAPED_CHUNK_BYTES);
     }
 }

@@ -41,8 +41,8 @@ final class CommentOnReportTool extends JournalWriteTool
         return new CommentOnReport((string) $arguments->recordReference('report_id'), $arguments->text('body'));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $commentId): ToolResult
     {
-        return ToolResult::ok(['comment_id' => $result]);
+        return ToolResult::ok(['comment_id' => $commentId]);
     }
 }

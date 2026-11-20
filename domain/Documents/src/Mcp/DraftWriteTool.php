@@ -12,15 +12,15 @@ abstract class DraftWriteTool extends JournalWriteTool
 {
     use PublicationArguments;
 
-    final protected function present(mixed $result): ToolResult
+    final protected function present(mixed $draftView): ToolResult
     {
         return ToolResult::ok([
-            'doc_id' => $result->documentNumber,
-            'edit_id' => $result->token,
-            'expected_revision' => $result->version,
-            'base_revision' => $result->baseRevisionNumber,
+            'doc_id' => $draftView->documentNumber,
+            'edit_id' => $draftView->token,
+            'expected_revision' => $draftView->version,
+            'base_revision' => $draftView->baseRevisionNumber,
             'outline' => array_map(fn (string $line): string => mb_strcut($line, 0, 80), array_slice(
-                $result->outline,
+                $draftView->outline,
                 0,
                 30,
             )),

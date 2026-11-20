@@ -24,8 +24,8 @@ trait PrintsInspection
             ->line("Attention: {$inspection->attention->value}");
 
         foreach ($inspection->settlements as $settlement) {
-            $by = "{$settlement->actorType} {$settlement->actorId}";
-            $report = $report->line("  settled {$settlement->settledAt} by {$by}: {$settlement->reason}");
+            $actorLabel = "{$settlement->actorType} {$settlement->actorId}";
+            $report = $report->line("  settled {$settlement->settledAt} by {$actorLabel}: {$settlement->reason}");
         }
 
         foreach ($inspection->links as $link) {

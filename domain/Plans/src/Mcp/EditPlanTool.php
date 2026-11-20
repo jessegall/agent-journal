@@ -44,8 +44,8 @@ final class EditPlanTool extends PlanWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $revision): ToolResult
     {
-        return ToolResult::ok(['revision' => $result]);
+        return ToolResult::ok(['revision' => $revision]);
     }
 }

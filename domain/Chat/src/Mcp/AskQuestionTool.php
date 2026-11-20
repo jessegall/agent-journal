@@ -39,9 +39,9 @@ final class AskQuestionTool extends JournalWriteTool
         return new AskQuestion($arguments->text('body'), $this->relatedRecord($arguments));
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $messageId): ToolResult
     {
-        return ToolResult::ok(['message_id' => $result]);
+        return ToolResult::ok(['message_id' => $messageId]);
     }
 
     private function relatedRecord(ToolArguments $arguments): RecordIdentity|null

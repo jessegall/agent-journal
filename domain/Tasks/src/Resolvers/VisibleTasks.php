@@ -30,12 +30,12 @@ final readonly class VisibleTasks implements TaskResolver
     public function requireAllVisible(array $taskIds): void
     {
         $this->actors->actor();
-        $wanted = array_values(array_unique($taskIds));
-        $found = array_values(array_map(
+        $requestedTaskIds = array_values(array_unique($taskIds));
+        $visibleTaskIds = array_values(array_map(
             strval(...),
-            Task::query()->whereKey($wanted)->readLimit(count($wanted))->pluck('id')->all(),
+            Task::query()->whereKey($requestedTaskIds)->readLimit(count($requestedTaskIds))->pluck('id')->all(),
         ));
-        $this->assertAllFound($wanted, $found);
+        $this->assertAllFound($requestedTaskIds, $visibleTaskIds);
     }
 
     /**
@@ -45,22 +45,22 @@ final readonly class VisibleTasks implements TaskResolver
     public function summaries(array $taskIds): array
     {
         $this->actors->actor();
-        $wanted = array_values(array_unique($taskIds));
-        $tasks = Task::query()->whereKey($wanted)->readLimit(count($wanted))->get()->keyBy('id');
-        $this->assertAllFound($wanted, array_values(array_map(strval(...), $tasks->keys()->all())));
+        $requestedTaskIds = array_values(array_unique($taskIds));
+        $tasks = Task::query()->whereKey($requestedTaskIds)->readLimit(count($requestedTaskIds))->get()->keyBy('id');
+        $this->assertAllFound($requestedTaskIds, array_values(array_map(strval(...), $tasks->keys()->all())));
 
         return array_map(fn (string $taskId) => $tasks[$taskId]->summary(), $taskIds);
     }
 
     /**
-     * @param  list<string>  $wanted
-     * @param  list<string>  $found
+     * @param  list<string>  $requestedTaskIds
+     * @param  list<string>  $visibleTaskIds
      */
-    private function assertAllFound(array $wanted, array $found): void
+    private function assertAllFound(array $requestedTaskIds, array $visibleTaskIds): void
     {
-        $missing = array_values(array_diff($wanted, $found));
-        if ($missing !== []) {
-            throw TaskMissing::forId($missing[0]);
+        $unavailableTaskIds = array_values(array_diff($requestedTaskIds, $visibleTaskIds));
+        if ($unavailableTaskIds !== []) {
+            throw TaskMissing::forId($unavailableTaskIds[0]);
         }
     }
 }
