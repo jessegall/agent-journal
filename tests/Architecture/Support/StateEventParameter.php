@@ -42,8 +42,8 @@ final class StateEventParameter
             return false;
         }
 
-        $reflected = new ReflectionMethod($name, $method->name->toString());
+        $methodReflection = new ReflectionMethod($name, $method->name->toString());
 
-        return new StateMethods()->eventFor($reflected) === $parameter->type->toString();
+        return new StateMethods()->eventFor($methodReflection) === $parameter->type->toString();
     }
 }

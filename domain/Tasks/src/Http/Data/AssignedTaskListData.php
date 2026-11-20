@@ -26,13 +26,13 @@ final class AssignedTaskListData extends Data
         public readonly int $total,
     ) {}
 
-    public static function fromList(TaskList $taskList): self
+    public static function fromList(TaskList $assignedTaskPage): self
     {
         return self::from([
-            'cards' => AssignedTaskCardData::collect($taskList->cards),
-            'page' => $taskList->page->number,
-            'perPage' => $taskList->page->size,
-            'total' => $taskList->total,
+            'cards' => AssignedTaskCardData::collect($assignedTaskPage->cards),
+            'page' => $assignedTaskPage->page->number,
+            'perPage' => $assignedTaskPage->page->size,
+            'total' => $assignedTaskPage->total,
         ]);
     }
 }

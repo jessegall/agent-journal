@@ -43,7 +43,7 @@ enum FolderType: string
      */
     public function requirementNotMetBy(ReflectionClass $class): string|null
     {
-        $fits = match ($this) {
+        $meetsFolderRequirement = match ($this) {
             self::States => $class->getName() === AgentState::class || $class->isSubclassOf(AgentState::class),
             self::Resolvers => ! $class->isInterface() && array_any(
                 $class->getInterfaceNames(),
@@ -66,7 +66,7 @@ enum FolderType: string
             self::CommandMiddleware => $class->implementsInterface(CommandMiddlewareContract::class),
         };
 
-        return $fits ? null : $this->requirement();
+        return $meetsFolderRequirement ? null : $this->requirement();
     }
 
     private function requirement(): string

@@ -1062,6 +1062,7 @@ case	ViolationType::OtherOwnersTable
 case	ViolationType::OutsideEveryDomain
 case	ViolationType::PivotNotWritten
 case	ViolationType::PrivateCoreType
+case	ViolationType::PrivateEventListenedTo
 case	ViolationType::PrivateType
 case	ViolationType::PrivateTypeInSignature
 case	ViolationType::RawRowAccess
@@ -4842,6 +4843,7 @@ class	TextVersionController
 class	TextVersionInfo
 class	TextVersionRequest
 class	TextVersionUnavailable
+class	ThrowOnlyGuards
 class	TickBatch
 class	TickCandidate
 class	TickCandidates
@@ -4957,6 +4959,7 @@ class	UserPresence
 class	UserPresenceRecords
 class	UserStacks
 class	UserVisibility
+class	UserWords
 class	ValidateCommand
 class	VerbNamedTypes
 class	VerificationContract
@@ -5684,6 +5687,7 @@ constant	TextUpload::CHUNK_BYTES
 constant	TextUpload::LINK_TYPE
 constant	TextUpload::MAX_BYTES
 constant	TextUpload::SESSION_SCOPE
+constant	ThrowOnlyGuards::GUARD_NAME
 constant	TickCommands::MAXIMUM
 constant	TickDelivery::MICROSECONDS_PER_SECOND
 constant	TickDelivery::NANOSECONDS_PER_MICROSECOND
@@ -5704,6 +5708,9 @@ constant	UiManifest::SHARED_INCLUDES
 constant	UnsupportedConstruct::COMMAND_STARTING_WORDS
 constant	UploadStore::ACTIVE_UPLOADS
 constant	UserChannel::PATTERN
+constant	UserWords::EXTENSIONS
+constant	UserWords::GENERATED
+constant	UserWords::WORD
 constant	VerbNamedTypes::VERBS
 constant	WorkingOnPlanStateReference::TYPE_KEY
 constant	WorkingOnTaskStateReference::TYPE_KEY
@@ -11892,6 +11899,7 @@ method	NameScan::classConstantType()
 method	NameScan::classStatementType()
 method	NameScan::groupImports()
 method	NameScan::imports()
+method	NameScan::isStateEventParameter()
 method	NameScan::isType()
 method	NameScan::isUse()
 method	NameScan::names()
@@ -18235,6 +18243,13 @@ method	TextVersionInfo::__construct()
 method	TextVersionRequest::rules()
 method	TextVersionRequest::version()
 method	TextVersionUnavailable::named()
+method	ThrowOnlyGuards::containsThrow()
+method	ThrowOnlyGuards::findingsIn()
+method	ThrowOnlyGuards::hasThrowOnlyBranches()
+method	ThrowOnlyGuards::isThrowOnly()
+method	ThrowOnlyGuards::isThrowOnlyGuard()
+method	ThrowOnlyGuards::key()
+method	ThrowOnlyGuards::onlyThrows()
 method	TickBatch::__construct()
 method	TickBatch::count()
 method	TickBatch::isEmpty()
@@ -18635,6 +18650,10 @@ method	UserStacks::push()
 method	UserVisibility::ownRead()
 method	UserVisibility::ownRows()
 method	UserVisibility::readAcrossOwners()
+method	UserWords::codeFiles()
+method	UserWords::in()
+method	UserWords::isScannedSourceFile()
+method	UserWords::linesOf()
 method	UsesGrammarContext::cursor()
 method	UsesGrammarContext::draft()
 method	ValidateCommand::__construct()
@@ -18943,6 +18962,7 @@ parameter	$answering
 parameter	$answers
 parameter	$any
 parameter	$app
+parameter	$appFolder
 parameter	$appKey
 parameter	$appName
 parameter	$applied
@@ -18974,6 +18994,7 @@ parameter	$assignableType
 parameter	$assigned
 parameter	$assignedIds
 parameter	$assignedPlanPage
+parameter	$assignedTaskPage
 parameter	$assignee
 parameter	$assigneeType
 parameter	$assignees
@@ -19215,6 +19236,7 @@ parameter	$commandReply
 parameter	$commandRequest
 parameter	$commandRequestId
 parameter	$commandResult
+parameter	$commandSources
 parameter	$commandStops
 parameter	$commandType
 parameter	$commands
@@ -19234,7 +19256,9 @@ parameter	$completes
 parameter	$completion
 parameter	$component
 parameter	$componentFile
+parameter	$composerPath
 parameter	$compound
+parameter	$concrete
 parameter	$condition
 parameter	$conditionHashes
 parameter	$conditionKey
@@ -19253,8 +19277,10 @@ parameter	$conflicts
 parameter	$connection
 parameter	$considered
 parameter	$console
+parameter	$constantAccess
 parameter	$constraints
 parameter	$construct
+parameter	$constructor
 parameter	$consumed
 parameter	$container
 parameter	$containerRequired
@@ -19275,6 +19301,7 @@ parameter	$contractLabel
 parameter	$contracts
 parameter	$controlPort
 parameter	$controller
+parameter	$controllers
 parameter	$controllingResult
 parameter	$conversation
 parameter	$conversationId
@@ -19288,6 +19315,7 @@ parameter	$copiedFrom
 parameter	$core
 parameter	$coreDeclarations
 parameter	$coreExports
+parameter	$coreFolder
 parameter	$coreListenerFolders
 parameter	$coreRules
 parameter	$correction
@@ -19303,6 +19331,8 @@ parameter	$cpuCores
 parameter	$createdAt
 parameter	$createdDocument
 parameter	$createdReport
+parameter	$creationAttributes
+parameter	$creations
 parameter	$creator
 parameter	$creatorId
 parameter	$creatorType
@@ -19399,6 +19429,9 @@ parameter	$dispatcher
 parameter	$dispatchers
 parameter	$dispatches
 parameter	$disposition
+parameter	$docComment
+parameter	$docblockLine
+parameter	$docblockUses
 parameter	$dockable
 parameter	$docked
 parameter	$dockedCards
@@ -19409,6 +19442,7 @@ parameter	$documentation
 parameter	$documents
 parameter	$domain
 parameter	$domainClass
+parameter	$domainFolder
 parameter	$domainName
 parameter	$domainSwitches
 parameter	$domains
@@ -19426,6 +19460,7 @@ parameter	$driverType
 parameter	$duration
 parameter	$each
 parameter	$earlier
+parameter	$edges
 parameter	$editing
 parameter	$editor
 parameter	$editors
@@ -19489,6 +19524,7 @@ parameter	$eventFields
 parameter	$eventId
 parameter	$eventKey
 parameter	$eventName
+parameter	$eventNames
 parameter	$eventResults
 parameter	$eventScope
 parameter	$events
@@ -19539,6 +19575,7 @@ parameter	$expiresInSeconds
 parameter	$expirySeconds
 parameter	$explanation
 parameter	$explanations
+parameter	$export
 parameter	$exportGroup
 parameter	$exported
 parameter	$exports
@@ -19593,6 +19630,7 @@ parameter	$firstRead
 parameter	$firstReader
 parameter	$firstRequest
 parameter	$firstRequestId
+parameter	$fixedFiles
 parameter	$flag
 parameter	$flags
 parameter	$floatSize
@@ -19708,6 +19746,7 @@ parameter	$http
 parameter	$icon
 parameter	$id
 parameter	$idempotencyKey
+parameter	$identifier
 parameter	$identity
 parameter	$identityId
 parameter	$identityIds
@@ -19768,6 +19807,7 @@ parameter	$isFound
 parameter	$isHealthy
 parameter	$isInsideFilter
 parameter	$isInspection
+parameter	$isInterface
 parameter	$isJobSource
 parameter	$isKnown
 parameter	$isLimit
@@ -19784,9 +19824,12 @@ parameter	$isRead
 parameter	$isRequired
 parameter	$isRoot
 parameter	$isRunning
+parameter	$isScoped
 parameter	$isSelected
 parameter	$isSignedIn
+parameter	$isSingleton
 parameter	$isStale
+parameter	$isStateListenerUse
 parameter	$isStoreRemoved
 parameter	$isTrusted
 parameter	$isUnread
@@ -19932,6 +19975,7 @@ parameter	$mayRevoke
 parameter	$mayTakeSemicolon
 parameter	$measuredAnswer
 parameter	$member
+parameter	$memberPath
 parameter	$members
 parameter	$membership
 parameter	$memberships
@@ -19952,6 +19996,8 @@ parameter	$meter
 parameter	$method
 parameter	$methods
 parameter	$middleware
+parameter	$migrationFolders
+parameter	$migrationsFolder
 parameter	$migrator
 parameter	$millisecondBudget
 parameter	$milliseconds
@@ -19974,6 +20020,7 @@ parameter	$modelClass
 parameter	$modelOfName
 parameter	$models
 parameter	$modelsByClass
+parameter	$modelsFolder
 parameter	$modelsLoaded
 parameter	$module
 parameter	$moment
@@ -19993,10 +20040,12 @@ parameter	$mostRenderedBytes
 parameter	$mounts
 parameter	$move
 parameter	$name
+parameter	$nameContext
 parameter	$namedPaths
 parameter	$names
 parameter	$namesByType
 parameter	$namespace
+parameter	$namespaces
 parameter	$nanoseconds
 parameter	$narrowToOwnRows
 parameter	$narrower
@@ -20371,6 +20420,7 @@ parameter	$quote
 parameter	$raise
 parameter	$raiseKey
 parameter	$raiseRows
+parameter	$raises
 parameter	$range
 parameter	$ranges
 parameter	$rank
@@ -20549,6 +20599,7 @@ parameter	$role
 parameter	$room
 parameter	$root
 parameter	$rootId
+parameter	$rootMigrationFolder
 parameter	$rootReference
 parameter	$rootTitle
 parameter	$rootType
@@ -20564,6 +20615,7 @@ parameter	$routeVersion
 parameter	$router
 parameter	$routes
 parameter	$row
+parameter	$rowAccessExpression
 parameter	$rowVersion
 parameter	$rows
 parameter	$rule
@@ -20604,6 +20656,7 @@ parameter	$schemaVersion
 parameter	$schemaVersions
 parameter	$scope
 parameter	$scopeVersion
+parameter	$scoped
 parameter	$screen
 parameter	$screens
 parameter	$script
@@ -20698,9 +20751,12 @@ parameter	$shareId
 parameter	$shareRecords
 parameter	$shareable
 parameter	$shared
+parameter	$sharedFolder
+parameter	$sharedFolders
 parameter	$shares
 parameter	$sharing
 parameter	$sharingNotice
+parameter	$shortName
 parameter	$shownIds
 parameter	$signal
 parameter	$signature
@@ -20709,6 +20765,7 @@ parameter	$signedCallRefreshSeconds
 parameter	$silent
 parameter	$since
 parameter	$sincePrevious
+parameter	$singleton
 parameter	$site
 parameter	$size
 parameter	$skeleton
@@ -20778,6 +20835,7 @@ parameter	$started
 parameter	$startedAt
 parameter	$startedBy
 parameter	$starter
+parameter	$starterKitFiles
 parameter	$starting
 parameter	$starts
 parameter	$startsAt
@@ -20868,11 +20926,13 @@ parameter	$systemEntries
 parameter	$systemPolicies
 parameter	$table
 parameter	$tables
+parameter	$tag
 parameter	$taken
 parameter	$takenUp
 parameter	$takeover
 parameter	$takes
 parameter	$takesAssignments
+parameter	$takesOnlyEvents
 parameter	$target
 parameter	$targetId
 parameter	$targetIdentity
@@ -20983,8 +21043,11 @@ parameter	$use
 parameter	$user
 parameter	$userId
 parameter	$userIds
+parameter	$userName
+parameter	$userOwner
 parameter	$users
 parameter	$uses
+parameter	$usingDomain
 parameter	$validation
 parameter	$validator
 parameter	$validators
@@ -21028,6 +21091,8 @@ parameter	$view
 parameter	$viewId
 parameter	$viewer
 parameter	$views
+parameter	$violation
+parameter	$violations
 parameter	$visibility
 parameter	$visible
 parameter	$visibleModels
@@ -28300,8 +28365,8 @@ property	Violation::$detail
 property	Violation::$file
 property	Violation::$line
 property	Violation::$owner
+property	Violation::$subject
 property	Violation::$type
-property	Violation::$used
 property	Violation::$usingDomain
 property	VisibilityChecks::$actors
 property	VisibilityChecks::$container
@@ -28481,6 +28546,8 @@ trait	UsesGrammarContext
 trait	WithContext
 variable	$ability
 variable	$abilityType
+variable	$abstract
+variable	$abstractOwner
 variable	$accepted
 variable	$access
 variable	$account
@@ -28539,6 +28606,7 @@ variable	$approve
 variable	$approved
 variable	$area
 variable	$areas
+variable	$areasOnStack
 variable	$argument
 variable	$arguments
 variable	$arms
@@ -28621,7 +28689,9 @@ variable	$byType
 variable	$bytes
 variable	$cache
 variable	$call
+variable	$callContractMatch
 variable	$callId
+variable	$callParameterType
 variable	$caller
 variable	$calls
 variable	$cancelled
@@ -28676,6 +28746,7 @@ variable	$class
 variable	$classInput
 variable	$classLevel
 variable	$classMapping
+variable	$classMatch
 variable	$className
 variable	$classNames
 variable	$classSubjectFits
@@ -28710,6 +28781,8 @@ variable	$completion
 variable	$components
 variable	$composer
 variable	$composerOptions
+variable	$concrete
+variable	$concreteOwner
 variable	$condition
 variable	$conditionParameters
 variable	$conditions
@@ -28724,6 +28797,7 @@ variable	$conflict
 variable	$conflictingAttributes
 variable	$conflicts
 variable	$connection
+variable	$constantParser
 variable	$construct
 variable	$constructor
 variable	$constructorDoc
@@ -28739,10 +28813,13 @@ variable	$contract
 variable	$contracts
 variable	$contribution
 variable	$control
+variable	$controller
+variable	$controllerMethod
 variable	$conversation
 variable	$conversationId
 variable	$conversations
 variable	$cookie
+variable	$coreExports
 variable	$coreGroups
 variable	$coreRoot
 variable	$correction
@@ -28753,6 +28830,7 @@ variable	$counts
 variable	$coverRemoved
 variable	$covered
 variable	$created
+variable	$creation
 variable	$creator
 variable	$credential
 variable	$curl
@@ -28761,6 +28839,7 @@ variable	$currentDigest
 variable	$currentId
 variable	$currentPhase
 variable	$cursor
+variable	$cycles
 variable	$database
 variable	$deadline
 variable	$decide
@@ -28791,6 +28870,8 @@ variable	$delivery
 variable	$denials
 variable	$denied
 variable	$deny
+variable	$dependency
+variable	$dependencyArea
 variable	$depth
 variable	$descriptor
 variable	$descriptors
@@ -28805,13 +28886,16 @@ variable	$dialect
 variable	$digest
 variable	$digests
 variable	$directory
+variable	$disallowedCategory
 variable	$disk
 variable	$dismissedBy
 variable	$dispatch
 variable	$dispatcher
 variable	$distinct
 variable	$doc
+variable	$docComment
 variable	$docblock
+variable	$docblockScan
 variable	$docker
 variable	$document
 variable	$documents
@@ -28873,11 +28957,13 @@ variable	$event
 variable	$eventCacheEntries
 variable	$eventKey
 variable	$eventName
+variable	$eventNameItem
 variable	$events
 variable	$eventsAreOff
 variable	$evidence
 variable	$exactAgents
 variable	$examinedUpTo
+variable	$exampleUse
 variable	$exceeded
 variable	$except
 variable	$excerpt
@@ -28900,6 +28986,7 @@ variable	$exposedIdentityIds
 variable	$exposure
 variable	$extended
 variable	$extra
+variable	$facade
 variable	$factory
 variable	$facts
 variable	$failed
@@ -28912,9 +28999,12 @@ variable	$fields
 variable	$file
 variable	$filed
 variable	$files
+variable	$filesWithConflictingTraits
 variable	$filter
 variable	$filters
 variable	$final
+variable	$finder
+variable	$findings
 variable	$fingerprints
 variable	$finished
 variable	$finishedTool
@@ -28937,6 +29027,7 @@ variable	$flags
 variable	$flat
 variable	$folder
 variable	$folders
+variable	$forbiddenWordLines
 variable	$formatted
 variable	$former
 variable	$forms
@@ -28979,6 +29070,7 @@ variable	$handler
 variable	$handlerEntries
 variable	$handlers
 variable	$hasDisallowedEntry
+variable	$hasGuardName
 variable	$hasMore
 variable	$hasMorePhases
 variable	$hasParentheses
@@ -29053,13 +29145,18 @@ variable	$isApplicationCode
 variable	$isArray
 variable	$isBacktick
 variable	$isBareEsac
+variable	$isCall
+variable	$isCallOnThis
+variable	$isComparison
 variable	$isConcreteCommand
 variable	$isConcreteEvent
+variable	$isCoreBase
 variable	$isCoreListener
 variable	$isDirectChild
 variable	$isDirectoryRemoved
 variable	$isExportedUiEvent
 variable	$isFull
+variable	$isGenerated
 variable	$isHeldForCheck
 variable	$isInside
 variable	$isInsideFilter
@@ -29068,6 +29165,7 @@ variable	$isOwnInbox
 variable	$isOwnOutputRead
 variable	$isPlain
 variable	$isPositiveNumber
+variable	$isPublic
 variable	$isPublished
 variable	$isQuote
 variable	$isQuoted
@@ -29075,8 +29173,10 @@ variable	$isRecipient
 variable	$isRefusedCommand
 variable	$isRelative
 variable	$isSameAgent
+variable	$isScoped
 variable	$isSignedIn
 variable	$isSignedOut
+variable	$isSingleton
 variable	$isSource
 variable	$isStoreRemoved
 variable	$isTextContinuation
@@ -29123,6 +29223,7 @@ variable	$limits
 variable	$line
 variable	$lineEnd
 variable	$lineStart
+variable	$lineage
 variable	$lines
 variable	$link
 variable	$linkOfId
@@ -29154,6 +29255,7 @@ variable	$longest
 variable	$looksSecret
 variable	$loop
 variable	$lost
+variable	$lowLinks
 variable	$made
 variable	$main
 variable	$manager
@@ -29176,6 +29278,7 @@ variable	$mayName
 variable	$mayReveal
 variable	$measuredOutput
 variable	$measurement
+variable	$meetsFolderRequirement
 variable	$member
 variable	$members
 variable	$membership
@@ -29191,13 +29294,17 @@ variable	$messages
 variable	$meta
 variable	$meter
 variable	$method
+variable	$methodReflection
 variable	$methods
 variable	$microseconds
 variable	$middlewareRegistrations
 variable	$middlewareReply
+variable	$migration
 variable	$mimeType
 variable	$mine
 variable	$minutes
+variable	$misplacedExceptions
+variable	$misplacedInterfaces
 variable	$missed
 variable	$missing
 variable	$missingPhase
@@ -29216,12 +29323,16 @@ variable	$moves
 variable	$name
 variable	$nameLength
 variable	$nameStart
+variable	$nameUsesByFile
 variable	$named
 variable	$namedClasses
 variable	$names
 variable	$namesByType
+variable	$namesInDocblock
 variable	$namesReceipt
 variable	$namespace
+variable	$namespaceMatch
+variable	$namespaces
 variable	$navigation
 variable	$nearest
 variable	$needed
@@ -29306,6 +29417,7 @@ variable	$over
 variable	$override
 variable	$overrun
 variable	$own
+variable	$ownProperties
 variable	$ownRegistrations
 variable	$ownRuntime
 variable	$owned
@@ -29395,6 +29507,7 @@ variable	$preview
 variable	$previous
 variable	$previousDeadline
 variable	$printed
+variable	$privateTypeOwner
 variable	$problem
 variable	$problems
 variable	$process
@@ -29411,6 +29524,7 @@ variable	$project
 variable	$projectKey
 variable	$projection
 variable	$promised
+variable	$promotedProperties
 variable	$proof
 variable	$proofId
 variable	$proofs
@@ -29493,6 +29607,7 @@ variable	$registeredModel
 variable	$registeredName
 variable	$registration
 variable	$registrationDigest
+variable	$registrations
 variable	$registry
 variable	$reject
 variable	$rejected
@@ -29550,6 +29665,7 @@ variable	$retiredSkill
 variable	$retirement
 variable	$returnType
 variable	$returnsCommands
+variable	$returnsVoid
 variable	$reused
 variable	$review
 variable	$revision
@@ -29665,6 +29781,7 @@ variable	$skillFiles
 variable	$skillId
 variable	$skills
 variable	$skipped
+variable	$skippedPath
 variable	$sliceStart
 variable	$slot
 variable	$slotHosts
@@ -29676,10 +29793,12 @@ variable	$sortedNames
 variable	$sortedParameters
 variable	$source
 variable	$sourceAdmitted
+variable	$sourceArea
 variable	$sourceRoot
 variable	$sources
 variable	$span
 variable	$special
+variable	$sql
 variable	$sqlite
 variable	$stack
 variable	$staged
@@ -29700,6 +29819,7 @@ variable	$startup
 variable	$state
 variable	$stateClass
 variable	$stateEventEntries
+variable	$stateEvents
 variable	$stateNames
 variable	$stateOfTask
 variable	$statements
@@ -29720,6 +29840,8 @@ variable	$stored
 variable	$storedOwner
 variable	$stream
 variable	$streams
+variable	$string
+variable	$strings
 variable	$stripped
 variable	$stripsTabs
 variable	$structured
@@ -29757,6 +29879,7 @@ variable	$taskIds
 variable	$taskIdsByPhase
 variable	$taskIdsOfPhase
 variable	$taskOffset
+variable	$taskPage
 variable	$tasks
 variable	$temporary
 variable	$text
@@ -29785,8 +29908,11 @@ variable	$top
 variable	$topLevel
 variable	$total
 variable	$trait
+variable	$traitUse
 variable	$traits
+variable	$traitsByFile
 variable	$transport
+variable	$traverser
 variable	$tree
 variable	$trigger
 variable	$tunnel
@@ -29794,6 +29920,7 @@ variable	$tunnels
 variable	$turn
 variable	$turnGeneration
 variable	$type
+variable	$typeCollector
 variable	$typeEnabled
 variable	$typeKey
 variable	$types
@@ -29822,6 +29949,7 @@ variable	$usage
 variable	$use
 variable	$user
 variable	$userIds
+variable	$userOwner
 variable	$uses
 variable	$usesBusReceipt
 variable	$valid
@@ -29839,6 +29967,8 @@ variable	$vet
 variable	$view
 variable	$viewer
 variable	$views
+variable	$violation
+variable	$violations
 variable	$visible
 variable	$visibleIdsByType
 variable	$visibleJobIds
@@ -29848,6 +29978,7 @@ variable	$visibleRecords
 variable	$visibleRunIds
 variable	$visibleTargets
 variable	$visibleTaskIds
+variable	$visitArea
 variable	$visited
 variable	$vitest
 variable	$wait

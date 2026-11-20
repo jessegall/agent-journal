@@ -53,11 +53,11 @@ final readonly class ThrowOnlyGuards implements FileScan
      */
     public static function isThrowOnlyGuard(ClassMethod $method): bool
     {
-        $isVoid = $method->returnType instanceof Identifier && $method->returnType->toLowerString() === 'void';
+        $returnsVoid = $method->returnType instanceof Identifier && $method->returnType->toLowerString() === 'void';
         $body = $method->stmts ?? [];
-        $isNamedAsGuard = preg_match(self::GUARD_NAME, $method->name->toString()) === 1;
+        $hasGuardName = preg_match(self::GUARD_NAME, $method->name->toString()) === 1;
 
-        return $isNamedAsGuard && $isVoid && $body !== [] && self::onlyThrows($body) && self::throwsSomewhere($body);
+        return $hasGuardName && $returnsVoid && $body !== [] && self::onlyThrows($body) && self::containsThrow($body);
     }
 
     /**
@@ -73,13 +73,13 @@ final readonly class ThrowOnlyGuards implements FileScan
         return match (true) {
             $statement instanceof Expression => $statement->expr instanceof Throw_,
             $statement instanceof Return_ => $statement->expr === null,
-            $statement instanceof If_ => self::isThrowOnlyIf($statement),
+            $statement instanceof If_ => self::hasThrowOnlyBranches($statement),
             $statement instanceof Foreach_ => self::onlyThrows($statement->stmts),
             default => false,
         };
     }
 
-    private static function isThrowOnlyIf(If_ $branch): bool
+    private static function hasThrowOnlyBranches(If_ $branch): bool
     {
         $arms = [$branch->stmts, ...array_map(fn (Node $arm) => $arm->stmts, $branch->elseifs)];
 
@@ -93,7 +93,7 @@ final readonly class ThrowOnlyGuards implements FileScan
     /**
      * @param  array<Stmt>  $statements
      */
-    private static function throwsSomewhere(array $statements): bool
+    private static function containsThrow(array $statements): bool
     {
         return new NodeFinder()->findFirstInstanceOf($statements, Throw_::class) !== null;
     }

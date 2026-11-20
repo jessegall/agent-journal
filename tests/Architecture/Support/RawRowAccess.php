@@ -59,9 +59,9 @@ final readonly class RawRowAccess implements FileScan
         }
 
         foreach ($finder->findInstanceOf($file->statements, MethodCall::class) as $call) {
-            $isOwnMethod = $call->var instanceof Variable && $call->var->name === 'this';
+            $isCallOnThis = $call->var instanceof Variable && $call->var->name === 'this';
 
-            if ($call->name instanceof Identifier && $call->name->toLowerString() === 'table' && ! $isOwnMethod) {
+            if ($call->name instanceof Identifier && $call->name->toLowerString() === 'table' && ! $isCallOnThis) {
                 $violations[] = $this->violation($file, $call, '->table()');
             }
         }
@@ -94,8 +94,15 @@ final readonly class RawRowAccess implements FileScan
         return $sql instanceof String_ && preg_match('/^\\s*(ALTER|CREATE|DROP) /i', $sql->value) === 1;
     }
 
-    private function violation(ParsedFile $file, MethodCall|StaticCall $call, string $used): Violation
+    private function violation(ParsedFile $file, MethodCall|StaticCall $call, string $rowAccessExpression): Violation
     {
-        return new Violation($file->path, $call->getStartLine(), $used, 'none', 'none', ViolationType::RawRowAccess);
+        return new Violation(
+            $file->path,
+            $call->getStartLine(),
+            $rowAccessExpression,
+            'none',
+            'none',
+            ViolationType::RawRowAccess,
+        );
     }
 }
