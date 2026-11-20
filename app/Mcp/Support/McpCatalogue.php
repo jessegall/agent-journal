@@ -88,7 +88,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         $sizes = $this->toolBytes;
 
         foreach (DiscoveryProfile::cases() as $profile) {
-            if ($write->isDefined() && ! $profile->includesWrite($write->get()->readOnlyHelper)) {
+            if (! $tool->isVisibleTo($profile)) {
                 continue;
             }
 

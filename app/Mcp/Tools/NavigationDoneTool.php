@@ -7,7 +7,9 @@ namespace App\Mcp\Tools;
 use App\Agents\Commands\ProveNavigation;
 use App\Agents\Enums\NavigationCompletion;
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -22,6 +24,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Name('navigation_done')]
 #[Dispatches(ProveNavigation::class)]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description(
     'Say a navigation request is done: completes goal (the whole goal shows) or step (only the stalled step is '
     .'repaired), and a proof, text that now shows on the screen and did not when the request was raised. The host '

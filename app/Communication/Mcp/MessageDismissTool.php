@@ -7,6 +7,8 @@ namespace App\Communication\Mcp;
 use App\Bus\Contracts\Command;
 use App\Communication\Commands\DismissMessage;
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -17,7 +19,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsIdempotent]
 #[IsDestructive(true)]
 #[Name('messages_dismiss')]
-#[Dispatches(DismissMessage::class, readOnlyHelper: true)]
+#[Dispatches(DismissMessage::class)]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 #[Description('Withdraw a message you wrote, or decline one sent to your inbox, with a reason.')]
 final class MessageDismissTool extends MessageWriteTool
 {

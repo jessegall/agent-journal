@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Support\JobPermissionReader;
 use App\Mcp\Support\ToolArguments;
@@ -24,6 +26,21 @@ abstract class JournalTool extends Tool
     final public function shouldRegister(JobPermissionReader $permissions): bool
     {
         return $permissions->allows($this);
+    }
+
+    final public function isVisibleTo(DiscoveryProfile $profile): bool
+    {
+        $type = new ReflectionClass($this);
+
+        while ($type !== false) {
+            foreach ($type->getAttributes(VisibleToProfiles::class) as $attribute) {
+                return in_array($profile, $attribute->newInstance()->profiles, true);
+            }
+
+            $type = $type->getParentClass();
+        }
+
+        return true;
     }
 
     /**

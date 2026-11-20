@@ -7,7 +7,9 @@ namespace App\Mcp\Tools;
 use App\Agents\Commands\RetireMenuEntry;
 use App\Agents\Enums\MenuEntryState;
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -22,6 +24,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Name('menu_retire')]
 #[IsDestructive(true)]
 #[Dispatches(RetireMenuEntry::class)]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description(
     'Retire a menu library entry in the state you read; the next uncertain point of any runtime asks the main agent '
     .'instead.',

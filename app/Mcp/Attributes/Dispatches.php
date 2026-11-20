@@ -13,5 +13,5 @@ final readonly class Dispatches
     /**
      * @param  class-string<Command<mixed>>  $command
      */
-    public function __construct(public string $command, public bool $readOnlyHelper = false) {}
+    public function __construct(public string $command) {}
 }

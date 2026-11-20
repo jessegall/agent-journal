@@ -66,10 +66,20 @@ use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\StartPlanController;
 use Domain\Plans\Mcp\AssignedPlansTool;
+use Domain\Plans\Mcp\AddPhaseTasksTool;
 use Domain\Plans\Mcp\AssignPlanWorkTool;
+use Domain\Plans\Mcp\CancelPlanTool;
+use Domain\Plans\Mcp\CreatePhaseTool;
+use Domain\Plans\Mcp\CreatePlanTool;
+use Domain\Plans\Mcp\EditPlanTool;
+use Domain\Plans\Mcp\FinishPlanTool;
 use Domain\Plans\Mcp\HeldPlansOverview;
+use Domain\Plans\Mcp\PhaseReadTool;
+use Domain\Plans\Mcp\PlanReadTool;
+use Domain\Plans\Mcp\PlanResource;
 use Domain\Plans\Mcp\PlansListTool;
 use Domain\Plans\Mcp\ReassignPlanWorkTool;
+use Domain\Plans\Mcp\StartPlanTool;
 use Domain\Plans\Mcp\UnassignPlanWorkTool;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
@@ -271,12 +281,21 @@ final class PlansDomain extends Domain implements
             AssignPlanWorkTool::class,
             ReassignPlanWorkTool::class,
             UnassignPlanWorkTool::class,
+            PlanReadTool::class,
+            PhaseReadTool::class,
+            CreatePlanTool::class,
+            EditPlanTool::class,
+            StartPlanTool::class,
+            FinishPlanTool::class,
+            CancelPlanTool::class,
+            CreatePhaseTool::class,
+            AddPhaseTasksTool::class,
         ];
     }
 
     public function mcpResources(): array
     {
-        return [];
+        return [PlanResource::class];
     }
 
     public function overviewContributions(): array

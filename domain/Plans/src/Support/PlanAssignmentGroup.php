@@ -40,7 +40,7 @@ final readonly class PlanAssignmentGroup
             $plan->id,
         )->readAll('every phase of the plan is assigned')->orderBy('number')->get();
 
-        return $this->group($root, [
+        return $this->group($root, $plan->id, [
             ...array_values($phases->map(fn (Phase $phase) => $phase->assignmentIdentity())->all()),
             ...$this->tasks->records($this->taskIdsOf($phases)),
         ]);
@@ -51,13 +51,13 @@ final readonly class PlanAssignmentGroup
         $phase = Phase::query()->find($root->id) ?? throw RecordUnavailable::for($root);
         Plan::lockStructure($phase->plan_id);
 
-        return $this->group($root, $this->tasks->records($this->taskIdsOf(new Collection([$phase]))));
+        return $this->group($root, $phase->plan_id, $this->tasks->records($this->taskIdsOf(new Collection([$phase]))));
     }
 
     /** @param list<RecordIdentity> $records */
-    private function group(RecordIdentity $root, array $records): AssignmentGroup
+    private function group(RecordIdentity $root, string $planId, array $records): AssignmentGroup
     {
-        return new AssignmentGroup($root, $records, new RecoveryCall('plans_assigned'));
+        return new AssignmentGroup($root, $records, new RecoveryCall('plans_read', ['plan_id' => $planId]));
     }
 
     /**

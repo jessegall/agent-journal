@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Skills\Support\SkillAuthoring;
 
 /** A stored skill write answers with its revision and publication status. */
+#[VisibleToProfiles]
 abstract class SkillWriteTool extends JournalWriteTool
 {
     public function __construct(protected readonly SkillAuthoring $authoring) {}

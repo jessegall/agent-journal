@@ -6,6 +6,7 @@ namespace App\Mcp\Support;
 
 use App\Agents\Support\AgentContext;
 use App\Mcp\Data\ContinuationPayload;
+use App\Mcp\Data\NextAction;
 use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ContinuationStale;
 use Carbon\CarbonImmutable;
@@ -39,6 +40,14 @@ final readonly class Continuations
         ])->toJson(JSON_THROW_ON_ERROR));
 
         return $payload.'.'.$this->signatureOf($payload);
+    }
+
+    public function link(Continuation $position, string $selectorName): NextAction
+    {
+        return new NextAction($position->tool, [
+            $selectorName => $position->selector,
+            'continuation' => $this->issue($position),
+        ]);
     }
 
     /**

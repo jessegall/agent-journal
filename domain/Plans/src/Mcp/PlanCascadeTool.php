@@ -8,8 +8,10 @@ use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Mcp\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Support\RequestKey;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
@@ -18,6 +20,7 @@ use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\ObjectType;
 
 /** Summarizes a plan or phase cascade and links to its complete receipted outcomes. */
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 abstract class PlanCascadeTool extends JournalWriteTool
 {
     use ReadsAssignmentArguments;

@@ -6,6 +6,8 @@ namespace App\Assignments\Mcp;
 
 use App\Assignments\Commands\ReassignRecord;
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -17,6 +19,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive]
 #[Name('assignments_reassign')]
 #[Dispatches(ReassignRecord::class)]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Move a record to another recipient using the assignment reference you read.')]
 final class ReassignRecordTool extends AssignmentWriteTool
 {

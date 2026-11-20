@@ -28,8 +28,4 @@ enum DiscoveryProfile: string
         };
     }
 
-    public function includesWrite(bool $readOnlyHelper): bool
-    {
-        return $this !== self::ReadOnlyHelper || $readOnlyHelper;
-    }
 }

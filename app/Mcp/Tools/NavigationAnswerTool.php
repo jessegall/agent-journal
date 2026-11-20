@@ -8,7 +8,9 @@ use App\Agents\Commands\AnswerNavigation;
 use App\Agents\Exceptions\NavigationAnswerRefused;
 use App\Agents\Values\NavigationAnswer;
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -23,6 +25,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[IsDestructive(false)]
 #[Name('navigation_answer')]
 #[Dispatches(AnswerNavigation::class)]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description(
     'Send one round to a stalled screen, at the version and generation navigation_show gave: exactly one of keys '
     .'(up, down, left, right, enter, esc, tab, space, a digit, y, n), choose (a label), confirm (the label of the '

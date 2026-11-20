@@ -99,8 +99,23 @@ final readonly class ToolArguments
 
     public function ulid(string $name): string
     {
-        $id = $this->text($name);
+        return self::normalizedUlid($name, $this->text($name));
+    }
 
+    /** @return non-empty-list<string> */
+    public function ulids(string $name): array
+    {
+        $ids = $this->list($name);
+
+        if ($ids === []) {
+            throw ToolArgumentInvalid::for($name, 'at least one ULID');
+        }
+
+        return array_map(fn (string $id): string => self::normalizedUlid($name, $id), $ids);
+    }
+
+    private static function normalizedUlid(string $name, string $id): string
+    {
         if (! Str::isUlid($id)) {
             throw ToolArgumentInvalid::for($name, 'a ULID');
         }
@@ -281,6 +296,16 @@ final readonly class ToolArguments
     public function enumOr(string $name, BackedEnum $default): BackedEnum
     {
         return array_key_exists($name, $this->arguments) ? $this->enum($name, $default::class) : $default;
+    }
+
+    /**
+     * @template T of BackedEnum
+     * @param class-string<T> $type
+     * @return T|null
+     */
+    public function optionalEnum(string $name, string $type): BackedEnum|null
+    {
+        return array_key_exists($name, $this->arguments) ? $this->enum($name, $type) : null;
     }
 
     /**

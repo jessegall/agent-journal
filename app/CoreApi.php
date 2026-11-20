@@ -621,6 +621,8 @@ use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 use App\Mcp\Data\ToolResult as McpToolResult;
@@ -635,6 +637,7 @@ use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\Continuations;
 use App\Mcp\Support\TextChunk;
+use App\Mcp\Support\TextFields;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalWriteTool;
@@ -1393,6 +1396,8 @@ final class CoreApi
                 Continuation::class,
                 TextChunk::class,
                 Dispatches::class,
+                VisibleToProfiles::class,
+                DiscoveryProfile::class,
                 RecoveryCall::class,
                 RecordCard::class,
                 StateReferences::class,
@@ -2151,6 +2156,7 @@ final class CoreApi
                 RequestKey::class,
                 ReadGrant::class,
                 Continuations::class,
+                TextFields::class,
                 JournalResource::class,
                 RendersRefusal::class,
                 RunsCallPipelines::class,

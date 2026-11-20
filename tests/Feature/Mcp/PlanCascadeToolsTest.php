@@ -109,7 +109,8 @@ final class PlanCascadeToolsTest extends TestCase
 
         $this->callMcpTool($this->caller, 'plans_assign_work', $this->assignArguments($plan))
             ->assertJsonPath('result.isError', true)
-            ->assertJsonPath('result.structuredContent.next_action.tool', 'plans_assigned')
+            ->assertJsonPath('result.structuredContent.next_action.tool', 'plans_read')
+            ->assertJsonPath('result.structuredContent.next_action.arguments.plan_id', $plan->id)
             ->assertJsonPath('result.structuredContent.code', 'invalid_input')
             ->assertJsonPath('result.structuredContent.message', "plans.plan {$plan->id} is finished, "
                 .'so its work is not given out as a whole; assign single records instead.');

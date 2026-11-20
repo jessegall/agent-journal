@@ -25,6 +25,10 @@ final readonly class JobPermissionReader
 
     public function allows(JournalTool $tool): bool
     {
+        if (! $this->isVisible($tool)) {
+            return false;
+        }
+
         if ($tool instanceof JournalReadTool) {
             return $this->reads->allows($tool->readRequest());
         }
@@ -55,12 +59,6 @@ final readonly class JobPermissionReader
 
     private function allowsCommand(StartProfileAuthority $authority, Dispatches $write): bool
     {
-        $profile = DiscoveryProfile::from($authority->profile->base->key);
-
-        if (! $profile->includesWrite($write->readOnlyHelper)) {
-            return false;
-        }
-
         $declaration = $this->commands->operationOf($write->command);
 
         if ($declaration !== null && ! $authority->profile->start->access->decide(
@@ -75,5 +73,17 @@ final readonly class JobPermissionReader
                 $authorization->ability,
             ),
         )->getOrElse(false);
+    }
+
+    private function isVisible(JournalTool $tool): bool
+    {
+        if (! $this->actors->hasActor()) {
+            return true;
+        }
+
+        $authority = $this->actors->authority();
+
+        return ! $authority instanceof StartProfileAuthority
+            || $tool->isVisibleTo(DiscoveryProfile::from($authority->profile->base->key));
     }
 }
