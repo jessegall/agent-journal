@@ -7,20 +7,33 @@ namespace Tests\Feature\Profiles;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Models\Agent;
+use App\Agents\Support\StackTarget;
+use App\Agents\Values\WorkReference;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Exceptions\AssignmentTypeInternal;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
+use App\Hooks\Decisions\StateReference;
+use App\Hooks\Enums\NoSubject;
+use App\Hooks\Models\AgentStackRow;
+use App\Hooks\States\ReadyState;
+use App\Hooks\Storage\FrameRecord;
+use App\Hooks\Storage\FrameRecords;
+use App\Hooks\Ticks\TickingTypes;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Exceptions\SupervisorRouteInvalid;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\SupervisorTarget;
 use App\Records\Exceptions\RecordUnavailable;
+use App\Supervision\Commands\AskSupervisor;
 use App\Supervision\Commands\ChangeSupervisor;
+use App\Supervision\Commands\ReplyToAsk;
 use App\Supervision\Commands\RouteAsk;
+use App\Supervision\Commands\WithdrawAsk;
+use App\Supervision\Contracts\AskReader;
 use App\Supervision\Enums\AskRouteStatus;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Models\Ask;
@@ -28,7 +41,14 @@ use App\Supervision\Models\AskHop;
 use App\Supervision\Support\AskRecords;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Values\AskReference;
+use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
+use Inertia\Testing\AssertableInertia;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -36,11 +56,13 @@ use Tests\TestCase;
 final class AskRecordsTest extends TestCase
 {
     use CommitsHookRows;
+    use SendsSignedCalls;
     use StartsAgentRequests;
 
     private const array TABLES = [
-        'ask_hops', 'asks', 'supervisor_changes', 'supervisor_links',
-        'assignments', 'agents', 'profile_revisions', 'profiles',
+        'ask_hops', 'asks', 'ask_requesters', 'supervisor_changes', 'supervisor_links',
+        'assignments', 'command_receipts', 'start_tokens', 'agent_sessions', 'agents', 'profile_revisions', 'profiles',
+        'agent_stacks', 'tasks',
     ];
 
     public function test_the_internal_route_holds_an_ask_and_public_assignment_cannot_change_it(): void
@@ -114,6 +136,127 @@ final class AskRecordsTest extends TestCase
         $this->assertSame(15, $question->allowance()->i);
         $this->assertThrows(fn () => $registry->register($question), AskRefused::class);
         $this->assertThrows(fn () => $registry->get(AskTypeKey::from('imaginary')), SupervisorRouteInvalid::class);
+    }
+
+    public function test_the_plain_signed_cli_retains_a_question_for_the_reviewers_supervisor(): void
+    {
+        $this->activateProfiles();
+        $start = TestStart::start('journal-code-reviewer');
+        $recipient = TestStart::start('journal-main');
+        $this->runCommandsAs($start);
+
+        $this->artisan('ask:make', ['text' => 'Why does this fail?'])->assertSuccessful();
+        $this->artisan('ask:list')->assertSuccessful();
+
+        $ask = Ask::query()->ownedBy(ActorIdentity::of($start->agent))->firstOrFail();
+        $this->artisan('ask:show', ['ask' => $ask->id])->assertSuccessful();
+        $this->assertSame('question', $ask->type_key);
+        $this->assertStringStartsWith('free:', $ask->work);
+        $this->assertTrue(
+            AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->firstOrFail()
+                ->toAssignment()->holder()->isSameAs($recipient->agent->assigneeIdentity()),
+        );
+
+        $this->signed($recipient, '/agent/asks/reply', [
+            'id' => $ask->id,
+            'body' => 'Read the fixture.',
+            'request_key' => 'reply-to-fixture-ask',
+        ])->assertOk()->assertJsonPath('reply', 'Read the fixture.');
+        $this->assertFalse($ask->refresh()->open);
+
+        $this->artisan('ask:make', ['text' => 'Please check another file.'])->assertSuccessful();
+        $ask = Ask::query()->ownedBy(ActorIdentity::of($start->agent))->where('open', true)->sole();
+        $this->artisan('ask:withdraw', ['ask' => $ask->id])->assertSuccessful();
+        $this->assertFalse($ask->refresh()->open);
+    }
+
+    public function test_replay_and_closing_asks_are_available_at_the_open_limit(): void
+    {
+        $this->activateProfiles();
+        $requester = Agent::named('Requester', 'journal-worker');
+        $recipient = Agent::named('Supervisor', 'journal-code-reviewer');
+        $this->startRequestAs($requester->id, TestIds::of(91));
+        $commands = $this->app->make(CommandBus::class);
+
+        $first = $commands->run(new AskSupervisor('First question', 'first'));
+        $second = $commands->run(new AskSupervisor('Second question', 'second'));
+
+        foreach (['third', 'fourth', 'fifth'] as $ordinal) {
+            $commands->run(new AskSupervisor('Another question', $ordinal));
+        }
+
+        $this->assertThrows(fn () => $commands->run(new AskSupervisor('One more', 'sixth')), AskRefused::class);
+        $this->assertEquals($first, $commands->run(new AskSupervisor('First question', 'first')));
+        $this->assertThrows(fn () => $commands->run(new AskSupervisor('Changed', 'first')), AskRefused::class);
+
+        $this->startRequestAs($recipient->id, TestIds::of(92));
+        $inbox = $this->app->make(AskReader::class);
+        $this->assertTrue($inbox->card($first)->obligation);
+        $commands->run(new ReplyToAsk($first, 'Check the input file.'));
+
+        $this->startRequestAs($requester->id, TestIds::of(91));
+        $commands->run(new WithdrawAsk($second));
+        $this->assertSame('Check the input file.', $inbox->card($first)->reply);
+        $this->assertFalse($inbox->card($second)->open);
+        $this->assertSame(3, Ask::openSubmissions(ActorIdentity::of($requester)));
+        $this->assertSame(3, AssignmentRecord::query()->count());
+        $this->assertSame('pending', AskHop::query()->where('ask_id', $first->id)->firstOrFail()->attention);
+    }
+
+    public function test_a_typed_review_still_requires_a_visible_work_record(): void
+    {
+        $this->activateProfiles();
+        $requester = Agent::named('Requester', 'journal-code-reviewer');
+        $this->startRequestAs($requester->id, TestIds::of(91));
+        $commands = $this->app->make(CommandBus::class);
+
+        $this->assertThrows(
+            fn () => $commands->run(new AskSupervisor('Review this', 'review', AskTypeKey::from('review.ready'))),
+            AskRefused::class,
+        );
+        $this->assertSame(0, Ask::openSubmissions(ActorIdentity::of($requester)));
+    }
+
+    public function test_asks_resolve_the_current_work_from_a_registered_domain_state(): void
+    {
+        $this->activateProfiles();
+        $start = TestStart::start('journal-code-reviewer');
+        $start->startRequest($this->app);
+        $task = Task::file('Review a task', 'Check the expected result.', $start->agent);
+        $task->start();
+        $now = CarbonImmutable::now();
+        new AgentStackRow()->startFor(
+            new StackTarget($start->agent->id, $start->session->id),
+            new FrameRecords([
+                new FrameRecord('ready', new StateReference(ReadyState::TYPE_KEY, NoSubject::None), true, 1, $now),
+                new FrameRecord('work', WorkingOnTaskStateReference::forTask($task), false, 1, $now),
+            ]),
+            new TickingTypes([]),
+        );
+        $commands = $this->app->make(CommandBus::class);
+
+        $question = $commands->run(new AskSupervisor('What should I check?', 'question'));
+        $review = $commands->run(new AskSupervisor('Review this task', 'review', AskTypeKey::from('review.ready')));
+
+        $expected = WorkReference::forRecord($task->assignmentIdentity());
+        $this->assertEquals($expected, Ask::query()->findOrFail($question->id)->workReference());
+        $this->assertEquals($expected, Ask::query()->findOrFail($review->id)->workReference());
+        $this->assertSame('review.ready', Ask::query()->findOrFail($review->id)->type_key);
+    }
+
+    public function test_the_owner_sees_the_ask_card_on_the_inbox_page(): void
+    {
+        $this->activateProfiles();
+        $requester = Agent::named('Requester', 'journal-main');
+        $owner = User::factory()->create();
+        $this->startUserRequestAs($owner->id);
+        $this->retainFor($requester, SupervisorTarget::parse('owner'));
+
+        $this->actingAs($owner)->get('/web/asks')->assertOk()->assertInertia(
+            fn (AssertableInertia $page) => $page->component('web/Asks')
+                ->where('page.data.cards.0.body', 'Where does this fail?')
+                ->where('page.data.cards.0.open', true),
+        );
     }
 
     private function activateProfiles(): void

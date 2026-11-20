@@ -21,6 +21,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Reads\Providers\ReadsServiceProvider;
 use App\Records\Providers\RecordsServiceProvider;
+use App\Scripts\Providers\ScriptsServiceProvider;
 use App\Settings\Providers\SettingsServiceProvider;
 use App\Sharing\Providers\SharingServiceProvider;
 use App\Skills\Providers\SkillsServiceProvider;
@@ -45,6 +46,7 @@ return [
     DomainEventServiceProvider::class,
     CoreServiceProvider::class,
     ProfilesServiceProvider::class,
+    ScriptsServiceProvider::class,
     SupervisionServiceProvider::class,
     ActorsServiceProvider::class,
     AgentsServiceProvider::class,

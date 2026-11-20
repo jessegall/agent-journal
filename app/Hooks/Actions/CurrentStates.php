@@ -6,10 +6,13 @@ namespace App\Hooks\Actions;
 
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\CurrentState;
+use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\Frame;
 use App\Hooks\Stack\StackRestorer;
+use App\Records\Support\RecordIdentity;
 use Closure;
 use PhpOption\None;
 use PhpOption\Option;
@@ -33,6 +36,35 @@ final readonly class CurrentStates implements CurrentState
 
             return $stack->top()->reference;
         });
+    }
+
+    public function record(StackTarget $target): Option
+    {
+        return AgentStackRow::activeFor($target)->flatMap(function (AgentStackRow $row): Option {
+            $frames = $this->restorer->restore($row->frames)->frames();
+
+            foreach (array_reverse($frames) as $frame) {
+                $record = $this->workRecord($frame);
+
+                if ($record->isDefined()) {
+                    return $record;
+                }
+            }
+
+            return None::create();
+        });
+    }
+
+    /** @return Option<RecordIdentity> */
+    private function workRecord(Frame $frame): Option
+    {
+        $subject = $frame->reference->subject;
+
+        if (! $frame->isLive() || ! $subject instanceof SubjectReference || ! $frame->state instanceof WorkRecordState) {
+            return None::create();
+        }
+
+        return Option::fromValue(new RecordIdentity($frame->state->workRecordType(), $subject->id));
     }
 
     /**

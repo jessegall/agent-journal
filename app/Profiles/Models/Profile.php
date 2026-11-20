@@ -7,8 +7,10 @@ namespace App\Profiles\Models;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Profiles\Exceptions\ProfileMissing;
+use App\Profiles\Values\CompiledScript;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\ScriptSource;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -52,15 +54,19 @@ final class Profile extends Model implements ReadableModel
      * Appends the definition as the next revision of the profile with its key, making that profile first when the key
      * is new; a retired profile of that key is current again under the same identity.
      */
-    public static function activate(ProfileDefinition $definition, ActorIdentity $author): ProfileRevision
-    {
+    public static function activate(
+        ProfileDefinition $definition,
+        ActorIdentity $author,
+        ScriptSource $source = new ScriptSource(),
+        CompiledScript|null $compiled = null,
+    ): ProfileRevision {
         $profile = self::query()->withKey($definition->key)->lockForUpdate()->first()
             ?? new self(['key' => $definition->key->key]);
         $profile->label = $definition->label;
         $profile->retired_at = null;
         $profile->save();
 
-        $revision = ProfileRevision::appendTo($profile, $definition, $author);
+        $revision = ProfileRevision::appendTo($profile, $definition, $author, $source, $compiled);
         $profile->current_revision_id = $revision->id;
         $profile->save();
 

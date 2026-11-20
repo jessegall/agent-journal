@@ -12,6 +12,44 @@ use RuntimeException;
 
 final class AskRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
+    public const int BODY_LIMIT = 16000;
+
+    public static function assertValidSubmission(string $body, string $key): void
+    {
+        self::assertValidBody($body);
+
+        if (preg_match('/^[a-zA-Z0-9-]{1,128}$/D', $key) !== 1) {
+            throw self::invalidKey();
+        }
+    }
+
+    public static function assertValidBody(string $body): void
+    {
+        if ($body === '' || strlen($body) > self::BODY_LIMIT) {
+            throw self::invalidBody();
+        }
+    }
+
+    public static function invalidKey(): self
+    {
+        return new self('An ask submission needs a valid request key.');
+    }
+
+    public static function invalidBody(): self
+    {
+        return new self('Ask text must have between 1 and '.self::BODY_LIMIT.' bytes.');
+    }
+
+    public static function openLimit(int $limit): self
+    {
+        return new self("You already have {$limit} open asks.");
+    }
+
+    public static function cannotWithdraw(): self
+    {
+        return new self('Only the requester can withdraw an open ask.');
+    }
+
     public static function typeRepeated(string $type): self
     {
         return new self("The ask type {$type} is registered twice.");

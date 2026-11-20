@@ -15,6 +15,7 @@ use App\Profiles\Values\SupervisorTarget;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
+use App\Supervision\Enums\AskOriginType;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Values\AskReference;
 use App\Supervision\Values\AskSubject;
@@ -25,13 +26,14 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
+use PhpOption\Option;
 
 /**
  * @property string $id
  * @property string $actor_type
  * @property string $actor_id
  * @property string $type_key
+ * @property string $body
  * @property string $submission_hash
  * @property string $work
  * @property string|null $head
@@ -53,7 +55,21 @@ final class Ask extends Model implements Assignable, ReadableModel
 
     public static function newReference(): AskReference
     {
-        return new AskReference((string) Str::ulid());
+        return new AskReference(new self()->newUniqueId());
+    }
+
+    /** @return Option<self> */
+    public static function submission(ActorIdentity $actor, string $key): Option
+    {
+        return Option::fromValue(self::query()->ownedBy($actor)->where('submission_key', $key)->first());
+    }
+
+    public static function openSubmissions(ActorIdentity $actor): int
+    {
+        return self::query()->ownedBy($actor)
+            ->where('origin', AskOriginType::Supervisor->value)
+            ->where('open', true)
+            ->count();
     }
 
     public static function submit(
@@ -64,6 +80,7 @@ final class Ask extends Model implements Assignable, ReadableModel
         string $body,
         AskSubject $subject,
         SupervisorTarget $target,
+        AskOriginType $origin = AskOriginType::Internal,
     ): self {
         $work = $subject->work->isFree() ? 'free' : $subject->work->key;
         $digest = hash('sha256', json_encode([$type->key, $body, $work], JSON_THROW_ON_ERROR));
@@ -74,6 +91,7 @@ final class Ask extends Model implements Assignable, ReadableModel
             'actor_type' => $requester->type->value,
             'actor_id' => $requester->id,
             'type_key' => $type->key,
+            'origin' => $origin->value,
             'submission_key' => $submissionKey,
             'submission_hash' => $digest,
             'body' => $body,
@@ -93,6 +111,20 @@ final class Ask extends Model implements Assignable, ReadableModel
         }
 
         return $ask;
+    }
+
+    public function replay(AskTypeKey $type, string $body): AskReference
+    {
+        if ($type->key !== $this->type_key || $body !== $this->body) {
+            throw AskRefused::submissionChanged();
+        }
+
+        return $this->reference();
+    }
+
+    public function reference(): AskReference
+    {
+        return new AskReference($this->id);
     }
 
     public function assignmentIdentity(): RecordIdentity
@@ -130,6 +162,14 @@ final class Ask extends Model implements Assignable, ReadableModel
         $this->pending_target = null;
         $this->save();
         AskHop::recordAcceptance($this, $holder, $routeVersion);
+    }
+
+    public function close(): void
+    {
+        $this->version++;
+        $this->open = false;
+        $this->pending_target = null;
+        $this->save();
     }
 
     /**

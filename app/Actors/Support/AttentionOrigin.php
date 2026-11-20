@@ -20,6 +20,10 @@ final readonly class AttentionOrigin
 
     public const string STATE_EVENT = 'state_event';
 
+    public const string ASK = 'ask';
+
+    public const string ASK_REPLY = 'ask_reply';
+
     public function __construct(
         public string $type,
         public string $id,
@@ -51,6 +55,16 @@ final readonly class AttentionOrigin
     public static function stateEvent(string $dispatchId): self
     {
         return new self(self::STATE_EVENT, $dispatchId, $dispatchId);
+    }
+
+    public static function ask(string $askId, int $version): self
+    {
+        return new self(self::ASK, "{$askId}:{$version}", $askId);
+    }
+
+    public static function askReply(string $askId): self
+    {
+        return new self(self::ASK_REPLY, $askId, $askId);
     }
 
     public function keyFor(ActorIdentity $actor): string

@@ -65,6 +65,7 @@ final class CoreServiceProvider extends ServiceProvider
         'Numbers',
         'Processes',
         'Profiles',
+        'Scripts',
         'Settings',
         'Sharing',
         'Skills',

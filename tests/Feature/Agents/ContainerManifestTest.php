@@ -10,6 +10,7 @@ use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Exceptions\ContainerUnavailable;
@@ -199,6 +200,17 @@ final class ContainerManifestTest extends TestCase
     public function test_a_host_without_a_proven_container_runtime_refuses_before_reserving(): void
     {
         $this->signIn();
+        $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
+        {
+            public function capability(HostCapabilityQuery $query): HostCapability
+            {
+                $status = $query->capability === HostCapabilityType::AccountTransport
+                    ? CapabilityStatusType::Supported
+                    : CapabilityStatusType::Unverified;
+
+                return new HostCapability($query, $status, 'docs/x.md', 'Runtime unavailable.');
+            }
+        });
 
         $this->assertThrows(fn () => $this->start($this->containerRequest()), ContainerUnavailable::class);
 

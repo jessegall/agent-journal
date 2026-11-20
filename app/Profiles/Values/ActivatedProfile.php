@@ -20,5 +20,6 @@ final readonly class ActivatedProfile
         public int $revision,
         public ProfileChangeType $change,
         public array $supervisorCoverage = [],
+        public ScriptDiff $script = new ScriptDiff(new ScriptSource(), new ScriptSource()),
     ) {}
 }

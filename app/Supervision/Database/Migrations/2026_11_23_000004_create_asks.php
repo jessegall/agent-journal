@@ -10,11 +10,20 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::create('ask_requesters', function (Blueprint $table): void {
+            $table->id();
+            $table->string('actor_type', 16);
+            $table->string('actor_id');
+            $table->timestampsTz();
+            $table->unique(['actor_type', 'actor_id']);
+        });
+
         Schema::create('asks', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->string('actor_type', 16);
             $table->string('actor_id');
             $table->string('type_key');
+            $table->string('origin', 16);
             $table->string('submission_key', 128);
             $table->char('submission_hash', 64);
             $table->text('body');
@@ -26,6 +35,7 @@ return new class extends Migration
             $table->boolean('open')->default(true);
             $table->timestampsTz();
             $table->unique(['actor_type', 'actor_id', 'submission_key']);
+            $table->index(['actor_type', 'actor_id', 'origin', 'open']);
         });
 
         Schema::create('ask_hops', function (Blueprint $table): void {
@@ -37,7 +47,7 @@ return new class extends Migration
             $table->unsignedInteger('version');
             $table->unsignedInteger('route_version');
             $table->timestampTz('accepted_at');
-            $table->string('result')->nullable();
+            $table->text('result')->nullable();
             $table->string('attention')->nullable();
             $table->timestampsTz();
             $table->unique(['ask_id', 'version']);
@@ -49,5 +59,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('ask_hops');
         Schema::dropIfExists('asks');
+        Schema::dropIfExists('ask_requesters');
     }
 };

@@ -13,12 +13,14 @@ use App\Profiles\Casts\ProfileStartPolicyCast;
 use App\Profiles\Casts\SupervisorRoutesCast;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRevisionImmutable;
+use App\Profiles\Values\CompiledScript;
 use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Profiles\Values\ProfileStartPolicy;
+use App\Profiles\Values\ScriptSource;
 use App\Profiles\Values\SupervisorProfile;
 use App\Profiles\Values\SupervisorRoutes;
 use App\Reads\Contracts\ReadableModel;
@@ -47,6 +49,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property ProfileStartPolicy $start_policy
  * @property ProfileAuthorization $authorization
  * @property SupervisorRoutes $supervisor
+ * @property string $script_source
+ * @property array<string, mixed> $script_commands
  * @property ActorType $author_type
  * @property string $author_id
  * @property CarbonImmutable $created_at
@@ -62,6 +66,10 @@ use Illuminate\Database\Eloquent\Model;
     'start_policy',
     'authorization',
     'supervisor',
+    'script_source',
+    'script_commands',
+    'compiled_script',
+    'script_definition_digest',
     'author_type',
     'author_id',
 ])]
@@ -86,6 +94,8 @@ final class ProfileRevision extends Model implements ReadableModel
             'start_policy' => ProfileStartPolicyCast::class,
             'authorization' => ProfileAuthorizationCast::class,
             'supervisor' => SupervisorRoutesCast::class,
+            'script_commands' => 'array',
+            'compiled_script' => 'array',
             'author_type' => ActorType::class,
             'created_at' => 'immutable_datetime',
         ];
@@ -100,8 +110,13 @@ final class ProfileRevision extends Model implements ReadableModel
      * Appends the definition as the profile's next revision, numbered after every earlier one; the caller holds the
      * profile's lock, so two revisions never take one number.
      */
-    public static function appendTo(Profile $profile, ProfileDefinition $definition, ActorIdentity $author): self
-    {
+    public static function appendTo(
+        Profile $profile,
+        ProfileDefinition $definition,
+        ActorIdentity $author,
+        ScriptSource $source,
+        CompiledScript|null $compiled,
+    ): self {
         $latest = self::query()->ofProfile($profile)->max('revision');
 
         return self::query()->create([
@@ -115,6 +130,10 @@ final class ProfileRevision extends Model implements ReadableModel
             'start_policy' => $definition->start,
             'authorization' => $definition->authorization,
             'supervisor' => $definition->supervisor,
+            'script_source' => $source->text,
+            'script_commands' => $source->definitions(),
+            'compiled_script' => $compiled?->graph,
+            'script_definition_digest' => $compiled?->definitionDigest,
             'author_type' => $author->type,
             'author_id' => $author->id,
         ]);
@@ -137,6 +156,35 @@ final class ProfileRevision extends Model implements ReadableModel
     public static function numbered(Profile $profile, int $revision): self
     {
         return self::query()->ofProfile($profile)->where('revision', $revision)->firstOrFail();
+    }
+
+    public function scriptSource(): ScriptSource
+    {
+        return ScriptSource::fromDefinitions($this->script_source, $this->script_commands);
+    }
+
+    /**
+     * @param list<string> $keys
+     * @return array<string, ScriptSource>
+     */
+    public static function currentSources(array $keys): array
+    {
+        if ($keys === []) {
+            return [];
+        }
+
+        return self::query()->join('profiles', 'profiles.current_revision_id', '=', 'profile_revisions.id')
+            ->whereIn('profiles.key', $keys)
+            ->select([
+                'profiles.key as profile_key',
+                'profile_revisions.script_source',
+                'profile_revisions.script_commands',
+            ])
+            ->readLimit(count($keys))
+            ->get()
+            ->mapWithKeys(fn (self $revision) => [
+                (string) $revision->getAttribute('profile_key') => $revision->scriptSource(),
+            ])->all();
     }
 
     public function snapshot(ProfileKey $key): ProfileSnapshot

@@ -13,6 +13,10 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string|null $result
+ * @property string|null $attention
+ */
 #[Fillable(['ask_id', 'actor_type', 'actor_id', 'type_key', 'version', 'route_version', 'accepted_at'])]
 final class AskHop extends Model implements ReadableModel
 {
@@ -33,5 +37,26 @@ final class AskHop extends Model implements ReadableModel
             'route_version' => $routeVersion,
             'accepted_at' => CarbonImmutable::now(),
         ]);
+    }
+
+    public static function currentFor(Ask $ask): self
+    {
+        return self::query()->where('ask_id', $ask->id)->where('version', $ask->version)->firstOrFail();
+    }
+
+    /**
+     * @param list<string> $asks
+     * @return array<string, string>
+     */
+    public static function repliesTo(array $asks): array
+    {
+        return self::query()->whereIn('ask_id', $asks)->whereNotNull('result')->pluck('result', 'ask_id')->all();
+    }
+
+    public function answer(string $body, string $attention): void
+    {
+        $this->result = $body;
+        $this->attention = $attention;
+        $this->save();
     }
 }

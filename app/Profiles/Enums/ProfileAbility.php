@@ -12,6 +12,7 @@ use App\Bus\Contracts\ClassLevelAbilities;
 enum ProfileAbility: string implements ClassLevelAbilities
 {
     case Administer = 'administer';
+    case EditDraft = 'edit_draft';
 
     /**
      * Each is decided on the model class alone, before the handler loads a record.

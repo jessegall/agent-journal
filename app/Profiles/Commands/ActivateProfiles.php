@@ -16,6 +16,7 @@ use App\Profiles\Handlers\ActivateProfilesHandler;
 use App\Profiles\Models\Profile;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Support\ProfileProposal;
+use App\Profiles\Values\DraftExpectations;
 use App\Profiles\Values\ProfileActivation;
 
 /**
@@ -31,6 +32,7 @@ final readonly class ActivateProfiles extends Command implements AuthorizedComma
 {
     public function __construct(
         public ProfileProposal $proposal,
+        public DraftExpectations $drafts = new DraftExpectations(),
     ) {}
 
     /**

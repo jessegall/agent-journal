@@ -13,14 +13,20 @@ use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\SupervisorDefinitions;
 use App\Profiles\Enums\ProfileChangeType;
+use App\Profiles\Exceptions\InvalidScript;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Models\Profile;
+use App\Profiles\Models\ProfileDraft;
+use App\Profiles\Models\ProfileRevision;
 use App\Profiles\Support\PolicyResolver;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\ActivatedProfile;
+use App\Profiles\Values\DraftExpectations;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileDefinition;
+use App\Profiles\Values\ScriptDiff;
+use App\Profiles\Values\ScriptSource;
 
 /**
  * Resolves and checks the whole proposal before writing anything, then appends one revision per profile, every one
@@ -41,7 +47,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      */
     public function handle(ActivateProfiles $command): ProfileActivation
     {
-        return $this->activate($command->proposal, $command->dispatchedBy());
+        return $this->activate($command->proposal, $command->dispatchedBy(), $command->drafts);
     }
 
     /**
@@ -51,8 +57,11 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      * @throws ProfilePolicyRefused
      * @throws AbilityNotRegistered
      */
-    public function activate(ProfileProposal $proposal, ActorContext $actor): ProfileActivation
-    {
+    public function activate(
+        ProfileProposal $proposal,
+        ActorContext $actor,
+        DraftExpectations $expected = new DraftExpectations(),
+    ): ProfileActivation {
         $hash = hash('sha256', json_encode($proposal, JSON_THROW_ON_ERROR));
         $keys = array_map(fn (ProposedProfile $profile) => $profile->key->key, $proposal->profiles);
 
@@ -60,6 +69,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
             throw ProfilePolicyRefused::repeatedKey($proposal->profiles[$index]->key);
         }
 
+        $sources = self::draftSources($proposal, $expected, $keys);
         $definitions = array_map(
             fn (ProposedProfile $profile) => $this->resolver->resolve($proposal, $profile, $hash),
             $proposal->profiles,
@@ -73,17 +83,40 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         );
         $changes = array_map($this->changeOf(...), $definitions);
         $author = ActorIdentity::of($actor);
+        $current = ProfileRevision::currentSources($keys);
 
         return new ProfileActivation(array_map(
-            fn (ProfileDefinition $definition, ProfileChangeType $change) => new ActivatedProfile(
+            fn (ProfileDefinition $definition, ProfileChangeType $change, ScriptSource $source) => new ActivatedProfile(
                 $definition->key,
-                Profile::activate($definition, $author)->revision,
+                Profile::activate($definition, $author, $source)->revision,
                 $change,
                 $coverage[$definition->key->key],
+                new ScriptDiff($current[$definition->key->key] ?? new ScriptSource(), $source),
             ),
             $definitions,
             $changes,
+            $sources,
         ), $hash);
+    }
+
+    /**
+     * @param list<string> $keys
+     * @return list<ScriptSource>
+     */
+    private static function draftSources(ProfileProposal $proposal, DraftExpectations $expected, array $keys): array
+    {
+        $drafts = ProfileDraft::lockForProfiles($keys);
+        $sources = [];
+
+        foreach ($proposal->profiles as $profile) {
+            $sources[] = $drafts[$profile->key->key]->sourceAt($expected->revisionOf($profile->key));
+        }
+
+        if (array_any($sources, fn (ScriptSource $source) => ! $source->isEmpty())) {
+            throw InvalidScript::compilerUnavailable();
+        }
+
+        return $sources;
     }
 
     private function changeOf(ProfileDefinition $definition): ProfileChangeType

@@ -1,0 +1,90 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Profiles\Models;
+
+use App\Actors\Support\ActorIdentity;
+use App\Profiles\Exceptions\ProfileDraftRefused;
+use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\ScriptSource;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+/**
+ * @property string $profile_key
+ * @property int $revision
+ * @property string|null $current_revision_id
+ * @property ProfileDraftRevision|null $currentRevision
+ */
+#[Table(key: 'profile_key', keyType: 'string', incrementing: false)]
+#[Fillable(['profile_key', 'revision', 'current_revision_id'])]
+final class ProfileDraft extends Model implements ReadableModel
+{
+    use BoundedReads;
+
+    protected function casts(): array
+    {
+        return ['revision' => 'integer'];
+    }
+
+    /**
+     * @param list<string> $profiles
+     * @return array<string, self>
+     */
+    public static function lockForProfiles(array $profiles): array
+    {
+        if ($profiles === []) {
+            return [];
+        }
+
+        sort($profiles);
+        $now = CarbonImmutable::now();
+        self::query()->insertOrIgnore(array_map(
+            fn (string $profile) => ['profile_key' => $profile, 'created_at' => $now, 'updated_at' => $now],
+            $profiles,
+        ));
+
+        return self::query()
+            ->whereKey($profiles)
+            ->orderBy('profile_key')
+            ->lockForUpdate()
+            ->with('currentRevision')
+            ->readLimit(count($profiles))
+            ->get()
+            ->keyBy('profile_key')
+            ->all();
+    }
+
+    /** @return BelongsTo<ProfileDraftRevision, $this> */
+    public function currentRevision(): BelongsTo
+    {
+        return $this->belongsTo(ProfileDraftRevision::class, 'current_revision_id');
+    }
+
+    public function sourceAt(int $expected): ScriptSource
+    {
+        if ($expected !== $this->revision) {
+            throw ProfileDraftRefused::stale(ProfileKey::from($this->profile_key), $expected, $this->revision);
+        }
+
+        return $this->currentRevision?->scriptSource() ?? new ScriptSource();
+    }
+
+    public static function saveFor(ProfileKey $profile, int $expected, ScriptSource $source, ActorIdentity $author): int
+    {
+        $draft = self::lockForProfiles([$profile->key])[$profile->key];
+        $draft->sourceAt($expected);
+        $revision = ProfileDraftRevision::appendTo($draft, $source, $author);
+        $draft->revision = $revision->revision;
+        $draft->current_revision_id = $revision->id;
+        $draft->save();
+
+        return $revision->revision;
+    }
+}

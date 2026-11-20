@@ -21,7 +21,7 @@ final readonly class SupervisorTarget
 
         try {
             if ($this->isProfile()) {
-                ProfileKey::from(substr($key, strlen(self::PROFILE_PREFIX)));
+                $this->profileKey();
 
                 return;
             }
@@ -55,5 +55,10 @@ final readonly class SupervisorTarget
     public function isProfile(): bool
     {
         return str_starts_with($this->key, self::PROFILE_PREFIX);
+    }
+
+    public function profileKey(): ProfileKey
+    {
+        return ProfileKey::from(substr($this->key, strlen(self::PROFILE_PREFIX)));
     }
 }

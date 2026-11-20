@@ -75,6 +75,11 @@ only then may `ProgramCompatibility` mark a build, platform and arrangement nati
 
 A row becomes `supported` only with a native run recorded here: the exact commands, the redacted output and proof that each point of the question above holds. A newer pinned build gets its own check; until then its rows are unverified.
 
+Required-container admission checks the account transport before the runtime, so an unverified or unsupported
+account combination answers `account-container-unsupported` before account selection or host preparation.
+The launch network, protected bridge, and native launch evidence are tracked in task 1357, which depends on
+the protected host in task 258.
+
 ## Process starts on an account
 
 Every launch on a saved account registers a process start in its launch transaction, after the agent's lifecycle

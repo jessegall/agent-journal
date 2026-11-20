@@ -6,6 +6,7 @@ namespace App\Hooks\Contracts;
 
 use App\Actors\Support\ActorIdentity;
 use App\Hooks\Decisions\StateReference;
+use App\Records\Support\RecordIdentity;
 use PhpOption\Option;
 
 /**
@@ -28,4 +29,7 @@ interface ActorWorkStacks
      * @return Option<StateReference>
      */
     public function current(string $typeKey): Option;
+
+    /** @return Option<RecordIdentity> */
+    public function currentRecord(): Option;
 }

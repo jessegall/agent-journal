@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Supervision\Handlers;
 
+use App\Actors\Contracts\ActorAttention;
+use App\Actors\Support\AttentionOrigin;
 use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\JournalAssignment;
@@ -21,6 +23,7 @@ final readonly class RouteAskHandler implements CommandHandler
         private SupervisorRecipients $recipients,
         private SupervisorRouting $routes,
         private JournalAssignmentWriter $writer,
+        private ActorAttention $attention,
     ) {}
 
     public function handle(RouteAsk $command): AskRouteStatus
@@ -49,6 +52,7 @@ final readonly class RouteAskHandler implements CommandHandler
 
         $route = $this->routes->routeFor($ask->requester(), $ask->typeKey());
         $ask->accept($recipient, $route->version);
+        $this->attention->request($recipient, AttentionOrigin::ask($ask->id, $ask->version));
 
         return AskRouteStatus::Assigned;
     }

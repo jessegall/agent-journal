@@ -6,6 +6,7 @@ namespace App\Domains\Support;
 
 use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Domains\Bootstrappers\LoadMigrations;
+use App\Domains\Bootstrappers\RegisterScriptDefinitions;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
@@ -13,6 +14,8 @@ use App\Domains\Contracts\AssignableContributor;
 use App\Domains\Contracts\AssigneeContributor;
 use App\Domains\Contracts\DomainBootstrapper;
 use App\Domains\Contracts\InternalAssignableContributor;
+use App\Domains\Contracts\ProvidesScriptKeywords;
+use App\Domains\Contracts\ProvidesScriptObjects;
 use App\Domains\Contracts\StateProvider;
 use App\Domains\Exceptions\CapabilityWithoutTrait;
 use App\Exports\Support\Exports;
@@ -95,6 +98,15 @@ abstract class Domain
             }
         }
 
-        return array_values(array_unique([LoadMigrations::class, ...$fromTraits, ...$this->bootstrappers()]));
+        $scripts = $this instanceof ProvidesScriptObjects || $this instanceof ProvidesScriptKeywords
+            ? [RegisterScriptDefinitions::class]
+            : [];
+
+        return array_values(array_unique([
+            LoadMigrations::class,
+            ...$fromTraits,
+            ...$scripts,
+            ...$this->bootstrappers(),
+        ]));
     }
 }

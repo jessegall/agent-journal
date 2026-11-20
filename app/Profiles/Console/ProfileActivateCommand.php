@@ -9,6 +9,7 @@ use App\Bus\Support\ConsoleOwner;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\ActivatedProfile;
+use App\Profiles\Values\DraftExpectations;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository;
 
@@ -18,7 +19,7 @@ use Illuminate\Contracts\Config\Repository;
  */
 final class ProfileActivateCommand extends Command
 {
-    protected $signature = 'profile:activate';
+    protected $signature = 'profile:activate {--draft=* : Expected revisions as profile=revision}';
 
     protected $description = 'Activate the built-in profiles and the profile proposal in config/profiles.php';
 
@@ -26,7 +27,8 @@ final class ProfileActivateCommand extends Command
     {
         $owner->actAsOwner();
         $proposal = ProfileProposal::fromConfiguration((array) $config->get('profiles', []))->withBuiltIns();
-        $activation = $commands->run(new ActivateProfiles($proposal));
+        $drafts = DraftExpectations::fromOptions($this->option('draft'));
+        $activation = $commands->run(new ActivateProfiles($proposal, $drafts));
 
         $this->line("Configuration {$activation->configurationHash}");
 
