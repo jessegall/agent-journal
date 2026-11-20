@@ -61,6 +61,7 @@ use App\Profiles\Commands\RecordAccountFailure;
 use App\Profiles\Commands\ReleaseAccountRemoval;
 use App\Profiles\Commands\ReleaseSignInAgain;
 use App\Profiles\Commands\ReportSignIn;
+use App\Profiles\Commands\SaveProfileDraft;
 use App\Profiles\Commands\TakeSignInCode;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Commands\ExpireShares;
@@ -77,6 +78,11 @@ use App\Skills\Commands\PublishSkills;
 use App\Skills\Commands\RecordSkillRead;
 use App\Skills\Commands\RefreshSkills;
 use App\Skills\Commands\RetrySkillPublication;
+use App\Supervision\Commands\AskSupervisor;
+use App\Supervision\Commands\ChangeSupervisor;
+use App\Supervision\Commands\ReplyToAsk;
+use App\Supervision\Commands\RouteAsk;
+use App\Supervision\Commands\WithdrawAsk;
 use App\Web\Commands\RecordUserHeartbeat;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 
@@ -110,7 +116,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             );
         }
 
-        $this->assertSame([
+        $this->assertEqualsCanonicalizing([
             ClaimStart::class,
             ReportRunning::class,
             ReportStopped::class,
@@ -179,6 +185,12 @@ final class CoreCommandsTest extends CommandBusTestCase
             ClaimStartGrant::class,
             ClaimAutoAssignment::class,
             AssignRecordForMaintenance::class,
+            SaveProfileDraft::class,
+            AskSupervisor::class,
+            ChangeSupervisor::class,
+            ReplyToAsk::class,
+            RouteAsk::class,
+            WithdrawAsk::class,
         ], CoreCommands::privateCommands());
     }
 

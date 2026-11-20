@@ -11,7 +11,8 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\RequestKey;
 use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Support\McpCatalogue;
-use Domain\Access\Support\AccessSettings;
+use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Values\ProfileBase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Tests\Feature\Bus\CommandBusTestCase;
@@ -20,20 +21,34 @@ use Tests\Fixtures\Mcp\WriteNoteTool;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefuseNoteAtQuota;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\SendsSignedCalls;
-use Tests\Support\TestActors;
+use Tests\Support\TestIds;
 
 final class WriteToolTest extends CommandBusTestCase
 {
+    use InstallsBuiltInProfiles;
     use SendsMcpFrames;
     use SendsSignedCalls;
 
     private const string PATH = '/agent/test/notes/write';
 
+    private const string PROFILE = 'note-writer';
+
     protected function tearDown(): void
     {
-        $this->emptyTables('command_receipts', 'start_tokens', 'agent_stacks', 'agent_sessions', 'agents');
+        $this->emptyTables(
+            'command_receipts',
+            'start_tokens',
+            'agent_stacks',
+            'agent_sessions',
+            'agents',
+            'profile_revisions',
+            'profiles',
+            'profile_drafts',
+        );
 
         parent::tearDown();
     }
@@ -125,11 +140,14 @@ final class WriteToolTest extends CommandBusTestCase
     private function startWithNotes(MiddlewareDeclaration ...$middleware): TestStart
     {
         $this->installCommandModules(...$middleware);
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
+        $this->startUserRequestAs(TestIds::of(7));
+        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+            TestProposals::profile(self::PROFILE, ProfileBase::mainAgent()),
+        )));
         $catalogue = new McpCatalogue($this->app->make(CommandRegistry::class));
         $catalogue->registerTool(WriteNoteTool::class);
         $this->app->instance(McpCatalogue::class, $catalogue);
 
-        return TestStart::start();
+        return TestStart::start(self::PROFILE);
     }
 }
