@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Rules;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Mcp\Contracts\ProvidesMcpTools;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Mcp\Contracts\McpToolProvider;
+use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
-use App\Skills\Contracts\ProvidesSkills;
-use App\Ui\Contracts\ProvidesNavigation;
-use App\Ui\Contracts\ProvidesPages;
+use App\Skills\Contracts\SkillProvider;
+use App\Ui\Contracts\NavigationProvider;
+use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -46,13 +46,13 @@ use Domain\Rules\Resolvers\RulesWindowResolver;
 use Domain\Rules\Skills\RulesSkill;
 
 final class RulesDomain extends Domain implements
-    ProvidesCommands,
-    ProvidesMcpTools,
-    ProvidesNavigation,
-    ProvidesNumberedModels,
-    ProvidesPages,
-    ProvidesPolicies,
-    ProvidesSkills
+    CommandProvider,
+    McpToolProvider,
+    NavigationProvider,
+    NumberedModelProvider,
+    PageProvider,
+    PolicyProvider,
+    SkillProvider
 {
     use HasNumberedModels;
 

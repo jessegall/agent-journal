@@ -33,7 +33,7 @@ final class SupervisorRouteRefused extends RuntimeException implements CodedRefu
         return new self('The actor has no supervisor route to change.');
     }
 
-    public static function historyIsImmutable(): self
+    public static function historyEdited(): self
     {
         return new self('A recorded supervisor change is immutable.');
     }

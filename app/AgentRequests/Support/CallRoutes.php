@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\AgentRequests\Support;
 
-use App\AgentRequests\Contracts\RegistersCalls;
+use App\AgentRequests\Contracts\CallRegistrar;
 use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
@@ -15,7 +15,7 @@ use ReflectionNamedType;
  * Registers a signed route from its call's declaration: the controller's __invoke takes the call, whose #[Endpoint]
  * gives the path. The route is returned so a route file chains its name, middleware and defaults.
  */
-final readonly class CallRoutes implements RegistersCalls
+final readonly class CallRoutes implements CallRegistrar
 {
     public const string CALL_DEFAULT = 'journal_call';
 

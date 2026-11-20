@@ -14,7 +14,7 @@ final class RunsWhenIdle {}
 interface ShouldRefreshPages {}
 
 // @righteous TypeNameIsSentenceDetector
-interface ProvidesPages {}
+interface PageProvider {}
 
 // @righteous TypeNameIsSentenceDetector
 final class StackTarget {}

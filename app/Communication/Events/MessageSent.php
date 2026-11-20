@@ -6,13 +6,13 @@ namespace App\Communication\Events;
 
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
-use App\Contracts\LogsListenerFailures;
-use App\Ui\Contracts\UpdatesUserInterface;
+use App\Contracts\ListenerFailureLog;
+use App\Ui\Contracts\UserInterfaceUpdater;
 
 /**
  * A user sent a message to an agent's session; raised once the send has committed.
  */
-final readonly class MessageSent implements Event, LogsListenerFailures, UpdatesUserInterface
+final readonly class MessageSent implements Event, ListenerFailureLog, UserInterfaceUpdater
 {
     public function __construct(
         public string $messageId,

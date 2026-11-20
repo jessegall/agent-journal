@@ -25,7 +25,7 @@ enum AccountState: string
     }
 
     /**
-     * Why a start cannot use an account in this state, as the agent that asked may hear it.
+     * Why a start cannot use an account in this state, as the agent that asked is told it.
      */
     public function startUnavailableReason(): StartUnavailableReason
     {

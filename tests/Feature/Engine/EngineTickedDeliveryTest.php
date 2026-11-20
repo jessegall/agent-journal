@@ -18,8 +18,8 @@ use Tests\Fixtures\Engine\RecordingEngineListener;
 use Tests\TestCase;
 
 /**
- * Every engine listener hears each pass's EngineTicked inside its own maintenance scope only; one that fails is logged
- * by its class and the next still hears it; the access is cleared after each.
+ * Every engine listener receives each pass's EngineTicked inside its own maintenance scope only; one that fails is logged
+ * by its class and the next still receives it; the access is cleared after each.
  */
 final class EngineTickedDeliveryTest extends TestCase
 {
@@ -40,7 +40,7 @@ final class EngineTickedDeliveryTest extends TestCase
 
         $this->assertSame(['fixtures.first'], $first->allowed);
         $this->assertSame(['fixtures.second'], $second->allowed);
-        $this->assertSame([$event], $second->heard);
+        $this->assertSame([$event], $second->received);
         $log->shouldHaveReceived('error')->withArgs(
             fn (
                 string $line,
@@ -59,7 +59,7 @@ final class EngineTickedDeliveryTest extends TestCase
 
         $this->app->make(EngineTickedDelivery::class)->deliver($event);
 
-        Event::assertDispatched(EngineTicked::class, fn (EngineTicked $heard) => $heard === $event);
+        Event::assertDispatched(EngineTicked::class, fn (EngineTicked $received) => $received === $event);
     }
 
     private function ticked(): EngineTicked

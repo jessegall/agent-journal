@@ -6,8 +6,8 @@ namespace App\Desks\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Assignments\Contracts\AssignmentFactPublisher;
 use App\Assignments\Contracts\ClaimRelease;
-use App\Assignments\Contracts\PublishesAssignmentFacts;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Support\AssigneeIdentity;
@@ -27,7 +27,7 @@ final readonly class DeskSeating
         private ResponsibilityWriter $responsibilities,
         private SeatLossRepair $repair,
         private ClaimRelease $claims,
-        private PublishesAssignmentFacts $facts,
+        private AssignmentFactPublisher $facts,
         private CurrentActor $actors,
     ) {}
 

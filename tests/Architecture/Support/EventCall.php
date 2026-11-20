@@ -7,7 +7,7 @@ namespace Tests\Architecture\Support;
 use App\Domains\Support\DomainEntry;
 
 /**
- * One call that raises or hears an event: the call as written, what it passes, and whether a string there is surely an
+ * One call that raises or listens to an event: the call as written, what it passes, and whether a string there is surely an
  * event.
  */
 final readonly class EventCall

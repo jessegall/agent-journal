@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Processes\Events;
 
 use App\Contracts\Event;
-use App\Processes\Contracts\ChangesActiveRules;
+use App\Processes\Contracts\ActiveRuleChange;
 use App\Processes\Models\RuleRevision;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * A project owner made an approved revision of a command rule the active one; heard after the change is committed.
+ * A project owner made an approved revision of a command rule the active one; raised after the change is committed.
  */
-final readonly class RuleActivated implements ChangesActiveRules, Event, ShouldDispatchAfterCommit
+final readonly class RuleActivated implements ActiveRuleChange, Event, ShouldDispatchAfterCommit
 {
     public function __construct(
         public string $projectKey,

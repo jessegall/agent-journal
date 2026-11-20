@@ -98,8 +98,8 @@ final readonly class DomainRegistry
     }
 
     /**
-     * The pages, navigation and sections every domain declares through ProvidesPages, ProvidesNavigation and
-     * ProvidesSections, checked together with Core's own; a domain that declares none of them adds nothing.
+     * The pages, navigation and sections every domain declares through PageProvider, NavigationProvider and
+     * SectionProvider, checked together with Core's own; a domain that declares none of them adds nothing.
      */
     public function uiDeclarations(DomainUi ...$coreDeclarations): UiDeclarations
     {

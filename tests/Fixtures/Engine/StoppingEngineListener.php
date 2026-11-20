@@ -9,14 +9,14 @@ use App\Engine\Events\EngineTicked;
 use App\Engine\Support\EngineLoop;
 
 /**
- * Keeps every EngineTicked it hears and stops the engine loop once it heard the given number.
+ * Keeps every EngineTicked it receives and stops the engine loop once it received the given number.
  */
 final class StoppingEngineListener implements EngineListener
 {
     /**
      * @var list<EngineTicked>
      */
-    public array $heard = [];
+    public array $received = [];
 
     public function __construct(
         private readonly EngineLoop $loop,
@@ -30,9 +30,9 @@ final class StoppingEngineListener implements EngineListener
 
     public function __invoke(EngineTicked $event): void
     {
-        $this->heard[] = $event;
+        $this->received[] = $event;
 
-        if (count($this->heard) >= $this->stopAfter) {
+        if (count($this->received) >= $this->stopAfter) {
             $this->loop->stop();
         }
     }

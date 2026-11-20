@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Records\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with links between records.
  */
-enum RecordLinkAbility: string implements DeclaresClassLevelAbilities
+enum RecordLinkAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

@@ -12,7 +12,7 @@ use Throwable;
 
 /**
  * Delivers one EngineTicked to every engine listener, each built for this pass and granted only its own maintenance
- * scope; a listener that throws is logged and the next still runs. Plain observers hear it last, on the dispatcher.
+ * scope; a listener that throws is logged and the next still runs. Plain observers receive it last, on the dispatcher.
  */
 final readonly class EngineTickedDelivery
 {

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\StartPlanHandler;
 use Domain\Plans\Models\Plan;
@@ -24,7 +24,7 @@ use Domain\Plans\Policies\PlanPolicy;
 #[HandledBy(StartPlanHandler::class)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
 #[Operation('start_plan', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class StartPlan extends Command implements HasAuthorizationSubject
+final readonly class StartPlan extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string $planId,

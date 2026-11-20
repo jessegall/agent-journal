@@ -6,13 +6,13 @@ namespace Tests\Fixtures\Domains\StraySkills;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\SkillProvider;
 use Tests\Fixtures\Modules\Notes\Skills\NotesSkill;
 
 /**
  * A fixture domain that declares another package's skill as its own.
  */
-final class StraySkillsDomain extends Domain implements ProvidesSkills
+final class StraySkillsDomain extends Domain implements SkillProvider
 {
     public function description(): string
     {

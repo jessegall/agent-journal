@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with the ledgers.
  */
-enum LedgerAbility: string implements DeclaresClassLevelAbilities
+enum LedgerAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

@@ -21,7 +21,7 @@ final readonly class CleanAccountHandler implements CommandHandler
 
     public function handle(CleanAccount $command): bool
     {
-        ActiveAccount::lockedForJournal(Account::programOfForJournal($command->accountId));
+        ActiveAccount::lockedForJournal(Account::programForJournal($command->accountId));
         $account = Account::lockedForJournal($command->accountId);
 
         if (! $account->applyCleanup($command->generation, $command->progress)) {

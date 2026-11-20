@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Records\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Links\Models\Link;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Records\Enums\RecordLinkAbility;
 use App\Records\Handlers\LinkRecordsHandler;
 use App\Records\Policies\RecordLinkPolicy;
@@ -25,7 +25,7 @@ use App\Records\Support\RecordIdentity;
 #[HandledBy(LinkRecordsHandler::class)]
 #[Authorize(RecordLinkPolicy::class, RecordLinkAbility::Work)]
 #[Operation('link_records', ResourceAreaType::JournalContent, AccessType::Create)]
-final readonly class LinkRecords extends Command implements HasAuthorizationSubject
+final readonly class LinkRecords extends Command implements AuthorizedCommand
 {
     public function __construct(public RecordIdentity $source, public RecordIdentity $target) {}
 

@@ -9,7 +9,7 @@ use App\Processes\Models\RuleProposal;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * A project owner rejected a proposal; its author hears the reason, and the proposal and its request stay readable.
+ * A project owner rejected a proposal; its author is told the reason, and the proposal and its request stay readable.
  */
 final readonly class RuleRejected implements Event, ShouldDispatchAfterCommit
 {

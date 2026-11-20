@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\AgentRequests\Support;
 
-use App\AgentRequests\Contracts\SendsAgentRequests;
+use App\AgentRequests\Contracts\AgentRequestClient as AgentRequestClientContract;
 use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
 use Carbon\CarbonImmutable;
@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
  * and the signature over the body's digest. A prepared call is sent again unchanged on a retry. Redirects are refused
  * and certificates verified.
  */
-final readonly class AgentRequestClient implements SendsAgentRequests
+final readonly class AgentRequestClient implements AgentRequestClientContract
 {
     public function __construct(private Factory $http) {}
 

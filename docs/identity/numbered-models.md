@@ -52,10 +52,10 @@ final class Phase extends Model implements Assignable, Numbered
 
 ## Declaring them in the domain
 
-The domain declares each numbered model through `ProvidesNumberedModels` and its trait `HasNumberedModels`:
+The domain declares each numbered model through `NumberedModelProvider` and its trait `HasNumberedModels`:
 
 ```php
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections
+final class PlansDomain extends Domain implements AssignableContributor, CommandProvider, NavigationProvider, NumberedModelProvider, PageProvider, SectionProvider
 {
     use HasAssignables, HasNumberedModels;
 

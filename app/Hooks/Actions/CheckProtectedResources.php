@@ -38,7 +38,7 @@ final readonly class CheckProtectedResources
 
     public function refusesCommand(string $sessionId, string $command, string $workFolder): bool
     {
-        if ($this->accounts->readsSignInIn($command)) {
+        if ($this->accounts->readsSignIn($command)) {
             return true;
         }
 

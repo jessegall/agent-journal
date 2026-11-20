@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Agents\Support\AgentContext;
-use App\Bus\Contracts\MapsRefusals;
+use App\Bus\Contracts\RefusalMapper;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
 use Closure;
@@ -24,7 +24,7 @@ final readonly class LoggedMcpCall implements McpCall
 
     public function __construct(
         private AgentContext $agent,
-        private MapsRefusals $refusals,
+        private RefusalMapper $refusals,
         private ResultBudget $budget,
         private LoggerInterface $logger,
     ) {}

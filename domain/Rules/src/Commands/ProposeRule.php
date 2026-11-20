@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use Domain\Rules\Enums\RuleAbility;
 use Domain\Rules\Handlers\ProposeRuleHandler;
 use Domain\Rules\Models\Rule;
@@ -26,7 +26,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 #[HandledBy(ProposeRuleHandler::class)]
 #[Authorize(RulePolicy::class, RuleAbility::Propose)]
 #[Operation('propose_rule', ResourceAreaType::JournalContent, AccessType::Create)]
-final readonly class ProposeRule extends Command implements HasAuthorizationSubject
+final readonly class ProposeRule extends Command implements AuthorizedCommand
 {
     public function __construct(
         #[Required, Max(Rule::TEXT_CHARACTERS)]

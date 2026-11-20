@@ -6,7 +6,7 @@ namespace App\Desks\Support;
 
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxProvider;
-use App\Communication\Contracts\NamesInboxes;
+use App\Communication\Contracts\NamedInboxes;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Desks\Models\DeskRecord;
 use PhpOption\Option;
@@ -14,7 +14,7 @@ use PhpOption\Option;
 /**
  * Desks as inboxes: the inbox of a desk is the desk itself, labelled by the desk and found by its name.
  */
-final readonly class DeskInboxProvider implements InboxProvider, NamesInboxes
+final readonly class DeskInboxProvider implements InboxProvider, NamedInboxes
 {
     public function inboxFor(string $inboxId, string $providerId): Inbox
     {

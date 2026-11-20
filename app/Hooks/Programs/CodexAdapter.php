@@ -131,7 +131,7 @@ final readonly class CodexAdapter implements ProgramAdapter
     }
 
     /**
-     * After a call to the journal's own tools nothing walks the stack again; after any other tool the journal hears it.
+     * After a call to the journal's own tools nothing walks the stack again; after any other tool the journal is told.
      */
     private function callsJournalTools(HookPayload $payload): bool
     {

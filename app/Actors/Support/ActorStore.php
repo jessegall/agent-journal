@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Actors\Support;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\ActorRunner;
 use App\Actors\Contracts\AuthoritySource;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Contracts\RunsAsActor;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Values\TrustedEntryAuthority;
 use Closure;
@@ -20,7 +20,7 @@ use Illuminate\Container\Attributes\Scoped;
  * reader and the middleware that fills it always share it and a long-running worker never carries it to the next one.
  */
 #[Scoped]
-final class ActorStore implements CurrentActor, CurrentActorSetter, RunsAsActor
+final class ActorStore implements ActorRunner, CurrentActor, CurrentActorSetter
 {
     /**
      * The acting actor with the source of its authority, installed and cleared together; empty when none acts.

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Profiles\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with agent profiles and the main start.
  */
-enum ProfileAbility: string implements DeclaresClassLevelAbilities
+enum ProfileAbility: string implements ClassLevelAbilities
 {
     case Administer = 'administer';
 

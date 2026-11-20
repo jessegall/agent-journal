@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace App\Domains\Support;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AssignableProvider;
-use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
-use App\Bus\Contracts\ProvidesCommandMiddleware;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandMiddlewareProvider;
+use App\Bus\Contracts\CommandProvider;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Contracts\Event;
-use App\Domains\Contracts\ProvidesAssignables;
-use App\Domains\Contracts\ProvidesAssignees;
-use App\Domains\Contracts\ProvidesIncomingWork;
-use App\Domains\Contracts\ProvidesInternalAssignables;
-use App\Domains\Contracts\ProvidesLinkRecords;
-use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Contracts\AssignableContributor;
+use App\Domains\Contracts\AssigneeContributor;
+use App\Domains\Contracts\IncomingWorkProvider;
+use App\Domains\Contracts\InternalAssignableContributor;
+use App\Domains\Contracts\LinkRecordProvider;
+use App\Domains\Contracts\StateProvider;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
 use App\Domains\Exceptions\RequiredDomainTwice;
@@ -32,24 +32,24 @@ use App\Domains\Support\Exports as ExportsCheck;
 use App\Exports\Support\Exports;
 use App\Hooks\Contracts\IncomingWork;
 use App\Mcp\Contracts\McpRegistration;
-use App\Mcp\Contracts\ProvidesMcpTools;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Mcp\Contracts\McpToolProvider;
+use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
-use App\Processes\Contracts\ProvidesCommandRules;
+use App\Processes\Contracts\CommandRuleProvider;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\RuleScope;
 use App\Records\Contracts\RecordProvider;
-use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\SettingsDefinition;
+use App\Settings\Contracts\SettingsProvider;
 use App\Settings\Support\EmptySettingsDefinition;
-use App\Sharing\Contracts\ProvidesShareGateways;
-use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\Contracts\ShareGatewayProvider;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordRegistration;
-use App\Skills\Contracts\ProvidesSkillConditions;
-use App\Skills\Contracts\ProvidesSkills;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillConditionEvaluator;
+use App\Skills\Contracts\SkillConditionProvider;
+use App\Skills\Contracts\SkillProvider;
 use App\Skills\Values\SkillConditionRegistration;
 use App\Skills\Values\SkillOwner;
 use App\Ui\Declarations\DomainUi;
@@ -114,10 +114,10 @@ final readonly class DomainEntry
             domain: $domain,
             requires: self::checkedRequirements($name, $className, $domain->requires()),
             exports: ExportsCheck::check($name, $namespace, $domain->exports()),
-            settings: $domain instanceof ProvidesSettings ? $domain->settings() : new EmptySettingsDefinition(),
+            settings: $domain instanceof SettingsProvider ? $domain->settings() : new EmptySettingsDefinition(),
             switchable: $domain->canDisable(),
-            skills: $domain instanceof ProvidesSkills ? self::checkedSkills($name, $namespace, $domain->skills()) : [],
-            skillConditions: $domain instanceof ProvidesSkillConditions ? self::checkedSkillConditions(
+            skills: $domain instanceof SkillProvider ? self::checkedSkills($name, $namespace, $domain->skills()) : [],
+            skillConditions: $domain instanceof SkillConditionProvider ? self::checkedSkillConditions(
                 $name,
                 $domain->skillConditions(),
             ) : [],
@@ -342,7 +342,7 @@ final readonly class DomainEntry
 
     /**
      * The named condition types this domain registers, checked when it was registered; none without
-     * ProvidesSkillConditions.
+     * SkillConditionProvider.
      *
      * @return list<SkillConditionRegistration>
      */
@@ -352,7 +352,7 @@ final readonly class DomainEntry
     }
 
     /**
-     * The skill classes this domain declares, checked when it was registered; none without ProvidesSkills.
+     * The skill classes this domain declares, checked when it was registered; none without SkillProvider.
      *
      * @return list<class-string<Skill>>
      */
@@ -405,120 +405,120 @@ final readonly class DomainEntry
     }
 
     /**
-     * The record types this domain lets Core read and link, each with its provider; none without ProvidesLinkRecords.
+     * The record types this domain lets Core read and link, each with its provider; none without LinkRecordProvider.
      *
      * @return array<string, class-string<RecordProvider>>
      */
     public function linkRecords(): array
     {
-        return $this->provided(ProvidesLinkRecords::class)
-            ->map(fn (ProvidesLinkRecords $domain) => $domain->linkRecords())
+        return $this->provided(LinkRecordProvider::class)
+            ->map(fn (LinkRecordProvider $domain) => $domain->linkRecords())
             ->getOrElse([]);
     }
 
     /**
      * The record types this domain lets actors hold, each with its provider; none when it declares no
-     * ProvidesAssignables.
+     * AssignableContributor.
      *
      * @return array<string, class-string<AssignableProvider>>
      */
     public function assignables(): array
     {
-        return $this->provided(ProvidesAssignables::class)
-            ->map(fn (ProvidesAssignables $domain) => $domain->assignables())
+        return $this->provided(AssignableContributor::class)
+            ->map(fn (AssignableContributor $domain) => $domain->assignables())
             ->getOrElse([]);
     }
 
     /**
-     * The incoming work this domain's hooks accept; none without ProvidesIncomingWork.
+     * The incoming work this domain's hooks accept; none without IncomingWorkProvider.
      *
      * @return list<class-string<IncomingWork>>
      */
     public function incomingWork(): array
     {
-        return $this->provided(ProvidesIncomingWork::class)
-            ->map(fn (ProvidesIncomingWork $domain) => $domain->incomingWork())
+        return $this->provided(IncomingWorkProvider::class)
+            ->map(fn (IncomingWorkProvider $domain) => $domain->incomingWork())
             ->getOrElse([]);
     }
 
     /**
-     * The record types of this domain only Core's own writers assign; none without ProvidesInternalAssignables.
+     * The record types of this domain only Core's own writers assign; none without InternalAssignableContributor.
      *
      * @return array<string, class-string<AssignableProvider>>
      */
     public function internalAssignables(): array
     {
-        return $this->provided(ProvidesInternalAssignables::class)
-            ->map(fn (ProvidesInternalAssignables $domain) => $domain->internalAssignables())
+        return $this->provided(InternalAssignableContributor::class)
+            ->map(fn (InternalAssignableContributor $domain) => $domain->internalAssignables())
             ->getOrElse([]);
     }
 
     /**
-     * The auto-assigners this domain declares for its record types; none without ProvidesAutoAssignments.
+     * The auto-assigners this domain declares for its record types; none without AutoAssignmentProvider.
      *
      * @return list<AutoAssignerDefinition>
      */
     public function autoAssigners(): array
     {
-        return $this->provided(ProvidesAutoAssignments::class)
-            ->map(fn (ProvidesAutoAssignments $domain) => $domain->autoAssigners())
+        return $this->provided(AutoAssignmentProvider::class)
+            ->map(fn (AutoAssignmentProvider $domain) => $domain->autoAssigners())
             ->getOrElse([]);
     }
 
     /**
-     * The pools this domain declares for auto-assignment to draw from; none without ProvidesAutoAssignments.
+     * The pools this domain declares for auto-assignment to draw from; none without AutoAssignmentProvider.
      *
      * @return list<PoolDefinition>
      */
     public function assignmentPools(): array
     {
-        return $this->provided(ProvidesAutoAssignments::class)
-            ->map(fn (ProvidesAutoAssignments $domain) => $domain->assignmentPools())
+        return $this->provided(AutoAssignmentProvider::class)
+            ->map(fn (AutoAssignmentProvider $domain) => $domain->assignmentPools())
             ->getOrElse([]);
     }
 
     /**
-     * The records this domain lets owners share, each with its provider; none without ProvidesShareRecords.
+     * The records this domain lets owners share, each with its provider; none without ShareRecordContributor.
      *
      * @return list<ShareRecordRegistration>
      */
     public function shareRecords(): array
     {
-        return $this->provided(ProvidesShareRecords::class)
-            ->map(fn (ProvidesShareRecords $domain) => $domain->shareRecords())
+        return $this->provided(ShareRecordContributor::class)
+            ->map(fn (ShareRecordContributor $domain) => $domain->shareRecords())
             ->getOrElse([]);
     }
 
     /**
-     * The policies this domain registers; none without ProvidesPolicies.
+     * The policies this domain registers; none without PolicyProvider.
      *
      * @return list<PolicyRegistration>
      */
     public function policies(): array
     {
-        return $this->provided(ProvidesPolicies::class)
-            ->map(fn (ProvidesPolicies $domain) => $domain->policies())
+        return $this->provided(PolicyProvider::class)
+            ->map(fn (PolicyProvider $domain) => $domain->policies())
             ->getOrElse([]);
     }
 
     /**
-     * The share gateways this domain adds, by key; none without ProvidesShareGateways.
+     * The share gateways this domain adds, by key; none without ShareGatewayProvider.
      *
      * @return array<string, class-string<ShareGateway>>
      */
     public function shareGateways(): array
     {
-        return $this->provided(ProvidesShareGateways::class)
-            ->map(fn (ProvidesShareGateways $domain) => $domain->shareGateways())
+        return $this->provided(ShareGatewayProvider::class)
+            ->map(fn (ShareGatewayProvider $domain) => $domain->shareGateways())
             ->getOrElse([]);
     }
 
     /**
-     * Adds this domain's MCP tools, resources and overview sections to the registration; none without ProvidesMcpTools.
+     * Adds this domain's MCP tools, resources and overview sections to the registration; none without McpToolProvider.
      */
     public function registerMcpToolsIn(McpRegistration $registration): void
     {
-        $provided = $this->provided(ProvidesMcpTools::class);
+        $provided = $this->provided(McpToolProvider::class);
 
         if ($provided->isEmpty()) {
             return;
@@ -540,7 +540,7 @@ final readonly class DomainEntry
     }
 
     /**
-     * The settings this domain declares, read once when the domain is registered; none without ProvidesSettings.
+     * The settings this domain declares, read once when the domain is registered; none without SettingsProvider.
      */
     public function settings(): SettingsDefinition
     {
@@ -558,56 +558,56 @@ final readonly class DomainEntry
     }
 
     /**
-     * The agent states this domain declares, each type key with its factory; none when it declares no ProvidesStates.
+     * The agent states this domain declares, each type key with its factory; none when it declares no StateProvider.
      *
      * @return array<string, class-string>
      */
     public function states(): array
     {
-        return $this->provided(ProvidesStates::class)
-            ->map(fn (ProvidesStates $domain) => $domain->states())
+        return $this->provided(StateProvider::class)
+            ->map(fn (StateProvider $domain) => $domain->states())
             ->getOrElse([]);
     }
 
     /**
-     * The models this domain numbers; none when it declares no ProvidesNumberedModels.
+     * The models this domain numbers; none when it declares no NumberedModelProvider.
      *
      * @return list<NumberedModel>
      */
     public function numberedModels(): array
     {
-        return $this->provided(ProvidesNumberedModels::class)
-            ->map(fn (ProvidesNumberedModels $domain) => $domain->numberedModels())
+        return $this->provided(NumberedModelProvider::class)
+            ->map(fn (NumberedModelProvider $domain) => $domain->numberedModels())
             ->getOrElse([]);
     }
 
     /**
-     * The holders of records this domain adds; none when it declares no ProvidesAssignees.
+     * The holders of records this domain adds; none when it declares no AssigneeContributor.
      *
      * @return list<AssigneeRegistration>
      */
     public function assignees(): array
     {
-        return $this->provided(ProvidesAssignees::class)
-            ->map(fn (ProvidesAssignees $domain) => $domain->assignees())
+        return $this->provided(AssigneeContributor::class)
+            ->map(fn (AssigneeContributor $domain) => $domain->assignees())
             ->getOrElse([]);
     }
 
     /**
-     * Whether this domain's actors may take automatically assigned work now; none without ProvidesAssignees.
+     * Whether this domain's actors may take automatically assigned work now; none without AssigneeContributor.
      *
      * @return list<ActivityRegistration>
      */
     public function activities(): array
     {
-        return $this->provided(ProvidesAssignees::class)
-            ->map(fn (ProvidesAssignees $domain) => $domain->activities())
+        return $this->provided(AssigneeContributor::class)
+            ->map(fn (AssigneeContributor $domain) => $domain->activities())
             ->getOrElse([]);
     }
 
     /**
      * The command rules this domain declares for its own programs, owned by it as a module so they wait for review;
-     * none without ProvidesCommandRules.
+     * none without CommandRuleProvider.
      *
      * @return list<CommandRule>
      */
@@ -615,8 +615,8 @@ final readonly class DomainEntry
     {
         $scope = RuleScope::module($this->name, '');
 
-        return $this->provided(ProvidesCommandRules::class)
-            ->map(fn (ProvidesCommandRules $domain) => array_map(
+        return $this->provided(CommandRuleProvider::class)
+            ->map(fn (CommandRuleProvider $domain) => array_map(
                 fn (CommandRule $rule): CommandRule => $rule->ownedBy($scope, $rule->revision),
                 $domain->commandRules(),
             ))
@@ -645,8 +645,8 @@ final readonly class DomainEntry
      */
     private function commands(): array
     {
-        return $this->provided(ProvidesCommands::class)
-            ->map(fn (ProvidesCommands $domain) => $domain->commands())
+        return $this->provided(CommandProvider::class)
+            ->map(fn (CommandProvider $domain) => $domain->commands())
             ->getOrElse([]);
     }
 
@@ -655,8 +655,8 @@ final readonly class DomainEntry
      */
     private function commandMiddleware(): array
     {
-        return $this->provided(ProvidesCommandMiddleware::class)
-            ->map(fn (ProvidesCommandMiddleware $domain) => $domain->commandMiddleware())
+        return $this->provided(CommandMiddlewareProvider::class)
+            ->map(fn (CommandMiddlewareProvider $domain) => $domain->commandMiddleware())
             ->getOrElse([]);
     }
 

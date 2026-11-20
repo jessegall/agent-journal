@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with its helpers.
  */
-enum HelperAbility: string implements DeclaresClassLevelAbilities
+enum HelperAbility: string implements ClassLevelAbilities
 {
     case Dispatch = 'dispatch';
 

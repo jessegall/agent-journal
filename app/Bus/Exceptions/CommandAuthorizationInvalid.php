@@ -14,7 +14,7 @@ final class CommandAuthorizationInvalid extends LogicException
     public static function subjectMissing(string $command): self
     {
         return new self(
-            sprintf('%s declares Authorize but names no subject: it must implement HasAuthorizationSubject.', $command),
+            sprintf('%s declares Authorize but names no subject: it must implement AuthorizedCommand.', $command),
         );
     }
 

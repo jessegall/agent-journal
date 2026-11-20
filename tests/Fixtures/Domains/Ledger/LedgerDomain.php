@@ -6,13 +6,13 @@ namespace Tests\Fixtures\Domains\Ledger;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Mcp\Contracts\ProvidesMcpTools;
+use App\Mcp\Contracts\McpToolProvider;
 use Tests\Fixtures\Domains\Ledger\Mcp\LedgerReadTool;
 
 /**
  * A fixture domain that offers agents one MCP read tool.
  */
-final class LedgerDomain extends Domain implements ProvidesMcpTools
+final class LedgerDomain extends Domain implements McpToolProvider
 {
     public function description(): string
     {

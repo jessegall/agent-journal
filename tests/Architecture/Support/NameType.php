@@ -23,7 +23,7 @@ enum NameType: string
     case Other = 'other';
 
     /**
-     * A listener may name another domain's event only to hear it: as an import, a type or ::class.
+     * A listener may name another domain's event only to listen to it: as an import, a type or ::class.
      */
     public function canNameAnEventToHearIt(): bool
     {

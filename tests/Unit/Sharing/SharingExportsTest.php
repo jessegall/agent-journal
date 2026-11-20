@@ -13,7 +13,7 @@ use App\Sharing\Support\ShareToken;
 use Tests\TestCase;
 
 /**
- * Core's exports carry the sharing seams: a domain implements Shareable, ProvidesShareRecords, a provider and a gateway
+ * Core's exports carry the sharing seams: a domain implements Shareable, ShareRecordContributor, a provider and a gateway
  * through exported names alone, while models, registries, the owner policy and tokens stay private.
  */
 final class SharingExportsTest extends TestCase
@@ -35,7 +35,7 @@ final class SharingExportsTest extends TestCase
         $named = array_values(array_unique($named));
 
         $this->assertContains('App\\Sharing\\Contracts\\Shareable', $named);
-        $this->assertContains('App\\Sharing\\Contracts\\ProvidesShareRecords', $named);
+        $this->assertContains('App\\Sharing\\Contracts\\ShareRecordContributor', $named);
         $this->assertSame([], array_values(array_filter($named, fn (string $name) => ! $exports->has($name))));
     }
 

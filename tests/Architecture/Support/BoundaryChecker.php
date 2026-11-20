@@ -249,7 +249,7 @@ final readonly class BoundaryChecker
     }
 
     /**
-     * Another domain's event is named only in a listener, and only to hear it. This limits naming, not data flow.
+     * Another domain's event is named only in a listener, and only to listen to it. This limits naming, not data flow.
      *
      * @return list<Violation>
      */
@@ -308,7 +308,7 @@ final readonly class BoundaryChecker
     }
 
     /**
-     * Only a domain raises its own events; another domain or the shared places may only hear them.
+     * Only a domain raises its own events; another domain or the shared places may only listen to them.
      */
     private function raisesAnotherDomainsEvent(EventCall $call, string $userName): bool
     {
@@ -356,7 +356,7 @@ final readonly class BoundaryChecker
     }
 
     /**
-     * A Core class that implements Event: a domain hears it in a listener, only Core raises it.
+     * A Core class that implements Event: a domain listens to it in a listener, only Core raises it.
      */
     private function isCoreEvent(string $name): bool
     {

@@ -7,7 +7,7 @@ namespace App\Profiles\Enums;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Support\AllowsEverything;
+use App\Actors\Support\UnrestrictedAuthorizer;
 use App\Profiles\Support\PolicyAuthorizer;
 use App\Profiles\Values\AbilityGrant;
 use App\Profiles\Values\ProfileAuthorization;
@@ -28,7 +28,7 @@ enum AuthorizationType: string
     public function authorizerFor(ProfileAuthorization $authorization, PolicyCatalogue $catalogue): Authorizer
     {
         return match ($this) {
-            self::AllowsEverything => new AllowsEverything(),
+            self::AllowsEverything => new UnrestrictedAuthorizer(),
             self::Policies => new PolicyAuthorizer($authorization, $catalogue),
         };
     }

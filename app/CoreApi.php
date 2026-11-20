@@ -23,14 +23,14 @@ use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Contracts\ForwardsToDesk;
 use App\Actors\Contracts\JournalAdmission;
+use App\Actors\Contracts\MessageRecipient;
+use App\Actors\Contracts\MessageSender;
 use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Contracts\ProvidesPolicies;
-use App\Actors\Contracts\ReceivesMessages;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Contracts\ReplyInboxes;
-use App\Actors\Contracts\SendsMessages;
+use App\Actors\Contracts\SeatedActor;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
 use App\Actors\Contracts\WorkStackProvider;
@@ -55,8 +55,8 @@ use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorLabelSet;
-use App\Actors\Support\AllowsEverything;
 use App\Actors\Support\CurrentUser;
+use App\Actors\Support\UnrestrictedAuthorizer;
 use App\Actors\Values\AbilityRequirement;
 use App\Actors\Values\OwnerAuthority;
 use App\Actors\Values\PolicyRegistration;
@@ -67,9 +67,9 @@ use App\AgentRequests\Attributes\PresentList;
 use App\AgentRequests\Casts\CallKeyCast;
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\AgentRequests\Contracts\CallRefusal;
+use App\AgentRequests\Contracts\CallRegistrar;
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\JournalCall;
-use App\AgentRequests\Contracts\RegistersCalls;
 use App\AgentRequests\Enums\CallEffect;
 use App\AgentRequests\Enums\ReceiptOwner;
 use App\AgentRequests\Enums\ReportLineType;
@@ -168,7 +168,7 @@ use App\Agents\Contracts\StartReadiness;
 use App\Agents\Contracts\StartReceipts;
 use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Contracts\StartReservations;
-use App\Agents\Contracts\StartsAgent;
+use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
@@ -213,9 +213,9 @@ use App\Agents\Events\StartAccepted;
 use App\Agents\Events\StartUnavailable;
 use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
+use App\Agents\Exceptions\AccountInUse;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Exceptions\AccountUseMissing;
-use App\Agents\Exceptions\AccountUsesRemain;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
@@ -328,7 +328,7 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Contracts\AutoAssigner;
 use App\Assignments\Contracts\AutoAssignmentActivity;
-use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Enums\AssignmentOutcomeType;
@@ -393,20 +393,18 @@ use App\Bus\Attributes\Operation as CommandOperationDeclaration;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
+use App\Bus\Contracts\AuthorizedCommand;
+use App\Bus\Contracts\ClassLevelAbilities;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandMiddleware;
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\CommandMiddlewareProvider;
+use App\Bus\Contracts\CommandProvider;
 use App\Bus\Contracts\OperationResolver;
-use App\Bus\Contracts\ProvidesCommandMiddleware;
-use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Contracts\RefusalDetails;
-use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\CommandEffectType;
-use App\Supervision\Commands\ChangeSupervisor;
-use App\Supervision\Commands\RouteAsk;
+use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
@@ -514,7 +512,7 @@ use App\Contracts\CommandRefusal;
 use App\Contracts\DomainAvailability;
 use App\Contracts\Event;
 use App\Contracts\Listener;
-use App\Contracts\LogsListenerFailures;
+use App\Contracts\ListenerFailureLog;
 use App\Desks\Commands\CreateDesk;
 use App\Desks\Commands\InstallDesks;
 use App\Desks\Commands\ProvisionActorDesk;
@@ -532,8 +530,8 @@ use App\Desks\Exceptions\SeatCapacityReached;
 use App\Desks\Exceptions\SeatConflict;
 use App\Desks\Exceptions\SecondForwardingSeat;
 use App\Desks\Support\SeatChangeResult;
-use App\Domains\Contracts\ProvidesIncomingWork;
-use App\Domains\Contracts\ProvidesInternalAssignables;
+use App\Domains\Contracts\IncomingWorkProvider;
+use App\Domains\Contracts\InternalAssignableContributor;
 use App\Engine\Commands\EndTerminalViews;
 use App\Engine\Commands\ExpireNavigationRequests;
 use App\Engine\Commands\MarkSilentSessions;
@@ -616,21 +614,20 @@ use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
 use App\Links\Support\LinkTypeRegistry;
-use App\Mcp\Contracts\McpCall;
-use App\Mcp\Contracts\NumberedPages;
-use App\Mcp\Contracts\OverviewContribution;
-use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
-use App\Mcp\Enums\DiscoveryProfile;
+use App\Mcp\Contracts\McpCall;
+use App\Mcp\Contracts\McpToolProvider;
+use App\Mcp\Contracts\NumberedPages;
+use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 use App\Mcp\Data\ToolResult as McpToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Exceptions\ResourceMimeTypeRefused;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
-use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ListedPage;
@@ -644,7 +641,7 @@ use App\Mcp\Tools\JournalWriteTool;
 use App\Mcp\Tools\JournalTool;
 use App\Numbers\Commands\InstallNumbers;
 use App\Numbers\Contracts\Numbered;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Exceptions\InvalidRecordReference;
 use App\Numbers\Support\HasNumber;
 use App\Numbers\Support\NumberedModel;
@@ -659,9 +656,9 @@ use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\RevokeCommandPermissions;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Contracts\CommandClassifier;
+use App\Processes\Contracts\CommandRuleProvider;
 use App\Processes\Contracts\FactOrigin;
 use App\Processes\Contracts\ProgramClassifier;
-use App\Processes\Contracts\ProvidesCommandRules;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\VerificationTiming;
@@ -851,12 +848,12 @@ use App\Settings\Contracts\CatalogueValue;
 use App\Settings\Contracts\ChoiceLabel;
 use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\GroupDeclaration;
-use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\Setting;
 use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Contracts\SettingsDefinition;
+use App\Settings\Contracts\SettingsProvider;
 use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Contracts\SettingsSnapshot;
 use App\Settings\Data\BooleanValueData;
@@ -924,12 +921,12 @@ use App\Sharing\Commands\RequestShare;
 use App\Sharing\Commands\RetryShare;
 use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Commands\SaveSharePreview;
-use App\Sharing\Contracts\ProvidesShareGateways;
-use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\Shareable;
 use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\Contracts\ShareGatewayProvider;
 use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Contracts\ShareRecordProvider;
 use App\Sharing\Contracts\ShareStatusResolver;
 use App\Sharing\Enums\ShareRelationType;
@@ -987,11 +984,11 @@ use App\Skills\Conditions\ProfileBases;
 use App\Skills\Conditions\Profiles;
 use App\Skills\Conditions\Programs;
 use App\Skills\Conditions\Providers;
-use App\Skills\Contracts\ProvidesSkillConditions;
-use App\Skills\Contracts\ProvidesSkills;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Contracts\SkillConditionEvaluator;
+use App\Skills\Contracts\SkillConditionProvider;
+use App\Skills\Contracts\SkillProvider;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Enums\SkillOrigin;
@@ -1020,6 +1017,8 @@ use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 use App\Skills\Values\StartProfile;
+use App\Supervision\Commands\ChangeSupervisor;
+use App\Supervision\Commands\RouteAsk;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
@@ -1047,13 +1046,13 @@ use App\Text\Values\TextRange;
 use App\Text\Values\TextVersion;
 use App\Ui\Contracts\CountResolver;
 use App\Ui\Contracts\NavigationChildren;
+use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageOption;
+use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\PageResolver;
-use App\Ui\Contracts\ProvidesNavigation;
-use App\Ui\Contracts\ProvidesPages;
-use App\Ui\Contracts\ProvidesSections;
+use App\Ui\Contracts\SectionProvider;
 use App\Ui\Contracts\SectionResolver;
-use App\Ui\Contracts\UpdatesUserInterface;
+use App\Ui\Contracts\UserInterfaceUpdater;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\ChoiceOption;
@@ -1126,11 +1125,11 @@ final class CoreApi
                 CallingProgram::class,
                 ResponsibilityWriter::class,
                 ActiveAccountReader::class,
-                StartsAgent::class,
+                AgentStartCommand::class,
                 AccountUses::class,
                 IdentityLinks::class,
                 JournalCall::class,
-                RegistersCalls::class,
+                CallRegistrar::class,
                 CallSender::class,
                 CallRefusal::class,
                 RecordProvider::class,
@@ -1166,8 +1165,8 @@ final class CoreApi
                 TextContent::class,
                 TextResolver::class,
                 Commentable::class,
-                SendsMessages::class,
-                ReceivesMessages::class,
+                MessageSender::class,
+                MessageRecipient::class,
                 ActorResolver::class,
                 ActorProvider::class,
                 ActorProviderRegistration::class,
@@ -1184,21 +1183,21 @@ final class CoreApi
                 ActorProvisioning::class,
                 RunClaims::class,
                 ReplyInboxes::class,
-                ProvidesInternalAssignables::class,
-                ProvidesIncomingWork::class,
+                InternalAssignableContributor::class,
+                IncomingWorkProvider::class,
                 IncomingWork::class,
-                LogsListenerFailures::class,
+                ListenerFailureLog::class,
                 IncomingWorkRegistration::class,
                 Desk::class,
-                ForwardsToDesk::class,
+                SeatedActor::class,
                 AssignmentDestinationResolver::class,
                 InboxDestinationResolver::class,
                 ActorInboxResolver::class,
                 WorkStacks::class,
-                ProvidesPolicies::class,
+                PolicyProvider::class,
                 WorkStackProvider::class,
-                HasAuthorizationSubject::class,
-                DeclaresClassLevelAbilities::class,
+                AuthorizedCommand::class,
+                ClassLevelAbilities::class,
                 Authorizer::class,
                 AuthorizerProvider::class,
                 AuthorizerProviderRegistration::class,
@@ -1215,7 +1214,7 @@ final class CoreApi
                 CommentResolver::class,
                 ShellCommandParser::class,
                 CommandClassifier::class,
-                ProvidesCommandRules::class,
+                CommandRuleProvider::class,
                 ProgramClassifier::class,
                 FactOrigin::class,
                 ResultReceipts::class,
@@ -1235,7 +1234,7 @@ final class CoreApi
                 AssignmentResolver::class,
                 AssignmentRegistration::class,
                 Numbered::class,
-                ProvidesNumberedModels::class,
+                NumberedModelProvider::class,
                 AssigneeResolver::class,
                 AssignmentWriter::class,
                 AssignmentTransaction::class,
@@ -1245,7 +1244,7 @@ final class CoreApi
                 AssignedWorkResolver::class,
                 AssignedWorkProvider::class,
                 AssignmentQuery::class,
-                ProvidesAutoAssignments::class,
+                AutoAssignmentProvider::class,
                 CurrentUserResolver::class,
                 Command::class,
                 CommandBus::class,
@@ -1254,25 +1253,25 @@ final class CoreApi
                 Event::class,
                 Listener::class,
                 CommandHandler::class,
-                ProvidesCommands::class,
-                ProvidesMcpTools::class,
+                CommandProvider::class,
+                McpToolProvider::class,
                 RefusalDetails::class,
                 McpCall::class,
                 NumberedPages::class,
-                ProvidesCommandMiddleware::class,
+                CommandMiddlewareProvider::class,
                 AdmittedRecipients::class,
                 JournalAdmission::class,
-                UpdatesUserInterface::class,
+                UserInterfaceUpdater::class,
                 CountResolver::class,
                 NavigationChildren::class,
                 PageOption::class,
                 PageResolver::class,
-                ProvidesNavigation::class,
-                ProvidesPages::class,
-                ProvidesSections::class,
+                NavigationProvider::class,
+                PageProvider::class,
+                SectionProvider::class,
                 SectionResolver::class,
                 VisibilityCheck::class,
-                ProvidesSettings::class,
+                SettingsProvider::class,
                 Setting::class,
                 CatalogueValue::class,
                 CatalogueConstraints::class,
@@ -1283,8 +1282,8 @@ final class CoreApi
                 ShareRecordProvider::class,
                 ShareBudget::class,
                 ShareGateway::class,
-                ProvidesShareRecords::class,
-                ProvidesShareGateways::class,
+                ShareRecordContributor::class,
+                ShareGatewayProvider::class,
                 SharePolicy::class,
                 ShareStatusResolver::class,
                 PublicCommentResolver::class,
@@ -1299,10 +1298,10 @@ final class CoreApi
                 OverviewContribution::class,
                 ProfileResolver::class,
                 ProfileSelections::class,
-                ProvidesSkills::class,
+                SkillProvider::class,
                 Skill::class,
                 SkillCondition::class,
-                ProvidesSkillConditions::class,
+                SkillConditionProvider::class,
                 SkillResolver::class,
                 SkillConditionEvaluator::class,
             )
@@ -1571,7 +1570,7 @@ final class CoreApi
                 InboxMembership::class,
                 InboxMembers::class,
                 ActorLabelSet::class,
-                AllowsEverything::class,
+                UnrestrictedAuthorizer::class,
                 StartProfileAuthority::class,
                 OwnerAuthority::class,
                 TrustedEntryAuthority::class,
@@ -2024,7 +2023,7 @@ final class CoreApi
                 InvalidRecordIdentity::class,
                 AccountUnavailable::class,
                 AccountUseMissing::class,
-                AccountUsesRemain::class,
+                AccountInUse::class,
                 AccountMissing::class,
                 AccountLabelTaken::class,
                 AccountLabelInvalid::class,
@@ -2107,7 +2106,6 @@ final class CoreApi
                 ExecutionPolicyInvalid::class,
                 ExecutionBudgetInvalid::class,
                 ToolArgumentInvalid::class,
-                ContinuationStale::class,
                 ToolArgumentUnknown::class,
                 ContinuationInvalid::class,
                 ContinuationStale::class,

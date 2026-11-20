@@ -56,14 +56,14 @@ final class SessionContextTest extends TestCase
     public function test_a_replayed_start_carries_the_recorded_reminders_without_running_listeners(): void
     {
         $first = $this->start('call-1', SessionStartSource::Resume);
-        $heard = 0;
-        Event::listen(ContextStarted::class, function () use (&$heard): void {
-            $heard++;
+        $received = 0;
+        Event::listen(ContextStarted::class, function () use (&$received): void {
+            $received++;
         });
 
         $again = $this->start('call-1', SessionStartSource::Resume);
 
-        $this->assertSame([$first, 0], [$again, $heard]);
+        $this->assertSame([$first, 0], [$again, $received]);
     }
 
     public function test_over_the_budget_the_required_reminders_stay_and_the_omitted_count_is_stated(): void

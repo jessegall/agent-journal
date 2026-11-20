@@ -10,7 +10,7 @@ use App\Communication\Contracts\InboxAccess;
 use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
-use App\Communication\Contracts\NamesInboxes;
+use App\Communication\Contracts\NamedInboxes;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\InboxRecord;
@@ -60,7 +60,7 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
         foreach ($this->providers->all() as [$providerClass]) {
             $provider = Container::getInstance()->make($providerClass);
 
-            if (! $provider instanceof NamesInboxes) {
+            if (! $provider instanceof NamedInboxes) {
                 continue;
             }
 

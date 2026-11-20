@@ -251,7 +251,7 @@ final class ProcessRun extends Model implements ReadableModel
     /**
      * Records that the run was stopped and why; a stopped run never ends with a pass.
      *
-     * Nothing more will be heard from the run's supervisor; its unfinished parts were marked lost.
+     * Nothing more will come from the run's supervisor; its unfinished parts were marked lost.
      */
     public function markLost(): void
     {

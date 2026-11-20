@@ -10,7 +10,7 @@ use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
 use Tests\Fixtures\Bus\Models\FixtureWork;
@@ -25,7 +25,7 @@ use Tests\Fixtures\Bus\Shop\Handlers\AddItemHandler;
 #[HandledBy(AddItemHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
 #[Operation('add_item', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class AddItem extends Command implements HasAuthorizationSubject
+final readonly class AddItem extends Command implements AuthorizedCommand
 {
     /**
      * @param  list<string>  $tags

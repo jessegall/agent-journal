@@ -14,6 +14,6 @@ final class FailingMessageListener
 {
     public function handle(MessageSent $sent): void
     {
-        throw SimulatedFailure::of("The store is down while hearing {$sent->messageId}.");
+        throw SimulatedFailure::of("The store is down while receiving {$sent->messageId}.");
     }
 }

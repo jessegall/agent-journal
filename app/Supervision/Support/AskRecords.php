@@ -6,11 +6,11 @@ namespace App\Supervision\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Reads\Support\ReadBuilder;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use App\Supervision\Models\Ask;
 use App\Supervision\Values\AskReference;
-use Illuminate\Database\Eloquent\Builder;
 
 final readonly class AskRecords
 {
@@ -28,8 +28,8 @@ final readonly class AskRecords
             ?? throw RecordUnavailable::for(new RecordIdentity(Ask::LINK_TYPE, $reference->id));
     }
 
-    /** @return Builder<Ask> */
-    public function visible(): Builder
+    /** @return ReadBuilder<Ask> */
+    public function visible(): ReadBuilder
     {
         return Ask::query()->visibleToParticipant(ActorIdentity::of($this->current->actor()), $this->owner->resolve());
     }

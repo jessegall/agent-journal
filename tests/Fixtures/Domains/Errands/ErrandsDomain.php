@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Errands;
 
-use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 use App\Domains\Concerns\HasAssignables;
-use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\AssignableContributor;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 
 /**
  * A fixture domain whose errands actors hold, with an auto-assigner and a pool of open errands.
  */
-final class ErrandsDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments
+final class ErrandsDomain extends Domain implements AssignableContributor, AutoAssignmentProvider
 {
     use HasAssignables;
 

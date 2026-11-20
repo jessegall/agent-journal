@@ -10,7 +10,7 @@ use App\Agents\Exceptions\NavigationAnswerRefused;
 use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Exceptions\NavigationTransitionRefused;
 use App\Agents\Models\DriverRequest;
-use App\Agents\Support\NavigationAnswering;
+use App\Agents\Support\NavigationAnswerCheck;
 use App\Contracts\CommandHandler;
 
 /**
@@ -19,7 +19,7 @@ use App\Contracts\CommandHandler;
  */
 final readonly class AbandonNavigationHandler implements CommandHandler
 {
-    public function __construct(private NavigationAnswering $answering) {}
+    public function __construct(private NavigationAnswerCheck $answering) {}
 
     /**
      * @throws NavigationAnswerRefused

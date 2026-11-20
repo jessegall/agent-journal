@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with the bus and module fixtures.
  */
-enum FixtureAbility: string implements DeclaresClassLevelAbilities
+enum FixtureAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

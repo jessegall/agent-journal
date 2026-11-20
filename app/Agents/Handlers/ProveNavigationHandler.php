@@ -11,7 +11,7 @@ use App\Agents\Exceptions\NavigationAnswerRefused;
 use App\Agents\Exceptions\NavigationProofRefused;
 use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Support\DriverReceipt;
-use App\Agents\Support\NavigationAnswering;
+use App\Agents\Support\NavigationAnswerCheck;
 use App\Agents\Support\NavigationRounds;
 use App\Agents\Values\NavigationProof;
 use App\Agents\Values\NavigationRound;
@@ -24,7 +24,7 @@ use App\Contracts\CommandHandler;
 final readonly class ProveNavigationHandler implements CommandHandler
 {
     public function __construct(
-        private NavigationAnswering $answering,
+        private NavigationAnswerCheck $answering,
         private NavigationRounds $rounds,
     ) {}
 

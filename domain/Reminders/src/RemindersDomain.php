@@ -6,10 +6,10 @@ namespace Domain\Reminders;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\SkillProvider;
 use Domain\Reminders\Skills\RemindersSkill;
 
-final class RemindersDomain extends Domain implements ProvidesSkills
+final class RemindersDomain extends Domain implements SkillProvider
 {
     public function description(): string
     {

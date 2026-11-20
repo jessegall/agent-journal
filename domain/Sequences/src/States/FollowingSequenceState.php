@@ -12,7 +12,7 @@ use App\Hooks\States\AgentState;
 use Domain\Sequences\Support\SequenceWork;
 
 /**
- * The agent is following a sequence: it may not stop while a step runs, and hears the current step after a compaction.
+ * The agent is following a sequence: it may not stop while a step runs, and is told the current step after a compaction.
  */
 final class FollowingSequenceState extends AgentState
 {

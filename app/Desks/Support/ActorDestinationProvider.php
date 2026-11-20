@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Desks\Support;
 
 use App\Actors\Contracts\ActorResolver;
-use App\Actors\Contracts\ForwardsToDesk;
+use App\Actors\Contracts\SeatedActor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentProviders;
@@ -32,7 +32,7 @@ final readonly class ActorDestinationProvider implements DestinationProvider
         $assignee = $this->providers->assigneeProvider($requested->type)->requireEligible($requested);
         $actor = $this->actors->get(new ActorIdentity(ActorType::from($requested->type), $requested->id));
 
-        if ($actor instanceof ForwardsToDesk) {
+        if ($actor instanceof SeatedActor) {
             $seat = $this->seats->forActor($actor);
 
             if ($seat->isDefined()) {

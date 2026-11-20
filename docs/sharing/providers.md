@@ -40,7 +40,7 @@ complete examples.
 
 ## 3. Registration
 
-The domain class implements `App\Sharing\Contracts\ProvidesShareRecords` and returns one `ShareRecordRegistration`
+The domain class implements `App\Sharing\Contracts\ShareRecordContributor` and returns one `ShareRecordRegistration`
 per type: the alias, the model class, the provider class and the capabilities the type advertises, such as
 `share-linked-record` for a record the owner may select as a linked record. Core's `SharingServiceProvider` registers
 every domain that declares it at boot.

@@ -18,9 +18,9 @@ use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Events\AccountUseChanged;
+use App\Agents\Exceptions\AccountInUse;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Exceptions\AccountUseMissing;
-use App\Agents\Exceptions\AccountUsesRemain;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
@@ -170,7 +170,7 @@ final class AccountUsesTest extends TestCase
         try {
             $this->bus()->run(new SettleAccountUses($account));
             $this->fail('An account with a claimed start was settled.');
-        } catch (AccountUsesRemain) {
+        } catch (AccountInUse) {
             $claimed->endAt(CarbonImmutable::now());
             $this->assertSame(1, $this->uses()->counts([$account])->runningFor($account));
             $this->starts[$claimed->id]->stopWithProof();

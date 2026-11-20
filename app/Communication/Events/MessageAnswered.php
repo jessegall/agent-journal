@@ -6,13 +6,13 @@ namespace App\Communication\Events;
 
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
-use App\Contracts\LogsListenerFailures;
-use App\Ui\Contracts\UpdatesUserInterface;
+use App\Contracts\ListenerFailureLog;
+use App\Ui\Contracts\UserInterfaceUpdater;
 
 /**
  * A message was answered; raised once that has committed.
  */
-final readonly class MessageAnswered implements Event, LogsListenerFailures, UpdatesUserInterface
+final readonly class MessageAnswered implements Event, ListenerFailureLog, UserInterfaceUpdater
 {
     public function __construct(
         public string $messageId,

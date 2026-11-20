@@ -9,7 +9,7 @@ use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerPolicy;
-use App\Ui\Contracts\UpdatesUserInterface;
+use App\Ui\Contracts\UserInterfaceUpdater;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Tests\Fixtures\Boundary\EventCalls\Plans\Listeners\QuietListener;
@@ -66,9 +66,9 @@ final class ListenerPolicyTest extends TestCase
             CoreApi::listenerFolders(),
         );
 
-        $expanded = $policy->expand([UpdatesUserInterface::class => [BroadcastPageChange::class.'@handle']]);
+        $expanded = $policy->expand([UserInterfaceUpdater::class => [BroadcastPageChange::class.'@handle']]);
 
-        $this->assertArrayNotHasKey(UpdatesUserInterface::class, $expanded);
+        $this->assertArrayNotHasKey(UserInterfaceUpdater::class, $expanded);
         $this->assertSame([BroadcastPageChange::class.'@handle'], $expanded[PlanProgressChanged::class]);
         $this->assertSame($expanded, $policy->check($expanded));
     }

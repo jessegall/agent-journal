@@ -13,7 +13,7 @@ use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
-use App\Profiles\Models\Support\HumanAccounts;
+use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\CleanupProgress;
 use App\Programs\Enums\HookProgram;
@@ -146,7 +146,7 @@ final class Account extends Model implements ReadableModel
     public static function lockedForStart(string $accountId): self
     {
         $account = self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereKey($accountId)
             ->lockForUpdate()
             ->firstOrFail();
@@ -161,7 +161,7 @@ final class Account extends Model implements ReadableModel
     public static function lockedForJournal(string $accountId): self
     {
         return self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereKey($accountId)
             ->lockForUpdate()
             ->firstOrFail();
@@ -231,7 +231,7 @@ final class Account extends Model implements ReadableModel
     public static function nextToCheck(): self|null
     {
         return self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereNotNull('check_requested_generation')
             ->orderBy('updated_at')
             ->lockForUpdate()
@@ -288,9 +288,9 @@ final class Account extends Model implements ReadableModel
     /**
      * The program of an account, for the journal's own maintenance or the host, read before its locks are taken.
      */
-    public static function programOfForJournal(string $accountId): HookProgram
+    public static function programForJournal(string $accountId): HookProgram
     {
-        $program = self::query()->withoutGlobalScope(HumanAccounts::class)->whereKey($accountId)->value('program');
+        $program = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->value('program');
 
         return HookProgram::from((string) $program);
     }
@@ -519,7 +519,7 @@ final class Account extends Model implements ReadableModel
     public static function nextToClean(): self|null
     {
         return self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->where('state', AccountState::Removing->value)
             ->where('cleanup_released', true)
             ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
@@ -536,7 +536,7 @@ final class Account extends Model implements ReadableModel
     public static function waitingForCleanupIds(int $limit): array
     {
         $ids = self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->where('state', AccountState::Removing->value)
             ->where('cleanup_released', false)
             ->orderBy('updated_at')

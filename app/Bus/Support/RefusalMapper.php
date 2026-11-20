@@ -8,8 +8,8 @@ use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Bus\Contracts\CodedRefusal;
-use App\Bus\Contracts\MapsRefusals;
 use App\Bus\Contracts\RefusalDetails;
+use App\Bus\Contracts\RefusalMapper as RefusalMapperContract;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\CallFailedUnexpectedly;
 use App\Bus\Values\MappedRefusal;
@@ -26,7 +26,7 @@ use Throwable;
  * Turns a failure inside an MCP call into the refusal its caller is shown. A failure the journal did not name is
  * reported and shown only as a generic message with the call's correlation id.
  */
-final readonly class RefusalMapper implements MapsRefusals
+final readonly class RefusalMapper implements RefusalMapperContract
 {
     public function __construct(private ExceptionHandler $exceptions) {}
 

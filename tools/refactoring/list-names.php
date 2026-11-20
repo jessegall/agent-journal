@@ -108,10 +108,51 @@ function declaredNames(array $folders): array
                     }
                 }
             }
+
+            foreach (localNamesOf($statements) as [$declarationType, $name, $line]) {
+                $names[] = [$declarationType, $name, "{$path}:{$line}"];
+            }
         }
     }
 
     return $names;
+}
+
+/**
+ * Every parameter and local variable a file names, each as `$name`: a parameter of any function, method or closure,
+ * and a variable that is not one of them, `$this` or a superglobal. A name counts once however often it is used.
+ *
+ * @param  array<Node>  $statements
+ * @return list<array{string, string, int}>
+ */
+function localNamesOf(array $statements): array
+{
+    $finder = new NodeFinder();
+    $parameters = [];
+
+    foreach ($finder->findInstanceOf($statements, Node\Param::class) as $parameter) {
+        if ($parameter->var instanceof Node\Expr\Variable && is_string($parameter->var->name)) {
+            $parameters['$'.$parameter->var->name] ??= $parameter->getStartLine();
+        }
+    }
+
+    $variables = [];
+    $ignored = ['this', 'GLOBALS', '_SERVER', '_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_REQUEST', '_ENV', 'argv', 'argc'];
+
+    foreach ($finder->findInstanceOf($statements, Node\Expr\Variable::class) as $variable) {
+        $name = $variable->name;
+
+        if (! is_string($name) || in_array($name, $ignored, true) || isset($parameters['$'.$name])) {
+            continue;
+        }
+
+        $variables['$'.$name] ??= $variable->getStartLine();
+    }
+
+    return [
+        ...array_map(fn (string $name, int $line) => ['parameter', $name, $line], array_keys($parameters), $parameters),
+        ...array_map(fn (string $name, int $line) => ['variable', $name, $line], array_keys($variables), $variables),
+    ];
 }
 
 function declarationTypeOf(ClassLike $type): string

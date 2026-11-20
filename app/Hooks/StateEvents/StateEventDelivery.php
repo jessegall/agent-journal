@@ -8,7 +8,7 @@ use App\Agents\Support\StackTarget;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Support\CommandRegistry;
-use App\Contracts\LogsListenerFailures;
+use App\Contracts\ListenerFailureLog;
 use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Enums\StateEventStage;
 use App\Hooks\Exceptions\StateEventAfterCommitFailed;
@@ -155,7 +155,7 @@ final readonly class StateEventDelivery
             'failure' => $failure::class,
         ]);
 
-        if ($dispatch->event instanceof LogsListenerFailures) {
+        if ($dispatch->event instanceof ListenerFailureLog) {
             return;
         }
 

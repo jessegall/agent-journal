@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Skills\Contracts\ProvidesSkills;
-use App\Ui\Contracts\ProvidesNavigation;
-use App\Ui\Contracts\ProvidesPages;
-use App\Ui\Contracts\ProvidesSections;
+use App\Skills\Contracts\SkillProvider;
+use App\Ui\Contracts\NavigationProvider;
+use App\Ui\Contracts\PageProvider;
+use App\Ui\Contracts\SectionProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -40,12 +40,12 @@ use Domain\Chat\Resolvers\InboxPageResolver;
 use Domain\Chat\Skills\ChatSkill;
 
 final class ChatDomain extends Domain implements
-    ProvidesCommands,
-    ProvidesNavigation,
-    ProvidesPages,
-    ProvidesPolicies,
-    ProvidesSections,
-    ProvidesSkills
+    CommandProvider,
+    NavigationProvider,
+    PageProvider,
+    PolicyProvider,
+    SectionProvider,
+    SkillProvider
 {
     public function description(): string
     {

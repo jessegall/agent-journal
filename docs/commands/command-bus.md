@@ -20,7 +20,7 @@ namespace Domain\Rules\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Domain\Rules\Enums\RuleAbility;
 use Domain\Rules\Handlers\ProposeRuleHandler;
@@ -34,7 +34,7 @@ use Domain\Rules\Policies\RulePolicy;
  */
 #[HandledBy(ProposeRuleHandler::class)]
 #[Authorize(RulePolicy::class, RuleAbility::Propose)]
-final readonly class ProposeRule extends Command implements HasAuthorizationSubject
+final readonly class ProposeRule extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string $text,
@@ -88,7 +88,7 @@ owner may name, and lists of those, never a model, a service or a stack target (
 resolves). A handler returns nothing, one of those, or a final readonly value such as `App\Assignments\Support\AssignmentResult`.
 
 Every command a person or an agent sends declares who may run it: `#[Authorize(Policy::class, Ability::Case)]` and a
-`subject()`, through `App\Bus\Contracts\HasAuthorizationSubject`. The subject is a model class for a class-level
+`subject()`, through `App\Bus\Contracts\AuthorizedCommand`. The subject is a model class for a class-level
 ability (creating a task: `Domain\Tasks\Commands\CreateTask` returns `Task::class`), or the record the ability acts on
 (blocking a task: `Domain\Tasks\Commands\BlockTask` returns the locked task). A handler may take that subject as its
 second argument, as `Domain\Tasks\Handlers\BlockTaskHandler::handle(BlockTask $command, Task $task)` does, so it
@@ -103,7 +103,7 @@ One attribute changes how a command runs:
 
 - `#[RepeatableRead]` runs it in a repeatable-read transaction, as `App\Assignments\Commands\AssignRecord` does.
 
-The owner lists its commands on its Domain class through `App\Bus\Contracts\ProvidesCommands`, and exports the ones other
+The owner lists its commands on its Domain class through `App\Bus\Contracts\CommandProvider`, and exports the ones other
 owners may run. Callers take `App\Bus\Contracts\CommandBus` as a method parameter and call `run`:
 
 ```php
@@ -170,7 +170,7 @@ the old input.
 ## Middleware: scopes, stages and order
 
 A module watches or changes commands with middleware in its `CommandMiddleware` folder, declared on its Domain class
-through `App\Bus\Contracts\ProvidesCommandMiddleware`:
+through `App\Bus\Contracts\CommandMiddlewareProvider`:
 
 ```php
 use App\Bus\Support\CommandScope;

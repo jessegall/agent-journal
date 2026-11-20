@@ -6,11 +6,11 @@ namespace Tests\Fixtures\Domains\Pamphlets;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Sharing\Contracts\ProvidesShareGateways;
-use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Contracts\ShareGatewayProvider;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordRegistration;
 
-final class PamphletsDomain extends Domain implements ProvidesShareGateways, ProvidesShareRecords
+final class PamphletsDomain extends Domain implements ShareGatewayProvider, ShareRecordContributor
 {
     public function description(): string
     {

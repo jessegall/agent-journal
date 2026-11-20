@@ -61,12 +61,12 @@ final class SupervisorLink extends Model implements ReadableModel
 
     public function versionFor(AskTypeKey|null $type): int
     {
-        return $this->versions[$type?->key ?? 'default'] ?? 0;
+        return $this->versions[AskTypeKey::routeOf($type)] ?? 0;
     }
 
     public function change(SupervisorRoutes $routes, AskTypeKey|null $type): void
     {
-        $key = $type?->key ?? 'default';
+        $key = AskTypeKey::routeOf($type);
         $this->routes = $routes;
         $this->versions = [...$this->versions, $key => $this->versionFor($type) + 1];
         $this->save();

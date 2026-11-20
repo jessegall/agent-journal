@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace Domain\Plans;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
-use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Support\PoolDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
-use App\Domains\Contracts\ProvidesAssignables;
-use App\Domains\Contracts\ProvidesLinkRecords;
-use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Contracts\AssignableContributor;
+use App\Domains\Contracts\LinkRecordProvider;
+use App\Domains\Contracts\StateProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Mcp\Contracts\ProvidesMcpTools;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Mcp\Contracts\McpToolProvider;
+use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
-use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordRegistration;
-use App\Skills\Contracts\ProvidesSkills;
-use App\Ui\Contracts\ProvidesNavigation;
-use App\Ui\Contracts\ProvidesPages;
-use App\Ui\Contracts\ProvidesSections;
+use App\Skills\Contracts\SkillProvider;
+use App\Ui\Contracts\NavigationProvider;
+use App\Ui\Contracts\PageProvider;
+use App\Ui\Contracts\SectionProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -102,19 +102,19 @@ use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\TasksDomain;
 
 final class PlansDomain extends Domain implements
-    ProvidesAssignables,
-    ProvidesAutoAssignments,
-    ProvidesCommands,
-    ProvidesLinkRecords,
-    ProvidesMcpTools,
-    ProvidesNavigation,
-    ProvidesNumberedModels,
-    ProvidesPages,
-    ProvidesPolicies,
-    ProvidesSections,
-    ProvidesShareRecords,
-    ProvidesSkills,
-    ProvidesStates
+    AssignableContributor,
+    AutoAssignmentProvider,
+    CommandProvider,
+    LinkRecordProvider,
+    McpToolProvider,
+    NavigationProvider,
+    NumberedModelProvider,
+    PageProvider,
+    PolicyProvider,
+    SectionProvider,
+    ShareRecordContributor,
+    SkillProvider,
+    StateProvider
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 

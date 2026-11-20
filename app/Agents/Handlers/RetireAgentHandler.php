@@ -20,8 +20,8 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\DriverRequests;
 use App\Agents\Support\StackTarget;
+use App\Assignments\Contracts\AssignmentFactPublisher;
 use App\Assignments\Contracts\AssignmentStorage;
-use App\Assignments\Contracts\PublishesAssignmentFacts;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentResult;
@@ -41,7 +41,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         private AgentSessions $sessions,
         private StartTokens $credentials,
         private AssignmentStorage $store,
-        private PublishesAssignmentFacts $facts,
+        private AssignmentFactPublisher $facts,
         private DriverRequests $requests,
         private Dispatcher $events,
     ) {}

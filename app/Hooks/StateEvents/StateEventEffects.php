@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\StateEvents;
 
-use App\Actors\Contracts\RunsAsActor;
+use App\Actors\Contracts\ActorRunner;
 use App\Agents\Contracts\AgentCallContext;
 use App\Bus\Contracts\GuardedCommandBus;
 use App\Bus\Contracts\StackAdmission;
@@ -26,7 +26,7 @@ final readonly class StateEventEffects
         private StateEventOriginGuard $guard,
         private StackAdmission $admission,
         private OperationDeadline $deadline,
-        private RunsAsActor $actors,
+        private ActorRunner $actors,
         private AgentCallContext $session,
         private EngineTargetAccess $engine,
         private CommandEntrance $entrance,

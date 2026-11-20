@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Access\Models;
 
-use App\Actors\Contracts\ForwardsToDesk;
-use App\Actors\Contracts\ReceivesMessages;
-use App\Actors\Contracts\SendsMessages;
+use App\Actors\Contracts\MessageRecipient;
+use App\Actors\Contracts\MessageSender;
+use App\Actors\Contracts\SeatedActor;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Support\AssigneeIdentity;
@@ -47,12 +47,12 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements
     Assignee,
-    ForwardsToDesk,
+    MessageRecipient,
+    MessageSender,
     MustVerifyEmail,
     PasskeyUser,
     ReadableModel,
-    ReceivesMessages,
-    SendsMessages
+    SeatedActor
 {
     use BoundedReads;
 

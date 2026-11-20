@@ -22,16 +22,16 @@ final class StateEventRegistrationTest extends TestCase
     {
         $provider = $this->providerWithNotes();
         $dispatcher = $this->app->make(Dispatcher::class);
-        $heard = [];
-        $dispatcher->listen(NoteWritten::class, function (NoteWritten $event) use (&$heard): void {
-            $heard[] = $event;
+        $received = [];
+        $dispatcher->listen(NoteWritten::class, function (NoteWritten $event) use (&$received): void {
+            $received[] = $event;
         });
 
         $provider->boot();
         $event = new NoteWritten();
         $dispatcher->dispatch($event);
 
-        $this->assertSame([$event], $heard);
+        $this->assertSame([$event], $received);
         $this->assertContains(
             StateEventBridge::LISTENER,
             $dispatcher->getRawListeners()[NoteWritten::class],

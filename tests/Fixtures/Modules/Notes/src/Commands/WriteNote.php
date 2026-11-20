@@ -9,7 +9,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Tests\Fixtures\Modules\Notes\Enums\NoteWorkAbility;
 use Tests\Fixtures\Modules\Notes\Handlers\WriteNoteHandler;
@@ -22,7 +22,7 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 #[HandledBy(WriteNoteHandler::class)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
 #[Operation('write_note', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class WriteNote extends Command implements HasAuthorizationSubject
+final readonly class WriteNote extends Command implements AuthorizedCommand
 {
     public function __construct(public string $text) {}
 

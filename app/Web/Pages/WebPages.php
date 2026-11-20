@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Pages;
 
-use App\Ui\Contracts\ProvidesPages;
+use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\Page;
@@ -24,7 +24,7 @@ use App\Web\Resolvers\RuntimeStatusResolver;
  * The pages Core's Web declares itself, served beside the domains' pages: Home, at /, and the runtime status, at
  * /web/runtimes, with the owner's recovery actions.
  */
-final class WebPages implements ProvidesPages
+final class WebPages implements PageProvider
 {
     public function pages(): array
     {

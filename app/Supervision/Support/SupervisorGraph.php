@@ -13,7 +13,7 @@ final readonly class SupervisorGraph
     private const int MAX_HOPS = 32;
 
     /**
-     * @param array<string, SupervisorRoutes> $routes
+     * @param  array<string, SupervisorRoutes>  $routes
      */
     public function __construct(private array $routes) {}
 
@@ -30,7 +30,7 @@ final readonly class SupervisorGraph
     private function follow(string $source, AskTypeKey|null $type): void
     {
         $path = [];
-        $route = $type?->key ?? 'default';
+        $route = AskTypeKey::routeOf($type);
 
         while (isset($this->routes[$source])) {
             if (isset($path[$source])) {

@@ -6,9 +6,9 @@ namespace Tests\Fixtures\Domains\Library;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Settings\Contracts\ProvidesSettings;
+use App\Settings\Contracts\SettingsProvider;
 
-final class LibraryDomain extends Domain implements ProvidesSettings
+final class LibraryDomain extends Domain implements SettingsProvider
 {
     public function description(): string
     {

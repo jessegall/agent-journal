@@ -9,9 +9,9 @@ use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
 use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
-use App\Sharing\Contracts\ProvidesShareGateways;
-use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Contracts\ShareGatewayProvider;
 use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Contracts\ShareStatusResolver;
 use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Gateways\Ngrok\NgrokGateway;
@@ -27,7 +27,7 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * Keeps one registry of shareable record types and one of share gateways for the application's life, filled at
- * boot from Core's own gateways and the domains that declare ProvidesShareRecords or ProvidesShareGateways, and binds
+ * boot from Core's own gateways and the domains that declare ShareRecordContributor or ShareGatewayProvider, and binds
  * the owner's share policy. The record types' relations are checked once everything
  * booted, so a wrong one stops the boot.
  */

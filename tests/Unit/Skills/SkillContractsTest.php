@@ -9,10 +9,10 @@ use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\ProgramSkills;
-use App\Skills\Contracts\ProvidesSkillConditions;
-use App\Skills\Contracts\ProvidesSkills;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
+use App\Skills\Contracts\SkillConditionProvider;
+use App\Skills\Contracts\SkillProvider;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Enums\ConditionOutcome;
@@ -40,10 +40,10 @@ final class SkillContractsTest extends TestCase
         $exports = CoreApi::exports();
 
         foreach ([
-            ProvidesSkills::class,
+            SkillProvider::class,
             Skill::class,
             SkillCondition::class,
-            ProvidesSkillConditions::class,
+            SkillConditionProvider::class,
             SkillResolver::class,
         ] as $contract) {
             $this->assertContains($contract, $exports->contracts);

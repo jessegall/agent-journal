@@ -9,7 +9,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Tests\Fixtures\Modules\Ledger\Enums\LedgerAbility;
 use Tests\Fixtures\Modules\Ledger\Handlers\OpenLedgerHandler;
@@ -24,7 +24,7 @@ use Tests\Fixtures\Modules\Ledger\Policies\LedgerPolicy;
 #[HandledBy(OpenLedgerHandler::class)]
 #[Authorize(LedgerPolicy::class, LedgerAbility::Work)]
 #[Operation('open_ledger', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class OpenLedger extends Command implements HasAuthorizationSubject
+final readonly class OpenLedger extends Command implements AuthorizedCommand
 {
     public function __construct(public string $title) {}
 

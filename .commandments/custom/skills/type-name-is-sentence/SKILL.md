@@ -6,7 +6,7 @@ description: A class, interface, enum or trait named with a sentence or clause, 
 # A type name is a short name, never a sentence
 
 A class, interface, enum or trait is a thing, so its name is a noun or a noun phrase: `StackTarget`,
-`LinkTypeRegistry`, `PlanCard`. A capability interface may be a verb with its object: `ProvidesPages`. A name with a
+`LinkTypeRegistry`, `PlanCard`, never a verb phrase (rule 43, the type-name-is-noun skill). A name with a
 clause in it (`ChangesWhatUsersSee`, `RunsWhenTheAgentIsIdle`) is a sentence; it is long, hard to say and hides the
 thing behind a description of it (rule 23).
 
@@ -27,5 +27,5 @@ interface ChangesWhatUsersSee {}
 /**
  * A fact after which open pages refresh.
  */
-interface UpdatesUserInterface {}
+interface UserInterfaceUpdater {}
 ```

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with a project rule.
  */
-enum RuleAbility: string implements DeclaresClassLevelAbilities
+enum RuleAbility: string implements ClassLevelAbilities
 {
     case Propose = 'propose';
     case Approve = 'approve';

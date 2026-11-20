@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Bus\Exceptions;
 
-use App\Bus\Contracts\AnswersFromReceipt;
 use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Contracts\ReceiptRefusal;
 use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
@@ -17,9 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
  * The refusal a write got the first time, given again to a retry with the same request key.
  */
 final class RefusalReplayed extends RuntimeException implements
-    AnswersFromReceipt,
     CodedRefusal,
     CommandRefusal,
+    ReceiptRefusal,
     RefusalDetails
 {
     use RendersRefusal;
@@ -59,6 +59,9 @@ final class RefusalReplayed extends RuntimeException implements
         return $details;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function details(): array
     {
         return $this->refusalDetails();

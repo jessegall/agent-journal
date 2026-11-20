@@ -50,7 +50,7 @@ final readonly class NavigationProof
     {
         $wanted = self::folded($this->text);
         foreach ($rows as $row) {
-            if ($this->standsIn(self::folded($row), $wanted)) {
+            if ($this->containsWholeWord(self::folded($row), $wanted)) {
                 return true;
             }
         }
@@ -58,13 +58,13 @@ final readonly class NavigationProof
         return false;
     }
 
-    private function standsIn(string $row, string $wanted): bool
+    private function containsWholeWord(string $row, string $wanted): bool
     {
         $offset = 0;
         while (($at = mb_strpos($row, $wanted, $offset)) !== false) {
             $before = self::backwards($row, $at);
             $after = mb_substr($row, $at + mb_strlen($wanted), 2);
-            if (! self::wordGoesOn($before) && ! self::wordGoesOn($after)) {
+            if (! self::continuesWord($before) && ! self::continuesWord($after)) {
                 return true;
             }
             $offset = $at + 1;
@@ -88,7 +88,7 @@ final readonly class NavigationProof
      * Whether the text next to a word, read away from it, continues the word: a letter or digit, or a joiner followed
      * by one.
      */
-    private static function wordGoesOn(string $next): bool
+    private static function continuesWord(string $next): bool
     {
         $first = mb_substr($next, 0, 1);
         $second = mb_substr($next, 1, 1);

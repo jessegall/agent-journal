@@ -11,7 +11,7 @@ use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\NavigationRequest;
 use App\Agents\Support\DriverReceipt;
-use App\Agents\Support\NavigationAnswering;
+use App\Agents\Support\NavigationAnswerCheck;
 use App\Agents\Support\NavigationRounds;
 use App\Agents\Values\NavigationRound;
 use App\Agents\Values\ScriptProgress;
@@ -25,7 +25,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
 {
     public function __construct(
         private NavigationRounds $rounds,
-        private NavigationAnswering $answering,
+        private NavigationAnswerCheck $answering,
     ) {}
 
     /**

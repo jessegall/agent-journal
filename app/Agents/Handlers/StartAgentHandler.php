@@ -40,7 +40,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Starts inside the command's transaction: the request's record first, so a repeat finds its start; then the
- * session under the agent's shared lifecycle lock, which a retirement waits for; the host hears of it after the
+ * session under the agent's shared lifecycle lock, which a retirement waits for; the host is told after the
  * commit and receives its token and settings through its own read, never through the receipt.
  */
 final readonly class StartAgentHandler implements CommandHandler

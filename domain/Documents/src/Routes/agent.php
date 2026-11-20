@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\AgentRequests\Contracts\RegistersCalls;
+use App\AgentRequests\Contracts\CallRegistrar;
 use Domain\Documents\Http\Controllers\Calls;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
@@ -11,7 +11,7 @@ Route::middleware('journal.agent')
     ->prefix('agent')
     ->name('documents.agent.')
     ->group(function (): void {
-        $calls = Container::getInstance()->make(RegistersCalls::class);
+        $calls = Container::getInstance()->make(CallRegistrar::class);
         $calls->register(Calls\MakeDocumentController::class)->name('docs.make');
         $calls->register(Calls\ListDocumentsController::class)->name('docs.list');
         $calls->register(Calls\ShowDocumentController::class)->name('docs.show');

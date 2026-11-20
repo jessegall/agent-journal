@@ -6,12 +6,12 @@ namespace Tests\Fixtures\Domains\FalseSkills;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\SkillProvider;
 
 /**
  * A fixture domain that declares a class of its own that is no skill.
  */
-final class FalseSkillsDomain extends Domain implements ProvidesSkills
+final class FalseSkillsDomain extends Domain implements SkillProvider
 {
     public function description(): string
     {

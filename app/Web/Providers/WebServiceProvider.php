@@ -16,11 +16,11 @@ use App\Links\Support\LinkTypeRegistry;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Console\GenerateUiManifest;
-use App\Web\Contracts\ChecksUiOwnerAvailability;
 use App\Web\Contracts\CurrentUserResolver;
-use App\Web\Contracts\ListsReaderRequests;
-use App\Web\Contracts\ReadsWindowResults;
-use App\Web\Contracts\RecordsNavigation;
+use App\Web\Contracts\NavigationRecords as NavigationRecordsContract;
+use App\Web\Contracts\ReaderRequests as ReaderRequestsContract;
+use App\Web\Contracts\UiOwnerAvailability as UiOwnerAvailabilityContract;
+use App\Web\Contracts\WindowResults as WindowResultsContract;
 use App\Web\Enums\PresenceAbility;
 use App\Web\Models\Layout;
 use App\Web\Models\Support\CurrentUserScope;
@@ -58,10 +58,10 @@ final class WebServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(RecordsNavigation::class, NavigationRecords::class);
-        $this->app->bind(ListsReaderRequests::class, ReaderRequests::class);
-        $this->app->bind(ReadsWindowResults::class, WindowResults::class);
-        $this->app->bind(ChecksUiOwnerAvailability::class, UiOwnerAvailability::class);
+        $this->app->bind(NavigationRecordsContract::class, NavigationRecords::class);
+        $this->app->bind(ReaderRequestsContract::class, ReaderRequests::class);
+        $this->app->bind(WindowResultsContract::class, WindowResults::class);
+        $this->app->bind(UiOwnerAvailabilityContract::class, UiOwnerAvailability::class);
         $this->app->bind(SettingsAccessPolicy::class, OwnerSettingsAccess::class);
         $this->app->bind(AutoAssignmentAccess::class, OwnerAutoAssignmentAccess::class);
         $this->app->singleton(

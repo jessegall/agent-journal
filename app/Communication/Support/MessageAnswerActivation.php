@@ -12,7 +12,7 @@ use App\Communication\Models\Message;
 use App\Communication\States\Support\AnsweringMessageStateReference;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\IncomingWork;
-use App\Hooks\Contracts\RunsStackTransactions;
+use App\Hooks\Contracts\StackTransaction;
 
 /**
  * At the start of each hook, gives the acting actor an answering frame for its oldest message claim that still
@@ -27,7 +27,7 @@ final readonly class MessageAnswerActivation implements IncomingWork
         private CurrentActor $actors,
         private ActorWorkStacks $workStacks,
         private ProvedClaims $proved,
-        private RunsStackTransactions $transaction,
+        private StackTransaction $transaction,
     ) {}
 
     public function accept(): void

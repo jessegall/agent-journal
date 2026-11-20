@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Profiles\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Profiles\Enums\AccountAbility;
 use App\Profiles\Handlers\BeginSignInHandler;
 use App\Profiles\Models\Account;
@@ -26,7 +26,7 @@ use App\Profiles\Values\SignInStarted;
 #[HandledBy(BeginSignInHandler::class)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
 #[Operation('begin_sign_in', ResourceAreaType::JournalControl, AccessType::Create)]
-final readonly class BeginSignIn extends Command implements HasAuthorizationSubject
+final readonly class BeginSignIn extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string $program,

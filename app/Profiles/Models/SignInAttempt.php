@@ -9,7 +9,7 @@ use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Enums\SignInType;
 use App\Profiles\Exceptions\SignInAttemptMissing;
-use App\Profiles\Models\Support\HumanAccounts;
+use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\CleanupProgress;
 use App\Programs\Enums\HookProgram;
@@ -153,7 +153,7 @@ final class SignInAttempt extends Model implements ReadableModel
     public static function lockedForJournal(string $attemptId): self
     {
         $attempt = self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereKey($attemptId)
             ->lockForUpdate()
             ->first();
@@ -168,7 +168,7 @@ final class SignInAttempt extends Model implements ReadableModel
      */
     public static function programForJournal(string $attemptId): HookProgram
     {
-        $program = self::query()->withoutGlobalScope(HumanAccounts::class)->whereKey($attemptId)->value('program');
+        $program = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($attemptId)->value('program');
 
         if (! is_string($program)) {
             throw SignInAttemptMissing::for($attemptId);
@@ -185,7 +185,7 @@ final class SignInAttempt extends Model implements ReadableModel
     public static function expiredLiveIds(CarbonImmutable $now, int $limit): array
     {
         $ids = self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->where('expires_at', '<=', $now)
             ->orderBy('expires_at')
@@ -245,7 +245,7 @@ final class SignInAttempt extends Model implements ReadableModel
     public static function claimFor(string $hostId, CarbonImmutable $now): self|null
     {
         $attempt = self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->where('state', SignInState::Starting->value)
             ->where('waits_for_uses', false)
             ->whereNull('process_reference')
@@ -273,7 +273,7 @@ final class SignInAttempt extends Model implements ReadableModel
     public static function lostBy(string $hostId, array $runningAttemptIds): array
     {
         $attempts = self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->where('process_reference', $hostId)
             ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->whereNotIn('id', $runningAttemptIds)
@@ -294,7 +294,7 @@ final class SignInAttempt extends Model implements ReadableModel
     public static function runBy(string $hostId, string $attemptId): self
     {
         $attempt = self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereKey($attemptId)
             ->where('process_reference', $hostId)
             ->first();
@@ -345,7 +345,7 @@ final class SignInAttempt extends Model implements ReadableModel
     public static function nextToClean(): self|null
     {
         return self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->where('cleanup_pending', true)
             ->whereNull('account_id')
             ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
@@ -435,7 +435,7 @@ final class SignInAttempt extends Model implements ReadableModel
     public static function waitingForUsesIds(int $limit): array
     {
         $ids = self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->where('waits_for_uses', true)
             ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('created_at')

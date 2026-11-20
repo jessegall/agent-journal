@@ -8,7 +8,7 @@ use App\Engine\Values\ScanProgress;
 use App\Engine\Values\TickBatch;
 use App\Engine\Values\TickCandidate;
 use App\Hooks\Contracts\ConditionalStateType;
-use App\Hooks\Contracts\ResolvesStateTypes;
+use App\Hooks\Contracts\StateTypes;
 use App\Hooks\Contracts\TickableState;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Exceptions\StateSchemaUnknown;
@@ -31,7 +31,7 @@ final class TickCandidates
 {
     private ScanProgress $progress;
 
-    public function __construct(private readonly ResolvesStateTypes $types)
+    public function __construct(private readonly StateTypes $types)
     {
         $this->progress = ScanProgress::start();
     }

@@ -12,9 +12,9 @@ use App\Processes\Http\Controllers\RejectProposalPageController;
 use App\Processes\Http\Controllers\StopRunPageController;
 use App\Processes\Resolvers\RequestListResolver;
 use App\Processes\Resolvers\RequestWindowResolver;
-use App\Processes\Resolvers\RunsWindowResolver;
+use App\Processes\Resolvers\RunListResolver;
 use App\Processes\Resolvers\RunWindowResolver;
-use App\Ui\Contracts\ProvidesPages;
+use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\Page;
@@ -25,7 +25,7 @@ use App\Ui\Enums\Icon;
  * state, the active and retired rules and the module bundles waiting, and one request with everything its approval
  * binds.
  */
-final class ProcessPages implements ProvidesPages
+final class ProcessPages implements PageProvider
 {
     private const string LIST_VIEW = 'RequestsWindow.vue';
 
@@ -82,7 +82,7 @@ final class ProcessPages implements ProvidesPages
 
     private function runsPage(): Page
     {
-        return Page::make('runs', 'Runs', Icon::Rules, RunsWindowResolver::class, 'RunsWindow.vue')->at('runs');
+        return Page::make('runs', 'Runs', Icon::Rules, RunListResolver::class, 'RunsWindow.vue')->at('runs');
     }
 
     private function runPage(): Page

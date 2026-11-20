@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Sharing\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with shares: ask for one, or run the sharing itself.
  */
-enum SharingAbility: string implements DeclaresClassLevelAbilities
+enum SharingAbility: string implements ClassLevelAbilities
 {
     case Request = 'request';
     case Administer = 'administer';

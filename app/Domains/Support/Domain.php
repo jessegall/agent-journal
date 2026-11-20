@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Domains\Support;
 
-use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Domains\Bootstrappers\LoadMigrations;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
+use App\Domains\Contracts\AssignableContributor;
+use App\Domains\Contracts\AssigneeContributor;
 use App\Domains\Contracts\DomainBootstrapper;
-use App\Domains\Contracts\ProvidesAssignables;
-use App\Domains\Contracts\ProvidesAssignees;
-use App\Domains\Contracts\ProvidesInternalAssignables;
-use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Contracts\InternalAssignableContributor;
+use App\Domains\Contracts\StateProvider;
 use App\Domains\Exceptions\CapabilityWithoutTrait;
 use App\Exports\Support\Exports;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Contracts\NumberedModelProvider;
 
 /**
  * One domain of the application: what it owns, the domains it may use, and the steps its boot runs. Every domain loads
@@ -29,12 +29,12 @@ abstract class Domain
      * The capability interfaces that need a trait to boot, each with that trait.
      */
     private const array TRAIT_OF_CAPABILITY = [
-        ProvidesAssignables::class => HasAssignables::class,
-        ProvidesAssignees::class => HasAssignables::class,
-        ProvidesAutoAssignments::class => HasAssignables::class,
-        ProvidesInternalAssignables::class => HasAssignables::class,
-        ProvidesStates::class => HasStates::class,
-        ProvidesNumberedModels::class => HasNumberedModels::class,
+        AssignableContributor::class => HasAssignables::class,
+        AssigneeContributor::class => HasAssignables::class,
+        AutoAssignmentProvider::class => HasAssignables::class,
+        InternalAssignableContributor::class => HasAssignables::class,
+        StateProvider::class => HasStates::class,
+        NumberedModelProvider::class => HasNumberedModels::class,
     ];
 
     abstract public function description(): string;

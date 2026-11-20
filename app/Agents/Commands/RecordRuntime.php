@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Contracts\TargetsAgentStack;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\DriverOperation;
@@ -17,8 +14,11 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 
 /**
  * The owner asks the host to start, or stop, a redacted recording of an agent's runtime, written in the host's
@@ -29,7 +29,7 @@ use App\Bus\Support\Command;
 #[HandledBy(RecordRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
 #[Operation('record_runtime', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class RecordRuntime extends Command implements HasAuthorizationSubject, TargetsAgentStack
+final readonly class RecordRuntime extends Command implements AuthorizedCommand, TargetsAgentStack
 {
     public function __construct(
         public string $agentId,

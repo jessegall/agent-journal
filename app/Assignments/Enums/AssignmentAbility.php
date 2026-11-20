@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Assignments\Enums;
 
 use App\Assignments\Support\AssigneeIdentity;
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with who holds a record: take it for itself, give it to another, or let it go.
  */
-enum AssignmentAbility: string implements DeclaresClassLevelAbilities
+enum AssignmentAbility: string implements ClassLevelAbilities
 {
     case Acquire = 'acquire';
     case Dispatch = 'dispatch';

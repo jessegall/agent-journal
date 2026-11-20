@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Bus\Shop\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
 use Tests\Fixtures\Bus\Models\FixtureWork;
@@ -18,7 +18,7 @@ use Tests\Fixtures\Bus\Shop\Handlers\RemoveItemHandler;
  */
 #[HandledBy(RemoveItemHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
-final readonly class RemoveItem extends Command implements HasAuthorizationSubject
+final readonly class RemoveItem extends Command implements AuthorizedCommand
 {
     public function __construct() {}
 

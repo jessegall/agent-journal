@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * One failure a session's program reported, kept once per native event so a retried notification is heard once.
+ * One failure a session's program reported, kept once per native event so a retried notification is recorded once.
  * Only the safe failure is kept, never the program's own error text; a request reads only its own session's.
  *
  * @property string $id

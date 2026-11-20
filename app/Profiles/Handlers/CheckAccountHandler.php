@@ -25,7 +25,7 @@ final readonly class CheckAccountHandler implements CommandHandler
 
     public function handle(CheckAccount $command): void
     {
-        $program = Account::programOfForJournal($command->accountId);
+        $program = Account::programForJournal($command->accountId);
         $selection = ActiveAccount::lockedForJournal($program);
         $account = Account::lockedForJournal($command->accountId);
 

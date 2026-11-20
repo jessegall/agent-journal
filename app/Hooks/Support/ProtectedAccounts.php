@@ -46,14 +46,14 @@ final readonly class ProtectedAccounts
             }
         }
 
-        return $this->readsSignInIn($command);
+        return $this->readsSignIn($command);
     }
 
     /**
      * Whether a shell command reads a sign-in through the Keychain, a program's own sign-in commands or the variables
      * that name an account folder; no grant ever allows these.
      */
-    public function readsSignInIn(string $command): bool
+    public function readsSignIn(string $command): bool
     {
         return preg_match(self::SIGN_IN_COMMAND, $command) === 1;
     }

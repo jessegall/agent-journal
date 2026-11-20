@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Memory;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
-use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\SkillProvider;
 use Domain\Memory\Api\MemoryCard;
 use Domain\Memory\Api\MemoryPage;
 use Domain\Memory\Commands\EditMemory;
@@ -27,10 +27,10 @@ use Domain\Memory\Policies\MemoryPolicy;
 use Domain\Memory\Skills\MemorySkill;
 
 final class MemoryDomain extends Domain implements
-    ProvidesCommands,
-    ProvidesNumberedModels,
-    ProvidesPolicies,
-    ProvidesSkills
+    CommandProvider,
+    NumberedModelProvider,
+    PolicyProvider,
+    SkillProvider
 {
     use HasNumberedModels;
 

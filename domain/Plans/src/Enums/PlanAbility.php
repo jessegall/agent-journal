@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with plans.
  */
-enum PlanAbility: string implements DeclaresClassLevelAbilities
+enum PlanAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

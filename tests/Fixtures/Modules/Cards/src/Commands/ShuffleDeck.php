@@ -9,7 +9,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Tests\Fixtures\Modules\Cards\Enums\DeckAbility;
 use Tests\Fixtures\Modules\Cards\Handlers\ShuffleDeckHandler;
@@ -22,7 +22,7 @@ use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
 #[HandledBy(ShuffleDeckHandler::class)]
 #[Authorize(DeckPolicy::class, DeckAbility::Work)]
 #[Operation('shuffle_deck', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class ShuffleDeck extends Command implements HasAuthorizationSubject
+final readonly class ShuffleDeck extends Command implements AuthorizedCommand
 {
     public function __construct(public string $deck) {}
 

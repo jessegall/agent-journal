@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with the journal's agents: run a key script on an agent's terminal, retire another agent, or
  * read and maintain the starts that use an account.
  */
-enum AgentAbility: string implements DeclaresClassLevelAbilities
+enum AgentAbility: string implements ClassLevelAbilities
 {
     case RunKeyScript = 'run-key-script';
     case RetireOthers = 'retire-others';

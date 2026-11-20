@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Skills\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Skills\Enums\SkillAbility;
 use App\Skills\Handlers\ReviseSkillHandler;
 use App\Skills\Models\Skill;
@@ -29,7 +29,7 @@ use App\Skills\Values\SkillRevisionResult;
 #[HandledBy(ReviseSkillHandler::class)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
 #[Operation('skills_edit', ResourceAreaType::JournalContent, AccessType::Edit)]
-final readonly class ReviseSkill extends Command implements HasAuthorizationSubject
+final readonly class ReviseSkill extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string|SkillReference $skill,

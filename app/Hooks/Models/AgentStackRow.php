@@ -146,6 +146,18 @@ final class AgentStackRow extends Model implements ReadableModel
     }
 
     /**
+     * The active stack of a target the caller was authorized for, unlocked; none when it is missing or closed.
+     *
+     * @return Option<self>
+     */
+    public static function activeAuthorizedFor(StackTarget $target): Option
+    {
+        $row = self::query()->authorizedFor($target)->first();
+
+        return $row !== null && $row->isActive() ? new Some($row) : None::create();
+    }
+
+    /**
      * The active stack of a target the caller was authorized for (its start, or a user acting on it), read through
      * the explicit authorized query and locked.
      */

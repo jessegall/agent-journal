@@ -8,7 +8,7 @@ use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\AuthorizerProvider;
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\AllowsEverything;
+use App\Actors\Support\UnrestrictedAuthorizer;
 use App\Engine\Exceptions\EngineAccessRefused;
 
 /**
@@ -26,7 +26,7 @@ final readonly class EngineAuthorizerProvider implements AuthorizerProvider
     {
         $this->access->requireGranted();
 
-        return new AllowsEverything();
+        return new UnrestrictedAuthorizer();
     }
 
     /**

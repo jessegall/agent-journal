@@ -10,7 +10,7 @@ use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
 use Tests\Fixtures\Bus\Models\FixtureWork;
@@ -25,7 +25,7 @@ use Tests\Fixtures\Domains\QuestionReminders\Handlers\SendQuestionReminderHandle
 #[HandledBy(SendQuestionReminderHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
 #[Operation('send_question_reminder', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class SendQuestionReminder extends Command implements HasAuthorizationSubject
+final readonly class SendQuestionReminder extends Command implements AuthorizedCommand
 {
     public function __construct(
         public StackTarget $target,

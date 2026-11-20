@@ -23,7 +23,7 @@ final readonly class CodexSignIn implements SignInProtocol
 
     public function begin(string $directory): PrivateAccountProcess
     {
-        self::keepSignInInItsFile($directory);
+        self::useFileCredentialStore($directory);
         $arguments = [$this->program(), 'app-server'];
         $process = PrivateAccountProcess::start($arguments, $this->environment($directory), $directory);
         $process->send(self::message([
@@ -122,7 +122,7 @@ final readonly class CodexSignIn implements SignInProtocol
      * The account's configuration keeps its sign-in in the folder's own auth.json, never a keyring shared with other
      * accounts or the person's own login.
      */
-    private static function keepSignInInItsFile(string $directory): void
+    private static function useFileCredentialStore(string $directory): void
     {
         $file = $directory.'/config.toml';
         $config = is_file($file) ? (string) file_get_contents($file) : '';

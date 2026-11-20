@@ -44,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property array{value: mixed, php: string}|null $result
  * @property string|null $refusal_code
  * @property string|null $refusal_message
+ * @property array<string, mixed>|null $refusal_details
  * @property CarbonImmutable $answers_until
  * @property CarbonImmutable|null $refuses_until
  * @property Carbon|null $created_at
@@ -62,6 +63,7 @@ use Illuminate\Support\Carbon;
         'result',
         'refusal_code',
         'refusal_message',
+        'refusal_details',
         'answers_until',
         'refuses_until',
     ],
@@ -86,6 +88,7 @@ final class CommandReceipt extends Model implements ReadableModel
         return [
             'state' => ReceiptState::class,
             'result' => 'array',
+            'refusal_details' => 'array',
             'contract_major' => 'integer',
             'answers_until' => 'immutable_datetime',
             'refuses_until' => 'immutable_datetime',
@@ -151,7 +154,7 @@ final class CommandReceipt extends Model implements ReadableModel
             'state' => ReceiptState::Refused,
             'refusal_code' => $code->value,
             'refusal_message' => $message,
-            'result' => ['refusal_details' => $details],
+            'refusal_details' => $details,
         ];
         $taken = self::lockedFor($caller, $command::class, $requestKey);
 
@@ -249,7 +252,7 @@ final class CommandReceipt extends Model implements ReadableModel
             throw RefusalReplayed::of(
                 RefusalCode::from((string) $this->refusal_code),
                 (string) $this->refusal_message,
-                $this->result['refusal_details'] ?? [],
+                $this->refusal_details ?? [],
             );
         }
 

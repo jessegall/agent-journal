@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Web\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with presence.
  */
-enum PresenceAbility: string implements DeclaresClassLevelAbilities
+enum PresenceAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

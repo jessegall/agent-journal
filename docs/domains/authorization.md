@@ -11,10 +11,10 @@ The worked example is the Notes test module in `tests/Fixtures/Modules/Notes/src
 
 An ability is a case of a backed enum, named for what it lets an actor do. A class-level ability is decided on the
 model class alone, before any record is loaded (create, list, ordinary work); the enum says which through
-`App\Bus\Contracts\DeclaresClassLevelAbilities`:
+`App\Bus\Contracts\ClassLevelAbilities`:
 
 ```php
-enum NoteWorkAbility: string implements DeclaresClassLevelAbilities
+enum NoteWorkAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 
@@ -36,7 +36,7 @@ takes the record, as `NotePolicy::edit(Actor $actor, Note $note)` does.
 
 ## 3. Registering it
 
-The module's Domain class implements `App\Actors\Contracts\ProvidesPolicies` and lists one registration per model:
+The module's Domain class implements `App\Actors\Contracts\PolicyProvider` and lists one registration per model:
 
 ```php
 public function policies(): array
@@ -58,7 +58,7 @@ depends on a profile's name.
 ```php
 #[HandledBy(WriteNoteHandler::class)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
-final readonly class WriteNote implements Command, HasAuthorizationSubject
+final readonly class WriteNote implements Command, AuthorizedCommand
 {
     public function __construct(public string $text) {}
 
