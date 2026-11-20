@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Mcp;
 
-use App\Mcp\Data\ToolResult;
-use App\Mcp\Support\Continuation;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Contracts\TextFields;
+use App\Mcp\Data\ToolResult;
+use App\Mcp\Support\Continuation;
 use Domain\Memory\Contracts\MemoryResolver;
 
 final readonly class MemoryReadResult

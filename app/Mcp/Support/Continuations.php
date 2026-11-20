@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Mcp\Contracts\Continuations as ContinuationsContract;
 use App\Agents\Support\AgentContext;
+use App\Mcp\Contracts\Continuations as ContinuationsContract;
 use App\Mcp\Data\ContinuationPayload;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Exceptions\ContinuationInvalid;

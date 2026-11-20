@@ -7,8 +7,8 @@ namespace App\Scripts\Values;
 final readonly class ObjectDefinition
 {
     /**
-     * @param class-string $class
-     * @param array<string, ObjectMember> $members
+     * @param  class-string  $class
+     * @param  array<string, ObjectMember>  $members
      */
     public function __construct(
         public string $key,

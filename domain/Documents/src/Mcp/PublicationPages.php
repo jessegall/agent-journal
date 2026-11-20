@@ -6,9 +6,9 @@ namespace Domain\Documents\Mcp;
 
 use App\Assignments\Support\Page;
 use App\Comments\Contracts\CommentResolver;
+use App\Mcp\Contracts\Continuations;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Contracts\Continuations;
 use App\Records\Support\RecordIdentity;
 use App\Text\Support\MarkdownText;
 use Domain\Documents\Values\DocumentReadCard;
@@ -45,7 +45,11 @@ final readonly class PublicationPages
         }
         $next = $position->offset + count($entries);
         $actions = $next <= count($outline) ? [$this->continuations->link(new Continuation(
-            $position->tool, $position->selector, $position->filters, $next, revision: $position->revision,
+            $position->tool,
+            $position->selector,
+            $position->filters,
+            $next,
+            revision: $position->revision,
         ), $key)] : [];
 
         return ToolResult::ok([

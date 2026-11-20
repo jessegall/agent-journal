@@ -21,7 +21,7 @@ final readonly class ObjectReflection
     public function __construct(private OperationNames $operations) {}
 
     /**
-     * @param class-string $class
+     * @param  class-string  $class
      */
     public function describe(string $class, string $owner): ObjectDefinition
     {
@@ -80,7 +80,7 @@ final readonly class ObjectReflection
     }
 
     /**
-     * @param ReflectionClass<object> $class
+     * @param  ReflectionClass<object>  $class
      */
     private function contextParameter(ReflectionClass $class): string
     {
@@ -98,6 +98,7 @@ final readonly class ObjectReflection
             if ($type instanceof ReflectionNamedType && $type->getName() === ScriptContext::class
                 && ! $type->allowsNull()) {
                 $contexts[] = $parameter->getName();
+
                 continue;
             }
 

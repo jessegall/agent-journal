@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
-use Domain\Chat\Mcp\MessageSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
@@ -32,6 +31,7 @@ use Domain\Chat\Http\Controllers\ReplyController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\TakeNextController;
 use Domain\Chat\Mcp\MessageResource;
+use Domain\Chat\Mcp\MessageSearch;
 use Domain\Chat\Mcp\PendingMessagesOverview;
 use Domain\Chat\Models\DockedRecord;
 use Domain\Chat\Models\MessagePin;

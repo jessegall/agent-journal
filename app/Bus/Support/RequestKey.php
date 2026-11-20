@@ -68,7 +68,7 @@ final class RequestKey implements RequestKeyContract
     }
 
     /**
-     * @param class-string $command
+     * @param  class-string  $command
      */
     public function requireFor(string $command): string
     {
@@ -100,7 +100,8 @@ final class RequestKey implements RequestKeyContract
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function independently(string $key, Closure $work): mixed

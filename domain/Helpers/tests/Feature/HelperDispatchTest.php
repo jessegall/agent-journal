@@ -237,5 +237,4 @@ final class HelperDispatchTest extends TestCase
 
         return Agent::query()->findOrFail($identity->helper_actor_id);
     }
-
 }

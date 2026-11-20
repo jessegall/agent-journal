@@ -109,7 +109,7 @@ final class DocumentReaderTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $arguments
+     * @param  array<string, mixed>  $arguments
      */
     private function read(int $number, array $arguments): ToolResult
     {

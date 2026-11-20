@@ -12,7 +12,7 @@ use App\Assignments\Support\NumberedPage;
 final readonly class AgentInbox
 {
     /**
-     * @param list<AgentMessageCard> $messages
+     * @param  list<AgentMessageCard>  $messages
      */
     public function __construct(public array $messages, public NumberedPage $page, public int $total) {}
 }

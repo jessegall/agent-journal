@@ -6,9 +6,9 @@ namespace App\Mcp\Tools;
 
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
-use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Laravel\Mcp\Request;

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Mcp\Attributes\VisibleToProfiles;
-use App\Mcp\Enums\DiscoveryProfile;
-use App\Mcp\Tools\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Support\AssignmentResult;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalWriteTool;
+use App\Mcp\Tools\Concerns\ReadsAssignmentArguments;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
@@ -40,7 +39,7 @@ abstract class AssignmentWriteTool extends JournalWriteTool
     }
 
     /**
-     * @param AssignmentResult $assignmentChange
+     * @param  AssignmentResult  $assignmentChange
      */
     final protected function present(mixed $assignmentChange): ToolResult
     {

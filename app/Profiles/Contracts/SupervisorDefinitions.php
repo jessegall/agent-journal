@@ -10,7 +10,7 @@ use App\Profiles\Values\SupervisorProfile;
 interface SupervisorDefinitions
 {
     /**
-     * @param list<SupervisorProfile> $proposed
+     * @param  list<SupervisorProfile>  $proposed
      * @return array<string, list<SupervisorCoverage>>
      */
     public function validate(array $proposed): array;

@@ -130,9 +130,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
         }
 
         /**
-
          * @var array{entry: string, policy: TriggerPolicy} $handler
-
          */
         $handler = $program->graph['handlers'][self::TRIGGER];
         /**

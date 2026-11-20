@@ -26,7 +26,7 @@ final readonly class ObjectRegistry implements ScriptObjectRegistration
     }
 
     /**
-     * @param class-string $class
+     * @param  class-string  $class
      */
     public function register(string $class): void
     {
@@ -34,7 +34,7 @@ final readonly class ObjectRegistry implements ScriptObjectRegistration
     }
 
     /**
-     * @param class-string $class
+     * @param  class-string  $class
      */
     public function registerOwned(string $owner, string $class): void
     {

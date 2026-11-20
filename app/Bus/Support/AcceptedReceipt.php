@@ -21,7 +21,8 @@ final class AcceptedReceipt
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function independently(Closure $work): mixed

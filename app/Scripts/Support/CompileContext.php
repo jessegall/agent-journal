@@ -18,7 +18,7 @@ use App\Scripts\Values\TriggerPolicy;
 final readonly class CompileContext
 {
     /**
-     * @param array<string, NamedCommand> $commands
+     * @param  array<string, NamedCommand>  $commands
      */
     private function __construct(
         private KeywordRegistry $keywords,
@@ -43,7 +43,7 @@ final readonly class CompileContext
     }
 
     /**
-     * @param list<ParsedStatement> $statements
+     * @param  list<ParsedStatement>  $statements
      */
     public function compileBlock(array $statements): string
     {
@@ -124,7 +124,7 @@ final readonly class CompileContext
     }
 
     /**
-     * @param array<string, string> $successors
+     * @param  array<string, string>  $successors
      */
     private function textInstruction(ParsedStatement $statement, array $successors): Instruction
     {

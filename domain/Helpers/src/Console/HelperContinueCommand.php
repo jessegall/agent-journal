@@ -47,11 +47,11 @@ final class HelperContinueCommand extends Command
         }
 
         return $this->runReport(fn (): CommandReport => $this->receiptReport($helpers->continueHelper(
-                $call->identityId,
-                $call->jobId,
-                $call->model,
-                $call->programKey,
-                $call->requestKey,
-            )));
+            $call->identityId,
+            $call->jobId,
+            $call->model,
+            $call->programKey,
+            $call->requestKey,
+        )));
     }
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Mcp;
 
+use App\Mcp\Contracts\Continuations;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Contracts\Continuations;
 use App\Mcp\Support\TextChunk;
 use App\Mcp\Support\ToolArguments;
 use App\Text\Support\MarkdownText;
@@ -53,7 +53,7 @@ final readonly class PublicationChunks
     }
 
     /**
-     * @param array<string, mixed> $card
+     * @param  array<string, mixed>  $card
      */
     public function page(string $text, Continuation $position, string $selectorName, array $card): ToolResult
     {

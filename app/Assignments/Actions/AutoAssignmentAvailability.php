@@ -23,6 +23,7 @@ final readonly class AutoAssignmentAvailability
             $this->providers->recordOwner($fact->key->assignableType),
             $this->providers->poolOwner($fact->pool->type),
         ]);
+
         return array_all($owners, fn (string $owner): bool => $this->domains->isEnabled($owner));
     }
 

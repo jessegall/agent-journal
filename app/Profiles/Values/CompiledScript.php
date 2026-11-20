@@ -7,7 +7,7 @@ namespace App\Profiles\Values;
 final readonly class CompiledScript
 {
     /**
-     * @param array<string, mixed> $graph
+     * @param  array<string, mixed>  $graph
      */
     public function __construct(public array $graph, public string $definitionDigest) {}
 }

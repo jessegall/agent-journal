@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Comments\Data;
 
 use App\Comments\Casts\CommentViewsCast;
-use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

@@ -63,7 +63,7 @@ final readonly class ToolArguments
     }
 
     /**
-     * @param list<string> $fields
+     * @param  list<string>  $fields
      */
     public static function query(string $resource, Request $request, array $fields): self
     {
@@ -99,7 +99,7 @@ final readonly class ToolArguments
     }
 
     /**
-     * @param list<string> $fields
+     * @param  list<string>  $fields
      */
     public function object(string $name, array $fields): self
     {
@@ -113,7 +113,7 @@ final readonly class ToolArguments
     }
 
     /**
-     * @param list<string> $fields
+     * @param  list<string>  $fields
      */
     public function optionalObject(string $name, array $fields): self|null
     {
@@ -350,7 +350,8 @@ final readonly class ToolArguments
 
     /**
      * @template T of BackedEnum
-     * @param T $default
+     *
+     * @param  T  $default
      * @return T
      */
     public function enumOr(string $name, BackedEnum $default): BackedEnum
@@ -360,7 +361,8 @@ final readonly class ToolArguments
 
     /**
      * @template T of BackedEnum
-     * @param class-string<T> $type
+     *
+     * @param  class-string<T>  $type
      * @return T|null
      */
     public function optionalEnum(string $name, string $type): BackedEnum|null

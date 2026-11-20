@@ -59,8 +59,7 @@ trait PrintsComments
         CommandReport $report,
         CommentDetails $comment,
         string $anchorDescription,
-    ): CommandReport
-    {
+    ): CommandReport {
         return $report
             ->line("{$comment->authorType->value} {$comment->authorId}  {$comment->createdAt}")
             ->line("  {$anchorDescription}")

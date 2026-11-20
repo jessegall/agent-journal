@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Plans\Mcp;
 
 use App\Assignments\Enums\AssignmentOutcomeType;
-use App\Mcp\Tools\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Contracts\RequestKey;
 use App\Mcp\Attributes\VisibleToProfiles;
@@ -14,6 +13,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\Concerns\ReadsAssignmentArguments;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -52,7 +52,7 @@ abstract class PlanCascadeTool extends JournalWriteTool
     }
 
     /**
-     * @param AssignmentResult $assignmentResult
+     * @param  AssignmentResult  $assignmentResult
      */
     final protected function present(mixed $assignmentResult): ToolResult
     {

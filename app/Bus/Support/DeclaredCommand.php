@@ -11,8 +11,8 @@ use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\CommandEffectType;
+use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use ReflectionClass;
 

@@ -26,7 +26,7 @@ final readonly class ScriptParser
     public function __construct(private KeywordRegistry $keywords) {}
 
     /**
-     * @param list<ScriptLine> $lines
+     * @param  list<ScriptLine>  $lines
      * @return list<ScriptHandler>
      */
     public function parse(array $lines): array

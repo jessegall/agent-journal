@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Communication\Listeners;
 
-use App\Agents\Models\AgentSession;
 use App\Agents\Events\SessionOpened;
+use App\Agents\Models\AgentSession;
 use App\Communication\Models\Message;
 use App\Contracts\Listener;
 

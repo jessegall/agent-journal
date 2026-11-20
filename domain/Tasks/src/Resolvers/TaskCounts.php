@@ -57,7 +57,7 @@ final readonly class TaskCounts implements TaskProgressCounter
     }
 
     /**
-     * @param array<array-key, int> $taskCountsByState Counts by state value, omitting states with no tasks.
+     * @param  array<array-key, int>  $taskCountsByState  Counts by state value, omitting states with no tasks.
      */
     private static function progressOfStates(array $taskCountsByState): TaskProgress
     {

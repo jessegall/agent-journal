@@ -6,13 +6,14 @@ namespace App\Scripts\Support;
 
 use App\Profiles\Values\CompiledScript;
 use App\Profiles\Values\ScriptSource;
+use App\Scripts\Values\ScriptHandler;
 
 final readonly class ScriptCompiler
 {
     public function __construct(private KeywordRegistry $keywords, private ObjectRegistry $objects) {}
 
     /**
-     * @param list<\App\Scripts\Values\ScriptHandler> $handlers
+     * @param  list<ScriptHandler>  $handlers
      */
     public function compile(ScriptSource $source, array $handlers): CompiledScript
     {

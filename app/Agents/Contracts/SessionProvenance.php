@@ -28,7 +28,8 @@ interface SessionProvenance
 
     /**
      * @template T of Model
-     * @param Builder<T> $records
+     *
+     * @param  Builder<T>  $records
      * @return Builder<T>
      */
     public function fromSession(Builder $records, string $sessionId): Builder;

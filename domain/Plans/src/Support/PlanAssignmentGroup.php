@@ -55,7 +55,7 @@ final readonly class PlanAssignmentGroup
     }
 
     /**
-     * @param list<RecordIdentity> $records
+     * @param  list<RecordIdentity>  $records
      */
     private function group(RecordIdentity $root, string $planId, array $records): AssignmentGroup
     {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Mcp;
 
+use App\Assignments\Support\AssignmentData;
+use App\Assignments\Support\AssignmentHolder;
 use App\Assignments\Support\NumberedPage;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
@@ -11,10 +13,8 @@ use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use Domain\Tasks\Api\TaskFilters;
-use Domain\Tasks\Enums\TaskState;
-use App\Assignments\Support\AssignmentData;
-use App\Assignments\Support\AssignmentHolder;
 use Domain\Tasks\Api\TaskList;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Http\Data\TaskExecutionData;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 

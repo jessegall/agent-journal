@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
+use App\Mcp\Contracts\Continuations;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Contracts\Continuations;
 use App\Mcp\Support\ToolArguments;
 use App\Records\Support\RecordIdentity;
 use App\Text\Support\MarkdownText;

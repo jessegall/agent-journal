@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Processes\Pipes\Lexing;
 
 use App\Pipelines\Contracts\Pipe;
-use App\Processes\Syntax\ShellWordScanner;
 use App\Processes\Syntax\LexerCursor;
+use App\Processes\Syntax\ShellWordScanner;
 
 /**
  * Takes an operator if one starts here, or reads the next word.

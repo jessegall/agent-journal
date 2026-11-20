@@ -28,7 +28,7 @@ use App\Operations\Enums\ResourceAreaType;
 #[HandledBy(ContinueStartHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
 #[Operation('continue_start', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class ContinueStart extends Command implements AuthorizedCommand, AgentStartCommand
+final readonly class ContinueStart extends Command implements AgentStartCommand, AuthorizedCommand
 {
     public function __construct(
         public string $sessionId,

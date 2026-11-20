@@ -19,6 +19,4 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  */
 #[MapName(SnakeCaseMapper::class)]
 #[Endpoint('helpers/notices', 'POST', HelperNoticeListData::class, CallEffect::Read)]
-final class ListHelperNoticesCall extends Data implements JournalCall
-{
-}
+final class ListHelperNoticesCall extends Data implements JournalCall {}

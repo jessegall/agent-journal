@@ -65,9 +65,9 @@ final readonly class ContractSnapshot
     }
 
     /**
-     * @param array<string, mixed> $before
-     * @param array<string, mixed> $after
-     * @param list<string> $skip
+     * @param  array<string, mixed>  $before
+     * @param  array<string, mixed>  $after
+     * @param  list<string>  $skip
      * @return list<string>
      */
     private function changedFields(array $before, array $after, array $skip = []): array

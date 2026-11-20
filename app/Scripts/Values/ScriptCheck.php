@@ -10,8 +10,8 @@ use App\Profiles\Values\CompiledScript;
 final readonly class ScriptCheck
 {
     /**
-     * @param list<ScriptDiagnostic> $diagnostics
-     * @param list<ScriptRange> $tokens
+     * @param  list<ScriptDiagnostic>  $diagnostics
+     * @param  list<ScriptRange>  $tokens
      */
     public function __construct(
         public array $diagnostics,

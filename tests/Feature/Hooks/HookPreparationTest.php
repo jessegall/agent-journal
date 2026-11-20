@@ -110,7 +110,6 @@ final class HookPreparationTest extends TestCase
         $this->assertFalse($preparation->isPrepared());
     }
 
-
     private function prepare(string $generation): void
     {
         $this->preparation()->openGeneration($generation);

@@ -64,7 +64,13 @@ final readonly class StartSessions
         RecordIdentity|null $authorizedSource = null,
     ): StartedAgent {
         return $this->open(
-            $agent, $selection, $requestId, $parent, $this->settingsFor($selection), null, $authorizedSource,
+            $agent,
+            $selection,
+            $requestId,
+            $parent,
+            $this->settingsFor($selection),
+            null,
+            $authorizedSource,
         );
     }
 

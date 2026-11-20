@@ -14,8 +14,8 @@ use App\Scripts\Enums\SyntaxForm;
 final readonly class KeywordDefinition implements ScriptKeywordDefinition
 {
     /**
-     * @param class-string<ScriptStatement|ScriptTrigger>|null $implementation
-     * @param list<ScriptEffect> $effects
+     * @param  class-string<ScriptStatement|ScriptTrigger>|null  $implementation
+     * @param  list<ScriptEffect>  $effects
      */
     private function __construct(
         public string $token,
@@ -32,7 +32,7 @@ final readonly class KeywordDefinition implements ScriptKeywordDefinition
     }
 
     /**
-     * @param class-string<ScriptTrigger> $implementation
+     * @param  class-string<ScriptTrigger>  $implementation
      */
     public static function trigger(string $token, string $implementation): self
     {
@@ -45,8 +45,8 @@ final readonly class KeywordDefinition implements ScriptKeywordDefinition
     }
 
     /**
-     * @param class-string<ScriptStatement> $implementation
-     * @param list<ScriptEffect> $effects
+     * @param  class-string<ScriptStatement>  $implementation
+     * @param  list<ScriptEffect>  $effects
      */
     public static function statement(
         string $token,

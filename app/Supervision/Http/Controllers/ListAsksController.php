@@ -8,7 +8,6 @@ use App\Supervision\Calls\ListAsksCall;
 use App\Supervision\Contracts\AskReader;
 use App\Supervision\Data\AskInbox;
 
-
 final readonly class ListAsksController
 {
     public function __invoke(ListAsksCall $call, AskReader $asks): AskInbox

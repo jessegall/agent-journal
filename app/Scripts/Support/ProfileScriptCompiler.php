@@ -45,9 +45,7 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         $compiled = $this->compile($source);
 
         /**
-
          * @var array<string, Instruction> $instructions
-
          */
         $instructions = $compiled->graph['instructions'];
 

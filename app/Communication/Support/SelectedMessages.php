@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
-use App\Agents\Models\AgentSession;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\RequestSource;
+use App\Agents\Models\AgentSession;
 use App\Communication\Models\Message;
 use App\Records\Support\RecordIdentity;
 

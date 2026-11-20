@@ -202,7 +202,7 @@ final class AgentStackRow extends Model implements ReadableModel
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      */
     #[Scope]
     protected function historyOf(Builder $query, ActorIdentity $actor): void
@@ -211,7 +211,7 @@ final class AgentStackRow extends Model implements ReadableModel
     }
 
     /**
-     * @param list<string> $sessions
+     * @param  list<string>  $sessions
      * @return list<self>
      */
     public static function lockActiveOf(ActorIdentity $actor, array $sessions): array

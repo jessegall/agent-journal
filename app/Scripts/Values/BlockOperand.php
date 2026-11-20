@@ -7,8 +7,8 @@ namespace App\Scripts\Values;
 final readonly class BlockOperand
 {
     /**
-     * @param list<ParsedStatement> $whenTrue
-     * @param list<ParsedStatement> $whenFalse
+     * @param  list<ParsedStatement>  $whenTrue
+     * @param  list<ParsedStatement>  $whenFalse
      */
     public function __construct(
         public BooleanOperand $condition,

@@ -34,7 +34,11 @@ final readonly class RuleSearch implements SearchContribution
         }
 
         $hits = array_map(fn (RuleView $rule) => SearchHit::matching(
-            $this->recordType(), $rule->id, "Rule {$rule->number}", $rule->text, $query,
+            $this->recordType(),
+            $rule->id,
+            "Rule {$rule->number}",
+            $rule->text,
+            $query,
         ), $matches->rules);
 
         return new SearchPage($hits, $page < $matches->lastPage);

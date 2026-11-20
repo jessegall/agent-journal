@@ -10,6 +10,7 @@ use App\Mcp\Tools\JournalReadTool;
 use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 
 abstract class PublicationReadTool extends JournalReadTool
 {
@@ -23,7 +24,7 @@ abstract class PublicationReadTool extends JournalReadTool
     }
 
     /**
-     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     * @return array<string, Type>
      */
     protected function rangeSchema(JsonSchema $schema): array
     {

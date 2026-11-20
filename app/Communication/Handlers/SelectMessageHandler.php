@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Communication\Handlers;
 
-use App\Agents\Models\AgentSession;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Models\AgentSession;
 use App\Communication\Commands\SelectMessage;
 use App\Communication\Models\Message;
 use App\Contracts\CommandHandler;

@@ -31,7 +31,11 @@ final readonly class TaskSearch implements SearchContribution
     {
         $matches = $this->tasks->list(new TaskFilters(search: $query, page: new NumberedPage($page, self::PAGE_SIZE)));
         $hits = array_map(fn (TaskCard $task) => SearchHit::matching(
-            $this->recordType(), $task->id, $task->title, $task->title, $query,
+            $this->recordType(),
+            $task->id,
+            $task->title,
+            $task->title,
+            $query,
         ), $matches->cards);
 
         return new SearchPage($hits, $page * self::PAGE_SIZE < $matches->total);

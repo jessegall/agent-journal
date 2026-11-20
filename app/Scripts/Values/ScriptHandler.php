@@ -7,7 +7,7 @@ namespace App\Scripts\Values;
 final readonly class ScriptHandler
 {
     /**
-     * @param list<ParsedStatement> $statements
+     * @param  list<ParsedStatement>  $statements
      */
     public function __construct(
         public KeywordDefinition $trigger,

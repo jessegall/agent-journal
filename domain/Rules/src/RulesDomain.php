@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Rules;
 
-use Domain\Rules\Mcp\RuleSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\CommandProvider;
@@ -43,6 +42,7 @@ use Domain\Rules\Http\Controllers\DenyRuleController;
 use Domain\Rules\Mcp\ActiveRulesOverview;
 use Domain\Rules\Mcp\ProposeRuleTool;
 use Domain\Rules\Mcp\RuleReadTool;
+use Domain\Rules\Mcp\RuleSearch;
 use Domain\Rules\Mcp\RulesListTool;
 use Domain\Rules\Mcp\RulesResource;
 use Domain\Rules\Models\Rule;

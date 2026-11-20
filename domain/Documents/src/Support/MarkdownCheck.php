@@ -27,7 +27,7 @@ final class MarkdownCheck
     }
 
     /**
-     * @param list<string> $lines
+     * @param  list<string>  $lines
      * @return list<int>
      */
     private static function problemLines(array $lines): array

@@ -50,7 +50,7 @@ final readonly class AskRecords implements AskReader
     }
 
     /**
-     * @param list<Ask> $asks
+     * @param  list<Ask>  $asks
      * @return list<AskCard>
      */
     private function cards(array $asks): array

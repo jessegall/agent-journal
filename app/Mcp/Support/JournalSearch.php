@@ -63,7 +63,7 @@ final readonly class JournalSearch
     }
 
     /**
-     * @param list<string> $registered
+     * @param  list<string>  $registered
      */
     private function firstPage(ToolArguments $arguments, array $registered): Continuation
     {

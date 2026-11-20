@@ -14,7 +14,6 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
-use App\Mcp\Tools\AssignmentWriteTool;
 
 #[IsIdempotent]
 #[IsDestructive]

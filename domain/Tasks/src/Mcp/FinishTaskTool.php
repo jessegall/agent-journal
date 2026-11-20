@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Mcp;
 
-use App\Mcp\Attributes\VisibleToProfiles;
-use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Enums\TaskTextLimit;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskTextLimit;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;

@@ -30,6 +30,7 @@ use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ScriptDiff;
 use App\Profiles\Values\ScriptSource;
+use App\Profiles\Values\SupervisorCoverage;
 
 /**
  * Resolves and checks the whole proposal before writing anything, then appends one revision per profile, every one
@@ -91,8 +92,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         $author = ActorIdentity::of($actor);
         $current = ProfileRevision::currentSources($keys);
         $compiled = array_map(
-            fn (ProfileDefinition $definition, ScriptSource $source) =>
-                $this->scripts->compileForProfile($source, $definition->start->access),
+            fn (ProfileDefinition $definition, ScriptSource $source) => $this->scripts->compileForProfile($source, $definition->start->access),
             $definitions,
             $sources,
         );
@@ -119,7 +119,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
     }
 
     /**
-     * @param list<string> $keys
+     * @param  list<string>  $keys
      * @return list<ScriptSource>
      */
     private static function draftSources(ProfileProposal $proposal, DraftExpectations $expected, array $keys): array
@@ -135,7 +135,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
     }
 
     /**
-     * @param list<\App\Profiles\Values\SupervisorCoverage> $coverage
+     * @param  list<SupervisorCoverage>  $coverage
      */
     private function publish(
         ProfileDefinition $definition,

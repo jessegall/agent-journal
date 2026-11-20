@@ -14,7 +14,7 @@ interface AutoAssignmentWriter
     /**
      * Claims once against the locked configuration in the caller's repeatable-read transaction.
      *
-     * @param Closure(AutoAssignmentFact): AutoAssignmentOutcome $claim
+     * @param  Closure(AutoAssignmentFact): AutoAssignmentOutcome  $claim
      */
     public function claim(AutoAssignmentKey $key, Closure $claim): AutoAssignmentOutcome;
 }

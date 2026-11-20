@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
+use App\Mcp\Contracts\Continuations;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Contracts\Continuations;
 use Domain\Documents\Contracts\AttachmentReader;
 use Domain\Documents\Mcp\PublicationChunks;
 use Domain\Documents\Models\TextUpload;

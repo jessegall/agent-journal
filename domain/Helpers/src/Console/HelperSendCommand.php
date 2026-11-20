@@ -9,8 +9,8 @@ use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Values\CommandReport;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
-use Domain\Helpers\Calls\SendHelperCall;
 use Domain\Helpers\Calls\HelperCalls;
+use Domain\Helpers\Calls\SendHelperCall;
 use Domain\Helpers\Console\Concerns\PrintsHelperReceipts;
 use Illuminate\Console\Command;
 
@@ -53,17 +53,17 @@ final class HelperSendCommand extends Command
         }
 
         return $this->runReport(fn (): CommandReport => $this->receiptReport($helpers->sendHelper(
-                $call->identityId,
-                $call->profileKey,
-                $call->model,
-                $call->programKey,
-                $call->subject,
-                $call->purposeId,
-                $call->purposeText,
-                $call->brief,
-                $call->requestKey,
-                $call->sourceSubjects,
-                $call->independent,
-            )));
+            $call->identityId,
+            $call->profileKey,
+            $call->model,
+            $call->programKey,
+            $call->subject,
+            $call->purposeId,
+            $call->purposeText,
+            $call->brief,
+            $call->requestKey,
+            $call->sourceSubjects,
+            $call->independent,
+        )));
     }
 }

@@ -18,6 +18,7 @@ final readonly class RetireSkillHandler implements CommandHandler
     public function handle(RetireSkill $command): SkillRevisionResult
     {
         $skillId = $command->skill;
+
         return $this->writes->once($command->requestId, hash(
             'sha256',
             "retire|{$skillId}|{$command->expectedRevision}",

@@ -10,7 +10,6 @@ use App\Supervision\Commands\AskSupervisor;
 use App\Supervision\Contracts\AskReader;
 use App\Supervision\Data\AskCard;
 
-
 final readonly class MakeAskController
 {
     public function __invoke(MakeAskCall $call, AskReader $asks, CommandBus $commands): AskCard

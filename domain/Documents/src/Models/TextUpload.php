@@ -142,7 +142,7 @@ final class TextUpload extends Model implements ReadableModel
     }
 
     /**
-     * @param Builder<self> $query
+     * @param  Builder<self>  $query
      */
     #[Scope]
     protected function unexpired(Builder $query): void

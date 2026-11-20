@@ -18,6 +18,7 @@ final readonly class ReviseSkillHandler implements CommandHandler
     public function handle(ReviseSkill $command): SkillRevisionResult
     {
         $skillId = $command->skill;
+
         return $this->writes->once($command->requestId, hash(
             'sha256',
             "{$skillId}|{$command->expectedRevision}|".$command->draft->digest(),

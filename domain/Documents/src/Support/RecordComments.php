@@ -14,7 +14,7 @@ final readonly class RecordComments
     public function __construct(private CommandBus $commands, private RequestKey $key) {}
 
     /**
-     * @param class-string $command
+     * @param  class-string  $command
      */
     public function post(RecordIdentity $record, string $body, string $command): string
     {

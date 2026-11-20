@@ -7,7 +7,6 @@ namespace App\Supervision\Calls;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
-
 use App\Supervision\Data\AskInbox;
 use App\Supervision\Values\AskReference;
 use Spatie\LaravelData\Attributes\Validation\Ulid;

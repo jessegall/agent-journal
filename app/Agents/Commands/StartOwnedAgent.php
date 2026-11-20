@@ -28,7 +28,7 @@ use App\Operations\Enums\ResourceAreaType;
 #[HandledBy(StartOwnedAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 #[Operation('start_owned_agent', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class StartOwnedAgent extends Command implements AuthorizedCommand, AgentStartCommand
+final readonly class StartOwnedAgent extends Command implements AgentStartCommand, AuthorizedCommand
 {
     public function __construct(public OwnerStartRequest $request) {}
 

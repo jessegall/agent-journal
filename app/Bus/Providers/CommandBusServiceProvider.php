@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Bus\Providers;
 
-use App\Bus\Contracts\RequestKey as RequestKeyContract;
-use App\Bus\Support\RequestKey;
 use App\Bus\Console\PruneReceiptsCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandStops as CommandStopsContract;
@@ -13,6 +11,7 @@ use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Contracts\GuardedCommandBus;
 use App\Bus\Contracts\OperationResolver;
 use App\Bus\Contracts\RefusalMapper as RefusalMapperContract;
+use App\Bus\Contracts\RequestKey as RequestKeyContract;
 use App\Bus\Resolvers\CallerOperations;
 use App\Bus\Support\AcceptedReceipt;
 use App\Bus\Support\CommandOriginChecks;
@@ -22,6 +21,7 @@ use App\Bus\Support\ConsoleOwner;
 use App\Bus\Support\LaravelCommandBus;
 use App\Bus\Support\MiddlewareRunner;
 use App\Bus\Support\RefusalMapper;
+use App\Bus\Support\RequestKey;
 use App\Bus\Support\RunningCommand;
 use App\Bus\Support\RunningCommandTransaction;
 use App\Bus\Support\SignedCallRefusal;

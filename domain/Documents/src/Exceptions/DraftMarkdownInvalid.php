@@ -13,7 +13,7 @@ use RuntimeException;
 final class DraftMarkdownInvalid extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     /**
-     * @param list<int> $lines
+     * @param  list<int>  $lines
      */
     public static function onLines(array $lines): self
     {

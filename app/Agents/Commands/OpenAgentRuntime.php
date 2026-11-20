@@ -29,7 +29,7 @@ use App\Operations\Enums\ResourceAreaType;
 #[HandledBy(OpenAgentRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 #[Operation('open_agent_runtime', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class OpenAgentRuntime extends Command implements AuthorizedCommand, AgentStartCommand
+final readonly class OpenAgentRuntime extends Command implements AgentStartCommand, AuthorizedCommand
 {
     public function __construct(
         public string $agentId,

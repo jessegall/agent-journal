@@ -6,8 +6,8 @@ namespace Domain\Memory\Mcp;
 
 use App\Agents\Contracts\ReadGrant;
 use App\Agents\Values\ReadRequest;
-use App\Mcp\Resources\JournalResource;
 use App\Mcp\Contracts\JobPermissionReader;
+use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ToolArguments;
 use App\Operations\Enums\ResourceAreaType;
 use Laravel\Mcp\Request;

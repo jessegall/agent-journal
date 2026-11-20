@@ -19,6 +19,7 @@ final readonly class RestoreSkillHandler implements CommandHandler
     public function handle(RestoreSkill $command): SkillRevisionResult
     {
         $skillId = $command->skill;
+
         return $this->writes->once($command->requestId, hash(
             'sha256',
             "{$skillId}|{$command->revision}|{$command->expectedRevision}",

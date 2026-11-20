@@ -37,7 +37,7 @@ final readonly class AddressedStackPush
     }
 
     /**
-     * @param list<AgentStackRow> $stacks
+     * @param  list<AgentStackRow>  $stacks
      */
     public function offer(array $stacks, StateReference $state): void
     {
