@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
+use App\Agents\Commands\RetireAgent;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Support\ProfileProposal;
 use Domain\Helpers\Commands\CancelHelperJob;
+use Domain\Helpers\Commands\StartHelper;
 use Domain\Helpers\Exceptions\HelperBusy;
+use Domain\Helpers\Exceptions\HelperRetired;
+use Domain\Helpers\Exceptions\HelperUnavailable;
+use Domain\Helpers\Models\HelperIdentity;
+use Domain\Helpers\Support\HelperReceipt;
+use Domain\Helpers\Support\HelperWork;
 use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Illuminate\Support\Str;
@@ -29,8 +36,7 @@ final class HelperInstancesTest extends TestCase
     public function test_a_single_profile_binds_its_one_helper_and_never_makes_a_second(): void
     {
         $first = $this->start((string) Str::ulid(), 'Review plan 7', profileKey: 'lone-reviewer');
-        $this->app->make(CommandBus::class)->run(new CancelHelperJob($first->jobId, 'cancel-first'));
-        $this->endSessionOf($first);
+        $this->finish($first);
         $second = $this->start((string) Str::ulid(), 'Review plan 8', profileKey: 'lone-reviewer');
 
         $this->assertSame($first->identityId, $second->identityId);
@@ -48,6 +54,56 @@ final class HelperInstancesTest extends TestCase
 
         $this->assertSame($first->identityId, $again->identityId);
         $this->assertNotSame($first->identityId, $other->identityId);
+    }
+
+    public function test_a_retired_single_helper_is_replaced_once_its_process_ended(): void
+    {
+        $first = $this->start((string) Str::ulid(), 'Review plan 7', profileKey: 'lone-reviewer');
+        $this->finish($first);
+        $this->retireHelperOf($first);
+
+        $second = $this->start((string) Str::ulid(), 'Review plan 8', profileKey: 'lone-reviewer');
+
+        $this->assertNotSame($first->identityId, $second->identityId);
+        $this->assertSame($second->identityId, HelperIdentity::designatedFor('lone-reviewer')->get()->id);
+    }
+
+    public function test_the_single_helper_cannot_review_a_purpose_it_worked_on_independently(): void
+    {
+        $first = $this->start((string) Str::ulid(), 'Review plan 7', profileKey: 'lone-reviewer');
+        $this->finish($first);
+        $this->expectException(HelperUnavailable::class);
+
+        $this->app->make(CommandBus::class)->run(new StartHelper(
+            (string) Str::ulid(),
+            'lone-reviewer',
+            'default',
+            null,
+            new HelperWork(null, null, 'Review plan 7', 'Review it again.', [], true),
+        ));
+    }
+
+    public function test_a_replay_after_the_reused_helper_retired_mid_job_is_refused(): void
+    {
+        $requestId = (string) Str::ulid();
+        $first = $this->start($requestId, 'Review plan 7');
+        $this->endSessionOf($first);
+        $this->retireHelperOf($first);
+        $this->expectException(HelperRetired::class);
+
+        $this->start($requestId, 'Review plan 7');
+    }
+
+    private function finish(HelperReceipt $receipt): void
+    {
+        $this->app->make(CommandBus::class)->run(new CancelHelperJob($receipt->jobId, 'cancel-'.$receipt->jobId));
+        $this->endSessionOf($receipt);
+    }
+
+    private function retireHelperOf(HelperReceipt $receipt): void
+    {
+        $agentId = HelperIdentity::query()->acrossActors()->findOrFail($receipt->identityId)->helper_actor_id;
+        $this->app->make(CommandBus::class)->run(new RetireAgent($agentId));
     }
 
     public function test_an_unknown_instances_value_refuses_the_proposal(): void

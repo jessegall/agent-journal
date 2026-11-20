@@ -21,4 +21,10 @@ interface StartReservations
      * @throws AgentBusy
      */
     public function reserve(ActorIdentity $agent): void;
+
+    /**
+     * Whether the agent can never start again: it retired, or no longer exists. Retiring needs its process stopped
+     * first, so a retired agent has exited.
+     */
+    public function hasRetired(ActorIdentity $agent): bool;
 }

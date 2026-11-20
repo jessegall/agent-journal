@@ -98,6 +98,16 @@ final class HelperIdentity extends Model implements ReadableModel
     }
 
     /**
+     * Gives up this helper's designation once its agent retired, so a replacement can take it; a designation another
+     * transaction already moved is left alone.
+     */
+    public function releaseDesignation(): void
+    {
+        self::query()->acrossActors()->whereKey($this->id)->whereNotNull('designated_profile')
+            ->update(['designated_profile' => null]);
+    }
+
+    /**
      * The helper designated for the profile, whoever holds it.
      *
      * @return Option<self>

@@ -27,4 +27,11 @@ final readonly class ReserveStarts implements StartReservations
 
         $this->sessions->reserveStart($found);
     }
+
+    public function hasRetired(ActorIdentity $agent): bool
+    {
+        $found = Agent::query()->whereKey($agent->id)->first();
+
+        return $found === null || $found->isRetired();
+    }
 }

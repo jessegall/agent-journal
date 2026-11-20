@@ -181,6 +181,12 @@ final readonly class HelperDispatch
             throw HelperRequestConflict::forRequest($request->requestId);
         }
 
+        $identity = HelperIdentity::query()->whereKey($job->helper_identity_id)->sole();
+
+        if ($job->state->isLive() && $this->hasRetired($identity)) {
+            throw HelperRetired::withUnfinishedJob($identity->id, $job->id);
+        }
+
         return $this->records->receiptOf($job->id);
     }
 
@@ -260,14 +266,40 @@ final readonly class HelperDispatch
             return $this->newHelper($request, $profile);
         }
 
-        return HelperIdentity::designatedFor($request->profileKey)->getOrCall(
-            fn () => HelperIdentity::declareDesignated(
-                $this->designatedHolder($request),
-                $this->newActor($request, $profile),
-                $request->profileKey,
-                $profile->base->key,
-            ),
+        $designated = HelperIdentity::designatedFor($request->profileKey);
+
+        if ($designated->isDefined() && ! $this->hasRetired($designated->get())) {
+            $this->assertIndependentFor($request, $designated->get());
+
+            return $designated->get();
+        }
+
+        $designated->forAll(fn (HelperIdentity $retired) => $retired->releaseDesignation());
+
+        return HelperIdentity::declareDesignated(
+            $this->designatedHolder($request),
+            $this->newActor($request, $profile),
+            $request->profileKey,
+            $profile->base->key,
         );
+    }
+
+    /**
+     * Whether the helper's agent retired, so its process has exited and the helper may be replaced.
+     */
+    private function hasRetired(HelperIdentity $identity): bool
+    {
+        return $this->reservations->hasRetired($identity->helperActor());
+    }
+
+    /**
+     * An independent review cannot go to the one designated helper once it worked on the same purpose.
+     */
+    private function assertIndependentFor(DispatchRequest $request, HelperIdentity $designated): void
+    {
+        if ($request->work->independent && HelperJob::existsFor($designated, $this->purposeOf($request))) {
+            throw HelperUnavailable::forIndependentReview($request->profileKey);
+        }
     }
 
     /**

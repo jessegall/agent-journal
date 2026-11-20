@@ -13,6 +13,14 @@ use RuntimeException;
  */
 final class HelperUnavailable extends RuntimeException implements CommandRefusal
 {
+    public static function forIndependentReview(string $profileKey): self
+    {
+        return new self(
+            "The one {$profileKey} helper already worked on this purpose, so it cannot review it independently. "
+            .'Choose an independent profile, or report that no independent review is possible.',
+        );
+    }
+
     public static function toYou(): self
     {
         return new self('This helper is unavailable to you. Choose a helper you may dispatch.');

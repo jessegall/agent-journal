@@ -280,6 +280,17 @@ final class HelperJob extends Model implements Assignable, ReadableModel
     }
 
     /**
+     * Whether the helper already had a job of this purpose: the same subject, or the same named work.
+     */
+    public static function existsFor(HelperIdentity $identity, HelperPurpose $purpose): bool
+    {
+        return self::query()->acrossActors()
+            ->where('helper_identity_id', $identity->id)
+            ->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'))
+            ->exists();
+    }
+
+    /**
      * Jobs of the identities named.
      *
      * @param  Builder<self>  $query

@@ -20,4 +20,16 @@ final class HelperRetired extends RuntimeException implements CommandRefusal
             $identityId,
         ), previous: $previous);
     }
+
+    /**
+     * A replayed start of a job its retired helper left unfinished: nothing picks another helper silently.
+     */
+    public static function withUnfinishedJob(string $identityId, string $jobId): self
+    {
+        return new self(sprintf(
+            'Helper %s is retired with job %s unfinished. Continue or replace it explicitly; its history is retained.',
+            $identityId,
+            $jobId,
+        ));
+    }
 }

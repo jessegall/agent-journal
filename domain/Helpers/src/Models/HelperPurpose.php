@@ -13,6 +13,7 @@ use App\Records\Support\RecordIdentity;
 use Domain\Helpers\Enums\PurposeType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -108,5 +109,19 @@ final class HelperPurpose extends Model implements ReadableModel
         $purpose->save();
 
         return $purpose;
+    }
+
+    /**
+     * The purposes of any holder that name the same work as this one: the same subject, or the same label.
+     *
+     * @return Builder<self>
+     */
+    public static function sameAs(self $purpose): Builder
+    {
+        $same = self::query()->acrossActors()->where('profile_key', $purpose->profile_key);
+
+        return $purpose->subject_id === null
+            ? $same->where('label', $purpose->label)
+            : $same->where('subject_type', $purpose->subject_type)->where('subject_id', $purpose->subject_id);
     }
 }
