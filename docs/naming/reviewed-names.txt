@@ -1202,6 +1202,7 @@ class	BoundaryReport
 class	BroadcastPageChange
 class	BuildRules
 class	BuildShellTreePipeline
+class	BuiltFresh
 class	BuiltInAuthorizations
 class	BuiltInDesks
 class	BuiltInProfileMissing
@@ -1286,8 +1287,11 @@ class	ChatSkill
 class	ChatSwitchTest
 class	ChatWindowResolver
 class	ChatWindowTest
+class	CheckCommandHandlers
+class	CheckCommandMiddleware
 class	CheckCommandStart
 class	CheckEntry
+class	CheckExportedCommands
 class	CheckPageVisibility
 class	CheckPlanDigest
 class	CheckRestoredOutputCall
@@ -1368,6 +1372,7 @@ class	CommandBusServiceProvider
 class	CommandCall
 class	CommandClassSet
 class	CommandDeclarationInvalid
+class	CommandDeclarations
 class	CommandDispatcherMissing
 class	CommandEntrance
 class	CommandFrame
@@ -1571,6 +1576,7 @@ class	DeclarationData
 class	DeclarationInvalid
 class	DeclarationRules
 class	DeclarativeReader
+class	DeclaredCommand
 class	DeclaredPageRequest
 class	DeclaredProposal
 class	DeclaredRouteKey
@@ -2797,6 +2803,7 @@ class	RankedLaunchCandidate
 class	RawRowAccess
 class	ReadAndOrPipeline
 class	ReadBuilder
+class	ReadCommandHandlers
 class	ReadCommandPipeline
 class	ReadCompoundPipeline
 class	ReadCounts
@@ -2999,6 +3006,7 @@ class	RefuseWritesDuringEvaluation
 class	RegisterAnsweringState
 class	RegisterAssignables
 class	RegisterAwaitingSkillsState
+class	RegisterCommands
 class	RegisterIncomingWork
 class	RegisterLinkRecords
 class	RegisterNumberedModels
@@ -4631,6 +4639,7 @@ constant	PublishSessionSkills::HOLDER
 constant	PublishSkillsHandler::LEASE_SECONDS
 constant	RawRowAccess::DB
 constant	RawRowAccess::ROW_METHODS
+constant	ReadCommandHandlers::SINGLE_ATTRIBUTES
 constant	ReadIdempotencyKey::HEADER
 constant	ReadOptionStatementPipeline::OPTION_STATEMENTS
 constant	ReadPermits::REFERENCE_BYTES
@@ -6504,6 +6513,7 @@ method	BroadcastPageChange::handle()
 method	BuildRules::all()
 method	BuildRules::build()
 method	BuildShellTreePipeline::pipes()
+method	BuiltFresh::check()
 method	BuiltInAuthorizations::for()
 method	BuiltInDesks::install()
 method	BuiltInProfileMissing::forKey()
@@ -6716,11 +6726,20 @@ method	ChatWindowTest::setUp()
 method	ChatWindowTest::stored()
 method	ChatWindowTest::test_a_reply_to_a_message_that_changed_is_refused_and_writes_nothing()
 method	ChatWindowTest::test_reading_marks_only_the_shown_incoming_messages()
+method	CheckCommandHandlers::check()
+method	CheckCommandHandlers::checkAuthorization()
+method	CheckCommandHandlers::handle()
+method	CheckCommandHandlers::takesFirst()
+method	CheckCommandHandlers::takesOnly()
+method	CheckCommandHandlers::typeFits()
+method	CheckCommandMiddleware::checkScope()
+method	CheckCommandMiddleware::handle()
 method	CheckCommandStart::handle()
 method	CheckCommandStart::timesCompound()
 method	CheckEntry::__construct()
 method	CheckEntry::handle()
 method	CheckEntry::mayRunApplicationCommands()
+method	CheckExportedCommands::handle()
 method	CheckPageVisibility::__construct()
 method	CheckPageVisibility::handle()
 method	CheckPlanDigest::handle()
@@ -6995,6 +7014,11 @@ method	CommandClassifier::withCandidate()
 method	CommandDeclarationInvalid::exportedButNotRegistered()
 method	CommandDeclarationInvalid::for()
 method	CommandDeclarationInvalid::ruleUnreadable()
+method	CommandDeclarations::__construct()
+method	CommandDeclarations::commandOwners()
+method	CommandDeclarations::grammarFor()
+method	CommandDeclarations::withCommands()
+method	CommandDeclarations::withMiddleware()
 method	CommandDispatcherMissing::forCommand()
 method	CommandEffect::mayChangeFiles()
 method	CommandEntrance::admits()
@@ -7095,6 +7119,7 @@ method	CommandRegistry::hasActorScopedReceipt()
 method	CommandRegistry::isExported()
 method	CommandRegistry::middlewareFor()
 method	CommandRegistry::needsRepeatableRead()
+method	CommandRegistry::of()
 method	CommandRegistry::orderedFor()
 method	CommandRegistry::ownerOf()
 method	CommandRegistry::requiresKey()
@@ -7187,6 +7212,7 @@ method	CommandRuleRegistry::withoutReplaced()
 method	CommandScope::__construct()
 method	CommandScope::all()
 method	CommandScope::command()
+method	CommandScope::identity()
 method	CommandScope::ownedBy()
 method	CommandScope::ownedByCore()
 method	CommandShape::__construct()
@@ -7739,6 +7765,14 @@ method	DeclarativeReader::readFrame()
 method	DeclarativeReader::readLastLine()
 method	DeclarativeReader::readLine()
 method	DeclarativeReader::readLines()
+method	DeclaredCommand::__construct()
+method	DeclaredCommand::authorization()
+method	DeclaredCommand::entry()
+method	DeclaredCommand::hasActorScopedReceipt()
+method	DeclaredCommand::isRequestKeyRequired()
+method	DeclaredCommand::needsRepeatableRead()
+method	DeclaredCommand::reflection()
+method	DeclaredCommand::retention()
 method	DeclaredPageRequest::chosenSession()
 method	DeclaredPageRequest::inspectedPage()
 method	DeclaredPageRequest::parameter()
@@ -10091,6 +10125,7 @@ method	MeteredShareBudget::run()
 method	MeteredShareBudget::textBytes()
 method	MiddlewareDeclaration::__construct()
 method	MiddlewareDeclaration::around()
+method	MiddlewareDeclaration::identity()
 method	MiddlewareDeclaration::inside()
 method	MiddlewareDeclarationInvalid::for()
 method	MiddlewareListedTwice::for()
@@ -10775,6 +10810,7 @@ method	Pipelines::__construct()
 method	Pipelines::build()
 method	Pipelines::run()
 method	Pipelines::runOf()
+method	Pipelines::runSteps()
 method	Pipelines::sequence()
 method	Pipelines::step()
 method	PlaceWord::handle()
@@ -11726,6 +11762,8 @@ method	ReadBuilder::readInChunks()
 method	ReadBuilder::readLimit()
 method	ReadBuilder::readRelationCompletely()
 method	ReadBuilder::simplePaginate()
+method	ReadCommandHandlers::handle()
+method	ReadCommandHandlers::handlerOf()
 method	ReadCommandPipeline::pipes()
 method	ReadCompoundPipeline::pipes()
 method	ReadCounts::__construct()
@@ -12293,6 +12331,9 @@ method	RegisterAssignables::__construct()
 method	RegisterAssignables::__invoke()
 method	RegisterAwaitingSkillsState::__construct()
 method	RegisterAwaitingSkillsState::handle()
+method	RegisterCommands::__construct()
+method	RegisterCommands::handle()
+method	RegisterCommands::middlewareFor()
 method	RegisterIncomingWork::__construct()
 method	RegisterIncomingWork::__invoke()
 method	RegisterLinkRecords::__construct()
@@ -13210,6 +13251,7 @@ method	RunsCallPipelines::runCalls()
 method	RunsCallPipelines::runReport()
 method	RunsCallPipelines::sendCall()
 method	RunsPipelines::run()
+method	RunsPipelines::runSteps()
 method	RunsStackTransactions::run()
 method	RunsWindowResolver::__construct()
 method	RunsWindowResolver::read()
@@ -15069,6 +15111,7 @@ method	Step::repeated()
 method	Step::resolvedBy()
 method	Step::run()
 method	StepOutOfOrder::ending()
+method	StepOutOfOrder::endingSteps()
 method	StepOutOfOrder::handing()
 method	StepOutcome::__construct()
 method	StepOutcome::negated()
@@ -17092,6 +17135,9 @@ property	CommandCall::$original
 property	CommandCall::$owner
 property	CommandCall::$repeatableRead
 property	CommandClassSet::$classes
+property	CommandDeclarations::$commands
+property	CommandDeclarations::$middleware
+property	CommandDeclarations::$owners
 property	CommandEntrance::$entries
 property	CommandGrammar::$mayName
 property	CommandNesting::$depth
@@ -17470,6 +17516,9 @@ property	DeclarativeReader::$contract
 property	DeclarativeReader::$definition
 property	DeclarativeReader::$normalizer
 property	DeclarativeReader::$revision
+property	DeclaredCommand::$command
+property	DeclaredCommand::$handler
+property	DeclaredCommand::$owner
 property	DeclaredProposal::$proposed
 property	DeclaredProposal::$requestId
 property	DeclaredRoutes::$declarations
@@ -20159,6 +20208,7 @@ property	RefuseWritesDuringEvaluation::$guard
 property	RegisterAnsweringState::$factory
 property	RegisterAssignables::$assignments
 property	RegisterAwaitingSkillsState::$factory
+property	RegisterCommands::$propertyRules
 property	RegisterIncomingWork::$incoming
 property	RegisterLinkRecords::$providers
 property	RegisterNumberedModels::$numbered

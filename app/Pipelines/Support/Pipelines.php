@@ -51,6 +51,26 @@ final class Pipelines implements RunsPipelines
     }
 
     /**
+     * Runs the input through the steps listed here, in order, with no definition class.
+     *
+     * @template TOutput of object
+     *
+     * @param  list<class-string<Pipable>|Step>  $steps
+     * @param  class-string<TOutput>  $output
+     * @return TOutput
+     */
+    public function runSteps(array $steps, object $input, string $output): object
+    {
+        $result = $this->sequence($steps)($input);
+
+        if (! $result instanceof $output) {
+            throw StepOutOfOrder::endingSteps($output, $result);
+        }
+
+        return $result;
+    }
+
+    /**
      * The pipe or pipeline a class names, built the first time it runs.
      *
      * @param  class-string<Pipable>  $class

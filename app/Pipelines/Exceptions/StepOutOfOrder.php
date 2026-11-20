@@ -28,4 +28,12 @@ final class StepOutOfOrder extends LogicException
     {
         return new self(sprintf('[%s] ended on a [%s] where a [%s] is read.', $definition, $output::class, $wanted));
     }
+
+    /**
+     * @param  class-string  $wanted
+     */
+    public static function endingSteps(string $wanted, object $output): self
+    {
+        return new self(sprintf('The listed steps ended on a [%s] where a [%s] is read.', $output::class, $wanted));
+    }
 }

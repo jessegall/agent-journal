@@ -39,4 +39,12 @@ final readonly class MiddlewareDeclaration
     {
         return new self($middleware, $scope, MiddlewareStage::InsideTransaction);
     }
+
+    /**
+     * What makes two declarations the same: the middleware and its scope.
+     */
+    public function identity(): string
+    {
+        return sprintf('%s|%s', $this->middleware, $this->scope->identity());
+    }
 }

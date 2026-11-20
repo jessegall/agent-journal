@@ -18,11 +18,11 @@ use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
-use App\Bus\Support\PropertyRules;
 use App\Bus\Support\RegisteredMiddleware;
 use App\CoreCommands;
 use App\Domains\Support\DomainRegistry;
 use App\Exports\Support\Exports;
+use App\Pipelines\Contracts\RunsPipelines;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
 use Tests\Fixtures\Bus\Garden\CommandMiddleware\Fence;
 use Tests\Fixtures\Bus\Garden\Commands\Water;
@@ -93,7 +93,7 @@ final class CommandRegistryTest extends TestCase
     public function test_the_application_starts_with_the_real_owners(): void
     {
         $registry = $this->app->make(DomainRegistry::class)
-            ->commandDeclarations(CoreCommands::owner(), $this->app->make(PropertyRules::class));
+            ->commandDeclarations(CoreCommands::owner(), $this->app->make(RunsPipelines::class));
 
         $this->assertFalse($registry->has(AddItem::class));
     }
@@ -284,7 +284,7 @@ final class CommandRegistryTest extends TestCase
      */
     private function registryOf(array $owners): CommandRegistry
     {
-        return CommandRegistry::from($owners, $this->app->make(PropertyRules::class));
+        return CommandRegistry::from($owners, $this->app->make(RunsPipelines::class));
     }
 
     /**
