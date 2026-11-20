@@ -20,33 +20,45 @@ final class DirectFileAccess
 {
     public function __construct(private Filesystem $files) {}
 
-    public function caught(string $path): void
+    /**
+     * @return list<mixed>
+     */
+    public function caught(string $path): array
     {
-        file_get_contents($path);
-        \file_put_contents($path, 'bytes');
-        fopen($path, 'rb');
-        is_dir($path);
-        glob("{$path}/*.php");
-        hash_file('sha256', $path);
-        new RecursiveDirectoryIterator($path);
-        new FilesystemIterator($path);
-        Finder::create()->in($path);
-        File::get($path);
+        return [
+            file_get_contents($path),
+            \file_put_contents($path, 'bytes'),
+            fopen($path, 'rb'),
+            is_dir($path),
+            glob("{$path}/*.php"),
+            hash_file('sha256', $path),
+            new RecursiveDirectoryIterator($path),
+            new FilesystemIterator($path),
+            Finder::create()->in($path),
+            File::get($path),
+            $this->files,
+        ];
     }
 
-    public function leftAlone(object $linker, object $task, $stream): void
+    /**
+     * @param  resource  $stream
+     * @return list<mixed>
+     */
+    public function leftAlone(Linker $linker, $stream): array
     {
         $linker->unlink();
-        $linker->rename('label');
-        $task::file();
-        fwrite($stream, 'bytes');
-        fread($stream, 10);
-        fclose($stream);
-        stream_get_contents($stream);
-        fopen('php://stdin', 'rb');
-        fopen('php://memory', 'w+');
-        file_get_contents('php://stdin');
-        FileRule::types(['pdf']);
-        \Tests\Fixtures\FileAccess\file('not the global one');
+
+        return [
+            $linker->rename('label'),
+            Linker::file(),
+            fwrite($stream, 'bytes'),
+            fread($stream, 10),
+            stream_get_contents($stream),
+            fclose($stream),
+            fopen('php://stdin', 'rb'),
+            fopen('php://memory', 'w+'),
+            file_get_contents('php://stdin'),
+            FileRule::types(['pdf']),
+        ];
     }
 }

@@ -95,66 +95,63 @@ final readonly class FileFunctionScan implements FileScan
      */
     public static function of(ParsedFile $file): array
     {
+        $finder = new NodeFinder();
         $findings = [];
 
-        foreach (new NodeFinder()->find($file->statements, fn (Node $node) => self::isDirectAccess($node)) as $node) {
-            $findings[] = self::findingOf($node);
+        foreach ($finder->findInstanceOf($file->statements, Expr\FuncCall::class) as $call) {
+            if (! $call->name instanceof Node\Name || ! self::isBannedFunction($call, $call->name)) {
+                continue;
+            }
+
+            $function = $call->name->toLowerString();
+            $findings[] = [
+                'line' => $call->getStartLine(),
+                'form' => "{$function}()",
+                'instead' => self::FUNCTIONS[$function],
+            ];
         }
+
+        foreach ($finder->findInstanceOf($file->statements, Expr\New_::class) as $new) {
+            if (! $new->class instanceof Node\Name || ! isset(self::ITERATORS[$new->class->toString()])) {
+                continue;
+            }
+
+            $class = $new->class->toString();
+            $findings[] = [
+                'line' => $new->getStartLine(),
+                'form' => "new {$class}",
+                'instead' => self::ITERATORS[$class],
+            ];
+        }
+
+        foreach ($finder->findInstanceOf($file->statements, Node\Name::class) as $name) {
+            $class = $name->toString();
+
+            if (isset(self::CLASSES[$class]) && ! $name->getAttribute('parent') instanceof Node\UseItem) {
+                $findings[] = ['line' => $name->getStartLine(), 'form' => $class, 'instead' => self::CLASSES[$class]];
+            }
+        }
+
+        usort($findings, fn (array $one, array $other) => $one['line'] <=> $other['line']);
 
         return $findings;
     }
 
-    private static function isDirectAccess(Node $node): bool
-    {
-        return match (true) {
-            $node instanceof Expr\FuncCall => self::isBannedFunction($node),
-            $node instanceof Expr\New_ => $node->class instanceof Node\Name
-                && isset(self::ITERATORS[$node->class->toString()]),
-            $node instanceof Node\Name => isset(self::CLASSES[$node->toString()])
-                && ! $node->getAttribute('parent') instanceof Node\UseItem,
-            default => false,
-        };
-    }
-
     /**
      * Whether the call names a banned global function, through a 'use function', a leading backslash or the
-     * fallback from a namespace, and is not a read of a php:// stream such as php://stdin.
+     * fallback from a namespace, and is not a read of a php:// stream such as php://stdin; is_dir(...) as a callable
+     * counts too.
      */
-    private static function isBannedFunction(Expr\FuncCall $call): bool
+    private static function isBannedFunction(Expr\FuncCall $call, Node\Name $name): bool
     {
-        if (! $call->name instanceof Node\Name || count($call->name->getParts()) !== 1) {
+        if (count($name->getParts()) !== 1 || ! isset(self::FUNCTIONS[$name->toLowerString()])) {
             return false;
         }
 
-        $first = $call->getArgs()[0] ?? null;
-        $readsAStream = $first !== null
+        $first = $call->isFirstClassCallable() ? null : ($call->getArgs()[0] ?? null);
+
+        return ! ($first !== null
             && $first->value instanceof Node\Scalar\String_
-            && str_starts_with($first->value->value, 'php://');
-
-        return isset(self::FUNCTIONS[$call->name->toLowerString()]) && ! $readsAStream;
-    }
-
-    /**
-     * @return array{line: int, form: string, instead: string}
-     */
-    private static function findingOf(Node $node): array
-    {
-        return match (true) {
-            $node instanceof Expr\FuncCall && $node->name instanceof Node\Name => [
-                'line' => $node->getStartLine(),
-                'form' => $node->name->toLowerString().'()',
-                'instead' => self::FUNCTIONS[$node->name->toLowerString()],
-            ],
-            $node instanceof Expr\New_ && $node->class instanceof Node\Name => [
-                'line' => $node->getStartLine(),
-                'form' => "new {$node->class->toString()}",
-                'instead' => self::ITERATORS[$node->class->toString()],
-            ],
-            $node instanceof Node\Name => [
-                'line' => $node->getStartLine(),
-                'form' => $node->toString(),
-                'instead' => self::CLASSES[$node->toString()],
-            ],
-        };
+            && str_starts_with($first->value->value, 'php://'));
     }
 }

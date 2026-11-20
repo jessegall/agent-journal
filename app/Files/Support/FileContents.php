@@ -130,6 +130,14 @@ final class FileContents
     }
 
     /**
+     * How many bytes of file contents are kept now.
+     */
+    public function keptBytes(): int
+    {
+        return $this->keptBytes;
+    }
+
+    /**
      * Whether a copy is kept under this very fingerprint.
      */
     private function holds(Fingerprint $fingerprint): bool

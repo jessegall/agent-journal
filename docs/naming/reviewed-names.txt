@@ -2052,6 +2052,7 @@ class	DesksSeeder
 class	DesksServiceProvider
 class	DestinationRegistry
 class	DirectDestinations
+class	DirectFileAccess
 class	DisableAutoAssignment
 class	DisableAutoAssignmentCall
 class	DisableAutoAssignmentCommand
@@ -2334,6 +2335,7 @@ class	FileChanges
 class	FileContents
 class	FileDeclaresNoClass
 class	FileEditRequested
+class	FileFunctionScan
 class	FileJsonInvalid
 class	FileMissing
 class	FileOutsideAutoload
@@ -5489,6 +5491,7 @@ constant	DeskRecord::LARGEST_SEAT_COUNT
 constant	DeskRecord::LINK_TYPE
 constant	DeskSeat::LINK_TYPE
 constant	DesksServiceProvider::OWNER
+constant	DirectFileAccess::WAITING_LIST
 constant	DockedRecord::DEFAULT_LIMIT
 constant	DockedRecord::LARGEST_LIMIT
 constant	Document::ABSTRACT_CHARACTER_LIMIT
@@ -5546,6 +5549,9 @@ constant	Exports::CORE_SUPPORT
 constant	FailedWindow::MESSAGE
 constant	FileChange::DECLARATION_REVISION
 constant	FileChange::SURFACE
+constant	FileFunctionScan::CLASSES
+constant	FileFunctionScan::FUNCTIONS
+constant	FileFunctionScan::ITERATORS
 constant	FlowGraphData::MERMAID_ESCAPES
 constant	FollowingSequenceStateReference::TYPE_KEY
 constant	Frame::BUDGET_SECONDS
@@ -9915,6 +9921,13 @@ method	Destinations::inbox()
 method	DirectDestinations::__construct()
 method	DirectDestinations::assignee()
 method	DirectDestinations::inbox()
+method	DirectFileAccess::__construct()
+method	DirectFileAccess::across()
+method	DirectFileAccess::listText()
+method	DirectFileAccess::outside()
+method	DirectFileAccess::report()
+method	DirectFileAccess::sites()
+method	DirectFileAccess::waitingSites()
 method	DisableAutoAssignment::__construct()
 method	DisableAutoAssignmentCall::__construct()
 method	DisableAutoAssignmentCommand::handle()
@@ -10848,6 +10861,7 @@ method	FileContents::fresh()
 method	FileContents::holds()
 method	FileContents::keep()
 method	FileContents::kept()
+method	FileContents::keptBytes()
 method	FileContents::keptDecoded()
 method	FileContents::keptUnder()
 method	FileContents::openCount()
@@ -10863,6 +10877,12 @@ method	FileEditRequested::leavesAgentIdle()
 method	FileEditRequested::methodName()
 method	FileEditRequested::recordTurn()
 method	FileEditRequested::recordVisit()
+method	FileFunctionScan::findingOf()
+method	FileFunctionScan::findingsIn()
+method	FileFunctionScan::isBannedFunction()
+method	FileFunctionScan::isDirectAccess()
+method	FileFunctionScan::key()
+method	FileFunctionScan::of()
 method	FileJsonInvalid::at()
 method	FileMissing::at()
 method	FileOperation::accessTypes()
@@ -23948,6 +23968,8 @@ property	DestinationRegistry::$providers
 property	DirectDestinations::$actor
 property	DirectDestinations::$holder
 property	DirectDestinations::$inboxes
+property	DirectFileAccess::$findings
+property	DirectFileAccess::$projectRoot
 property	DisableAutoAssignment::$expectedRevision
 property	DisableAutoAssignment::$key
 property	DisableAutoAssignmentCall::$actorId
@@ -30656,6 +30678,7 @@ variable	$filter
 variable	$filters
 variable	$final
 variable	$finder
+variable	$finding
 variable	$findings
 variable	$fingerprint
 variable	$fingerprints
@@ -30707,6 +30730,7 @@ variable	$gh
 variable	$given
 variable	$go
 variable	$goal
+variable	$gone
 variable	$grant
 variable	$grantable
 variable	$granted
@@ -30847,6 +30871,7 @@ variable	$isSignedOut
 variable	$isSingleton
 variable	$isSource
 variable	$isStoreRemoved
+variable	$isStream
 variable	$isTextContinuation
 variable	$isTicking
 variable	$isToolCall
@@ -31478,6 +31503,7 @@ variable	$signature
 variable	$signedLeft
 variable	$since
 variable	$site
+variable	$sites
 variable	$size
 variable	$skill
 variable	$skillEntries
