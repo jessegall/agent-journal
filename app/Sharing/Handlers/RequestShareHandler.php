@@ -41,8 +41,8 @@ final readonly class RequestShareHandler implements CommandHandler
 
         ShareInstallation::lockForAdmission();
 
-        if (Share::proposedCount() >= Share::MOST_PROPOSED) {
-            throw ShareQuotaReached::forProposals(Share::MOST_PROPOSED);
+        if (Share::proposedCount() >= Share::PROPOSED_LIMIT) {
+            throw ShareQuotaReached::forProposals(Share::PROPOSED_LIMIT);
         }
 
         $expiry = CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS);

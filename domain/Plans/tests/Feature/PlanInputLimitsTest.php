@@ -37,14 +37,14 @@ final class PlanInputLimitsTest extends TestCase
      */
     public static function refusedInput(): iterable
     {
-        $longTitle = str_repeat('é', Plan::TITLE_CHARACTERS + 1);
-        $longNote = str_repeat('é', Plan::NOTE_CHARACTERS + 1);
+        $longTitle = str_repeat('é', Plan::TITLE_CHARACTER_LIMIT + 1);
+        $longNote = str_repeat('é', Plan::NOTE_CHARACTER_LIMIT + 1);
 
         yield 'a long plan title' => [new CreatePlan($longTitle, 'Brief', PlanType::Build), 'title'];
         yield 'a two-line plan title' => [new CreatePlan("Release\nnow", 'Brief', PlanType::Build), 'title'];
         yield 'an empty plan title' => [new CreatePlan('', 'Brief', PlanType::Build), 'title'];
         yield 'a long plan brief' => [
-            new CreatePlan('Release', str_repeat('é', Plan::BRIEF_CHARACTERS + 1), PlanType::Build),
+            new CreatePlan('Release', str_repeat('é', Plan::BRIEF_CHARACTER_LIMIT + 1), PlanType::Build),
             'brief',
         ];
         yield 'a long edited title' => [new EditPlan(self::PLAN_ID, 1, $longTitle), 'title'];
@@ -70,8 +70,8 @@ final class PlanInputLimitsTest extends TestCase
 
     public function test_a_title_and_brief_at_their_limits_create_the_plan(): void
     {
-        $title = str_repeat('é', Plan::TITLE_CHARACTERS);
-        $brief = str_repeat('é', Plan::BRIEF_CHARACTERS);
+        $title = str_repeat('é', Plan::TITLE_CHARACTER_LIMIT);
+        $brief = str_repeat('é', Plan::BRIEF_CHARACTER_LIMIT);
 
         $planId = $this->app->make(CommandBus::class)->run(new CreatePlan($title, $brief, PlanType::Build));
 

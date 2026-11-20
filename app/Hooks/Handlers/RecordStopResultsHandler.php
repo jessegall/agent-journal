@@ -20,8 +20,7 @@ final readonly class RecordStopResultsHandler implements CommandHandler
         $attempt = StopAttempt::query()
             ->withoutGlobalScope(AgentSessionScope::class)
             ->lockForUpdate()
-            ->find($command->attemptId)
-            ?? throw StopResultsRefused::unknownAttempt($command->attemptId);
+            ->findOr($command->attemptId, fn () => throw StopResultsRefused::unknownAttempt($command->attemptId));
         $submission = $command->submissionDigest();
 
         if ($attempt->isSettled() && $attempt->wasSubmittedAs($submission)) {

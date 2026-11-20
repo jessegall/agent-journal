@@ -48,7 +48,7 @@ final readonly class PlanAssignmentGroup
 
     private function forPhase(RecordIdentity $root): AssignmentGroup
     {
-        $phase = Phase::query()->find($root->id) ?? throw RecordUnavailable::for($root);
+        $phase = Phase::query()->findOr($root->id, fn () => throw RecordUnavailable::for($root));
         Plan::lockStructure($phase->plan_id);
 
         return $this->group($root, $phase->plan_id, $this->tasks->records($this->taskIdsOf(new Collection([$phase]))));

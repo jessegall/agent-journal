@@ -26,7 +26,7 @@ final readonly class DraftRecords implements DraftResolver
         $document = Document::query()->sharedPublished()->with('draft')->where(
             'number',
             $documentNumber,
-        )->first() ?? throw DraftMissing::forDocument($documentNumber);
+        )->firstOr(fn () => throw DraftMissing::forDocument($documentNumber));
         $draft = $document->draft ?? throw DraftMissing::forDocument($documentNumber);
 
         if (! $this->editors->isEditing($draft)) {
@@ -41,7 +41,7 @@ final readonly class DraftRecords implements DraftResolver
         $document = Document::query()->sharedPublished()->with('draft')->where(
             'number',
             $documentNumber,
-        )->first() ?? throw DraftMissing::forDocument($documentNumber);
+        )->firstOr(fn () => throw DraftMissing::forDocument($documentNumber));
         $draft = $document->draft;
 
         if ($draft === null) {

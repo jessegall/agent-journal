@@ -22,8 +22,9 @@ final readonly class DeskSeatProvider implements AssignableProvider
     {
         $this->actors->actor();
 
-        return DeskSeat::query()->whereKey($record->id)->lock('for key share')->first()
-            ?? throw RecordUnavailable::for($record);
+        return DeskSeat::query()->whereKey($record->id)->lock('for key share')->firstOr(
+            fn () => throw RecordUnavailable::for($record),
+        );
     }
 
     /**

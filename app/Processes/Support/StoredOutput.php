@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
  */
 final readonly class StoredOutput
 {
-    public const int PREVIEW_CHARACTERS = 4_000;
+    public const int PREVIEW_CHARACTER_LIMIT = 4_000;
 
     public function __construct(private Factory $disks) {}
 
@@ -100,6 +100,6 @@ final readonly class StoredOutput
             $escaped = (string) preg_replace_callback('/[\x80-\xFF]/', $escape, $escaped);
         }
 
-        return mb_substr($escaped, 0, self::PREVIEW_CHARACTERS);
+        return mb_substr($escaped, 0, self::PREVIEW_CHARACTER_LIMIT);
     }
 }

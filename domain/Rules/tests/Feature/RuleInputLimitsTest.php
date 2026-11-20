@@ -28,9 +28,9 @@ final class RuleInputLimitsTest extends TestCase
      */
     public static function refusedProposals(): iterable
     {
-        yield 'a long text' => [new ProposeRule(str_repeat('é', Rule::TEXT_CHARACTERS + 1), 'Reason'), 'text'];
+        yield 'a long text' => [new ProposeRule(str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1), 'Reason'), 'text'];
         yield 'an empty text' => [new ProposeRule('', 'Reason'), 'text'];
-        yield 'a long reason' => [new ProposeRule('Text', str_repeat('é', Rule::REASON_CHARACTERS + 1)), 'reason'];
+        yield 'a long reason' => [new ProposeRule('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)), 'reason'];
         yield 'an empty reason' => [new ProposeRule('Text', ''), 'reason'];
     }
 
@@ -47,10 +47,10 @@ final class RuleInputLimitsTest extends TestCase
 
     public function test_a_text_and_reason_at_their_limits_are_proposed(): void
     {
-        $text = str_repeat('é', Rule::TEXT_CHARACTERS);
+        $text = str_repeat('é', Rule::TEXT_CHARACTER_LIMIT);
 
         $ruleId = $this->app->make(CommandBus::class)->run(
-            new ProposeRule($text, str_repeat('é', Rule::REASON_CHARACTERS)),
+            new ProposeRule($text, str_repeat('é', Rule::REASON_CHARACTER_LIMIT)),
         );
 
         $this->assertSame($text, Rule::query()->findOrFail($ruleId)->text);

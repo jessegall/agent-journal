@@ -29,9 +29,9 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 final readonly class ProposeRule extends Command implements AuthorizedCommand
 {
     public function __construct(
-        #[Required, Max(Rule::TEXT_CHARACTERS)]
+        #[Required, Max(Rule::TEXT_CHARACTER_LIMIT)]
         public string $text,
-        #[Required, Max(Rule::REASON_CHARACTERS)]
+        #[Required, Max(Rule::REASON_CHARACTER_LIMIT)]
         public string $reason,
         public string|null $replacesRuleId = null,
     ) {}

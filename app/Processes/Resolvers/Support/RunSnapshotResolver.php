@@ -33,7 +33,7 @@ final readonly class RunSnapshotResolver
             ->forActor()
             ->where('project_key', $this->projects->current())
             ->whereKey($runId)
-            ->first() ?? throw new NotFoundHttpException();
+            ->firstOr(fn () => throw new NotFoundHttpException());
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
 
         return RunSnapshotData::from([

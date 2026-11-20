@@ -37,7 +37,7 @@ final class HelperNotice extends Model implements ReadableModel
     /**
      * The most notices given to a parent at one context start.
      */
-    public const int MOST_DELIVERED = 20;
+    public const int DELIVERED_LIMIT = 20;
 
     /**
      * @return array<string, string>
@@ -72,7 +72,7 @@ final class HelperNotice extends Model implements ReadableModel
             ->whereNull('delivered_at')
             ->orderBy('id')
             ->lockForUpdate()
-            ->readLimit(self::MOST_DELIVERED)
+            ->readLimit(self::DELIVERED_LIMIT)
             ->get()
             ->all());
     }

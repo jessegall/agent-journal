@@ -97,8 +97,9 @@ final class TaskRun extends Model implements Assignable, ReadableModel
      */
     public static function lockedById(string $runId): self
     {
-        return self::query()->whereKey($runId)->lockForUpdate()->first()
-            ?? throw RecordUnavailable::for(new RecordIdentity(self::LINK_TYPE, $runId));
+        return self::query()->whereKey($runId)->lockForUpdate()->firstOr(
+            fn () => throw RecordUnavailable::for(new RecordIdentity(self::LINK_TYPE, $runId)),
+        );
     }
 
     /**

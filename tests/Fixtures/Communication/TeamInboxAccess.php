@@ -24,14 +24,12 @@ final readonly class TeamInboxAccess implements InboxAccess
 
     public function lockShared(Inbox $inbox): void
     {
-        InboxRecord::query()->whereKey($inbox->inboxId())->sharedLock()->first()
-            ?? throw InboxUnavailable::forId($inbox->inboxId());
+        InboxRecord::query()->whereKey($inbox->inboxId())->sharedLock()->firstOr(fn () => throw InboxUnavailable::forId($inbox->inboxId()));
     }
 
     public function lockExclusive(Inbox $inbox): void
     {
-        InboxRecord::query()->whereKey($inbox->inboxId())->lockForUpdate()->first()
-            ?? throw InboxUnavailable::forId($inbox->inboxId());
+        InboxRecord::query()->whereKey($inbox->inboxId())->lockForUpdate()->firstOr(fn () => throw InboxUnavailable::forId($inbox->inboxId()));
     }
 
     public function membership(Inbox $inbox, Actor $actor): InboxMembership

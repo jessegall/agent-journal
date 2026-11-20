@@ -91,8 +91,9 @@ final readonly class DraftClosing
             return $closed->result();
         }
 
-        $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->first()
-            ?? throw DraftMissing::forDocument($document->number);
+        $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->firstOr(
+            fn () => throw DraftMissing::forDocument($document->number),
+        );
         $requireCloser($draft);
         if ($target->expectedVersion !== null) {
             $this->assertCurrentDraftVersion($draft, $target->expectedVersion);

@@ -36,7 +36,7 @@ final readonly class Supervisor
     /**
      * The most standard output a step keeps in memory as a substitution value; the recorder keeps every byte.
      */
-    private const int KEPT_OUTPUT_BYTES = 1_048_576;
+    private const int KEPT_OUTPUT_BYTE_LIMIT = 1_048_576;
 
     /**
      * How long a stopped part may take to end after the polite signal before it is forced.
@@ -161,7 +161,7 @@ final readonly class Supervisor
             $state->events->output($commands[$index][0], $stream, $bytes);
             $kept = $index === array_key_last($commands)
                 && $stream === OutputStream::Stdout
-                && strlen($stdout) < self::KEPT_OUTPUT_BYTES;
+                && strlen($stdout) < self::KEPT_OUTPUT_BYTE_LIMIT;
             $stdout .= $kept ? $bytes : '';
         };
         new PipelinePump()->run(array_column($commands, 1), $pump, $state->stop);
@@ -227,7 +227,7 @@ final readonly class Supervisor
         $stdout = '';
         $drained = $process->drain(function (OutputStream $stream, string $bytes) use ($part, $state, &$stdout): void {
             $state->events->output($part, $stream, $bytes);
-            $stdout .= $stream === OutputStream::Stdout && strlen($stdout) < self::KEPT_OUTPUT_BYTES ? $bytes : '';
+            $stdout .= $stream === OutputStream::Stdout && strlen($stdout) < self::KEPT_OUTPUT_BYTE_LIMIT ? $bytes : '';
         }, SpawnedProcess::DRAIN_SECONDS, $state->stop);
         $status = $this->finishExternal($part, $process, $state, $drained);
 

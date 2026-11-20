@@ -50,12 +50,12 @@ final class Rule extends Model implements Numbered, ReadableModel
     /**
      * The most characters a rule's text holds.
      */
-    public const int TEXT_CHARACTERS = 2000;
+    public const int TEXT_CHARACTER_LIMIT = 2000;
 
     /**
      * The most characters the reason given with a rule holds.
      */
-    public const int REASON_CHARACTERS = 2000;
+    public const int REASON_CHARACTER_LIMIT = 2000;
 
     /**
      * @var array<string, mixed>
@@ -111,7 +111,7 @@ final class Rule extends Model implements Numbered, ReadableModel
      */
     public static function lockedById(string $ruleId): self
     {
-        return self::query()->whereKey($ruleId)->lockForUpdate()->first() ?? throw RuleMissing::withId($ruleId);
+        return self::query()->whereKey($ruleId)->lockForUpdate()->firstOr(fn () => throw RuleMissing::withId($ruleId));
     }
 
     /**

@@ -17,7 +17,7 @@ final readonly class NavigationAnswer
     /**
      * The longest label an answer may name.
      */
-    private const int MOST_LABEL_CHARACTERS = 200;
+    private const int LABEL_CHARACTER_LIMIT = 200;
 
     /**
      * @param  list<NavigationKey>  $keys
@@ -75,8 +75,8 @@ final readonly class NavigationAnswer
      */
     private static function label(string $label): string
     {
-        if (trim($label) === '' || mb_strlen($label) > self::MOST_LABEL_CHARACTERS) {
-            throw NavigationAnswerRefused::labelNotAllowed(self::MOST_LABEL_CHARACTERS);
+        if (trim($label) === '' || mb_strlen($label) > self::LABEL_CHARACTER_LIMIT) {
+            throw NavigationAnswerRefused::labelNotAllowed(self::LABEL_CHARACTER_LIMIT);
         }
 
         return $label;

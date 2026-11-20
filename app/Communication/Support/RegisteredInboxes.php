@@ -49,7 +49,7 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
 
     public function resolve(string $inboxId): Inbox
     {
-        $record = InboxRecord::query()->find($inboxId) ?? throw InboxUnavailable::forId($inboxId);
+        $record = InboxRecord::query()->findOr($inboxId, fn () => throw InboxUnavailable::forId($inboxId));
         [$providerClass] = $this->providers->find($record->provider_key)->getOrThrow(InboxUnavailable::forId($inboxId));
 
         return Container::getInstance()->make($providerClass)->inboxFor($record->id, $record->provider_id);
@@ -76,7 +76,10 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
 
     public function accessFor(Inbox $inbox): InboxAccess
     {
-        $record = InboxRecord::query()->find($inbox->inboxId()) ?? throw InboxUnavailable::forId($inbox->inboxId());
+        $record = InboxRecord::query()->findOr(
+            $inbox->inboxId(),
+            fn () => throw InboxUnavailable::forId($inbox->inboxId()),
+        );
         [, $accessClass] = $this->providers->find($record->provider_key)
             ->getOrThrow(InboxUnavailable::forId($inbox->inboxId()));
 

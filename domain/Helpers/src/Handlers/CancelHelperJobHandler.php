@@ -24,8 +24,9 @@ final readonly class CancelHelperJobHandler implements CommandHandler
 
     public function handle(CancelHelperJob $command): string
     {
-        $job = HelperJob::query()->open()->whereKey($command->jobId)->lockForUpdate()->first()
-            ?? throw HelperUnavailable::toYou();
+        $job = HelperJob::query()->open()->whereKey($command->jobId)->lockForUpdate()->firstOr(
+            fn () => throw HelperUnavailable::toYou(),
+        );
 
         if ($job->state->isLive()) {
             $this->stopLiveAttempt($job, $command->idempotencyKey);

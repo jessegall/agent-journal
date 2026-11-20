@@ -48,8 +48,7 @@ final readonly class RetainedPages
             'expires_at',
             '>=',
             CarbonImmutable::now(),
-        )->first()
-            ?? throw ContinuationStale::expired();
+        )->firstOr(fn () => throw ContinuationStale::expired());
         $references = array_slice($page->references, $offset);
         $found = $read($references);
         $visibleRecords = [];

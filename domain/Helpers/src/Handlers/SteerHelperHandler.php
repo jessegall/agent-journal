@@ -21,8 +21,9 @@ final readonly class SteerHelperHandler implements CommandHandler
 
     public function handle(SteerHelper $command): SteerReceipt
     {
-        $identity = HelperIdentity::query()->whereKey($command->identityId)->first()
-            ?? throw HelperUnavailable::toYou();
+        $identity = HelperIdentity::query()->whereKey($command->identityId)->firstOr(
+            fn () => throw HelperUnavailable::toYou(),
+        );
         $latest = HelperJob::query()->ofIdentities([$identity->id])->latest('id')->lockForUpdate()->first();
 
         if ($latest !== null && $latest->state->isLive()) {

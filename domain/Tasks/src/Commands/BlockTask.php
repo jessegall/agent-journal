@@ -30,7 +30,7 @@ final readonly class BlockTask extends Command implements AuthorizedCommand
     public function __construct(
         public string $taskId,
         public int $runNumber,
-        #[Max(Task::NOTE_CHARACTERS)]
+        #[Max(Task::NOTE_CHARACTER_LIMIT)]
         public string $reason,
     ) {}
 

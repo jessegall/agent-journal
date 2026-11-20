@@ -29,7 +29,7 @@ final readonly class CancelTask extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string $taskId,
-        #[Max(Task::NOTE_CHARACTERS)]
+        #[Max(Task::NOTE_CHARACTER_LIMIT)]
         public string $reason,
     ) {}
 

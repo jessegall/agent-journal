@@ -80,7 +80,7 @@ final class Profile extends Model implements ReadableModel
      */
     public static function lockByKey(ProfileKey $key): self
     {
-        return self::query()->withKey($key)->lockForUpdate()->first() ?? throw ProfileMissing::for($key);
+        return self::query()->withKey($key)->lockForUpdate()->firstOr(fn () => throw ProfileMissing::for($key));
     }
 
     /**
@@ -90,7 +90,7 @@ final class Profile extends Model implements ReadableModel
      */
     public static function byKey(ProfileKey $key): self
     {
-        return self::query()->withKey($key)->first() ?? throw ProfileMissing::for($key);
+        return self::query()->withKey($key)->firstOr(fn () => throw ProfileMissing::for($key));
     }
 
     public static function hasCurrent(ProfileKey $key): bool

@@ -30,7 +30,7 @@ final readonly class PlanDetailRecords implements PlanDetailsResolver
     public function plan(string $planId, ReadView $view, int $taskOffset = 0): PlanDetails
     {
         $this->actors->actor();
-        $plan = Plan::query()->find($planId) ?? throw PlanMissing::withId($planId);
+        $plan = Plan::query()->findOr($planId, fn () => throw PlanMissing::withId($planId));
         $card = $this->records->cardOf($plan);
         [$phases, $nextTaskOffset] = $this->phaseWindow($plan, $taskOffset);
 
@@ -40,7 +40,7 @@ final readonly class PlanDetailRecords implements PlanDetailsResolver
     public function phase(string $phaseId): PhaseDetails
     {
         $this->actors->actor();
-        $phase = Phase::query()->find($phaseId) ?? throw PhaseMissing::withId($phaseId);
+        $phase = Phase::query()->findOr($phaseId, fn () => throw PhaseMissing::withId($phaseId));
 
         return $phase->details();
     }

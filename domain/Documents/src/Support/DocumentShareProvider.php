@@ -42,7 +42,9 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
      */
     public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
     {
-        $document = $this->cardQuery([$read->record->id])->first() ?? throw RecordUnavailable::forActor($read->record);
+        $document = $this->cardQuery([$read->record->id])->firstOr(
+            fn () => throw RecordUnavailable::forActor($read->record),
+        );
         $revisionId = (string) $document->current_revision_id;
         $bytes = DocumentRevision::bodyBytesOf($revisionId);
 

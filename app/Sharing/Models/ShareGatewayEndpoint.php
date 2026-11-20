@@ -120,7 +120,7 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
             self::query()->ofRun($runId)->where(
                 'state',
                 GatewayEndpointState::Open->value,
-            )->orderBy('id')->readLimit(Share::MOST_LIVE)->get()->all(),
+            )->orderBy('id')->readLimit(Share::LIVE_LIMIT)->get()->all(),
         );
     }
 
@@ -192,8 +192,7 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
         return self::query()->ofConfiguration($configurationId)->where(
             'endpoint_version',
             $endpointVersion,
-        )->ofRun($runId)->lockForUpdate()->first()
-            ?? throw GatewayLeaseRefused::forEndpoint($configurationId, $endpointVersion);
+        )->ofRun($runId)->lockForUpdate()->firstOr(fn () => throw GatewayLeaseRefused::forEndpoint($configurationId, $endpointVersion));
     }
 
     public function isVersion(int $endpointVersion): bool

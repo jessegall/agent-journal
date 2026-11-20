@@ -18,7 +18,7 @@ final readonly class DeskInboxProvider implements InboxProvider, NamedInboxes
 {
     public function inboxFor(string $inboxId, string $providerId): Inbox
     {
-        return DeskRecord::query()->whereKey($providerId)->first() ?? throw InboxUnavailable::forId($inboxId);
+        return DeskRecord::query()->whereKey($providerId)->firstOr(fn () => throw InboxUnavailable::forId($inboxId));
     }
 
     public function inboxNamed(string $name): Option

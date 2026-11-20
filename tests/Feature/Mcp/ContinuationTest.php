@@ -164,7 +164,7 @@ final class ContinuationTest extends TestCase
         $chunk = TextChunk::of($text, 2, 0);
 
         while ($chunk->nextLine === 2) {
-            $this->assertLessThanOrEqual(TextChunk::MAX_BYTES, strlen($chunk->text));
+            $this->assertLessThanOrEqual(TextChunk::BYTE_LIMIT, strlen($chunk->text));
             $this->assertTrue(mb_check_encoding($chunk->text, 'UTF-8'));
             $read .= $chunk->text;
             $chunk = TextChunk::of($text, 2, $chunk->nextCharacter);

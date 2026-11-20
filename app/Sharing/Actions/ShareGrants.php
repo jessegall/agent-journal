@@ -148,8 +148,8 @@ final readonly class ShareGrants
      */
     private function assertLiveSlotFree(): void
     {
-        if (Share::liveCount() >= Share::MOST_LIVE) {
-            throw ShareQuotaReached::at(Share::MOST_LIVE);
+        if (Share::liveCount() >= Share::LIVE_LIMIT) {
+            throw ShareQuotaReached::at(Share::LIVE_LIMIT);
         }
     }
 

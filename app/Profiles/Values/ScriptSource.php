@@ -8,14 +8,14 @@ use App\Profiles\Exceptions\ProfileDraftRefused;
 
 final readonly class ScriptSource
 {
-    public const int MAX_BYTES = 262144;
+    public const int BYTE_LIMIT = 262144;
 
     /**
      * @param  list<NamedCommand>  $commands
      */
     public function __construct(public string $text, public array $commands = [])
     {
-        if (strlen($text) > self::MAX_BYTES || count($commands) > 64) {
+        if (strlen($text) > self::BYTE_LIMIT || count($commands) > 64) {
             throw ProfileDraftRefused::oversized();
         }
     }

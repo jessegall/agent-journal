@@ -33,9 +33,9 @@ final readonly class EditPlan extends Command implements AuthorizedCommand
     public function __construct(
         public string $planId,
         public int $expectedRevision,
-        #[OneLine, Max(Plan::TITLE_CHARACTERS)]
+        #[OneLine, Max(Plan::TITLE_CHARACTER_LIMIT)]
         public string|null $title = null,
-        #[Max(Plan::BRIEF_CHARACTERS)]
+        #[Max(Plan::BRIEF_CHARACTER_LIMIT)]
         public string|null $brief = null,
         public PlanType|null $type = null,
     ) {}

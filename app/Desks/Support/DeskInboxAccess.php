@@ -25,14 +25,16 @@ final readonly class DeskInboxAccess implements InboxAccess
 {
     public function lockShared(Inbox $inbox): void
     {
-        DeskRecord::query()->where('inbox_id', $inbox->inboxId())->sharedLock()->first()
-            ?? throw InboxUnavailable::forId($inbox->inboxId());
+        DeskRecord::query()->where('inbox_id', $inbox->inboxId())->sharedLock()->firstOr(
+            fn () => throw InboxUnavailable::forId($inbox->inboxId()),
+        );
     }
 
     public function lockExclusive(Inbox $inbox): void
     {
-        DeskRecord::query()->where('inbox_id', $inbox->inboxId())->lockForUpdate()->first()
-            ?? throw InboxUnavailable::forId($inbox->inboxId());
+        DeskRecord::query()->where('inbox_id', $inbox->inboxId())->lockForUpdate()->firstOr(
+            fn () => throw InboxUnavailable::forId($inbox->inboxId()),
+        );
     }
 
     /**
@@ -42,7 +44,7 @@ final readonly class DeskInboxAccess implements InboxAccess
     {
         $seat = $this->seatAssignments($inbox)
             ->heldBy(AssigneeIdentity::of($actor))
-            ->first() ?? throw InboxUnavailable::forId($inbox->inboxId());
+            ->firstOr(fn () => throw InboxUnavailable::forId($inbox->inboxId()));
 
         return $this->membershipOf($seat);
     }

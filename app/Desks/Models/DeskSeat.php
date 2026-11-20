@@ -73,7 +73,9 @@ final class DeskSeat extends Model implements Assignable, ReadableModel
      */
     public static function ofDeskById(Desk $desk, string $seatId): self
     {
-        return self::query()->ofDesk($desk)->whereKey($seatId)->first() ?? throw DeskUnavailable::forSeat($seatId);
+        return self::query()->ofDesk($desk)->whereKey($seatId)->firstOr(
+            fn () => throw DeskUnavailable::forSeat($seatId),
+        );
     }
 
     /**

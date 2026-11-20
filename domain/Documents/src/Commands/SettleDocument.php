@@ -31,7 +31,7 @@ final readonly class SettleDocument extends Command implements AuthorizedCommand
     public function __construct(
         public int $documentNumber,
         public int $expectedRevision,
-        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)]
+        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTER_LIMIT)]
         public string $reason,
     ) {}
 

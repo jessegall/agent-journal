@@ -40,8 +40,9 @@ final readonly class JobContext
             return [];
         }
 
-        $purpose = HelperPurpose::query()->acrossActors()->whereKey($job->helper_purpose_id)->first()
-            ?? throw ContextUnavailable::forJob($job->id);
+        $purpose = HelperPurpose::query()->acrossActors()->whereKey($job->helper_purpose_id)->firstOr(
+            fn () => throw ContextUnavailable::forJob($job->id),
+        );
 
         return [$job->contextFor($identity, $purpose->label)];
     }

@@ -25,12 +25,12 @@ final readonly class ReportRuntimeScreenHandler implements CommandHandler
     /**
      * The most bytes one screen report may take.
      */
-    public const int MAX_BYTES = 256 * 1024;
+    public const int BYTE_LIMIT = 256 * 1024;
 
     /**
      * The most frames of one runtime kept in one second.
      */
-    public const int MAX_FRAMES_PER_SECOND = 4;
+    public const int FRAMES_PER_SECOND_LIMIT = 4;
 
     public function __construct(
         private WatchedRuntimes $watched,
@@ -42,7 +42,7 @@ final readonly class ReportRuntimeScreenHandler implements CommandHandler
 
     public function handle(ReportRuntimeScreen $command): ScreenReportAnswer
     {
-        if (strlen($command->body) > self::MAX_BYTES) {
+        if (strlen($command->body) > self::BYTE_LIMIT) {
             return $this->refuse($command->hostId, '', ScreenReportRefusal::TooLarge);
         }
 
@@ -71,7 +71,7 @@ final readonly class ReportRuntimeScreenHandler implements CommandHandler
         }
 
         $second = $this->clock->now()->getTimestamp();
-        if ((int) $this->cache->get($this->rateKey($runtimeId, $second), 0) >= self::MAX_FRAMES_PER_SECOND) {
+        if ((int) $this->cache->get($this->rateKey($runtimeId, $second), 0) >= self::FRAMES_PER_SECOND_LIMIT) {
             return ScreenReportRefusal::TooFast;
         }
 

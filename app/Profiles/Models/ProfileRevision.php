@@ -152,8 +152,9 @@ final class ProfileRevision extends Model implements ReadableModel
      */
     public static function currentOf(Profile $profile): self
     {
-        return self::query()->ofProfile($profile)->whereKey($profile->current_revision_id)->first()
-            ?? throw ProfileMissing::for(ProfileKey::from($profile->key));
+        return self::query()->ofProfile($profile)->whereKey($profile->current_revision_id)->firstOr(
+            fn () => throw ProfileMissing::for(ProfileKey::from($profile->key)),
+        );
     }
 
     /**

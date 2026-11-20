@@ -216,7 +216,7 @@ final class ShareProposalTest extends TestCase
 
     public function test_the_hundred_and_first_proposal_is_refused_and_an_expired_one_frees_a_slot(): void
     {
-        $this->proposeMany(Share::MOST_PROPOSED);
+        $this->proposeMany(Share::PROPOSED_LIMIT);
 
         $this->assertThrows(fn () => $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1'), ShareQuotaReached::class);
 

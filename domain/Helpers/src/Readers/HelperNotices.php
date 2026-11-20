@@ -15,14 +15,14 @@ final readonly class HelperNotices
     /**
      * The most notices one read answers.
      */
-    private const int MOST_NOTICES = 50;
+    private const int NOTICE_LIMIT = 50;
 
     /**
      * @return list<HelperNoticeData>
      */
     public function newest(): array
     {
-        $notices = HelperNotice::query()->latest('id')->readLimit(self::MOST_NOTICES)->get()->all();
+        $notices = HelperNotice::query()->latest('id')->readLimit(self::NOTICE_LIMIT)->get()->all();
 
         return array_values(HelperNoticeData::collect($notices));
     }

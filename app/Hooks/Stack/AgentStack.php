@@ -20,7 +20,7 @@ final readonly class AgentStack
     /**
      * The most frames one stack may hold, ready included.
      */
-    public const int DEEPEST = 100;
+    public const int DEPTH_LIMIT = 100;
 
     /**
      * @param  list<Frame>  $frames  bottom first

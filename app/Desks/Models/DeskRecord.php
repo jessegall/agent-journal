@@ -112,7 +112,9 @@ final class DeskRecord extends Model implements Desk, ReadableModel
      */
     public static function lockedForSeating(string $deskId): self
     {
-        return self::query()->whereKey($deskId)->lockForUpdate()->first() ?? throw DeskUnavailable::forId($deskId);
+        return self::query()->whereKey($deskId)->lockForUpdate()->firstOr(
+            fn () => throw DeskUnavailable::forId($deskId),
+        );
     }
 
     /**

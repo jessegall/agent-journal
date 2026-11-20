@@ -16,7 +16,7 @@ final readonly class AddPhaseHandler implements CommandHandler
 {
     public function handle(AddPhase $command): string
     {
-        $plan = Plan::query()->find($command->planId) ?? throw PlanMissing::withId($command->planId);
+        $plan = Plan::query()->findOr($command->planId, fn () => throw PlanMissing::withId($command->planId));
 
         return $plan->addPhase($command->title)->id;
     }

@@ -84,7 +84,7 @@ final class Share extends Model implements Numbered, ReadableModel
     /**
      * The most live, unexpired shares an installation holds at once.
      */
-    public const int MOST_LIVE = 100;
+    public const int LIVE_LIMIT = 100;
 
     /**
      * The scope version of a grant's first approved member list; a proposal has none yet, at 0.
@@ -94,7 +94,7 @@ final class Share extends Model implements Numbered, ReadableModel
     /**
      * The most unexpired proposals the installation holds at once.
      */
-    public const int MOST_PROPOSED = 100;
+    public const int PROPOSED_LIMIT = 100;
 
     /**
      * How long a proposal waits for the owner before it expires.
@@ -186,7 +186,7 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function lockForChange(string $id): self
     {
-        return self::query()->whereKey($id)->lockForUpdate()->first() ?? throw ShareUnavailable::for($id);
+        return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw ShareUnavailable::for($id));
     }
 
     /**
@@ -302,7 +302,7 @@ final class Share extends Model implements Numbered, ReadableModel
     {
         return array_values(
             self::query()->servedBy($configurationId)->awaitingGateway()->orderBy('id')->lockForUpdate()->readLimit(
-                self::MOST_LIVE,
+                self::LIVE_LIMIT,
             )->get()->all(),
         );
     }
@@ -343,7 +343,7 @@ final class Share extends Model implements Numbered, ReadableModel
                 array_map(
                     strval(...),
                     self::query()->liveNow()->whereNotNull('share_gateway_configuration_id')->readLimit(
-                        self::MOST_LIVE,
+                        self::LIVE_LIMIT,
                     )->pluck('share_gateway_configuration_id')->all(),
                 ),
             ),
@@ -360,7 +360,7 @@ final class Share extends Model implements Numbered, ReadableModel
     {
         return array_values(
             self::query()->servedBy($configurationId)->unended()->orderBy('id')->readLimit(
-                self::MOST_LIVE,
+                self::LIVE_LIMIT,
             )->get()->all(),
         );
     }
@@ -374,7 +374,7 @@ final class Share extends Model implements Numbered, ReadableModel
     {
         return array_values(
             self::query()->servedBy($configurationId)->unended()->orderBy('id')->lockForUpdate()->readLimit(
-                self::MOST_LIVE,
+                self::LIVE_LIMIT,
             )->get()->all(),
         );
     }
@@ -389,7 +389,7 @@ final class Share extends Model implements Numbered, ReadableModel
         return array_values(
             self::query()->servedBy($configurationId)->inState(
                 ShareState::Pending,
-            )->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all(),
+            )->orderBy('id')->lockForUpdate()->readLimit(self::LIVE_LIMIT)->get()->all(),
         );
     }
 
@@ -434,8 +434,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function lockProposal(string $id): self
     {
-        return self::query()->whereKey($id)->proposedNow()->lockForUpdate()->first()
-            ?? throw ShareProposalUnavailable::for($id);
+        return self::query()->whereKey($id)->proposedNow()->lockForUpdate()->firstOr(
+            fn () => throw ShareProposalUnavailable::for($id),
+        );
     }
 
     /**
@@ -446,7 +447,7 @@ final class Share extends Model implements Numbered, ReadableModel
     public static function proposedBy(ActorIdentity $requester): array
     {
         return array_values(
-            self::query()->requestedBy($requester)->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all(),
+            self::query()->requestedBy($requester)->orderByDesc('id')->readLimit(self::PROPOSED_LIMIT)->get()->all(),
         );
     }
 
@@ -522,7 +523,7 @@ final class Share extends Model implements Numbered, ReadableModel
     {
         return array_values(
             self::query()->ofRoot($root)->proposedNow()->orderByDesc('id')->readLimit(
-                self::MOST_PROPOSED,
+                self::PROPOSED_LIMIT,
             )->get()->all(),
         );
     }

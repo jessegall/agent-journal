@@ -73,8 +73,9 @@ final class Memory extends Model implements Numbered, ReadableModel
      */
     public static function ownForUpdate(string $memoryId): self
     {
-        return self::query()->whereKey($memoryId)->lockForUpdate()->first()
-            ?? throw MemoryUnavailable::forId($memoryId);
+        return self::query()->whereKey($memoryId)->lockForUpdate()->firstOr(
+            fn () => throw MemoryUnavailable::forId($memoryId),
+        );
     }
 
     public function isAtRevision(int $expectedRevision): bool

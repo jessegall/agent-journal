@@ -34,7 +34,9 @@ final class GlobalGroup extends Model implements ReadableModel
      */
     public static function journal(): self
     {
-        return self::query()->where('name', self::JOURNAL)->first() ?? throw GlobalGroupMissing::named(self::JOURNAL);
+        return self::query()->where('name', self::JOURNAL)->firstOr(
+            fn () => throw GlobalGroupMissing::named(self::JOURNAL),
+        );
     }
 
     /**

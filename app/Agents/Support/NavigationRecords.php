@@ -61,7 +61,9 @@ final readonly class NavigationRecords implements NavigationReader
 
     public function menuEntry(ActorIdentity $owner, string $id): array
     {
-        $entry = MenuEntry::query()->ownedBy($owner)->whereKey($id)->first() ?? throw MenuEntryRefused::notFound($id);
+        $entry = MenuEntry::query()->ownedBy($owner)->whereKey($id)->firstOr(
+            fn () => throw MenuEntryRefused::notFound($id),
+        );
 
         return [
             'id' => $entry->id,
@@ -85,8 +87,9 @@ final readonly class NavigationRecords implements NavigationReader
 
     public function navigationRequest(string $id): array
     {
-        $navigation = NavigationRequest::query()->acrossActors()->whereKey($id)->first()
-            ?? throw NavigationRaiseRefused::unknownRequest($id);
+        $navigation = NavigationRequest::query()->acrossActors()->whereKey($id)->firstOr(
+            fn () => throw NavigationRaiseRefused::unknownRequest($id),
+        );
         $this->transaction->run(fn () => $this->answering->checkAnswerer($navigation));
         $runtime = AgentRuntime::query()->with('session.agent')->findOrFail($navigation->agent_runtime_id);
         $rounds = DriverRequest::query()

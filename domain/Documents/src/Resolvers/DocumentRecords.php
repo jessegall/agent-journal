@@ -99,7 +99,7 @@ final readonly class DocumentRecords implements DocumentResolver
         $revision = $document->revisions()->whereNotNull('closed_at')->where(
             'number',
             $revisionNumber,
-        )->first() ?? throw DocumentMissing::numbered($documentNumber);
+        )->firstOr(fn () => throw DocumentMissing::numbered($documentNumber));
 
         return $revision->view($document);
     }
@@ -120,7 +120,7 @@ final readonly class DocumentRecords implements DocumentResolver
         $publishedRevision = $document->revisions()->whereNotNull('closed_at')->where(
             'number',
             $revision ?? $current,
-        )->first() ?? throw DocumentMissing::numbered($number);
+        )->firstOr(fn () => throw DocumentMissing::numbered($number));
 
         return RecordReading::read("doc {$number}", $publishedRevision, $selection);
     }
@@ -170,9 +170,11 @@ final readonly class DocumentRecords implements DocumentResolver
     {
         $documents = Document::query()->sharedPublished()->with('currentRevision');
         if (is_int($reference)) {
-            return $documents->where('number', $reference)->first() ?? throw DocumentMissing::numbered($reference);
+            return $documents->where('number', $reference)->firstOr(
+                fn () => throw DocumentMissing::numbered($reference),
+            );
         }
 
-        return $documents->whereKey($reference)->first() ?? throw DocumentMissing::identified($reference);
+        return $documents->whereKey($reference)->firstOr(fn () => throw DocumentMissing::identified($reference));
     }
 }

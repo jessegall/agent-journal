@@ -78,17 +78,17 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     /**
      * The most characters a plan's title or a phase's title holds.
      */
-    public const int TITLE_CHARACTERS = PlanTextLimit::Title->value;
+    public const int TITLE_CHARACTER_LIMIT = PlanTextLimit::Title->value;
 
     /**
      * The most characters a plan's brief holds.
      */
-    public const int BRIEF_CHARACTERS = PlanTextLimit::Brief->value;
+    public const int BRIEF_CHARACTER_LIMIT = PlanTextLimit::Brief->value;
 
     /**
      * The most characters a plan's finish note or cancel reason holds.
      */
-    public const int NOTE_CHARACTERS = PlanTextLimit::Note->value;
+    public const int NOTE_CHARACTER_LIMIT = PlanTextLimit::Note->value;
 
     /**
      * @var array<string, mixed>
@@ -190,8 +190,9 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
      */
     public function phaseNumbered(int $number): Phase
     {
-        return $this->phases()->where('number', $number)->first()
-            ?? throw PhaseMissing::numbered($this->number, $number);
+        return $this->phases()->where('number', $number)->firstOr(
+            fn () => throw PhaseMissing::numbered($this->number, $number),
+        );
     }
 
     /**

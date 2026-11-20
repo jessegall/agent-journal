@@ -24,7 +24,7 @@ final class CheckProfileScriptCall extends Data implements JournalCall
     public function __construct(
         #[Max(64)]
         public readonly string $profile,
-        #[Max(ScriptSource::MAX_BYTES)]
+        #[Max(ScriptSource::BYTE_LIMIT)]
         public readonly string $source,
         public readonly array $commands = [],
     ) {}

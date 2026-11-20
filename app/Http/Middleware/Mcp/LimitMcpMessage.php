@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class LimitMcpMessage
 {
-    public const int MAX_BYTES = 262144;
+    public const int BYTE_LIMIT = 262144;
 
     public const int MAX_DEPTH = 32;
 
@@ -26,9 +26,9 @@ final readonly class LimitMcpMessage
     {
         $body = $request->getContent();
 
-        if (strlen($body) > self::MAX_BYTES) {
+        if (strlen($body) > self::BYTE_LIMIT) {
             return new JsonResponse(
-                ['message' => 'The message is larger than '.self::MAX_BYTES.' bytes.'],
+                ['message' => 'The message is larger than '.self::BYTE_LIMIT.' bytes.'],
                 Response::HTTP_REQUEST_ENTITY_TOO_LARGE,
             );
         }

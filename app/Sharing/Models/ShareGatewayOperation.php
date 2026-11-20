@@ -125,7 +125,7 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      */
     public static function of(string $id): self
     {
-        return self::query()->whereKey($id)->first() ?? throw GatewayLeaseRefused::forOperation($id);
+        return self::query()->whereKey($id)->firstOr(fn () => throw GatewayLeaseRefused::forOperation($id));
     }
 
     /**

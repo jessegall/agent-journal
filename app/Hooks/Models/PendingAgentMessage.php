@@ -37,7 +37,7 @@ final class PendingAgentMessage extends Model implements ReadableModel
     /**
      * The most deliveries one hook hands over, with all their lines.
      */
-    public const int LARGEST_DELIVERY = 50;
+    public const int DELIVERY_LIMIT = 50;
 
     protected function casts(): array
     {
@@ -77,7 +77,7 @@ final class PendingAgentMessage extends Model implements ReadableModel
             ->orderBy('created_at')
             ->orderBy('id')
             ->lockForUpdate()
-            ->readLimit(self::LARGEST_DELIVERY)
+            ->readLimit(self::DELIVERY_LIMIT)
             ->get();
         self::query()->ownedBy($agent)->whereKey($messages->modelKeys())->delete();
 

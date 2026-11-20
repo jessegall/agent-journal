@@ -12,7 +12,7 @@ final readonly class TextChunk
 {
     public const int MAX_LINES = 80;
 
-    public const int MAX_BYTES = 4096;
+    public const int BYTE_LIMIT = 4096;
 
     private const string ENCODING = 'UTF-8';
 
@@ -33,8 +33,12 @@ final readonly class TextChunk
     /**
      * The chunk of the text from the line and character offset given.
      */
-    public static function of(string $text, int $lineStart, int $characterStart, int $byteLimit = self::MAX_BYTES): self
-    {
+    public static function of(
+        string $text,
+        int $lineStart,
+        int $characterStart,
+        int $byteLimit = self::BYTE_LIMIT,
+    ): self {
         $lines = explode("\n", $text);
         $parts = [];
         $bytes = 0;

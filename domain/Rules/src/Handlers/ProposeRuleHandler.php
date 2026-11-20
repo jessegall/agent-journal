@@ -17,7 +17,10 @@ final readonly class ProposeRuleHandler implements CommandHandler
     public function handle(ProposeRule $command): string
     {
         if ($command->replacesRuleId !== null) {
-            Rule::query()->find($command->replacesRuleId) ?? throw RuleMissing::withId($command->replacesRuleId);
+            Rule::query()->findOr(
+                $command->replacesRuleId,
+                fn () => throw RuleMissing::withId($command->replacesRuleId),
+            );
         }
 
         return Rule::proposed($command->text, $command->reason, $command->replacesRuleId, $command->dispatchedBy())->id;

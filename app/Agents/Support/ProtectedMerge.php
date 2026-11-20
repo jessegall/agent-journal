@@ -20,7 +20,7 @@ final readonly class ProtectedMerge
     /**
      * The longest one git step of a merge may take.
      */
-    private const int TIMEOUT_SECONDS = 120;
+    private const int STEP_SECONDS_LIMIT = 120;
 
     /**
      * Git settings that keep the merge from running anything the checkout or the user's configuration could name.
@@ -154,7 +154,7 @@ final readonly class ProtectedMerge
         return $this->processes
             ->newPendingProcess()
             ->path($folder)
-            ->timeout(self::TIMEOUT_SECONDS)
+            ->timeout(self::STEP_SECONDS_LIMIT)
             ->env(['GIT_CONFIG_NOSYSTEM' => '1', 'GIT_CONFIG_GLOBAL' => '/dev/null', 'GIT_TERMINAL_PROMPT' => '0'])
             ->run(['git', ...$settings, ...$arguments]);
     }

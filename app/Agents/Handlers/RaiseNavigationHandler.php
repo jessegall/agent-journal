@@ -72,8 +72,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
             ->whereKey($command->requestId)
             ->where('agent_runtime_id', $runtime->id)
             ->lockForUpdate()
-            ->first()
-            ?? throw NavigationRaiseRefused::notOfRuntime($command->requestId, $runtime->id);
+            ->firstOr(fn () => throw NavigationRaiseRefused::notOfRuntime($command->requestId, $runtime->id));
         if (! $request->isKeyScript()) {
             throw NavigationRaiseRefused::notAKeyScript($request->id);
         }

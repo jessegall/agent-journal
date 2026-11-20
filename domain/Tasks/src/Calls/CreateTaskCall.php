@@ -30,9 +30,9 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 final class CreateTaskCall extends Data implements JournalCall
 {
     public function __construct(
-        #[Max(Task::TITLE_CHARACTERS)]
+        #[Max(Task::TITLE_CHARACTER_LIMIT)]
         public string $title,
-        #[Max(Task::NOTE_CHARACTERS)]
+        #[Max(Task::NOTE_CHARACTER_LIMIT)]
         public string $brief,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]

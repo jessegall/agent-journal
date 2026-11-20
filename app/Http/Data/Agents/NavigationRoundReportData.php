@@ -21,7 +21,7 @@ final class NavigationRoundReportData extends Data
     /**
      * The most steps a proven path keeps.
      */
-    private const int MOST_STEPS = 20;
+    private const int STEP_LIMIT = 20;
 
     /**
      * @param  list<string>  $rows
@@ -42,8 +42,8 @@ final class NavigationRoundReportData extends Data
     public function report(): NavigationRoundReport
     {
         $highlight = $this->highlight >= 0 ? $this->highlight : null;
-        if (count($this->steps) > self::MOST_STEPS) {
-            throw MenuStepRefused::tooMany(count($this->steps), self::MOST_STEPS);
+        if (count($this->steps) > self::STEP_LIMIT) {
+            throw MenuStepRefused::tooMany(count($this->steps), self::STEP_LIMIT);
         }
         $steps = array_map(
             fn (int $index, array $step) => MenuStep::fromHost($index + 1, $step),

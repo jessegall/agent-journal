@@ -35,7 +35,7 @@ final class SaveProfileDraftCall extends Data implements JournalCall
         #[Max(64)]
         public readonly string $profile,
         public readonly int $expectedRevision,
-        #[Max(ScriptSource::MAX_BYTES)]
+        #[Max(ScriptSource::BYTE_LIMIT)]
         public readonly string $source,
         public readonly array $commands = [],
     ) {}

@@ -20,7 +20,7 @@ final readonly class NavigationExpiry implements ExpiresNavigation
     /**
      * The most requests one sweep expires; the rest wait for the next pass.
      */
-    private const int MOST_PER_SWEEP = 100;
+    private const int SWEEP_LIMIT = 100;
 
     public function expireDue(): void
     {
@@ -30,7 +30,7 @@ final readonly class NavigationExpiry implements ExpiresNavigation
             ->expiredBefore(CarbonImmutable::now())
             ->with(['driverRequest', 'runtime'])
             ->lockForUpdate()
-            ->readLimit(self::MOST_PER_SWEEP)
+            ->readLimit(self::SWEEP_LIMIT)
             ->get();
 
         foreach ($due as $navigation) {

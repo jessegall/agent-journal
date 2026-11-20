@@ -21,7 +21,7 @@ final readonly class SuperviseRun implements Pipe
     /**
      * The most output printed; every byte is stored on the server.
      */
-    private const int PREVIEW_CHARACTERS = 4_000;
+    private const int PREVIEW_CHARACTER_LIMIT = 4_000;
 
     public function __construct(private ProcessCalls $processes, private Supervisor $supervisor) {}
 
@@ -35,7 +35,7 @@ final readonly class SuperviseRun implements Pipe
         );
         $outcome = $this->supervisor->run($events, $admission->plan(), $admission->context());
         $events->flush();
-        $preview = mb_substr($outcome->output, -self::PREVIEW_CHARACTERS);
+        $preview = mb_substr($outcome->output, -self::PREVIEW_CHARACTER_LIMIT);
 
         return new SupervisedRun($admission->runId, CommandReport::ending($outcome->status)->output($preview));
     }

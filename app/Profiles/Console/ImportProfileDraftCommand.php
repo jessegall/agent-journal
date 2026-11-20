@@ -44,13 +44,13 @@ final class ImportProfileDraftCommand extends Command
             throw ProfileDraftRefused::unreadable($path);
         }
 
-        $contents = file_get_contents($path, length: ScriptSource::MAX_BYTES + 1);
+        $contents = file_get_contents($path, length: ScriptSource::BYTE_LIMIT + 1);
 
         if ($contents === false) {
             throw ProfileDraftRefused::unreadable($path);
         }
 
-        if (strlen($contents) > ScriptSource::MAX_BYTES) {
+        if (strlen($contents) > ScriptSource::BYTE_LIMIT) {
             throw ProfileDraftRefused::oversized();
         }
 

@@ -179,7 +179,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
 
     public static function visibleById(string $messageId): self
     {
-        return self::query()->whereKey($messageId)->first() ?? throw MessageMissing::forId($messageId);
+        return self::query()->whereKey($messageId)->firstOr(fn () => throw MessageMissing::forId($messageId));
     }
 
     public function revision(): int
@@ -209,7 +209,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
      */
     public static function lockedById(string $id): self
     {
-        return self::query()->whereKey($id)->lockForUpdate()->first() ?? throw MessageMissing::forId($id);
+        return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw MessageMissing::forId($id));
     }
 
     public function assignmentIdentity(): RecordIdentity

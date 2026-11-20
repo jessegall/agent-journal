@@ -18,8 +18,9 @@ final readonly class TaskRunAssignments implements AssignableProvider
 {
     public function requireAssignable(RecordIdentity $record): Assignable
     {
-        return TaskRun::query()->whereKey($record->id)->lock('for key share')->first()
-            ?? throw RecordUnavailable::for($record);
+        return TaskRun::query()->whereKey($record->id)->lock('for key share')->firstOr(
+            fn () => throw RecordUnavailable::for($record),
+        );
     }
 
     public function visibleRecords(array $records): array

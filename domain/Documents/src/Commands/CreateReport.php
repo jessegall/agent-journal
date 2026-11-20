@@ -38,9 +38,9 @@ final readonly class CreateReport extends Command implements AuthorizedCommand
      * @param  list<RecordIdentity>  $relatedRecords  the records it is about, linked with it or not created at all
      */
     public function __construct(
-        #[Required, OneLine, Max(Document::TITLE_CHARACTERS)]
+        #[Required, OneLine, Max(Document::TITLE_CHARACTER_LIMIT)]
         public string $title,
-        #[Required, OneLine, Max(Document::ABSTRACT_CHARACTERS)]
+        #[Required, OneLine, Max(Document::ABSTRACT_CHARACTER_LIMIT)]
         public string $abstract,
         public string|null $body,
         #[Max(self::MOST_LINKS)]

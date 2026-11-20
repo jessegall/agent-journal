@@ -184,7 +184,7 @@ final class DraftsTest extends TestCase
         $draft = $this->bus()->run(new OpenDocument('1'));
         $tooLong = new ChangeDocumentDetails(
             $draft->target(),
-            str_repeat('a', Document::TITLE_CHARACTERS + 1),
+            str_repeat('a', Document::TITLE_CHARACTER_LIMIT + 1),
             'What we build',
         );
 

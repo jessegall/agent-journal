@@ -27,7 +27,7 @@ final readonly class PlanAssignmentProvider implements AssignableProvider
 
         return Plan::query()->whereKey(
             $record->id,
-        )->lock('for key share')->first() ?? throw RecordUnavailable::for($record);
+        )->lock('for key share')->firstOr(fn () => throw RecordUnavailable::for($record));
     }
 
     /**

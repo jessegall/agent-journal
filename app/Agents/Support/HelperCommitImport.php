@@ -23,7 +23,7 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
     /**
      * The longest one git step of an import may take.
      */
-    private const int TIMEOUT_SECONDS = 120;
+    private const int STEP_SECONDS_LIMIT = 120;
 
     /**
      * Git settings that keep the fetch from running anything the checkout or the user's configuration could name.
@@ -128,7 +128,7 @@ final readonly class HelperCommitImport implements HelperCommitImportContract
         return $this->processes
             ->newPendingProcess()
             ->path($folder ?? $this->repository)
-            ->timeout(self::TIMEOUT_SECONDS)
+            ->timeout(self::STEP_SECONDS_LIMIT)
             ->env(['GIT_CONFIG_NOSYSTEM' => '1', 'GIT_CONFIG_GLOBAL' => '/dev/null', 'GIT_TERMINAL_PROMPT' => '0'])
             ->run(['git', ...$this->settings(), ...$arguments]);
     }

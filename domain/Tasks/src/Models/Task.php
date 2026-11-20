@@ -96,12 +96,12 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     /**
      * The most characters a task's title holds.
      */
-    public const int TITLE_CHARACTERS = TaskTextLimit::Title->value;
+    public const int TITLE_CHARACTER_LIMIT = TaskTextLimit::Title->value;
 
     /**
      * The most characters a task's brief, result note, block reason or cancel reason holds.
      */
-    public const int NOTE_CHARACTERS = TaskTextLimit::Note->value;
+    public const int NOTE_CHARACTER_LIMIT = TaskTextLimit::Note->value;
 
     /**
      * @var array<string, mixed>
@@ -139,7 +139,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
      */
     public static function lockedById(string $id): self
     {
-        return self::query()->whereKey($id)->lockForUpdate()->first() ?? throw TaskMissing::forId($id);
+        return self::query()->whereKey($id)->lockForUpdate()->firstOr(fn () => throw TaskMissing::forId($id));
     }
 
     /**

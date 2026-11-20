@@ -30,8 +30,8 @@ final readonly class StackRestorer
         $records->checkBottom();
         $frameRecords = $records->all();
 
-        if (count($frameRecords) > AgentStack::DEEPEST) {
-            throw StackTooDeep::for('a stored stack', AgentStack::DEEPEST);
+        if (count($frameRecords) > AgentStack::DEPTH_LIMIT) {
+            throw StackTooDeep::for('a stored stack', AgentStack::DEPTH_LIMIT);
         }
 
         $frames = [];

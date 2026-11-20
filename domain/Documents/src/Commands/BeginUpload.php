@@ -26,7 +26,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 #[Operation('begin_upload', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class BeginUpload extends Command implements AuthorizedCommand
 {
-    public const int MAX_BYTES = TextUpload::MAX_BYTES;
+    public const int MAX_BYTES = TextUpload::BYTE_LIMIT;
 
     public function __construct(
         public UploadType $type,

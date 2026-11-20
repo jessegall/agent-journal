@@ -36,10 +36,13 @@ trait ProvidesModelRecords
 
     public function identityOf(int $number): RecordIdentity
     {
-        $record = $this->readableRecords()->where('number', $number)->first() ?? throw RecordUnavailable::numbered(
+        $record = $this->readableRecords()->where(
+            'number',
+            $number,
+        )->firstOr(fn () => throw RecordUnavailable::numbered(
             $this->referenceWord(),
             $number,
-        );
+        ));
 
         return new RecordIdentity($this->linkType(), (string) $record->getKey());
     }
@@ -54,7 +57,9 @@ trait ProvidesModelRecords
      */
     public function requireReadable(RecordIdentity $record): Model
     {
-        return $this->readableRecords()->whereKey($record->id)->first() ?? throw RecordUnavailable::forActor($record);
+        return $this->readableRecords()->whereKey($record->id)->firstOr(
+            fn () => throw RecordUnavailable::forActor($record),
+        );
     }
 
     /**

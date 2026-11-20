@@ -36,7 +36,7 @@ final class TextUpload extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'documents.upload';
 
-    public const int MAX_BYTES = 2 * 1024 * 1024;
+    public const int BYTE_LIMIT = 2 * 1024 * 1024;
 
     public const int CHUNK_BYTES = 48 * 1024;
 
@@ -55,7 +55,7 @@ final class TextUpload extends Model implements ReadableModel
 
     public static function begin(UploadType $type, int $bytes, string $digest): self
     {
-        if ($bytes < 1 || $bytes > self::MAX_BYTES || ! self::isDigest($digest)) {
+        if ($bytes < 1 || $bytes > self::BYTE_LIMIT || ! self::isDigest($digest)) {
             throw UploadInvalid::forDeclaration();
         }
 
@@ -69,12 +69,17 @@ final class TextUpload extends Model implements ReadableModel
 
     public static function locked(string $id): self
     {
-        return self::query()->unexpired()->whereKey($id)->lockForUpdate()->first() ?? throw UploadExpired::forUpload();
+        return self::query()->unexpired()->whereKey($id)->lockForUpdate()->firstOr(
+            fn () => throw UploadExpired::forUpload(),
+        );
     }
 
     public static function sealed(string $id): self
     {
-        return self::query()->unexpired()->whereNotNull('sealed_at')->find($id) ?? throw UploadExpired::forUpload();
+        return self::query()->unexpired()->whereNotNull('sealed_at')->findOr(
+            $id,
+            fn () => throw UploadExpired::forUpload(),
+        );
     }
 
     public function attachmentText(): string

@@ -41,9 +41,9 @@ final readonly class ReportShareProvider implements ShareRecordProvider
      */
     public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
     {
-        $report = Report::query()->sharedPublished()->whereKey($read->record->id)->first(
-            self::CARD_COLUMNS,
-        ) ?? throw RecordUnavailable::forActor($read->record);
+        $report = Report::query()->sharedPublished()->whereKey($read->record->id)->firstOr(
+            fn () => throw RecordUnavailable::forActor($read->record),
+        );
         $bytes = Report::bodyBytesOf($report->id);
 
         if ($bytes > MarkdownText::BODY_BYTES) {

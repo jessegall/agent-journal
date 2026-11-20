@@ -108,13 +108,14 @@ final readonly class DriverRequests
             ->whereKey($target->sessionId)
             ->where('agent_id', $target->agentId)
             ->lockForUpdate()
-            ->first() ?? throw DriverRequestRefused::noRuntime($target);
+            ->firstOr(fn () => throw DriverRequestRefused::noRuntime($target));
 
         if (! $session->isActive()) {
             throw DriverRequestRefused::sessionEnded($target);
         }
 
-        return AgentRuntime::query()->where('agent_session_id', $target->sessionId)->lockForUpdate()->first()
-            ?? throw DriverRequestRefused::noRuntime($target);
+        return AgentRuntime::query()->where('agent_session_id', $target->sessionId)->lockForUpdate()->firstOr(
+            fn () => throw DriverRequestRefused::noRuntime($target),
+        );
     }
 }

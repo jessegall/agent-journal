@@ -22,7 +22,7 @@ final class SpawnedProcess
     /**
      * The most bytes of one stream gathered before they are handed on as one piece.
      */
-    private const int PIECE_BYTES = 1_048_576;
+    private const int PIECE_BYTE_LIMIT = 1_048_576;
 
     /**
      * @var array{running: bool, signaled: bool, termsig: int, exitcode: int}|null
@@ -102,7 +102,7 @@ final class SpawnedProcess
             foreach ($streams as $descriptor => $stream) {
                 $bytes = fread($stream, 1_048_576);
                 $gathered[$descriptor] .= $bytes === false ? '' : $bytes;
-                $emitOutput($descriptor, $ready === 0 || feof($stream) ? 1 : self::PIECE_BYTES);
+                $emitOutput($descriptor, $ready === 0 || feof($stream) ? 1 : self::PIECE_BYTE_LIMIT);
                 if (feof($stream)) {
                     fclose($stream);
                     unset($streams[$descriptor]);

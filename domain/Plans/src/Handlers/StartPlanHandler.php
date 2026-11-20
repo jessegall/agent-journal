@@ -27,8 +27,9 @@ final readonly class StartPlanHandler implements CommandHandler
 
     public function handle(StartPlan $command): void
     {
-        $plan = Plan::query()->whereKey($command->planId)->lockForUpdate()->first()
-            ?? throw PlanMissing::withId($command->planId);
+        $plan = Plan::query()->whereKey($command->planId)->lockForUpdate()->firstOr(
+            fn () => throw PlanMissing::withId($command->planId),
+        );
 
         if (! $plan->startOnce()) {
             return;

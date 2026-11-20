@@ -18,14 +18,16 @@ final readonly class AskRecords
 
     public function read(AskReference $reference): Ask
     {
-        return $this->visible()->whereKey($reference->id)->first()
-            ?? throw RecordUnavailable::for(new RecordIdentity(Ask::LINK_TYPE, $reference->id));
+        return $this->visible()->whereKey($reference->id)->firstOr(
+            fn () => throw RecordUnavailable::for(new RecordIdentity(Ask::LINK_TYPE, $reference->id)),
+        );
     }
 
     public function lock(AskReference $reference): Ask
     {
-        return $this->visible()->whereKey($reference->id)->lockForUpdate()->first()
-            ?? throw RecordUnavailable::for(new RecordIdentity(Ask::LINK_TYPE, $reference->id));
+        return $this->visible()->whereKey($reference->id)->lockForUpdate()->firstOr(
+            fn () => throw RecordUnavailable::for(new RecordIdentity(Ask::LINK_TYPE, $reference->id)),
+        );
     }
 
     /**

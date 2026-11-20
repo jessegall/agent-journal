@@ -31,7 +31,7 @@ final readonly class AddPhase extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string $planId,
-        #[Required, OneLine, Max(Plan::TITLE_CHARACTERS)]
+        #[Required, OneLine, Max(Plan::TITLE_CHARACTER_LIMIT)]
         public string $title,
     ) {}
 

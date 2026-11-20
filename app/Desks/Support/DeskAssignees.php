@@ -28,8 +28,9 @@ final readonly class DeskAssignees implements AssigneeProvider
     {
         $this->actors->actor();
 
-        return DeskRecord::query()->whereKey($recipient->id)->sharedLock()->first()
-            ?? throw AssigneeUnavailable::forActor($recipient);
+        return DeskRecord::query()->whereKey($recipient->id)->sharedLock()->firstOr(
+            fn () => throw AssigneeUnavailable::forActor($recipient),
+        );
     }
 
     /**
@@ -39,8 +40,9 @@ final readonly class DeskAssignees implements AssigneeProvider
     {
         $this->actors->actor();
 
-        return DeskRecord::query()->whereKey($recipient->id)->lockForUpdate()->first()
-            ?? throw AssigneeUnavailable::forActor($recipient);
+        return DeskRecord::query()->whereKey($recipient->id)->lockForUpdate()->firstOr(
+            fn () => throw AssigneeUnavailable::forActor($recipient),
+        );
     }
 
     /**

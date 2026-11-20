@@ -19,7 +19,7 @@ trait NamesPlanPhase
      */
     public function phaseOfPlan(): Phase
     {
-        $plan = Plan::query()->find(Plan::idOfNumber($this->plan)) ?? throw new NotFoundHttpException();
+        $plan = Plan::query()->findOr(Plan::idOfNumber($this->plan), fn () => throw new NotFoundHttpException());
 
         try {
             return $plan->phaseNumbered($this->phase);

@@ -195,12 +195,12 @@ final class RelayFrames
             return;
         }
 
-        if (strlen($line) > LimitMcpMessage::MAX_BYTES) {
+        if (strlen($line) > LimitMcpMessage::BYTE_LIMIT) {
             $this->writeError(
                 self::idIn($line),
                 self::INVALID_REQUEST,
                 RefusalCode::InvalidInput,
-                'The message is larger than '.LimitMcpMessage::MAX_BYTES.' bytes and was not sent.',
+                'The message is larger than '.LimitMcpMessage::BYTE_LIMIT.' bytes and was not sent.',
             );
 
             return;

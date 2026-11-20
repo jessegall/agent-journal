@@ -31,9 +31,9 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 final readonly class CreatePlan extends Command implements AuthorizedCommand
 {
     public function __construct(
-        #[Required, OneLine, Max(Plan::TITLE_CHARACTERS)]
+        #[Required, OneLine, Max(Plan::TITLE_CHARACTER_LIMIT)]
         public string $title,
-        #[Required, Max(Plan::BRIEF_CHARACTERS)]
+        #[Required, Max(Plan::BRIEF_CHARACTER_LIMIT)]
         public string $brief,
         public PlanType $type,
     ) {}

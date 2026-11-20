@@ -114,7 +114,7 @@ final class SettleAndRecoverTest extends TestCase
     public function test_a_reason_over_its_limit_is_refused_and_the_record_stays_unsettled(): void
     {
         $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
-        $tooLong = str_repeat('a', Document::SETTLEMENT_REASON_CHARACTERS + 1);
+        $tooLong = str_repeat('a', Document::SETTLEMENT_REASON_CHARACTER_LIMIT + 1);
 
         $this->assertThrows(fn () => $this->bus()->run(new SettleDocument(1, 1, $tooLong)), CommandInputInvalid::class);
         $this->assertThrows(fn () => $this->bus()->run(new CloseReport('1', $tooLong)), CommandInputInvalid::class);

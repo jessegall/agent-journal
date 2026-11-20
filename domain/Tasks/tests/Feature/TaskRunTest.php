@@ -84,7 +84,7 @@ final class TaskRunTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new StartTask($task->id));
-        $tooLong = str_repeat('a', Task::NOTE_CHARACTERS + 1);
+        $tooLong = str_repeat('a', Task::NOTE_CHARACTER_LIMIT + 1);
 
         $finish = new FinishTask($task->id, 1, $tooLong);
         $block = new BlockTask($task->id, 1, $tooLong);
@@ -95,7 +95,7 @@ final class TaskRunTest extends TestCase
         $this->assertThrows(fn () => $bus->run($cancel), CommandInputInvalid::class, 'reason:');
         $this->assertSame(TaskState::Started, $task->refresh()->state);
 
-        $bus->run(new FinishTask($task->id, 1, str_repeat('a', Task::NOTE_CHARACTERS)));
+        $bus->run(new FinishTask($task->id, 1, str_repeat('a', Task::NOTE_CHARACTER_LIMIT)));
 
         $this->assertSame(TaskState::Finished, $task->refresh()->state);
     }

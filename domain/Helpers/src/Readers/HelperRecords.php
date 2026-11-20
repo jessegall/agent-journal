@@ -21,7 +21,7 @@ final readonly class HelperRecords implements HelperReader
 
     public function receiptOf(string $jobId): HelperReceipt
     {
-        $job = HelperJob::query()->whereKey($jobId)->first() ?? throw HelperUnavailable::toYou();
+        $job = HelperJob::query()->whereKey($jobId)->firstOr(fn () => throw HelperUnavailable::toYou());
         $identity = HelperIdentity::query()->findOrFail($job->helper_identity_id);
 
         return $job->receipt(

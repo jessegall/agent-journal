@@ -57,8 +57,9 @@ final readonly class CommentRecords implements CommentResolver
         TextSelection $selection = new TextSelection(),
     ): RecordCommentLocation|TextCommentLocation {
         $record = $this->commentable($target);
-        $comment = self::commentsOf($record)->whereKey($commentId)->first()
-            ?? throw CommentUnavailable::for($commentId);
+        $comment = self::commentsOf($record)->whereKey($commentId)->firstOr(
+            fn () => throw CommentUnavailable::for($commentId),
+        );
         $subject = $comment->subject();
         $card = $this->records->card($target);
 

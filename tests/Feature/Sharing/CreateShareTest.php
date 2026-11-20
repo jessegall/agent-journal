@@ -207,20 +207,20 @@ final class CreateShareTest extends TestCase
 
     public function test_the_hundred_and_first_live_share_is_refused(): void
     {
-        for ($index = 0; $index < Share::MOST_LIVE; $index++) {
+        for ($index = 0; $index < Share::LIVE_LIMIT; $index++) {
             TestShares::grantForADay(TestActors::record('binders.binder', 1000 + $index), $this->configuration);
         }
 
         $saved = $this->preview([]);
 
         $this->assertThrows(fn () => $this->create($saved), ShareQuotaReached::class);
-        $this->assertSame(Share::MOST_LIVE, Share::query()->count());
+        $this->assertSame(Share::LIVE_LIMIT, Share::query()->count());
     }
 
     #[TimeLimit(5, 'It fills the live-share quota of a hundred shares first.')]
     public function test_an_expired_share_whose_state_has_not_caught_up_does_not_count(): void
     {
-        for ($index = 0; $index < Share::MOST_LIVE; $index++) {
+        for ($index = 0; $index < Share::LIVE_LIMIT; $index++) {
             Share::grant(
                 TestActors::record('binders.binder', 1000 + $index),
                 TestIds::of(9),

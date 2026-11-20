@@ -65,7 +65,7 @@ final class CreateShareRaceTest extends TestCase
         $first = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
         $second = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
 
-        for ($index = 1; $index < Share::MOST_LIVE; $index++) {
+        for ($index = 1; $index < Share::LIVE_LIMIT; $index++) {
             TestShares::grantForADay(TestActors::record('binders.binder', 1000 + $index), $first);
         }
 
@@ -96,7 +96,7 @@ final class CreateShareRaceTest extends TestCase
         }
 
         $this->assertThrows(fn () => $this->create($saved, '01JD8X0G9M3QZ6V4K2RACE0002'), ShareQuotaReached::class);
-        $this->assertSame(Share::MOST_LIVE, Share::query()->count());
+        $this->assertSame(Share::LIVE_LIMIT, Share::query()->count());
         $this->assertSame(0, Share::query()->where('share_gateway_configuration_id', $second->id)->count());
     }
 

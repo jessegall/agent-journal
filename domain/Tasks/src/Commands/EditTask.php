@@ -32,9 +32,9 @@ final readonly class EditTask extends Command implements AuthorizedCommand
     public function __construct(
         public string $taskId,
         public int $expectedRevision,
-        #[RequiredWithout('brief'), Max(Task::TITLE_CHARACTERS)]
+        #[RequiredWithout('brief'), Max(Task::TITLE_CHARACTER_LIMIT)]
         public string|null $title = null,
-        #[Max(Task::NOTE_CHARACTERS)]
+        #[Max(Task::NOTE_CHARACTER_LIMIT)]
         public string|null $brief = null,
     ) {}
 

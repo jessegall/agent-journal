@@ -44,7 +44,7 @@ final readonly class MessageRecords implements ConversationResolver
 
     public function detail(string $messageId): MessageView
     {
-        $message = Message::query()->find($messageId) ?? throw MessageMissing::forId($messageId);
+        $message = Message::query()->findOr($messageId, fn () => throw MessageMissing::forId($messageId));
 
         return $this->viewsOf([$message])[0];
     }

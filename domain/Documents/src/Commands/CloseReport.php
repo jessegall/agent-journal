@@ -30,7 +30,7 @@ final readonly class CloseReport extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string $reportReference,
-        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)]
+        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTER_LIMIT)]
         public string $reason,
     ) {}
 

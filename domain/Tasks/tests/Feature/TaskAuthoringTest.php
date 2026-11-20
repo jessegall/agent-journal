@@ -107,7 +107,7 @@ final class TaskAuthoringTest extends TestCase
     {
         $this->actAsUser();
         $bus = $this->app->make(CommandBus::class);
-        $tooLong = new CreateTask(str_repeat('é', Task::TITLE_CHARACTERS + 1), 'Brief');
+        $tooLong = new CreateTask(str_repeat('é', Task::TITLE_CHARACTER_LIMIT + 1), 'Brief');
 
         $this->assertThrows(
             fn () => $bus->run($tooLong),
@@ -116,9 +116,9 @@ final class TaskAuthoringTest extends TestCase
         );
         $this->assertSame(0, Task::query()->count());
 
-        $taskId = $bus->run(new CreateTask(str_repeat('é', Task::TITLE_CHARACTERS), 'Brief'));
+        $taskId = $bus->run(new CreateTask(str_repeat('é', Task::TITLE_CHARACTER_LIMIT), 'Brief'));
 
-        $this->assertSame(Task::TITLE_CHARACTERS, mb_strlen((string) Task::query()->findOrFail($taskId)->title));
+        $this->assertSame(Task::TITLE_CHARACTER_LIMIT, mb_strlen((string) Task::query()->findOrFail($taskId)->title));
     }
 
     public function test_an_edit_with_neither_title_nor_brief_is_refused_naming_the_title(): void

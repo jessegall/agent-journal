@@ -98,10 +98,10 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     {
         $reports = self::query()->lockForUpdate();
         if (is_int($reference)) {
-            return $reports->where('number', $reference)->first() ?? throw ReportMissing::numbered($reference);
+            return $reports->where('number', $reference)->firstOr(fn () => throw ReportMissing::numbered($reference));
         }
 
-        return $reports->whereKey($reference)->first() ?? throw ReportMissing::identified($reference);
+        return $reports->whereKey($reference)->firstOr(fn () => throw ReportMissing::identified($reference));
     }
 
     public function card(): PublicationCard

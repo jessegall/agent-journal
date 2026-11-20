@@ -31,8 +31,8 @@ final class FrameLifecycle
      */
     public function settle(StackTarget $target, AgentStack $before, AgentStack $after): void
     {
-        if (count($after->frames()) > AgentStack::DEEPEST) {
-            throw StackTooDeep::for($target->description(), AgentStack::DEEPEST);
+        if (count($after->frames()) > AgentStack::DEPTH_LIMIT) {
+            throw StackTooDeep::for($target->description(), AgentStack::DEPTH_LIMIT);
         }
 
         $removed = $before->framesMissingFrom($after);

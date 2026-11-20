@@ -20,8 +20,7 @@ final readonly class StopAttemptRecords implements StopEvidence
     {
         $record = StopAttempt::query()
             ->with(['results' => RelationRead::complete(max: 50)->constraint()])
-            ->find($attempt->attemptId)
-            ?? throw StopAttemptMissing::for($attempt->attemptId);
+            ->findOr($attempt->attemptId, fn () => throw StopAttemptMissing::for($attempt->attemptId));
         $statuses = [];
         $summaries = [];
 

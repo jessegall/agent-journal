@@ -103,8 +103,9 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public static function usable(string $configurationId): self
     {
-        return self::query()->enabled()->whereKey($configurationId)->first()
-            ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
+        return self::query()->enabled()->whereKey($configurationId)->firstOr(
+            fn () => throw ShareGatewayUnavailable::forConfiguration($configurationId),
+        );
     }
 
     /**
@@ -114,8 +115,9 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public static function lockUsable(string $configurationId): self
     {
-        return self::query()->enabled()->whereKey($configurationId)->lockForUpdate()->first()
-            ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
+        return self::query()->enabled()->whereKey($configurationId)->lockForUpdate()->firstOr(
+            fn () => throw ShareGatewayUnavailable::forConfiguration($configurationId),
+        );
     }
 
     /**
@@ -187,7 +189,7 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public static function usableDefault(): self
     {
-        return self::query()->enabled()->markedDefault()->first() ?? throw ShareGatewayUnavailable::noDefault();
+        return self::query()->enabled()->markedDefault()->firstOr(fn () => throw ShareGatewayUnavailable::noDefault());
     }
 
     /**

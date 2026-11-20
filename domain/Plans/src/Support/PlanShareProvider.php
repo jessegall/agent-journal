@@ -95,9 +95,7 @@ final readonly class PlanShareProvider implements ShareRecordProvider
             throw RecordUnavailable::forActor($record);
         }
 
-        $plan = Plan::query()->whereKey($record->id)->first(
-            self::SUMMARY_COLUMNS,
-        ) ?? throw RecordUnavailable::forActor($record);
+        $plan = Plan::query()->whereKey($record->id)->firstOr(fn () => throw RecordUnavailable::forActor($record));
         $budget->chargeMetadata(strlen($plan->title));
 
         return $plan;

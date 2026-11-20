@@ -61,17 +61,17 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     /**
      * The most characters a document's or a report's title holds.
      */
-    public const int TITLE_CHARACTERS = 240;
+    public const int TITLE_CHARACTER_LIMIT = 240;
 
     /**
      * The most characters a document's or a report's abstract holds.
      */
-    public const int ABSTRACT_CHARACTERS = 1000;
+    public const int ABSTRACT_CHARACTER_LIMIT = 1000;
 
     /**
      * The most characters the reason a document or a report is settled holds.
      */
-    public const int SETTLEMENT_REASON_CHARACTERS = 2000;
+    public const int SETTLEMENT_REASON_CHARACTER_LIMIT = 2000;
 
     protected $attributes = ['attention' => 'active'];
 
@@ -245,10 +245,10 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     {
         $query = self::query()->with('currentRevision')->lockForUpdate();
         if (is_int($number)) {
-            return $query->where('number', $number)->first() ?? throw DocumentMissing::numbered($number);
+            return $query->where('number', $number)->firstOr(fn () => throw DocumentMissing::numbered($number));
         }
 
-        return $query->whereKey($number)->first() ?? throw DocumentMissing::identified($number);
+        return $query->whereKey($number)->firstOr(fn () => throw DocumentMissing::identified($number));
     }
 
     /**
@@ -322,15 +322,17 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     public function publishedRevision(string|null $version): DocumentRevision
     {
         if ($version === null) {
-            return $this->revisions()->whereKey($this->current_revision_id)->whereNotNull('closed_at')->first()
-                ?? throw TextVersionUnavailable::named('current');
+            return $this->revisions()->whereKey($this->current_revision_id)->whereNotNull('closed_at')->firstOr(
+                fn () => throw TextVersionUnavailable::named('current'),
+            );
         }
 
         if (! ctype_digit($version)) {
             throw TextVersionUnavailable::named($version);
         }
 
-        return $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->first()
-            ?? throw TextVersionUnavailable::named($version);
+        return $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->firstOr(
+            fn () => throw TextVersionUnavailable::named($version),
+        );
     }
 }

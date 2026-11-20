@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Access\Handlers;
+namespace Domain\Access\Handlers\Support;
 
 use App\Contracts\CommandHandler;
 

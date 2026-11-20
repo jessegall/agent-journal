@@ -291,8 +291,9 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public static function lockById(string $publicationId): self
     {
-        return self::query()->whereKey($publicationId)->lockForUpdate()->first()
-            ?? throw SkillPublicationMissing::for($publicationId);
+        return self::query()->whereKey($publicationId)->lockForUpdate()->firstOr(
+            fn () => throw SkillPublicationMissing::for($publicationId),
+        );
     }
 
     /**

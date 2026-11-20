@@ -33,9 +33,9 @@ final readonly class ChangeDocumentDetails extends Command implements Authorized
 {
     public function __construct(
         public DraftTarget $draft,
-        #[Required, OneLine, Max(Document::TITLE_CHARACTERS)]
+        #[Required, OneLine, Max(Document::TITLE_CHARACTER_LIMIT)]
         public string $title,
-        #[Required, OneLine, Max(Document::ABSTRACT_CHARACTERS)]
+        #[Required, OneLine, Max(Document::ABSTRACT_CHARACTER_LIMIT)]
         public string $abstract,
     ) {}
 

@@ -105,7 +105,7 @@ final class SharePreview extends Model implements ReadableModel
      */
     public static function of(string $previewId): self
     {
-        return self::query()->whereKey($previewId)->first() ?? throw SharePreviewRefused::unknown($previewId);
+        return self::query()->whereKey($previewId)->firstOr(fn () => throw SharePreviewRefused::unknown($previewId));
     }
 
     /**
@@ -115,8 +115,9 @@ final class SharePreview extends Model implements ReadableModel
      */
     public static function lockFor(string $previewId): self
     {
-        return self::query()->whereKey($previewId)->lockForUpdate()->first()
-            ?? throw SharePreviewRefused::unknown($previewId);
+        return self::query()->whereKey($previewId)->lockForUpdate()->firstOr(
+            fn () => throw SharePreviewRefused::unknown($previewId),
+        );
     }
 
     /**

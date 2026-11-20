@@ -17,8 +17,9 @@ final readonly class DeskDestinationProvider implements DestinationProvider
 {
     public function destinationsFor(AssigneeIdentity $requested): Destinations
     {
-        $desk = DeskRecord::query()->whereKey($requested->id)->sharedLock()->first()
-            ?? throw AssigneeUnavailable::forActor($requested);
+        $desk = DeskRecord::query()->whereKey($requested->id)->sharedLock()->firstOr(
+            fn () => throw AssigneeUnavailable::forActor($requested),
+        );
 
         return new ResolvedDestinations($desk, $desk);
     }

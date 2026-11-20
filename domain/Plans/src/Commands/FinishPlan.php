@@ -31,7 +31,7 @@ final readonly class FinishPlan extends Command implements AuthorizedCommand
     public function __construct(
         public string $planId,
         public int $expectedRevision,
-        #[Required, Max(Plan::NOTE_CHARACTERS)]
+        #[Required, Max(Plan::NOTE_CHARACTER_LIMIT)]
         public string $note,
     ) {}
 
