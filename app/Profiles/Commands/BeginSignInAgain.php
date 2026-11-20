@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -23,6 +26,7 @@ use App\Profiles\Values\SignInStarted;
  */
 #[HandledBy(BeginSignInAgainHandler::class)]
 #[Authorize(AccountPolicy::class, AccountAbility::Manage)]
+#[Operation('begin_sign_in_again', ResourceAreaType::JournalControl, AccessType::Create)]
 final readonly class BeginSignInAgain extends Command implements HasAuthorizationSubject
 {
     public function __construct(

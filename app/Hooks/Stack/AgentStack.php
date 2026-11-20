@@ -54,6 +54,23 @@ final readonly class AgentStack
         return $walk->finish();
     }
 
+    public function permission(): StackVerdict
+    {
+        foreach (array_reverse($this->frames) as $frame) {
+            if (! $frame->isLive()) {
+                continue;
+            }
+
+            $permission = $frame->state->workPermission();
+
+            if (! $permission->allowed) {
+                return $permission;
+            }
+        }
+
+        return StackVerdict::allow();
+    }
+
     /**
      * The stack with a state put on top, or this stack when it already holds a state for the same reference or the
      * state is a conditional state that is switched off. Every push passes through here, so a declined push stores

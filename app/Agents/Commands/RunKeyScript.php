@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
+use App\Agents\Contracts\TargetsAgentStack;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\RunKeyScriptHandler;
 use App\Agents\Models\Agent;
@@ -24,7 +28,8 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(RunKeyScriptHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::RunKeyScript)]
-final readonly class RunKeyScript extends Command implements HasAuthorizationSubject
+#[Operation('run_key_script', ResourceAreaType::Workspace, AccessType::Execute)]
+final readonly class RunKeyScript extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     /**
      * @param  list<ScriptParameter>  $parameters

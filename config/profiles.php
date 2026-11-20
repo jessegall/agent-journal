@@ -13,6 +13,27 @@ return [
 
     'base_overrides' => [],
 
-    'profiles' => [],
+    'profiles' => [
+        'journal-main' => [
+            'base' => 'main-agent',
+            'model' => 'opus',
+            'supervisor' => ['default' => 'owner'],
+        ],
+        'journal-worker' => [
+            'base' => 'writing-helper',
+            'model' => 'sonnet',
+            'supervisor' => ['default' => 'profile:journal-code-reviewer'],
+        ],
+        'journal-code-reviewer' => [
+            'base' => 'read-only-helper',
+            'model' => 'sonnet',
+            'supervisor' => ['default' => 'profile:journal-main', 'merge.ready' => 'profile:journal-merger'],
+        ],
+        'journal-merger' => [
+            'base' => 'writing-helper',
+            'model' => 'sonnet',
+            'supervisor' => ['default' => 'profile:journal-main'],
+        ],
+    ],
 
 ];

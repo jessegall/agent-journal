@@ -90,7 +90,7 @@ final class OrientationToolsTest extends TestCase
         $this->assertSame(CapabilitiesResolver::CONTRACT_VERSION, $result['contract_version']);
         $this->assertIsString($result['server_build']);
         $this->assertSame('2025-11-25', $result['protocol_version']);
-        $this->assertSame('main', $result['job_profile']);
+        $this->assertSame('main-agent', $result['job_profile']);
         $this->assertContains('overview_read', $result['tools']);
     }
 

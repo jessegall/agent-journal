@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Desks\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Bus\Attributes\Authorize;
@@ -27,6 +30,7 @@ use App\Desks\Support\SeatChangeResult;
 #[RetainedActorRequestKey]
 #[HandledBy(ReplaceSeatOccupantHandler::class)]
 #[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
+#[Operation('replace_seat_occupant', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class ReplaceSeatOccupant extends Command implements HasAuthorizationSubject
 {
     public function __construct(

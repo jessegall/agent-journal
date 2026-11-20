@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\RetryDriverRequestHandler;
 use App\Agents\Models\Agent;
@@ -21,6 +24,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(RetryDriverRequestHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
+#[Operation('retry_driver_request', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RetryDriverRequest extends Command implements HasAuthorizationSubject
 {
     public function __construct(

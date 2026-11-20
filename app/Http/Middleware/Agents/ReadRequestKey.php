@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
+use App\AgentRequests\Enums\CallEffect;
 use App\AgentRequests\Enums\ReceiptOwner;
 use App\AgentRequests\Exceptions\KeyedWriteWithoutReceipt;
 use App\AgentRequests\Support\CallDeclaration;
 use App\AgentRequests\Support\CallRoutes;
+use App\Agents\Support\ReadGrant;
+use App\Agents\Values\ReadRequest;
 use App\Bus\Support\RequestKey;
 use Closure;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -28,6 +32,7 @@ final readonly class ReadRequestKey
         private RequestKey $key,
         private ExceptionHandler $failures,
         private Application $app,
+        private ReadGrant $reads,
     ) {}
 
     /**
@@ -46,6 +51,10 @@ final readonly class ReadRequestKey
 
         if ($declaration !== null) {
             self::requireDeclaredFields($request, $declaration);
+
+            if ($declaration->endpoint->effect === CallEffect::Read) {
+                $this->reads->requireAllowed(self::readRequest($declaration, $request));
+            }
         }
 
         $handsKey = $declaration === null || $declaration->endpoint->receipt === ReceiptOwner::CommandBus;
@@ -65,6 +74,22 @@ final readonly class ReadRequestKey
         } finally {
             $this->key->forget();
         }
+    }
+
+    private static function readRequest(CallDeclaration $declaration, Request $request): ReadRequest
+    {
+        $path = $declaration->endpoint->path;
+        $name = match ($path) {
+            'communication/show' => 'messages_show',
+            'communication/history' => 'inbox_history',
+            'communication/counts' => 'inbox_counts',
+            default => Str::replace(['/', '-'], '_', $path),
+        };
+        $arguments = $name === 'messages_show' && $request->filled('message_id')
+            ? ['message_id' => $request->string('message_id')->value()]
+            : [];
+
+        return new ReadRequest($name, arguments: $arguments);
     }
 
     /**

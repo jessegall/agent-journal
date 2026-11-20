@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Desks\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
@@ -27,6 +30,7 @@ use App\Desks\Support\SeatChangeResult;
 #[RetainedActorRequestKey]
 #[HandledBy(RestoreActorDeskHandler::class)]
 #[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
+#[Operation('restore_actor_desk', ResourceAreaType::JournalControl, AccessType::Create)]
 final readonly class RestoreActorDesk extends Command implements HasAuthorizationSubject
 {
     public function __construct(public ActorIdentity $actor) {}

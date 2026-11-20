@@ -9,6 +9,7 @@ use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\MapsRefusals;
+use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\CallFailedUnexpectedly;
 use App\Bus\Values\MappedRefusal;
@@ -34,7 +35,11 @@ final readonly class RefusalMapper implements MapsRefusals
     public function refusal(Throwable $failure, string $subject, string $correlationId): MappedRefusal
     {
         return match (true) {
-            $failure instanceof CodedRefusal => new MappedRefusal($failure->refusalCode(), $failure->getMessage()),
+            $failure instanceof CodedRefusal => new MappedRefusal(
+                $failure->refusalCode(),
+                $failure->getMessage(),
+                $failure instanceof RefusalDetails ? $failure->refusalDetails() : [],
+            ),
             $failure instanceof ValidationException => new MappedRefusal(
                 RefusalCode::InvalidInput,
                 $failure->getMessage(),

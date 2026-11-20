@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -22,6 +25,7 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 #[RetainedActorRequestKey]
 #[HandledBy(RetainNoteHandler::class)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('retain_note', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RetainNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $text) {}

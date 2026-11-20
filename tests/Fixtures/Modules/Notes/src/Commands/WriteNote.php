@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -18,6 +21,7 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  */
 #[HandledBy(WriteNoteHandler::class)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+#[Operation('write_note', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class WriteNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $text) {}

@@ -8,6 +8,7 @@ use App\Bus\CommandMiddleware\AdmitStack;
 use App\Bus\CommandMiddleware\AuthorizeCommand;
 use App\Bus\CommandMiddleware\BindDispatcher;
 use App\Bus\CommandMiddleware\CheckEntry;
+use App\Bus\CommandMiddleware\CheckJobGrant;
 use App\Bus\CommandMiddleware\GuardCommandOrigin;
 use App\Bus\CommandMiddleware\LogCommand;
 use App\Bus\CommandMiddleware\RecordReceipt;
@@ -17,11 +18,7 @@ use App\Bus\CommandMiddleware\ValidateCommand;
 use App\Bus\Contracts\CommandMiddleware;
 
 /**
- * The order every command passes (doc 19, section 6.5): LogCommand, CheckEntry, BindDispatcher, ValidateCommand,
- * AdmitStack, RecordRefusalReceipt, the module middleware of the BeforeTransaction stage, RunInTransaction,
- * RecordReceipt (check, then write after the handler), [guard], the module middleware of the InsideTransaction stage,
- * the handler. The place in brackets belongs to doc 16's MCP plan, which adds its step to these lists without
- * changing MiddlewareRunner.
+ * The core middleware frame around the module middleware and handler.
  */
 final class CommandFrame
 {
@@ -51,5 +48,10 @@ final class CommandFrame
      *
      * @var list<class-string<CommandMiddleware>>
      */
-    public const array INSIDE = [GuardCommandOrigin::class, AuthorizeCommand::class, RecordReceipt::class];
+    public const array INSIDE = [
+        GuardCommandOrigin::class,
+        AuthorizeCommand::class,
+        RecordReceipt::class,
+        CheckJobGrant::class,
+    ];
 }

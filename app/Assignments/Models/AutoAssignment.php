@@ -148,6 +148,11 @@ final class AutoAssignment extends Model implements ReadableModel
         );
     }
 
+    public function markServedAt(CarbonImmutable $time): void
+    {
+        self::query()->whereKey($this->id)->update(['last_served_at' => $time]);
+    }
+
     /**
      * @param  Builder<self>  $query
      */

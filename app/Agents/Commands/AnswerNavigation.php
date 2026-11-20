@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\AnswerNavigationHandler;
 use App\Agents\Models\Agent;
@@ -23,6 +26,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(AnswerNavigationHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Navigate)]
+#[Operation('navigation_answer', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class AnswerNavigation extends Command implements HasAuthorizationSubject
 {
     public function __construct(

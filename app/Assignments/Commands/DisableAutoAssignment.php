@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Assignments\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Handlers\DisableAutoAssignmentHandler;
 use App\Assignments\Models\AssignmentRecord;
@@ -24,6 +27,7 @@ use App\Bus\Support\Command;
 #[RepeatableRead]
 #[HandledBy(DisableAutoAssignmentHandler::class)]
 #[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
+#[Operation('disable_auto_assignment', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class DisableAutoAssignment extends Command implements HasAuthorizationSubject
 {
     public function __construct(

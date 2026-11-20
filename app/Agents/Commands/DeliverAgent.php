@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
+use App\Agents\Contracts\TargetsAgentStack;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\DeliverAgentHandler;
 use App\Agents\Models\Agent;
@@ -22,7 +26,8 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(DeliverAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class DeliverAgent extends Command implements HasAuthorizationSubject
+#[Operation('deliver_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
+final readonly class DeliverAgent extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(
         public string $agentId,

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
@@ -21,6 +24,7 @@ use Tests\Fixtures\Domains\QuestionReminders\Handlers\SendQuestionReminderHandle
  */
 #[HandledBy(SendQuestionReminderHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('send_question_reminder', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class SendQuestionReminder extends Command implements HasAuthorizationSubject
 {
     public function __construct(

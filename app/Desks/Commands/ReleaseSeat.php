@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Desks\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Assignments\Support\AssignmentReference;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
@@ -25,6 +28,7 @@ use App\Desks\Policies\DeskPolicy;
 #[RetainedActorRequestKey]
 #[HandledBy(ReleaseSeatHandler::class)]
 #[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
+#[Operation('release_seat', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class ReleaseSeat extends Command implements HasAuthorizationSubject
 {
     public function __construct(

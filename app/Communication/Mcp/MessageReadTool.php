@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\ReadMessages;
@@ -13,6 +14,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('messages_read')]
+#[WritesCommand(ReadMessages::class, readOnlyHelper: true)]
 #[Description('Read messages in one of your inboxes; the first reader of a question takes it up.')]
 final class MessageReadTool extends MessageWriteTool
 {

@@ -7,6 +7,7 @@ namespace App\Mcp\Support;
 use App\Hooks\Contracts\JournalToolNames;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\McpBudgetExceeded;
 use App\Mcp\Exceptions\McpClassInvalid;
 use App\Mcp\Exceptions\McpResourceUriTaken;
@@ -19,17 +20,11 @@ use ReflectionClass;
 
 /**
  * Every MCP tool, resource and overview contribution class Core and the domains offer, checked as each is added: one
- * class per tool name and resource URI, snake_case tool names, and the main profile's discovery budget. It holds class
+ * class per tool name and resource URI, snake_case tool names, and each profile's discovery budget. It holds class
  * names and their sizes only, never a tool built to answer a call.
  */
 final class McpCatalogue implements JournalToolNames, McpRegistration
 {
-    private const string MAIN_PROFILE = 'main';
-
-    private const int MAIN_TOOLS = 72;
-
-    private const int MAIN_BYTES = 65536;
-
     private const string SNAKE_CASE = '/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/';
 
     /**
@@ -47,7 +42,11 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     private array $overviewContributions = [];
 
-    private int $toolBytes = 0;
+    /** @var array<string, int> */
+    private array $toolBytes = [];
+
+    /** @var array<string, int> */
+    private array $toolCounts = [];
 
     /**
      * @throws McpClassInvalid
@@ -67,15 +66,37 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
             throw McpToolNameTaken::for($name, $this->tools[$name], $className);
         }
 
-        $this->tools[$name] = $className;
-        $this->toolBytes += strlen(json_encode($this->definitionOf($className)->toArray(), JSON_THROW_ON_ERROR));
+        $tool = $this->definitionOf($className);
+        $bytes = strlen(json_encode($tool->toArray(), JSON_THROW_ON_ERROR));
+        $write = $tool->writeDeclaration();
+        $counts = $this->toolCounts;
+        $sizes = $this->toolBytes;
 
-        if (count($this->tools) > self::MAIN_TOOLS) {
-            throw McpBudgetExceeded::tools(self::MAIN_PROFILE, count($this->tools), self::MAIN_TOOLS);
+        foreach (DiscoveryProfile::cases() as $profile) {
+            if ($write->isDefined() && ! $profile->includesWrite($write->get()->readOnlyHelper)) {
+                continue;
+            }
+
+            $count = ($counts[$profile->value] ?? 0) + 1;
+            $size = ($sizes[$profile->value] ?? 0) + $bytes;
+            $this->requireBudget($profile, $count, $size);
+            $counts[$profile->value] = $count;
+            $sizes[$profile->value] = $size;
         }
 
-        if ($this->toolBytes > self::MAIN_BYTES) {
-            throw McpBudgetExceeded::bytes(self::MAIN_PROFILE, $this->toolBytes, self::MAIN_BYTES);
+        $this->tools[$name] = $className;
+        $this->toolCounts = $counts;
+        $this->toolBytes = $sizes;
+    }
+
+    private function requireBudget(DiscoveryProfile $profile, int $count, int $bytes): void
+    {
+        if ($count > $profile->toolLimit()) {
+            throw McpBudgetExceeded::tools($profile->value, $count, $profile->toolLimit());
+        }
+
+        if ($bytes > $profile->byteLimit()) {
+            throw McpBudgetExceeded::bytes($profile->value, $bytes, $profile->byteLimit());
         }
     }
 
@@ -134,6 +155,17 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     public function toolNames(): array
     {
         return array_keys($this->tools);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function toolNamesFor(JobPermissionReader $permissions): array
+    {
+        return array_keys(array_filter(
+            $this->tools,
+            fn (string $class) => $permissions->allows($this->definitionOf($class)),
+        ));
     }
 
     /**

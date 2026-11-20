@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Communication\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Assignments\Support\AssignmentReference;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
@@ -26,6 +29,7 @@ use App\Communication\Policies\MessagePolicy;
 #[RetainedActorRequestKey]
 #[HandledBy(ReleaseMessageClaimHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Recover)]
+#[Operation('release_message_claim', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ReleaseMessageClaim extends Command implements HasAuthorizationSubject
 {
     public function __construct(

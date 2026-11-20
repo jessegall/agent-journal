@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Communication\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
@@ -24,6 +27,7 @@ use App\Communication\Policies\MessagePolicy;
 #[RetainedActorRequestKey]
 #[HandledBy(RequireMessageAnswerHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
+#[Operation('require_message_answer', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RequireMessageAnswer extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $messageId) {}

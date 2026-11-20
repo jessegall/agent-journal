@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\RetireAgentHandler;
 use App\Agents\Models\Agent;
@@ -21,6 +24,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(RetireAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
+#[Operation('retire_agent', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class RetireAgent extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $agentId) {}

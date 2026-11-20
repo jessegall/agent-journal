@@ -36,6 +36,11 @@ final readonly class ProfileRecords implements ProfileResolver
         return Profile::hasCurrent($key);
     }
 
+    public function supervisorProfiles(): array
+    {
+        return ProfileRevision::currentSupervisorProfiles();
+    }
+
     /**
      * @throws ProfileRetired
      */

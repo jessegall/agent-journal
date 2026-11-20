@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\ReplyToMessage;
@@ -13,6 +14,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('messages_reply')]
+#[WritesCommand(ReplyToMessage::class, readOnlyHelper: true)]
 #[Description('Reply to a message at the state version you read; a question is answered by it.')]
 final class MessageReplyTool extends MessageWriteTool
 {

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
+use App\Agents\Contracts\TargetsAgentStack;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\ReassignAgentRuntimeHandler;
 use App\Agents\Models\Agent;
@@ -22,7 +26,8 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(ReassignAgentRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
-final readonly class ReassignAgentRuntime extends Command implements HasAuthorizationSubject
+#[Operation('reassign_agent_runtime', ResourceAreaType::JournalWork, AccessType::Edit)]
+final readonly class ReassignAgentRuntime extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(
         public string $agentId,

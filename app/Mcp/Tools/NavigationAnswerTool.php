@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Agents\Commands\AnswerNavigation;
 use App\Agents\Exceptions\NavigationAnswerRefused;
 use App\Agents\Values\NavigationAnswer;
@@ -18,6 +19,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * navigation_answer: one round of the main agent on a stalled screen.
  */
 #[Name('navigation_answer')]
+#[WritesCommand(AnswerNavigation::class)]
 #[Description(
     'Send one round to a stalled screen, at the version and generation navigation_show gave: exactly one of keys '
     .'(up, down, left, right, enter, esc, tab, space, a digit, y, n), choose (a label), confirm (the label of the '

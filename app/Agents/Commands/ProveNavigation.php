@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Handlers\ProveNavigationHandler;
@@ -23,6 +26,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(ProveNavigationHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Navigate)]
+#[Operation('navigation_done', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ProveNavigation extends Command implements HasAuthorizationSubject
 {
     public function __construct(

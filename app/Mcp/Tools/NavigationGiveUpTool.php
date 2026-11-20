@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Agents\Commands\AbandonNavigation;
 use App\Bus\Contracts\CommandBus;
 use App\Mcp\Data\ToolResult;
@@ -16,6 +17,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * navigation_give_up: the main agent gives up on a navigation request, saying why.
  */
 #[Name('navigation_give_up')]
+#[WritesCommand(AbandonNavigation::class)]
 #[Description(
     'Give up on a navigation request, saying why: its key script ends and the runtime stays held for the person.',
 )]

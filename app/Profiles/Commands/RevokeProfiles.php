@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -22,6 +25,7 @@ use App\Profiles\Values\ProfileKey;
  */
 #[HandledBy(RevokeProfilesHandler::class)]
 #[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
+#[Operation('revoke_profiles', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class RevokeProfiles extends Command implements HasAuthorizationSubject
 {
     /**

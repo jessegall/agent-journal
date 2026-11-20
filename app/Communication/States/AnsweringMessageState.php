@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Communication\States;
 
+use App\Bus\Values\RecoveryCall;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Stack\StackVerdict;
 use App\Hooks\States\AgentState;
 
 /**
@@ -23,6 +25,14 @@ final class AnsweringMessageState extends AgentState
     public function isFinished(): bool
     {
         return ! $this->claimStands;
+    }
+
+    public function workPermission(): StackVerdict
+    {
+        return StackVerdict::refuse(
+            $this->instruction(),
+            new RecoveryCall('messages_show', ['message_id' => $this->messageId]),
+        );
     }
 
     #[StackWide]

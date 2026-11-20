@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\AllowsEngine;
+use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\Entry;
+use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Enums\CommandEffectType;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use ReflectionClass;
 
@@ -56,6 +60,39 @@ final readonly class DeclaredCommand
     public function needsRepeatableRead(): bool
     {
         return $this->reflection()->getAttributes(RepeatableRead::class) !== [];
+    }
+
+    public function allowsEngine(): bool
+    {
+        return $this->reflection()->getAttributes(AllowsEngine::class) !== [];
+    }
+
+    public function effect(): CommandEffectType
+    {
+        foreach ($this->reflection()->getAttributes(Effect::class) as $declared) {
+            return $declared->newInstance()->type;
+        }
+
+        return CommandEffectType::StateChange;
+    }
+
+    public function operation(): Operation|null
+    {
+        foreach ($this->reflection()->getAttributes(Operation::class) as $declared) {
+            $operation = $declared->newInstance();
+
+            if ($operation->name === '') {
+                throw CommandDeclarationInvalid::for($this->command, 'its Operation needs a name');
+            }
+
+            return $operation;
+        }
+
+        if ($this->owner->exportsCommand($this->command) && $this->entry() === CommandEntry::Application) {
+            throw CommandDeclarationInvalid::for($this->command, 'an exported application command needs Operation');
+        }
+
+        return null;
     }
 
     public function hasActorScopedReceipt(): bool

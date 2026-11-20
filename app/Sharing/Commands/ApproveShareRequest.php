@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresRequestKey;
@@ -24,6 +27,7 @@ use App\Sharing\Support\ShareSummary;
 #[HandledBy(ApproveShareRequestHandler::class)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 #[Authorize(SharingPolicy::class, SharingAbility::Administer)]
+#[Operation('approve_share_request', ResourceAreaType::JournalControl, AccessType::Edit)]
 final readonly class ApproveShareRequest extends Command implements HasAuthorizationSubject
 {
     public function __construct(

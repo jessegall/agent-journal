@@ -8,6 +8,7 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\StopCondition;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\SupervisorRoutes;
 use App\Profiles\Values\WithheldAbility;
 use App\Programs\Enums\HookProgram;
 
@@ -40,5 +41,6 @@ final readonly class ProposedProfile
         public PolicyOverride $override,
         public array $stopConditions,
         public array $withheldAbilities = [],
+        public SupervisorRoutes $supervisor = new SupervisorRoutes(),
     ) {}
 }

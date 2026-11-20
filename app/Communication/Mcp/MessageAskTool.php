@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\AskMessage;
@@ -13,6 +14,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('messages_ask')]
+#[WritesCommand(AskMessage::class)]
 #[Description('Ask a question from one of your inboxes to another inbox; it waits until someone there answers.')]
 final class MessageAskTool extends MessageWriteTool
 {

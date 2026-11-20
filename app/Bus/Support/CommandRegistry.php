@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\Attributes\Operation;
+use App\Bus\Enums\CommandAdmissionStage;
+use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Pipes\CheckCommandHandlers;
 use App\Bus\Pipes\CheckCommandMiddleware;
 use App\Bus\Pipes\CheckExportedCommands;
 use App\Bus\Pipes\ReadCommandHandlers;
 use App\Bus\Pipes\RegisterCommands;
+use App\Bus\Values\EffectiveCommand;
 use App\Pipelines\Contracts\PipelineRunner;
 use PhpOption\Option;
 
@@ -108,6 +112,39 @@ final readonly class CommandRegistry
     public function needsRepeatableRead(string $command): bool
     {
         return $this->entry($command)->repeatableRead;
+    }
+
+    public function allowsEngine(string $command): bool
+    {
+        return $this->entry($command)->allowsEngine;
+    }
+
+    public function effectOf(string $command): CommandEffectType
+    {
+        return $this->entry($command)->effect;
+    }
+
+    public function effective(CommandCall $call, CommandAdmissionStage $stage): EffectiveCommand
+    {
+        $registered = $this->entry($call->name());
+
+        return new EffectiveCommand($call->command(), $registered->effect, $registered->operation, $stage);
+    }
+
+    public function operationOf(string $command): Operation|null
+    {
+        return $this->entry($command)->operation;
+    }
+
+    public function operationNamed(string $name): Operation|null
+    {
+        foreach ($this->commands as $command) {
+            if ($command->operation?->name === $name) {
+                return $command->operation;
+            }
+        }
+
+        return null;
     }
 
     public function requiresRequestKey(string $command): bool

@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Communication\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\Effect;
+use App\Bus\Enums\CommandEffectType;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -24,8 +29,10 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  */
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[Effect(CommandEffectType::Recovery)]
 #[HandledBy(ReplyToMessageHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
+#[Operation('messages_reply', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class ReplyToMessage extends Command implements HasAuthorizationSubject
 {
     public function __construct(

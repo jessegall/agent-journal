@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -22,6 +25,7 @@ use App\Processes\Values\SampleOutcome;
  */
 #[HandledBy(SettleSampleHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+#[Operation('settle_sample', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class SettleSample extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $commandRequestId) {}

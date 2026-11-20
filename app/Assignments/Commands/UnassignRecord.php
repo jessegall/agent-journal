@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Assignments\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Handlers\UnassignRecordHandler;
 use App\Assignments\Models\AssignmentRecord;
@@ -27,6 +30,7 @@ use App\Records\Support\RecordIdentity;
 #[RetainedActorRequestKey]
 #[HandledBy(UnassignRecordHandler::class)]
 #[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
+#[Operation('unassign_record', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class UnassignRecord extends Command implements HasAuthorizationSubject
 {
     public function __construct(

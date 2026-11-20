@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
@@ -21,6 +24,7 @@ use Tests\Fixtures\Bus\Shop\Handlers\AddItemHandler;
 #[RepeatableRead]
 #[HandledBy(AddItemHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
+#[Operation('add_item', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class AddItem extends Command implements HasAuthorizationSubject
 {
     /**

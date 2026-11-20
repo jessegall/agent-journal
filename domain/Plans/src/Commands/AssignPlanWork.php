@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Attributes\Authorize;
@@ -27,6 +30,7 @@ use Domain\Plans\Policies\PlanPolicy;
 #[RetainedActorRequestKey]
 #[HandledBy(AssignPlanWorkHandler::class)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
+#[Operation('assign_plan_work', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class AssignPlanWork extends Command implements HasAuthorizationSubject
 {
     public function __construct(

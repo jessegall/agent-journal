@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Providers;
 
+use App\Assignments\Actions\AssignmentTurns;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Actions\AdmitPublicAssignments;
@@ -19,8 +20,11 @@ use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Contracts\AutoAssignmentResolver;
+use App\Assignments\Contracts\AutoAssignmentTrigger;
+use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Contracts\ClaimRelease;
 use App\Assignments\Contracts\PublishesAssignmentFacts;
 use App\Assignments\Contracts\RecordVisibility;
@@ -64,6 +68,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->bind(AssignmentStorage::class, AssignmentStore::class);
         $this->app->bind(PublishesAssignmentFacts::class, AssignmentFacts::class);
         $this->app->scoped(AssignmentWriter::class, WriteAssignments::class);
+        $this->app->scoped(JournalAssignmentWriter::class, WriteAssignments::class);
         $this->app->scoped(ResponsibilityWriter::class, WriteResponsibilities::class);
         $this->app->scoped(AssigneeLocks::class, OrderedAssigneeLocks::class);
         $this->app->scoped(AdmitPublicAssignments::class);
@@ -74,6 +79,8 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(AssignmentQuery::class, DatabaseAssignmentQuery::class);
         $this->app->scoped(AssignedWorkResolver::class, RegisteredAssignedWork::class);
         $this->app->scoped(AutoAssignmentResolver::class, DatabaseAutoAssignments::class);
+        $this->app->scoped(AutoAssignmentTrigger::class, AssignmentTurns::class);
+        $this->app->alias(DatabaseAutoAssignments::class, AutoAssignmentWriter::class);
         $this->app->scoped(SizeAssignmentRoom::class);
         $this->app->scoped(DatabaseAutoAssignments::class);
     }

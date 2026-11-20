@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Commands;
 
+use App\Bus\Attributes\Operation;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\HasAuthorizationSubject;
@@ -20,6 +23,7 @@ use Domain\Rules\Policies\RulePolicy;
  */
 #[HandledBy(DenyRuleHandler::class)]
 #[Authorize(RulePolicy::class, RuleAbility::Deny)]
+#[Operation('deny_rule', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class DenyRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $ruleId) {}

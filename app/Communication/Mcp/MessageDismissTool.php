@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\DismissMessage;
@@ -13,6 +14,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('messages_dismiss')]
+#[WritesCommand(DismissMessage::class, readOnlyHelper: true)]
 #[Description('Withdraw a message you wrote, or decline one sent to your inbox, with a reason.')]
 final class MessageDismissTool extends MessageWriteTool
 {

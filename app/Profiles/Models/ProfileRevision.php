@@ -10,6 +10,7 @@ use App\Links\Support\Linkable;
 use App\Profiles\Casts\ProfileAuthorizationCast;
 use App\Profiles\Casts\ProfileBaseCast;
 use App\Profiles\Casts\ProfileStartPolicyCast;
+use App\Profiles\Casts\SupervisorRoutesCast;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRevisionImmutable;
 use App\Profiles\Values\ProfileAuthorization;
@@ -18,6 +19,8 @@ use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Profiles\Values\ProfileStartPolicy;
+use App\Profiles\Values\SupervisorProfile;
+use App\Profiles\Values\SupervisorRoutes;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -43,6 +46,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property list<string> $required_skills
  * @property ProfileStartPolicy $start_policy
  * @property ProfileAuthorization $authorization
+ * @property SupervisorRoutes $supervisor
  * @property ActorType $author_type
  * @property string $author_id
  * @property CarbonImmutable $created_at
@@ -57,6 +61,7 @@ use Illuminate\Database\Eloquent\Model;
     'required_skills',
     'start_policy',
     'authorization',
+    'supervisor',
     'author_type',
     'author_id',
 ])]
@@ -80,6 +85,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'required_skills' => 'array',
             'start_policy' => ProfileStartPolicyCast::class,
             'authorization' => ProfileAuthorizationCast::class,
+            'supervisor' => SupervisorRoutesCast::class,
             'author_type' => ActorType::class,
             'created_at' => 'immutable_datetime',
         ];
@@ -108,6 +114,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'required_skills' => $definition->requiredSkills,
             'start_policy' => $definition->start,
             'authorization' => $definition->authorization,
+            'supervisor' => $definition->supervisor,
             'author_type' => $author->type,
             'author_id' => $author->id,
         ]);
@@ -144,7 +151,30 @@ final class ProfileRevision extends Model implements ReadableModel
             'requiredSkills' => $this->required_skills,
             'start' => $this->start_policy,
             'authorization' => $this->authorization,
+            'supervisor' => $this->supervisor,
         ]);
+    }
+
+    /** @return list<SupervisorProfile> */
+    public static function currentSupervisorProfiles(): array
+    {
+        $profiles = [];
+        self::query()
+            ->join('profiles', 'profiles.current_revision_id', '=', 'profile_revisions.id')
+            ->whereNull('profiles.retired_at')
+            ->select(['profile_revisions.*', 'profiles.key as profile_key'])
+            ->orderBy('profile_revisions.id')
+            ->readInChunks(50, function ($revisions) use (&$profiles): void {
+                foreach ($revisions as $revision) {
+                    $profiles[] = new SupervisorProfile(
+                        ProfileKey::from((string) $revision->getAttribute('profile_key')),
+                        $revision->supervisor,
+                        $revision->start_policy->access,
+                    );
+                }
+            });
+
+        return $profiles;
     }
 
     /**

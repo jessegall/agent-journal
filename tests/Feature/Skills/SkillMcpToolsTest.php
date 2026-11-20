@@ -77,7 +77,7 @@ final class SkillMcpToolsTest extends TestCase
         );
     }
 
-    public function test_an_agent_edit_is_refused_as_the_bus_refuses_an_agent_and_changes_nothing(): void
+    public function test_an_agent_edit_is_hidden_and_the_bus_refuses_the_same_write(): void
     {
         $this->actAs(TestActors::user(7));
         $created = $this->app->make(CommandBus::class)->run(
@@ -104,19 +104,14 @@ final class SkillMcpToolsTest extends TestCase
             );
             $this->fail('The bus let an agent revise a skill.');
         } catch (ActorNotAllowed $refusal) {
-            $busMessage = $refusal->getMessage();
+            $this->assertNotEmpty($refusal->getMessage());
         }
 
-        $refused = $this->callMcpTool(
-            $this->caller,
-            'skills_edit',
-            ['skill' => 'user-review-notes', 'expected_revision' => 1, 'body' => 'Other.'],
-        )
-            ->assertJsonPath('result.isError', true)
-            ->json('result.structuredContent');
+        $this->sendMcp($this->caller, 'tools/call', [
+            'name' => 'skills_edit',
+            'arguments' => ['skill' => 'user-review-notes', 'expected_revision' => 1, 'body' => 'Other.'],
+        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
 
-        $this->assertSame('forbidden', $refused['code']);
-        $this->assertSame($busMessage, $refused['message']);
         $this->assertSame(1, SkillRevision::query()->count());
     }
 }

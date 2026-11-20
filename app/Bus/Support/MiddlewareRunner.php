@@ -6,8 +6,11 @@ namespace App\Bus\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandAdmission;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Enums\MiddlewareStage;
+use App\Bus\Enums\CommandAdmissionStage;
+use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\DomainDisabled;
 use App\Contracts\DomainAvailability;
 use Closure;
@@ -26,6 +29,7 @@ final readonly class MiddlewareRunner
         private CurrentActor $actors,
         private CommandNesting $nesting,
         private CommandSubjects $subjects,
+        private CommandAdmission $admission,
     ) {}
 
     /**
@@ -34,7 +38,7 @@ final readonly class MiddlewareRunner
      */
     public function handle(Command $command, Closure $next): mixed
     {
-        $this->nesting->enter();
+        $this->nesting->enter($command::class);
 
         try {
             $name = $command::class;
@@ -69,11 +73,22 @@ final readonly class MiddlewareRunner
             return $this->through(
                 $steps,
                 $call,
-                fn (CommandCall $current) => $this->subjects->handOver($current, $next),
+                fn (CommandCall $current) => $this->handOver($current, $next),
             );
         } finally {
             $this->nesting->leave();
         }
+    }
+
+    private function handOver(CommandCall $call, Closure $next): mixed
+    {
+        if ($this->registry->entryOf($call->name()) === CommandEntry::Application) {
+            $this->admission->assess(
+                $this->registry->effective($call, CommandAdmissionStage::BeforeHandler),
+            )->requireAllowed();
+        }
+
+        return $this->subjects->handOver($call, $next);
     }
 
     /**
