@@ -51,7 +51,7 @@ final readonly class ClaimStartHandler implements CommandHandler
             $start->session_id,
             $start->directory,
             $start->account_generation,
-            $settings->recipeFor($program),
+            $settings->recipeFor($program, $start->transport_profile),
         );
     }
 }

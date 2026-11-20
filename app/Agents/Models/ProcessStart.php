@@ -6,6 +6,7 @@ namespace App\Agents\Models;
 
 use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ProcessStartState;
+use App\Agents\Enums\TransportProfileType;
 use App\Agents\Exceptions\ProcessStartUnknown;
 use App\Agents\Models\Support\ProcessStartScope;
 use App\Agents\Support\SelectedAccount;
@@ -39,6 +40,7 @@ use Illuminate\Support\Str;
  * @property int $account_generation
  * @property string $directory
  * @property ProcessStartState $state
+ * @property TransportProfileType $transport_profile
  * @property AccountProcessRole $role
  * @property string|null $owner_start_id
  * @property string|null $execution_id
@@ -64,6 +66,7 @@ final class ProcessStart extends Model implements ReadableModel
     {
         return [
             'state' => ProcessStartState::class,
+            'transport_profile' => TransportProfileType::class,
             'role' => AccountProcessRole::class,
             'account_generation' => 'integer',
             'output_generation' => 'integer',
@@ -74,8 +77,11 @@ final class ProcessStart extends Model implements ReadableModel
     /**
      * A new start of the session's start on the selected account, waiting for its host.
      */
-    public static function register(AgentSession $session, SelectedAccount $account): self
-    {
+    public static function register(
+        AgentSession $session,
+        SelectedAccount $account,
+        TransportProfileType $transport = TransportProfileType::Mcp,
+    ): self {
         $start = new self();
         $start->agent_id = $session->agent_id;
         $start->session_id = $session->id;
@@ -85,6 +91,7 @@ final class ProcessStart extends Model implements ReadableModel
         $start->account_generation = $account->generation;
         $start->directory = $account->directory;
         $start->state = ProcessStartState::Pending;
+        $start->transport_profile = $transport;
         $start->role = AccountProcessRole::Execution;
         $start->save();
 

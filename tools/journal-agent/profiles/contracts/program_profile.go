@@ -38,11 +38,19 @@ type JournalServer struct {
 	Relay   string
 }
 
+type TransportProfile string
+
+const (
+	McpTransport TransportProfile = "mcp"
+	CliTransport TransportProfile = "cli"
+)
+
 // AccountStart is what a start on a saved account adds to the profile's own settings: the account's folder on the
 // host and the native protection settings its adapter checked, as JSON, merged into the start's settings.
 type AccountStart struct {
 	Folder     string
 	Protection string
+	Transport  TransportProfile
 	// JournalServer is the journal's own MCP server the start loads; an account start is refused without it.
 	JournalServer *JournalServer
 	// LaunchReference names the launch to the journal's relays; it is no secret.

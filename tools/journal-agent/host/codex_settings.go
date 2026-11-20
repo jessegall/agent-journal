@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os/exec"
 	"path/filepath"
+
+	"journal-agent/profiles/contracts"
 )
 
 // CodexPreparation prepares a saved Codex account for one more thread through the protected installation's PHP and
@@ -24,6 +26,7 @@ type CodexRootRequest struct {
 	Root         string
 	Hooks        []byte
 	HookTables   []string
+	Transport    contracts.TransportProfile
 }
 
 // CodexPreparationOf is the preparation the installation's PHP and entrypoint run.
@@ -40,9 +43,13 @@ func (preparation CodexPreparation) PrepareRoot(ctx context.Context, request Cod
 	if err := writePrivateFile(filepath.Join(request.Account, "hooks.json"), request.Hooks); err != nil {
 		return "", err
 	}
+	transport := request.Transport
+	if transport == "" {
+		transport = contracts.McpTransport
+	}
 	line, err := json.Marshal(map[string]any{
 		"account": request.Account, "working_roots": request.WorkingRoots, "root": request.Root,
-		"tables": request.HookTables,
+		"tables": request.HookTables, "transport_profile": transport,
 	})
 	if err != nil {
 		return "", err

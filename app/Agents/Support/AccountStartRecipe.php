@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Enums\TransportProfileType;
+
 /**
  * What the host does to run a claimed start on its account, as the program's adapter checked it for the pinned build:
  * the environment it sets, the variables it points at a new empty folder, the variables it removes so no other
@@ -29,5 +31,6 @@ final readonly class AccountStartRecipe
         public string $binaryDigest,
         public string $arrangement,
         public string $protectionSettings,
+        public TransportProfileType $transportProfile,
     ) {}
 }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'transport_profile' => (string) env('AGENTS_TRANSPORT_PROFILE', 'mcp'),
 
     /*
     | The protected host's local start socket on this machine (journal-agent's state folder, start.sock): the one

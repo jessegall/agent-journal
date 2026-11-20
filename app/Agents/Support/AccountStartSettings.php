@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Enums\TransportProfileType;
 use App\Agents\Exceptions\StartRefused;
 
 /**
@@ -88,7 +89,7 @@ final class AccountStartSettings
     /**
      * @throws StartRefused
      */
-    public function recipeFor(string $program): AccountStartRecipe
+    public function recipeFor(string $program, TransportProfileType $transport): AccountStartRecipe
     {
         if ($this->build === null) {
             throw StartRefused::withoutAccountSettings($program);
@@ -104,6 +105,7 @@ final class AccountStartSettings
             $this->binaryDigest,
             $this->arrangement,
             $this->protectionSettings,
+            $transport,
         );
     }
 }

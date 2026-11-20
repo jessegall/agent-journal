@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Programs;
 
+use App\Agents\Enums\TransportProfileType;
 use App\Hooks\Exceptions\JournalServerUnresolved;
 
 /**
@@ -43,7 +44,7 @@ final readonly class CodexJournalServer
     /**
      * The whole [mcp_servers.journal] table: required, its tools approved, with the start and call timeouts.
      */
-    public function tomlTable(): string
+    public function tomlTable(TransportProfileType $transport = TransportProfileType::Mcp): string
     {
         $variables = implode(', ', array_map(fn (string $name): string => sprintf('"%s"', $name), self::PASSED_VARIABLES));
         $header = self::HEADER;
@@ -52,7 +53,7 @@ final readonly class CodexJournalServer
         $startup = self::STARTUP_TIMEOUT_SECONDS;
         $tool = self::TOOL_TIMEOUT_SECONDS;
 
-        return <<<TOML
+        $table = <<<TOML
             {$header}
             command = "{$command}"
             args = ["{$relay}"]
@@ -63,6 +64,8 @@ final readonly class CodexJournalServer
             tool_timeout_sec = {$tool}
 
             TOML;
+
+        return $transport === TransportProfileType::Cli ? rtrim($table)."\nenabled = false\n" : $table;
     }
 
     /**

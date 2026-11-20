@@ -161,6 +161,37 @@ func TestAnAccountLaunchGetsTheMcpTimeoutsAndItsReference(t *testing.T) {
 	}
 }
 
+func TestCliLaunchKeepsClaudeProtectionWithoutJournalMcp(t *testing.T) {
+	earlier := accountStartWith(&journalServer, "")
+	cli := accountStartWith(nil, "")
+	cli.Account.Transport = contracts.CliTransport
+	profile := ClaudeCode{}
+
+	files, err := profile.SettingsFiles(cli)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) != 1 || strings.Contains(string(files[0].Content), claudeCodeJournalTools) ||
+		!strings.Contains(string(files[0].Content), "Bash(security:*)") {
+		t.Fatalf("CLI settings %v", files)
+	}
+	arguments, err := profile.Arguments(cli)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if slices.Contains(arguments, "--strict-mcp-config") || slices.Contains(arguments, "--mcp-config") ||
+		!slices.Contains(arguments, "--restricted") {
+		t.Fatalf("CLI arguments %v", arguments)
+	}
+
+	for _, start := range []contracts.Start{earlier, accountStartWith(&journalServer, "")} {
+		files, err := profile.SettingsFiles(start)
+		if err != nil || len(files) != 2 || files[1].Name != "mcp.json" {
+			t.Fatalf("MCP settings %v, %v", files, err)
+		}
+	}
+}
+
 func TestAnAccountLaunchWithAnUnresolvedPathIsRefused(t *testing.T) {
 	for name, start := range map[string]contracts.Start{
 		"no server":        accountStartWith(nil, ""),

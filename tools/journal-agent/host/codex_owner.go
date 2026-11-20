@@ -10,6 +10,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"journal-agent/profiles/contracts"
 )
 
 // ErrNotChatgptAccount refuses an owner whose account is not signed in with a ChatGPT subscription: no API key or
@@ -29,6 +31,7 @@ type CodexThreadSettings struct {
 	Root          string
 	Model         string
 	WritableRoots []string
+	Transport     contracts.TransportProfile
 }
 
 // CodexOwner is the one app-server of a saved account's sign-in generation: it owns the sign-in and its refresh, and
@@ -93,6 +96,7 @@ func (owner *CodexOwner) initialize(ctx context.Context) error {
 // StartThread starts one thread and answers the id the app-server acknowledged, the thread's only identity.
 func (owner *CodexOwner) StartThread(ctx context.Context, settings CodexThreadSettings) (string, error) {
 	params := map[string]any{"cwd": settings.Root, "sandbox": "workspace-write", "approvalPolicy": "never"}
+	params["config"] = map[string]any{"mcp_servers.journal.enabled": settings.Transport != contracts.CliTransport}
 	if settings.Model != "" {
 		params["model"] = settings.Model
 	}

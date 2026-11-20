@@ -23,6 +23,7 @@ type AccountRecipe struct {
 	BinaryDigest         string         `json:"binaryDigest"`
 	Arrangement          string         `json:"arrangement"`
 	ProtectionSettings   string         `json:"protectionSettings"`
+	TransportProfile     string         `json:"transportProfile"`
 }
 
 // ClaimedStart is the pending account start of a session this host took: its key, the account folder on this host,

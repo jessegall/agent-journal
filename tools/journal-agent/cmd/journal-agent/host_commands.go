@@ -198,8 +198,10 @@ func (opener runtimeOpener) codexRuntime(
 	if err != nil {
 		return nil, err
 	}
+	transport := contracts.TransportProfile(prepared.Claim.Recipe.TransportProfile)
 	root, err := host.CodexPreparationOf(installation).PrepareRoot(ctx, host.CodexRootRequest{
 		Account: account, WorkingRoots: workingRoots, Root: runtimeID, Hooks: hooks, HookTables: tables,
+		Transport: transport,
 	})
 	if err != nil {
 		return nil, err
@@ -212,7 +214,9 @@ func (opener runtimeOpener) codexRuntime(
 	if err != nil {
 		return nil, err
 	}
-	settings := host.CodexThreadSettings{Root: root, WritableRoots: []string{prepared.Grant.Runtime.Folder}}
+	settings := host.CodexThreadSettings{
+		Root: root, WritableRoots: []string{prepared.Grant.Runtime.Folder}, Transport: transport,
+	}
 	if prepared.Grant.Runtime.Model != nil {
 		settings.Model = *prepared.Grant.Runtime.Model
 	}
@@ -417,6 +421,7 @@ func accountOf(prepared host.PreparedStart, installationFolder, runtimeID string
 	return &contracts.AccountStart{
 		Folder:     prepared.Claim.Directory,
 		Protection: prepared.Claim.Recipe.ProtectionSettings,
+		Transport:  contracts.TransportProfile(prepared.Claim.Recipe.TransportProfile),
 		JournalServer: &contracts.JournalServer{
 			Command: installation.Path(installedPHP),
 			Relay:   installation.Path(installedMcpRelay),
