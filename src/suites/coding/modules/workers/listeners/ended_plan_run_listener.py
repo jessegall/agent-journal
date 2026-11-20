@@ -11,12 +11,12 @@ from core.modules.processes.commands.stop_process.stop_process import StopProces
 from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
 
 
-class CancelledPlanRunListener(CommitListener[Moved[Plan]]):
-    """A plan cancelled while a run of one of its checkpoints goes has the tests of that run stopped. The
-    tasks keep their states and nobody is told of a result."""
+class EndedPlanRunListener(CommitListener[Moved[Plan]]):
+    """A plan closed or cancelled while a run of one of its checkpoints goes has the tests of that run stopped,
+    since the checkout they run in is removed. The tasks keep their states and nobody is told of a result."""
 
-    name = "workers.cancelled-plan-run"
-    moves = [PlanLifecycle.cancel]
+    name = "workers.ended-plan-run"
+    moves = [PlanLifecycle.close, PlanLifecycle.cancel]
 
     def __init__(self, bus: Bus, checkpoints: PlanCheckpoints, results: CheckpointResults) -> None:
         self.bus, self.checkpoints, self.results = bus, checkpoints, results

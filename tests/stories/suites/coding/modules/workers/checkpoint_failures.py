@@ -121,11 +121,19 @@ def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_th
     story.expect_rows("task:3" in merger_lines, "names no task" in merger_lines, "tests failed" not in main_agent_lines, "task:3" not in main_agent_lines, detail=f"{merger_lines} || {main_agent_lines}")
 
 
-def test_175_183_the_run_makes_the_selected_run_over_the_files_the_window_changed_and_its_failure_goes_to_a_task(committed_window):
+@pytest.fixture
+def picking_run(committed_window) -> StoryWorker:
+    """The project names a picker and a test command, and the committed window is merged: the run of the
+    checkpoint goes, and its picker runs over the files the window changed."""
     worker, story = committed_window, committed_window.story
     story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "{PICKER}" --environment main')
     story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "{SELECTED_TEST}" --environment main')
     merge(worker)
+    return worker
+
+
+def test_175_183_the_run_makes_the_selected_run_over_the_files_the_window_changed_and_its_failure_goes_to_a_task(picking_run):
+    worker, story = picking_run, picking_run.story
     picks = [line for line in run_lines(worker) if line.startswith(PICKER)]
     story.expect_rows(len(picks) == 1, "cart.py" in "".join(picks), detail=str(run_lines(worker)))
     produce_output(worker, picks[0], "tests/receipts.py\n")
@@ -209,3 +217,20 @@ def test_a_failed_run_reads_only_the_worktrees_of_the_workers_of_its_tasks_and_s
     cost = database.repeated_work.points().minus(start)
     expect_returned(worker, 3)
     story.expect_rows(cost.tables["worker_worktrees"] < WORKTREE_LIST_LIMIT, detail=str({sql: rows for sql, rows in cost.statements.items() if "worker_worktrees" in sql and rows}))
+
+
+def test_a_plan_closed_while_its_picker_runs_stops_the_picker_cancels_its_test_and_starts_no_selected_run(picking_run):
+    worker, story = picking_run, picking_run.story
+    picker = [process for process in worker.started_processes() if process.line.startswith(PICKER)][0]
+    open_tasks = [row["id"] for row in rows(worker, "task list --json --environment main") if row["state"] not in ("completed", "cancelled")]
+    for task_id in open_tasks:
+        story.expect_success(f'task cancel {task_id} --reason "the plan closes while its picker runs"', actor=story.agent)
+    story.expect_text("plan show 1", "state: completed", actor=story.agent)
+    story.run_listeners()
+    produce_output(worker, picker.line, "tests/receipts.py\n")
+    end_run(worker)
+    tests = rows(worker, "checkpoint-test list --json --oldest")
+    story.expect_rows([test["state"] for test in tests if test["picker_command"]] == ["cancelled"],
+                      not [line for line in run_lines(worker) if line.startswith(SELECTED_TEST)],
+                      [process.state for process in worker.started_processes() if process.id == picker.id] != [ProcessState.RUNNING],
+                      detail=f"{tests} | {run_lines(worker)}")

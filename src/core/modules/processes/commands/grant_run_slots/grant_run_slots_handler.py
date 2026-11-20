@@ -16,6 +16,9 @@ class GrantRunSlotsHandler(Handler[GrantRunSlots, None]):
 
     def handle(self, command: GrantRunSlots, context: Context) -> None:
         self.slots.grant_all_environments(context)
-        self.slots.claim_counts(context)
+        counted = self.slots.unclaimed_counts()
+        if not counted:
+            return
+        self.slots.claim_counts(counted, context)
         # a count can stop a run and free its slot; no grant nests inside this one, so this one fills it
         self.slots.grant_all_environments(context)

@@ -40,6 +40,10 @@ class Plan(EnvironmentScoped, Model, StateHolder, Assignable):
     def __post_init__(self) -> None:
         check_title(self.cli_name, self.title)
 
+    @property
+    def is_ended(self) -> bool:
+        return self.state in (PlanState.COMPLETED, PlanState.CANCELLED)
+
     def start(self, timestamp: Timestamp, actor: Actor) -> "Plan":
         return self.moved(PlanLifecycle.start, started_at=self.started_at or timestamp)
 

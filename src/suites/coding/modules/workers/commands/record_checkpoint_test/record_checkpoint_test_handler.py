@@ -8,6 +8,7 @@ from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
+from core.modules.plans.models.plan import Plan
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.commands.record_checkpoint_test.record_checkpoint_test import RecordCheckpointTest
@@ -22,7 +23,8 @@ from suites.coding.modules.workers.support.worker_test_start import WorkerTestSt
 class RecordCheckpointTestHandler(Handler[RecordCheckpointTest, None]):
     """Records the end of a test of a checkpoint run. A picker that passed starts the selected run over the
     tests it printed, in the folder the picker ran in; a picker that printed none has passed. The run of the
-    checkpoint is then ended if this was its last test."""
+    checkpoint is then ended if this was its last test. A test that ends after its plan was closed or cancelled
+    is cancelled and starts nothing, since the checkout it ran in is removed."""
 
     command = RecordCheckpointTest
     disabled_scopes = [ActorScope]
@@ -32,9 +34,13 @@ class RecordCheckpointTestHandler(Handler[RecordCheckpointTest, None]):
 
     def handle(self, command: RecordCheckpointTest, context: Context) -> None:
         test = self.rows.required(CheckpointTest, command.test_id)
+        reach = self.rows.required(CheckpointReach, test.reach_id)
+        if self.rows.required(Plan, reach.plan_id).is_ended:
+            self.repository.save_change(test, test.changed(state=AffectedTestState.CANCELLED), context)
+            return
         ended = self.passed(test, context) if command.passed else test.changed(state=AffectedTestState.FAILED)
         self.repository.save_change(test, ended, context)
-        self.results.finish(self.rows.required(CheckpointReach, test.reach_id), context)
+        self.results.finish(reach, context)
 
     def passed(self, test: CheckpointTest, context: Context) -> CheckpointTest:
         return self.listed(test, context) if test.state is AffectedTestState.LISTING else self.picked(test, context)

@@ -6,7 +6,6 @@ from engine.repository.repository import Repository
 from core.modules.plans.commands.fail_checkpoint.fail_checkpoint import FailCheckpoint
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.plans.models.enums.checkpoint_state import CheckpointState
-from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.lifecycles.checkpoint_lifecycle import CheckpointLifecycle
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
@@ -24,7 +23,7 @@ class CheckpointResults:
     """Ends the run of a reached checkpoint once none of its tests waits or runs: the proofs of its window,
     the checkpoint's own test and the selected run. When every one passed, the reach is passed, which opens
     the phases after it; otherwise it is failed with the tasks its failures belong to. A run with no test
-    passes at once. A result that comes in for a cancelled plan ends no run."""
+    passes at once. A result that comes in for a closed or cancelled plan ends no run."""
 
     def __init__(self, proofs: ProofQuery, queries: Queries, repository: Repository, bus: Bus, checkpoints: PlanCheckpoints, plans: TaskPlans, rows: EventRows, failures: CheckpointFailures, deferrals: PhaseTestDeferrals) -> None:
         self.failures, self.deferrals = failures, deferrals
@@ -40,7 +39,7 @@ class CheckpointResults:
             self.finish(running[0], context)
 
     def finish(self, reach: CheckpointReach, context: Context) -> None:
-        if self.rows.required(Plan, reach.plan_id).state is PlanState.CANCELLED:
+        if self.rows.required(Plan, reach.plan_id).is_ended:
             return
         proofs, tests = self.proofs.task_proofs(reach.tasks()), self.tests(reach)
         if any(proof.state in TEST_WAITING_STATES for proof in proofs) or any(test.state in RUNNING_STATES for test in tests):
