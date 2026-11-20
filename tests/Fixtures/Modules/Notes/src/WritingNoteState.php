@@ -9,6 +9,8 @@ use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
 use App\Hooks\Values\EventCommands;
+use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
+use Tests\Fixtures\Modules\Notes\Events\NotePublished;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 
@@ -30,5 +32,16 @@ final class WritingNoteState extends AgentState
         }
 
         return EventCommands::of(...$event->marked)->withContext('A note was written.');
+    }
+
+    #[StackWide]
+    public function onNotePublished(NotePublished $event): EventCommands
+    {
+        return $this->onNoteWritten($event->note);
+    }
+
+    public function onNoteAudited(NoteAudited $event): EventCommands
+    {
+        throw NoteWorkFailed::whileListening();
     }
 }

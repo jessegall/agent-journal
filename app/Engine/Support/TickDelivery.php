@@ -112,8 +112,13 @@ final readonly class TickDelivery
     private function tick(TickCandidate $candidate, CarbonImmutable $now, ElapsedTime $delta): bool
     {
         $context = new TickContext($now, $delta, $candidate->enteredAt, $candidate->target);
-        $this->access->grantFrame($candidate->target, $candidate->frameId);
+        $grant = new FrameGrant($candidate->target, $candidate->frameId);
 
+        return $this->access->withinFrameGrant($grant, fn () => $this->runTick($candidate, $context));
+    }
+
+    private function runTick(TickCandidate $candidate, TickContext $context): bool
+    {
         try {
             $commands = $candidate->state->onTick($context);
 
@@ -141,8 +146,6 @@ final readonly class TickDelivery
             );
 
             return false;
-        } finally {
-            $this->access->clear();
         }
     }
 
@@ -187,24 +190,25 @@ final readonly class TickDelivery
             return;
         }
 
-        $this->access->grantMaintenance(SettleFrameTimes::MAINTENANCE_SCOPE);
+        $frames = array_map(
+            fn (array $frame) => FrameSettlement::at(
+                $frame[0]->target,
+                $frame[0]->stackId,
+                $frame[0]->frameId,
+                $frame[1],
+            ),
+            $settled,
+        );
 
         try {
-            $this->commands->run(new SettleFrameTimes(array_map(
-                fn (array $frame) => FrameSettlement::at(
-                    $frame[0]->target,
-                    $frame[0]->stackId,
-                    $frame[0]->frameId,
-                    $frame[1],
-                ),
-                $settled,
-            )));
+            $this->access->withinMaintenance(
+                SettleFrameTimes::MAINTENANCE_SCOPE,
+                fn () => $this->commands->run(new SettleFrameTimes($frames)),
+            );
         } catch (Throwable $failure) {
             $this->log->error('Engine could not settle frame times', ['exception' => $failure]);
 
             return;
-        } finally {
-            $this->access->clear();
         }
 
         foreach ($settled as [$candidate, , $start]) {

@@ -43,14 +43,17 @@ final class EngineAccess implements EngineTargetAccess
 
     public function withinFrameGrant(FrameGrant $grant, Closure $work): mixed
     {
-        $before = $this->grant;
-        $this->grant = $grant;
+        return $this->withinGrant($grant, $work);
+    }
 
-        try {
-            return $work();
-        } finally {
-            $this->grant = $before;
-        }
+    /**
+     * @template TResult
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    public function withinMaintenance(string $capability, Closure $work): mixed
+    {
+        return $this->withinGrant(new MaintenanceGrant($capability), $work);
     }
 
     public function clear(): void
@@ -104,6 +107,23 @@ final class EngineAccess implements EngineTargetAccess
     {
         if (! $this->allowsMaintenance($capability)) {
             throw EngineAccessRefused::forMaintenance($capability, $this->grant->description());
+        }
+    }
+
+    /**
+     * @template TResult
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    private function withinGrant(EngineGrant $grant, Closure $work): mixed
+    {
+        $before = $this->grant;
+        $this->grant = $grant;
+
+        try {
+            return $work();
+        } finally {
+            $this->grant = $before;
         }
     }
 }

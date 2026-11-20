@@ -29,12 +29,9 @@ final readonly class EngineTickedDelivery
         foreach ($this->listeners->all() as $listenerClass) {
             try {
                 $listener = $this->container->make($listenerClass);
-                $this->access->grantMaintenance($listener->maintenanceScope());
-                $listener($event);
+                $this->access->withinMaintenance($listener->maintenanceScope(), fn () => $listener($event));
             } catch (Throwable $failure) {
                 $this->log->error('Engine listener failed', ['listener' => $listenerClass, 'exception' => $failure]);
-            } finally {
-                $this->access->clear();
             }
         }
 

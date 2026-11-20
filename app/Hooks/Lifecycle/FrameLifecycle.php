@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Lifecycle;
 
 use App\Agents\Support\StackTarget;
+use App\Hooks\Events\Support\StateEventActivity;
 use App\Hooks\Exceptions\StackChangedInLifecycle;
 use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Stack\AgentStack;
@@ -23,6 +24,8 @@ final class FrameLifecycle
      */
     private array $running = [];
 
+    public function __construct(private readonly StateEventActivity $eventActivity) {}
+
     /**
      * @throws StackTooDeep when the stack after the change holds more frames than a stack may
      */
@@ -35,20 +38,23 @@ final class FrameLifecycle
         $removed = $before->framesMissingFrom($after);
         $added = $after->framesMissingFrom($before);
         $resumed = $after->topResumedSince($before);
+        $runningBefore = $this->running;
         $this->running[self::keyOf($target)] = true;
 
         try {
-            foreach (array_reverse($removed) as $frame) {
-                $frame->exit($target);
-            }
+            $this->eventActivity->evaluate($target, function () use ($target, $removed, $added, $resumed): void {
+                foreach (array_reverse($removed) as $frame) {
+                    $frame->exit($target);
+                }
 
-            foreach ($added as $frame) {
-                $frame->enter($target);
-            }
+                foreach ($added as $frame) {
+                    $frame->enter($target);
+                }
 
-            $resumed?->resume($target);
+                $resumed?->resume($target);
+            });
         } finally {
-            unset($this->running[self::keyOf($target)]);
+            $this->running = $runningBefore;
         }
     }
 

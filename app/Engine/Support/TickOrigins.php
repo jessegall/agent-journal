@@ -36,12 +36,13 @@ final class TickOrigins
      */
     public function runWith(WorkLockSet $locks, Closure $command): mixed
     {
+        $before = $this->running;
         $this->running = [$locks];
 
         try {
             return $command();
         } finally {
-            $this->running = [];
+            $this->running = $before;
         }
     }
 

@@ -15,9 +15,15 @@ final readonly class StateEventOriginGuard
     public function __construct(
         private StateEventStacks $stacks,
         private StateMethodSelector $selector,
+        private StateEventActivity $activity,
     ) {}
 
     public function check(StateEventOrigin $origin): CommandOriginStatus
+    {
+        return $this->activity->evaluate($origin->target, fn () => $this->checkFromSnapshot($origin));
+    }
+
+    private function checkFromSnapshot(StateEventOrigin $origin): CommandOriginStatus
     {
         $stack = $this->stacks->restoreActive($origin->dispatch, $origin->target);
 

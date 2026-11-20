@@ -8,6 +8,7 @@ use App\Contracts\Event;
 use App\Hooks\Events\StateEventBridge;
 use Closure;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Events\Dispatcher;
 use stdClass;
 
@@ -47,11 +48,13 @@ final class StateEventDispatcher extends Dispatcher
             return parent::dispatch($event, $payload, $halt);
         }
 
-        $captured = $payload instanceof StateEventPayload && $payload->hasKey($this->payloadKey)
-            ? $payload
-            : new StateEventPayload($this->payloadKey, ($this->scope)()->capture($event));
+        if ($payload instanceof StateEventPayload && $payload->hasKey($this->payloadKey)) {
+            return parent::dispatch($event, $payload, $halt);
+        }
 
-        return parent::dispatch($event, $captured, $halt);
+        $dispatch = ($this->scope)()->capture($event);
+
+        return parent::dispatch($event, new StateEventPayload($this->payloadKey, $dispatch), $halt);
     }
 
     protected function parseEventAndPayload($event, $payload): array
@@ -59,7 +62,9 @@ final class StateEventDispatcher extends Dispatcher
         [$name, $arguments] = parent::parseEventAndPayload($event, $payload);
 
         if ($payload instanceof StateEventPayload && $event === $payload->dispatch->event) {
-            $arguments[] = $payload;
+            $arguments[] = $this->awaitsCommit($payload->dispatch->event)
+                ? $payload->scheduledAfterCommit()
+                : $payload;
         }
 
         return [$name, $arguments];
@@ -81,6 +86,32 @@ final class StateEventDispatcher extends Dispatcher
         $dispatch = $captured->dispatch;
 
         return $scope->deliver($dispatch, fn () => parent::invokeListeners($event, [$dispatch->event], $halt));
+    }
+
+    public function getListeners($eventName): array
+    {
+        $listeners = parent::getListeners($eventName);
+        $bridge = array_search(StateEventBridge::LISTENER, $this->listeners[$eventName] ?? [], true);
+
+        if ($bridge === false) {
+            return $listeners;
+        }
+
+        $last = $listeners[$bridge];
+        unset($listeners[$bridge]);
+
+        return [...array_values($listeners), $last];
+    }
+
+    private function awaitsCommit(Event $event): bool
+    {
+        if (! $event instanceof ShouldDispatchAfterCommit) {
+            return false;
+        }
+
+        $manager = $this->resolveTransactionManager();
+
+        return $manager !== null && $manager->callbackApplicableTransactions()->isNotEmpty();
     }
 
     private function hasBridge(string $event): bool

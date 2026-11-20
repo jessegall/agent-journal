@@ -10,6 +10,7 @@ use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
+use App\Engine\Support\FrameGrant;
 use App\Hooks\Events\StateEventBridge;
 use App\Hooks\Events\Support\StateEventScope;
 use Illuminate\Database\ConnectionInterface;
@@ -17,6 +18,7 @@ use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AfterCommitStateEvent;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Support\ActsAsActors;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -119,5 +121,26 @@ final class StateEventScopeTest extends TestCase
         $this->assertSame([$target], $seen[0]->audience->get()->targets);
         $this->assertTrue($seen[1]->audience->isEmpty());
         $this->assertTrue($scope->currentDispatch()->isEmpty());
+    }
+
+    public function test_a_failing_nested_frame_grant_restores_the_surrounding_grant(): void
+    {
+        $access = $this->app->make(EngineAccess::class);
+        $target = TestActors::stack(1, 10);
+
+        $access->withinMaintenance('outer', function () use ($access, $target): void {
+            try {
+                $access->withinFrameGrant(new FrameGrant($target, 'frame'), function () use ($access, $target): void {
+                    $access->checkTarget($target);
+
+                    throw SimulatedFailure::of('The frame operation failed.');
+                });
+            } catch (SimulatedFailure) {
+                $this->assertTrue($access->allowsMaintenance('outer'));
+                $this->assertTrue($access->frameGrant()->isEmpty());
+            }
+        });
+
+        $this->assertFalse($access->allowsMaintenance('outer'));
     }
 }

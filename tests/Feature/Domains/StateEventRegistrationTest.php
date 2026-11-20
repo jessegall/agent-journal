@@ -53,7 +53,7 @@ final class StateEventRegistrationTest extends TestCase
         ]);
 
         $this->assertContains($expected, $events['@state-events']);
-        $this->assertCount(2, $events['@state-events']);
+        $this->assertCount(4, $events['@state-events']);
         $path = (string) tempnam(sys_get_temp_dir(), 'state-event-cache-');
         $this->useEventCachePath($path);
 
@@ -67,7 +67,10 @@ final class StateEventRegistrationTest extends TestCase
                 $dispatcher->getRawListeners()[NoteWritten::class],
             );
 
-            $events['@state-events'] = [str_replace('|wide', '|ordinary', $expected)];
+            $events['@state-events'] = array_map(
+                fn (string $entry) => $entry === $expected ? str_replace('|wide', '|ordinary', $entry) : $entry,
+                $events['@state-events'],
+            );
             $this->writeCache($path, $events);
 
             $this->expectException(InvalidListener::class);

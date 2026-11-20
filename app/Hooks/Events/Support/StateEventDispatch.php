@@ -20,9 +20,17 @@ final readonly class StateEventDispatch
     /**
      * @param Option<StateEventAudience> $audience
      */
-    public function __construct(public Event $event, public Option $audience)
-    {
+    public function __construct(
+        public Event $event,
+        public Option $audience,
+        public bool $afterCommit = false,
+    ) {
         $this->id = (string) Str::ulid();
+    }
+
+    public function scheduledAfterCommit(): self
+    {
+        return clone ($this, ['afterCommit' => true]);
     }
 
     public function checkTarget(StackTarget $target): void

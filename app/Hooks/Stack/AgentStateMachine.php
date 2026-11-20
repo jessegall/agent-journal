@@ -6,6 +6,7 @@ namespace App\Hooks\Stack;
 
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\HookInput;
+use App\Hooks\Events\Support\StateEventActivity;
 use App\Hooks\Exceptions\HookDeadlineExpired;
 use App\Hooks\Exceptions\ReplayFound;
 use App\Hooks\Pipelines\AnswerHookPipeline;
@@ -29,6 +30,7 @@ final readonly class AgentStateMachine
         private StackAccess $access,
         private IncomingWorkList $incomingWork,
         private RunsPipelines $pipelines,
+        private StateEventActivity $eventActivity,
     ) {}
 
     /**
@@ -55,7 +57,10 @@ final readonly class AgentStateMachine
             return $this->transaction->runAdmittedForTarget(
                 $target,
                 $deadline,
-                fn (): ProgramReply => $this->pipelines->run(AnswerHookPipeline::class, $call, ProgramReply::class),
+                fn (): ProgramReply => $this->eventActivity->evaluate(
+                    $target,
+                    fn (): ProgramReply => $this->pipelines->run(AnswerHookPipeline::class, $call, ProgramReply::class),
+                ),
             );
         } catch (ReplayFound $replay) {
             return $replay->reply;

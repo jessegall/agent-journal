@@ -7,20 +7,31 @@ namespace Tests\Feature\Hooks;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\AttentionOrigin;
+use App\Bus\Support\OperationDeadline;
+use App\Contracts\Event;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\StartStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Events\Support\StateEventScope;
+use App\Hooks\Exceptions\StateEventAfterCommitFailed;
+use App\Hooks\Exceptions\StateEventReentry;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\PendingAgentMessage;
+use App\Hooks\Programs\ProgramReplies;
+use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Support\StackTransaction;
 use App\Profiles\Values\ProfileBase;
 use Illuminate\Contracts\Events\Dispatcher;
+use Psr\Log\LoggerInterface;
 use Tests\Fixtures\Modules\Notes\Commands\RecordNoteEffect;
+use Tests\Fixtures\Modules\Notes\Events\NoteAudited;
+use Tests\Fixtures\Modules\Notes\Events\NotePublished;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 use Tests\Fixtures\Modules\Notes\Support\NoteEffects;
@@ -60,10 +71,18 @@ final class StateEventDeliveryTest extends TestCase
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
         $this->pushState(new StateReference('notes.watching', new SubjectReference('Partial context.', 1)));
 
+        $ordinary = [];
+        $this->app->make(Dispatcher::class)->listen(NoteWritten::class, function (NoteWritten $event) use (
+            &$ordinary,
+        ): void {
+            $ordinary[] = $event;
+        });
+
         try {
             $this->dispatch(new NoteWritten(listenerFails: true));
             $this->fail('The failing state returned successfully.');
         } catch (NoteWorkFailed) {
+            $this->assertCount(1, $ordinary);
             $this->assertSame([], $this->takeContext());
         }
 
@@ -145,7 +164,95 @@ final class StateEventDeliveryTest extends TestCase
         }
     }
 
-    private function dispatch(NoteWritten $event): void
+    public function test_a_cycle_in_an_effect_fails_visibly_and_a_later_dispatch_is_independent(): void
+    {
+        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $effects = $this->app->make(NoteEffects::class);
+        $effects->afterRecording(function (RecordNoteEffect $command): void {
+            if ($command->label === 'reenter') {
+                $this->dispatch(new NoteWritten());
+            }
+        });
+
+        try {
+            $this->dispatch(new NoteWritten(marked: [new RecordNoteEffect('reenter')]));
+            $this->fail('The delivery reentered an active origin.');
+        } catch (StateEventReentry $failure) {
+            $this->assertStringContainsString('cycle', $failure->getMessage());
+            $this->assertSame(['A note was written.'], $this->takeContext());
+        }
+
+        $this->dispatch(new NoteWritten(marked: [new RecordNoteEffect('independent')]));
+
+        $this->assertSame(['reenter', 'independent'], $effects->labels);
+        $this->assertSame(['A note was written.'], $this->takeContext());
+    }
+
+    public function test_synchronous_delivery_cannot_reenter_the_stack_of_an_unfinished_hook(): void
+    {
+        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $this->expectException(StateEventReentry::class);
+        $this->expectExceptionMessage('evaluating stack');
+
+        $this->machine()->answer(
+            $this->stop(),
+            $this->capabilities(),
+            new OperationDeadline(),
+            function (HookAnswer $answer): ProgramReply {
+                $this->dispatch(new NoteWritten());
+
+                return ProgramReplies::stop($answer);
+            },
+        );
+    }
+
+    public function test_after_commit_failure_reports_its_stage_and_leaves_the_producers_write(): void
+    {
+        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $log = $this->createMock(LoggerInterface::class);
+        $log->expects($this->once())->method('error')->with(
+            'State event delivery failed.',
+            $this->callback(fn (array $context) => $context['after_commit'] && $context['stage'] === 'collection'),
+        );
+        $this->app->instance(LoggerInterface::class, $log);
+        $transaction = $this->app->make(StackTransaction::class);
+        $event = new NotePublished(new NoteWritten(listenerFails: true));
+
+        try {
+            $transaction->run(function () use ($event): void {
+                PendingAgentMessage::keep(
+                    $this->target->actorIdentity(),
+                    AttentionOrigin::agentMessages('producer-hook'),
+                    ['Saved by the producer.'],
+                    requestsAttention: true,
+                );
+                $this->dispatch($event);
+            });
+            $this->fail('The after-commit failure was hidden.');
+        } catch (StateEventAfterCommitFailed $failure) {
+            $this->assertInstanceOf(NoteWorkFailed::class, $failure->getPrevious());
+            $this->assertSame(['Saved by the producer.'], $this->takeContext());
+        }
+    }
+
+    public function test_a_committed_fact_that_logs_listener_failures_keeps_the_producers_success(): void
+    {
+        $this->pushState(new StateReference('notes.writing', NoSubject::None));
+        $log = $this->createMock(LoggerInterface::class);
+        $log->expects($this->once())->method('error')->with('State event delivery failed.', $this->anything());
+        $this->app->instance(LoggerInterface::class, $log);
+
+        $result = $this->app->make(StackTransaction::class)->run(function (): string {
+            $this->dispatch(new NoteAudited());
+
+            return 'committed';
+        });
+
+        $this->assertSame('committed', $result);
+        $this->assertSame([], $this->takeContext());
+    }
+
+    private function dispatch(Event $event): void
     {
         $scope = $this->app->make(StateEventScope::class);
         $dispatcher = $this->app->make(Dispatcher::class);
