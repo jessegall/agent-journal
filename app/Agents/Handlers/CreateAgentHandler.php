@@ -17,11 +17,12 @@ final readonly class CreateAgentHandler implements CommandHandler
 {
     public function __construct(private ActorProvisioning $desks) {}
 
-    public function handle(CreateAgent $command): string
+    public function handle(CreateAgent $command): ActorIdentity
     {
         $agent = Agent::named($command->name, $command->profileKey);
-        $this->desks->provision(ActorIdentity::of($agent), $agent->name);
+        $actor = ActorIdentity::of($agent);
+        $this->desks->provision($actor, $agent->name);
 
-        return $agent->id;
+        return $actor;
     }
 }

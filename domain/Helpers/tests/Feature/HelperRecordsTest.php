@@ -31,7 +31,14 @@ final class HelperRecordsTest extends TestCase
     {
         $parent = $this->actAsUser('parent');
         [$helper, $purpose] = $this->helperFor($parent);
-        HelperJob::accept($helper, $purpose, $parent, 'Read the plan', ['message' => '1'], 'request-1', 1);
+        HelperJob::accept(
+            $helper,
+            $purpose,
+            $parent,
+            'Read the plan',
+            ['message' => '1'],
+            self::launchFor('request-1'),
+        );
 
         $this->actAsUser('another');
 
@@ -66,7 +73,7 @@ final class HelperRecordsTest extends TestCase
     {
         $parent = $this->actAsUser('parent');
         [$helper, $purpose] = $this->helperFor($parent);
-        $job = HelperJob::accept($helper, $purpose, $parent, 'Review', [], 'request-2', 1);
+        $job = HelperJob::accept($helper, $purpose, $parent, 'Review', [], self::launchFor('request-2'));
         $job->addSteering('Look at the tests too');
         $job->finish('report:12');
 

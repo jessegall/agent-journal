@@ -73,8 +73,7 @@ final class DeskProvisioningTest extends TestCase
 
     public function test_a_created_agent_has_one_personal_desk_it_prefers(): void
     {
-        $agentId = $this->app->make(CommandBus::class)->run(new CreateAgent('Builder', 'read-only-helper'));
-        $agent = ActorIdentity::of(Agent::query()->findOrFail($agentId));
+        $agent = $this->app->make(CommandBus::class)->run(new CreateAgent('Builder', 'read-only-helper'));
 
         $this->assertSame(1, DeskRecord::query()->occupiedBy($agent)->count());
         $this->assertTrue(DeskRecord::preferredBy($agent)->isDefined());

@@ -24,10 +24,12 @@ use App\AgentRequests\Support\CallRoutes;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\AgentRequests\Support\SendSignedCalls;
 use App\AgentRequests\Support\StartEnvironment;
+use App\Agents\Actions\ReserveStarts;
 use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\AgentResolver;
+use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\ExpiresNavigation;
 use App\Agents\Contracts\HelperImages;
@@ -42,7 +44,9 @@ use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Contracts\StartExecutor;
 use App\Agents\Contracts\StartReadiness;
+use App\Agents\Contracts\StartReceipts;
 use App\Agents\Contracts\StartRecordResolver;
+use App\Agents\Contracts\StartReservations;
 use App\Agents\Contracts\TerminalViewCloser;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
@@ -54,7 +58,9 @@ use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
 use App\Agents\Resolvers\AgentLaunchCandidates;
+use App\Agents\Resolvers\CallingSessionProgram;
 use App\Agents\Resolvers\LinkedAccountUses;
+use App\Agents\Resolvers\OwnerStartReceipts;
 use App\Agents\Resolvers\ProgramConversationRecords;
 use App\Agents\Resolvers\RecordedHostCapabilities;
 use App\Agents\Resolvers\RuntimeRecords;
@@ -139,6 +145,9 @@ final class AgentsServiceProvider extends ServiceProvider
         );
         $this->app->bind(SessionPolicyReader::class, FrozenSessionPolicies::class);
         $this->app->bind(LaunchCandidates::class, AgentLaunchCandidates::class);
+        $this->app->bind(StartReservations::class, ReserveStarts::class);
+        $this->app->bind(StartReceipts::class, OwnerStartReceipts::class);
+        $this->app->bind(CallingProgram::class, CallingSessionProgram::class);
         $this->app->singleton(DriverBudgets::class, fn () => new DriverBudgets(
             $this->app->make('config')->integer('agents.driver_budgets.claim_batch_max'),
             $this->app->make('config')->integer('agents.driver_budgets.long_poll_max_seconds'),

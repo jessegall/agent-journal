@@ -7,7 +7,6 @@ namespace App\Profiles\Handlers;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
-use App\Agents\Support\StartPolicy;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Support\StartRequest;
 use App\Bus\Contracts\CommandBus;
@@ -39,8 +38,6 @@ final readonly class StartProfileMainHandler implements CommandHandler
             throw ProfileCannotCoordinate::for($command->profile);
         }
 
-        $source = $profile->selection->source;
-
         return $this->commands->run(new StartAgent(new StartRequest(
             $command->requestId,
             $command->agentId,
@@ -50,14 +47,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
             null,
             ConversationModeType::New,
             null,
-            new StartPolicy(
-                $profile->start->access,
-                $profile->start->stopConditions,
-                $profile->start->execution,
-                $source->profileKey,
-                $source->profileRevision,
-                $profile->start->configurationHash(),
-            ),
+            $profile->startPolicy(),
         )));
     }
 }

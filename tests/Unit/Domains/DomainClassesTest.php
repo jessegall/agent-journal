@@ -107,7 +107,24 @@ final class DomainClassesTest extends TestCase
         yield 'Sequences' => [SequencesDomain::class, [], []];
         yield 'Reminders' => [RemindersDomain::class, [], []];
         yield 'Access' => [AccessDomain::class, [], []];
-        yield 'Helpers' => [HelpersDomain::class, [], []];
+        yield 'Helpers' => [HelpersDomain::class, [], [
+            'HelperBusy',
+            'HelperJobUnfinished',
+            'HelperLaunchUncertain',
+            'HelperProfileMismatch',
+            'HelperProfileTypeConflict',
+            'HelperProfilesUnavailable',
+            'HelperReader',
+            'HelperReceipt',
+            'HelperRequestConflict',
+            'HelperRetired',
+            'HelperUnavailable',
+            'HelperWork',
+            'JobLaunch',
+            'JobState',
+            'SendHelper',
+            'StartHelper',
+        ]];
     }
 
     /**

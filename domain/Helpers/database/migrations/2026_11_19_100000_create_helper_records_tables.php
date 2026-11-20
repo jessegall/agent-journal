@@ -57,9 +57,15 @@ return new class extends Migration
             $table->string('stop_evidence_reference')->nullable();
             $table->unsignedInteger('profile_revision');
             $table->timestampTz('finished_at')->nullable();
+            $table->string('payload_digest', 64);
+            $table->boolean('identity_new');
+            $table->boolean('independent');
+            $table->string('conversation_mode', 16);
+            $table->string('conversation_reason', 500);
             $table->timestampsTz();
 
             $table->index(['actor_type', 'actor_id']);
+            $table->unique(['actor_type', 'actor_id', 'request_id']);
         });
     }
 
