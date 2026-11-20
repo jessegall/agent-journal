@@ -15,7 +15,6 @@ use App\Bus\Enums\RefusalCode;
 use App\Bus\Values\CommandDecision;
 use App\Bus\Values\EffectiveCommand;
 use App\Hooks\Contracts\StackPermission;
-use App\Profiles\Support\CommandAdmissions;
 
 final readonly class StackCommandAdmission implements CommandAdmission
 {

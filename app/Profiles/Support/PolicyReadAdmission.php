@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Enums\ReadEntitlementType;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\ReadAdmission;
-use App\Actors\Contracts\ReadEntitlements;
 use App\Agents\Enums\AccessRuleType;
-use App\Actors\Enums\ReadEntitlementType;
 use App\Agents\Support\StackTarget;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\ReadRequest;

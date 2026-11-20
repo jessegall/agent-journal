@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Providers;
 
-use App\Operations\Enums\AccessType;
-use Domain\Documents\Policies\DocumentPolicy;
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionProvenance;
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
+use App\Operations\Enums\AccessType;
 use Domain\Documents\Contracts\AttachmentReader;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\DocumentResolver;
@@ -29,6 +28,7 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Models\RetainedDraft;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Models\TextUploadChunk;
+use Domain\Documents\Policies\DocumentPolicy;
 use Domain\Documents\Resolvers\AttachmentPages;
 use Domain\Documents\Resolvers\DocumentPages;
 use Domain\Documents\Resolvers\DocumentRecords;
