@@ -25,6 +25,11 @@ final class StateTypes implements ResolvesStateTypes
         private ReadyStateLoader $readyStates,
     ) {}
 
+    public function registrationSnapshot(): StateTypeRegistry
+    {
+        return $this->registry ?? $this->build();
+    }
+
     public function registry(): StateTypeRegistry
     {
         return $this->registry ??= $this->build();

@@ -347,12 +347,12 @@ final readonly class BoundaryChecker
     }
 
     /**
-     * The one place outside a Listeners folder that registers a listener: each domain's state types answer Core's
-     * StateTypesRequested through the RegisterStates bootstrapper.
+     * Core registers state loaders and bridges through checked provider entry points.
      */
     private static function isCheckedRegistrationSite(string $file): bool
     {
-        return str_ends_with($file, 'app/Domains/Bootstrappers/RegisterStates.php');
+        return str_ends_with($file, 'app/Domains/Bootstrappers/RegisterStates.php')
+            || str_ends_with($file, 'app/Domains/Providers/DomainEventServiceProvider.php');
     }
 
     /**

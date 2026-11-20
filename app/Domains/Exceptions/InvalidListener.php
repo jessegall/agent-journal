@@ -70,6 +70,11 @@ final class InvalidListener extends DomainDeclarationError
         return new self("{$listener} cannot be registered directly for {$event}. Register its state loader instead.");
     }
 
+    public static function stateCacheChanged(): self
+    {
+        return new self('The state event declarations changed. Run php artisan event:cache to rebuild them.');
+    }
+
     public static function cacheMissing(string $provider): self
     {
         return new self(

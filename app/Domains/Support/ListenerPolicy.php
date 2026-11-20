@@ -8,8 +8,12 @@ use App\Contracts\Event;
 use App\Contracts\LogsListenerFailures;
 use App\Domains\Exceptions\InvalidListener;
 use App\Exports\Support\Exports;
+use App\Hooks\Declarations\StateEventDeclaration;
+use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Declarations\StateMethod;
+use App\Hooks\Declarations\StateMethods;
 use App\Hooks\States\AgentState;
+use App\Hooks\States\Support\StateTypeRegistry;
 use App\Ui\Contracts\UpdatesUserInterface;
 use ReflectionClass;
 use ReflectionMethod;
@@ -135,6 +139,25 @@ final readonly class ListenerPolicy
 
         $hearer = $this->listenerDomain($class, $listener, $event);
         $this->checkOwnership($event, $listener, $method, $hearer);
+    }
+
+    public function stateEvents(StateTypeRegistry $types, StateMethods $methods): StateEvents
+    {
+        $declarations = [];
+
+        foreach ($types->loaders() as $loader) {
+            foreach ($methods->forLoader($loader) as $input => $method) {
+                if ($input === $method->name) {
+                    continue;
+                }
+
+                $owner = $this->checkStateEvent($input, $method);
+                $declaration = new StateEventDeclaration($input, $method, $owner);
+                $declarations[$declaration->cacheEntry()] = $declaration;
+            }
+        }
+
+        return new StateEvents(array_values($declarations));
     }
 
     public function checkStateEvent(string $event, StateMethod $method): string

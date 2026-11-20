@@ -10,6 +10,11 @@ use App\Domains\Support\AvailableListener;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\FailureLoggingListener;
 use App\Domains\Support\ListenerPolicy;
+use App\Hooks\Declarations\StateEvents;
+use App\Hooks\Declarations\StateMethods;
+use App\Hooks\Events\StateEventBridge;
+use App\Hooks\Stack\StateTypes;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 
 /**
@@ -19,6 +24,13 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider;
  */
 final class DomainEventServiceProvider extends EventServiceProvider
 {
+    private const string STATE_EVENTS = '@state-events';
+
+    public function boot(): void
+    {
+        $this->app->booted($this->registerStateBridges(...));
+    }
+
     public function shouldDiscoverEvents(): bool
     {
         return true;
@@ -31,9 +43,19 @@ final class DomainEventServiceProvider extends EventServiceProvider
      */
     public function discoverEvents(): array
     {
-        $policy = $this->policy();
+        $events = $this->discoverOrdinaryEvents();
 
-        return $policy->check($policy->expand(parent::discoverEvents()));
+        if (! $this->app->isBooted()) {
+            return $events;
+        }
+
+        $entries = $this->stateEvents()->cacheEntries();
+
+        if ($entries === []) {
+            return $events;
+        }
+
+        return [...$events, self::STATE_EVENTS => $entries];
     }
 
     /**
@@ -47,16 +69,64 @@ final class DomainEventServiceProvider extends EventServiceProvider
     public function getEvents(): array
     {
         if (! $this->app->eventsAreCached()) {
-            return $this->policy()->gated(parent::getEvents());
+            return $this->policy()->gated(array_merge_recursive($this->discoverOrdinaryEvents(), $this->listens()));
         }
 
+        $events = $this->cachedEvents();
+        unset($events[self::STATE_EVENTS]);
+
+        return $this->policy()->gated($this->policy()->check($events));
+    }
+
+    private function registerStateBridges(): void
+    {
+        $states = $this->stateEvents();
+
+        if ($this->app->eventsAreCached()) {
+            $events = $this->cachedEvents();
+
+            if (($events[self::STATE_EVENTS] ?? []) !== $states->cacheEntries()) {
+                throw InvalidListener::stateCacheChanged();
+            }
+        }
+
+        $dispatcher = $this->app->make(Dispatcher::class);
+
+        foreach ($states->eventClasses() as $event) {
+            $dispatcher->listen($event, StateEventBridge::class.'@receive');
+        }
+    }
+
+    private function stateEvents(): StateEvents
+    {
+        return $this->policy()->stateEvents(
+            $this->app->make(StateTypes::class)->registrationSnapshot(),
+            $this->app->make(StateMethods::class),
+        );
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function discoverOrdinaryEvents(): array
+    {
+        $policy = $this->policy();
+
+        return $policy->check($policy->expand(parent::discoverEvents()));
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function cachedEvents(): array
+    {
         $cache = require $this->app->getCachedEventsPath();
 
         if (! isset($cache[self::class])) {
             throw InvalidListener::cacheMissing(self::class);
         }
 
-        return $this->policy()->gated($this->policy()->check($cache[self::class]));
+        return $cache[self::class];
     }
 
     /**
