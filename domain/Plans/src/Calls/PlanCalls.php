@@ -53,6 +53,7 @@ final readonly class PlanCalls
         ActorType $recipientType,
         string $recipientId,
         CallKey $requestKey = new CallKey(),
+        string|null $rootPlan = null,
     ): PlanWorkResultData {
         return $this->sender->send(AssignPlanWorkCall::from([
             'rootType' => $rootType,
@@ -60,6 +61,7 @@ final readonly class PlanCalls
             'recipientType' => $recipientType,
             'recipientId' => $recipientId,
             'requestKey' => $requestKey,
+            'rootPlan' => $rootPlan,
         ]));
     }
 
@@ -159,6 +161,7 @@ final readonly class PlanCalls
         ActorType $recipientType,
         string $recipientId,
         CallKey $requestKey = new CallKey(),
+        string|null $rootPlan = null,
     ): PlanWorkResultData {
         return $this->sender->send(ReassignPlanWorkCall::from([
             'rootType' => $rootType,
@@ -169,6 +172,7 @@ final readonly class PlanCalls
             'recipientType' => $recipientType,
             'recipientId' => $recipientId,
             'requestKey' => $requestKey,
+            'rootPlan' => $rootPlan,
         ]));
     }
 
@@ -193,6 +197,7 @@ final readonly class PlanCalls
         ActorType $holderType,
         string $holderId,
         CallKey $requestKey = new CallKey(),
+        string|null $rootPlan = null,
     ): PlanWorkResultData {
         return $this->sender->send(UnassignPlanWorkCall::from([
             'rootType' => $rootType,
@@ -201,6 +206,7 @@ final readonly class PlanCalls
             'holderType' => $holderType,
             'holderId' => $holderId,
             'requestKey' => $requestKey,
+            'rootPlan' => $rootPlan,
         ]));
     }
 }

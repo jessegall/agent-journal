@@ -66,7 +66,6 @@ final class DispatchReplyInboxTest extends TestCase
         'process_starts',
     ];
 
-    #[TimeLimit(seconds: 5, reason: 'It starts two agent sessions and seats a desk before it dispatches.')]
     protected function setUp(): void
     {
         parent::setUp();
@@ -74,6 +73,7 @@ final class DispatchReplyInboxTest extends TestCase
         $this->chooseActiveAccounts();
     }
 
+    #[TimeLimit(seconds: 5, reason: 'It starts two agent sessions and seats a desk before it dispatches.')]
     public function test_a_run_keeps_mains_inbox_after_mains_occupant_changes(): void
     {
         $owner = User::factory()->create();
