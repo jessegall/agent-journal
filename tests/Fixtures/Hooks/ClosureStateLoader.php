@@ -8,6 +8,7 @@ use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\States\AgentState;
 use Closure;
 
@@ -40,5 +41,10 @@ final readonly class ClosureStateLoader implements StateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return SessionTransferType::SessionOnly;
     }
 }

@@ -108,6 +108,22 @@ final class AgentStackRow extends Model implements ReadableModel
     }
 
     /**
+     * The agent's most recently closed stack in another session: the one a continued session carries work from.
+     *
+     * @return Option<self>
+     */
+    public static function lastClosedBefore(StackTarget $target): Option
+    {
+        return Option::fromValue(self::query()
+            ->withoutGlobalScope(AgentSessionScope::class)
+            ->where('agent_id', $target->agentId)
+            ->where('session_id', '!=', $target->sessionId)
+            ->where('status', StackStatus::Closed->value)
+            ->orderByDesc('closed_at')
+            ->first());
+    }
+
+    /**
      * The active stack of the target, locked for this transaction.
      */
     public static function lockFor(StackTarget $target): self

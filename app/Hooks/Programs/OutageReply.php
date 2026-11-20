@@ -19,6 +19,9 @@ final class OutageReply
 {
     public const string OUTAGE_REASON = 'The journal is unreachable, so this helper cannot act until it is back.';
 
+    public const string PREPARATION_PENDING_REASON = 'preparation-pending: the journal has not prepared this '
+        .'context yet, so tools wait until its context and state reach the program.';
+
     public const string PROTECTED_REASON = 'The journal is unreachable, so saved program accounts and saved outputs '
         .'stay closed until it is back.';
 
@@ -32,6 +35,15 @@ final class OutageReply
             $nativeEvent,
             $failure->isOutage() ? self::OUTAGE_REASON : "The journal refused this call ({$failure->value}).",
         );
+    }
+
+    /**
+     * The refusal of a tool call while the program's current context generation is not prepared yet: for every
+     * start, also while the journal is away, so no tool runs before its context and state reached the program.
+     */
+    public static function preparationPending(string $nativeEvent): ProgramReply
+    {
+        return self::refusal($nativeEvent, self::PREPARATION_PENDING_REASON);
     }
 
     /**

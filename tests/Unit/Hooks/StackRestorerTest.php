@@ -6,6 +6,7 @@ namespace Tests\Unit\Hooks;
 
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateLoader;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
@@ -224,6 +225,11 @@ final class StackRestorerTest extends TestCase
             public function schemaVersion(): int
             {
                 return 1;
+            }
+
+            public function sessionTransfer(): SessionTransferType
+            {
+                return SessionTransferType::SessionOnly;
             }
 
             public function isEnabled(): bool

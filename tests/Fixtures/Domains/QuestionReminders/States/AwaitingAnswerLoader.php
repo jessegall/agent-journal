@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
-use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Contracts\TickableStateLoader;
+use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 
@@ -47,6 +48,11 @@ $reference->subject->id,
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return SessionTransferType::SessionOnly;
     }
 
     public function occurrenceGuard(): WorkOccurrenceGuard

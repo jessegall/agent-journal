@@ -9,6 +9,7 @@ use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
+use App\Hooks\Enums\SessionTransferType;
 
 /**
  * A domain's ticking state type registered with the domain that owns it: the same as DomainStateType, and still marked
@@ -31,6 +32,11 @@ final readonly class DomainTickableStateType implements ConditionalStateType, Ti
     public function schemaVersion(): int
     {
         return $this->type->schemaVersion();
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return $this->type->sessionTransfer();
     }
 
     public function isEnabled(): bool

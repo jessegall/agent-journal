@@ -7,6 +7,7 @@ namespace Tests\Fixtures\Domains\Reviews\States;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\States\AgentState;
 use App\Settings\Support\CurrentSettingsResolver;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
@@ -36,5 +37,10 @@ final readonly class ReviewStateType implements StateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return SessionTransferType::SessionOnly;
     }
 }

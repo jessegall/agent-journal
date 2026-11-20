@@ -6,6 +6,7 @@ namespace App\Hooks\Contracts;
 
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\States\AgentState;
 
 /**
@@ -28,4 +29,9 @@ interface StateLoader
      * The version of the stored reference this loader reads.
      */
     public function schemaVersion(): int;
+
+    /**
+     * Whether this type's frames carry into the session that continues the agent's work.
+     */
+    public function sessionTransfer(): SessionTransferType;
 }

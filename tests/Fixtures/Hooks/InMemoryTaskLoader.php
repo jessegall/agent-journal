@@ -9,6 +9,7 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Enums\NoSubject;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
 use Domain\Tasks\Enums\TaskWorkState;
@@ -54,5 +55,10 @@ new TaskWork((int) $subject->id, $subject->runNumber, $this->tasks[$subject->id]
     public function schemaVersion(): int
     {
         return $this->version;
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return SessionTransferType::SessionOnly;
     }
 }

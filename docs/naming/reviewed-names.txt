@@ -809,6 +809,8 @@ case	SessionStartSource::Startup
 case	SessionStatus::Active
 case	SessionStatus::Ended
 case	SessionStatus::Silent
+case	SessionTransferType::Durable
+case	SessionTransferType::SessionOnly
 case	SettingAbility::Administer
 case	SettingAvailability::Available
 case	SettingAvailability::GroupDisabled
@@ -3160,6 +3162,7 @@ class	PreToolBody
 class	PreToolOutput
 class	PreferredDeskInboxes
 class	PreparationProgress
+class	PreparationState
 class	PrepareCall
 class	PrepareSkillPublication
 class	PrepareSkillPublicationHandler
@@ -4649,6 +4652,7 @@ class	StateReferencesInvalid
 class	StateSchemaUnknown
 class	StateSet
 class	StateSubjectMissing
+class	StateTransferUnknown
 class	StateTypeMissing
 class	StateTypeRegistry
 class	StateTypeRepeated
@@ -5408,6 +5412,7 @@ constant	OperationsResolver::TOOL
 constant	OperationsResolver::UNKNOWN
 constant	OrderedRecordIds::LARGEST
 constant	OutageReply::OUTAGE_REASON
+constant	OutageReply::PREPARATION_PENDING_REASON
 constant	OutageReply::PROTECTED_REASON
 constant	OutcomeUnknown::CODE
 constant	OutputAssessment::UPDATED_AT
@@ -5963,6 +5968,7 @@ enum	SequenceRunState
 enum	SessionEndReason
 enum	SessionStartSource
 enum	SessionStatus
+enum	SessionTransferType
 enum	SettingAbility
 enum	SettingAvailability
 enum	SettingSource
@@ -7009,6 +7015,7 @@ method	AgentStackRow::historyOf()
 method	AgentStackRow::holdForInvestigation()
 method	AgentStackRow::insertIfMissing()
 method	AgentStackRow::isActive()
+method	AgentStackRow::lastClosedBefore()
 method	AgentStackRow::lockActiveAuthorizedFor()
 method	AgentStackRow::lockActiveOf()
 method	AgentStackRow::lockAuthorizedFor()
@@ -7107,6 +7114,7 @@ method	AnsweringAskState::__construct()
 method	AnsweringAskState::isFinished()
 method	AnsweringAskState::reference()
 method	AnsweringAskStates::schemaVersion()
+method	AnsweringAskStates::sessionTransfer()
 method	AnsweringAskStates::stateClass()
 method	AnsweringAskStates::statesFor()
 method	AnsweringMessageState::__construct()
@@ -7118,6 +7126,7 @@ method	AnsweringMessageState::onShellCommand()
 method	AnsweringMessageState::onStop()
 method	AnsweringMessageState::workPermission()
 method	AnsweringMessageStateFactory::schemaVersion()
+method	AnsweringMessageStateFactory::sessionTransfer()
 method	AnsweringMessageStateFactory::stateClass()
 method	AnsweringMessageStateFactory::stateOf()
 method	AnsweringMessageStateFactory::statesFor()
@@ -7802,6 +7811,7 @@ method	AwaitingSkillsState::onShellCommand()
 method	AwaitingSkillsState::reason()
 method	AwaitingSkillsState::workPermission()
 method	AwaitingSkillsStateFactory::schemaVersion()
+method	AwaitingSkillsStateFactory::sessionTransfer()
 method	AwaitingSkillsStateFactory::stateClass()
 method	AwaitingSkillsStateFactory::statesFor()
 method	AwaitingSkillsStateReference::forPublication()
@@ -9866,6 +9876,7 @@ method	DomainServiceProvider::settingRegistry()
 method	DomainStateType::__construct()
 method	DomainStateType::isEnabled()
 method	DomainStateType::schemaVersion()
+method	DomainStateType::sessionTransfer()
 method	DomainStateType::stateClass()
 method	DomainStateType::statesFor()
 method	DomainStatus::__construct()
@@ -9876,6 +9887,7 @@ method	DomainTickableStateType::__construct()
 method	DomainTickableStateType::isEnabled()
 method	DomainTickableStateType::occurrenceGuard()
 method	DomainTickableStateType::schemaVersion()
+method	DomainTickableStateType::sessionTransfer()
 method	DomainTickableStateType::stateClass()
 method	DomainTickableStateType::statesFor()
 method	DomainTypeWriter::__construct()
@@ -10506,6 +10518,7 @@ method	FollowingSequenceState::onCompaction()
 method	FollowingSequenceState::onStop()
 method	FollowingSequenceStateFactory::__construct()
 method	FollowingSequenceStateFactory::schemaVersion()
+method	FollowingSequenceStateFactory::sessionTransfer()
 method	FollowingSequenceStateFactory::stateClass()
 method	FollowingSequenceStateFactory::statesFor()
 method	FollowingSequenceStateReference::forRun()
@@ -12437,6 +12450,7 @@ method	OrderedAssigneeLocks::ordered()
 method	OrderedRecordIds::__construct()
 method	OutageReply::for()
 method	OutageReply::neutral()
+method	OutageReply::preparationPending()
 method	OutageReply::protectedRefusal()
 method	OutageReply::refusal()
 method	Outcome::acceptsClaim()
@@ -13126,6 +13140,12 @@ method	PreToolOutput::contextText()
 method	PreferredDeskInboxes::preferredFor()
 method	PreparationProgress::__construct()
 method	PreparationProgress::isComplete()
+method	PreparationState::__construct()
+method	PreparationState::isPrepared()
+method	PreparationState::openGeneration()
+method	PreparationState::prepare()
+method	PreparationState::storedState()
+method	PreparationState::write()
 method	PrepareCall::__construct()
 method	PrepareCall::handle()
 method	PrepareSkillPublication::__construct()
@@ -14150,6 +14170,7 @@ method	ReadyState::onToolFinished()
 method	ReadyState::onToolRequested()
 method	ReadyStateLoader::__construct()
 method	ReadyStateLoader::schemaVersion()
+method	ReadyStateLoader::sessionTransfer()
 method	ReadyStateLoader::stateClass()
 method	ReadyStateLoader::statesFor()
 method	ReadyWindow::__construct()
@@ -14611,6 +14632,7 @@ method	RelaySettings::client()
 method	RelaySettings::forStart()
 method	RelaySettings::hookPath()
 method	RelaySettings::pendingEnvelopesFolder()
+method	RelaySettings::preparationFile()
 method	RelaySettings::processGenerationOf()
 method	RelaySettings::protectedAccountsOf()
 method	RelaySettings::valueOrEmpty()
@@ -17384,6 +17406,7 @@ method	StartRecord::ownerWork()
 method	StartRecord::replyInboxId()
 method	StartRecord::requestedBy()
 method	StartRecord::requireDigest()
+method	StartRecord::resumesConversation()
 method	StartRecord::startedAs()
 method	StartRecordDetails::__construct()
 method	StartRecordMissing::forRequest()
@@ -17439,6 +17462,7 @@ method	StartSignInRequest::program()
 method	StartSignInRequest::requestKey()
 method	StartSignInRequest::rules()
 method	StartStacks::__construct()
+method	StartStacks::carriedFrames()
 method	StartStacks::close()
 method	StartStacks::open()
 method	StartTask::__construct()
@@ -17554,6 +17578,7 @@ method	StateListenerDeclarations::__construct()
 method	StateListenerDeclarations::declarations()
 method	StateListenerDeclarations::ownerOf()
 method	StateLoader::schemaVersion()
+method	StateLoader::sessionTransfer()
 method	StateLoader::stateClass()
 method	StateLoader::statesFor()
 method	StateMethod::__construct()
@@ -17596,6 +17621,7 @@ method	StateSet::build()
 method	StateSet::stateAt()
 method	StateSet::stateOfClassAt()
 method	StateSubjectMissing::for()
+method	StateTransferUnknown::for()
 method	StateTypeMissing::forClass()
 method	StateTypeRegistry::__construct()
 method	StateTypeRegistry::freeze()
@@ -18976,6 +19002,7 @@ method	WorkingOnPlanState::__construct()
 method	WorkingOnPlanState::isFinished()
 method	WorkingOnPlanState::workRecordType()
 method	WorkingOnPlanStateFactory::schemaVersion()
+method	WorkingOnPlanStateFactory::sessionTransfer()
 method	WorkingOnPlanStateFactory::stateClass()
 method	WorkingOnPlanStateFactory::statesFor()
 method	WorkingOnPlanStateReference::forPlan()
@@ -18985,6 +19012,7 @@ method	WorkingOnTaskState::onStop()
 method	WorkingOnTaskState::workRecordType()
 method	WorkingOnTaskStateFactory::__construct()
 method	WorkingOnTaskStateFactory::schemaVersion()
+method	WorkingOnTaskStateFactory::sessionTransfer()
 method	WorkingOnTaskStateFactory::stateClass()
 method	WorkingOnTaskStateFactory::statesFor()
 method	WorkingOnTaskStateReference::forTask()
@@ -25188,6 +25216,8 @@ property	PreToolOutput::$permissionDecisionReason
 property	PreToolOutput::$updatedInput
 property	PreparationProgress::$staged
 property	PreparationProgress::$total
+property	PreparationState::$file
+property	PreparationState::$files
 property	PrepareCall::$context
 property	PrepareCall::$sessionStart
 property	PrepareCall::$toolCalls
@@ -28983,6 +29013,7 @@ variable	$captures
 variable	$card
 variable	$cards
 variable	$carriageReturn
+variable	$carriedFrames
 variable	$caseNames
 variable	$cases
 variable	$catalogue
@@ -29784,6 +29815,7 @@ variable	$preference
 variable	$preferred
 variable	$prefix
 variable	$prefixes
+variable	$preparation
 variable	$prepared
 variable	$preview
 variable	$previous
@@ -29798,6 +29830,7 @@ variable	$producerDone
 variable	$profile
 variable	$profiles
 variable	$program
+variable	$programReply
 variable	$programSource
 variable	$progress
 variable	$progressByPhase

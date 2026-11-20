@@ -10,6 +10,7 @@ use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\AgentCallReply;
 use App\Agents\Support\LoggedBypass;
 use App\Hooks\Enums\CallFailure;
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Exceptions\OutputGrantsInvalid;
 use App\Hooks\Exceptions\ProgramReplyMalformed;
 use App\Hooks\Inputs\ProtectedFileRead;
@@ -52,6 +53,17 @@ final readonly class HookRelay
         $log = new BypassLog($settings->bypassLogPath);
         $pending = new PendingEnvelopes($this->files, $settings->pendingEnvelopesFolder());
         $envelope = CallbackEnvelope::forCallback($program->value, $hookJson, CarbonImmutable::now());
+        $preparation = new PreparationState($this->files, $settings->preparationFile());
+        $event = HookEvent::tryFrom(ProgramEventName::of($hookJson));
+
+        if ($event?->isToolCall() === true && ! $preparation->isPrepared()) {
+            return OutageReply::preparationPending($event->value);
+        }
+
+        if ($event === HookEvent::SessionStart) {
+            $preparation->openGeneration($envelope->id);
+        }
+
         $pending->keep($envelope);
 
         try {
@@ -68,10 +80,16 @@ final readonly class HookRelay
         $pending->acknowledge($envelope);
 
         try {
-            return ProgramReply::fromJournal($reply->body);
+            $programReply = ProgramReply::fromJournal($reply->body);
         } catch (JsonException|ProgramReplyMalformed) {
             return $this->answerWithoutJournal(CallFailure::Refused, $hookJson, $settings, $log);
         }
+
+        if ($event === HookEvent::SessionStart) {
+            $preparation->prepare($envelope->id);
+        }
+
+        return $programReply;
     }
 
     /**

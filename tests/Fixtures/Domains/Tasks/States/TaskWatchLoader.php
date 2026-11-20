@@ -9,6 +9,7 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Exceptions\StateSubjectMissing;
 
 /**
@@ -40,5 +41,10 @@ class TaskWatchLoader implements StateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return SessionTransferType::Durable;
     }
 }

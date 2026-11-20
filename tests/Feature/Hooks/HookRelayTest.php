@@ -14,6 +14,7 @@ use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Relay\CallbackEnvelope;
 use App\Hooks\Relay\HookRelay;
+use App\Hooks\Relay\PreparationState;
 use App\Hooks\Relay\RelaySettings;
 use App\Hooks\Support\ProtectedAccounts;
 use App\Hooks\Support\StackTransaction;
@@ -22,6 +23,7 @@ use Carbon\CarbonImmutable;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
@@ -69,12 +71,17 @@ final class HookRelayTest extends TestCase
             new StackTarget($this->start->agent->id, $this->start->session->id),
         ));
         $this->bypassLog = sys_get_temp_dir().'/hook-relay-bypasses-'.getmypid().'.jsonl';
+        $preparation = new PreparationState(new Filesystem(), $this->bypassLog.'.preparation.json');
+        $preparation->openGeneration('generation-1');
+        $preparation->prepare('generation-1');
     }
 
     protected function tearDown(): void
     {
-        if (is_file($this->bypassLog)) {
-            unlink($this->bypassLog);
+        foreach ([$this->bypassLog, $this->bypassLog.'.preparation.json'] as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
         }
 
         array_map(unlink(...), glob($this->bypassLog.'.pending/*.json') ?: []);

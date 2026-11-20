@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use Tests\Support\Exceptions\SimulatedFailure;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
+use App\Hooks\Enums\SessionTransferType;
 use Tests\Fixtures\Hooks\ScriptedState;
+use Tests\Support\Exceptions\SimulatedFailure;
 
 /**
  * A state type that does not tick and must never be restored while the engine selects ticks.
@@ -28,5 +29,10 @@ final class UnreadLoader implements StateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return SessionTransferType::SessionOnly;
     }
 }

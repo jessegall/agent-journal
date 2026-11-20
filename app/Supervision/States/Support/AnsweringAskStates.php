@@ -9,6 +9,7 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\Enums\SessionTransferType;
 use App\Supervision\Models\AskHop;
 use App\Supervision\States\AnsweringAskState;
 
@@ -33,5 +34,10 @@ final readonly class AnsweringAskStates implements StateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return SessionTransferType::Durable;
     }
 }

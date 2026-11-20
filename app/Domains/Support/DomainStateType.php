@@ -9,6 +9,7 @@ use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
+use App\Hooks\Enums\SessionTransferType;
 use Closure;
 
 /**
@@ -35,6 +36,11 @@ final readonly class DomainStateType implements ConditionalStateType, StateLoade
     public function schemaVersion(): int
     {
         return $this->loader->schemaVersion();
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return $this->loader->sessionTransfer();
     }
 
     public function isEnabled(): bool

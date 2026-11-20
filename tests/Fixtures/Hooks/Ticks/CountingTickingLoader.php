@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Contracts\TickableStateLoader;
+use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\States\AgentState;
 
 /**
@@ -51,6 +52,11 @@ final class CountingTickingLoader implements TickableStateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function sessionTransfer(): SessionTransferType
+    {
+        return SessionTransferType::SessionOnly;
     }
 
     public function occurrenceGuard(): WorkOccurrenceGuard

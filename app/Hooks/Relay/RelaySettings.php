@@ -101,6 +101,14 @@ final readonly class RelaySettings
     }
 
     /**
+     * The host file that says whether the program's current context generation is prepared, beside the bypass log.
+     */
+    public function preparationFile(): string
+    {
+        return $this->bypassLogPath.'.preparation.json';
+    }
+
+    /**
      * The hook path, with the process generation the host gave this program when it has one, so the server can refuse
      * a call from an older process (doc 40, section 12).
      */

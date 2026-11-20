@@ -159,6 +159,17 @@ final class StartRecord extends Model implements ReadableModel
     }
 
     /**
+     * Whether the session was started to resume an earlier conversation of the same agent.
+     */
+    public static function resumesConversation(string $sessionId): bool
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->where('conversation_mode', ConversationModeType::Resume->value)
+            ->exists();
+    }
+
+    /**
      * The work this start was made for, as its owner names it.
      */
     public function ownerWork(): RecordIdentity
