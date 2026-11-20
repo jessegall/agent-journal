@@ -36,7 +36,7 @@ def test_nothing_set_dispatches_as_today_on_codex(split_story):
     story = split_story
     parent = Actor(story.new_row_id('agent start codex-parent codex main --environment main'), ActorType.AGENT)
     worker = dispatch(story, actor=parent)
-    expect_program(story, worker, 'codex', 'gpt-6.1-terra')
+    expect_program(story, worker, 'codex', 'gpt-6.2-sol')
 
 
 def test_nothing_set_dispatches_as_today_person_needs_program(split_story):
@@ -45,7 +45,7 @@ def test_nothing_set_dispatches_as_today_person_needs_program(split_story):
     story.expect_text('worker-worktree list', 'nothing found')
 
 
-@pytest.mark.parametrize('program,model', [('codex', 'gpt-6.1-sol'), ('claude', 'opus')])
+@pytest.mark.parametrize('program,model', [('codex', 'gpt-6.2-astra'), ('claude', 'opus')])
 def test_tier_flag_picks_the_model_of_each_program(split_story, program, model):
     story = split_story
     worker = dispatch(story, flags=f'--tier strongest --program {program}')
@@ -56,7 +56,7 @@ def test_tier_flag_picks_the_model_of_each_program_rare_needs_a_name(split_story
     split_story.expect_refusal('worker dispatch --test-command python=pytest 1 --tier rare', 'name the model', actor=split_story.agent)
 
 
-@pytest.mark.parametrize('program,model', [('codex', 'gpt-6.1-sol'), ('claude', 'opus')])
+@pytest.mark.parametrize('program,model', [('codex', 'gpt-6.2-astra'), ('claude', 'opus')])
 def test_profile_tier_fits_any_program(split_story, program, model):
     story = split_story
     worker = dispatch(story, flags=f'--profile {WORKER_SENIOR_PROFILE.name} --program {program}')

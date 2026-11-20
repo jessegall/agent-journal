@@ -77,7 +77,7 @@ def test_route_beats_the_split(split_story, split_viewer):
     story.expect_success('task tag 1 networking linux --confirm', actor=story.agent)
     set_split(story, 'claude 100,codex 0', viewer=split_viewer)
     story.expect_success('worker-route make --program codex --tags networking,linux --environment main', actor=story.agent)
-    expect_program(story, dispatch(story), 'codex', 'gpt-6.1-terra')
+    expect_program(story, dispatch(story), 'codex', 'gpt-6.2-sol')
     story.run_listeners()
     story.expect_text('chat-mark list --json', 'Route 1', 'networking', 'linux')
 
@@ -189,7 +189,7 @@ def test_worker_split_previews_a_task(split_story):
     story = split_story
     story.expect_success('task tag 1 preview --confirm', actor=story.agent)
     route = story.new_row_id('worker-route make --program codex --tags preview --environment main', actor=story.agent)
-    story.expect_text('worker split --task 1', 'codex', 'gpt-6.1-terra', f'Route {route}')
+    story.expect_text('worker split --task 1', 'codex', 'gpt-6.2-sol', f'Route {route}')
     story.expect_text('worker-worktree list', 'nothing found')
     story.expect_rows(story.story_rows(Agent, role="worker") == ())
     story.expect_text('task show 1', 'state: open')
@@ -272,8 +272,8 @@ def test_agent_naming_another_program_is_refused_before_git_explicit_skip_is_log
 
 def test_person_names_any_program(split_story):
     story = split_story
-    worker = dispatch(story, flags='--program codex --model gpt-6.1-terra --environment main', actor=story.user)
-    expect_program(story, worker, 'codex', 'gpt-6.1-terra')
+    worker = dispatch(story, flags='--program codex --model gpt-6.2-sol --environment main', actor=story.user)
+    expect_program(story, worker, 'codex', 'gpt-6.2-sol')
 
 
 def test_person_names_any_program_over_a_route(split_story):

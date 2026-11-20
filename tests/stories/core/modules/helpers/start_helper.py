@@ -21,7 +21,7 @@ from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
 
 START = f'helper start {RESEARCHER_PROFILE.name} --brief "How does the queue hold a run?" --environment main'
-CODEX_START = f"{START} --program codex --model gpt-6.1-sol"
+CODEX_START = f"{START} --program codex --model gpt-6.2-sol"
 PLAIN_START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read the queue" --environment main'
 
 
@@ -95,7 +95,7 @@ def test_a_start_keeps_a_job_with_the_whole_brief(new_story):
 def test_a_helper_runs_on_the_program_named(new_story):
     story = new_story(fixture=LauncherRuns)
     helper_id, _ = started(story, CODEX_START)
-    story.expect_success(f"agent show {helper_id}", "program: codex", "program_model: gpt-6.1-sol")
+    story.expect_success(f"agent show {helper_id}", "program: codex", "program_model: gpt-6.2-sol")
 
 
 def test_a_given_name_shows_on_the_helper(new_story):
@@ -216,7 +216,7 @@ def test_a_profile_that_always_uses_its_program_is_refused_when_it_cannot_start(
 
 def test_a_profile_that_uses_its_program_if_possible_starts_on_the_other_one_and_says_why(new_story, monkeypatch):
     story = new_story(fixture=LauncherRuns)
-    save_profile(story, "--program-if-possible --codex-model gpt-6.1-sol")
+    save_profile(story, "--program-if-possible --codex-model gpt-6.2-sol")
     refuse_claude(monkeypatch)
     launcher = fake_launcher(story)
     answer = json.loads(story.run(f"{PLAIN_START} --json", actor=story.agent).output_text.splitlines()[0])
@@ -224,7 +224,7 @@ def test_a_profile_that_uses_its_program_if_possible_starts_on_the_other_one_and
     launcher.drain_requests()
     launcher.server.close()
     story.expect_rows(answer["program"] == "codex", answer["note"] == "claude could not start (claude is not installed here: install claude or name another program), so it runs on codex")
-    story.expect_success(f"agent show {answer['id']}", "program: codex", "program_model: gpt-6.1-sol")
+    story.expect_success(f"agent show {answer['id']}", "program: codex", "program_model: gpt-6.2-sol")
 
 
 def test_a_profile_that_uses_its_program_if_possible_keeps_it_when_it_can_start(new_story):
@@ -236,7 +236,7 @@ def test_a_profile_that_uses_its_program_if_possible_keeps_it_when_it_can_start(
 
 def test_a_profile_that_says_nothing_falls_back_to_another_program(new_story, monkeypatch):
     story = new_story(fixture=LauncherRuns)
-    save_profile(story, "--codex-model gpt-6.1-sol")
+    save_profile(story, "--codex-model gpt-6.2-sol")
     refuse_claude(monkeypatch)
     launcher = fake_launcher(story)
     answer = json.loads(story.run(f"{PLAIN_START} --json", actor=story.agent).output_text.splitlines()[0])

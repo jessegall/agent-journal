@@ -12,7 +12,7 @@ from tests.stories.core.modules.helpers.support.rotating_helper import START_ROT
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
-CODEX_MODELS = "codex gpt-6-luna,codex gpt-6.1-terra,codex gpt-6.1-sol,codex gpt-6-astra"
+CODEX_MODELS = "codex gpt-6-luna,codex gpt-6.2-sol,codex gpt-6.2-astra"
 UNUSED_MODEL = "claude fable"
 TILL_START = START_ROTATING.replace("src/cart.py", "src/till.py")
 

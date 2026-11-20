@@ -6,7 +6,7 @@ from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, Sta
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches
 from tests.stories.core.modules.helpers.rotation_mid_job import session_rows
 
-CODEX_MODEL = "gpt-6.1-sol"
+CODEX_MODEL = "gpt-6.2-sol"
 DRIVER = "agent driver {number} --program {program} --model {model} --environment main"
 MEMORY_TEXT = "The cart rounds each line before it adds them"
 

@@ -26,7 +26,7 @@ def identity_story(new_story):
     return story
 
 
-@pytest.mark.parametrize("program,model,flag", [("claude", "sonnet", "--model"), ("codex", "gpt-6.1-sol", "-m")])
+@pytest.mark.parametrize("program,model,flag", [("claude", "sonnet", "--model"), ("codex", "gpt-6.2-sol", "-m")])
 def test_dispatch_send_resume_and_restart_keep_the_model_on_the_command_and_card(identity_story, monkeypatch, program, model, flag):
     story = identity_story
     repository = repository_environment(story)

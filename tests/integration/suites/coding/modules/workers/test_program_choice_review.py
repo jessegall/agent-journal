@@ -120,7 +120,7 @@ def test_both_plans_reuse_stays_on_the_chosen_program_counts_each_helper_job(spl
     story.expect_rows(next(row for row in counts if row['id'] == 'claude')['helpers_recent'] == 2, len(launcher.starts) == 1)
 
 
-@pytest.mark.parametrize('program,model,shares', [('claude', 'sonnet', 'codex 100,claude 0'), ('codex', 'gpt-6.1-terra', 'claude 100,codex 0')])
+@pytest.mark.parametrize('program,model,shares', [('claude', 'sonnet', 'codex 100,claude 0'), ('codex', 'gpt-6.2-sol', 'claude 100,codex 0')])
 @pytest.mark.parametrize('agent_role', ['worker', 'helper'])
 def test_named_model_fixes_the_program(split_story, program, model, shares, agent_role, split_viewer):
     story = split_story
@@ -244,7 +244,7 @@ def test_mark_a_program_out_invalid_values_are_refused(split_story, program, end
 def test_profile_with_tools_stays_on_its_program(split_story, split_viewer):
     story = split_story
     split_viewer.value('profiles.profiles', ['profile', 'save', 'tool-reader', '--description', 'Reads the design', '--body', 'Read the design.', '--model', 'sonnet', '--mcp-tools', 'mcp__design__read'])
-    split_viewer.value('profiles.profiles', ['profile', 'save', 'codex-tools', '--description', 'Reads the design', '--body', 'Read the design.', '--program', 'codex', '--model', 'gpt-6.1-terra', '--mcp-tools', 'mcp__design__read'])
+    split_viewer.value('profiles.profiles', ['profile', 'save', 'codex-tools', '--description', 'Reads the design', '--body', 'Read the design.', '--program', 'codex', '--model', 'gpt-6.2-sol', '--mcp-tools', 'mcp__design__read'])
     set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     helper_id, _ = started(story, 'helper start tool-reader --brief "Read the design" --environment main')
     story.expect_text(f'agent show {helper_id}', 'program: claude')
@@ -322,8 +322,8 @@ def test_batch_combines_route_constraints(batch_route_story, reverse):
     if reverse:
         tasks.reverse()
     flags = ' '.join(f'--task {number}' for number in tasks)
-    story.expect_text(f'worker split {flags}', 'codex', 'gpt-6.1-sol')
-    expect_program(story, dispatch(story, ' '.join(map(str, tasks))), 'codex', 'gpt-6.1-sol')
+    story.expect_text(f'worker split {flags}', 'codex', 'gpt-6.2-astra')
+    expect_program(story, dispatch(story, ' '.join(map(str, tasks))), 'codex', 'gpt-6.2-astra')
 
 
 def test_only_a_person_changes_the_split(split_story):
@@ -399,7 +399,7 @@ def tier_worker_story(split_story, split_viewer):
     return story
 
 
-@pytest.mark.parametrize('program,model', [('claude', 'opus'), ('codex', 'gpt-6.1-sol')])
+@pytest.mark.parametrize('program,model', [('claude', 'opus'), ('codex', 'gpt-6.2-astra')])
 def test_profile_tier_alone_beats_default_models(tier_worker_story, program, model):
     story = tier_worker_story
     expect_program(story, dispatch(story, flags=f'--profile tier-worker --program {program}'), program, model)
@@ -420,7 +420,7 @@ def test_profile_tier_alone_beats_default_models_bad_file_is_a_problem(split_sto
     story.expect_text('profile list --json', 'bad-tier', 'problem', 'enormous')
 
 
-@pytest.mark.parametrize('program,model', [('claude', 'fable'), ('codex', 'gpt-6-astra')])
+@pytest.mark.parametrize('program,model', [('claude', 'fable')])
 def test_rare_model_is_never_automatic(split_story, split_viewer, program, model):
     story = split_story
     split_viewer.value('settings.settings', ['setting', 'set', f'{ALLOWED_MODELS}', f'{program} {model}', '--project'])
@@ -509,7 +509,7 @@ def test_route_commands_as_the_doc_writes_them(split_story):
     story.expect_rows([row['position'] for row in rows] == [1, 2, 3, 4], rows[0]['tags'] == ['networking', 'linux'])
 
 
-@pytest.mark.parametrize(("program", "model"), [pytest.param("codex", "gpt-6.1-sol", id="S68")])
+@pytest.mark.parametrize(("program", "model"), [pytest.param("codex", "gpt-6.2-astra", id="S68")])
 def test_codex_hooks_run_in_the_worker_folder(played, monkeypatch, program, model):
     story = played(OpenTaskOrchestrator)
     repository = repository_environment(story)

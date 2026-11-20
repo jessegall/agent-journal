@@ -109,8 +109,7 @@ class CodexProvider(Provider):
     session_variable = "CODEX_THREAD_ID"
     markers = ["CODEX_THREAD_ID", "CODEX_SESSION_ID", "CODEX_TOOL_CALL_ID", "CODEX_CI", "CODEX_SANDBOX", "CODEX_VERSION",
                "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS"]
-    models = [ProgramModel("gpt-6-luna", ModelTier.FAST), ProgramModel("gpt-6.1-terra", ModelTier.GENERAL), ProgramModel("gpt-6.1-sol", ModelTier.STRONGEST),
-              ProgramModel("gpt-6-astra", ModelTier.RARE)]
+    models = [ProgramModel("gpt-6-luna", ModelTier.FAST), ProgramModel("gpt-6.2-sol", ModelTier.GENERAL), ProgramModel("gpt-6.2-astra", ModelTier.STRONGEST)]
 
     profile_model_setting = "journal.core.profiles.model-codex"
 

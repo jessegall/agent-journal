@@ -5,6 +5,6 @@ MODULE_KEY = "journal.core.codex"
 MODEL_EFFORTS = f"{MODULE_KEY}.model-efforts"
 
 CODEX_SETTINGS = [
-    SettingValue("model-efforts", "Effort per Codex model", "Entries of model:effort, such as gpt-6.1-sol:high; a model not listed runs at Codex's own default.",
+    SettingValue("model-efforts", "Effort per Codex model", "Entries of model:effort, such as gpt-6.2-sol:high; a model not listed runs at Codex's own default.",
                  SettingType.LIST, default=(), person_set=True),
 ]

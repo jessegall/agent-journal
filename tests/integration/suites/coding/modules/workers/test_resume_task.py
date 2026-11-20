@@ -25,7 +25,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import c
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
 
-@pytest.mark.parametrize(("program", "model"), [("claude", "sonnet"), ("codex", "gpt-6.1-sol")])
+@pytest.mark.parametrize(("program", "model"), [("claude", "sonnet"), ("codex", "gpt-6.2-sol")])
 @pytest.mark.parametrize("answer", [b"started 123456789\n", b"started\n"], ids=["with-pid", "without-pid"])
 @pytest.mark.parametrize("merged", [False, True], ids=["open-worktree", "merged-worktree"])
 def test_a_task_sent_to_a_stopped_worker_resumes_it_once(played, monkeypatch, program, model, merged, answer):

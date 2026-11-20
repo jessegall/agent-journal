@@ -70,13 +70,13 @@ def test_a_planner_making_a_plan_starts_the_plan_sequence_and_takes_its_goal_fro
 
 def test_the_functional_designer_runs_on_the_strongest_model_and_starts_its_sequence(bundled_story):
     designer = profile(bundled_story, FUNCTIONAL_DESIGNER)
-    bundled_story.expect_rows(designer.agent_type == "helper", designer.tier == ModelTier.STRONGEST, designer.model == "opus", designer.codex_model == "gpt-6.1-sol",
+    bundled_story.expect_rows(designer.agent_type == "helper", designer.tier == ModelTier.STRONGEST, designer.model == "opus", designer.codex_model == "gpt-6.2-astra",
                         FUNCTIONAL_DESIGN in designer.body, "skill journal-functional-design" in designer.body, detail=designer.body)
 
 
 def test_the_planner_runs_on_a_cheaper_model_and_works_from_the_design(bundled_story):
     planner = profile(bundled_story, PLANNER)
-    bundled_story.expect_rows(planner.agent_type == "helper", planner.tier == ModelTier.GENERAL, planner.model == "sonnet", planner.codex_model == "gpt-6.1-terra",
+    bundled_story.expect_rows(planner.agent_type == "helper", planner.tier == ModelTier.GENERAL, planner.model == "sonnet", planner.codex_model == "gpt-6.2-sol",
                         "functional design document" in planner.body, "cheaper model" in planner.body, detail=planner.body)
 
 

@@ -32,7 +32,7 @@ def test_a_folder_named_to_link_is_a_link_to_the_environments_folder_that_git_ne
 def test_a_program_that_picks_its_own_session_is_bound_to_its_worker_row_by_its_first_hook(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --program codex --model gpt-6.1-sol 1")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --program codex --model gpt-6.2-sol 1")
     launch_name = story.row(Agent, worker.id).session
     story.hook("real-codex-session", HookSamples.sample("session_start").with_fields(launch=launch_name, program="codex"))
     expect_session(story, worker, "real-codex-session")

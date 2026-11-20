@@ -111,7 +111,7 @@ def test_legacy_profiles_are_copied_without_deletion_and_keep_their_fields(profi
     expect_value(FileAccess.read(original), text)
     expect_value("moved-from:" in FileAccess.read(profile_path(story)), True)
     expect_value((row["agent_type"], row["access"]), ("helper", "read-only"))
-    expect_value((row["model"], row["codex_model"]), ("sonnet", "gpt-6.1-sol"))
+    expect_value((row["model"], row["codex_model"]), ("sonnet", "gpt-6.2-sol"))
     expect_value((row["occupant"], row["mcp_tools"]), ("each-launch", ["mcp__wiki__search"]))
     if suffix == ".md":
         expect_value(row["description"], "Reads changes\nand their tests")
@@ -165,9 +165,9 @@ def test_default_models_are_effective_and_native_profiles_still_publish(profile_
     story = profile_story
     profile_line(story, SAVE)
     story.expect_success(f"setting set {CLAUDE_MODEL_SETTING} haiku --project", actor=story.user)
-    story.expect_success(f"setting set {CODEX_MODEL_SETTING} gpt-6.1-sol --project", actor=story.user)
+    story.expect_success(f"setting set {CODEX_MODEL_SETTING} gpt-6.2-sol --project", actor=story.user)
     row = profile_row(story, "critic")
-    expect_value((row["model"], row["codex_model"]), ("haiku", "gpt-6.1-sol"))
+    expect_value((row["model"], row["codex_model"]), ("haiku", "gpt-6.2-sol"))
     story.container.get(ProfileFiles).publish()
     native = story.home.project_folder / ".claude/agents/journal-researcher.md"
     expect_value(native.is_file(), True)

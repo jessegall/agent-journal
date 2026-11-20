@@ -16,7 +16,7 @@ KEY = "worker-test-key-6375"
 VARIABLE = "GITHUB_PERSONAL_ACCESS_TOKEN"
 
 
-@pytest.mark.parametrize("program,model", [("claude", "sonnet"), ("codex", "gpt-6.1-sol")])
+@pytest.mark.parametrize("program,model", [("claude", "sonnet"), ("codex", "gpt-6.2-sol")])
 @pytest.mark.real_git
 def test_workers_receive_the_main_agents_servers_and_keys_outside_the_prompt(played, private_folder, program, model):
     story = played(OpenTaskOrchestrator)

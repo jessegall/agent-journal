@@ -20,13 +20,13 @@ def allow_opus(story) -> None:
 def test_each_program_lists_its_models_from_the_cheapest_to_the_one_for_rare_occasions(played):
     story = played(OpenTaskOrchestrator)
     story.expect_text("worker models", "claude haiku: allowed\nclaude sonnet: allowed\nclaude opus: allowed\nclaude fable: allowed",
-                      "codex gpt-6-luna: allowed\ncodex gpt-6.1-terra: allowed\ncodex gpt-6.1-sol: allowed\ncodex gpt-6-astra: allowed")
+                      "codex gpt-6-luna: allowed\ncodex gpt-6.2-sol: allowed\ncodex gpt-6.2-astra: allowed")
 
 
 def test_listing_models_allows_only_those_listed_on_every_program(played):
     story = played(OpenTaskOrchestrator)
     allow_opus(story)
-    story.expect_text("worker models", "claude sonnet: not allowed", "claude opus: allowed", "codex gpt-6.1-terra: not allowed")
+    story.expect_text("worker models", "claude sonnet: not allowed", "claude opus: allowed", "codex gpt-6.2-sol: not allowed")
 
 
 def test_the_settings_window_saves_the_models_left_with_the_line_it_sends(played):
@@ -34,9 +34,9 @@ def test_the_settings_window_saves_the_models_left_with_the_line_it_sends(played
     story.run('actor make user "Ada"')
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", ALLOWED_MODELS, "claude sonnet,claude opus,codex gpt-6.1-terra", "--project"]})
+        server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", ALLOWED_MODELS, "claude sonnet,claude opus,codex gpt-6.2-sol", "--project"]})
     story.expect_text("worker models", "claude haiku: not allowed\nclaude sonnet: allowed\nclaude opus: allowed\nclaude fable: not allowed",
-                      "codex gpt-6-luna: not allowed\ncodex gpt-6.1-terra: allowed\ncodex gpt-6.1-sol: not allowed\ncodex gpt-6-astra: not allowed")
+                      "codex gpt-6-luna: not allowed\ncodex gpt-6.2-sol: allowed\ncodex gpt-6.2-astra: not allowed")
 
 
 def test_a_worker_for_a_program_that_is_not_installed_is_refused_before_any_worktree_is_cut(played, monkeypatch):

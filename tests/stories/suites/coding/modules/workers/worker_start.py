@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 
 
-@pytest.mark.parametrize("program,model,skills_folder", [("claude", "sonnet", ".claude/skills"), ("codex", "gpt-6.1-terra", ".agents/skills")])
+@pytest.mark.parametrize("program,model,skills_folder", [("claude", "sonnet", ".claude/skills"), ("codex", "gpt-6.2-sol", ".agents/skills")])
 def test_a_dispatch_with_the_launcher_running_hands_it_the_worker_to_start_in_its_worktree(new_story, program, model, skills_folder):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
