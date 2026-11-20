@@ -1,4 +1,5 @@
 from journal.engine.support.session_agents import SessionAgents
+from journal.engine.states.ended import Ended
 from journal.engine.states.void import Void
 from journal.events.rows.worker_session_bound import WorkerSessionBound
 from journal.features.workers.support.worker_assigner import WorkerAssigner
@@ -31,7 +32,7 @@ class WorkerHooks:
         if not worker.session:
             worker = self.workers.save(worker.with_(session=hook.session).with_event(WorkerSessionBound(environment_id=worker.environment_id)), Actor.system())
         agent = self.agents.worker_agent(hook.session, environment.row_id, hook.provider)
-        if agent.state != Void.name:
+        if agent.state not in (Void.name, Ended.name):
             return agent
         self.assigner.assigned(worker)
         return self.agents.worker_agent(hook.session, environment.row_id, hook.provider)

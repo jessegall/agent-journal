@@ -4,6 +4,7 @@ from journal.engine.no_task_assigner import NoTaskAssigner
 from journal.engine.base_state import BaseState
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
+from journal.events.agent.helper_assignment import HelperAssignment
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
@@ -30,3 +31,6 @@ class Ended(BaseState):
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return self.pop()
+
+    def on_helper_assignment(self, event: HelperAssignment, settings: Settings) -> Transition:
+        return self.forward()
