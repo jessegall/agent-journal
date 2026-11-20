@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Contracts;
 
-interface ProvidesScriptObjects
+interface ScriptObjectProvider
 {
     /** @return list<class-string> */
     public function scriptObjects(): array;

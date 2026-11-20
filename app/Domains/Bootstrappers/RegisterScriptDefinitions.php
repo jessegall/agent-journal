@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domains\Bootstrappers;
 
 use App\Domains\Contracts\DomainBootstrapper;
-use App\Domains\Contracts\ProvidesScriptKeywords;
-use App\Domains\Contracts\ProvidesScriptObjects;
+use App\Domains\Contracts\ScriptKeywordProvider;
+use App\Domains\Contracts\ScriptObjectProvider;
 use App\Domains\Support\DomainEntry;
 use App\Scripts\Support\KeywordRegistry;
 use App\Scripts\Support\ObjectRegistry;
@@ -23,7 +23,7 @@ final readonly class RegisterScriptDefinitions implements DomainBootstrapper
 
     private function registerObjects(DomainEntry $domain): void
     {
-        if (! $domain->domain instanceof ProvidesScriptObjects) {
+        if (! $domain->domain instanceof ScriptObjectProvider) {
             return;
         }
 
@@ -34,7 +34,7 @@ final readonly class RegisterScriptDefinitions implements DomainBootstrapper
 
     private function registerKeywords(DomainEntry $domain): void
     {
-        if (! $domain->domain instanceof ProvidesScriptKeywords) {
+        if (! $domain->domain instanceof ScriptKeywordProvider) {
             return;
         }
 

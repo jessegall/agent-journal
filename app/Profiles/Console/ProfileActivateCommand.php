@@ -27,7 +27,7 @@ final class ProfileActivateCommand extends Command
     {
         $owner->actAsOwner();
         $proposal = ProfileProposal::fromConfiguration((array) $config->get('profiles', []))->withBuiltIns();
-        $drafts = DraftExpectations::fromOptions($this->option('draft'));
+        $drafts = DraftExpectations::fromOptions(array_values(array_filter($this->option('draft'), is_string(...))));
         $activation = $commands->run(new ActivateProfiles($proposal, $drafts));
 
         $this->line("Configuration {$activation->configurationHash}");

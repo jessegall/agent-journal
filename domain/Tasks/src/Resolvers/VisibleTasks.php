@@ -31,10 +31,10 @@ final readonly class VisibleTasks implements TaskResolver
     {
         $this->actors->actor();
         $wanted = array_values(array_unique($taskIds));
-        $found = array_map(
+        $found = array_values(array_map(
             strval(...),
             Task::query()->whereKey($wanted)->readLimit(count($wanted))->pluck('id')->all(),
-        );
+        ));
         $this->assertAllFound($wanted, $found);
     }
 
@@ -47,7 +47,7 @@ final readonly class VisibleTasks implements TaskResolver
         $this->actors->actor();
         $wanted = array_values(array_unique($taskIds));
         $tasks = Task::query()->whereKey($wanted)->readLimit(count($wanted))->get()->keyBy('id');
-        $this->assertAllFound($wanted, $tasks->keys()->all());
+        $this->assertAllFound($wanted, array_values(array_map(strval(...), $tasks->keys()->all())));
 
         return array_map(fn (string $taskId) => $tasks[$taskId]->summary(), $taskIds);
     }

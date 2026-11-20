@@ -22,8 +22,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $current_revision_id
  * @property ProfileDraftRevision|null $currentRevision
  */
-#[Table(key: 'profile_key', keyType: 'string', incrementing: false)]
 #[Fillable(['profile_key', 'revision', 'current_revision_id'])]
+#[Table(key: 'profile_key', keyType: 'string', incrementing: false)]
 final class ProfileDraft extends Model implements ReadableModel
 {
     use BoundedReads;

@@ -105,7 +105,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
 
     public function releaseForJournal(RecordIdentity $record): void
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         $this->providers->journalProvider($record->type)->assertJournalRelease($record);
         $current = $this->store->lockCurrent($record);
 

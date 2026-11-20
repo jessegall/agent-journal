@@ -14,8 +14,8 @@ use App\Domains\Contracts\AssignableContributor;
 use App\Domains\Contracts\AssigneeContributor;
 use App\Domains\Contracts\DomainBootstrapper;
 use App\Domains\Contracts\InternalAssignableContributor;
-use App\Domains\Contracts\ProvidesScriptKeywords;
-use App\Domains\Contracts\ProvidesScriptObjects;
+use App\Domains\Contracts\ScriptKeywordProvider;
+use App\Domains\Contracts\ScriptObjectProvider;
 use App\Domains\Contracts\StateProvider;
 use App\Domains\Exceptions\CapabilityWithoutTrait;
 use App\Exports\Support\Exports;
@@ -98,7 +98,7 @@ abstract class Domain
             }
         }
 
-        $scripts = $this instanceof ProvidesScriptObjects || $this instanceof ProvidesScriptKeywords
+        $scripts = $this instanceof ScriptObjectProvider || $this instanceof ScriptKeywordProvider
             ? [RegisterScriptDefinitions::class]
             : [];
 

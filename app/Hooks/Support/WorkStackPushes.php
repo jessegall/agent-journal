@@ -52,7 +52,9 @@ final readonly class WorkStackPushes implements ActorWorkStacks
 
     public function currentRecord(): Option
     {
-        return Option::fromValue($this->targets()[0] ?? null)->flatMap($this->states->record(...));
+        $target = $this->targets()[0] ?? null;
+
+        return $target === null ? None::create() : $this->states->record($target);
     }
 
     /**

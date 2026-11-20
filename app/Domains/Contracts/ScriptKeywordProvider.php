@@ -6,7 +6,7 @@ namespace App\Domains\Contracts;
 
 use App\Scripts\Contracts\ScriptKeywordDefinition;
 
-interface ProvidesScriptKeywords
+interface ScriptKeywordProvider
 {
     /** @return list<ScriptKeywordDefinition> */
     public function scriptKeywords(): array;

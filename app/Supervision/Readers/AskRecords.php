@@ -44,7 +44,7 @@ final readonly class AskRecords implements AskReader
         $page = $asks->take(self::PAGE_SIZE);
 
         return AskInbox::from([
-            'cards' => $this->cards($page->all()),
+            'cards' => $this->cards(array_values($page->all())),
             'before' => $asks->count() > self::PAGE_SIZE ? $page->last()->id : null,
         ]);
     }
