@@ -4,7 +4,7 @@ import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
-import { usePaneLayout } from '@/composables/usePaneLayout';
+import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import layoutRoutes from '@/routes/layouts';
 import type { LayoutData } from '@/types/generated';
 import { arrangementFrom, keptOnScreen, sameArrangement } from './arrangement';

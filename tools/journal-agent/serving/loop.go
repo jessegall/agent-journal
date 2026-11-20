@@ -147,7 +147,7 @@ func (loop *Loop) run(ctx context.Context, runtime *liveRuntime, admission host.
 
 		return false
 	}
-	if !admission.StartsTurn() {
+	if !admission.ShouldStartTurn() {
 		return true
 	}
 	loop.startTurn(ctx, runtime, admission)
@@ -166,7 +166,7 @@ func (loop *Loop) control(ctx context.Context, runtime *liveRuntime, request cli
 		}
 		loop.mutex.Unlock()
 		result, err := runtime.driver.Interrupt(ctx, contracts.InterruptRequest{Request: identity, Turn: turn})
-		if err == nil && result.Hold != "" && result.Hold != contracts.HoldNone {
+		if err == nil && result.IsHeld() {
 			loop.mutex.Lock()
 			runtime.hold = result.Hold
 			if result.Progress == contracts.ProgressApplying {
@@ -831,7 +831,7 @@ func (loop *Loop) runtimeOf(ctx context.Context, runtimeID string) (*liveRuntime
 		return nil, err
 	}
 	runtime := &liveRuntime{
-		id: runtimeID, driver: driver, build: prepared.Grant.Runtime.ProgramBuild, hold: contracts.HoldNone,
+		id: runtimeID, driver: driver, build: prepared.ProgramBuild(), hold: contracts.HoldNone,
 	}
 	loop.mutex.Lock()
 	loop.runtimes[runtimeID] = runtime

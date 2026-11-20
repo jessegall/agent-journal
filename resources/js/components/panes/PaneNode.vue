@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePaneLayout } from '@/composables/usePaneLayout';
+import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import PaneFrame from './PaneFrame.vue';
 import PaneSplitter from './PaneSplitter.vue';
 import { centreSplit, withRatio } from './paneLayout';

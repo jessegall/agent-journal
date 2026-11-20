@@ -6,6 +6,7 @@ import {
     provide,
     ref,
 } from 'vue';
+import { keepStoredJson, readStoredJson } from '@/composables/browserStorage';
 import type { ComputedRef, InjectionKey, Ref } from 'vue';
 import {
     arrangementFrom,
@@ -105,11 +106,7 @@ export function providePaneLayout(
         apply(next) {
             arrangement.value = next;
 
-            try {
-                localStorage.setItem(storageKey, JSON.stringify(next));
-            } catch {
-                // A browser that refuses storage keeps the arrangement for this visit only.
-            }
+            keepStoredJson('local', storageKey, next);
         },
         reset() {
             store.apply(firstArrangement());
@@ -122,21 +119,10 @@ export function providePaneLayout(
     }
 
     onMounted(() => {
-        try {
-            const remembered = localStorage.getItem(storageKey);
-            const applied =
-                remembered === null
-                    ? null
-                    : arrangementFrom(
-                          JSON.parse(remembered),
-                          knownWindows.value,
-                      );
+        const applied = readStoredJson('local', storageKey, (decoded) => arrangementFrom(decoded, knownWindows.value));
 
-            if (applied) {
-                arrangement.value = keptOnScreen(applied, screen());
-            }
-        } catch {
-            // A missing or unreadable remembered arrangement leaves the default one.
+        if (applied) {
+            arrangement.value = keptOnScreen(applied, screen());
         }
 
         window.addEventListener('resize', keepDetachedOnScreen);
@@ -151,11 +137,20 @@ export function providePaneLayout(
     return store;
 }
 
+/**
+ * A pane component was mounted with no pane grid above it to give it its layout.
+ */
+export class PaneOutsideGrid extends Error {
+    static create(): PaneOutsideGrid {
+        return new PaneOutsideGrid('A pane is shown outside a pane grid.');
+    }
+}
+
 export function usePaneLayout(): PaneLayoutStore {
     const store = inject(storeKey);
 
     if (!store) {
-        throw new Error('A pane is shown outside a pane grid.');
+        throw PaneOutsideGrid.create();
     }
 
     return store;

@@ -119,6 +119,11 @@ type OperationResult struct {
 	Script *keyscripts.Result
 }
 
+// IsHeld is whether the driver holds the program after the operation, waiting on the user or a menu.
+func (result OperationResult) IsHeld() bool {
+	return result.Hold != "" && result.Hold != HoldNone
+}
+
 // AgentDriver carries out the six operations on one running program. Starting a program is the driver factory's job,
 // never a seventh operation.
 type AgentDriver interface {

@@ -81,6 +81,9 @@ func (evidence NativeEvidence) shown(program, build string, item BoundaryItem) (
 	return records[program+"@"+build+"/"+runtime.GOOS][item], nil
 }
 
+// ProgramMechanisms is how one program's pinned client applies each boundary item on this platform.
+type ProgramMechanisms map[BoundaryItem]BoundaryMechanism
+
 // InspectProtection reports which items of the program's protected arrangement this host can enforce now.
 func InspectProtection(program, build string, evidence NativeEvidence) (ProtectionCapability, error) {
 	mechanisms, known := platformMechanisms()[program]

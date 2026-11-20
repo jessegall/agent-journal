@@ -30,9 +30,18 @@ export function quoteIn(lines: string[], firstLine: number, start: { line: numbe
 }
 
 /**
+ * The fields the comment form posts for a text place: its version, and the section, the lines or the exact quote.
+ */
+export type SubjectFields =
+    | Record<string, never>
+    | { version: string; section: number }
+    | { version: string; first_line: number; last_line: number }
+    | { version: string; first_line: number; last_line: number; quote: string; start_offset: number; end_offset: number };
+
+/**
  * The fields the comment form posts for a subject: none for the whole record, the place's own fields for text.
  */
-export function subjectFields(subject: CommentSubject): Record<string, string | number> {
+export function subjectFields(subject: CommentSubject): SubjectFields {
     if (subject.type === 'record') {
         return {};
     }

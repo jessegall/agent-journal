@@ -3,7 +3,8 @@ import { usePage } from '@inertiajs/vue3';
 import type { Component } from 'vue';
 import { computed, defineAsyncComponent } from 'vue';
 import PaneGrid from '@/components/panes/PaneGrid.vue';
-import { providePaneLayout } from '@/composables/usePaneLayout';
+import type { PaneWindow } from '@/components/panes/paneLayout';
+import { providePaneLayout } from '@/components/panes/usePaneLayout';
 import WindowHost from '@/framework/WindowHost.vue';
 import type { WindowResult } from '@/generated/types/page-props';
 import { components } from '@/generated/ui-manifest';
@@ -27,7 +28,7 @@ function resultOf(window: HomeWindowData): WindowResult<{ pagination?: { total: 
 }
 
 providePaneLayout('home-layout', () =>
-    props.home.windows.map((window) => {
+    props.home.windows.map((window): PaneWindow => {
         const result = resultOf(window);
 
         return {

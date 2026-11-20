@@ -12,7 +12,7 @@ func TestAChoiceThenAConfirmationKeyGiveTwoStepsAndNoArrow(t *testing.T) {
 		{Kind: "key", Key: "enter", Fingerprint: "fp1:b"},
 	}}
 
-	entry, err := EntryFromActions(path)
+	entry, err := path.Entry()
 
 	if err != nil || len(entry.Steps) != 2 {
 		t.Fatalf("the path gave %+v, %v", entry, err)
@@ -32,7 +32,7 @@ func TestMovesOfTheHighlightBeforeAConfirmGiveOneChooseStep(t *testing.T) {
 		{Kind: "choose", Label: "low", Fingerprint: "fp1:a", Replayable: true},
 	}}
 
-	entry, err := EntryFromActions(path)
+	entry, err := path.Entry()
 
 	if err != nil || len(entry.Steps) != 1 || *entry.Steps[0].Choose != "low" {
 		t.Fatalf("the path gave %+v, %v", entry, err)
@@ -47,7 +47,7 @@ func TestAnEmptySecretOrUnreplayablePathIsRefused(t *testing.T) {
 		ErrUnreplayablePath: unreplayable,
 	}
 	for want, path := range cases {
-		if _, err := EntryFromActions(path); !errors.Is(err, want) {
+		if _, err := path.Entry(); !errors.Is(err, want) {
 			t.Fatalf("the path %+v gave %v, not %v", path, err, want)
 		}
 	}
@@ -56,7 +56,7 @@ func TestAnEmptySecretOrUnreplayablePathIsRefused(t *testing.T) {
 func TestAnEntryBuiltFromARecordedChoiceReplaysProvenOnTheSameScreen(t *testing.T) {
 	runner, _ := codexPicker(t)
 	round := runner.Navigate(Round{Generation: liveGeneration(runner), Choose: "GPT-6-Sol"}, 0, Uncertainty{}, nil)
-	entry, err := EntryFromActions(ProvenPath{Actions: round.Actions, Proof: "GPT-6-Sol", Completes: "goal"})
+	entry, err := ProvenPath{Actions: round.Actions, Proof: "GPT-6-Sol", Completes: "goal"}.Entry()
 	if err != nil {
 		t.Fatal(err)
 	}

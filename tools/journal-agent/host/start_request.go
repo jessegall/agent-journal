@@ -116,25 +116,41 @@ func AnswerHostRequest(ctx context.Context, connection io.ReadWriter, executor E
 	if err := json.Unmarshal(line, &request); err != nil {
 		return fmt.Errorf("%w: %v", ErrMalformedRequest, err)
 	}
-	reply, err := carryOut(ctx, request, executor)
+	reply, err := request.carryOut(ctx, executor)
 	if err != nil {
 		return err
 	}
 	return json.NewEncoder(connection).Encode(reply)
 }
 
-func carryOut(ctx context.Context, request HostRequest, executor Executor) (any, error) {
+// carryOut runs the one operation the request names; a request naming none, or more than one, is malformed.
+func (request HostRequest) carryOut(ctx context.Context, executor Executor) (any, error) {
 	switch {
-	case request.Drain != nil && request.Start == nil && request.Stop == nil && request.Drain.Account != "":
+	case request.isDrain():
 		return executor.Drain(ctx, *request.Drain)
-	case request.Start != nil && request.Stop == nil && request.Drain == nil:
+	case request.isStart():
 		if err := request.Start.Check(); err != nil {
 			return StartReply{StartID: request.Start.StartID, Refusal: err.Error()}, nil
 		}
 		return executor.Start(ctx, *request.Start)
-	case request.Stop != nil && request.Start == nil && request.Drain == nil && request.Stop.Execution != "":
+	case request.isStop():
 		return executor.Stop(ctx, *request.Stop)
 	default:
 		return nil, ErrMalformedRequest
 	}
+}
+
+// isDrain is whether the request asks only to drain a named account.
+func (request HostRequest) isDrain() bool {
+	return request.Drain != nil && request.Start == nil && request.Stop == nil && request.Drain.Account != ""
+}
+
+// isStart is whether the request asks only for a start.
+func (request HostRequest) isStart() bool {
+	return request.Start != nil && request.Stop == nil && request.Drain == nil
+}
+
+// isStop is whether the request asks only to stop a named execution.
+func (request HostRequest) isStop() bool {
+	return request.Stop != nil && request.Start == nil && request.Drain == nil && request.Stop.Execution != ""
 }

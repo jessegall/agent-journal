@@ -59,6 +59,24 @@ func (state State) Load() (Enrollment, error) {
 
 func (state State) enrollmentPath() string { return filepath.Join(state.Folder, enrollmentName) }
 
+// writePrivateJSON replaces a private file with the value encoded as JSON, in one step as writePrivateFile does.
+func writePrivateJSON(path string, value any) error {
+	content, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return writePrivateFile(path, content)
+}
+
+// removePrivateFile removes a private file; one that is already gone counts as removed.
+func removePrivateFile(path string) error {
+	err := os.Remove(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
+}
+
 // writePrivateFile replaces a file readable by its owner alone in one step: the content goes to a new file beside it,
 // is synced, and is renamed over the old one, so a crash leaves the old file or the new one, never half of either.
 func writePrivateFile(path string, content []byte) error {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import Icon from '@/components/kit/Icon.vue';
-import { usePaneLayout } from '@/composables/usePaneLayout';
-import type { WindowDrag } from '@/composables/usePaneLayout';
+import { usePaneLayout } from '@/components/panes/usePaneLayout';
+import type { WindowDrag } from '@/components/panes/usePaneLayout';
 
 /**
  * Version 5's drag ghost (panes/DragGhost.vue): the dragged window's icon and title beside the pointer, with a hint of

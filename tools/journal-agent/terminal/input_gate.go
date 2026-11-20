@@ -96,7 +96,7 @@ func (gate *InputGate) Submit(line *TypedLine, enterRetries int) (Delivery, erro
 	if line.invalidated {
 		return DeliveryUncertain, ErrLineInvalidated
 	}
-	if gate.pending != line || !gate.echoes(line.Text) || line.enters > enterRetries {
+	if !gate.mayEnter(line, enterRetries) {
 		return DeliveryUncertain, nil
 	}
 	if _, err := io.WriteString(gate.program, enterKey); err != nil {
@@ -111,6 +111,12 @@ func (gate *InputGate) Submit(line *TypedLine, enterRetries int) (Delivery, erro
 	}
 
 	return DeliveryUncertain, nil
+}
+
+// mayEnter is whether the line may be entered now: it is the pending one, the program shows its text, and it has
+// not used up its retries.
+func (gate *InputGate) mayEnter(line *TypedLine, enterRetries int) bool {
+	return gate.pending == line && gate.echoes(line.Text) && line.enters <= enterRetries
 }
 
 // Keys sends a driver's keys, such as a menu move, unless the person holds the input: a person's key since the

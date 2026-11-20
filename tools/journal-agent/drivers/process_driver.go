@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
-	"sync"
 	"syscall"
 
 	"journal-agent/drivers/contracts"
@@ -54,15 +53,13 @@ type ProcessRuntime struct {
 // ProcessDriver runs one child of the program per turn, each with a new process generation. Settings asked for between
 // turns are staged and passed to the next child; they count as applied only when that child's evidence shows them.
 type ProcessDriver struct {
-	runtime    ProcessRuntime
-	mutex      sync.Mutex
+	runtime ProcessRuntime
+	turnState
 	generation int
 	turns      int
 	model      string
-	effort     string
 	child      *exec.Cmd
 	childGroup host.OwnedGroup
-	finished   chan error
 	// signedIn is set once a Claude account start's sign-in was checked.
 	signedIn bool
 }
@@ -79,14 +76,6 @@ func (driver *ProcessDriver) Generation() int {
 	return driver.generation
 }
 
-// Finished delivers the exit of the current child: nil for a normal end, which leaves the runtime eligible for the
-// next turn; an error fails that turn and the host holds the runtime instead of running it again.
-func (driver *ProcessDriver) Finished() <-chan error {
-	driver.mutex.Lock()
-	defer driver.mutex.Unlock()
-	return driver.finished
-}
-
 func (driver *ProcessDriver) Deliver(_ context.Context, delivery contracts.Delivery) (contracts.OperationResult, error) {
 	return driver.startTurn(delivery.Request, delivery.Message)
 }
@@ -100,13 +89,6 @@ func (driver *ProcessDriver) ChangeModel(_ context.Context, change contracts.Mod
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 	driver.model = change.Model
-	return staged(change.Request), nil
-}
-
-func (driver *ProcessDriver) ChangeEffort(_ context.Context, change contracts.EffortChange) (contracts.OperationResult, error) {
-	driver.mutex.Lock()
-	defer driver.mutex.Unlock()
-	driver.effort = change.Effort
 	return staged(change.Request), nil
 }
 

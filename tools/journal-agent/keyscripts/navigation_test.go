@@ -3,6 +3,8 @@ package keyscripts
 import (
 	"strings"
 	"testing"
+
+	"journal-agent/terminal"
 )
 
 // liveGeneration is the generation of the screen as the round's runner reads it now, as a round would answer it.
@@ -68,7 +70,7 @@ func TestAChangedScreenOrThePersonsInputSendsNoKey(t *testing.T) {
 
 func TestAPersonTypingPausesTheRound(t *testing.T) {
 	runner, menu := codexPicker(t)
-	if err := runner.gate.Human([]byte("x")); err != nil {
+	if err := runner.gate.(*terminal.InputGate).Human([]byte("x")); err != nil {
 		t.Fatal(err)
 	}
 	epoch := runner.gate.HumanInputs()

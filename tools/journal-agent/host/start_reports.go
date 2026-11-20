@@ -65,14 +65,19 @@ func (reports *StartReports) Send(ctx context.Context, reporter StartReporter) e
 	var kept []StartReport
 	var failures []error
 	for index, report := range pending {
-		err := send(ctx, reporter, report)
-		if err != nil && !errors.Is(err, client.ErrRefused) && !errors.Is(err, client.ErrAlreadyGranted) {
+		if err := send(ctx, reporter, report); isRetried(err) {
 			kept = append(kept, pending[index:]...)
 			failures = append(failures, err)
 			break
 		}
 	}
 	return errors.Join(append(failures, reports.save(kept))...)
+}
+
+// isRetried is whether a report's failure keeps it for the next round: a refusal and a grant the journal already
+// holds are settled answers, every other failure is not.
+func isRetried(err error) bool {
+	return err != nil && !errors.Is(err, client.ErrRefused) && !errors.Is(err, client.ErrAlreadyGranted)
 }
 
 func send(ctx context.Context, reporter StartReporter, report StartReport) error {
@@ -99,9 +104,5 @@ func (reports *StartReports) pending() ([]StartReport, error) {
 }
 
 func (reports *StartReports) save(pending []StartReport) error {
-	content, err := json.Marshal(pending)
-	if err != nil {
-		return err
-	}
-	return writePrivateFile(filepath.Join(reports.Folder, pendingReportsName), content)
+	return writePrivateJSON(filepath.Join(reports.Folder, pendingReportsName), pending)
 }

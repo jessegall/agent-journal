@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 
 	"journal-agent/drivers/contracts"
 	"journal-agent/host"
@@ -28,12 +27,10 @@ type CodexDriver struct {
 	owner      CodexThreads
 	settings   host.CodexThreadSettings
 	generation int
-	mutex      sync.Mutex
-	threadID   string
-	turnID     string
-	turns      int
-	effort     string
-	finished   chan error
+	turnState
+	threadID string
+	turnID   string
+	turns    int
 }
 
 // NewCodexDriver returns the driver of one thread on the owner, under the runtime's process generation.
@@ -42,12 +39,6 @@ func NewCodexDriver(owner CodexThreads, settings host.CodexThreadSettings, gener
 }
 
 func (driver *CodexDriver) Generation() int { return driver.generation }
-
-func (driver *CodexDriver) Finished() <-chan error {
-	driver.mutex.Lock()
-	defer driver.mutex.Unlock()
-	return driver.finished
-}
 
 func (driver *CodexDriver) Deliver(ctx context.Context, delivery contracts.Delivery) (contracts.OperationResult, error) {
 	return driver.startTurn(ctx, delivery.Request, delivery.Message)
@@ -63,15 +54,6 @@ func (driver *CodexDriver) ChangeModel(_ context.Context, change contracts.Model
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 	driver.settings.Model = change.Model
-	return staged(change.Request), nil
-}
-
-// ChangeEffort is staged for the next turn.
-func (driver *CodexDriver) ChangeEffort(_ context.Context, change contracts.EffortChange) (contracts.OperationResult,
-	error) {
-	driver.mutex.Lock()
-	defer driver.mutex.Unlock()
-	driver.effort = change.Effort
 	return staged(change.Request), nil
 }
 

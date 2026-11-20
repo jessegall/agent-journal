@@ -134,11 +134,10 @@ export function useWindowDrag(): {
             (each) => each.id === target.paneId,
         );
 
-        if (
-            fromPaneId === null &&
-            target.zone === 'centre' &&
-            (pane?.windows.length ?? 0) > 0
-        ) {
+        const dropsNewWindowOnFullPane =
+            fromPaneId === null && target.zone === 'centre' && (pane?.windows.length ?? 0) > 0;
+
+        if (dropsNewWindowOnFullPane) {
             store.splitOffer.value = { paneId: target.paneId, windowKey };
 
             return;

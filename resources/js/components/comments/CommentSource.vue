@@ -10,6 +10,9 @@ const props = defineProps<{ location: TextCommentLocation }>();
 
 type LinePiece = { text: string; marked: boolean };
 
+/** One source line by its number in the whole text, split into marked and plain pieces. */
+type SourceLine = { number: number; pieces: LinePiece[] };
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -17,12 +20,12 @@ const decoder = new TextDecoder();
  * Each line of the part split into marked and plain pieces by the anchor's byte range, counted from the anchor's
  * first line.
  */
-const lines = computed<{ number: number; pieces: LinePiece[] }[]>(() => {
+const lines = computed<SourceLine[]>(() => {
     const anchor = props.location.anchor;
     const isQuote = anchor.quote !== '';
     let windowByte = 0;
 
-    return props.location.part.text.split('\n').map((line, index) => {
+    return props.location.part.text.split('\n').map((line, index): SourceLine => {
         const number = props.location.part.firstLine + index;
         const lineBytes = encoder.encode(line);
         const inWindow = number >= anchor.firstLine && number <= anchor.lastLine;

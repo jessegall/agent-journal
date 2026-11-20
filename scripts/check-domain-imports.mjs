@@ -94,7 +94,10 @@ function refusalOf(owner, ownFolder, file, specifier) {
     }
 
     if (first === '@generated') {
-        return (second === 'types' || second === 'routes') && third === owner ? null : `another owner's generated ${second}`;
+        const isOwnGenerated = (second === 'types' || second === 'routes') && third === owner;
+
+        // The shell may import everything under @/, the generated types and routes of every owner among it.
+        return isOwnGenerated || owner === shellOwner ? null : `another owner's generated ${second}`;
     }
 
     if (first === '@kit') {

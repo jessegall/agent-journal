@@ -19,11 +19,13 @@ const props = defineProps<{
 
 const page = usePage();
 const conversation = computed(() => props.chat.conversation);
-const key = computed(() =>
-    conversation.value === undefined
+const key = computed(() => {
+    const user = page.props.currentUser;
+
+    return conversation.value === undefined || !user
         ? undefined
-        : draftKey(page.props.currentUser?.id ?? '', conversation.value.id),
-);
+        : draftKey(user.id, conversation.value.id);
+});
 const replyingTo = ref<MessageView | null>(null);
 const unreadShown = computed(() =>
     (conversation.value?.messages ?? [])

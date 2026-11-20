@@ -131,18 +131,7 @@ func (reader *EmulatorReader) snapshot() contracts.Snapshot {
 	rows := make([]string, height)
 
 	for row := range height {
-		var line strings.Builder
-		for column := 0; column < columns; column++ {
-			cell := reader.terminal.CellAt(column, row)
-			if cell == nil || cell.Content == "" {
-				if cell == nil || cell.Width != 0 {
-					line.WriteByte(' ')
-				}
-				continue
-			}
-			line.WriteString(cell.Content)
-		}
-		rows[row] = strings.TrimRight(line.String(), " ")
+		rows[row] = reader.rowText(row, columns)
 	}
 
 	cursor := reader.terminal.CursorPosition()
@@ -154,6 +143,24 @@ func (reader *EmulatorReader) snapshot() contracts.Snapshot {
 		Columns: columns,
 		Height:  height,
 	}
+}
+
+// rowText is one screen row as text, without its trailing spaces: an empty cell is a space, and the second cell of
+// a wide character adds nothing. The caller holds the lock.
+func (reader *EmulatorReader) rowText(row, columns int) string {
+	var line strings.Builder
+	for column := range columns {
+		cell := reader.terminal.CellAt(column, row)
+		switch {
+		case cell == nil:
+			line.WriteByte(' ')
+		case cell.Content != "":
+			line.WriteString(cell.Content)
+		case cell.Width != 0:
+			line.WriteByte(' ')
+		}
+	}
+	return strings.TrimRight(line.String(), " ")
 }
 
 // buffer names the screen buffer shown; the caller holds the lock.

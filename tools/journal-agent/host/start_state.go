@@ -76,11 +76,7 @@ var ErrStartRecordTooOpen = errors.New("a start record is readable by others")
 
 // Save replaces the runtime's record.
 func (states StartStates) Save(record StartRecord) error {
-	content, err := json.Marshal(record)
-	if err != nil {
-		return err
-	}
-	return writePrivateFile(states.pathOf(record.RuntimeID), content)
+	return writePrivateJSON(states.pathOf(record.RuntimeID), record)
 }
 
 // Load reads the runtime's record; found is false when the host saved none.
@@ -101,11 +97,7 @@ func (states StartStates) Load(runtimeID string) (record StartRecord, found bool
 
 // Remove drops the runtime's record once nothing is left to report.
 func (states StartStates) Remove(runtimeID string) error {
-	err := os.Remove(states.pathOf(runtimeID))
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-	return err
+	return removePrivateFile(states.pathOf(runtimeID))
 }
 
 // All reads every saved record, for a restarted host to recover.

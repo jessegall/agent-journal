@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
-import { usePaneLayout } from '@/composables/usePaneLayout';
-import { useWindowDrag } from '@/composables/useWindowDrag';
+import { usePaneLayout } from '@/components/panes/usePaneLayout';
+import { useWindowDrag } from '@/components/panes/useWindowDrag';
 import { detachWindow, dropWindow } from './arrangement';
 import DropCompass from './DropCompass.vue';
 import MenuList from './MenuList.vue';
@@ -123,18 +123,16 @@ function answerOffer(zone: DropZone | null): void {
 
 const menuEntries = computed<MenuEntry[]>(() => {
     const isAlone = props.pane.windows.length < 2;
+    const active = props.pane.active;
     const moves: MenuEntry[] = otherPanes.value.map((other, place) => ({
         label: `Move to ${titleOf(other)}`,
         groupLabel: place === 0 ? 'Move' : undefined,
-        disabled: props.pane.active === null,
-        run: () =>
-            store.change(
-                moveWindow(
-                    store.layout.value,
-                    props.pane.active ?? '',
-                    other.id,
-                ),
-            ),
+        disabled: active === null,
+        run: () => {
+            if (active !== null) {
+                store.change(moveWindow(store.layout.value, active, other.id));
+            }
+        },
     }));
     const foot: MenuEntry[] = [
         {

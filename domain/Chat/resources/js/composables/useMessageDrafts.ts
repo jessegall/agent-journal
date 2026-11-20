@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import { keepStoredJson, readStoredJson } from '@kit/browserStorage';
 
 /**
  * Unsent message text per user and conversation, so leaving and coming back to a conversation, or reloading the page,
@@ -9,23 +10,15 @@ const storageKey = 'journal.message-drafts';
 const drafts = reactive(new Map<string, string>(storedDrafts()));
 
 function storedDrafts(): [string, string][] {
-    try {
-        const stored: unknown = JSON.parse(
-            sessionStorage.getItem(storageKey) ?? '[]',
-        );
+    const stored = readStoredJson('session', storageKey, (decoded) =>
+        Array.isArray(decoded) ? (decoded as [string, string][]) : null,
+    );
 
-        return Array.isArray(stored) ? (stored as [string, string][]) : [];
-    } catch {
-        return [];
-    }
+    return stored ?? [];
 }
 
 function store(): void {
-    try {
-        sessionStorage.setItem(storageKey, JSON.stringify([...drafts]));
-    } catch {
-        // Without storage the drafts stay in memory only.
-    }
+    keepStoredJson('session', storageKey, [...drafts]);
 }
 
 export function draftKey(userId: string, conversationId: string): string {
