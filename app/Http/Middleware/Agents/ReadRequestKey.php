@@ -80,12 +80,12 @@ final readonly class ReadRequestKey
     {
         $path = $declaration->endpoint->path;
         $name = match ($path) {
-            'communication/show' => 'messages_show',
+            'communication/show' => 'messages_read',
             'communication/history' => 'inbox_history',
             'communication/counts' => 'inbox_counts',
             default => Str::replace(['/', '-'], '_', $path),
         };
-        $arguments = $name === 'messages_show' && $request->filled('message_id')
+        $arguments = $name === 'messages_read' && $request->filled('message_id')
             ? ['message_id' => $request->string('message_id')->value()]
             : [];
 

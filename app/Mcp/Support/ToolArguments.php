@@ -25,6 +25,7 @@ final readonly class ToolArguments
         'after_id',
         'limit',
         'search',
+        'state',
         'states',
         'view',
         'section',
@@ -95,6 +96,12 @@ final readonly class ToolArguments
         }
 
         return self::within($name, $value, $fields);
+    }
+
+    /** @param list<string> $fields */
+    public function optionalObject(string $name, array $fields): self|null
+    {
+        return array_key_exists($name, $this->arguments) ? $this->object($name, $fields) : null;
     }
 
     public function ulid(string $name): string
@@ -175,6 +182,11 @@ final readonly class ToolArguments
         }
 
         return $value;
+    }
+
+    public function optionalWholeNumber(string $name): int|null
+    {
+        return array_key_exists($name, $this->arguments) ? $this->wholeNumber($name) : null;
     }
 
     /**

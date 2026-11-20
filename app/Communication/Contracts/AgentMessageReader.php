@@ -13,6 +13,8 @@ use App\Communication\Enums\AgentMessageView;
 /** Reads the caller's inbox and message context without changing any message or selection. */
 interface AgentMessageReader
 {
+    public const string CONTEXT_TOOL = 'messages_context';
+
     public function inbox(AgentInboxState $state, int $page): AgentInbox;
 
     public function counts(): AgentInboxCounts;

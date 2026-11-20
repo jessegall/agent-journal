@@ -7,8 +7,6 @@ namespace App\Communication\Mcp;
 use App\Bus\Contracts\Command;
 use App\Communication\Commands\ReadMessages;
 use App\Mcp\Attributes\Dispatches;
-use App\Mcp\Attributes\VisibleToProfiles;
-use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -18,11 +16,10 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
 #[IsDestructive(false)]
-#[Name('messages_read')]
+#[Name('messages_acknowledge')]
 #[Dispatches(ReadMessages::class)]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
-#[Description('Read messages in one of your inboxes; the first reader of a question takes it up.')]
-final class MessageReadTool extends MessageWriteTool
+#[Description('Mark inbox messages as read and take up any unanswered questions.')]
+final class MessageAcknowledgeTool extends MessageWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {

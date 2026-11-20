@@ -51,18 +51,18 @@ final class MessageEntryRoutesTest extends MessagingTestCase
         $callerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $caller->agent->id))->inboxId();
         $questionId = $this->ownerAsks($callerInboxId, 'Which port?');
 
-        $read = $this->callMcpTool($caller, 'messages_read', [
+        $read = $this->callMcpTool($caller, 'messages_acknowledge', [
             'inbox_id' => $callerInboxId,
             'message_ids' => [$questionId],
             'request_key' => (string) Str::ulid(),
         ]);
         $this->assertFalse($read->json('result.isError'), (string) json_encode($read->json('result')));
-        $showing = $this->callMcpTool($caller, 'messages_show', ['message_id' => $questionId]);
+        $showing = $this->callMcpTool($caller, 'messages_read', ['message_id' => $questionId]);
         $this->assertFalse($showing->json('result.isError'), (string) json_encode($showing->json('result')));
         $shown = $showing->json('result.structuredContent.message');
         $replied = $this->callMcpTool($caller, 'messages_reply', [
             'message_id' => $questionId,
-            'state_version' => $shown['stateVersion'],
+            'state_version' => $shown['revision'] - 1,
             'body' => 'Port 8080.',
             'request_key' => (string) Str::ulid(),
         ]);

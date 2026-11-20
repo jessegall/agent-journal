@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Communication\Mcp;
+namespace Domain\Chat\Mcp;
 
-use App\Bus\Contracts\Command;
 use App\Communication\Commands\DismissMessage;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\JournalWriteTool;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -22,7 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 #[Dispatches(DismissMessage::class)]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 #[Description('Withdraw a message you wrote, or decline one sent to your inbox, with a reason.')]
-final class MessageDismissTool extends MessageWriteTool
+final class DismissMessageTool extends JournalWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array
     {
@@ -32,16 +33,16 @@ final class MessageDismissTool extends MessageWriteTool
         ];
     }
 
-    protected function command(ToolArguments $arguments): Command
+    protected function command(ToolArguments $arguments): DismissMessage
     {
         return new DismissMessage(
-            $arguments->text('message_id'),
+            $arguments->ulid('message_id'),
             $arguments->text('reason'),
         );
     }
 
-    protected function payload(mixed $result): array
+    protected function present(mixed $result): ToolResult
     {
-        return ['dismissed' => true];
+        return ToolResult::ok(['dismissed' => true]);
     }
 }

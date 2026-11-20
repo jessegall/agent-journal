@@ -30,7 +30,16 @@ use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\TakeNextController;
+use Domain\Chat\Mcp\AnswerMessageTool;
+use Domain\Chat\Mcp\AskQuestionTool;
+use Domain\Chat\Mcp\DismissMessageTool;
+use Domain\Chat\Mcp\MessageContextTool;
+use Domain\Chat\Mcp\MessageReadTool;
+use Domain\Chat\Mcp\MessageResource;
+use Domain\Chat\Mcp\MessagesListTool;
 use Domain\Chat\Mcp\PendingMessagesOverview;
+use Domain\Chat\Mcp\ReplyToMessageTool;
+use Domain\Chat\Mcp\SelectMessageTool;
 use Domain\Chat\Models\DockedRecord;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Policies\DockedRecordPolicy;
@@ -128,12 +137,21 @@ final class ChatDomain extends Domain implements
 
     public function mcpTools(): array
     {
-        return [];
+        return [
+            MessagesListTool::class,
+            MessageReadTool::class,
+            MessageContextTool::class,
+            SelectMessageTool::class,
+            ReplyToMessageTool::class,
+            AskQuestionTool::class,
+            AnswerMessageTool::class,
+            DismissMessageTool::class,
+        ];
     }
 
     public function mcpResources(): array
     {
-        return [];
+        return [MessageResource::class];
     }
 
     public function overviewContributions(): array

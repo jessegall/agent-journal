@@ -6,7 +6,9 @@ namespace App\Communication\Mcp;
 
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Data\MessagePage;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -14,6 +16,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('inbox_history')]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
 #[Description('Page back through the history of an inbox you sit at, with a cursor to older pages.')]
 final class InboxHistoryTool extends JournalReadTool
 {

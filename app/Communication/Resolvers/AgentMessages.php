@@ -26,8 +26,6 @@ use Illuminate\Database\Eloquent\Builder;
 
 final readonly class AgentMessages implements AgentMessageReader
 {
-    public const string CONTEXT_TOOL = 'messages_context';
-
     private const int CHUNK_BYTES = 900;
 
     public function __construct(
