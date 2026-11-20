@@ -27,4 +27,7 @@ interface McpToolProvider
      * @return list<class-string<OverviewContribution>>
      */
     public function overviewContributions(): array;
+
+    /** @return list<class-string<SearchContribution>> */
+    public function searchContributions(): array;
 }

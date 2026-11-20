@@ -157,6 +157,9 @@ use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Support\SessionProvenance;
 use App\Communication\Support\InboxNotices;
+use App\Mcp\Contracts\SearchContribution;
+use App\Mcp\Data\SearchHit;
+use App\Mcp\Data\SearchPage;
 use App\Bus\Contracts\CommandTransaction;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
@@ -1151,6 +1154,7 @@ final class CoreApi
                 RecordLinker::class,
                 CommandTransaction::class,
                 CurrentSession::class,
+                SearchContribution::class,
                 ConversationVisits::class,
                 AutoAssignmentActivity::class,
                 NativeTurnRecords::class,
@@ -1416,6 +1420,8 @@ final class CoreApi
                 ReadRequest::class,
                 Continuation::class,
                 TextChunk::class,
+                SearchHit::class,
+                SearchPage::class,
                 Dispatches::class,
                 VisibleToProfiles::class,
                 DiscoveryProfile::class,

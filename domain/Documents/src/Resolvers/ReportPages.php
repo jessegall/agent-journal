@@ -35,9 +35,9 @@ final readonly class ReportPages implements ReportReader
         private PublicationPages $pages,
     ) {}
 
-    public function list(string $search, ReportState $state, int $page): ReportList
+    public function list(string $search, ReportState $state, int $page, int $size = 8): ReportList
     {
-        return $this->reports->list(new DocumentFilters($state->attention(), $page, 8, $search));
+        return $this->reports->list(new DocumentFilters($state->attention(), $page, $size, $search));
     }
 
     public function report(int|string $id, ToolArguments $arguments): ToolResult

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Rules\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Assignments\Support\NumberedPage;
 use Domain\Rules\Api\RuleFilters;
 use Domain\Rules\Api\RuleList;
 use Domain\Rules\Api\RuleView;
@@ -40,9 +41,10 @@ final readonly class RuleRecords implements RuleResolver
         }
 
         $total = (clone $matching)->count();
-        $lastPage = max(1, (int) ceil($total / self::PER_PAGE));
+        $size = min(max(1, $filters->perPage), NumberedPage::LARGEST_SIZE);
+        $lastPage = max(1, (int) ceil($total / $size));
         $page = min(max(1, $filters->page), $lastPage);
-        $rules = $matching->orderByDesc('id')->forPage($page, self::PER_PAGE)->get();
+        $rules = $matching->orderByDesc('id')->forPage($page, $size)->get();
         $selected = $filters->selectedRuleId === null ? null : Rule::query()->find($filters->selectedRuleId);
 
         return new RuleList(

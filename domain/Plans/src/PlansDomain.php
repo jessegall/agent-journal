@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans;
 
+use Domain\Plans\Mcp\PlanSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AutoAssignmentProvider;
@@ -301,5 +302,10 @@ final class PlansDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [HeldPlansOverview::class];
+    }
+
+    public function searchContributions(): array
+    {
+        return [PlanSearch::class];
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks;
 
+use Domain\Tasks\Mcp\TaskSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AutoAssignmentProvider;
@@ -211,6 +212,11 @@ final class TasksDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [HeldTasksOverview::class];
+    }
+
+    public function searchContributions(): array
+    {
+        return [TaskSearch::class];
     }
 
     public function skills(): array

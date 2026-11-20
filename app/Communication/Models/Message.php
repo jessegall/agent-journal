@@ -18,6 +18,7 @@ use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Scopes\MessageVisibility;
 use App\Communication\Support\AcceptedOperation;
+use App\Queries\Support\TextSearch;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageEnvelope;
 use App\Communication\Support\RegisteredInboxes;
@@ -124,6 +125,13 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     protected function acrossInboxes(Builder $query): void
     {
         $query->withoutGlobalScope(MessageVisibility::class);
+    }
+
+    /** @param Builder<self> $query */
+    #[Scope]
+    protected function matchingBody(Builder $query, string $words): void
+    {
+        TextSearch::narrow($query, 'body', $words);
     }
 
     /**

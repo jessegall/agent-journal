@@ -104,4 +104,9 @@ final class MemoryDomain extends Domain implements
     {
         return [];
     }
+
+    public function searchContributions(): array
+    {
+        return [];
+    }
 }

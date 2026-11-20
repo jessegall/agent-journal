@@ -28,6 +28,8 @@ final readonly class ToolArguments
         'state',
         'states',
         'view',
+        'query',
+        'types',
         'section',
         'line_start',
         'line_end',

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents;
 
+use Domain\Documents\Mcp\DocumentSearch;
+use Domain\Documents\Mcp\ReportSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
@@ -276,6 +278,11 @@ final class DocumentsDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [OpenReportsOverview::class];
+    }
+
+    public function searchContributions(): array
+    {
+        return [DocumentSearch::class, ReportSearch::class];
     }
 
     public function pages(): array

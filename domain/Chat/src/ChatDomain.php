@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
+use Domain\Chat\Mcp\MessageSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
@@ -157,5 +158,10 @@ final class ChatDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [PendingMessagesOverview::class];
+    }
+
+    public function searchContributions(): array
+    {
+        return [MessageSearch::class];
     }
 }

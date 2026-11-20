@@ -37,9 +37,9 @@ final readonly class DocumentPages implements DocumentReader
         private PublicationPages $pages,
     ) {}
 
-    public function list(string $search, int $page): DocumentList
+    public function list(string $search, int $page, int $size = 8): DocumentList
     {
-        return $this->documents->list(new DocumentFilters(AttentionFilter::All, $page, 8, $search));
+        return $this->documents->list(new DocumentFilters(AttentionFilter::All, $page, $size, $search));
     }
 
     public function document(int|string $id, ToolArguments $arguments): ToolResult

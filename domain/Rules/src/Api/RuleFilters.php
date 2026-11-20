@@ -12,10 +12,13 @@ use Domain\Rules\Enums\RuleState;
  */
 final readonly class RuleFilters
 {
+    public const int PAGE_SIZE = 30;
+
     public function __construct(
         public string $search = '',
         public int $page = 1,
         public string|null $selectedRuleId = null,
         public RuleState|null $state = null,
+        public int $perPage = self::PAGE_SIZE,
     ) {}
 }

@@ -537,6 +537,10 @@ final readonly class DomainEntry
         foreach ($domain->overviewContributions() as $contribution) {
             $registration->registerOverviewContribution($contribution);
         }
+
+        foreach ($domain->searchContributions() as $contribution) {
+            $registration->registerSearchContribution($contribution);
+        }
     }
 
     /**

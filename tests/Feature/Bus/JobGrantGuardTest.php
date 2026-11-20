@@ -31,7 +31,6 @@ use Domain\Rules\Commands\ProposeRule;
 use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Domains\Ledger\Mcp\LedgerReadTool;
 use Tests\Fixtures\Domains\Ledger\Mcp\SecondBudgetReadTool;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
@@ -143,8 +142,6 @@ final class JobGrantGuardTest extends TestCase
     public function test_the_catalogue_rejects_the_twenty_fifth_tool_of_a_read_only_profile(): void
     {
         $catalogue = $this->app->make(McpCatalogue::class);
-        $catalogue->registerTool(LedgerReadTool::class);
-
         $this->expectException(McpBudgetExceeded::class);
         $this->expectExceptionMessage('read-only-helper');
         $catalogue->registerTool(SecondBudgetReadTool::class);

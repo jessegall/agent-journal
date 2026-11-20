@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules;
 
+use Domain\Rules\Mcp\RuleSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\CommandProvider;
@@ -141,6 +142,11 @@ final class RulesDomain extends Domain implements
     public function overviewContributions(): array
     {
         return [ActiveRulesOverview::class];
+    }
+
+    public function searchContributions(): array
+    {
+        return [RuleSearch::class];
     }
 
     public function skills(): array
