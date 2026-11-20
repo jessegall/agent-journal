@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Events\Support;
+namespace App\Hooks\StateEvents;
 
 use App\Bus\Contracts\Command;
 use App\Hooks\Declarations\StateMethod;

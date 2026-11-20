@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Events\Support;
+namespace App\Hooks\StateEvents;
 
 /**
  * A dispatch carried privately through the framework's deferred arguments.

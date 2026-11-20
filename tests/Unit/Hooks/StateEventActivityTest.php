@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Hooks\Events\Support\StateEventActivity;
 use App\Hooks\Exceptions\StateEventReentry;
+use App\Hooks\StateEvents\StateEventActivity;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Support\TestActors;

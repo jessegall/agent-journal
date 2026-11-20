@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Events\Support;
+namespace App\Hooks\StateEvents;
 
 use App\Contracts\Event;
-use App\Hooks\Events\StateEventBridge;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;

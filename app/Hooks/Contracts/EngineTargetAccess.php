@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Contracts;
 
+use App\Actors\Contracts\Actor;
 use App\Agents\Support\StackTarget;
-use App\Engine\Support\FrameGrant;
+use App\Hooks\Values\FrameGrant;
 use Closure;
 use PhpOption\Option;
 
@@ -17,7 +18,7 @@ interface EngineTargetAccess
     /**
      * @return Option<FrameGrant>
      */
-    public function frameGrant(): Option;
+    public function frameGrantFor(Actor $actor): Option;
 
     /**
      * @template TResult

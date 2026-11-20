@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Engine\Support;
+namespace App\Hooks\Values;
 
 use App\Agents\Support\StackTarget;
-use App\Engine\Contracts\EngineGrant;
 
 /**
  * The engine delivering a tick to one frame: its commands may act on that frame's stack target only.
  */
-final readonly class FrameGrant implements EngineGrant
+final readonly class FrameGrant
 {
     public function __construct(
         public StackTarget $target,
@@ -20,11 +19,6 @@ final readonly class FrameGrant implements EngineGrant
     public function allowsTarget(StackTarget $target): bool
     {
         return $this->target->isSameAs($target);
-    }
-
-    public function allowsMaintenance(string $capability): bool
-    {
-        return false;
     }
 
     public function description(): string

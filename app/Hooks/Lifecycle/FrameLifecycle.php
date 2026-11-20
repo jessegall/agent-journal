@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Hooks\Lifecycle;
 
 use App\Agents\Support\StackTarget;
-use App\Hooks\Events\Support\StateEventActivity;
 use App\Hooks\Exceptions\StackChangedInLifecycle;
 use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Stack\AgentStack;
+use App\Hooks\StateEvents\StateEventActivity;
 use Illuminate\Container\Attributes\Scoped;
 
 /**

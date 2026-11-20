@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Events\Support;
+namespace App\Hooks\StateEvents;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Agents\Support\AgentContext;
 use App\Agents\Contracts\AgentCallContext;
+use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
 use App\Contracts\Event;
-use App\Engine\Support\FrameGrant;
+use App\Hooks\Values\FrameGrant;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 use PhpOption\None;

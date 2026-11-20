@@ -10,9 +10,9 @@ use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
-use App\Engine\Support\FrameGrant;
-use App\Hooks\Events\StateEventBridge;
-use App\Hooks\Events\Support\StateEventScope;
+use App\Hooks\StateEvents\StateEventBridge;
+use App\Hooks\StateEvents\StateEventScope;
+use App\Hooks\Values\FrameGrant;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Events\Dispatcher;
 use Tests\Fixtures\Hooks\AfterCommitStateEvent;
@@ -137,7 +137,7 @@ final class StateEventScopeTest extends TestCase
                 });
             } catch (SimulatedFailure) {
                 $this->assertTrue($access->allowsMaintenance('outer'));
-                $this->assertTrue($access->frameGrant()->isEmpty());
+                $this->assertTrue($access->frameGrantFor(new EngineActor())->isEmpty());
             }
         });
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Events\Support;
+namespace App\Hooks\StateEvents;
 
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\StackTarget;

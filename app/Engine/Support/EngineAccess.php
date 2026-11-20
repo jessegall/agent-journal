@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Engine\Support;
 
+use App\Actors\Contracts\Actor;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\StackTarget;
 use App\Engine\Contracts\EngineGrant;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Hooks\Contracts\EngineTargetAccess;
+use App\Hooks\Values\FrameGrant;
 use Closure;
 use PhpOption\None;
 use PhpOption\Option;
@@ -19,7 +22,7 @@ use PhpOption\Some;
  */
 final class EngineAccess implements EngineTargetAccess
 {
-    private EngineGrant $grant;
+    private EngineGrant|FrameGrant $grant;
 
     public function __construct()
     {
@@ -36,9 +39,15 @@ final class EngineAccess implements EngineTargetAccess
         $this->grant = new MaintenanceGrant($capability);
     }
 
-    public function frameGrant(): Option
+    public function frameGrantFor(Actor $actor): Option
     {
-        return $this->grant instanceof FrameGrant ? new Some($this->grant) : None::create();
+        if (! $this->grant instanceof FrameGrant) {
+            return None::create();
+        }
+
+        $owner = ActorIdentity::of(new EngineActor());
+
+        return $owner->isSameAs(ActorIdentity::of($actor)) ? new Some($this->grant) : None::create();
     }
 
     public function withinFrameGrant(FrameGrant $grant, Closure $work): mixed
@@ -90,14 +99,14 @@ final class EngineAccess implements EngineTargetAccess
      */
     public function checkTargetOrMaintenance(StackTarget $target, string $capability): void
     {
-        if (! $this->grant->allowsTarget($target) && ! $this->grant->allowsMaintenance($capability)) {
+        if (! $this->grant->allowsTarget($target) && ! $this->allowsMaintenance($capability)) {
             throw EngineAccessRefused::forTarget($target, $this->grant->description());
         }
     }
 
     public function allowsMaintenance(string $capability): bool
     {
-        return $this->grant->allowsMaintenance($capability);
+        return $this->grant instanceof EngineGrant && $this->grant->allowsMaintenance($capability);
     }
 
     /**
@@ -115,7 +124,7 @@ final class EngineAccess implements EngineTargetAccess
      * @param Closure(): TResult $work
      * @return TResult
      */
-    private function withinGrant(EngineGrant $grant, Closure $work): mixed
+    private function withinGrant(EngineGrant|FrameGrant $grant, Closure $work): mixed
     {
         $before = $this->grant;
         $this->grant = $grant;
