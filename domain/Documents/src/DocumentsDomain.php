@@ -14,6 +14,7 @@ use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Contracts\LinkRecordProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Mcp\Contracts\McpToolProvider;
 use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
 use App\Sharing\Contracts\ShareRecordContributor;
@@ -54,8 +55,11 @@ use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
 use Domain\Documents\Commands\CloseReport;
 use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\AttachmentReader;
+use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Contracts\ReportResolver;
+use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\DockData;
@@ -101,6 +105,7 @@ use Domain\Documents\Links\ReportLinkRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Mcp\OpenReportsOverview;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Domain\Documents\Resolvers\DocumentDockResolver;
 use Domain\Documents\Resolvers\DocumentWindowResolver;
@@ -113,6 +118,7 @@ use Domain\Documents\Support\ReportShareProvider;
 final class DocumentsDomain extends Domain implements
     CommandProvider,
     LinkRecordProvider,
+    McpToolProvider,
     NavigationProvider,
     NumberedModelProvider,
     PageProvider,
@@ -148,6 +154,7 @@ final class DocumentsDomain extends Domain implements
                 RecordSettled::class,
             )
             ->contracts(DraftResolver::class, DraftReader::class, DocumentResolver::class, ReportResolver::class)
+            ->contracts(AttachmentReader::class, DocumentReader::class, ReportReader::class)
             ->values(
                 DockCard::class,
                 DockData::class,
@@ -252,6 +259,21 @@ final class DocumentsDomain extends Domain implements
     public function commands(): array
     {
         return FolderClasses::in(__DIR__.'/Commands', Command::class);
+    }
+
+    public function mcpTools(): array
+    {
+        return [];
+    }
+
+    public function mcpResources(): array
+    {
+        return [];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [OpenReportsOverview::class];
     }
 
     public function pages(): array

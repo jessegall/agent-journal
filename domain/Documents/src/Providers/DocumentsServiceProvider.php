@@ -11,9 +11,12 @@ use App\Agents\Support\SessionProvenance;
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
 use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\AttachmentReader;
+use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Contracts\ReportResolver;
+use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Contracts\SealedUploads;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentClose;
@@ -25,8 +28,11 @@ use Domain\Documents\Models\RetainedDraft;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Models\TextUploadChunk;
 use Domain\Documents\Resolvers\DocumentRecords;
+use Domain\Documents\Resolvers\AttachmentPages;
+use Domain\Documents\Resolvers\DocumentPages;
 use Domain\Documents\Resolvers\DraftRecords;
 use Domain\Documents\Resolvers\ReportRecords;
+use Domain\Documents\Resolvers\ReportPages;
 use Domain\Documents\Resolvers\RetainedDrafts;
 use Domain\Documents\Support\UploadStore;
 use Illuminate\Console\Command;
@@ -46,6 +52,9 @@ final class DocumentsServiceProvider extends ServiceProvider
         $this->app->bind(DraftReader::class, RetainedDrafts::class);
         $this->app->bind(ReportResolver::class, ReportRecords::class);
         $this->app->bind(SealedUploads::class, UploadStore::class);
+        $this->app->scoped(AttachmentReader::class, AttachmentPages::class);
+        $this->app->scoped(DocumentReader::class, DocumentPages::class);
+        $this->app->scoped(ReportReader::class, ReportPages::class);
     }
 
     public function boot(LinkTypeRegistry $links): void

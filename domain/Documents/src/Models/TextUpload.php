@@ -72,6 +72,16 @@ final class TextUpload extends Model implements ReadableModel
         return self::query()->unexpired()->whereKey($id)->lockForUpdate()->first() ?? throw UploadExpired::forUpload();
     }
 
+    public static function sealed(string $id): self
+    {
+        return self::query()->unexpired()->whereNotNull('sealed_at')->find($id) ?? throw UploadExpired::forUpload();
+    }
+
+    public function attachmentText(): string
+    {
+        return $this->body();
+    }
+
     public function append(int $position, string $text, string $digest): void
     {
         $bytes = strlen($text);

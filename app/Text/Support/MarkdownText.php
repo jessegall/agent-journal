@@ -432,11 +432,11 @@ final readonly class MarkdownText
         $fenceLine = 0;
 
         foreach ($lines as $index => $line) {
-            if (preg_match('/^ {0,3}(`{3,}|~{3,})/', $line, $marker) === 1) {
+            if (preg_match('/^ {0,3}(`{3,}|~{3,})(.*)$/', $line, $marker) === 1) {
                 if ($fence === null) {
-                    $fence = $marker[1][0];
+                    $fence = $marker[1];
                     $fenceLine = $index + 1;
-                } elseif ($marker[1][0] === $fence) {
+                } elseif (str_starts_with($marker[1], $fence) && trim($marker[2]) === '') {
                     $fence = null;
                 }
 
@@ -490,18 +490,15 @@ final readonly class MarkdownText
             $sections[] = Section::preamble($firstHeadingLine - 1);
         }
 
+        $ends = [];
+        $next = array_fill(0, 6, $lineCount + 1);
+        foreach (array_reverse($headings, true) as $position => [$line, $level]) {
+            $ends[$position] = min(array_slice($next, 0, $level)) - 1;
+            $next[$level - 1] = $line;
+        }
+
         foreach ($headings as $position => [$line, $level, $heading]) {
-            $end = $lineCount;
-
-            foreach (array_slice($headings, $position + 1) as [$nextLine, $nextLevel]) {
-                if ($nextLevel <= $level) {
-                    $end = $nextLine - 1;
-
-                    break;
-                }
-            }
-
-            $sections[] = new Section(count($sections) + 1, $level, $heading, $line, $end);
+            $sections[] = new Section(count($sections) + 1, $level, $heading, $line, $ends[$position]);
         }
 
         return $sections;
