@@ -18426,6 +18426,7 @@ parameter	$arguments
 parameter	$ask
 parameter	$asks
 parameter	$assignedIds
+parameter	$assignedPlanPage
 parameter	$assignee
 parameter	$assignees
 parameter	$assignment
@@ -18758,6 +18759,7 @@ parameter	$places
 parameter	$plan
 parameter	$planId
 parameter	$planNumber
+parameter	$planPage
 parameter	$planTitle
 parameter	$plans
 parameter	$policies
@@ -18869,6 +18871,7 @@ parameter	$row
 parameter	$rows
 parameter	$rule
 parameter	$ruleId
+parameter	$rulePage
 parameter	$rules
 parameter	$run
 parameter	$runId
@@ -26242,6 +26245,8 @@ variable	$applying
 variable	$arguments
 variable	$ask
 variable	$assigned
+variable	$assignedPlanPage
+variable	$assignedTaskPage
 variable	$assignment
 variable	$assignmentResult
 variable	$attribute
@@ -26456,6 +26461,7 @@ variable	$placement
 variable	$placements
 variable	$plan
 variable	$planId
+variable	$planPage
 variable	$planPhases
 variable	$plans
 variable	$policy
@@ -26511,6 +26517,7 @@ variable	$routes
 variable	$row
 variable	$rows
 variable	$rule
+variable	$rulePage
 variable	$rules
 variable	$run
 variable	$runners

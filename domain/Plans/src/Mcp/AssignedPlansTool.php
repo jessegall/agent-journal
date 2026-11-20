@@ -64,13 +64,18 @@ final class AssignedPlansTool extends JournalReadTool
 
     private function page(AssignedPlanFilters $filters): ListedPage
     {
-        $list = $this->plans->assignedToCaller($filters);
+        $assignedPlanPage = $this->plans->assignedToCaller($filters);
         $cards = [];
 
-        foreach ($list->cards as $card) {
+        foreach ($assignedPlanPage->cards as $card) {
             $cards[$card->id] = PlanCardData::fromPlanCard($card)->toArray();
         }
 
-        return new ListedPage($cards, $list->page->number, $list->page->size, $list->total);
+        return new ListedPage(
+            $cards,
+            $assignedPlanPage->page->number,
+            $assignedPlanPage->page->size,
+            $assignedPlanPage->total,
+        );
     }
 }
