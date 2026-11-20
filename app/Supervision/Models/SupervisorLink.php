@@ -46,7 +46,9 @@ final class SupervisorLink extends Model implements ReadableModel
         return $link;
     }
 
-    /** @return array<string, SupervisorRoutes> */
+    /**
+     * @return array<string, SupervisorRoutes>
+     */
     public static function graphRoutes(): array
     {
         $routes = [];

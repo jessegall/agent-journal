@@ -35,10 +35,11 @@ final readonly class LaravelCommandBus implements CommandBus, GuardedCommandBus
         Container $container,
         CommandRegistry $registry,
         CommandOriginChecks $origins,
+        MiddlewareRunner $middleware,
     ): self {
         $dispatcher = new Dispatcher($container);
         $dispatcher->map($registry->handlerMap());
-        $dispatcher->pipeThrough([$container->make(MiddlewareRunner::class)]);
+        $dispatcher->pipeThrough([$middleware]);
 
         return new self($dispatcher, $registry, $container, $origins);
     }

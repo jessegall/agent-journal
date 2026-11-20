@@ -9,6 +9,7 @@ use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
+use Throwable;
 
 /**
  * An owner's approval was refused: the declaration conflicts with an active rule, or the reader and proof it names do
@@ -18,9 +19,9 @@ final class ApprovalRefused extends RuntimeException implements CodedRefusal, Co
 {
     use RendersRefusal;
 
-    public static function conflict(string $reason): self
+    public static function conflict(Throwable $cause): self
     {
-        return new self("The declaration conflicts with an active rule: {$reason}");
+        return new self("The declaration conflicts with an active rule: {$cause->getMessage()}", previous: $cause);
     }
 
     public static function proofMissing(string $ruleId): self

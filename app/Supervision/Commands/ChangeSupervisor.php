@@ -20,7 +20,9 @@ use App\Supervision\Models\SupervisorLink;
 use App\Supervision\Policies\SupervisorPolicy;
 use App\Supervision\Values\SupervisorChangeReceipt;
 
-/** @extends Command<SupervisorChangeReceipt> */
+/**
+ * @extends Command<SupervisorChangeReceipt>
+ */
 #[HandledBy(ChangeSupervisorHandler::class)]
 #[Authorize(SupervisorPolicy::class, SupervisorAbility::ChangeRoute)]
 #[Operation('change_supervisor', ResourceAreaType::JournalWork, AccessType::Edit)]
@@ -33,7 +35,9 @@ final readonly class ChangeSupervisor extends Command implements AuthorizedComma
         public AskTypeKey|null $type = null,
     ) {}
 
-    /** @return class-string<SupervisorLink> */
+    /**
+     * @return class-string<SupervisorLink>
+     */
     public function subject(): string
     {
         return SupervisorLink::class;

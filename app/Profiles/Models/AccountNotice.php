@@ -6,6 +6,7 @@ namespace App\Profiles\Models;
 
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountNoticeReason;
+use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -25,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property AccountNoticeReason $reason
  * @property int $times
  * @property CarbonImmutable|null $resolved_at
- * @property Carbon|null $created_at
+ * @property Carbon $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['program', 'reason'])]
@@ -51,7 +52,7 @@ final class AccountNotice extends Model implements ReadableModel
     public static function raise(string $program, AccountNoticeReason $reason): self
     {
         $open = self::query()
-            ->withoutGlobalScopes()
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->open()
             ->where('program', $program)
             ->where('reason', $reason->value)
@@ -76,7 +77,9 @@ final class AccountNotice extends Model implements ReadableModel
      */
     public static function resolveFor(string $program, CarbonImmutable $now): void
     {
-        self::query()->withoutGlobalScopes()->open()->where('program', $program)->update(['resolved_at' => $now]);
+        self::query()->withoutGlobalScope(
+            AccountOwnerScope::class,
+        )->open()->where('program', $program)->update(['resolved_at' => $now]);
     }
 
     /**

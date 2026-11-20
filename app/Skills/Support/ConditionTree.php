@@ -66,7 +66,7 @@ final readonly class ConditionTree
         try {
             $wire = json_decode($json, true, self::MOST_DEPTH * 2 + 4, JSON_THROW_ON_ERROR);
         } catch (JsonException $failure) {
-            throw SkillConditionInvalid::notJson($failure->getMessage());
+            throw SkillConditionInvalid::notJson($failure);
         }
 
         return $this->hydrate($wire);
@@ -226,7 +226,7 @@ final readonly class ConditionTree
         } catch (InvalidArgumentException|ValueError $refusal) {
             $problem = 'holds a key that is not valid: '.$refusal->getMessage();
 
-            throw SkillConditionInvalid::field($node->at('keys'), $problem);
+            throw SkillConditionInvalid::field($node->at('keys'), $problem, previous: $refusal);
         }
     }
 
@@ -272,7 +272,7 @@ final readonly class ConditionTree
         } catch (ValidationException|CannotCreateData $refusal) {
             $problem = 'does not fit '.$key.': '.$refusal->getMessage();
 
-            throw SkillConditionInvalid::field($node->at('parameters'), $problem);
+            throw SkillConditionInvalid::field($node->at('parameters'), $problem, previous: $refusal);
         }
 
         return new RegisteredCondition(

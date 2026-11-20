@@ -15,7 +15,9 @@ use App\Bus\Pipes\ReadCommandHandlers;
 use App\Bus\Pipes\RegisterCommands;
 use App\Bus\Values\EffectiveCommand;
 use App\Pipelines\Contracts\PipelineRunner;
+use PhpOption\None;
 use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * Every registered command with its handler, owner and middleware, checked once at start-up so a wrong declaration
@@ -136,15 +138,18 @@ final readonly class CommandRegistry
         return $this->entry($command)->operation;
     }
 
-    public function operationNamed(string $name): Operation|null
+    /**
+     * @return Option<Operation>
+     */
+    public function operationNamed(string $name): Option
     {
         foreach ($this->commands as $command) {
             if ($command->operation?->name === $name) {
-                return $command->operation;
+                return new Some($command->operation);
             }
         }
 
-        return null;
+        return None::create();
     }
 
     public function requiresRequestKey(string $command): bool

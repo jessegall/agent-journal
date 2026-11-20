@@ -12,6 +12,7 @@ use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use Carbon\CarbonInterface;
 use RuntimeException;
+use Throwable;
 
 /**
  * A terminal view refused before it is opened, so no view is stored.
@@ -20,18 +21,21 @@ final class TerminalViewRefused extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
-    private function __construct(string $message, public readonly TerminalViewRefusal $refusal)
-    {
-        parent::__construct($message);
+    private function __construct(
+        string $message,
+        public readonly TerminalViewRefusal $refusal,
+        Throwable|null $previous = null,
+    ) {
+        parent::__construct($message, previous: $previous);
     }
 
     /**
      * An unknown agent and an agent the viewer may not inspect get this same answer, which says nothing of whether the
      * agent runs.
      */
-    public static function mayNotInspect(): self
+    public static function mayNotInspect(Throwable|null $previous = null): self
     {
-        return new self('You may not inspect this agent', TerminalViewRefusal::MayNotInspect);
+        return new self('You may not inspect this agent', TerminalViewRefusal::MayNotInspect, $previous);
     }
 
     public static function processDriver(): self

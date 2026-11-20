@@ -7,6 +7,7 @@ namespace App\Skills\Exceptions;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use LogicException;
+use Throwable;
 
 /**
  * A skill that cannot be rendered as declared: a reserved key, too few or too many sections, a section key twice, a
@@ -22,9 +23,9 @@ final class SkillDeclarationInvalid extends LogicException implements CodedRefus
     /**
      * A skill the catalogue could not check or render, named by its owner and key.
      */
-    public static function inSkill(string $owner, string $key, string $reason): self
+    public static function inSkill(string $owner, string $key, Throwable $cause): self
     {
-        return new self("{$owner}'s skill {$key} is invalid: {$reason}");
+        return new self("{$owner}'s skill {$key} is invalid: {$cause->getMessage()}", previous: $cause);
     }
 
     public static function sectionCount(string $key, int $count, int $most): self

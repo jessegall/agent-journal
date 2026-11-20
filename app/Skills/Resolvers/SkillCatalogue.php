@@ -73,7 +73,7 @@ final readonly class SkillCatalogue implements SkillResolver
                         $renderer->render($skill, $owner),
                     );
                 } catch (SkillSourceInvalid|SkillConditionInvalid|SkillDeclarationInvalid $invalid) {
-                    throw SkillDeclarationInvalid::inSkill($owner->name, $key->key, $invalid->getMessage());
+                    throw SkillDeclarationInvalid::inSkill($owner->name, $key->key, $invalid);
                 }
             }
         }

@@ -76,7 +76,9 @@ final class NavigationRoundTest extends TestCase
         $again = $this->append($navigation, $round);
 
         $this->assertSame($first->id, $again->id);
-        $claimed = collect($this->hostCall($host, '/host/claim?limit=10&wait=0&watched_version=0')->assertOk()->json('requests'))
+        $claimed = collect(
+            $this->hostCall($host, '/host/claim?limit=10&wait=0&watched_version=0')->assertOk()->json('requests'),
+        )
             ->firstWhere('requestId', $first->id);
         $this->assertSame(['navigate', $navigation->id, ['down']], [
             $claimed['operation'],
@@ -186,8 +188,9 @@ final class NavigationRoundTest extends TestCase
             $response = $this->report($host, $this->proved($navigation), proofSeen: true, steps: $steps);
 
             $this->assertGreaterThanOrEqual(400, $response->status(), $name);
-            $this->assertSame(0, MenuEntry::query()->acrossActors()->count(), $name);
         }
+
+        $this->assertSame(0, MenuEntry::query()->acrossActors()->count());
     }
 
     /**

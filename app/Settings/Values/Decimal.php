@@ -41,8 +41,8 @@ final readonly class Decimal
     {
         try {
             return new self($this->number()->toScale($scale)->toString());
-        } catch (RoundingNecessaryException) {
-            throw DecimalInvalid::tooManyPlaces($scale);
+        } catch (RoundingNecessaryException $cause) {
+            throw DecimalInvalid::tooManyPlaces($scale, previous: $cause);
         }
     }
 

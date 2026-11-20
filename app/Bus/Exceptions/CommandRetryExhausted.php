@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Bus\Exceptions;
 
 use RuntimeException;
+use Throwable;
 
 final class CommandRetryExhausted extends RuntimeException
 {
-    public static function for(string $command, int $attempts): self
+    public static function for(string $command, int $attempts, Throwable|null $previous = null): self
     {
         return new self(
             sprintf(
@@ -16,6 +17,7 @@ final class CommandRetryExhausted extends RuntimeException
                 $command,
                 $attempts,
             ),
+            previous: $previous
         );
     }
 }

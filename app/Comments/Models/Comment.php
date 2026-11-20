@@ -159,7 +159,7 @@ final class Comment extends Model implements ReadableModel, Shareable
         try {
             return $this->anchor();
         } catch (IncompleteTextAnchor $broken) {
-            throw CommentAnchorCorrupt::for($this->id, $broken->getMessage());
+            throw CommentAnchorCorrupt::for($this->id, $broken);
         }
     }
 

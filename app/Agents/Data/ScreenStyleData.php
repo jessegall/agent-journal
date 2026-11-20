@@ -8,14 +8,14 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * How a run of screen cells is drawn: its colours as #rrggbb, empty for the terminal's default, and its attributes.
+ * How a run of screen cells is drawn: its colours as #rrggbb, none for the terminal's default, and its attributes.
  */
 #[TypeScript]
 final class ScreenStyleData extends Data
 {
     public function __construct(
-        public readonly string $fg = '',
-        public readonly string $bg = '',
+        public readonly string|null $fg = null,
+        public readonly string|null $bg = null,
         public readonly bool $bold = false,
         public readonly bool $italic = false,
         public readonly bool $underline = false,

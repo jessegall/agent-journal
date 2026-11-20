@@ -83,7 +83,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $this->admitContainer($request);
         }
 
-        $account = $this->accounts->forStart($request->selection->program->value);
+        $account = $this->accounts->forStart($request->selection->program);
         $parent = $request->parentSessionId === null
             ? null
             : AgentSession::query()->findOrFail($request->parentSessionId);

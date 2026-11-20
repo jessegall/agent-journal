@@ -13,8 +13,8 @@ function styleOf(
     if (plain) {
         return {};
     }
-    const foreground = style.fg === '' ? 'var(--terminal-fg)' : style.fg;
-    const background = style.bg === '' ? 'var(--terminal-bg)' : style.bg;
+    const foreground = style.fg ?? 'var(--terminal-fg)';
+    const background = style.bg ?? 'var(--terminal-bg)';
 
     return {
         color: style.inverse ? background : foreground,

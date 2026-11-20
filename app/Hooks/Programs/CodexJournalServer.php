@@ -46,7 +46,10 @@ final readonly class CodexJournalServer
      */
     public function tomlTable(TransportProfileType $transport = TransportProfileType::Mcp): string
     {
-        $variables = implode(', ', array_map(fn (string $name): string => sprintf('"%s"', $name), self::PASSED_VARIABLES));
+        $variables = implode(
+            ', ',
+            array_map(fn (string $name): string => sprintf('"%s"', $name), self::PASSED_VARIABLES),
+        );
         $header = self::HEADER;
         $command = addcslashes($this->command, '"\\');
         $relay = addcslashes($this->relay, '"\\');

@@ -38,7 +38,10 @@ final class CodexFolderTrustTest extends TestCase
     public function test_trusts_are_added_once_beside_every_existing_entry(): void
     {
         $config = $this->base.'/account/config.toml';
-        file_put_contents($config, "cli_auth_credentials_store = \"file\"\n\n[hooks]\nsession_start = \"journal-hook\"\n");
+        file_put_contents(
+            $config,
+            "cli_auth_credentials_store = \"file\"\n\n[hooks]\nsession_start = \"journal-hook\"\n",
+        );
         $write = new AccountConfigurationWrite();
         $one = CodexFolderTrust::forWorkingRoot($this->base.'/roots', $this->base.'/roots/one');
         $two = CodexFolderTrust::forWorkingRoot($this->base.'/roots', $this->base.'/roots/two');
@@ -50,7 +53,10 @@ final class CodexFolderTrustTest extends TestCase
         $written = (string) file_get_contents($config);
         $this->assertStringStartsWith("cli_auth_credentials_store = \"file\"\n\n[hooks]\n", $written);
         $this->assertSame(1, substr_count($written, '[projects."'.$this->base.'/roots/one"]'));
-        $this->assertStringContainsString('[projects."'.$this->base."/roots/two\"]\ntrust_level = \"trusted\"", $written);
+        $this->assertStringContainsString(
+            '[projects."'.$this->base."/roots/two\"]\ntrust_level = \"trusted\"",
+            $written,
+        );
         $this->assertSame([], glob($this->base.'/account/config.toml.*.new') ?: []);
     }
 
@@ -63,12 +69,21 @@ final class CodexFolderTrustTest extends TestCase
         $one = CodexFolderTrust::forWorkingRoot($this->base.'/roots', $this->base.'/roots/one');
         $two = CodexFolderTrust::forWorkingRoot($this->base.'/roots', $this->base.'/roots/two');
 
-        $this->assertTrue($write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $one, []));
-        $this->assertFalse($write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $one, []));
-        $this->assertTrue($write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $two, []));
+        $this->assertTrue(
+            $write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $one, []),
+        );
+        $this->assertFalse(
+            $write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $one, []),
+        );
+        $this->assertTrue(
+            $write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $two, []),
+        );
 
         $written = (string) file_get_contents($config);
-        $this->assertStringStartsWith("cli_auth_credentials_store = \"file\"\n[features]\nmulti_agent = false\n", $written);
+        $this->assertStringStartsWith(
+            "cli_auth_credentials_store = \"file\"\n[features]\nmulti_agent = false\n",
+            $written,
+        );
         $this->assertSame(1, substr_count($written, 'cli_auth_credentials_store'));
         $this->assertSame(1, substr_count($written, '[hooks.state.'));
         $this->assertSame(1, substr_count($written, '[projects."'.$this->base.'/roots/one"]'));

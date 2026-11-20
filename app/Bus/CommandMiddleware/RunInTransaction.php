@@ -78,7 +78,7 @@ final readonly class RunInTransaction implements CommandMiddleware
                 }
 
                 if ($attempt === self::ATTEMPTS || $this->deadline->hasRunOut()) {
-                    throw CommandRetryExhausted::for($call->name(), $attempt);
+                    throw CommandRetryExhausted::for($call->name(), $attempt, previous: $failure);
                 }
             }
         }

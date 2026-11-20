@@ -17,7 +17,9 @@ final readonly class SupervisorGraph
      */
     public function __construct(private array $routes) {}
 
-    /** @param list<AskTypeKey> $types */
+    /**
+     * @param  list<AskTypeKey>  $types
+     */
     public function requireAcyclic(array $types): void
     {
         foreach ([null, ...$types] as $type) {
@@ -27,8 +29,9 @@ final readonly class SupervisorGraph
         }
     }
 
-    private function follow(string $source, AskTypeKey|null $type): void
+    private function follow(string $start, AskTypeKey|null $type): void
     {
+        $source = $start;
         $path = [];
         $route = AskTypeKey::routeOf($type);
 

@@ -28,7 +28,9 @@ final readonly class AskRecords
             ?? throw RecordUnavailable::for(new RecordIdentity(Ask::LINK_TYPE, $reference->id));
     }
 
-    /** @return ReadBuilder<Ask> */
+    /**
+     * @return ReadBuilder<Ask>
+     */
     public function visible(): ReadBuilder
     {
         return Ask::query()->visibleToParticipant(ActorIdentity::of($this->current->actor()), $this->owner->resolve());

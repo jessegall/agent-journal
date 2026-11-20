@@ -25,10 +25,9 @@ var tokenPrefixes = []string{"sk-", "ghp_", "xox"}
 // Redact masks what must never leave the host: email addresses, file paths and token-like strings. Case and spacing
 // are kept.
 func Redact(text string) string {
-	text = emailAddress.ReplaceAllString(text, "<redacted>")
-	text = filePath.ReplaceAllString(text, "${1}<path>")
+	masked := filePath.ReplaceAllString(emailAddress.ReplaceAllString(text, "<redacted>"), "${1}<path>")
 
-	return wordRun.ReplaceAllStringFunc(text, func(run string) string {
+	return wordRun.ReplaceAllStringFunc(masked, func(run string) string {
 		if !isToken(run) {
 			return run
 		}
@@ -52,12 +51,12 @@ func isToken(run string) bool {
 // Normalise is the text a screen fingerprint is made of, and loses detail on purpose: it redacts, lower-cases,
 // removes the highlight markers, collapses white space to one space and writes every number as #. Proof never uses it.
 func Normalise(text string, markers []string) string {
-	text = strings.ToLower(Redact(text))
+	normalised := strings.ToLower(Redact(text))
 	for _, marker := range markers {
-		text = strings.ReplaceAll(text, strings.ToLower(marker), "")
+		normalised = strings.ReplaceAll(normalised, strings.ToLower(marker), "")
 	}
 
-	return digitRun.ReplaceAllString(collapseSpaces(text), "#")
+	return digitRun.ReplaceAllString(collapseSpaces(normalised), "#")
 }
 
 // collapseSpaces writes every run of white space, no-break spaces too, as one space and trims the ends.

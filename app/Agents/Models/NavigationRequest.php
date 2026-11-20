@@ -221,6 +221,14 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         return new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters);
     }
 
+    /**
+     * Whether the main agent is answering the request, the one state in which a proof may be given.
+     */
+    public function isAnswering(): bool
+    {
+        return $this->state === NavigationState::Answering;
+    }
+
     public function isAtRowVersion(int $rowVersion): bool
     {
         return $this->row_version === $rowVersion;
@@ -240,7 +248,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
      */
     public function answer(): void
     {
-        if ($this->state === NavigationState::Answering) {
+        if ($this->isAnswering()) {
             $this->change();
 
             return;

@@ -30,6 +30,8 @@ trait OpensLedgerRuntimes
 {
     use WithActiveAccount;
 
+    private const string FOLDER = '/work/project';
+
     /**
      * Every runtime starts through the real start path, which runs with the account chosen for its program.
      */
@@ -37,8 +39,6 @@ trait OpensLedgerRuntimes
     {
         $this->chooseActiveAccounts();
     }
-
-    private const string FOLDER = '/work/project';
 
     /**
      * @return array{EnrolledHost, OpenedRuntime}

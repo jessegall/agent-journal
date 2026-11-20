@@ -46,7 +46,10 @@ final class SupervisorRoutesTest extends TestCase
 
         $this->assertSame('profile:journal-code-reviewer', $worker->supervisor->default->key);
         $this->assertSame('profile:journal-main', $reviewer->supervisor->targetFor(AskTypeKey::from('question'))->key);
-        $this->assertSame('profile:journal-merger', $reviewer->supervisor->targetFor(AskTypeKey::from('merge.ready'))->key);
+        $this->assertSame(
+            'profile:journal-merger',
+            $reviewer->supervisor->targetFor(AskTypeKey::from('merge.ready'))->key,
+        );
 
         $byKey = collect($activation->profiles)->keyBy(fn (ActivatedProfile $profile) => $profile->key->key);
         $coverage = $byKey['journal-worker']->supervisorCoverage;
@@ -83,7 +86,9 @@ final class SupervisorRoutesTest extends TestCase
             ['default' => 'owner', 'unknown' => 'owner'],
         ] as $supervisor) {
             $this->assertThrows(
-                fn () => $this->activate(['profiles' => ['route-a' => [...self::PROFILE, 'supervisor' => $supervisor]]]),
+                fn () => $this->activate(
+                    ['profiles' => ['route-a' => [...self::PROFILE, 'supervisor' => $supervisor]]],
+                ),
                 SupervisorRouteInvalid::class,
             );
         }
@@ -114,7 +119,9 @@ final class SupervisorRoutesTest extends TestCase
         $this->assertSame(OwnerRouteType::NoOwner, $this->app->make(SupervisorOwner::class)->resolve()->type);
     }
 
-    /** @param array<string, mixed> $configuration */
+    /**
+     * @param  array<string, mixed>  $configuration
+     */
     private function activate(array $configuration): ProfileActivation
     {
         $this->startTestUserRequest(1);

@@ -9,13 +9,17 @@ use JsonSerializable;
 
 final readonly class SupervisorRoutes implements JsonSerializable
 {
-    /** @param list<SupervisorOverride> $overrides */
+    /**
+     * @param  list<SupervisorOverride>  $overrides
+     */
     public function __construct(
         public SupervisorTarget $default = new SupervisorTarget(),
         public array $overrides = [],
     ) {}
 
-    /** @param array<string, mixed> $routes */
+    /**
+     * @param  array<string, mixed>  $routes
+     */
     public static function fromArray(array $routes): self
     {
         if (! isset($routes['default']) || ! is_string($routes['default'])) {
@@ -63,7 +67,9 @@ final readonly class SupervisorRoutes implements JsonSerializable
         return new self($this->default, [...$overrides, new SupervisorOverride($type, $target)]);
     }
 
-    /** @return array<string, string> */
+    /**
+     * @return array<string, string>
+     */
     public function jsonSerialize(): array
     {
         $routes = ['default' => $this->default->key];

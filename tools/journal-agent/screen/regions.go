@@ -105,9 +105,9 @@ func (region MarkedSpan) Rows(snapshot contracts.Snapshot) (contracts.RowRange, 
 // startsWith is whether a row starts with the marker; a row is read without its trailing spaces, so a bare marker
 // such as an empty prompt's "❯ " is drawn as "❯".
 func startsWith(text, marker string) bool {
-	text = plainSpaces(text)
+	row := plainSpaces(text)
 
-	return strings.HasPrefix(text, marker) || strings.TrimRight(text, " ") == strings.TrimRight(marker, " ")
+	return strings.HasPrefix(row, marker) || strings.TrimRight(row, " ") == strings.TrimRight(marker, " ")
 }
 
 // plainSpaces turns the no-break spaces a program draws after its prompt marker into plain spaces, so a marker
@@ -190,9 +190,9 @@ func (region OptionList) Entries(snapshot contracts.Snapshot) (MenuEntries, bool
 
 // highlight finds a highlight marker after the row's indent and gives the column its option text starts at.
 func (region OptionList) highlight(text string) (int, bool) {
-	text = plainSpaces(text)
-	trimmed := strings.TrimLeft(text, " ")
-	indent := len(text) - len(trimmed)
+	row := plainSpaces(text)
+	trimmed := strings.TrimLeft(row, " ")
+	indent := len(row) - len(trimmed)
 
 	for _, marker := range region.Markers {
 		if strings.HasPrefix(trimmed, marker) && strings.TrimSpace(strings.TrimPrefix(trimmed, marker)) != "" {
@@ -205,9 +205,9 @@ func (region OptionList) highlight(text string) (int, bool) {
 
 // isOptionRow is whether a row is an option beside the highlighted one: its text starts at the same column.
 func isOptionRow(text string, textColumn int) bool {
-	text = plainSpaces(text)
+	row := plainSpaces(text)
 
-	return len(text) > textColumn &&
-		strings.TrimLeft(text[:textColumn], " ") == "" &&
-		text[textColumn] != ' '
+	return len(row) > textColumn &&
+		strings.TrimLeft(row[:textColumn], " ") == "" &&
+		row[textColumn] != ' '
 }

@@ -31,6 +31,9 @@
             },
             {
                 "nameMatches": "^(Domains|Exports|Links|Processes|Reads|Records)[A-Z]"
+            },
+            {
+                "file": "tests/**"
             }
         ]
     },

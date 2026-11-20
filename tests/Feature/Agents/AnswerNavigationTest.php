@@ -160,7 +160,10 @@ final class AnswerNavigationTest extends TestCase
         $goal = NavigationCompletion::Goal;
         $refused = [
             'empty' => [new ProveNavigation($navigation->id, $version, $goal, ' '), NavigationProofRefused::class],
-            'on screen' => [new ProveNavigation($navigation->id, $version, $goal, 'gpt-5'), NavigationProofRefused::class],
+            'on screen' => [
+                new ProveNavigation($navigation->id, $version, $goal, 'gpt-5'),
+                NavigationProofRefused::class,
+            ],
         ];
         $open = $this->raise($this->stalledScript(), 'raise-2');
         $refused['not answering'] = [

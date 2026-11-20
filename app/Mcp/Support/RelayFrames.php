@@ -9,6 +9,7 @@ use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Http\Middleware\Mcp\LimitMcpMessage;
 use Carbon\CarbonImmutable;
+use Throwable;
 
 /**
  * The relay's side of a started program's stdio: newline-delimited UTF-8 frames read without buffering past what
@@ -139,10 +140,8 @@ final class RelayFrames
 
     /**
      * Answers a frame the journal never got, with the code of the failure.
-     *
-     * @param  CodedRefusal&\Throwable  $failure
      */
-    public function fail(Frame $frame, CodedRefusal $failure): void
+    public function fail(Frame $frame, CodedRefusal&Throwable $failure): void
     {
         $this->refuse($frame, $failure->refusalCode(), $failure->getMessage());
     }

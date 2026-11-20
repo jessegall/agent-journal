@@ -17,7 +17,6 @@ final readonly class ClaimAnswer implements JsonSerializable
     public function __construct(
         public ClaimedRequests $claimed,
         public array $watched,
-        public int $watchedVersion,
     ) {}
 
     /**
@@ -38,7 +37,7 @@ final readonly class ClaimAnswer implements JsonSerializable
                 ],
                 $this->watched,
             ),
-            'watched_version' => $this->watchedVersion,
+            'watched_version' => WatchedRuntimes::versionOf($this->watched),
         ];
     }
 }

@@ -131,7 +131,7 @@ final readonly class MarkdownParts
         try {
             return MarkdownText::body($this->withoutFrontMatter(str_replace(["\r\n", "\r"], "\n", $text)));
         } catch (MarkdownInvalid|ContentMissing|ContentTooLarge $refusal) {
-            throw SkillSourceInvalid::unreadable($file, $refusal->getMessage());
+            throw SkillSourceInvalid::unreadable($file, $refusal);
         }
     }
 

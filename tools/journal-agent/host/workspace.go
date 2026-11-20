@@ -152,10 +152,11 @@ func (workspaces Workspaces) git(ctx context.Context, folder string, arguments .
 }
 
 func (workspaces Workspaces) output(ctx context.Context, folder string, arguments ...string) (string, error) {
+	gitArguments := arguments
 	if folder != "" {
-		arguments = append([]string{"-C", folder}, arguments...)
+		gitArguments = append([]string{"-C", folder}, arguments...)
 	}
-	command := exec.CommandContext(ctx, workspaces.Git, arguments...)
+	command := exec.CommandContext(ctx, workspaces.Git, gitArguments...)
 	command.Env = append(os.Environ(), "GIT_CONFIG_NOSYSTEM=1", "GIT_TERMINAL_PROMPT=0")
 	output, err := command.CombinedOutput()
 	if err != nil {

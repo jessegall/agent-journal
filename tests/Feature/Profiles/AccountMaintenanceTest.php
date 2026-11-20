@@ -41,7 +41,10 @@ use Tests\TestCase;
  * claimed starts until their host proves them gone and for a live sign-in, and a retired agent's unclaimed start
  * never runs.
  */
-#[TimeLimit(seconds: 5, reason: 'It opens runtimes, enrolls hosts and commits maintenance steps, emptying many tables.')]
+#[TimeLimit(
+    seconds: 5,
+    reason: 'It opens runtimes, enrolls hosts and commits maintenance steps, emptying many tables.',
+)]
 final class AccountMaintenanceTest extends TestCase
 {
     use CommitsHookRows;
@@ -82,16 +85,7 @@ final class AccountMaintenanceTest extends TestCase
             {
                 $pinned = ProgramCompatibility::pinned($program);
 
-                return new ProgramCompatibility(
-                    $pinned->program,
-                    $pinned->version,
-                    $pinned->binaryDigest,
-                    $pinned->startFlags,
-                    $pinned->settings,
-                    $pinned->arrangement,
-                    ProgramEvidence::NativeShown,
-                    $pinned->evidenceOwner,
-                );
+                return $pinned->withEvidence(ProgramEvidence::NativeShown);
             }
         });
     }

@@ -85,8 +85,8 @@ final readonly class ShareReadPath
     {
         try {
             return new RecordIdentity($alias, $id);
-        } catch (InvalidRecordIdentity) {
-            throw ShareReadRefused::malformedPath();
+        } catch (InvalidRecordIdentity $cause) {
+            throw ShareReadRefused::malformedPath(previous: $cause);
         }
     }
 }

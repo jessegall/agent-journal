@@ -177,7 +177,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             return JournalToolCall::starting();
         }
 
-        if ($tool->readsFiles()) {
+        if ($tool->isFileReader()) {
             if ($this->protection->refusesRead($hook->sessionId, $payload->fileRead())) {
                 return new UnjudgedCall(ProgramReplies::denyProtected());
             }

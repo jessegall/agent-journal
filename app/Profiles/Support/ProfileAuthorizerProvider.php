@@ -60,8 +60,11 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
                 ProfileKey::from($session->profile_key),
                 $session->profile_revision,
             );
-        } catch (ProfileRetired|ProfileMissing) {
-            throw ActorNotAllowed::withoutStoredAuthority('agent whose profile is no longer admitted');
+        } catch (ProfileRetired|ProfileMissing $cause) {
+            throw ActorNotAllowed::withoutStoredAuthority(
+                'agent whose profile is no longer admitted',
+                previous: $cause,
+            );
         }
 
         return $profile->authorization->authorizer($this->catalogue);

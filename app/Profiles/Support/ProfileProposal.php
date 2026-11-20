@@ -129,7 +129,9 @@ final readonly class ProfileProposal
         );
     }
 
-    /** @param array<string, mixed> $profile */
+    /**
+     * @param  array<string, mixed>  $profile
+     */
     private static function supervisors(array $profile): SupervisorRoutes
     {
         if (! array_key_exists('supervisor', $profile)) {

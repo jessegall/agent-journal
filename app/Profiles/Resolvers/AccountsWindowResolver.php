@@ -7,9 +7,6 @@ namespace App\Profiles\Resolvers;
 use App\Agents\Contracts\AccountUses;
 use App\Http\Data\Profiles\AccountListData;
 use App\Http\Data\Profiles\AccountRowData;
-use App\Http\Data\Profiles\AccountSelectionData;
-use App\Http\Data\Profiles\PendingAttemptCleanupData;
-use App\Http\Data\Profiles\SignInAttemptData;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
@@ -40,9 +37,9 @@ final readonly class AccountsWindowResolver implements PageResolver
                 $counts->runningFor($account->recordIdentity()),
                 $this->uses->history($account->recordIdentity(), self::RECENT_STARTS),
             ), $accounts),
-            'selections' => array_map(AccountSelectionData::fromSelection(...), $selections),
-            'attempts' => array_map(SignInAttemptData::fromAttempt(...), SignInAttempt::recentFor(CarbonImmutable::now())),
-            'pendingCleanups' => array_map(PendingAttemptCleanupData::fromAttempt(...), SignInAttempt::pendingCleanups()),
+            'selections' => $selections,
+            'attempts' => SignInAttempt::recentFor(CarbonImmutable::now()),
+            'pendingCleanups' => SignInAttempt::pendingCleanups(),
         ]);
     }
 }

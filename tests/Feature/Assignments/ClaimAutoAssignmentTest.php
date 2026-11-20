@@ -104,8 +104,10 @@ final class ClaimAutoAssignmentTest extends TestCase
         $this->app->make(CommandBus::class)->run(new EnableAutoAssignment($input, 0));
     }
 
-    private function claim(AutoAssignmentKey $key, string $scope = AssignRecord::MAINTENANCE_SCOPE): AutoAssignmentOutcome
-    {
+    private function claim(
+        AutoAssignmentKey $key,
+        string $scope = AssignRecord::MAINTENANCE_SCOPE,
+    ): AutoAssignmentOutcome {
         $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
         $access = $this->app->make(EngineAccess::class);
 

@@ -132,7 +132,9 @@ final class Ask extends Model implements Assignable, ReadableModel
         AskHop::recordAcceptance($this, $holder, $routeVersion);
     }
 
-    /** @param Builder<self> $query */
+    /**
+     * @param  Builder<self>  $query
+     */
     #[Scope]
     protected function visibleToParticipant(Builder $query, ActorIdentity $actor, OwnerRoute $owner): void
     {
@@ -144,6 +146,6 @@ final class Ask extends Model implements Assignable, ReadableModel
 
         $query->where(fn (Builder $participants) => $participants->where(
             fn (Builder $requester) => $requester->byActor($actor),
-        )->orWhereIn('id', AskHop::query()->acceptedBy($actor)->select('ask_id')));
+        )->orWhereIn('id', AskHop::query()->byActor($actor)->select('ask_id')));
     }
 }

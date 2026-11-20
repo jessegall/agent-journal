@@ -82,7 +82,11 @@ enum ViolationType: string
                 $violation->owner,
             ),
             self::BindingMisuse => "binds {$violation->used}, but {$violation->detail}",
-            self::PrivateEventListenedTo => "listens to {$violation->used}, an event {$violation->owner} does not publish",
+            self::PrivateEventListenedTo => sprintf(
+                'listens to %s, an event %s does not publish',
+                $violation->used,
+                $violation->owner,
+            ),
             self::OutsideEveryDomain => "uses {$violation->used}, which is project code outside every domain",
             self::TableOfNoDomain => "uses table {$violation->used}, which no domain owns",
             self::OtherOwnersTable => sprintf(

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Mcp;
 
-use App\Agents\Support\AgentContext;
+use App\Agents\Contracts\AgentCallContext;
+use App\Agents\Exceptions\AgentContextMissing;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Support\OperationDeadline;
 use Carbon\CarbonImmutable;
@@ -29,14 +30,14 @@ final readonly class SetCallDeadline
 
     private const int SERVER_ERROR = -32000;
 
-    public function __construct(private Container $container) {}
+    public function __construct(private Container $container, private AgentCallContext $calls) {}
 
     /**
      * @param  Closure(Request): Response  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $issuedAt = $this->container->make(AgentContext::class)->call->issuedAt;
+        $issuedAt = $this->calls->context()->getOrThrow(AgentContextMissing::forRequest())->call->issuedAt;
         $signedLeft = (int) CarbonImmutable::now()->diffInMilliseconds(
             $issuedAt->addMilliseconds(self::SIGNED_MILLISECONDS),
             false,

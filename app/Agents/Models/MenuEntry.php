@@ -146,13 +146,7 @@ final class MenuEntry extends Model implements ReadableModel
      */
     public function builds(): array
     {
-        $builds = [];
-        foreach ($this->builds as $stored) {
-            $build = MenuEntryBuild::from($stored);
-            $builds[$build->build] = $build;
-        }
-
-        return $builds;
+        return array_column(MenuEntryBuild::collect($this->builds), null, 'build');
     }
 
     /**

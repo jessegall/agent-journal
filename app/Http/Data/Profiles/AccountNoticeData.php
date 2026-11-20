@@ -33,7 +33,7 @@ final class AccountNoticeData extends Data
             $notice->program,
             $notice->reason,
             $notice->times,
-            $notice->created_at?->toIso8601String() ?? '',
+            $notice->created_at->toIso8601String(),
         );
     }
 }

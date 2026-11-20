@@ -88,10 +88,10 @@ final class AutoAssignmentTriggerTest extends TestCase
         $bus = $this->mock(CommandBus::class);
         $record = TestActors::record('tasks.task', 4);
         $bus->shouldReceive('run')->once()->ordered()->withArgs(
-            fn (ClaimAutoAssignment $claim): bool => $claim->key->actor->id === TestIds::of(2),
+            fn (ClaimAutoAssignment $claim): bool => $claim->key->isOf(TestActors::agentIdentity(2)),
         )->andThrow(AssignmentConflict::heldByAnother($record));
         $bus->shouldReceive('run')->once()->ordered()->withArgs(
-            fn (ClaimAutoAssignment $claim): bool => $claim->key->actor->id === TestIds::of(1),
+            fn (ClaimAutoAssignment $claim): bool => $claim->key->isOf(TestActors::agentIdentity(1)),
         )->andReturn(AutoAssignmentOutcome::assigned($record));
         $this->mock(LoggerInterface::class)->shouldReceive('warning')->once()->withArgs(
             fn (string $message, array $fields): bool => $message === 'Auto-assignment claim failed.'

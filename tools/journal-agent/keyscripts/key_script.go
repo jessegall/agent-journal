@@ -126,11 +126,12 @@ func (step KeyStep) proof(values map[string]string) (proof screen.Proof, proves 
 
 // filled is the text with each parameter named in braces replaced by the run's value.
 func filled(text string, values map[string]string) string {
+	result := text
 	for name, value := range values {
-		text = strings.ReplaceAll(text, "{"+name+"}", value)
+		result = strings.ReplaceAll(result, "{"+name+"}", value)
 	}
 
-	return text
+	return result
 }
 
 // KeyScript is a versioned recipe for one program build: its registered name, the parameters it is given, the

@@ -85,12 +85,13 @@ final class HelperDispatchTest extends TestCase
     public function test_a_default_start_names_the_resolved_model_revision_and_type_and_keeps_the_brief_as_data(): void
     {
         $receipt = $this->start('request-1', 'Review plan 7', self::SHELL_LIKE_BRIEF);
+        $selection = $receipt->start->selection;
 
         $this->assertTrue($receipt->launch->identityNew);
         $this->assertTrue($receipt->jobNew);
         $this->assertTrue($receipt->start->newSession);
-        $this->assertSame('opus', $receipt->start->selection->model);
-        $this->assertSame(HookProgram::Codex, $receipt->start->selection->program);
+        $this->assertSame('opus', $selection->model);
+        $this->assertSame(HookProgram::Codex, $selection->program);
         $this->assertSame(1, $receipt->launch->profileRevision);
         $this->assertSame('read-only-helper', $receipt->profileType);
         $this->assertSame(ExecutionModeType::RequiredContainer, $receipt->start->executionMode);

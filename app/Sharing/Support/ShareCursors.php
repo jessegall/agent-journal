@@ -56,8 +56,8 @@ final readonly class ShareCursors
 
         try {
             $cursor = new ShareCursor(...json_decode(self::decode($payload), false, 3, JSON_THROW_ON_ERROR));
-        } catch (JsonException) {
-            throw ShareReadRefused::staleCursor();
+        } catch (JsonException $cause) {
+            throw ShareReadRefused::staleCursor(previous: $cause);
         }
 
         return $cursor->belongsTo($expected) ? $cursor : throw ShareReadRefused::staleCursor();

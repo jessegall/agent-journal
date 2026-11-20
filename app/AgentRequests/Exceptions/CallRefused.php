@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\AgentRequests\Exceptions;
 
 use App\AgentRequests\Support\CallKey;
+use Throwable;
 
 /**
  * The journal refused the call with a code: the message is its safe text, and a keyed write can be sent again under
@@ -21,8 +22,9 @@ abstract class CallRefused extends CallFailed
         public readonly string $callId,
         public readonly CallKey|null $key,
         public readonly array $details = [],
+        Throwable|null $previous = null,
     ) {
-        parent::__construct($message);
+        parent::__construct($message, previous: $previous);
     }
 
     /**
@@ -34,8 +36,9 @@ abstract class CallRefused extends CallFailed
         string $callId,
         CallKey|null $key,
         array $details,
+        Throwable|null $previous = null,
     ): static {
-        return new static($code, $message, $callId, $key, $details);
+        return new static($code, $message, $callId, $key, $details, $previous);
     }
 
     /**

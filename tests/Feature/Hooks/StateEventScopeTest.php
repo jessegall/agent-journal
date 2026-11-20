@@ -71,7 +71,7 @@ final class StateEventScopeTest extends TestCase
         $this->assertTrue($scope->currentDispatch()->isEmpty());
     }
 
-    public function test_rollback_drops_deferred_delivery_and_unaddressed_dispatch_still_reaches_ordinary_listeners(): void
+    public function test_a_rollback_drops_deferred_delivery_and_a_plain_dispatch_still_reaches_listeners(): void
     {
         $target = TestActors::stack(1, 10);
         $this->actAsAgent($target->agentId);

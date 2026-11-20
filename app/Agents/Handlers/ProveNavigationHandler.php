@@ -6,7 +6,6 @@ namespace App\Agents\Handlers;
 
 use App\Agents\Commands\ProveNavigation;
 use App\Agents\Enums\NavigationCompletion;
-use App\Agents\Enums\NavigationState;
 use App\Agents\Exceptions\NavigationAnswerRefused;
 use App\Agents\Exceptions\NavigationProofRefused;
 use App\Agents\Exceptions\NavigationRaiseRefused;
@@ -36,7 +35,7 @@ final readonly class ProveNavigationHandler implements CommandHandler
     public function handle(ProveNavigation $command): DriverReceipt
     {
         $navigation = $this->answering->lockedForAnswerer($command->navigationId);
-        if ($navigation->state !== NavigationState::Answering) {
+        if (! $navigation->isAnswering()) {
             throw NavigationAnswerRefused::notAnswerable($navigation->id, $navigation->state->value);
         }
         $this->answering->checkVersion($navigation, $command->expectedRowVersion);

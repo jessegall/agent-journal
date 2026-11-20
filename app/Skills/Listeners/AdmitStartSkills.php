@@ -17,7 +17,6 @@ use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StartProgram;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -32,7 +31,7 @@ final readonly class AdmitStartSkills implements Listener
         private SkillSelection $selection,
         private ProgramSkillAdapters $adapters,
         private SkillTargets $targets,
-        private Container $container,
+        private SkillResolver $skills,
         private Dispatcher $events,
     ) {}
 
@@ -52,7 +51,7 @@ final readonly class AdmitStartSkills implements Listener
         }
 
         $context = $this->contexts->forSession($session);
-        $selected = $this->selection->select($this->container->make(SkillResolver::class)->all(), $context);
+        $selected = $this->selection->select($this->skills->all(), $context);
         $publication = SkillPublication::intend(
             $session->id,
             $program->key,

@@ -47,7 +47,7 @@ final readonly class RuleDeclarations
         try {
             $file = json_decode($text, true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $broken) {
-            throw DeclarationInvalid::notJson($broken->getMessage());
+            throw DeclarationInvalid::notJson($broken);
         }
 
         return $this->readFile(is_array($file) ? $file : []);

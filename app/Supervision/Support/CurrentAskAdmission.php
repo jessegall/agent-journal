@@ -41,11 +41,11 @@ final readonly class CurrentAskAdmission implements AskAdmission
         }
 
         $type = $this->types->get($record->typeKey());
-        $declaration = $this->commands->operationNamed($operation->key);
-
-        if ($type->operation()->key !== $operation->key || $declaration === null) {
+        if ($type->operation()->key !== $operation->key) {
             throw AskRefused::wrongOperation();
         }
+
+        $declaration = $this->commands->operationNamed($operation->key)->getOrThrow(AskRefused::wrongOperation());
 
         $decision = $this->policy->assess(
             Operation::journal($declaration->name, $declaration->area, $declaration->accessTypes),

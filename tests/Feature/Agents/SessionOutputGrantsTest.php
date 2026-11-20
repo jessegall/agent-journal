@@ -82,7 +82,13 @@ final class SessionOutputGrantsTest extends TestCase
 
         $this->enter($session, 'native-fork', 'call-2');
         $this->visits->entered($session->id, 'native-x', '/elsewhere/native-x.jsonl', 'call-3', CarbonImmutable::now());
-        $this->visits->entered($session->id, 'native-y', self::PROJECT.'/native-z.jsonl', 'call-4', CarbonImmutable::now());
+        $this->visits->entered(
+            $session->id,
+            'native-y',
+            self::PROJECT.'/native-z.jsonl',
+            'call-4',
+            CarbonImmutable::now(),
+        );
 
         $this->assertTrue($this->access->mayRead($session->id, self::PROJECT.'/native-fork/tool-results/out.txt'));
         $this->assertFalse($this->access->mayRead($session->id, self::PROJECT.'/native-parent.jsonl'));

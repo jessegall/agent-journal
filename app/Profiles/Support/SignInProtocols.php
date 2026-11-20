@@ -6,6 +6,7 @@ namespace App\Profiles\Support;
 
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Exceptions\SignInProtocolMissing;
+use App\Registries\Support\Registry;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -14,18 +15,29 @@ use Illuminate\Contracts\Container\Container;
 final class SignInProtocols
 {
     /**
-     * @var array<string, class-string<SignInProtocol>>
+     * @var Registry<class-string<SignInProtocol>>
      */
-    private array $protocols = [];
+    private readonly Registry $protocols;
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct(private readonly Container $container)
+    {
+        $this->protocols = Registry::replacing(SignInProtocolMissing::for(...));
+    }
 
     /**
      * @param  class-string<SignInProtocol>  $protocol
      */
     public function register(string $program, string $protocol): void
     {
-        $this->protocols[$program] = $protocol;
+        $this->protocols->put($program, $protocol);
+    }
+
+    /**
+     * Whether the host has a sign-in protocol for the program.
+     */
+    public function supports(string $program): bool
+    {
+        return $this->protocols->has($program);
     }
 
     /**
@@ -33,10 +45,6 @@ final class SignInProtocols
      */
     public function for(string $program): SignInProtocol
     {
-        if (! isset($this->protocols[$program])) {
-            throw SignInProtocolMissing::for($program);
-        }
-
-        return $this->container->make($this->protocols[$program]);
+        return $this->container->make($this->protocols->get($program));
     }
 }

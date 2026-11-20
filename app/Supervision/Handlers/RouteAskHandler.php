@@ -27,11 +27,13 @@ final readonly class RouteAskHandler implements CommandHandler
     {
         $ask = $this->asks->read($command->ask);
         $target = $ask->requirePending($command->expectedVersion);
-        $recipient = $this->recipients->resolve($target);
+        $found = $this->recipients->resolve($target);
 
-        if ($recipient === null) {
+        if ($found->isEmpty()) {
             return $target->isOwner() ? AskRouteStatus::NoOwner : AskRouteStatus::PendingProfile;
         }
+
+        $recipient = $found->get();
 
         $assignment = new JournalAssignment(
             $ask->assignmentIdentity(),

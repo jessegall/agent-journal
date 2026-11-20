@@ -106,7 +106,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
     }
 
     /**
-     * @param list<SupervisorProfile> $proposed
+     * @param  list<SupervisorProfile>  $proposed
      * @return array<string, SupervisorProfile>
      */
     private function profileRoutes(array $proposed): array
@@ -120,7 +120,9 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
         return $profiles;
     }
 
-    /** @param array<string, SupervisorProfile> $profiles */
+    /**
+     * @param  array<string, SupervisorProfile>  $profiles
+     */
     private function requireKnown(SupervisorRoutes $routes, array $profiles): void
     {
         foreach ($routes->overrides as $override) {
@@ -137,8 +139,8 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
     }
 
     /**
-     * @param array<string, SupervisorProfile> $profiles
-     * @param array<string, SupervisorRoutes> $actors
+     * @param  array<string, SupervisorProfile>  $profiles
+     * @param  array<string, SupervisorRoutes>  $actors
      */
     private function requireAcyclic(array $profiles, array $actors): void
     {

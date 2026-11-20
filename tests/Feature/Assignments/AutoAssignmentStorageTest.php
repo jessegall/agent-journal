@@ -23,8 +23,8 @@ use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\AutoAssignmentOutcome;
 use App\Assignments\Support\Page;
 use App\Assignments\Support\PoolReference;
-use Closure;
 use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -248,7 +248,9 @@ final class AutoAssignmentStorageTest extends TestCase
         $this->assertSame(1, $this->fact()->revision);
     }
 
-    /** @param Closure(AutoAssignmentFact): AutoAssignmentOutcome $claim */
+    /**
+     * @param  Closure(AutoAssignmentFact): AutoAssignmentOutcome  $claim
+     */
     private function claim(Closure $claim): AutoAssignmentOutcome
     {
         return $this->app->make(AssignmentTransaction::class)

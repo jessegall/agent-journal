@@ -9,7 +9,6 @@ use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
-use App\Profiles\Exceptions\SignInProtocolMissing;
 use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\CleanupProgress;
@@ -45,13 +44,13 @@ final readonly class PrivateSignInProcesses
             return false;
         }
 
-        try {
-            $protocol = $this->protocols->for($claimed->program);
-        } catch (SignInProtocolMissing) {
+        if (! $this->protocols->supports($claimed->program)) {
             $this->host->report($claimed, SignInOutcome::Failed, null);
 
             return true;
         }
+
+        $protocol = $this->protocols->for($claimed->program);
 
         if (! $this->owners->drain($claimed->directory)) {
             $this->host->report($claimed, SignInOutcome::Failed, null);
@@ -91,13 +90,13 @@ final readonly class PrivateSignInProcesses
             return false;
         }
 
-        try {
-            $verification = $this->protocols->for($claimed->program)->verify($claimed->directory);
-        } catch (SignInProtocolMissing) {
+        if (! $this->protocols->supports($claimed->program)) {
             $this->host->reportCheck($claimed, AccountCheckResult::Unknown);
 
             return true;
         }
+
+        $verification = $this->protocols->for($claimed->program)->verify($claimed->directory);
 
         $result = match (true) {
             ! $verification->isCertain => AccountCheckResult::Unknown,
@@ -130,15 +129,11 @@ final readonly class PrivateSignInProcesses
 
     private function removeStore(ClaimedCleanup $claimed): bool
     {
-        try {
-            $protocol = $this->protocols->for($claimed->program);
-        } catch (SignInProtocolMissing) {
+        if (! $this->protocols->supports($claimed->program) || ! $this->owners->drain($claimed->directory)) {
             return false;
         }
 
-        if (! $this->owners->drain($claimed->directory)) {
-            return false;
-        }
+        $protocol = $this->protocols->for($claimed->program);
 
         $protocol->signOut($claimed->directory);
         $verification = $protocol->verify($claimed->directory);

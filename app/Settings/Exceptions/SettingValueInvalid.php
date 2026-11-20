@@ -6,6 +6,7 @@ namespace App\Settings\Exceptions;
 
 use App\Settings\Enums\SettingType;
 use RuntimeException;
+use Throwable;
 
 /**
  * A value a setting does not accept, refused before it is stored; the message names the setting and the type it
@@ -13,9 +14,12 @@ use RuntimeException;
  */
 final class SettingValueInvalid extends RuntimeException
 {
-    public static function for(string $owner, string $key, SettingType $expected): self
+    public static function for(string $owner, string $key, SettingType $expected, Throwable|null $previous = null): self
     {
-        return new self("The value for the setting {$key} of {$owner} is not a {$expected->value} value it accepts.");
+        return new self(
+            "The value for the setting {$key} of {$owner} is not a {$expected->value} value it accepts.",
+            previous: $previous,
+        );
     }
 
     public static function notToggleGroup(string $owner, string $key): self

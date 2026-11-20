@@ -117,7 +117,7 @@ final class NameScan
             $parent instanceof Expr\StaticCall, $parent instanceof Expr\StaticPropertyFetch => NameType::StaticAccess,
             $parent instanceof Expr\New_ => NameType::Construction,
             $parent instanceof Stmt\Class_ => self::classStatementType($parent, $name),
-            $parent instanceof Param && $parent->type === $name && StateEventParameter::matches($parent) => NameType::StateEventParameter,
+            self::isStateEventParameter($parent, $name) => NameType::StateEventParameter,
             self::isType($parent, $name) => NameType::Type,
             default => NameType::Other,
         };
@@ -153,5 +153,10 @@ final class NameScan
             $parent instanceof Stmt\Property, $parent instanceof Stmt\ClassConst => $parent->type === $name,
             default => false,
         };
+    }
+
+    private static function isStateEventParameter(mixed $parent, Name $name): bool
+    {
+        return $parent instanceof Param && $parent->type === $name && StateEventParameter::matches($parent);
     }
 }

@@ -22,7 +22,9 @@ use App\Supervision\Models\Ask;
 use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Values\AskReference;
 
-/** @extends Command<AskRouteStatus> */
+/**
+ * @extends Command<AskRouteStatus>
+ */
 #[RepeatableRead]
 #[HandledBy(RouteAskHandler::class)]
 #[Effect(CommandEffectType::AssignmentChange)]
@@ -36,7 +38,9 @@ final readonly class RouteAsk extends Command implements AuthorizedCommand
         public AssignmentReference|null $current = null,
     ) {}
 
-    /** @return class-string<Ask> */
+    /**
+     * @return class-string<Ask>
+     */
     public function subject(): string
     {
         return Ask::class;

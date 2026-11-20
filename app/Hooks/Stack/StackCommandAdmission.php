@@ -15,8 +15,8 @@ use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Values\CommandDecision;
 use App\Bus\Values\EffectiveCommand;
-use App\Hooks\Contracts\StackPermission;
 use App\Hooks\Contracts\OperationPolicy;
+use App\Hooks\Contracts\StackPermission;
 
 final readonly class StackCommandAdmission implements CommandAdmission
 {
@@ -46,7 +46,10 @@ final readonly class StackCommandAdmission implements CommandAdmission
         }
 
         if ($this->session->hasSession()) {
-            return $this->assessStack(new StackTarget($this->actor->actor()->id, $this->session->sessionId()), $command);
+            return $this->assessStack(
+                new StackTarget($this->actor->actor()->id, $this->session->sessionId()),
+                $command,
+            );
         }
 
         if ($command->command instanceof TargetsAgentStack) {

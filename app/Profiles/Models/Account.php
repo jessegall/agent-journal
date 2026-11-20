@@ -345,7 +345,7 @@ final class Account extends Model implements ReadableModel
      */
     public function requireAvailable(): void
     {
-        if (! $this->state->acceptsStarts() || $this->maintenance) {
+        if (! $this->state->canStart() || $this->maintenance) {
             throw AccountUnavailable::forStart($this->program, $this->state->startUnavailableReason());
         }
     }

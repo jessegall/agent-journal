@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 /**
  * The actor may not do the ability; the message names the ability and the kind of subject, never its content.
@@ -22,9 +23,9 @@ final class ActorNotAllowed extends RuntimeException implements CommandRefusal
         return new self("This actor may not {$ability->value} this {$subjectType}.");
     }
 
-    public static function withoutStoredAuthority(string $type): self
+    public static function withoutStoredAuthority(string $type, Throwable|null $previous = null): self
     {
-        return new self("A {$type} has no stored authority another actor's request could evaluate.");
+        return new self("A {$type} has no stored authority another actor's request could evaluate.", previous: $previous);
     }
 
     public static function asNonOwner(): self

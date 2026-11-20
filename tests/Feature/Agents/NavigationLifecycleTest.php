@@ -109,6 +109,6 @@ final class NavigationLifecycleTest extends TestCase
 
         $this->assertSame(NavigationState::Interrupted, $navigation->fresh()?->state);
         $this->assertSame(HoldReason::NeedsAttention, $stalled->fresh()?->hold_reason);
-        $this->assertTrue($stalled->fresh()?->isStoppedKeyScript() ?? false);
+        $this->assertTrue($stalled->refresh()->isStoppedKeyScript());
     }
 }

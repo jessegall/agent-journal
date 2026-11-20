@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\Contracts\CommandStops as CommandStopsContract;
 use App\Bus\Contracts\StopTime;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
@@ -15,7 +16,7 @@ use Psr\Log\LoggerInterface;
  * past its stop is logged, not cut off.
  */
 #[Scoped]
-final class CommandStops
+final class CommandStops implements CommandStopsContract
 {
     /**
      * @var list<StopTime>
