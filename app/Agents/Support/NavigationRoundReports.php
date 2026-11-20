@@ -48,7 +48,7 @@ final readonly class NavigationRoundReports
 
     private function settleProof(NavigationRequest $navigation, NavigationRoundReport $report): void
     {
-        if (! $report->proofSeen) {
+        if (! $report->hasObservedProof) {
             $navigation->refuseProof();
 
             return;

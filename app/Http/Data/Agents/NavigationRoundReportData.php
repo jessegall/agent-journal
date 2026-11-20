@@ -31,7 +31,7 @@ final class NavigationRoundReportData extends Data
         public readonly array $rows,
         public readonly int $highlight,
         public readonly int $generation,
-        public readonly bool $proofSeen,
+        public readonly bool $hasObservedProof,
         public readonly string|null $refusal = null,
         public readonly array $steps = [],
     ) {}
@@ -55,7 +55,7 @@ final class NavigationRoundReportData extends Data
             $this->rows,
             $highlight,
             $this->generation,
-            $this->proofSeen,
+            $this->hasObservedProof,
             $this->refusal,
             $steps,
         );

@@ -12,10 +12,7 @@ use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\HelperImages;
-use App\Agents\Contracts\HostCapabilities;
-use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Events\StartAccepted;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\AgentBusy;
@@ -30,7 +27,7 @@ use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\SessionPolicy;
 use App\Agents\Models\StartRecord;
 use App\Agents\Resolvers\Support\HostStartMaterial;
-use App\Agents\Support\HostCapabilityQuery;
+use App\Agents\Support\ContainerAdmission;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\HostCapacityLock;
 use App\Agents\Support\StartReceipt;
@@ -52,7 +49,7 @@ final readonly class StartAgentHandler implements CommandHandler
         private RegisterPendingStart $pendingStarts,
         private HostStartMaterial $material,
         private Dispatcher $events,
-        private HostCapabilities $capabilities,
+        private ContainerAdmission $containers,
         private HelperImages $images,
         private HostCapacity $capacity,
         private HostCapacityLock $capacityLock,
@@ -135,15 +132,7 @@ final readonly class StartAgentHandler implements CommandHandler
      */
     private function admitContainer(StartRequest $request): void
     {
-        foreach ([HostCapabilityType::AccountTransport, HostCapabilityType::ContainerRuntime] as $capability) {
-            $query = new HostCapabilityQuery(
-                $capability,
-                $request->selection->program,
-                AccountModeType::Subscription,
-                ExecutionModeType::RequiredContainer,
-            );
-            $this->capabilities->capability($query)->assertSupported();
-        }
+        $this->containers->assertSupported($request->selection->program);
 
         if (! $this->images->isVerified((string) $request->execution()->imageReference)) {
             throw ImageUnverified::because((string) $request->execution()->imageReference);

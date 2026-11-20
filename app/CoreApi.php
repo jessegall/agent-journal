@@ -565,6 +565,7 @@ use App\Hooks\Stack\StackVerdict;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\WorkRecordState;
+use App\Hooks\Contracts\WorkProgress;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
 use App\Hooks\Contracts\ConditionalState;
@@ -1223,6 +1224,7 @@ final class CoreApi
                 PolicyCatalogue::class,
                 ActorWorkStacks::class,
                 WorkRecordState::class,
+                WorkProgress::class,
                 ScriptKeywordDefinition::class,
                 Inbox::class,
                 InboxResolver::class,

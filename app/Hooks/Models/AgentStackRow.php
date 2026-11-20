@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Models;
 
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
@@ -182,6 +183,28 @@ final class AgentStackRow extends Model implements ReadableModel
         $row = self::query()->authorizedFor($target)->lockForUpdate()->first();
 
         return $row !== null && $row->isActive() ? new Some($row) : None::create();
+    }
+
+    /** @param Builder<self> $query */
+    #[Scope]
+    protected function historyOf(Builder $query, ActorIdentity $actor): void
+    {
+        $query->withoutGlobalScope(AgentSessionScope::class)->where('agent_id', $actor->id);
+    }
+
+    /**
+     * @param list<string> $sessions
+     * @return list<self>
+     */
+    public static function lockActiveOf(ActorIdentity $actor, array $sessions): array
+    {
+        if ($sessions === []) {
+            return [];
+        }
+
+        return self::query()->historyOf($actor)->whereIn('session_id', $sessions)
+            ->where('status', StackStatus::Active->value)
+            ->orderBy('session_id')->lockForUpdate()->readLimit(count($sessions))->get()->all();
     }
 
     public function isActive(): bool

@@ -91,7 +91,7 @@ func TestAProofIsSeenOnlyWhenTheLiveRowsShowItAndTheStalledScreenDidNot(t *testi
 	already := Uncertainty{HostRows: []string{"Model: GPT-6"}}
 	shown := runner.Navigate(Round{Generation: liveGeneration(runner), Proof: "GPT-6"}, 0, already, nil)
 
-	if !seen.ProofSeen || missing.ProofSeen || shown.ProofSeen || shown.Refusal != RefusedProofShown {
+	if !seen.HasObservedProof || missing.HasObservedProof || shown.HasObservedProof || shown.Refusal != RefusedProofShown {
 		t.Fatalf("the proofs ended %+v, %+v and %+v", seen, missing, shown)
 	}
 }

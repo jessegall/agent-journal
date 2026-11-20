@@ -31,7 +31,7 @@ enum CoreAskType: string
     public function subject(): SubjectType
     {
         return match ($this) {
-            self::Question, self::Stuck => new SubjectType('question', requiresWork: false),
+            self::Question, self::Stuck => new SubjectType('question', isWorkRequired: false),
             self::ReviewReady => new SubjectType('code-review'),
             self::MergeReady => new SubjectType('merge'),
         };

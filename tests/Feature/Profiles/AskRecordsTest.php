@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Actors\Contracts\ActorAttention;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Support\AttentionOrigin;
+use App\Actors\Support\AttentionOutcome;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Models\Agent;
 use App\Agents\Support\StackTarget;
@@ -16,6 +19,7 @@ use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Contracts\WorkProgress;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\States\ReadyState;
@@ -38,6 +42,8 @@ use App\Supervision\Enums\AskRouteStatus;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Models\Ask;
 use App\Supervision\Models\AskHop;
+use App\Supervision\States\AnsweringAskState;
+use App\Supervision\Support\AskAttention;
 use App\Supervision\Support\AskRecords;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Values\AskReference;
@@ -257,6 +263,71 @@ final class AskRecordsTest extends TestCase
                 ->where('page.data.cards.0.body', 'Where does this fail?')
                 ->where('page.data.cards.0.open', true),
         );
+    }
+
+    public function test_only_the_first_ask_enters_the_stack_and_pending_reply_attention_recovers_once(): void
+    {
+        $this->activateProfiles();
+        $requester = TestStart::start('journal-worker');
+        $recipient = TestStart::start('journal-code-reviewer');
+        $holder = ActorIdentity::of($recipient->agent);
+        $author = ActorIdentity::of($requester->agent);
+        $attention = $this->mock(ActorAttention::class);
+        $attention->shouldReceive('request')->withArgs(
+            fn (ActorIdentity $actor, AttentionOrigin $origin) => $actor->isSameAs($holder),
+        )->twice()->andReturn(AttentionOutcome::accepted('holder-wake', 1));
+        $attention->shouldReceive('request')->withArgs(
+            fn (ActorIdentity $actor, AttentionOrigin $origin) => $actor->isSameAs($author),
+        )->twice()->andReturn(AttentionOutcome::noRuntime(), AttentionOutcome::accepted('reply-wake', 1));
+        $now = CarbonImmutable::now();
+        new AgentStackRow()->startFor(
+            new StackTarget($recipient->agent->id, $recipient->session->id),
+            new FrameRecords([
+                new FrameRecord('ready', new StateReference(ReadyState::TYPE_KEY, NoSubject::None), true, 1, $now),
+            ]),
+            new TickingTypes([]),
+        );
+        $requester->startRequest($this->app);
+        $this->app->instance(ActorAttention::class, $attention);
+        $commands = $this->app->make(CommandBus::class);
+        $first = $commands->run(new AskSupervisor('First question', 'first'));
+        $second = $commands->run(new AskSupervisor('Next question', 'second'));
+        $firstHop = AskHop::query()->where('ask_id', $first->id)->sole();
+        $secondHop = AskHop::query()->where('ask_id', $second->id)->sole();
+        $progress = $this->app->make(WorkProgress::class);
+        $firstWork = AnsweringAskState::reference($firstHop)->workReference();
+        $secondWork = AnsweringAskState::reference($secondHop)->workReference();
+        $this->assertNotNull($progress->enteredAt($holder, $firstWork));
+        $this->assertNull($progress->enteredAt($holder, $secondWork));
+
+        $recipient->startRequest($this->app);
+        $this->app->instance(ActorAttention::class, $attention);
+        $this->app->make(CommandBus::class)->run(new ReplyToAsk($first, 'Check the input.'));
+        $this->assertNull($progress->enteredAt($holder, $firstWork));
+        $this->assertNotNull($progress->enteredAt($holder, $secondWork));
+        $this->assertSame(AskHop::PENDING_DELIVERY, $firstHop->refresh()->attention);
+
+        $delivery = $this->app->make(AskAttention::class);
+        $delivery->recover();
+        $delivery->recover();
+        $this->assertSame('reply-wake', $firstHop->refresh()->attention);
+    }
+
+    public function test_a_user_supervisor_has_a_card_without_a_runtime_wake(): void
+    {
+        $this->activateProfiles();
+        $owner = User::factory()->create();
+        $this->startUserRequestAs($owner->id);
+        $this->mock(ActorAttention::class)->shouldNotReceive('request');
+        $requester = Agent::named('Requester', 'journal-main');
+        $this->startRequestAs($requester->id, TestIds::of(99));
+
+        $ask = $this->app->make(CommandBus::class)->run(new AskSupervisor('Check my result.', 'owner-question'));
+        $this->startUserRequestAs($owner->id);
+        $card = $this->app->make(AskReader::class)->card($ask);
+
+        $this->assertTrue($card->obligation);
+        $this->assertSame($owner->id, $card->holderId);
     }
 
     private function activateProfiles(): void

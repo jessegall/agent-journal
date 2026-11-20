@@ -256,7 +256,7 @@ final class NavigationRoundTest extends TestCase
                 'rows' => ['Model: GPT-6'],
                 'highlight' => -1,
                 'generation' => 8,
-                'proof_seen' => $proofSeen,
+                'has_observed_proof' => $proofSeen,
                 ...($steps === [] ? [] : ['steps' => $steps]),
             ],
         ]);

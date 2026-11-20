@@ -1,8 +1,8 @@
 # The name review
 
 `reviewed-names.txt` holds every name declared in `app`, `domain/*/src` and `tests/Architecture/Support` that has
-been read and judged: classes, interfaces, enums, traits, methods, properties, constants and enum cases, one per line
-as `type<TAB>Name`. A name missing from it has not been judged yet. Check 2 runs the same command every hour.
+been read and judged. It includes classes, interfaces, enums, traits, methods, properties, constants, enum cases,
+parameters and local variables. Each line has the declaration type and name. Check 2 runs the same command every hour.
 
 ```sh
 php tools/refactoring/list-names.php --check docs/naming/reviewed-names.txt app domain/*/src tests/Architecture/Support
