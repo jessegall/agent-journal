@@ -39,8 +39,8 @@ final class RejectProposalCall extends Data implements JournalCall
         public string $proposal,
         #[Max(2000)]
         public string $reason,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

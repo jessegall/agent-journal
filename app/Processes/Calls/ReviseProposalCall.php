@@ -43,8 +43,8 @@ final class ReviseProposalCall extends Data implements JournalCall
         public array $declaration,
         #[MapName('expected_revision'), Min(1)]
         public int|null $expectedRevision,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

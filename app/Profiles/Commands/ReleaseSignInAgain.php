@@ -16,8 +16,8 @@ use App\Profiles\Handlers\ReleaseSignInAgainHandler;
  *
  * @extends Command<bool>
  */
-#[HandledBy(ReleaseSignInAgainHandler::class)]
 #[Entry(CommandEntry::AccountMaintenance)]
+#[HandledBy(ReleaseSignInAgainHandler::class)]
 final readonly class ReleaseSignInAgain extends Command
 {
     public function __construct(public string $attemptId) {}

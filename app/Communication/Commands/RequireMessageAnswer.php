@@ -20,10 +20,10 @@ use App\Communication\Policies\MessagePolicy;
  *
  * @extends Command<null>
  */
-#[HandledBy(RequireMessageAnswerHandler::class)]
-#[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(RequireMessageAnswerHandler::class)]
+#[Authorize(MessagePolicy::class, MessageAbility::Work)]
 final readonly class RequireMessageAnswer extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $messageId) {}

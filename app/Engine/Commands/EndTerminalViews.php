@@ -16,8 +16,8 @@ use App\Engine\Handlers\EndTerminalViewsHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(EndTerminalViewsHandler::class)]
 #[Entry(CommandEntry::EngineMaintenance)]
+#[HandledBy(EndTerminalViewsHandler::class)]
 final readonly class EndTerminalViews extends Command
 {
     /**

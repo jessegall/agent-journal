@@ -24,6 +24,7 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<MessageNamed>
  */
+#[MapName(SnakeCaseMapper::class)]
 #[Endpoint(
     'communication/require-answer',
     'POST',
@@ -31,14 +32,13 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
     CallEffect::KeyedWrite,
     ReceiptOwner::CommandBus,
 )]
-#[MapName(SnakeCaseMapper::class)]
 final class RequireMessageAnswerCall extends Data implements JournalCall
 {
     public function __construct(
         #[Size(26)]
         public string $messageId,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

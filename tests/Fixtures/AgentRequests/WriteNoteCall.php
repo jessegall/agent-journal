@@ -31,8 +31,8 @@ final class WriteNoteCall extends Data implements JournalCall
         #[InPath, FromRouteParameter('notebookId')]
         public string $notebookId,
         public string $text,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

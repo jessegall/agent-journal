@@ -21,9 +21,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /**
  * plans_list: one page of every plan, 20 to a page as Plans keeps it, with state and progress.
  */
+#[IsReadOnly]
 #[Name('plans_list')]
 #[Description('Every plan, 20 to a page, with state, progress and holder. Filter by search and states and choose the page, or send only the continuation a result gave.')]
-#[IsReadOnly]
 final class PlansListTool extends JournalReadTool
 {
     public function __construct(private readonly PlanResolver $plans, private readonly NumberedPages $pages) {}

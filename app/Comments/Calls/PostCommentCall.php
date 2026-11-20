@@ -33,8 +33,8 @@ final class PostCommentCall extends Data implements JournalCall
         public string $body,
         #[MapName('submission_key'), Uuid]
         public string $submissionKey,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
         public CommentPlace|null $place = null,
     ) {}

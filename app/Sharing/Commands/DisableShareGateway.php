@@ -22,8 +22,8 @@ use App\Sharing\Support\GatewayConfiguration;
  * @extends Command<GatewayConfiguration>
  */
 #[HandledBy(DisableShareGatewayHandler::class)]
-#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
+#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
 final readonly class DisableShareGateway extends Command implements HasAuthorizationSubject
 {
     public function __construct(

@@ -18,8 +18,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<ClaimedStart|null>
  */
-#[HandledBy(ClaimStartHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ClaimStartHandler::class)]
 final readonly class ClaimStart extends Command
 {
     public function __construct(

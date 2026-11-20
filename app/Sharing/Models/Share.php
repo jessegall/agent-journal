@@ -62,6 +62,7 @@ use PhpOption\Option;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
+#[Hidden(['token_digest', 'token_ciphertext'])]
 #[Fillable(
     [
         'state',
@@ -74,7 +75,6 @@ use PhpOption\Option;
         'terminal_at',
     ],
 )]
-#[Hidden(['token_digest', 'token_ciphertext'])]
 final class Share extends Model implements Numbered, ReadableModel
 {
     use BelongsToOneRoot, BoundedReads, HasNumber, HasUlids, Linkable;

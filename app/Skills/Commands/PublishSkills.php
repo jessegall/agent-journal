@@ -17,8 +17,8 @@ use App\Skills\Values\PublicationClaim;
  *
  * @extends Command<PublicationClaim>
  */
-#[HandledBy(PublishSkillsHandler::class)]
 #[Entry(CommandEntry::SkillPublisher)]
+#[HandledBy(PublishSkillsHandler::class)]
 final readonly class PublishSkills extends Command
 {
     public function __construct(

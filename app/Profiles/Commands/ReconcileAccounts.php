@@ -16,6 +16,6 @@ use App\Profiles\Handlers\ReconcileAccountsHandler;
  *
  * @extends Command<int>
  */
-#[HandledBy(ReconcileAccountsHandler::class)]
 #[Entry(CommandEntry::AccountMaintenance)]
+#[HandledBy(ReconcileAccountsHandler::class)]
 final readonly class ReconcileAccounts extends Command {}

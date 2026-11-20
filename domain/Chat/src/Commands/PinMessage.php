@@ -20,9 +20,9 @@ use Domain\Chat\Support\ConversationPair;
  *
  * @extends Command<null>
  */
+#[RetainedActorRequestKey]
 #[HandledBy(PinMessageHandler::class)]
 #[Authorize(MessagePinPolicy::class, MessagePinAbility::Work)]
-#[RetainedActorRequestKey]
 final readonly class PinMessage extends Command implements HasAuthorizationSubject
 {
     public function __construct(

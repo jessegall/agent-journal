@@ -23,10 +23,10 @@ use App\Desks\Support\SeatChangeResult;
  *
  * @extends Command<SeatChangeResult>
  */
-#[HandledBy(ReplaceSeatOccupantHandler::class)]
-#[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(ReplaceSeatOccupantHandler::class)]
+#[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 final readonly class ReplaceSeatOccupant extends Command implements HasAuthorizationSubject
 {
     public function __construct(

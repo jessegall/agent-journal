@@ -19,8 +19,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<NavigationRaiseAnswer>
  */
-#[HandledBy(RaiseNavigationHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(RaiseNavigationHandler::class)]
 final readonly class RaiseNavigation extends Command
 {
     /**

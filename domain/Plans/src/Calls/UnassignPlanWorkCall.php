@@ -29,8 +29,8 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<PlanWorkResultData>
  */
-#[Endpoint('plans/work/unassign', 'POST', PlanWorkResultData::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('plans/work/unassign', 'POST', PlanWorkResultData::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class UnassignPlanWorkCall extends Data implements JournalCall
 {
     use NamesExpectedAssignment;
@@ -46,8 +46,8 @@ final class UnassignPlanWorkCall extends Data implements JournalCall
         public ActorType $holderType,
         #[Ulid]
         public string $holderId,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

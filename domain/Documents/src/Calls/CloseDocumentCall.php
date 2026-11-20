@@ -37,8 +37,8 @@ final class CloseDocumentCall extends Data implements JournalCall
         public string $token,
         #[Min(1)]
         public int $version,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

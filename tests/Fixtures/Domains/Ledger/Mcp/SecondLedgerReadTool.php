@@ -14,9 +14,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /**
  * Reads a ledger entry a second way.
  */
+#[IsReadOnly]
 #[Name('ledger_read')]
 #[Description('Reads a ledger entry a second way.')]
-#[IsReadOnly]
 final class SecondLedgerReadTool extends JournalReadTool
 {
     protected function read(ToolArguments $arguments): ToolResult

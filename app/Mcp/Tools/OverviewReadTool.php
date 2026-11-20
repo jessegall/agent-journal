@@ -15,9 +15,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /**
  * overview_read: the caller's session, the state its stack answers from and each owner's counts of its work.
  */
+#[IsReadOnly]
 #[Name('overview_read')]
 #[Description('Your agent and session, the state your stack answers from, and counts of the work you hold with the call that lists it. Read this first.')]
-#[IsReadOnly]
 final class OverviewReadTool extends JournalReadTool
 {
     protected array|null $meta = ['anthropic/alwaysLoad' => true];

@@ -36,8 +36,8 @@ final class StartEvidenceRunCall extends Data implements JournalCall
     public function __construct(
         #[InPath, FromRouteParameterProperty('evidencePermit', 'id')]
         public string $evidencePermit,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

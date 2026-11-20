@@ -30,8 +30,8 @@ final class RetireAgentCall extends Data implements JournalCall
     public function __construct(
         #[Ulid]
         public string $agentId,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

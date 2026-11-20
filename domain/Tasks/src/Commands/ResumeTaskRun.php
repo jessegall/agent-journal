@@ -21,10 +21,10 @@ use Domain\Tasks\Policies\TaskPolicy;
  *
  * @extends Command<int>
  */
-#[HandledBy(ResumeTaskRunHandler::class)]
-#[Authorize(TaskPolicy::class, TaskAbility::Start)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(ResumeTaskRunHandler::class)]
+#[Authorize(TaskPolicy::class, TaskAbility::Start)]
 final readonly class ResumeTaskRun extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $runId) {}

@@ -26,8 +26,8 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<MessagesRead>
  */
-#[Endpoint('communication/read', 'POST', MessagesRead::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('communication/read', 'POST', MessagesRead::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class ReadMessagesCall extends Data implements JournalCall
 {
     /**
@@ -38,8 +38,8 @@ final class ReadMessagesCall extends Data implements JournalCall
         public string $inboxId,
         #[Min(1), Max(100)]
         public array $messageIds,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

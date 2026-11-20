@@ -17,8 +17,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<StartGrant|null>
  */
-#[HandledBy(ClaimStartGrantHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ClaimStartGrantHandler::class)]
 final readonly class ClaimStartGrant extends Command
 {
     public function __construct(

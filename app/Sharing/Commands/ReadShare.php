@@ -18,9 +18,9 @@ use App\Sharing\Support\SharedPage;
  *
  * @extends Command<SharedPage>
  */
-#[HandledBy(ReadShareHandler::class)]
-#[Entry(CommandEntry::ShareGateway)]
 #[RepeatableRead]
+#[Entry(CommandEntry::ShareGateway)]
+#[HandledBy(ReadShareHandler::class)]
 final readonly class ReadShare extends Command
 {
     public function __construct(

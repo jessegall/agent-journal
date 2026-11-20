@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name'])]
 #[Guarded([])]
+#[Fillable(['name'])]
 final class EmptyGuardedModel extends Model {}

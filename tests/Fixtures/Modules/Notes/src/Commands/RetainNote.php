@@ -19,9 +19,9 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  *
  * @extends Command<int>
  */
+#[RetainedActorRequestKey]
 #[HandledBy(RetainNoteHandler::class)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
-#[RetainedActorRequestKey]
 final readonly class RetainNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $text) {}

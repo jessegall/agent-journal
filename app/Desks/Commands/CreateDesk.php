@@ -20,10 +20,10 @@ use App\Desks\Policies\DeskPolicy;
  *
  * @extends Command<string>
  */
-#[HandledBy(CreateDeskHandler::class)]
-#[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(CreateDeskHandler::class)]
+#[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 final readonly class CreateDesk extends Command implements HasAuthorizationSubject
 {
     public function __construct(

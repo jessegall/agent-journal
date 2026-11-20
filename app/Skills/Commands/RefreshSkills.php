@@ -17,6 +17,6 @@ use App\Skills\Values\RefreshResult;
  *
  * @extends Command<RefreshResult>
  */
-#[HandledBy(RefreshSkillsHandler::class)]
 #[Entry(CommandEntry::SkillPublisher)]
+#[HandledBy(RefreshSkillsHandler::class)]
 final readonly class RefreshSkills extends Command {}

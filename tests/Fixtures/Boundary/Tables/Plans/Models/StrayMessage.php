@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['body'])]
 #[Table('messages')]
+#[Fillable(['body'])]
 final class StrayMessage extends Model {}

@@ -17,9 +17,9 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 /**
  * @extends Command<string>
  */
+#[RepeatableRead]
 #[HandledBy(PinNoteHandler::class)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
-#[RepeatableRead]
 final readonly class PinNote extends Command implements HasAuthorizationSubject
 {
     public function __construct(public int $rowId) {}

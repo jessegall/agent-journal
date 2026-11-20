@@ -31,8 +31,8 @@ final class SettleReportCall extends Data implements JournalCall
         #[Max(32)]
         public string $number,
         public string $reason,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

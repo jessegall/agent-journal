@@ -16,9 +16,9 @@ use Laravel\Mcp\Server\Attributes\Uri;
  * journal://v1/overview: the same overview as overview_read, as JSON.
  */
 #[Name('overview')]
-#[Description('Your agent and session, the state your stack answers from, and counts of the work you hold.')]
 #[Uri('journal://v1/overview')]
 #[MimeType('application/json')]
+#[Description('Your agent and session, the state your stack answers from, and counts of the work you hold.')]
 final class OverviewResource extends JournalResource
 {
     public function __construct(private readonly OverviewResolver $overview) {}

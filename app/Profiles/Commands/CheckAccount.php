@@ -17,8 +17,8 @@ use App\Profiles\Handlers\CheckAccountHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(CheckAccountHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(CheckAccountHandler::class)]
 final readonly class CheckAccount extends Command
 {
     public function __construct(

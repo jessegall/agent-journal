@@ -18,9 +18,9 @@ use Tests\Fixtures\Bus\Shop\Handlers\AddItemHandler;
 /**
  * @extends Command<int>
  */
+#[RepeatableRead]
 #[HandledBy(AddItemHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
-#[RepeatableRead]
 final readonly class AddItem extends Command implements HasAuthorizationSubject
 {
     /**

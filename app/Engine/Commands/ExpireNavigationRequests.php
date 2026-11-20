@@ -15,8 +15,8 @@ use App\Engine\Handlers\ExpireNavigationRequestsHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(ExpireNavigationRequestsHandler::class)]
 #[Entry(CommandEntry::EngineMaintenance)]
+#[HandledBy(ExpireNavigationRequestsHandler::class)]
 final readonly class ExpireNavigationRequests extends Command
 {
     /**

@@ -17,8 +17,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<ScreenReportAnswer>
  */
-#[HandledBy(ReportRuntimeScreenHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReportRuntimeScreenHandler::class)]
 final readonly class ReportRuntimeScreen extends Command
 {
     public function __construct(

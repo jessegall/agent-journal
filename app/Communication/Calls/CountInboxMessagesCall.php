@@ -18,8 +18,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  *
  * @implements JournalCall<InboxCounts>
  */
-#[Endpoint('communication/counts', 'POST', InboxCounts::class, CallEffect::Read)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('communication/counts', 'POST', InboxCounts::class, CallEffect::Read)]
 final class CountInboxMessagesCall extends Data implements JournalCall
 {
     public function __construct(

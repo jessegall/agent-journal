@@ -18,8 +18,8 @@ use App\Bus\Support\Command;
  *
  * @extends Command<null>
  */
-#[HandledBy(ReportRuntimeActivityHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(ReportRuntimeActivityHandler::class)]
 final readonly class ReportRuntimeActivity extends Command
 {
     public function __construct(

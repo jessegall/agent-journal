@@ -28,8 +28,8 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<TaskEdited>
  */
-#[Endpoint('tasks/edit', 'POST', TaskEdited::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('tasks/edit', 'POST', TaskEdited::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class EditTaskCall extends Data implements JournalCall
 {
     public function __construct(
@@ -41,8 +41,8 @@ final class EditTaskCall extends Data implements JournalCall
         public string|null $title,
         #[Max(Task::NOTE_CHARACTERS), RequiredWithout('title')]
         public string|null $brief,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

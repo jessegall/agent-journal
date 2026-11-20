@@ -21,10 +21,10 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<string>
  */
-#[HandledBy(AskMessageHandler::class)]
-#[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(AskMessageHandler::class)]
+#[Authorize(MessagePolicy::class, MessageAbility::Work)]
 final readonly class AskMessage extends Command implements HasAuthorizationSubject
 {
     public function __construct(

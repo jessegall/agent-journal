@@ -31,6 +31,7 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<AutoAssignmentChangeData>
  */
+#[MapName(SnakeCaseMapper::class)]
 #[Endpoint(
     'assignments/auto/enable',
     'POST',
@@ -38,7 +39,6 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
     CallEffect::KeyedWrite,
     ReceiptOwner::CommandBus,
 )]
-#[MapName(SnakeCaseMapper::class)]
 final class EnableAutoAssignmentCall extends Data implements JournalCall
 {
     use NamesAssignmentPool;
@@ -62,8 +62,8 @@ final class EnableAutoAssignmentCall extends Data implements JournalCall
         public int $expectedRevision,
         #[Max(64)]
         public string|null $target,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

@@ -21,9 +21,9 @@ use Domain\Chat\Support\ConversationPair;
  *
  * @extends Command<null>
  */
+#[RetainedActorRequestKey]
 #[HandledBy(HideDockedRecordHandler::class)]
 #[Authorize(DockedRecordPolicy::class, DockedRecordAbility::Work)]
-#[RetainedActorRequestKey]
 final readonly class HideDockedRecord extends Command implements HasAuthorizationSubject
 {
     public function __construct(

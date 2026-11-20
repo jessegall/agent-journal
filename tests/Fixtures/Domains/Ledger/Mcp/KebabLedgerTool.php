@@ -14,9 +14,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /**
  * Reads a ledger entry under a kebab name.
  */
+#[IsReadOnly]
 #[Name('ledger-read')]
 #[Description('Reads a ledger entry under a kebab name.')]
-#[IsReadOnly]
 final class KebabLedgerTool extends JournalReadTool
 {
     protected function read(ToolArguments $arguments): ToolResult

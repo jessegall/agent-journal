@@ -16,8 +16,8 @@ use App\Sharing\Handlers\RecordGatewayHealthHandler;
  *
  * @extends Command<null>
  */
-#[HandledBy(RecordGatewayHealthHandler::class)]
 #[Entry(CommandEntry::ShareGateway)]
+#[HandledBy(RecordGatewayHealthHandler::class)]
 final readonly class RecordGatewayHealth extends Command
 {
     public function __construct(

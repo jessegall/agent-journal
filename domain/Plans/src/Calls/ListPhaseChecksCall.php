@@ -18,8 +18,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  *
  * @implements JournalCall<PhaseChecks>
  */
-#[Endpoint('plans/phases/checks', 'POST', PhaseChecks::class, CallEffect::Read)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('plans/phases/checks', 'POST', PhaseChecks::class, CallEffect::Read)]
 final class ListPhaseChecksCall extends Data implements JournalCall
 {
     use NamesPlanPhase;

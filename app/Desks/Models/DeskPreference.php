@@ -23,8 +23,8 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
  * @property string $actor_id
  * @property string $desk_id
  */
-#[Table('desk_preferences')]
 #[Fillable(['desk_id'])]
+#[Table('desk_preferences')]
 final class DeskPreference extends MorphPivot implements ReadableModel
 {
     use BelongsToOneActor, BoundedReads, HasUlids, Linkable;

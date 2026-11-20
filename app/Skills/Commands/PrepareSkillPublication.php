@@ -16,8 +16,8 @@ use App\Skills\Values\PreparationProgress;
  *
  * @extends Command<PreparationProgress>
  */
-#[HandledBy(PrepareSkillPublicationHandler::class)]
 #[Entry(CommandEntry::SkillPublisher)]
+#[HandledBy(PrepareSkillPublicationHandler::class)]
 final readonly class PrepareSkillPublication extends Command
 {
     public function __construct(

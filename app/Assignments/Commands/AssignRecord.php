@@ -23,10 +23,10 @@ use App\Records\Support\RecordIdentity;
  *
  * @extends Command<AssignmentResult>
  */
-#[HandledBy(AssignRecordHandler::class)]
-#[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
+#[HandledBy(AssignRecordHandler::class)]
+#[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
 final readonly class AssignRecord extends Command implements HasAuthorizationSubject
 {
     public function __construct(

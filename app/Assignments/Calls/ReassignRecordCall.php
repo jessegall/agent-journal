@@ -30,6 +30,7 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<AssignmentResultData>
  */
+#[MapName(SnakeCaseMapper::class)]
 #[Endpoint(
     'assignments/reassign',
     'POST',
@@ -37,7 +38,6 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
     CallEffect::KeyedWrite,
     ReceiptOwner::CommandBus,
 )]
-#[MapName(SnakeCaseMapper::class)]
 final class ReassignRecordCall extends Data implements JournalCall
 {
     use NamesAssignedRecord;
@@ -57,8 +57,8 @@ final class ReassignRecordCall extends Data implements JournalCall
         public ActorType $recipientType,
         #[Ulid]
         public string $recipientId,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

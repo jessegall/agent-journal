@@ -16,6 +16,6 @@ use App\Profiles\Values\ProfileActivation;
  *
  * @extends Command<ProfileActivation>
  */
-#[HandledBy(InstallBuiltInProfilesHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(InstallBuiltInProfilesHandler::class)]
 final readonly class InstallBuiltInProfiles extends Command {}

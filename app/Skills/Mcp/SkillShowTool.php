@@ -17,9 +17,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /**
  * skills_show: one skill's text exactly as it is delivered.
  */
+#[IsReadOnly]
 #[Name('skills_show')]
 #[Description('One skill by key: its owner, source, digest and the exact Markdown it is delivered as.')]
-#[IsReadOnly]
 final class SkillShowTool extends JournalReadTool
 {
     public function __construct(

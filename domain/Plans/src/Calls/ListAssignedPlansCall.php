@@ -21,8 +21,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
  *
  * @implements JournalCall<AssignedPlanListData>
  */
-#[Endpoint('plans/assigned', 'POST', AssignedPlanListData::class, CallEffect::Read)]
 #[MapName(SnakeCaseMapper::class)]
+#[Endpoint('plans/assigned', 'POST', AssignedPlanListData::class, CallEffect::Read)]
 final class ListAssignedPlansCall extends Data implements JournalCall
 {
     /**

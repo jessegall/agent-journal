@@ -19,9 +19,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /**
  * assignments_read: who holds one record, with the assignment reference a deliberate change must name.
  */
+#[IsReadOnly]
 #[Name('assignments_read')]
 #[Description('Who holds one record, such as tasks.task with its id, and the assignment reference a reassign or unassign must name; holder is null when nobody holds it.')]
-#[IsReadOnly]
 final class AssignmentReadTool extends JournalReadTool
 {
     public function __construct(

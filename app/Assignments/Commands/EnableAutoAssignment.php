@@ -21,9 +21,9 @@ use App\Bus\Support\Command;
  *
  * @extends Command<AutoAssignmentChange>
  */
+#[RepeatableRead]
 #[HandledBy(EnableAutoAssignmentHandler::class)]
 #[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
-#[RepeatableRead]
 final readonly class EnableAutoAssignment extends Command implements HasAuthorizationSubject
 {
     public function __construct(

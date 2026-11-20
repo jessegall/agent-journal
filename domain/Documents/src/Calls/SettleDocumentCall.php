@@ -34,8 +34,8 @@ final class SettleDocumentCall extends Data implements JournalCall
         public string $reason,
         #[Min(1)]
         public int $revision,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

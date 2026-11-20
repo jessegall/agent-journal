@@ -17,9 +17,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 /**
  * skills_list: the skill catalogue, as skill:list shows it.
  */
+#[IsReadOnly]
 #[Name('skills_list')]
 #[Description('Every skill of the catalogue: key, name, owner, source (shipped or stored), current revision of a stored skill and the digest of its text.')]
-#[IsReadOnly]
 final class SkillsListTool extends JournalReadTool
 {
     public function __construct(

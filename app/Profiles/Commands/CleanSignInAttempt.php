@@ -17,8 +17,8 @@ use App\Profiles\Values\CleanupProgress;
  *
  * @extends Command<bool>
  */
-#[HandledBy(CleanSignInAttemptHandler::class)]
 #[Entry(CommandEntry::HostControl)]
+#[HandledBy(CleanSignInAttemptHandler::class)]
 final readonly class CleanSignInAttempt extends Command
 {
     public function __construct(

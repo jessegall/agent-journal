@@ -34,8 +34,8 @@ final class CleanOutputCall extends Data implements JournalCall
         #[Min(1), Max(100)]
         public array $runs,
         public bool $preview,
-        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
     ) {}
 }

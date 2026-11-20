@@ -16,8 +16,8 @@ use App\Sharing\Handlers\ReopenSharedGatewaysHandler;
  *
  * @extends Command<int>
  */
-#[HandledBy(ReopenSharedGatewaysHandler::class)]
 #[Entry(CommandEntry::ShareGateway)]
+#[HandledBy(ReopenSharedGatewaysHandler::class)]
 final readonly class ReopenSharedGateways extends Command
 {
     public function __construct(public string $runId) {}
