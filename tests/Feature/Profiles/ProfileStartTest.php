@@ -23,6 +23,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\WithActiveAccount;
@@ -34,6 +35,7 @@ use Tests\TestCase;
  */
 final class ProfileStartTest extends TestCase
 {
+    use HasContainerSupport;
     use RefreshHookDatabase;
     use StartsAgentRequests;
     use WithActiveAccount;

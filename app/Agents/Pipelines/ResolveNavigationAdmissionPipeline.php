@@ -17,7 +17,7 @@ use App\Pipelines\Support\Step;
 /**
  * Answers a locked raise with the first admission decision that applies.
  */
-final readonly class NavigationAdmissionPipeline implements PipelineDefinition
+final readonly class ResolveNavigationAdmissionPipeline implements PipelineDefinition
 {
     public function pipes(): array
     {

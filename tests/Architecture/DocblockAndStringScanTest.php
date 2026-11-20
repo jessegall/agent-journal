@@ -32,8 +32,8 @@ final class DocblockAndStringScanTest extends TestCase
         yield 'array shape param' => ['Message', 28];
         yield 'union return' => ['Notifier', 29];
         yield 'throws' => ['ChatFailed', 31];
-        yield 'inline var before a statement' => ['Message', 43];
-        yield 'fully written return' => ['Message', 50];
+        yield 'var before a statement' => ['Message', 44];
+        yield 'fully written return' => ['Message', 52];
     }
 
     #[DataProvider('docblockTypes')]

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Supervision\States;
+namespace App\Supervision\States\Support;
 
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;

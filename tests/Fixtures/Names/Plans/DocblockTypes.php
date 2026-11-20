@@ -49,7 +49,7 @@ final class DocblockTypes
     }
 
     /**
-     * @return Message
+     * @return \Tests\Fixtures\Names\Chat\Message
      */
     public function fullyWritten(): object
     {

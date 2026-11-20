@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Scripts\Providers;
 
 use App\Profiles\Contracts\ScriptCompilation;
+use App\Scripts\Contracts\ScriptChecks;
 use App\Scripts\Contracts\ScriptKeywordRegistration;
 use App\Scripts\Contracts\ScriptObjectRegistration;
 use App\Scripts\Enums\SyntaxForm;
@@ -17,6 +18,7 @@ use App\Scripts\Objects\WorkspaceObject;
 use App\Scripts\Support\KeywordRegistry;
 use App\Scripts\Support\ObjectRegistry;
 use App\Scripts\Support\ProfileScriptCompiler;
+use App\Scripts\Support\ScriptChecker;
 use App\Scripts\Values\KeywordDefinition;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +32,7 @@ final class ScriptsServiceProvider extends ServiceProvider
         $this->app->alias(KeywordRegistry::class, ScriptKeywordRegistration::class);
         // The implementation belongs to a higher area; a Bind attribute here would create a reverse dependency.
         $this->app->bind(ScriptCompilation::class, ProfileScriptCompiler::class);
+        $this->app->bind(ScriptChecks::class, ScriptChecker::class);
     }
 
     public function boot(ObjectRegistry $objects, KeywordRegistry $keywords): void

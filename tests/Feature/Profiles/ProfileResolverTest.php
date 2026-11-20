@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsTestUser;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -35,6 +36,7 @@ final class ProfileResolverTest extends TestCase
 {
     use ActsAsTestUser;
     use CommitsHookRows;
+    use HasContainerSupport;
 
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
 

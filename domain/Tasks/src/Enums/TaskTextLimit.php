@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Api;
+namespace Domain\Tasks\Enums;
 
-enum PlanTextLimit: int
+enum TaskTextLimit: int
 {
     case Title = 240;
-
-    case Brief = 20000;
 
     case Note = 8000;
 }

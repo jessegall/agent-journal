@@ -22,6 +22,7 @@ use App\Skills\Support\SkillPublishing;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsActors;
+use Tests\Support\Agents\HasContainerSupport;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Skills\FinishesToolCalls;
 use Tests\Support\Skills\HasSkillTargets;
@@ -38,6 +39,7 @@ final class RequiredSkillReadsTest extends TestCase
     use ActsAsActors;
     use CommitsHookRows;
     use FinishesToolCalls;
+    use HasContainerSupport;
     use HasSkillTargets;
     use MakesUserGuideSkill;
 

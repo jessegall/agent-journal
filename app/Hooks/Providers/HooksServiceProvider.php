@@ -34,6 +34,7 @@ use App\Hooks\Contracts\StateTypes as StateTypesContract;
 use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Contracts\StopEvidence;
 use App\Hooks\Contracts\UserStack;
+use App\Hooks\Contracts\WorkProgress;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Inspection\StackInspectionQuery;
 use App\Hooks\Models\AgentStackRow;
@@ -42,6 +43,7 @@ use App\Hooks\Models\HookCall;
 use App\Hooks\Models\StopAttempt;
 use App\Hooks\Models\Support\AgentSessionScope;
 use App\Hooks\Programs\SupportedProgramAdapters;
+use App\Hooks\Readers\FrameProgress;
 use App\Hooks\Resolvers\PinnedCompatibilities;
 use App\Hooks\Resolvers\StopAttemptRecords;
 use App\Hooks\Stack\ActiveStackPermission;
@@ -102,6 +104,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(StateTypes::class);
         $this->app->singleton(StateMethods::class);
         $this->app->bind(StartTransaction::class, StackTransaction::class);
+        $this->app->bind(WorkProgress::class, FrameProgress::class);
         $this->app->singleton(ProtectedAccounts::class, fn ($app) => new ProtectedAccounts([
             $app->make(Repository::class)->string('accounts.root'),
         ]));
