@@ -78,6 +78,10 @@ export function dropWindow(
     windowKey: string,
     target: DropTarget,
 ): Arrangement {
+    if (!panesIn(arrangement.grid).some((pane) => pane.id === target.paneId)) {
+        return arrangement;
+    }
+
     const detached = arrangement.detached.filter(
         (each) => each.key !== windowKey,
     );

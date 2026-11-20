@@ -10,12 +10,36 @@ import {
     firstWindowOnly,
     shownWindows,
 } from './arrangement';
+import type { DropTarget } from './arrangement';
 import { panesIn, zoneAt } from './paneLayout';
 
 const screen = { width: 1440, height: 900 };
 const home = () => defaultArrangement('chat', ['plans', 'rules']);
 
 describe('dropping a dragged window', () => {
+    const missingPane = 'closed-pane';
+    const missingTargets: DropTarget[] = [
+        { paneId: missingPane, zone: 'tabs', place: 0 },
+        { paneId: missingPane, zone: 'centre' },
+        { paneId: missingPane, zone: 'left' },
+        { paneId: missingPane, zone: 'right' },
+        { paneId: missingPane, zone: 'above' },
+        { paneId: missingPane, zone: 'below' },
+    ];
+
+    it.each(missingTargets)('keeps docked and floating windows on a missing $zone drop', (target) => {
+        const docked = home();
+        const floating = detachWindow(
+            docked,
+            'rules',
+            { left: 100, top: 100 },
+            screen,
+        );
+
+        expect(dropWindow(docked, 'rules', target)).toBe(docked);
+        expect(dropWindow(floating, 'rules', target)).toBe(floating);
+    });
+
     it('lands among the tabs at the place it was let go', () => {
         const dropped = dropWindow(home(), 'chat', {
             paneId: 'pane-windows',
