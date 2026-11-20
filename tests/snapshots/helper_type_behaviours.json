@@ -95,6 +95,44 @@
     ],
     "job_task_flag": ""
   },
+  "supervisor": {
+    "job": false,
+    "active_task_unblocked": false,
+    "task": false,
+    "prompt": false,
+    "mark": true,
+    "plugin": false,
+    "dispatch": true,
+    "stop_required": false,
+    "private_output": false,
+    "reader_request": false,
+    "queued_run": false,
+    "automatic_watch": false,
+    "continuing_run": false,
+    "project_skill": false,
+    "pause_retention": false,
+    "restricted_alias": false,
+    "saved_command": true,
+    "queue_limit_settings": [],
+    "driver": "coding.helper",
+    "layout": "agent",
+    "access": "writing",
+    "separate_folder": false,
+    "bases": [
+      "helper"
+    ],
+    "default_profile": "",
+    "start_line": "",
+    "roster": "",
+    "run_limit": "journal.core.helpers.read-only-helper-run-limit",
+    "kept_limit": "",
+    "profile_limits": "journal.core.helpers.read-only-helper-profile-limits",
+    "job_command": [
+      "helper",
+      "send"
+    ],
+    "job_task_flag": ""
+  },
   "worker": {
     "job": true,
     "active_task_unblocked": true,
@@ -105,13 +143,13 @@
     "dispatch": true,
     "stop_required": true,
     "private_output": true,
-    "reader_request": true,
+    "reader_request": false,
     "queued_run": true,
     "automatic_watch": true,
     "continuing_run": true,
     "project_skill": true,
     "pause_retention": true,
-    "restricted_alias": true,
+    "restricted_alias": false,
     "saved_command": false,
     "queue_limit_settings": [
       "journal.suites.coding.workers.worker-run-most-tests"

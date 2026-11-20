@@ -63,10 +63,10 @@ def worker_actor(played):
     return story, Actor(int(agent["id"]), ActorType.AGENT)
 
 
-def test_a_worker_is_refused_an_alias_not_marked_for_workers(played):
+def test_a_worker_runs_an_alias_not_marked_for_agents(played):
     story, worker = worker_actor(played)
     story.run('alias add sins "echo judged"', actor=story.agent)
-    story.expect_refusal("sins", "a worker runs only the aliases marked for agents, and sins is not", actor=worker)
+    story.expect_success("sins", "judged", actor=worker)
 
 
 def test_a_worker_runs_an_alias_marked_for_workers(played):

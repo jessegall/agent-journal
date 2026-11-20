@@ -26,6 +26,6 @@ class Worker(Helper):
     behaviours = HelperBehaviours(takes_jobs=True, started_task_clears_block=True, takes_tasks=True, takes_prompts=True, takes_marks=True,
                                   runs_plugins=True, dispatches=True, checked_stops=True, has_private_outputs=True, requires_readers=False,
                                   queues_runs=True, watches_runs_automatically=True, continues_runs=True, reads_project_skills=True,
-                                  retains_pause=True, has_restricted_aliases=True, runs_saved_commands=False)
+                                  retains_pause=True, has_restricted_aliases=False, runs_saved_commands=False)
     commands = WorkerCommands()
     journal_runs = (WORKER_OPERATION_RUN,)

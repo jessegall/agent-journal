@@ -11,10 +11,7 @@ from suites.coding.modules.workers.policies.test_runs.phase_test_policy import P
 from suites.coding.modules.workers.policies.test_runs.worker_test_count_policy import WorkerTestCountPolicy
 from suites.coding.modules.workers.policies.test_runs.worker_test_line_policy import WorkerTestLinePolicy
 from suites.coding.modules.workers.policies.worker_file_policy import WorkerFilePolicy
-from suites.coding.modules.workers.policies.worker_git_policy import WorkerGitPolicy
 from suites.coding.modules.workers.policies.allowances.worker_helper_allowance_policy import WorkerHelperAllowancePolicy
 from suites.coding.modules.workers.policies.worker_judge_scope_policy import WorkerJudgeScopePolicy
-from suites.coding.modules.workers.policies.worker_outside_link_policy import WorkerOutsideLinkPolicy
-from suites.coding.modules.workers.policies.worker_read_policy import WorkerReadPolicy
 
-WORKERS_POLICIES = [MergeAllowancePolicy, WorkerHelperAllowancePolicy, WorkerGitPolicy, WorkerJudgeScopePolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerOutsideLinkPolicy, WorkerReadPolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
+WORKERS_POLICIES = [MergeAllowancePolicy, WorkerHelperAllowancePolicy, WorkerJudgeScopePolicy, DispatchNamesModelPolicy, ProvedDeliveryPolicy, ContextHardLimitPolicy, CheckoutWriteCodePolicy, DispatchAllowancePolicy, PhaseTestPolicy, ProtectedFolderPolicy, ReadonlyHelperAllowancePolicy, WorkerFilePolicy, WorkerReusePolicy, WorkerTestLinePolicy, WorkerTestCountPolicy]
