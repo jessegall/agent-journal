@@ -35,11 +35,7 @@ final readonly class VisibleTasks implements TaskResolver
             strval(...),
             Task::query()->whereKey($wanted)->readLimit(count($wanted))->pluck('id')->all(),
         );
-        $missing = array_values(array_diff($wanted, $found));
-
-        if ($missing !== []) {
-            throw TaskMissing::forId($missing[0]);
-        }
+        $this->assertAllFound($wanted, $found);
     }
 
     /**
@@ -48,9 +44,23 @@ final readonly class VisibleTasks implements TaskResolver
      */
     public function summaries(array $taskIds): array
     {
-        $this->requireAllVisible($taskIds);
-        $tasks = Task::query()->whereKey($taskIds)->readLimit(count($taskIds))->get()->keyBy('id');
+        $this->actors->actor();
+        $wanted = array_values(array_unique($taskIds));
+        $tasks = Task::query()->whereKey($wanted)->readLimit(count($wanted))->get()->keyBy('id');
+        $this->assertAllFound($wanted, $tasks->keys()->all());
 
         return array_map(fn (string $taskId) => $tasks[$taskId]->summary(), $taskIds);
+    }
+
+    /**
+     * @param  list<string>  $wanted
+     * @param  list<string>  $found
+     */
+    private function assertAllFound(array $wanted, array $found): void
+    {
+        $missing = array_values(array_diff($wanted, $found));
+        if ($missing !== []) {
+            throw TaskMissing::forId($missing[0]);
+        }
     }
 }

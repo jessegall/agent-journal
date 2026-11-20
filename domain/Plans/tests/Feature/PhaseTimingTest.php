@@ -13,7 +13,6 @@ use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PhaseTiming;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
@@ -33,6 +32,8 @@ final class PhaseTimingTest extends TestCase
 
     private Agent $agent;
 
+    private Plan $plan;
+
     /**
      * @var list<Task>
      */
@@ -43,13 +44,12 @@ final class PhaseTimingTest extends TestCase
         parent::setUp();
 
         $this->agent = Agent::named('Worker', 'writing-helper');
-        $plan = Plan::factory()->create(['title' => 'Phase timing']);
-        Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Started->value]);
+        $this->plan = Plan::factory()->create(['title' => 'Phase timing', 'state' => PlanState::Started]);
         $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
-        $plan->addPhase('Build')->addTasks(array_map(fn (Task $task): string => $task->id, $this->tasks));
+        $this->plan->addPhase('Build')->addTasks(array_map(fn (Task $task): string => $task->id, $this->tasks));
         $this->startUserRequestAs(TestIds::of(7));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->agent));
+        $writer->assign($this->plan->assignmentIdentity(), AssigneeIdentity::of($this->agent));
     }
 
     public function test_the_plans_domain_fills_in_the_phase_timing(): void
@@ -69,9 +69,39 @@ final class PhaseTimingTest extends TestCase
 
     public function test_once_the_phase_tasks_ended_the_agent_may_run_its_checks(): void
     {
-        Task::query()
-            ->whereKey(array_map(fn (Task $task) => $task->id, $this->tasks))
-            ->update(['state' => TaskState::Finished->value]);
+        foreach ($this->tasks as $task) {
+            $task->finish();
+        }
+
+        $this->assertTrue($this->timingForAgent()->isAllowed());
+    }
+
+    public function test_an_open_task_after_five_hundred_phases_still_holds_checks(): void
+    {
+        foreach ($this->tasks as $task) {
+            $task->finish();
+        }
+        for ($number = 2; $number <= 500; $number++) {
+            $this->plan->addPhase("Phase {$number}");
+        }
+        $task = Task::factory()->create(['title' => 'Finish the plan']);
+        $phase = $this->plan->addPhase('Finish');
+        $phase->addTasks([$task->id]);
+
+        $verdict = $this->timingForAgent();
+
+        $this->assertFalse($verdict->isAllowed());
+        $this->assertSame(501, $verdict->phase);
+        $this->assertSame([$task->number], $verdict->unfinishedTasks);
+    }
+
+    public function test_a_blocked_phase_allows_checks_even_when_a_later_phase_has_open_tasks(): void
+    {
+        foreach ($this->tasks as $task) {
+            $task->block();
+        }
+        $later = Task::factory()->create(['title' => 'Wait for the build']);
+        $this->plan->addPhase('Later')->addTasks([$later->id]);
 
         $this->assertTrue($this->timingForAgent()->isAllowed());
     }
