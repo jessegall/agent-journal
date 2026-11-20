@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\ConversationModeType;
@@ -30,6 +31,8 @@ use Illuminate\Database\Eloquent\Model;
  * on the way and where its result and stop evidence are. Only its parent reads it.
  *
  * @property string $id
+ * @property string $actor_type
+ * @property string $actor_id
  * @property string $helper_identity_id
  * @property string $helper_purpose_id
  * @property string $brief
@@ -130,6 +133,23 @@ final class HelperJob extends Model implements Assignable, ReadableModel
             $this->launch(),
             $start,
         );
+    }
+
+    /**
+     * The parent the job belongs to.
+     */
+    public function parent(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+    }
+
+    /**
+     * Opens the unfinished job for another attempt; its brief, purpose, steering and source stay.
+     */
+    public function reopenForAttempt(): void
+    {
+        $this->moveTo(JobState::Accepted);
+        $this->save();
     }
 
     public function wasDispatchedAs(string $payloadDigest): bool

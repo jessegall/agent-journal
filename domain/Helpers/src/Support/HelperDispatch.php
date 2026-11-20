@@ -71,7 +71,7 @@ final readonly class HelperDispatch
             return $this->repeated($request);
         }
 
-        $profile = $this->admittedProfile($request);
+        $profile = $this->admittedProfile($request->profileKey, $request->model, $request->programKey);
         $purpose = $this->purposeOf($request);
         $candidate = $this->candidatesFor($request, $profile, $purpose)[0] ?? null;
 
@@ -100,7 +100,7 @@ final readonly class HelperDispatch
             return $this->repeated($request);
         }
 
-        $profile = $this->admittedProfile($request);
+        $profile = $this->admittedProfile($request->profileKey, $request->model, $request->programKey);
         $identity = HelperIdentity::query()->whereKey($request->identityId)->first();
 
         if ($identity === null) {
@@ -111,7 +111,7 @@ final readonly class HelperDispatch
             throw HelperProfileMismatch::forIdentity($identity->id, $identity->profile_key);
         }
 
-        $this->requireNoOpenJob($identity);
+        $this->assertNoOpenJob($identity);
         $purpose = $this->purposeOf($request);
         $candidates = array_filter(
             $this->candidatesFor($request, $profile, $purpose),
@@ -122,6 +122,33 @@ final readonly class HelperDispatch
             : ConversationChoice::reusing(array_values($candidates)[0]);
 
         return $this->launch($request, $profile, $purpose, $identity, $conversation);
+    }
+
+    /**
+     * Launches another attempt at an unfinished job on the selection the parent names now, keeping its job, purpose,
+     * brief, steering and source; the helper resumes its conversation.
+     */
+    public function continueJob(
+        HelperJob $job,
+        string $requestId,
+        string $model,
+        string|null $programKey,
+    ): HelperReceipt {
+        $identity = HelperIdentity::query()->whereKey($job->helper_identity_id)->sole();
+        $profile = $this->admittedProfile($identity->profile_key, $model, $programKey);
+        $this->reserve($identity);
+        $job->reopenForAttempt();
+        $start = $this->commands->run(new StartOwnedAgent(new OwnerStartRequest(
+            $requestId,
+            $identity->helperActor(),
+            $job->assignmentIdentity(),
+            $job->helper_purpose_id,
+            $profile->selection,
+            ConversationModeType::Resume,
+            $profile->startPolicy(),
+        )));
+
+        return $job->receipt($profile->base->key, $start, false);
     }
 
     private function isRepeat(DispatchRequest $request): bool
@@ -147,7 +174,7 @@ final readonly class HelperDispatch
      * The profile's current selection, once the parent may delegate, the key names an activated helper profile and
      * that profile grants nothing the parent does not hold.
      */
-    private function admittedProfile(DispatchRequest $request): ProfileSelection
+    private function admittedProfile(string $profileKey, string $model, string|null $programKey): ProfileSelection
     {
         $authority = $this->actors->authority();
         $held = $authority instanceof StartProfileAuthority ? $authority->profile->start->access : null;
@@ -158,17 +185,17 @@ final readonly class HelperDispatch
 
         try {
             $profile = $this->profiles->select(
-                ProfileKey::from($request->profileKey),
-                ModelSelection::fromInput($request->model),
-                $request->programKey,
+                ProfileKey::from($profileKey),
+                ModelSelection::fromInput($model),
+                $programKey,
                 $this->callingProgram->programKey(),
             );
         } catch (ProfileMissing $missingProfile) {
-            throw HelperProfilesUnavailable::forProfile($request->profileKey, $missingProfile);
+            throw HelperProfilesUnavailable::forProfile($profileKey, $missingProfile);
         }
 
         if ($profile->base->isCoordinator()) {
-            throw HelperProfileTypeConflict::forProfile($request->profileKey);
+            throw HelperProfileTypeConflict::forProfile($profileKey);
         }
 
         if ($held !== null && ! $held->contains($profile->start->access)) {
@@ -232,7 +259,7 @@ final readonly class HelperDispatch
     ): HelperReceipt {
         $helper = $identity->helperActor();
         $this->reserve($identity);
-        $this->requireNoOpenJob($identity);
+        $this->assertNoOpenJob($identity);
         $job = HelperJob::accept(
             $identity,
             $purpose,
@@ -278,7 +305,7 @@ final readonly class HelperDispatch
      * Refuses a helper with a job that is not over, naming why: still working, stopped unfinished, or held while
      * nobody knows whether its launch runs.
      */
-    private function requireNoOpenJob(HelperIdentity $identity): void
+    private function assertNoOpenJob(HelperIdentity $identity): void
     {
         $open = HelperJob::query()
             ->ofIdentities([$identity->id])

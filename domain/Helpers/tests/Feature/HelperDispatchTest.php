@@ -5,28 +5,18 @@ declare(strict_types=1);
 namespace Domain\Helpers\Tests\Feature;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\StartReservations;
-use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Agents\Models\StartRecord;
-use App\Agents\Support\HostCapability;
-use App\Agents\Support\HostCapabilityQuery;
-use App\Agents\Support\HostCapacity;
 use App\Agents\Support\StartReceipt;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
-use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Values\ProfileBase;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Helpers\Commands\SendHelper;
 use Domain\Helpers\Commands\StartHelper;
 use Domain\Helpers\Contracts\HelperReader;
@@ -42,13 +32,12 @@ use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperReceipt;
 use Domain\Helpers\Support\HelperWork;
+use Domain\Helpers\Tests\Support\DispatchesHelpers;
 use Domain\Helpers\Tests\TestCase;
 use Illuminate\Database\DatabaseManager;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
-use Tests\Support\WithActiveAccount;
 
 /**
  * A parent dispatches its helpers through StartHelper and SendHelper: a start names the resolved model, revision and
@@ -59,29 +48,10 @@ use Tests\Support\WithActiveAccount;
 #[TimeLimit(seconds: 5, reason: 'It activates profiles and starts agent sessions for several dispatches.')]
 final class HelperDispatchTest extends TestCase
 {
+    use DispatchesHelpers;
     use RefreshHookDatabase;
-    use WithActiveAccount;
 
     private const string SHELL_LIKE_BRIEF = 'Review it; rm -rf / && echo "$(whoami)" `id`';
-
-    private TestStart $parent;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->chooseActiveAccounts();
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->supportContainers();
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
-            TestProposals::profile('plan-reviewer', ProfileBase::readOnlyHelper()),
-            TestProposals::profile('journal-main', ProfileBase::mainAgent()),
-        )));
-        $this->parent = TestStart::start();
-        $this->parent->startRequest($this->app);
-        $this->supportContainers();
-    }
 
     public function test_a_default_start_names_the_resolved_model_revision_and_type_and_keeps_the_brief_as_data(): void
     {
@@ -243,21 +213,6 @@ final class HelperDispatchTest extends TestCase
         $databases->purge('competing');
     }
 
-    private function start(
-        string $requestId,
-        string $purpose,
-        string $brief = 'Review it.',
-        string $profileKey = 'plan-reviewer',
-    ): HelperReceipt {
-        return $this->app->make(CommandBus::class)->run(new StartHelper(
-            $requestId,
-            $profileKey,
-            'default',
-            null,
-            new HelperWork(null, null, $purpose, $brief, [], false),
-        ));
-    }
-
     private function send(string $requestId, string $identityId, string $purpose): HelperReceipt
     {
         return $this->app->make(CommandBus::class)->run(new SendHelper(
@@ -276,12 +231,6 @@ final class HelperDispatchTest extends TestCase
         $this->endSessionOf($receipt);
     }
 
-    private function endSessionOf(HelperReceipt $receipt): void
-    {
-        $sessionId = StartRecord::query()->where('request_id', $receipt->start->launchReference)->sole()->session_id;
-        AgentSession::query()->findOrFail($sessionId)->endAt(CarbonImmutable::now());
-    }
-
     private function agentOf(HelperReceipt $receipt): Agent
     {
         $identity = HelperIdentity::query()->findOrFail($receipt->identityId);
@@ -289,27 +238,4 @@ final class HelperDispatchTest extends TestCase
         return Agent::query()->findOrFail($identity->helper_actor_id);
     }
 
-    private function supportContainers(): void
-    {
-        $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
-        {
-            public function capability(HostCapabilityQuery $query): HostCapability
-            {
-                return new HostCapability(
-                    $query,
-                    CapabilityStatusType::Supported,
-                    'docs/x.md',
-                    'Proven for this test.',
-                );
-            }
-        });
-        $this->app->instance(HelperImages::class, new class implements HelperImages
-        {
-            public function isVerified(string $imageReference): bool
-            {
-                return true;
-            }
-        });
-        $this->app->instance(HostCapacity::class, new HostCapacity(8, 64 * 1024 ** 3, 500 * 1024 ** 3));
-    }
 }

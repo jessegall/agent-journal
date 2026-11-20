@@ -21,4 +21,12 @@ enum JobState: string
     {
         return in_array($this, [self::Finished, self::Cancelled, self::Failed], true);
     }
+
+    /**
+     * Whether a helper is working the job now, so steering reaches it.
+     */
+    public function isLive(): bool
+    {
+        return in_array($this, [self::Accepted, self::Running], true);
+    }
 }

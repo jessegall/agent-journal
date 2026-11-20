@@ -13,12 +13,16 @@ use App\Domains\Concerns\HasAssignables;
 use App\Domains\Contracts\InternalAssignableContributor;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use Domain\Helpers\Commands\CancelHelperJob;
+use Domain\Helpers\Commands\ContinueHelper;
 use Domain\Helpers\Commands\SendHelper;
+use Domain\Helpers\Commands\SteerHelper;
 use Domain\Helpers\Commands\StartHelper;
 use Domain\Helpers\Contracts\HelperReader;
 use Domain\Helpers\Enums\HelperAbility;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperBusy;
+use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
 use Domain\Helpers\Exceptions\HelperJobUnfinished;
 use Domain\Helpers\Exceptions\HelperLaunchUncertain;
 use Domain\Helpers\Exceptions\HelperProfileMismatch;
@@ -33,6 +37,7 @@ use Domain\Helpers\Resolvers\HelperJobAssignments;
 use Domain\Helpers\Support\HelperReceipt;
 use Domain\Helpers\Support\HelperWork;
 use Domain\Helpers\Support\JobLaunch;
+use Domain\Helpers\Support\SteerReceipt;
 
 final class HelpersDomain extends Domain implements CommandProvider, InternalAssignableContributor, PolicyProvider
 {
@@ -63,8 +68,14 @@ final class HelpersDomain extends Domain implements CommandProvider, InternalAss
     {
         return Exports::make()
             ->contracts(HelperReader::class)
-            ->values(HelperReceipt::class, HelperWork::class, JobLaunch::class, JobState::class)
-            ->commands(StartHelper::class, SendHelper::class)
+            ->values(HelperReceipt::class, HelperWork::class, JobLaunch::class, JobState::class, SteerReceipt::class)
+            ->commands(
+                StartHelper::class,
+                SendHelper::class,
+                ContinueHelper::class,
+                SteerHelper::class,
+                CancelHelperJob::class,
+            )
             ->exceptions(
                 HelperUnavailable::class,
                 HelperBusy::class,
@@ -75,6 +86,7 @@ final class HelpersDomain extends Domain implements CommandProvider, InternalAss
                 HelperProfileTypeConflict::class,
                 HelperProfilesUnavailable::class,
                 HelperRequestConflict::class,
+                HelperJobAlreadyEnded::class,
             )
             ->build();
     }

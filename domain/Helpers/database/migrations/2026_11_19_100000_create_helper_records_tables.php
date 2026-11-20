@@ -67,10 +67,37 @@ return new class extends Migration
             $table->index(['actor_type', 'actor_id']);
             $table->unique(['actor_type', 'actor_id', 'request_id']);
         });
+
+        Schema::create('helper_notices', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->string('actor_type', 16);
+            $table->string('actor_id');
+            $table->foreignUlid('helper_identity_id')->constrained('helper_identities')->restrictOnDelete();
+            $table->foreignUlid('helper_job_id')->constrained('helper_jobs')->cascadeOnDelete();
+            $table->string('job_state', 16);
+            $table->text('text');
+            $table->timestampsTz();
+
+            $table->index(['actor_type', 'actor_id']);
+        });
+
+        Schema::create('helper_messages', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->string('actor_type', 16);
+            $table->string('actor_id');
+            $table->foreignUlid('helper_identity_id')->constrained('helper_identities')->restrictOnDelete();
+            $table->text('text');
+            $table->text('suggested_command');
+            $table->timestampsTz();
+
+            $table->index(['actor_type', 'actor_id']);
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('helper_messages');
+        Schema::dropIfExists('helper_notices');
         Schema::dropIfExists('helper_jobs');
         Schema::dropIfExists('helper_purposes');
         Schema::dropIfExists('helper_identities');

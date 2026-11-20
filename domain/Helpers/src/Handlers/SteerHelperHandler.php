@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Helpers\Handlers;
+
+use App\Actors\Support\ActorIdentity;
+use App\Contracts\CommandHandler;
+use Domain\Helpers\Commands\SteerHelper;
+use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Exceptions\HelperUnavailable;
+use Domain\Helpers\Models\HelperIdentity;
+use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Models\HelperMessage;
+use Domain\Helpers\Support\HelperStarts;
+use Domain\Helpers\Support\SteerReceipt;
+
+final readonly class SteerHelperHandler implements CommandHandler
+{
+    public function __construct(private HelperStarts $starts) {}
+
+    public function handle(SteerHelper $command): SteerReceipt
+    {
+        $identity = HelperIdentity::query()->whereKey($command->identityId)->first()
+            ?? throw HelperUnavailable::toYou();
+        $latest = HelperJob::query()->ofIdentities([$identity->id])->latest('id')->lockForUpdate()->first();
+
+        if ($latest !== null && $latest->state->isLive()) {
+            $latest->addSteering($command->text);
+
+            return SteerReceipt::steered($latest->id);
+        }
+
+        $suggestedCommand = $latest !== null && $latest->state === JobState::Unfinished
+            ? $this->starts->continueCommand($latest)
+            : sprintf('journal helper send %s --brief %s', escapeshellarg($identity->id), escapeshellarg($command->text));
+        $message = HelperMessage::keep(
+            ActorIdentity::of($command->dispatchedBy()),
+            $identity,
+            $command->text,
+            $suggestedCommand,
+        );
+
+        return SteerReceipt::kept($message->id, $suggestedCommand);
+    }
+}

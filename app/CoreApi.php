@@ -108,6 +108,7 @@ use App\Agents\Commands\AnswerNavigation;
 use App\Agents\Commands\CancelAccountUses;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
+use App\Agents\Commands\CancelLaunch;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
@@ -214,6 +215,7 @@ use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
 use App\Agents\Events\DriverRequestRecovered;
 use App\Agents\Events\LaunchCancelled;
+use App\Agents\Events\LaunchEnded;
 use App\Agents\Events\ProgramFailed;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\StartAccepted;
@@ -1150,6 +1152,7 @@ final class CoreApi
                 StartAccepted::class,
                 StartUnavailable::class,
                 LaunchCancelled::class,
+                LaunchEnded::class,
                 ProgramFailed::class,
                 AccountUseChanged::class,
                 AccountsChanged::class,
@@ -1915,6 +1918,7 @@ final class CoreApi
                 RetireAgent::class,
                 StartAgent::class,
                 StartOwnedAgent::class,
+                CancelLaunch::class,
                 ContinueStart::class,
                 CreateAgent::class,
                 RecordHeartbeat::class,
