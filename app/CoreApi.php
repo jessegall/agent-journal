@@ -795,6 +795,7 @@ use App\Profiles\Enums\CommandDirectory;
 use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SupervisorCoverageType;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\ProfileRevisionRevoked;
@@ -1878,6 +1879,7 @@ final class CoreApi
                 RootRule::class,
                 OperationRule::class,
                 ProfileChangeType::class,
+                SignInMethod::class,
                 FieldOrigin::class,
                 PolicyOriginType::class,
                 ProfileDefinition::class,

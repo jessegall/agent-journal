@@ -3342,6 +3342,7 @@ class	ProgramFailed
 class	ProgramIdentity
 class	ProgramKey
 class	ProgramKeyInvalid
+class	ProgramMethodsData
 class	ProgramNames
 class	ProgramReplies
 class	ProgramReply
@@ -4532,6 +4533,7 @@ class	SignInCodeInvalid
 class	SignInCompletion
 class	SignInDeadline
 class	SignInIdentity
+class	SignInMethodData
 class	SignInMethodMissing
 class	SignInPoll
 class	SignInProtocolMissing
@@ -4915,6 +4917,7 @@ class	SupervisorRoutesCast
 class	SupervisorRouting
 class	SupervisorTarget
 class	SupervisorTimer
+class	SupplyAccountSecret
 class	SupplyAccountSettings
 class	SupplyHelperContext
 class	SupplyHookContext
@@ -5243,6 +5246,7 @@ class	WriteResponsibilities
 class	YieldKeyword
 constant	AccessPolicy::PROTECTED_PATHS
 constant	Account::LINK_TYPE
+constant	AccountLabel::LENGTH_LIMIT
 constant	AccountsWindowResolver::RECENT_STARTS
 constant	ActiveAccount::LINK_TYPE
 constant	ActorCategoryScan::REMOVED_CALLS
@@ -5309,7 +5313,6 @@ constant	AuthenticateAgent::UNAUTHENTICATED
 constant	AuthenticateHost::WINDOW_SECONDS
 constant	AutoAssignmentInput::LARGEST_SIZE
 constant	AwaitingSkillsStateReference::TYPE_KEY
-constant	BeginSignInHandler::METHOD
 constant	BeginUpload::MAX_BYTES
 constant	BindingRules::BINDING_METHODS
 constant	BindingRules::PER_REQUEST_VALUES
@@ -6621,17 +6624,21 @@ method	Account::casts()
 method	Account::directoryForStart()
 method	Account::endSignInAgain()
 method	Account::finishRemoval()
+method	Account::freeLabel()
 method	Account::hasLiveWriter()
 method	Account::holdForMaintenance()
+method	Account::holdingPrincipal()
 method	Account::holdsKeyOf()
 method	Account::isBeingRemoved()
 method	Account::isGeneration()
 method	Account::isHeldForCheck()
 method	Account::isSamePrincipal()
+method	Account::labelIsTaken()
 method	Account::listed()
 method	Account::lockedForChange()
 method	Account::lockedForJournal()
 method	Account::lockedForStart()
+method	Account::methodOf()
 method	Account::name()
 method	Account::nextToCheck()
 method	Account::nextToClean()
@@ -6668,6 +6675,8 @@ method	AccountInUse::status()
 method	AccountLabel::__construct()
 method	AccountLabel::from()
 method	AccountLabel::key()
+method	AccountLabel::numbered()
+method	AccountLabel::proposedFrom()
 method	AccountLabelInvalid::for()
 method	AccountLabelInvalid::refusalCode()
 method	AccountLabelInvalid::status()
@@ -6711,6 +6720,7 @@ method	AccountStartData::fromUse()
 method	AccountStartRecipe::__construct()
 method	AccountStartSettings::holdFor()
 method	AccountStartSettings::keepAccountSetting()
+method	AccountStartSettings::openForReading()
 method	AccountStartSettings::passFlag()
 method	AccountStartSettings::protectWith()
 method	AccountStartSettings::recipeFor()
@@ -8659,6 +8669,7 @@ method	ClaudeTokenSignIn::authMethod()
 method	ClaudeTokenSignIn::install()
 method	ClaudeTokenSignIn::readFiles()
 method	ClaudeTokenSignIn::secretFile()
+method	ClaudeTokenSignIn::tokenFileIn()
 method	ClaudeTokenSignIn::uninstall()
 method	ClaudeTokenSignIn::variables()
 method	CleanAccount::__construct()
@@ -11270,6 +11281,7 @@ method	HookPayload::toolArguments()
 method	HookPayload::toolNameText()
 method	HookPayload::toolOutcome()
 method	HookPayload::workFolder()
+method	HookProgram::displayName()
 method	HookProgram::hookCommand()
 method	HookProgram::hostName()
 method	HookProgram::journalToolRules()
@@ -14021,6 +14033,8 @@ method	ProgramKey::__construct()
 method	ProgramKey::__toString()
 method	ProgramKey::from()
 method	ProgramKeyInvalid::for()
+method	ProgramMethodsData::__construct()
+method	ProgramMethodsData::fromMethods()
 method	ProgramNames::canonical()
 method	ProgramNames::proposalHints()
 method	ProgramReplies::allowTool()
@@ -17356,8 +17370,11 @@ method	SignInIdentity::__construct()
 method	SignInIdentity::expiry()
 method	SignInIdentity::shown()
 method	SignInIdentity::unproved()
+method	SignInMethod::accountNameFor()
 method	SignInMethod::billingNote()
 method	SignInMethod::isSecret()
+method	SignInMethodData::__construct()
+method	SignInMethodData::fromMethod()
 method	SignInMethodMissing::for()
 method	SignInMethodMissing::forKey()
 method	SignInPoll::__construct()
@@ -17988,10 +18005,11 @@ method	StartSetting::jsonSerialize()
 method	StartSettingMissing::forName()
 method	StartSettingsRequested::__construct()
 method	StartSignInController::__invoke()
-method	StartSignInRequest::label()
+method	StartSignInRequest::after()
 method	StartSignInRequest::program()
 method	StartSignInRequest::requestKey()
 method	StartSignInRequest::rules()
+method	StartSignInRequest::signInMethod()
 method	StartStacks::__construct()
 method	StartStacks::carriedFrames()
 method	StartStacks::close()
@@ -18573,6 +18591,7 @@ method	SupervisorTarget::parse()
 method	SupervisorTarget::profileKey()
 method	SupervisorTimer::__construct()
 method	SupervisorTimer::runIfDue()
+method	SupplyAccountSecret::handle()
 method	SupplyAccountSettings::__construct()
 method	SupplyAccountSettings::handle()
 method	SupplyHelperContext::__construct()
@@ -18659,9 +18678,7 @@ method	TargetNotCommentable::for()
 method	TargetsAgentStack::target()
 method	Task::assignmentIdentity()
 method	Task::block()
-method	Task::blockRun()
 method	Task::cancel()
-method	Task::cancelWith()
 method	Task::candidates()
 method	Task::casts()
 method	Task::currentRun()
@@ -18671,13 +18688,11 @@ method	Task::detailsWithText()
 method	Task::executionBy()
 method	Task::file()
 method	Task::finish()
-method	Task::finishRun()
 method	Task::inListedOrder()
 method	Task::isCurrentRun()
 method	Task::isOpenForAssignment()
 method	Task::lockedById()
 method	Task::start()
-method	Task::startRun()
 method	Task::summary()
 method	Task::summaryOf()
 method	Task::unfinished()
@@ -19838,6 +19853,7 @@ parameter	$beats
 parameter	$because
 parameter	$before
 parameter	$bg
+parameter	$billingNote
 parameter	$binary
 parameter	$binaryDigest
 parameter	$binding
@@ -20378,6 +20394,7 @@ parameter	$failure
 parameter	$failureField
 parameter	$failureSummary
 parameter	$failures
+parameter	$fallback
 parameter	$fallthrough
 parameter	$family
 parameter	$fence
@@ -20622,6 +20639,7 @@ parameter	$isRoot
 parameter	$isRunning
 parameter	$isSatisfied
 parameter	$isScoped
+parameter	$isSecret
 parameter	$isSelected
 parameter	$isSignedIn
 parameter	$isSingleton
@@ -21137,6 +21155,7 @@ parameter	$programArguments
 parameter	$programBuild
 parameter	$programClassifiers
 parameter	$programKey
+parameter	$programName
 parameter	$programPinned
 parameter	$programSource
 parameter	$programVersion
@@ -22007,6 +22026,7 @@ property	AccessSettings::$ownerId
 property	Account::$hidden
 property	AccountLabel::$label
 property	AccountListData::$attempts
+property	AccountListData::$methods
 property	AccountListData::$pendingCleanups
 property	AccountListData::$rows
 property	AccountListData::$selections
@@ -22023,10 +22043,12 @@ property	AccountOwnerScope::$authorizer
 property	AccountRowData::$awaitsCleanupRetry
 property	AccountRowData::$checkedAt
 property	AccountRowData::$cleanupProblem
+property	AccountRowData::$expiresAt
 property	AccountRowData::$id
 property	AccountRowData::$identity
 property	AccountRowData::$isActive
 property	AccountRowData::$label
+property	AccountRowData::$method
 property	AccountRowData::$program
 property	AccountRowData::$recentStarts
 property	AccountRowData::$runningCount
@@ -22035,6 +22057,7 @@ property	AccountSelectionData::$accountId
 property	AccountSelectionData::$changeNumber
 property	AccountSelectionData::$program
 property	AccountSessions::$links
+property	AccountSettingsRequested::$account
 property	AccountSettingsRequested::$directory
 property	AccountSettingsRequested::$program
 property	AccountSettingsRequested::$settings
@@ -22048,6 +22071,7 @@ property	AccountStartRecipe::$emptyFolderVariables
 property	AccountStartRecipe::$environment
 property	AccountStartRecipe::$programVersion
 property	AccountStartRecipe::$protectionSettings
+property	AccountStartRecipe::$readFiles
 property	AccountStartRecipe::$removedVariables
 property	AccountStartRecipe::$startFlags
 property	AccountStartRecipe::$transportProfile
@@ -22058,6 +22082,7 @@ property	AccountStartSettings::$build
 property	AccountStartSettings::$emptyFolderVariables
 property	AccountStartSettings::$environment
 property	AccountStartSettings::$protectionSettings
+property	AccountStartSettings::$readFiles
 property	AccountStartSettings::$removedVariables
 property	AccountStartSettings::$startFlags
 property	AccountUnavailable::$program
@@ -22073,6 +22098,7 @@ property	AccountUseChanged::$account
 property	AccountUseCounts::$runningByAccount
 property	AccountsChanged::$accountId
 property	AccountsChanged::$program
+property	AccountsWindowResolver::$protocols
 property	AccountsWindowResolver::$uses
 property	ActionRoute::$controller
 property	ActionRoute::$method
@@ -22747,7 +22773,7 @@ property	AvailableListener::$owner
 property	AwaitingSkillsState::$publication
 property	BaseOverride::$base
 property	BaseOverride::$override
-property	BeginSignIn::$label
+property	BeginSignIn::$method
 property	BeginSignIn::$program
 property	BeginSignIn::$requestKey
 property	BeginSignInAgain::$accountId
@@ -22759,6 +22785,7 @@ property	BeginSignInAgainHandler::$uses
 property	BeginSignInHandler::$config
 property	BeginSignInHandler::$events
 property	BeginSignInHandler::$jobs
+property	BeginSignInHandler::$protocols
 property	BeginUpload::$bytes
 property	BeginUpload::$digest
 property	BeginUpload::$type
@@ -25699,7 +25726,6 @@ property	PartSummaryData::$unresolved
 property	Passkey::$fillable
 property	PendingAttemptCleanupData::$attemptId
 property	PendingAttemptCleanupData::$awaitsRetry
-property	PendingAttemptCleanupData::$label
 property	PendingAttemptCleanupData::$lastTriedAt
 property	PendingAttemptCleanupData::$problem
 property	PendingAttemptCleanupData::$program
@@ -26215,6 +26241,8 @@ property	ProgramFailed::$sessionId
 property	ProgramIdentity::$family
 property	ProgramIdentity::$original
 property	ProgramKey::$key
+property	ProgramMethodsData::$methods
+property	ProgramMethodsData::$program
 property	ProgramReply::$exitCode
 property	ProgramReply::$stderr
 property	ProgramReply::$stdout
@@ -28482,7 +28510,7 @@ property	SignInAttempt::$hidden
 property	SignInAttemptData::$accountId
 property	SignInAttemptData::$expiresAt
 property	SignInAttemptData::$id
-property	SignInAttemptData::$label
+property	SignInAttemptData::$method
 property	SignInAttemptData::$program
 property	SignInAttemptData::$state
 property	SignInAttemptData::$type
@@ -28498,6 +28526,9 @@ property	SignInIdentity::$display
 property	SignInIdentity::$expiresAt
 property	SignInIdentity::$subject
 property	SignInIdentity::$workspace
+property	SignInMethodData::$billingNote
+property	SignInMethodData::$isSecret
+property	SignInMethodData::$method
 property	SignInPoll::$code
 property	SignInPoll::$isLive
 property	SignInProtocols::$container
@@ -30014,6 +30045,7 @@ variable	$className
 variable	$classNames
 variable	$classes
 variable	$classification
+variable	$cleaned
 variable	$cleanup
 variable	$close
 variable	$closed
@@ -30266,6 +30298,7 @@ variable	$facts
 variable	$failed
 variable	$failure
 variable	$failures
+variable	$fallback
 variable	$fallthrough
 variable	$fault
 variable	$fence
@@ -31179,6 +31212,7 @@ variable	$subjects
 variable	$submission
 variable	$substituted
 variable	$substitution
+variable	$suffix
 variable	$suggestedCommand
 variable	$summaries
 variable	$summary

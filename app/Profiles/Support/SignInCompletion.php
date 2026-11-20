@@ -62,7 +62,15 @@ final readonly class SignInCompletion
         }
 
         if ($attempt->account_id === null) {
-            $account = Account::signedIn($program, AccountLabel::from((string) $attempt->label), $staging);
+            if (Account::holdingPrincipal($program, $identity) !== null) {
+                $this->endWithout($attempt, SignInState::AlreadyAdded);
+
+                return;
+            }
+
+            $fallback = $attempt->method->accountNameFor($program->displayName());
+            $proposed = AccountLabel::proposedFrom($identity->display, $fallback);
+            $account = Account::signedIn($program, Account::freeLabel($program, $proposed), $staging);
             $attempt->end(SignInState::Complete);
         } else {
             $account = Account::lockedForJournal($attempt->account_id);

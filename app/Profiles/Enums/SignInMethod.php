@@ -26,6 +26,19 @@ enum SignInMethod: string
     }
 
     /**
+     * The name a new account of this method takes when its sign-in shows no name of its own, such as 'Claude Code'
+     * for an OAuth sign-in or 'Claude Code API key' for a key.
+     */
+    public function accountNameFor(string $programName): string
+    {
+        return match ($this) {
+            self::OAuth => $programName,
+            self::ApiKey => "{$programName} API key",
+            self::ProviderToken => "{$programName} provider token",
+        };
+    }
+
+    /**
      * The one sentence the sign-in form shows about how the method is paid for or how long it lasts.
      */
     public function billingNote(): string

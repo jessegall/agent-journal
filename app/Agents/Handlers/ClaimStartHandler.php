@@ -45,7 +45,8 @@ final readonly class ClaimStartHandler implements CommandHandler
 
         $program = AgentSession::query()->findOrFail($start->session_id)->selection()->program->value;
         $settings = new AccountStartSettings();
-        $this->events->dispatch(new AccountSettingsRequested($program, $start->directory, $settings));
+        $requested = new AccountSettingsRequested($program, $start->accountIdentity(), $start->directory, $settings);
+        $this->events->dispatch($requested);
 
         return new ClaimedStart(
             $start->start_key,

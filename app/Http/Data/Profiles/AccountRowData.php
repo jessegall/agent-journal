@@ -7,6 +7,7 @@ namespace App\Http\Data\Profiles;
 use App\Agents\Support\AccountUse;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Models\Account;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -26,11 +27,13 @@ final class AccountRowData extends Data
         public readonly string $id,
         public readonly string $program,
         public readonly string $label,
+        public readonly SignInMethod $method,
         public readonly AccountState $state,
         public readonly string|null $identity,
         public readonly bool $isActive,
         public readonly int $runningCount,
         public readonly string|null $checkedAt,
+        public readonly string|null $expiresAt,
         public readonly CleanupProblem|null $cleanupProblem,
         public readonly bool $awaitsCleanupRetry,
         #[DataCollectionOf(AccountStartData::class)]
@@ -46,11 +49,13 @@ final class AccountRowData extends Data
             $account->id,
             $account->program,
             $account->label,
+            $account->method,
             $account->state,
             $account->identity,
             $isActive,
             $runningCount,
             $account->checked_at?->toIso8601String(),
+            $account->expires_at?->toIso8601String(),
             $account->cleanup_problem,
             $account->awaitsCleanupRetry(),
             array_map(AccountStartData::fromUse(...), $recentUses),

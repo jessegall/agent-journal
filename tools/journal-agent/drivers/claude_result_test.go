@@ -25,10 +25,12 @@ func TestATurnSucceedsOnlyOnASuccessfulResult(t *testing.T) {
 	}
 }
 
-func TestTheSignInMustBeClaudeAiInTheAccountsOwnFolder(t *testing.T) {
+func TestTheSignInMustBeAJournalMethodInTheAccountsOwnFolder(t *testing.T) {
 	folder := t.TempDir()
 	answers := map[string]error{
 		`{"loggedIn":true,"authMethod":"claude.ai","configDirectory":"/accounts/a"}`:       nil,
+		`{"loggedIn":true,"authMethod":"oauth_token","configDirectory":"/accounts/a"}`:     nil,
+		`{"loggedIn":true,"authMethod":"api_key_helper","configDirectory":"/accounts/a"}`:  nil,
 		`{"loggedIn":true,"authMethod":"api_key","configDirectory":"/accounts/a"}`:         ErrNotSignedIn,
 		`{"loggedIn":true,"authMethod":"claude.ai","configDirectory":"/Users/me/.claude"}`: ErrNotSignedIn,
 		`{"loggedIn":false,"authMethod":"none","configDirectory":"/accounts/a"}`:           ErrNotSignedIn,
@@ -40,10 +42,30 @@ func TestTheSignInMustBeClaudeAiInTheAccountsOwnFolder(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err := CheckClaudeSignIn(context.Background(), executable, nil, "/accounts/a")
+		err := CheckClaudeSignIn(context.Background(), executable, nil, nil, "/accounts/a")
 
 		if !errors.Is(err, want) && !(want == nil && err == nil) {
 			t.Fatalf("answer %s: got %v, want %v", answer, err, want)
 		}
+	}
+}
+
+func TestTheTokenFileReachesTheCheckOnDescriptorThreeAndNotItsEnvironment(t *testing.T) {
+	folder := t.TempDir()
+	token := filepath.Join(folder, "provider-token")
+	if err := os.WriteFile(token, []byte("valid-token"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	executable := filepath.Join(folder, "claude")
+	script := "#!/bin/sh\n[ \"$(cat <&3)\" = valid-token ] || exit 1\nenv | grep -q valid-token && exit 1\n" +
+		"echo '{\"loggedIn\":true,\"authMethod\":\"oauth_token\",\"configDirectory\":\"/accounts/a\"}'\n"
+	if err := os.WriteFile(executable, []byte(script), 0o700); err != nil {
+		t.Fatal(err)
+	}
+
+	err := CheckClaudeSignIn(context.Background(), executable, nil, []string{token}, "/accounts/a")
+
+	if err != nil {
+		t.Fatalf("a token read on descriptor 3 was not accepted: %v", err)
 	}
 }

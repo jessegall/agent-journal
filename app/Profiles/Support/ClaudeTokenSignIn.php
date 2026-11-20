@@ -15,9 +15,17 @@ final readonly class ClaudeTokenSignIn extends ClaudeSecretSignIn
      */
     public const int TOKEN_DESCRIPTOR = 3;
 
-    protected function secretFile(string $directory): string
+    /**
+     * The file in an account folder that holds its provider token.
+     */
+    public static function tokenFileIn(string $directory): string
     {
         return $directory.'/provider-token';
+    }
+
+    protected function secretFile(string $directory): string
+    {
+        return self::tokenFileIn($directory);
     }
 
     protected function authMethod(): string

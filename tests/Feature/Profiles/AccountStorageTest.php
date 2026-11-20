@@ -163,7 +163,6 @@ final class AccountStorageTest extends TestCase
             ActorIdentity::system(),
             HookProgram::Codex,
             SignInMethod::OAuth,
-            AccountLabel::from('Home'),
             '/journal/accounts/new-home',
             'request-1',
             CarbonImmutable::now()->addMinutes(10),

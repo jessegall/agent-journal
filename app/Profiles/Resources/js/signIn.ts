@@ -37,6 +37,41 @@ export function attemptToRejoin(
 }
 
 /**
+ * The newest ended sign-in a form reports on: a new account's for the program, or the given account's.
+ */
+export function lastEndedAttempt(
+    attempts: SignInAttemptData[],
+    program: string,
+    accountId: string | null,
+): SignInAttemptData | undefined {
+    return attempts
+        .filter(
+            (attempt) =>
+                !isLive(attempt) &&
+                attempt.program === program &&
+                attempt.accountId === accountId,
+        )
+        .sort((first, second) => second.expiresAt.localeCompare(first.expiresAt))[0];
+}
+
+const endedMessages: Record<string, string> = {
+    already_added: 'This account is already added.',
+    different_account:
+        'That sign-in was for a different account. The saved login is unchanged; you can add it as a new account.',
+    failed: 'The sign-in did not finish.',
+    expired: 'The sign-in took too long and was stopped.',
+    interrupted: 'The sign-in was interrupted.',
+    cancelled: 'The sign-in was cancelled.',
+};
+
+/**
+ * What a form says about a sign-in that ended without adding or renewing an account; nothing for one that did.
+ */
+export function endedMessage(attempt: SignInAttemptData): string | null {
+    return endedMessages[attempt.state] ?? null;
+}
+
+/**
  * Reads the sign-in's challenge over its own no-store request; it is never part of the page.
  */
 export async function readChallenge(

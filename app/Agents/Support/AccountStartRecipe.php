@@ -20,6 +20,7 @@ final readonly class AccountStartRecipe
      * @param  list<string>  $removedVariables
      * @param  list<string>  $startFlags
      * @param  list<StartSetting>  $accountSettings
+     * @param  list<string>  $readFiles  the files the host opens for the program, the first on descriptor 3
      */
     public function __construct(
         public array $environment,
@@ -32,5 +33,6 @@ final readonly class AccountStartRecipe
         public string $arrangement,
         public string $protectionSettings,
         public TransportProfileType $transportProfile,
+        public array $readFiles,
     ) {}
 }

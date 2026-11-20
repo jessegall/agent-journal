@@ -46,6 +46,8 @@ type ProcessRuntime struct {
 	Profile             profilecontracts.ProgramProfile
 	// Environment is the prepared start's clean environment the child starts from; the host's own never reaches it.
 	Environment []string
+	// ReadFiles are the files the host opens for each turn's program to read, the first on descriptor 3.
+	ReadFiles []string
 	// Account is the saved account each child signs in with.
 	Account *profilecontracts.AccountStart
 	// RelayVariables tell the hook relay the start's key and where its sealed output grants are.
@@ -157,6 +159,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 	if err != nil {
 		return contracts.OperationResult{}, err
 	}
+	defer host.CloseFiles(command.ExtraFiles)
 
 	driver.generation++
 	command.Env = append(command.Env,
@@ -214,6 +217,11 @@ func (driver *ProcessDriver) command(start profilecontracts.Start) (*exec.Cmd, e
 	}
 	command.Dir = driver.runtime.WorkingFolder
 	command.Env = profile.Environment(WithoutJournalVariables(driver.runtime.Environment), start)
+	readFiles, err := host.OpenReadFiles(driver.runtime.ReadFiles)
+	if err != nil {
+		return nil, err
+	}
+	command.ExtraFiles = readFiles
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if driver.claudeAccountStart() && runtime.GOOS == "darwin" {
 		sandbox, err := host.WriteSessionSandbox(
@@ -241,7 +249,8 @@ func (driver *ProcessDriver) checkSignIn(command *exec.Cmd) error {
 	if !driver.claudeAccountStart() || driver.signedIn {
 		return nil
 	}
-	if err := CheckClaudeSignIn(context.Background(), command.Path, command.Env, driver.runtime.Account.Folder); err != nil {
+	runtime := driver.runtime
+	if err := CheckClaudeSignIn(context.Background(), command.Path, command.Env, runtime.ReadFiles, runtime.Account.Folder); err != nil {
 		return err
 	}
 	driver.signedIn = true

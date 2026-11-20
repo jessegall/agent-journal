@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Profiles\Listeners;
+
+use App\Agents\Events\AccountSettingsRequested;
+use App\Contracts\Listener;
+use App\Profiles\Enums\SignInMethod;
+use App\Profiles\Models\Account;
+use App\Profiles\Support\ClaudeTokenSignIn;
+
+/**
+ * A start on a Claude Code account signed in by a provider token gets its token the way the sign-in proved it: the
+ * host opens the token's file on a descriptor the program is told about, so the token is in no argument or variable.
+ * A key account needs nothing here: its own settings.json already names the apiKeyHelper the program reads.
+ */
+final readonly class SupplyAccountSecret implements Listener
+{
+    public function handle(AccountSettingsRequested $requested): void
+    {
+        if ($requested->account->type !== Account::LINK_TYPE) {
+            return;
+        }
+
+        if (Account::methodOf($requested->account->id) !== SignInMethod::ProviderToken) {
+            return;
+        }
+
+        $descriptor = $requested->settings->openForReading(ClaudeTokenSignIn::tokenFileIn($requested->directory));
+        $requested->settings->setVariable('CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR', (string) $descriptor);
+    }
+}

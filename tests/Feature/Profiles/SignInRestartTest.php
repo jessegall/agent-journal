@@ -12,6 +12,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\ReconcileSignIns;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\SignInAttempt;
@@ -76,7 +77,8 @@ final class SignInRestartTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $attemptId = $this->app->make(CommandBus::class)->run(new BeginSignIn($program, "key-{$program}", 'Work'))
+        $begin = new BeginSignIn($program, SignInMethod::OAuth, "key-{$program}");
+        $attemptId = $this->app->make(CommandBus::class)->run($begin)
             ->attemptId;
         $this->assertSame($attemptId, SignInAttempt::claimFor($hostId, CarbonImmutable::now())?->id);
 

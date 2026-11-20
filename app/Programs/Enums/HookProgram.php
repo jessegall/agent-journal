@@ -89,6 +89,17 @@ enum HookProgram: string
     }
 
     /**
+     * The program's name as people read it, such as on an account named after it.
+     */
+    public function displayName(): string
+    {
+        return match ($this) {
+            self::ClaudeCode => 'Claude Code',
+            self::Codex => 'Codex',
+        };
+    }
+
+    /**
      * The name the protected host knows the program by, as its profiles and its start protocol write it.
      */
     public function hostName(): string

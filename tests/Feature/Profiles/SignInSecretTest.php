@@ -9,14 +9,21 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
+use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\SubmitSignInCode;
 use App\Profiles\Enums\SignInMethod;
+use App\Profiles\Enums\SignInState;
 use App\Profiles\Exceptions\SignInCodeInvalid;
+use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
-use App\Profiles\Values\AccountLabel;
+use App\Profiles\Values\SignInIdentity;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -32,7 +39,14 @@ final class SignInSecretTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['sign_in_attempts', 'command_receipts', 'links'];
+    private const array TABLES = [
+        'users',
+        'accounts',
+        'active_accounts',
+        'sign_in_attempts',
+        'command_receipts',
+        'links',
+    ];
 
     protected function setUp(): void
     {
@@ -63,7 +77,9 @@ final class SignInSecretTest extends TestCase
     {
         $fingerprints = [];
 
-        foreach ([['claude-code', 'key-1'], ['claude-code', 'key-1'], ['codex', 'key-1'], ['claude-code', 'key-2']] as $index => [$program, $key]) {
+        $cases = [['claude-code', 'key-1'], ['claude-code', 'key-1'], ['codex', 'key-1'], ['claude-code', 'key-2']];
+
+        foreach ($cases as $index => [$program, $key]) {
             $attempt = $this->attempt(HookProgram::from($program), SignInMethod::ApiKey, "request-{$index}");
             $this->submit($attempt, $key);
             $fingerprints[] = $attempt->refresh()->fingerprint;
@@ -84,13 +100,51 @@ final class SignInSecretTest extends TestCase
         $this->assertNull($oauth->refresh()->fingerprint);
     }
 
+    public function test_key_accounts_are_named_for_their_method_and_the_same_key_is_already_added(): void
+    {
+        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(1)));
+        User::factory()->create(['id' => TestIds::of(1)]);
+
+        $first = $this->verifiedKey('request-1', 'key-1');
+        $again = $this->verifiedKey('request-2', 'key-1');
+        $this->verifiedKey('request-3', 'key-2');
+
+        $labels = Account::query()->orderBy('created_at')->orderBy('id')->pluck('label')->all();
+        $this->assertSame(['Claude Code API key', 'Claude Code API key (2)'], $labels);
+        $this->assertSame(SignInState::AlreadyAdded, $again->refresh()->state);
+        $this->assertSame(SignInState::Complete, $first->refresh()->state);
+    }
+
+    /**
+     * A key attempt for Claude Code, given its key and verified by the host.
+     */
+    private function verifiedKey(string $requestKey, string $key): SignInAttempt
+    {
+        $attempt = SignInAttempt::forNewAccount(
+            ActorIdentity::of(ActorContext::forUser(TestIds::of(1))),
+            HookProgram::ClaudeCode,
+            SignInMethod::ApiKey,
+            '/journal/accounts/'.$requestKey,
+            $requestKey,
+            CarbonImmutable::now()->addMinutes(10),
+        );
+        $this->submit($attempt, $key);
+        $attempt->waitForUser();
+        $this->app->make(EntryDispatchers::class)->runAsJournal(
+            CommandEntry::HostControl,
+            'test host',
+            new CompleteSignIn($attempt->id, $attempt->refresh()->generation, SignInIdentity::unproved()),
+        );
+
+        return $attempt;
+    }
+
     private function attempt(HookProgram $program, SignInMethod $method, string $requestKey): SignInAttempt
     {
         return SignInAttempt::forNewAccount(
             ActorIdentity::system(),
             $program,
             $method,
-            AccountLabel::from('Work'),
             '/journal/accounts/'.$requestKey,
             $requestKey,
             CarbonImmutable::now()->addMinutes(10),

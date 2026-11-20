@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SignInAttemptData } from '@generated/types/accounts';
+import type { SignInAttemptData, SignInMethod, SignInMethodData } from '@generated/types/accounts';
 import {
     cancelSignIn,
     signInAgain,
@@ -13,11 +13,11 @@ import FormErrors from '@kit/FormErrors';
 import TextField from '@kit/TextField';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { codeDirection, readChallenge } from './signIn';
+import { codeDirection, endedMessage, readChallenge } from './signIn';
 import type { SignInChallenge } from './signIn';
 
 /**
- * Signs in a new account of a program under a name, or a saved account again once the owner confirmed that no new
+ * Signs in a new account of a program, named later from who it proved to be, or a saved account again once the owner confirmed that no new
  * start uses it meanwhile and its running work must end first. While its sign-in runs the form shows the
  * challenge read over its own no-store request: Claude Code's address with a field for the code the provider gives
  * back, or Codex's code to enter on the provider's page. A typed code lives only in this form and is cleared once
@@ -27,9 +27,39 @@ const props = defineProps<{
     program: string;
     accountId: string | null;
     running: SignInAttemptData | undefined;
+    ended: SignInAttemptData | undefined;
+    methods: SignInMethodData[];
+    accountMethod: SignInMethod | null;
 }>();
 
-const start = useForm({ label: '' });
+const chosenMethod = ref<SignInMethod>(props.methods[0]?.method ?? 'oauth');
+const runningMethod = computed(() => props.methods.find((option) => option.method === props.running?.method));
+const againLabel = computed(() => (props.accountMethod === 'api_key' ? 'Replace key' : 'Sign in again'));
+const secretForm = useForm({ secret: '' });
+
+function sendSecret(): void {
+    if (props.running === undefined) {
+        return;
+    }
+
+    secretForm
+        .transform((fields) => ({ code: fields.secret }))
+        .submit(submitCode({ attempt: props.running.id }), {
+            preserveScroll: true,
+            onFinish: () => secretForm.reset(),
+            ...formSendingHooks(),
+        });
+}
+
+const methodNames: Record<SignInMethod, string> = {
+    oauth: 'Sign in with the provider',
+    provider_token: 'Provider token',
+    api_key: 'API key',
+};
+
+const endedNote = computed(() => (props.ended === undefined ? null : endedMessage(props.ended)));
+
+const start = useForm({});
 const again = useForm({});
 const cancelling = useForm({});
 const codeForm = useForm({ code: '' });
@@ -39,10 +69,10 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 
 function begin(): void {
     start
-        .transform((fields) => ({
+        .transform(() => ({
             program: props.program,
+            method: chosenMethod.value,
             request_key: crypto.randomUUID(),
-            label: fields.label,
         }))
         .submit(startSignIn(), { preserveScroll: true, ...formSendingHooks() });
 }
@@ -117,14 +147,24 @@ function cancel(): void {
 <template>
     <div class="flex flex-col gap-2 px-4 py-3">
         <template v-if="running === undefined && accountId === null">
-            <form class="flex items-end gap-2" @submit.prevent="begin">
-                <TextField
-                    :id="`new-account-${program}`"
-                    v-model="start.label"
-                    label="Account name"
-                    :maxlength="80"
-                    :error="start.errors.label"
-                />
+            <form class="flex flex-col gap-2" @submit.prevent="begin">
+                <template v-if="methods.length > 1">
+                    <fieldset class="flex flex-col gap-1">
+                        <legend class="text-small text-text-3">How to sign in</legend>
+                        <template v-for="option in methods" :key="option.method">
+                            <label class="flex items-baseline gap-2 text-small">
+                                <input
+                                    v-model="chosenMethod"
+                                    type="radio"
+                                    :name="`method-${program}`"
+                                    :value="option.method"
+                                />
+                                <span class="text-text">{{ methodNames[option.method] }}</span>
+                                <span class="text-text-3">{{ option.billingNote }}</span>
+                            </label>
+                        </template>
+                    </fieldset>
+                </template>
                 <Button
                     type="submit"
                     variant="primary"
@@ -137,12 +177,28 @@ function cancel(): void {
         <template v-else-if="running === undefined && accountId !== null">
             <div>
                 <ConfirmAction
-                    label="Sign in again"
-                    question="New starts wait and work running on this account must end first. Sign in again?"
-                    confirm-label="Sign in again"
+                    :label="againLabel"
+                    :question="`New starts wait and work running on this account must end first. ${againLabel}?`"
+                    :confirm-label="againLabel"
                     :pending="again.processing"
                     @confirm="beginAgain(accountId)"
                 />
+            </div>
+        </template>
+        <template v-else-if="running !== undefined && runningMethod?.isSecret">
+            <form class="flex items-end gap-2" @submit.prevent="sendSecret">
+                <TextField
+                    :id="`sign-in-secret-${running.id}`"
+                    v-model="secretForm.secret"
+                    :label="methodNames[running.method]"
+                    secret
+                    :maxlength="4096"
+                    :error="secretForm.errors.code"
+                />
+                <Button type="submit" variant="primary" size="small" :pending="secretForm.processing">Send</Button>
+            </form>
+            <div>
+                <Button size="small" :pending="cancelling.processing" @click="cancel">Cancel sign-in</Button>
             </div>
         </template>
         <template v-else-if="running !== undefined">
@@ -196,6 +252,14 @@ function cancel(): void {
                     >Cancel sign-in</Button
                 >
             </div>
+        </template>
+        <template v-if="running === undefined && endedNote !== null">
+            <p class="text-small text-text-2" role="status">{{ endedNote }}</p>
+            <template v-if="ended?.state === 'different_account' && accountId !== null">
+                <div>
+                    <Button size="small" :pending="start.processing" @click="begin">Add account</Button>
+                </div>
+            </template>
         </template>
         <FormErrors :errors="start.errors" />
         <FormErrors :errors="again.errors" />

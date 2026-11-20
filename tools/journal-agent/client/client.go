@@ -84,12 +84,12 @@ type RequestReport struct {
 // NavigationReport mirrors App\Http\Data\Agents\NavigationRoundReportData: the screen after a round, its rows
 // redacted, whether the round's proof showed, the actions carried out and the refusal that stopped it.
 type NavigationReport struct {
-	Rows       []string       `json:"rows"`
-	Highlight  int            `json:"highlight"`
-	Generation uint64         `json:"generation"`
-	HasObservedProof bool     `json:"has_observed_proof"`
-	Actions    []ActionReport `json:"actions,omitempty"`
-	Refusal    *string        `json:"refusal"`
+	Rows             []string       `json:"rows"`
+	Highlight        int            `json:"highlight"`
+	Generation       uint64         `json:"generation"`
+	HasObservedProof bool           `json:"has_observed_proof"`
+	Actions          []ActionReport `json:"actions,omitempty"`
+	Refusal          *string        `json:"refusal"`
 	// Steps are the proven path as a library entry keeps it, sent when the round's proof showed.
 	Steps []PathStep `json:"steps,omitempty"`
 }

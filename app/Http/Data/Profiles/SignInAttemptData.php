@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Profiles;
 
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Enums\SignInType;
 use App\Profiles\Models\SignInAttempt;
@@ -20,8 +21,8 @@ final class SignInAttemptData extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $program,
+        public readonly SignInMethod $method,
         public readonly SignInType $type,
-        public readonly string|null $label,
         public readonly string|null $accountId,
         public readonly SignInState $state,
         public readonly string $expiresAt,
@@ -32,8 +33,8 @@ final class SignInAttemptData extends Data
         return new self(
             $attempt->id,
             $attempt->program,
+            $attempt->method,
             $attempt->type(),
-            $attempt->label,
             $attempt->account_id,
             $attempt->state,
             $attempt->expires_at->toIso8601String(),

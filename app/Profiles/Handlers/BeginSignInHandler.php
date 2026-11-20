@@ -7,12 +7,12 @@ namespace App\Profiles\Handlers;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\BeginSignIn;
-use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Events\AccountsChanged;
+use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
-use App\Profiles\Values\AccountLabel;
+use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\SignInStarted;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
@@ -26,12 +26,8 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class BeginSignInHandler implements CommandHandler
 {
-    /**
-     * Every sign-in runs the program's OAuth method until the start command carries the method it asks for.
-     */
-    private const SignInMethod METHOD = SignInMethod::OAuth;
-
     public function __construct(
+        private SignInProtocols $protocols,
         private Repository $config,
         private Dispatcher $events,
         private JobDispatcher $jobs,
@@ -46,6 +42,11 @@ final readonly class BeginSignInHandler implements CommandHandler
         }
 
         $program = HookProgram::from($command->program);
+
+        if (! $this->protocols->supports($program->value, $command->method)) {
+            throw SignInMethodMissing::for($program->value, $command->method->value);
+        }
+
         ActiveAccount::lockedFor($program);
         $running = SignInAttempt::liveFor($program, null);
 
@@ -54,13 +55,11 @@ final readonly class BeginSignInHandler implements CommandHandler
         }
 
         $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
-        $label = AccountLabel::from($command->label);
         $directory = SignInAttempt::newFolderIn($this->config->string('accounts.root'));
         $attempt = SignInAttempt::forNewAccount(
             ActorIdentity::of($command->dispatchedBy()),
             $program,
-            self::METHOD,
-            $label,
+            $command->method,
             $directory,
             $command->requestKey,
             $expiresAt,

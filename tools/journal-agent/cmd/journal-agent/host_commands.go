@@ -253,6 +253,7 @@ func (opener runtimeOpener) processRuntime(
 		HookCommand:         opener.hookCommand,
 		Profile:             profile,
 		Environment:         environment,
+		ReadFiles:           prepared.Claim.Recipe.ReadFiles,
 		Account:             accountOf(prepared, opener.installationFolder, runtimeID),
 		RelayVariables:      prepared.RelayVariables(settingsFolder),
 		Executable:          installedProgram(opener.installationFolder, profile),
@@ -287,6 +288,7 @@ func (opener runtimeOpener) terminalRuntime(
 		return nil, err
 	}
 	request.Rows, request.Columns = defaultRows, defaultColumns
+	request.ReadFiles = prepared.Claim.Recipe.ReadFiles
 	opened, err := opener.socket.Open(request)
 	if err != nil {
 		return nil, err
@@ -327,6 +329,12 @@ func startTerminal(request host.AttachRequest) (*os.File, error) {
 	command := exec.Command(request.Command[0], request.Command[1:]...)
 	command.Dir = request.Folder
 	command.Env = request.Env
+	files, err := host.OpenReadFiles(request.ReadFiles)
+	if err != nil {
+		return nil, err
+	}
+	defer host.CloseFiles(files)
+	command.ExtraFiles = files
 	return pty.StartWithSize(command, &pty.Winsize{Rows: request.Rows, Cols: request.Columns})
 }
 
@@ -524,10 +532,12 @@ func openMainRuntime(
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	return startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, prepared.Grant,
+	request, err := startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, prepared.Grant,
 		environment, accountOf(prepared, installationFolder, opened.RuntimeID),
 		prepared.RelayVariables(filepath.Join(stateFolder, "runtimes", opened.RuntimeID)),
 		installedProgram(installationFolder, profile))
+	request.ReadFiles = prepared.Claim.Recipe.ReadFiles
+	return request, err
 }
 
 // startOf builds the program's terminal start for a runtime from its pinned profile and its start grant: the

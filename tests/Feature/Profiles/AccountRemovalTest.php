@@ -202,7 +202,7 @@ final class AccountRemovalTest extends TestCase
 
     public function test_an_unfinished_new_accounts_sign_in_is_cleaned_with_both_proofs(): void
     {
-        $started = $this->asOwner(new BeginSignIn('claude-code', 'new', 'Spare'));
+        $started = $this->asOwner(new BeginSignIn('claude-code', SignInMethod::OAuth, 'new'));
         $this->asOwner(new CancelSignIn($started->attemptId));
 
         $claimed = $this->asHost(new ClaimCleanup('host'));
@@ -235,7 +235,7 @@ final class AccountRemovalTest extends TestCase
 
     public function test_the_owner_retries_an_unfinished_sign_ins_cleanup_by_its_attempt(): void
     {
-        $started = $this->asOwner(new BeginSignIn('claude-code', 'new', 'Spare'));
+        $started = $this->asOwner(new BeginSignIn('claude-code', SignInMethod::OAuth, 'new'));
         $this->asOwner(new CancelSignIn($started->attemptId));
 
         foreach (range(1, CleanupProgress::MOST_TRIES) as $try) {

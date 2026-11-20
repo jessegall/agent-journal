@@ -117,6 +117,48 @@ final class Account extends Model implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * The method the account signed in by, read by the journal for a start on it; none for an account that is gone.
+     */
+    public static function methodOf(string $accountId): SignInMethod|null
+    {
+        return self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($accountId)->first()?->method;
+    }
+
+    /**
+     * The first free label of the program for a new account: the proposed one, else its numbered variants from 2.
+     */
+    public static function freeLabel(HookProgram $program, AccountLabel $proposed): AccountLabel
+    {
+        $label = $proposed;
+
+        for ($number = 2; self::labelIsTaken($program, $label); $number++) {
+            $label = $proposed->numbered($number);
+        }
+
+        return $label;
+    }
+
+    /**
+     * The program's account, not removed, that holds the principal a verified sign-in proved; none for a sign-in that
+     * proved no subject.
+     */
+    public static function holdingPrincipal(HookProgram $program, SignInIdentity $identity): self|null
+    {
+        if ($identity->subject === null) {
+            return null;
+        }
+
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('program', $program->value)
+            ->where('subject', $identity->subject)
+            ->where('state', '!=', AccountState::Removed->value)
+            ->readLimit(20)
+            ->get()
+            ->first(fn (self $account) => $account->isSamePrincipal($identity));
+    }
+
+    /**
      * Whether another account of the attempt's program, not removed, already signs in by the key or token the attempt
      * was given; an attempt without a key holds none.
      */
@@ -619,6 +661,16 @@ final class Account extends Model implements ReadableModel
     }
 
     // ----------[ Internals ]----------
+
+    private static function labelIsTaken(HookProgram $program, AccountLabel $label): bool
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('program', $program->value)
+            ->where('label_key', $label->key())
+            ->where('state', '!=', AccountState::Removed->value)
+            ->exists();
+    }
 
     private function name(AccountLabel $label): void
     {

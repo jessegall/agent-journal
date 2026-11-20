@@ -12,7 +12,31 @@ use App\Profiles\Exceptions\AccountLabelInvalid;
  */
 final readonly class AccountLabel
 {
+    private const int LENGTH_LIMIT = 80;
+
     private function __construct(public string $label) {}
+
+    /**
+     * A label proposed from the text a verified sign-in shows, without its control characters and path separators,
+     * cut to fit; the fallback, such as the program's name, when nothing of it is left.
+     */
+    public static function proposedFrom(string|null $display, string $fallback): self
+    {
+        $cleaned = trim((string) preg_replace('/[\p{Cc}\/\\\\]/u', '', (string) $display));
+
+        return self::from(mb_substr($cleaned === '' ? $fallback : $cleaned, 0, self::LENGTH_LIMIT));
+    }
+
+    /**
+     * The numbered variant used when this label is taken, such as 'Work (2)', its base cut so the whole fits.
+     */
+    public function numbered(int $number): self
+    {
+        $suffix = " ({$number})";
+        $base = rtrim(mb_substr($this->label, 0, self::LENGTH_LIMIT - mb_strlen($suffix)));
+
+        return self::from($base.$suffix);
+    }
 
     /**
      * @throws AccountLabelInvalid
@@ -22,7 +46,7 @@ final readonly class AccountLabel
         $label = trim($text);
         $length = mb_strlen($label);
 
-        if ($length < 1 || $length > 80 || preg_match('/[\p{Cc}\/\\\\]/u', $label) === 1) {
+        if ($length < 1 || $length > self::LENGTH_LIMIT || preg_match('/[\p{Cc}\/\\\\]/u', $label) === 1) {
             throw AccountLabelInvalid::for($text);
         }
 

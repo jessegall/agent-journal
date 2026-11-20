@@ -19,6 +19,7 @@ final class AccountListData extends Data
      * @param  list<AccountSelectionData>  $selections
      * @param  list<SignInAttemptData>  $attempts
      * @param  list<PendingAttemptCleanupData>  $pendingCleanups
+     * @param  list<ProgramMethodsData>  $methods
      */
     public function __construct(
         #[DataCollectionOf(AccountRowData::class)]
@@ -29,5 +30,7 @@ final class AccountListData extends Data
         public readonly array $attempts,
         #[DataCollectionOf(PendingAttemptCleanupData::class)]
         public readonly array $pendingCleanups,
+        #[DataCollectionOf(ProgramMethodsData::class)]
+        public readonly array $methods,
     ) {}
 }

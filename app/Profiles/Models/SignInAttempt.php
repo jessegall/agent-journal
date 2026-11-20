@@ -14,7 +14,6 @@ use App\Profiles\Enums\SignInState;
 use App\Profiles\Enums\SignInType;
 use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Models\Support\AccountOwnerScope;
-use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\CleanupProgress;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
@@ -37,7 +36,6 @@ use Illuminate\Support\Str;
  * @property string $id
  * @property string $program
  * @property string|null $account_id
- * @property string|null $label
  * @property SignInMethod $method
  * @property ActorType $actor_type
  * @property string $actor_id
@@ -58,7 +56,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  * @property-read Account|null $account
  */
-#[Fillable(['program', 'method', 'actor_type', 'actor_id', 'label'])]
+#[Fillable(['program', 'method', 'actor_type', 'actor_id'])]
 final class SignInAttempt extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -92,13 +90,12 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * A new attempt, started by an actor, to sign in a new account under a name by one of its program's methods.
+     * A new attempt, started by an actor, to sign in a new account by one of its program's methods.
      */
     public static function forNewAccount(
         ActorIdentity $starter,
         HookProgram $program,
         SignInMethod $method,
-        AccountLabel $label,
         string $directory,
         string $requestKey,
         CarbonImmutable $expiresAt,
@@ -107,7 +104,6 @@ final class SignInAttempt extends Model implements ReadableModel
             'program' => $program->value,
             'method' => $method,
             ...$starter->asColumns('actor'),
-            'label' => $label->label,
         ]);
         $attempt->directory = $directory;
         $attempt->begin($requestKey, $expiresAt);

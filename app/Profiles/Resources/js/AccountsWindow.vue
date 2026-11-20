@@ -2,6 +2,7 @@
 import type {
     AccountListData,
     AccountRowData,
+    SignInMethodData,
 } from '@generated/types/accounts';
 import EmptyState from '@kit/EmptyState';
 import PageHeader from '@kit/PageHeader';
@@ -9,7 +10,7 @@ import { computed, ref, watch } from 'vue';
 import AccountRecovery from './AccountRecovery.vue';
 import AccountRow from './AccountRow.vue';
 import SignInForm from './SignInForm.vue';
-import { attemptToRejoin } from './signIn';
+import { attemptToRejoin, lastEndedAttempt } from './signIn';
 import { isChosen, newestSelections } from './accountSelections';
 import { programName } from './accountLooks';
 
@@ -27,6 +28,10 @@ watch(
     (arrived) =>
         (selections.value = newestSelections(selections.value, arrived)),
 );
+
+function methodsOf(program: string): SignInMethodData[] {
+    return props.data.methods.find((entry) => entry.program === program)?.methods ?? [];
+}
 
 const programs = computed(() => {
     const byProgram = new Map<string, AccountRowData[]>([
@@ -64,6 +69,9 @@ const programs = computed(() => {
                     :program="program"
                     :account-id="null"
                     :running="attemptToRejoin(data.attempts, program, null)"
+                    :ended="lastEndedAttempt(data.attempts, program, null)"
+                    :methods="methodsOf(program)"
+                    :account-method="null"
                 />
                 <ul>
                     <template v-for="row in rows" :key="row.id">
@@ -83,6 +91,15 @@ const programs = computed(() => {
                                         row.id,
                                     )
                                 "
+                                :ended="
+                                    lastEndedAttempt(
+                                        data.attempts,
+                                        program,
+                                        row.id,
+                                    )
+                                "
+                                :methods="methodsOf(program)"
+                                :account-method="row.method"
                             />
                         </AccountRow>
                     </template>

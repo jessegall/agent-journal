@@ -7,8 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"journal-agent/host"
 	"os/exec"
 	"path/filepath"
+	"slices"
 )
 
 // ErrNotSignedIn refuses a Claude account start whose account is not signed in to claude.ai in its own folder: it
@@ -26,11 +28,24 @@ type claudeAuthStatus struct {
 	ConfigDirectory string `json:"configDirectory"`
 }
 
-// CheckClaudeSignIn asks the protected executable, in the start's own environment, whether the account is signed in
-// to claude.ai in exactly its folder. Nothing it prints is kept beyond those three fields.
-func CheckClaudeSignIn(ctx context.Context, executable string, environment []string, accountFolder string) error {
+// CheckClaudeSignIn asks the protected executable, in the start's own environment and with the files it reads,
+// whether the account is signed in by one of the journal's methods in exactly its folder. Nothing it prints is kept
+// beyond those three fields.
+func CheckClaudeSignIn(
+	ctx context.Context,
+	executable string,
+	environment []string,
+	readFiles []string,
+	accountFolder string,
+) error {
 	command := exec.CommandContext(ctx, executable, "auth", "status", "--json")
 	command.Env = environment
+	files, err := host.OpenReadFiles(readFiles)
+	if err != nil {
+		return errors.Join(ErrNotSignedIn, err)
+	}
+	defer host.CloseFiles(files)
+	command.ExtraFiles = files
 	output, err := command.Output()
 	if err != nil && len(output) == 0 {
 		return errors.Join(ErrNotSignedIn, err)
@@ -45,9 +60,13 @@ func CheckClaudeSignIn(ctx context.Context, executable string, environment []str
 	return nil
 }
 
-// isSignedInAt is whether the status is a claude.ai sign-in kept in the account's own folder.
+// accountAuthMethods are the authMethod values of the journal's Claude sign-in methods: OAuth, a provider token read
+// from a descriptor, and an API key from the folder's apiKeyHelper.
+var accountAuthMethods = []string{"claude.ai", "oauth_token", "api_key_helper"}
+
+// isSignedInAt is whether the status is a sign-in by one of the journal's methods kept in the account's own folder.
 func (status claudeAuthStatus) isSignedInAt(accountFolder string) bool {
-	return status.LoggedIn && status.AuthMethod == "claude.ai" &&
+	return status.LoggedIn && slices.Contains(accountAuthMethods, status.AuthMethod) &&
 		filepath.Clean(status.ConfigDirectory) == filepath.Clean(accountFolder)
 }
 

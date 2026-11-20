@@ -32,6 +32,7 @@ type AttachRequest struct {
 	Command   []string `json:"command"`
 	Folder    string   `json:"folder"`
 	Env       []string `json:"env"`
+	ReadFiles []string `json:"read_files"`
 	Rows      uint16   `json:"rows"`
 	Columns   uint16   `json:"columns"`
 }

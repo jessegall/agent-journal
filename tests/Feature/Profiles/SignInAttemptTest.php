@@ -16,6 +16,7 @@ use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Enums\AccountState;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Exceptions\SignInAttemptStale;
@@ -46,7 +47,14 @@ final class SignInAttemptTest extends TestCase
     use CommitsHookRows;
     use WithActiveAccount;
 
-    private const array TABLES = ['users', 'accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts', 'links'];
+    private const array TABLES = [
+        'users',
+        'accounts',
+        'active_accounts',
+        'sign_in_attempts',
+        'command_receipts',
+        'links',
+    ];
 
     protected function setUp(): void
     {
@@ -79,7 +87,7 @@ final class SignInAttemptTest extends TestCase
         $this->complete($started->attemptId, 0, 'work@example.test');
 
         $account = Account::query()->sole();
-        $this->assertSame([AccountState::SignedIn, 'Work'], [$account->state, $account->label]);
+        $this->assertSame([AccountState::SignedIn, 'work@example.test'], [$account->state, $account->label]);
         $this->assertSame($account->id, ActiveAccount::query()->sole()->account_id);
         $this->assertSame(SignInState::Complete, SignInAttempt::query()->sole()->state);
     }
@@ -97,6 +105,20 @@ final class SignInAttemptTest extends TestCase
         Event::assertNotDispatched(AccountsChanged::class);
         $this->expectException(SignInAttemptStale::class);
         $this->complete($started->attemptId, 1, 'work@example.test');
+    }
+
+    public function test_a_new_account_is_named_from_its_identity_and_a_known_principal_is_already_added(): void
+    {
+        $this->completeNew('request-1', new SignInIdentity('a@example.test', 'subject-1', null));
+        $this->completeNew('request-2', new SignInIdentity('a@example.test', 'subject-2', null));
+        $this->completeNew('request-3', SignInIdentity::unproved());
+        $known = $this->completeNew('request-4', new SignInIdentity('a@example.test', 'subject-1', null));
+
+        $labels = Account::query()->orderBy('created_at')->pluck('label')->all();
+        $this->assertSame(['a@example.test', 'a@example.test (2)', 'Claude Code'], $labels);
+        $this->assertSame(SignInState::AlreadyAdded, SignInAttempt::query()->whereKey($known)->sole()->state);
+        $first = Account::query()->orderBy('created_at')->firstOrFail();
+        $this->assertSame($first->id, ActiveAccount::query()->sole()->account_id);
     }
 
     public function test_a_starter_that_lost_its_grant_before_the_report_adds_no_account(): void
@@ -146,7 +168,24 @@ final class SignInAttemptTest extends TestCase
 
     private function begin(string $requestKey): SignInStarted
     {
-        return $this->bus()->run(new BeginSignIn('claude-code', $requestKey, 'Work'));
+        return $this->bus()->run(new BeginSignIn('claude-code', SignInMethod::OAuth, $requestKey));
+    }
+
+    /**
+     * A new account's sign-in, started and verified with this identity; answers its attempt.
+     */
+    private function completeNew(string $requestKey, SignInIdentity $identity): string
+    {
+        $started = $this->begin($requestKey);
+        SignInAttempt::query()->whereKey($started->attemptId)->sole()->waitForUser();
+        $this->app->make(EntryDispatchers::class)->runAsJournal(
+            CommandEntry::HostControl,
+            'test host',
+            new CompleteSignIn($started->attemptId, 0, $identity),
+        );
+        $this->actAsOwner();
+
+        return $started->attemptId;
     }
 
     private function complete(string $attemptId, int $generation, string|null $display): void

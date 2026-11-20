@@ -24,6 +24,9 @@ type AccountRecipe struct {
 	Arrangement          string         `json:"arrangement"`
 	ProtectionSettings   string         `json:"protectionSettings"`
 	TransportProfile     string         `json:"transportProfile"`
+	// ReadFiles are the files the host opens for the program to read, the first on descriptor 3, such as a provider
+	// token the program reads from a descriptor instead of from its environment.
+	ReadFiles []string `json:"readFiles"`
 }
 
 // ClaimedStart is the pending account start of a session this host took: its key, the account folder on this host,

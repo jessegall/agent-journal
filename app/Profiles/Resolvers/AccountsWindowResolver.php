@@ -7,9 +7,12 @@ namespace App\Profiles\Resolvers;
 use App\Agents\Contracts\AccountUses;
 use App\Http\Data\Profiles\AccountListData;
 use App\Http\Data\Profiles\AccountRowData;
+use App\Http\Data\Profiles\ProgramMethodsData;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
+use App\Profiles\Support\SignInProtocols;
+use App\Programs\Enums\HookProgram;
 use App\Ui\Contracts\PageResolver;
 use Carbon\CarbonImmutable;
 
@@ -21,7 +24,7 @@ final readonly class AccountsWindowResolver implements PageResolver
 {
     private const int RECENT_STARTS = 5;
 
-    public function __construct(private AccountUses $uses) {}
+    public function __construct(private AccountUses $uses, private SignInProtocols $protocols) {}
 
     public function read(): AccountListData
     {
@@ -40,6 +43,13 @@ final readonly class AccountsWindowResolver implements PageResolver
             'selections' => $selections,
             'attempts' => SignInAttempt::recentFor(CarbonImmutable::now()),
             'pendingCleanups' => SignInAttempt::pendingCleanups(),
+            'methods' => array_map(
+                fn (HookProgram $program) => ProgramMethodsData::fromMethods(
+                    $program->value,
+                    $this->protocols->methodsOf($program->value),
+                ),
+                HookProgram::cases(),
+            ),
         ]);
     }
 }

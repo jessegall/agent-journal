@@ -35,7 +35,7 @@ function retry(attemptId: string): void {
                         class="flex items-center gap-3 border-b border-border px-4 py-3"
                     >
                         <span class="text-card text-text">{{
-                            cleanup.label ?? programName(cleanup.program)
+                            programName(cleanup.program)
                         }}</span>
                         <span class="text-small text-text-3">{{
                             cleanup.problem === null

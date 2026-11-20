@@ -15,6 +15,7 @@ use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Enums\SignInState;
+use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
@@ -98,6 +99,43 @@ final class SignInHostTest extends TestCase
         );
     }
 
+    public function test_a_start_names_only_its_program_and_an_unknown_program_starts_nothing(): void
+    {
+        $owner = $this->owner();
+        $start = ['program' => 'claude-code', 'method' => 'oauth', 'request_key' => 'request-1'];
+
+        $this->actingAs($owner)->post('/accounts/sign-ins', $start)->assertStatus(303);
+        $this->actingAs($owner)->post('/accounts/sign-ins', [...$start, 'request_key' => 'request-2'])
+            ->assertStatus(303);
+        $unknown = ['program' => 'gemini', 'method' => 'oauth', 'request_key' => 'request-3'];
+        $this->actingAs($owner)->post('/accounts/sign-ins', $unknown)
+            ->assertSessionHasErrors('program');
+
+        $this->assertSame(1, SignInAttempt::query()->withoutGlobalScopes()->count());
+    }
+
+    public function test_a_start_carries_its_method_and_an_undeclared_method_starts_nothing(): void
+    {
+        $owner = $this->owner();
+        $start = fn (string $program, string $method, string $key) => $this->actingAs($owner)
+            ->post('/accounts/sign-ins', ['program' => $program, 'method' => $method, 'request_key' => $key]);
+
+        $start('claude-code', 'api_key', 'request-1')->assertStatus(303);
+        $start('codex', 'provider_token', 'request-2')->assertSessionHasErrors('method');
+        $start('codex', 'password', 'request-3')->assertSessionHasErrors('method');
+
+        $this->assertSame(SignInMethod::ApiKey, SignInAttempt::query()->withoutGlobalScopes()->sole()->method);
+        $owner = ActorContext::forUser($this->owner()->id);
+        $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(
+                new BeginSignIn('codex', SignInMethod::ProviderToken, 'request-4'),
+            ),
+            SignInMethodMissing::class,
+        );
+        $this->assertSame(1, SignInAttempt::query()->withoutGlobalScopes()->count());
+    }
+
     public function test_another_host_and_an_unsigned_call_reach_no_attempt(): void
     {
         $host = $this->enrollHost();
@@ -117,8 +155,8 @@ final class SignInHostTest extends TestCase
         $host = $this->enrollHost();
         $this->actingAs($owner)->post('/accounts/sign-ins', [
             'program' => 'claude-code',
+            'method' => 'oauth',
             'request_key' => 'request-1',
-            'label' => 'Work',
         ])->assertStatus(303);
         $attemptId = (string) $this->signed($host, '/host/sign-ins/claim')->json('attempt_id');
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?secret-state', 'code' => null];
@@ -229,7 +267,7 @@ final class SignInHostTest extends TestCase
         $owner = ActorContext::forUser($this->owner()->id);
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
 
-        $begin = new BeginSignIn('claude-code', (string) Str::ulid(), 'Work');
+        $begin = new BeginSignIn('claude-code', SignInMethod::OAuth, (string) Str::ulid());
         $started = $this->app->make(CommandBus::class)->run($begin);
 
         return $started->attemptId;

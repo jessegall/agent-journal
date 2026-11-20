@@ -38,6 +38,11 @@ final class AccountStartSettings
      */
     private array $accountSettings = [];
 
+    /**
+     * @var list<string>
+     */
+    private array $readFiles = [];
+
     private string|null $build = null;
 
     private string $binaryDigest = '';
@@ -69,6 +74,17 @@ final class AccountStartSettings
     public function keepAccountSetting(string $name, string $variableText): void
     {
         $this->accountSettings[] = new StartSetting($name, $variableText);
+    }
+
+    /**
+     * A file the host opens for the program to read, such as a token it reads on a descriptor instead of from its
+     * environment; answers the descriptor it gets, 3 for the first.
+     */
+    public function openForReading(string $path): int
+    {
+        $this->readFiles[] = $path;
+
+        return 2 + count($this->readFiles);
     }
 
     /**
@@ -106,6 +122,7 @@ final class AccountStartSettings
             $this->arrangement,
             $this->protectionSettings,
             $transport,
+            $this->readFiles,
         );
     }
 }

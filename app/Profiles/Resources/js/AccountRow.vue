@@ -101,6 +101,11 @@ function saveName(): void {
                 {{ account.identity }}
             </p>
         </template>
+        <template v-if="account.expiresAt !== null">
+            <p class="text-small text-text-3">
+                Its login expires {{ new Date(account.expiresAt).toLocaleDateString() }}.
+            </p>
+        </template>
         <template v-if="account.cleanupProblem !== null">
             <div class="flex items-center gap-2">
                 <span class="text-small text-text-2">{{
