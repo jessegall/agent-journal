@@ -7,7 +7,6 @@ namespace App\Agents\Handlers;
 use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\RaiseNavigation;
-use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\NavigationAnswerer;
 use App\Agents\Exceptions\HostReportRefused;
@@ -152,7 +151,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
             ->lockForUpdate()
             ->first()
             ?? throw NavigationRaiseRefused::notOfRuntime($command->requestId, $runtime->id);
-        if ($request->operation !== DriverOperation::KeyScript) {
+        if (! $request->isKeyScript()) {
             throw NavigationRaiseRefused::notAKeyScript($request->id);
         }
         if ($command->attempt !== $request->attempt_version) {

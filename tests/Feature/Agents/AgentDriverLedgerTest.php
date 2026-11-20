@@ -504,10 +504,14 @@ final class AgentDriverLedgerTest extends TestCase
             'process_generation' => $runtime->process_generation,
         ])->assertSuccessful();
         $ends = [[$unavailable, 'unavailable', 'entry_unavailable'], [$unconfirmed, 'failed', 'unconfirmed']];
+        $attempts = DriverRequest::query()
+            ->whereKey([$unavailable->requestId, $unconfirmed->requestId])
+            ->readLimit(2)
+            ->pluck('attempt_version', 'id');
         foreach ($ends as [$receipt, $progress, $outcome]) {
             $this->hostCall($host, '/host/reports/request', [
                 'request_id' => $receipt->requestId,
-                'attempt' => DriverRequest::query()->findOrFail($receipt->requestId)->attempt_version,
+                'attempt' => $attempts[$receipt->requestId],
                 'progress' => $progress,
                 'actual_binding' => null,
                 'outcome' => $outcome,
@@ -893,7 +897,10 @@ final class AgentDriverLedgerTest extends TestCase
      */
     private function claimedScript(EnrolledHost $host, string $requestId): array
     {
-        $requests = $this->hostCall($host, '/host/claim?limit=10&wait=0&watched_version=0')->assertOk()->json('requests');
+        $requests = $this->hostCall(
+            $host,
+            '/host/claim?limit=10&wait=0&watched_version=0',
+        )->assertOk()->json('requests');
 
         return collect($requests)->firstOrFail(fn (array $claimed) => $claimed['requestId'] === $requestId);
     }

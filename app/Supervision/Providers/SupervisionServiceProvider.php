@@ -69,7 +69,9 @@ final class SupervisionServiceProvider extends ServiceProvider
         );
     }
 
-    /** @param array<string, mixed> $profiles */
+    /**
+     * @param  array<string, mixed>  $profiles
+     */
     private function requireKnownAskTypes(AskTypeRegistry $types, array $profiles): void
     {
         foreach ($profiles as $profile) {

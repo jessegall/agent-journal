@@ -82,7 +82,7 @@ final readonly class RuleApprovals
         try {
             $this->rules->withRules(...[...$others, $rule]);
         } catch (CommandRuleConflict $conflict) {
-            throw ApprovalRefused::conflict($conflict->getMessage());
+            throw ApprovalRefused::conflict($conflict);
         }
     }
 

@@ -78,7 +78,10 @@ final class ClaudeNativeEvidenceTest extends TestCase
 
     public function test_an_account_outside_the_journal_accounts_folder_is_refused(): void
     {
-        $output = $this->procedureOutput(["--accounts-root={$this->accounts}/a", "--account-a={$this->accounts}/b"], 255);
+        $output = $this->procedureOutput(
+            ["--accounts-root={$this->accounts}/a", "--account-a={$this->accounts}/b"],
+            255,
+        );
 
         $this->assertStringNotContainsString('"items"', $output);
     }

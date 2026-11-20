@@ -15,10 +15,14 @@ final class CommandNesting
 {
     private const int LIMIT = 8;
 
-    /** @var list<class-string> */
+    /**
+     * @var list<class-string>
+     */
     private array $commands = [];
 
-    /** @param class-string $command */
+    /**
+     * @param  class-string  $command
+     */
     public function enter(string $command): void
     {
         if (count($this->commands) >= self::LIMIT) {

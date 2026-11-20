@@ -63,7 +63,7 @@ enum ClaudeCodeTool: string
     /**
      * Whether the tool reads, lists or searches files by the paths its input names.
      */
-    public function readsFiles(): bool
+    public function isFileReader(): bool
     {
         return match ($this) {
             self::Read, self::Glob, self::Grep, self::LS => true,

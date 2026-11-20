@@ -8,7 +8,9 @@ use App\Profiles\Values\SupervisorRoutes;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 
-/** @implements CastsAttributes<SupervisorRoutes, SupervisorRoutes> */
+/**
+ * @implements CastsAttributes<SupervisorRoutes, SupervisorRoutes>
+ */
 final class SupervisorRoutesCast implements CastsAttributes
 {
     public function get(Model $model, string $key, mixed $value, array $attributes): SupervisorRoutes

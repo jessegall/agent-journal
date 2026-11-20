@@ -64,8 +64,8 @@ final readonly class SettingCodec
     {
         try {
             return EncodedValue::of($setting->normalized($value)->text);
-        } catch (DecimalInvalid) {
-            throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
+        } catch (DecimalInvalid $cause) {
+            throw SettingValueInvalid::for($owner, $setting->key, $setting->type(), previous: $cause);
         }
     }
 

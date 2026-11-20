@@ -87,10 +87,13 @@ trait CommittedHookStack
                 'test.messaging',
                 new ClosureStateLoader(MessagingState::class, fn () => new MessagingState()),
             );
-            $event->registry->register('test.rewriting', new ClosureStateLoader(RewritingState::class, fn () => new RewritingState(
-                ['composer test' => 'git status', 'make docs' => 'acme publish --docs'],
-                new StateReference('guide', NoSubject::None),
-            )));
+            $event->registry->register(
+                'test.rewriting',
+                new ClosureStateLoader(RewritingState::class, fn () => new RewritingState(
+                    ['composer test' => 'git status', 'make docs' => 'acme publish --docs'],
+                    new StateReference('guide', NoSubject::None),
+                )),
+            );
         });
         $this->callAs('call-1');
         $this->app->make(StackTransaction::class)->run(

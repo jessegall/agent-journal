@@ -29,7 +29,9 @@ interface ProfileResolver
 
     public function has(ProfileKey $key): bool;
 
-    /** @return list<SupervisorProfile> */
+    /**
+     * @return list<SupervisorProfile>
+     */
     public function supervisorProfiles(): array;
 
     /**

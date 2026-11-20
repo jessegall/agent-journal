@@ -155,7 +155,9 @@ final class ProfileRevision extends Model implements ReadableModel
         ]);
     }
 
-    /** @return list<SupervisorProfile> */
+    /**
+     * @return list<SupervisorProfile>
+     */
     public static function currentSupervisorProfiles(): array
     {
         $profiles = [];

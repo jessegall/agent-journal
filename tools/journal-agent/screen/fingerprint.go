@@ -27,8 +27,9 @@ func FingerprintOf(
 	snapshot contracts.Snapshot,
 	menu string,
 ) (fingerprint string, replayable bool) {
-	if menu == "" {
-		menu = "unknown"
+	menuName := menu
+	if menuName == "" {
+		menuName = "unknown"
 	}
 	options, replayable := layout.OptionRegion(snapshot)
 	left := layout.changingRows(snapshot)
@@ -36,7 +37,7 @@ func FingerprintOf(
 		left = append(left, options.Rows)
 	}
 
-	lines := []string{fingerprintVersion, program, string(snapshot.Buffer), menu}
+	lines := []string{fingerprintVersion, program, string(snapshot.Buffer), menuName}
 	for row, text := range snapshot.Rows {
 		if isInAny(row, left) {
 			continue

@@ -33,6 +33,7 @@ use App\Bus\Exceptions\CommandTransactionMissing;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\LinkTypeRegistry;
 use App\Profiles\Resolvers\ActiveAccountRecords;
+use App\Programs\Enums\HookProgram;
 use App\Records\Contracts\IdentityLinks;
 use App\Records\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
@@ -186,7 +187,7 @@ final class AccountUsesTest extends TestCase
         $this->assertInstanceOf(ActiveAccountRecords::class, $this->app->make(ActiveAccountReader::class));
 
         try {
-            new UnconfiguredAccounts()->forStart('claude-code');
+            new UnconfiguredAccounts()->forStart(HookProgram::ClaudeCode);
             $this->fail('Core alone gave a start an account.');
         } catch (AccountUnavailable $refused) {
             $this->assertSame('claude-code', $refused->program);

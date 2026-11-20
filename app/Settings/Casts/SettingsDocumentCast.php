@@ -40,8 +40,8 @@ final class SettingsDocumentCast implements CastsAttributes
 
         try {
             $envelope = json_decode($value, false, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
-            throw SettingsDocumentInvalid::notJson($owner);
+        } catch (JsonException $cause) {
+            throw SettingsDocumentInvalid::notJson($owner, previous: $cause);
         }
 
         if (! $this->isEnvelope($envelope)) {

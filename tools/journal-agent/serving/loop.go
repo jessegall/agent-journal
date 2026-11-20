@@ -329,9 +329,10 @@ func (loop *Loop) raiseNavigation(
 	ctx context.Context,
 	runtime *liveRuntime,
 	request client.ClaimedRequest,
-	uncertainty keyscripts.Uncertainty,
+	seen keyscripts.Uncertainty,
 	state raiseState,
 ) {
+	uncertainty := seen
 	loop.holdRuntime(runtime)
 	for attempt := 1; ; attempt++ {
 		raise := raiseOf(request, uncertainty)
@@ -542,10 +543,11 @@ func (loop *Loop) askAgainAfter(
 	ctx context.Context,
 	runtime *liveRuntime,
 	request client.ClaimedRequest,
-	uncertainty keyscripts.Uncertainty,
+	seen keyscripts.Uncertainty,
 	state raiseState,
 	wait time.Duration,
 ) {
+	uncertainty := seen
 	timer := time.NewTimer(wait)
 	defer timer.Stop()
 	select {
@@ -895,7 +897,9 @@ func (loop *Loop) failAll(ctx context.Context, admission host.Admission, progres
 func (loop *Loop) reportResult(ctx context.Context, request client.ClaimedRequest, result contracts.OperationResult, err error) {
 	if err != nil {
 		log.Printf("%s request %s (attempt %d) of runtime %s failed: %v", request.Operation, request.RequestID, request.Attempt, request.RuntimeID, err)
-		result = contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused}
+		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused})
+
+		return
 	}
 	loop.report(ctx, request, result)
 }

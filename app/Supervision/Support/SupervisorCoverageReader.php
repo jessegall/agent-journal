@@ -17,7 +17,7 @@ final readonly class SupervisorCoverageReader
     public function __construct(private CommandRegistry $commands, private AskTypeRegistry $types) {}
 
     /**
-     * @param array<string, SupervisorProfile> $profiles
+     * @param  array<string, SupervisorProfile>  $profiles
      * @return list<SupervisorCoverage>
      */
     public function forRoutes(SupervisorRoutes $routes, array $profiles): array
@@ -31,9 +31,9 @@ final readonly class SupervisorCoverageReader
     private function forType(AskType $type, SupervisorProfile|null $profile): SupervisorCoverage
     {
         $name = $type->operation()->key;
-        $declaration = $this->commands->operationNamed($name);
+        $found = $this->commands->operationNamed($name);
 
-        if ($profile === null || $declaration === null) {
+        if ($profile === null || $found->isEmpty()) {
             return new SupervisorCoverage(
                 $type->key(),
                 SupervisorCoverageType::Unknown,
@@ -42,6 +42,7 @@ final readonly class SupervisorCoverageReader
             );
         }
 
+        $declaration = $found->get();
         $decision = $profile->access->decide(
             Operation::journal($declaration->name, $declaration->area, $declaration->accessTypes),
         );

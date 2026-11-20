@@ -19,7 +19,7 @@ enum AccountState: string
     case Removing = 'removing';
     case Removed = 'removed';
 
-    public function acceptsStarts(): bool
+    public function canStart(): bool
     {
         return $this === self::SignedIn;
     }

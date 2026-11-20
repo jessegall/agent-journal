@@ -67,11 +67,12 @@ final class DeskPlanAssignmentTest extends TestCase
             new AssignPlanWork($plan->assignmentIdentity(), $agent->assigneeIdentity()),
         );
 
-        foreach ([$plan, $phase, ...$tasks] as $record) {
-            $held = AssignmentRecord::query()->forRecord(
-                $record->assignmentIdentity(),
-            )->sole()->toAssignment()->holder();
-            $this->assertTrue($held->isSameAs($main->assigneeIdentity()));
+        $records = array_map(fn ($record) => $record->assignmentIdentity(), [$plan, $phase, ...$tasks]);
+        $assignments = AssignmentRecord::query()->forRecords($records)->readLimit(count($records))->get();
+
+        $this->assertCount(count($records), $assignments);
+        foreach ($assignments as $assignment) {
+            $this->assertTrue($assignment->toAssignment()->holder()->isSameAs($main->assigneeIdentity()));
         }
 
         $this->assertTrue($result->requests[0]->requested->isSameAs($agent->assigneeIdentity()));

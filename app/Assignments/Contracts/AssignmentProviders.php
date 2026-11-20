@@ -65,7 +65,9 @@ interface AssignmentProviders
      */
     public function autoAssigner(string $type): AutoAssigner;
 
-    /** @return class-string<AutoAssigner> */
+    /**
+     * @return class-string<AutoAssigner>
+     */
     public function autoAssignerClass(string $type): string;
 
     /**

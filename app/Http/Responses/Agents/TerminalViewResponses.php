@@ -50,10 +50,10 @@ final readonly class TerminalViewResponses
     {
         try {
             return $work();
-        } catch (ActorNotAllowed) {
+        } catch (ActorNotAllowed $cause) {
             $this->views->closeAllFor($agentId, ActorIdentity::of($this->actor->actor()), $this->clock->now());
 
-            throw TerminalViewRefused::mayNotInspect();
+            throw TerminalViewRefused::mayNotInspect($cause);
         }
     }
 }

@@ -7,7 +7,6 @@ namespace App\Hooks\Stack;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
-use App\Hooks\Enums\AnswerType;
 use App\Hooks\Exceptions\BottomStateDelegated;
 use App\Hooks\Exceptions\InvalidHookAnswer;
 use App\Hooks\Exceptions\StateBelowTopPushed;
@@ -66,7 +65,7 @@ final class HookWalk
         $this->messages = [...$this->messages, ...$decision->messages];
         $this->transitions[] = fn () => $decision->transition->applyTo(new FrameEditor($this, $frame));
 
-        if ($answer === AnswerType::Deny || $this->retained->answerType() !== AnswerType::Deny) {
+        if ($answer->replaces($this->retained->answerType())) {
             $this->retained = $decision;
         }
     }

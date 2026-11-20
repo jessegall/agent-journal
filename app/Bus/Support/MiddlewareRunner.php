@@ -8,9 +8,9 @@ use App\Actors\Contracts\CurrentActor;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandAdmission;
 use App\Bus\Contracts\CommandMiddleware;
-use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\CommandAdmissionStage;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Exceptions\DomainDisabled;
 use App\Contracts\DomainAvailability;
 use Closure;
@@ -25,6 +25,7 @@ final readonly class MiddlewareRunner
 {
     public function __construct(
         private Container $container,
+        private DomainAvailability $availability,
         private CommandRegistry $registry,
         private CurrentActor $actors,
         private CommandNesting $nesting,
@@ -97,7 +98,7 @@ final readonly class MiddlewareRunner
      */
     private function isAvailable(string $owner): bool
     {
-        return $owner === CommandOwner::CORE || $this->container->make(DomainAvailability::class)->isEnabled($owner);
+        return $owner === CommandOwner::CORE || $this->availability->isEnabled($owner);
     }
 
     /**

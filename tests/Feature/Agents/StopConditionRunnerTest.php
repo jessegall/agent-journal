@@ -153,7 +153,12 @@ final class StopConditionRunnerTest extends TestCase
 
     private function claimOn(TestStart $start, string $hostId): void
     {
-        $account = new SelectedAccount(new RecordIdentity('profiles.account', (string) Str::ulid()), 'codex', '/accounts/a', 1);
+        $account = new SelectedAccount(
+            new RecordIdentity('profiles.account', (string) Str::ulid()),
+            'codex',
+            '/accounts/a',
+            1,
+        );
         ProcessStart::register($start->session, $account);
         ProcessStart::claimFor($hostId, $start->session->id);
     }

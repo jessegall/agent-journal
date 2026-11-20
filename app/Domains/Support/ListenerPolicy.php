@@ -21,9 +21,9 @@ use ReflectionNamedType;
 use ReflectionUnionType;
 
 /**
- * Decides which event and listener pairs the application may register: an owner listens to its own events, a domain listens to
- * an event of a domain it requires only when that event is exported under events, and any domain listens to Core's exported
- * events. It holds declarations only, never request or actor state.
+ * Decides which event and listener pairs the application may register: an owner listens to its own events, a domain
+ * listens to an event of a domain it requires only when that event is exported under events, and any domain listens to
+ * Core's exported events. It holds declarations only, never request or actor state.
  */
 final readonly class ListenerPolicy
 {
@@ -178,8 +178,12 @@ final readonly class ListenerPolicy
         return $listenerDomain->name ?? self::CORE;
     }
 
-    private function checkOwnership(string $event, string $listener, string $method, DomainEntry|null $listenerDomain): void
-    {
+    private function checkOwnership(
+        string $event,
+        string $listener,
+        string $method,
+        DomainEntry|null $listenerDomain,
+    ): void {
         $owner = $this->eventDomain($event, $listener);
 
         if ($owner === null) {

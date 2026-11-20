@@ -42,7 +42,7 @@ final readonly class ClaimRequestsController
         );
         $list = $watched->forHost($host->hostId);
 
-        return new JsonResponse(new ClaimAnswer($claimed, $list, WatchedRuntimes::versionOf($list)));
+        return new JsonResponse(new ClaimAnswer($claimed, $list));
     }
 
     /**

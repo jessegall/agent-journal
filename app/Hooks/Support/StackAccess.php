@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Hooks\Support;
 
+use App\Agents\Contracts\AgentCallContext;
+use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Exceptions\HookIdentityExpired;
 use App\Hooks\Inputs\HookIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * The stack and hook identity of the authenticated agent in this request, and nothing wider. The agent context is read
@@ -19,7 +20,7 @@ use Illuminate\Contracts\Container\Container;
 final readonly class StackAccess
 {
     public function __construct(
-        private Container $container,
+        private AgentCallContext $calls,
         private HookRetryWindow $retryWindow,
     ) {}
 
@@ -55,6 +56,6 @@ final readonly class StackAccess
      */
     private function context(): AgentContext
     {
-        return $this->container->make(AgentContext::class);
+        return $this->calls->context()->getOrThrow(AgentContextMissing::forRequest());
     }
 }

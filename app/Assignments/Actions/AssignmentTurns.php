@@ -22,9 +22,9 @@ use App\Assignments\Support\AutoAssignmentRun;
 use App\Assignments\Support\Page;
 use App\Assignments\Support\SizeAssignmentRoom;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandStops;
 use App\Bus\Contracts\StopTime;
 use App\Bus\Contracts\StopTimes;
-use App\Bus\Support\CommandStops;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -59,7 +59,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
         $this->maintenance->checkMaintenance(AssignRecord::MAINTENANCE_SCOPE);
         $stop = $this->stopTimes->at($budget->stopNanoseconds);
 
-        if ($stop->remainingMilliseconds() <= 0 || $budget->factLimit < 1 || $budget->claimLimit < 1) {
+        if ($stop->remainingMilliseconds() <= 0 || $budget->isEmpty()) {
             return new AutoAssignmentRun(0, 0, 0, 0, $budget->afterId);
         }
 
@@ -75,9 +75,10 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
         }
 
         $nextAfterId = $page->facts[array_key_last($page->facts)]->id;
-        $ready = array_values(array_filter($page->facts, fn (AutoAssignmentFact $fact) => $this->isReady($fact, $stop)));
-        usort($ready, static fn (AutoAssignmentFact $one, AutoAssignmentFact $other): int =>
-            ($one->lastServedAt <=> $other->lastServedAt) ?: strcmp($one->id, $other->id));
+        $ready = array_values(
+            array_filter($page->facts, fn (AutoAssignmentFact $fact) => $this->isReady($fact, $stop)),
+        );
+        usort($ready, static fn (AutoAssignmentFact $one, AutoAssignmentFact $other): int => $one->compareTurn($other));
         $started = 0;
         $assigned = 0;
         $failed = 0;
@@ -129,8 +130,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
     {
         $key = $fact->key;
         $this->logger->warning('Auto-assignment claim failed.', [
-            'actor_type' => $key->actor->type->value,
-            'actor_id' => $key->actor->id,
+            ...$key->actor->asColumns('actor'),
             'type' => $key->assignableType,
             'provider' => $this->providers->autoAssignerClass($key->assignableType),
             'failure' => $failure::class,

@@ -8,7 +8,6 @@ use App\Hooks\Lifecycle\FrameLifecycle;
 use App\Hooks\Values\Answer\SettledCall;
 use App\Hooks\Values\Answer\WalkedCall;
 use App\Pipelines\Contracts\Pipe;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * Calls the lifecycle methods of the frames that left, arrived or came back on top. The lifecycle holds request
@@ -16,11 +15,11 @@ use Illuminate\Contracts\Container\Container;
  */
 final readonly class SettleLifecycle implements Pipe
 {
-    public function __construct(private Container $container) {}
+    public function __construct(private FrameLifecycle $lifecycle) {}
 
     public function handle(WalkedCall $walked): SettledCall
     {
-        $this->container->make(FrameLifecycle::class)->settle(
+        $this->lifecycle->settle(
             $walked->call->target,
             $walked->stackBefore,
             $walked->answer->stack,

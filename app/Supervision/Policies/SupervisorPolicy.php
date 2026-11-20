@@ -10,6 +10,8 @@ use BackedEnum;
 
 final readonly class SupervisorPolicy implements Policy
 {
-    /** @param object|class-string $subject */
+    /**
+     * @param  object|class-string  $subject
+     */
     public function authorize(Actor $actor, object|string $subject, BackedEnum $ability): void {}
 }

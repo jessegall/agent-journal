@@ -227,9 +227,12 @@ final class AgentStacksTest extends TestCase
     {
         $enabled = true;
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event) use (&$enabled): void {
-            $event->registry->register('test.switchable', new ClosureStateLoader(SwitchableState::class, function () use (&$enabled) {
-                return new SwitchableState($enabled);
-            }));
+            $event->registry->register(
+                'test.switchable',
+                new ClosureStateLoader(SwitchableState::class, function () use (&$enabled) {
+                    return new SwitchableState($enabled);
+                }),
+            );
         });
         $this->createStack();
         $this->transaction()->run(

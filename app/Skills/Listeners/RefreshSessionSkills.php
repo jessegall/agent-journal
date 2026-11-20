@@ -22,7 +22,6 @@ use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StartProgram;
 use App\Skills\Values\SelectedSkills;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -37,7 +36,7 @@ final readonly class RefreshSessionSkills implements Listener
         private SkillSelection $selection,
         private ProgramSkillAdapters $adapters,
         private SkillTargets $targets,
-        private Container $container,
+        private SkillResolver $skills,
         private AgentStack $stacks,
         private Dispatcher $events,
     ) {}
@@ -97,7 +96,7 @@ final readonly class RefreshSessionSkills implements Listener
     private function select(AgentSession $session): SelectedSkills
     {
         return $this->selection->select(
-            $this->container->make(SkillResolver::class)->all(),
+            $this->skills->all(),
             $this->contexts->forSession($session),
         );
     }

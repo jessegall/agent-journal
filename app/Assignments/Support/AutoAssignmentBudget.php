@@ -16,4 +16,12 @@ final readonly class AutoAssignmentBudget
         public int $claimLimit,
         public string|null $afterId,
     ) {}
+
+    /**
+     * Whether the budget allows no read or no claim at all.
+     */
+    public function isEmpty(): bool
+    {
+        return $this->factLimit < 1 || $this->claimLimit < 1;
+    }
 }

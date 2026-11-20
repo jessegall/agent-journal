@@ -242,20 +242,28 @@ final class LexerScan
             if ($character === '(') {
                 $depth++;
             } elseif ($character === ')' && --$depth === 0) {
-                $this->position = $index + 1;
-                $range = new SourceRange($start, $this->position);
-                $text = substr($this->source, $start, $this->position - $start);
-                $this->tokens[] = new Token(
-                    TokenType::Word,
-                    $range,
-                    word: new Word([new WordSegment(WordSegmentType::Literal, $text, $range)], $range),
-                );
+                $this->emitLiteralWord($start, $index + 1);
 
                 return;
             }
         }
 
         throw ShellLineUnreadable::unfinished('an arithmetic command', $start);
+    }
+
+    /**
+     * The source from the start up to the end as one literal word, read on from the end.
+     */
+    private function emitLiteralWord(int $start, int $end): void
+    {
+        $this->position = $end;
+        $range = new SourceRange($start, $end);
+        $text = substr($this->source, $start, $end - $start);
+        $this->tokens[] = new Token(
+            TokenType::Word,
+            $range,
+            word: new Word([new WordSegment(WordSegmentType::Literal, $text, $range)], $range),
+        );
     }
 
     private function emitRedirect(RedirectType $type, int $descriptor, int $start): void
@@ -432,14 +440,7 @@ final class LexerScan
             )
                 && in_array($this->at($index + 2), ['', ' ', "\t", "\n", ';', '&', '|', ')'], true);
             if ($closes) {
-                $this->position = $index + 2;
-                $range = new SourceRange($start, $this->position);
-                $text = substr($this->source, $start, $this->position - $start);
-                $this->tokens[] = new Token(
-                    TokenType::Word,
-                    $range,
-                    word: new Word([new WordSegment(WordSegmentType::Literal, $text, $range)], $range),
-                );
+                $this->emitLiteralWord($start, $index + 2);
 
                 return;
             }

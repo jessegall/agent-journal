@@ -26,7 +26,7 @@ final class RuntimeScreenTest extends TestCase
         $this->assertSame('red', $frame->rows[0]->runs[1]->text);
         $this->assertSame('#cd0000', $frame->rows[0]->runs[1]->style->fg);
         $this->assertTrue($frame->rows[0]->runs[1]->style->bold);
-        $this->assertSame('', $frame->rows[0]->runs[0]->style->bg);
+        $this->assertNull($frame->rows[0]->runs[0]->style->bg);
         $this->assertSame([], $frame->rows[1]->runs);
         $this->assertSame(['row' => 1, 'column' => 4, 'visible' => false], $frame->cursor->toArray());
         $this->assertSame('red', $frame->toArray()['rows'][0]['runs'][1]['text']);

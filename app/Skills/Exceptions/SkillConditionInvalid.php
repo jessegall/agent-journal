@@ -7,15 +7,16 @@ namespace App\Skills\Exceptions;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use InvalidArgumentException;
+use Throwable;
 
 /**
  * A condition that is not a valid tree; it is refused whole, before anything is evaluated.
  */
 final class SkillConditionInvalid extends InvalidArgumentException implements CodedRefusal
 {
-    public static function field(string $field, string $problem): self
+    public static function field(string $field, string $problem, Throwable|null $previous = null): self
     {
-        return new self("The condition field {$field} {$problem}.");
+        return new self("The condition field {$field} {$problem}.", previous: $previous);
     }
 
     public static function tooDeep(int $most): self
@@ -33,9 +34,9 @@ final class SkillConditionInvalid extends InvalidArgumentException implements Co
         return new self("The condition parameters take more than {$most} bytes.");
     }
 
-    public static function notJson(string $reason): self
+    public static function notJson(Throwable $cause): self
     {
-        return new self("The condition is not valid JSON: {$reason}.");
+        return new self("The condition is not valid JSON: {$cause->getMessage()}.", previous: $cause);
     }
 
     public function refusalCode(): RefusalCode

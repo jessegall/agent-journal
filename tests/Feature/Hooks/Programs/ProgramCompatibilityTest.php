@@ -84,18 +84,7 @@ final class ProgramCompatibilityTest extends TestCase
 
     private function withEvidence(ProgramEvidence $evidence): ProgramCompatibility
     {
-        $pinned = $this->compatibilityOf(HookProgram::Codex);
-
-        return new ProgramCompatibility(
-            $pinned->program,
-            $pinned->version,
-            $pinned->binaryDigest,
-            $pinned->startFlags,
-            $pinned->settings,
-            $pinned->arrangement,
-            $evidence,
-            $pinned->evidenceOwner,
-        );
+        return $this->compatibilityOf(HookProgram::Codex)->withEvidence($evidence);
     }
 
     private function compatibilityOf(HookProgram $program): ProgramCompatibility

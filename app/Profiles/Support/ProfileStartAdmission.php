@@ -28,8 +28,8 @@ final readonly class ProfileStartAdmission implements StartProfileAdmission
             return new StartProfileAuthority(
                 $this->profiles->admittedPin(ProfileKey::from($profileKey), $profileRevision),
             );
-        } catch (ProfileRetired|ProfileMissing|ModelNotFoundException) {
-            throw CredentialRejected::profileMismatched();
+        } catch (ProfileRetired|ProfileMissing|ModelNotFoundException $cause) {
+            throw CredentialRejected::profileMismatched(previous: $cause);
         }
     }
 }

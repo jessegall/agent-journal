@@ -25,7 +25,6 @@ use App\Skills\Support\SkillSelection;
 use App\Skills\Values\SessionSkillStatus;
 use App\Skills\Values\SkillEntry;
 use App\Skills\Values\SkillStatus;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * Reads where skill delivery stands for the acting actor: a user sees every session, an agent only its own, so no
@@ -38,7 +37,7 @@ final readonly class SkillStatusResolver
     public function __construct(
         private CurrentActor $actors,
         private CurrentAuthorizer $authorizer,
-        private Container $container,
+        private SkillResolver $skills,
         private SkillContextResolver $contexts,
         private SkillSelection $selection,
         private ProgramSkillAdapters $adapters,
@@ -55,7 +54,7 @@ final readonly class SkillStatusResolver
     {
         $this->visiblePublicationsOf($sessionId);
         $session = AgentSession::byId($sessionId);
-        $entries = $this->container->make(SkillResolver::class)->all();
+        $entries = $this->skills->all();
         $selection = $this->selectionOf($session, $entries);
         $delivered = SkillPublication::latestDeliveredOfSession($sessionId);
         $started = SkillPublication::firstOfSession($sessionId);

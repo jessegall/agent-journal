@@ -67,6 +67,23 @@ final readonly class ProgramCompatibility
      *
      * @throws ProgramArrangementUnproven
      */
+    /**
+     * The same compatibility with the evidence its arrangement now has.
+     */
+    public function withEvidence(ProgramEvidence $evidence): self
+    {
+        return new self(
+            $this->program,
+            $this->version,
+            $this->binaryDigest,
+            $this->startFlags,
+            $this->settings,
+            $this->arrangement,
+            $evidence,
+            $this->evidenceOwner,
+        );
+    }
+
     public function requireStartable(): void
     {
         if (! $this->arrangementEvidence->isNativeShown()) {

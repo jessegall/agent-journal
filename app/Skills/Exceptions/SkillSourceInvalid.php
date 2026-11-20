@@ -7,6 +7,7 @@ namespace App\Skills\Exceptions;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use RuntimeException;
+use Throwable;
 
 /**
  * A Markdown part or asset a skill names that cannot be read as named: outside its owner's folder, missing, or with a
@@ -24,9 +25,9 @@ final class SkillSourceInvalid extends RuntimeException implements CodedRefusal
         return new self("The skill source {$file} does not exist in its owner's resources/skills folder.");
     }
 
-    public static function unreadable(string $file, string $reason): self
+    public static function unreadable(string $file, Throwable $cause): self
     {
-        return new self("The skill source {$file} cannot be read: {$reason}");
+        return new self("The skill source {$file} cannot be read: {$cause->getMessage()}", previous: $cause);
     }
 
     public static function missingHeading(string $selector): self

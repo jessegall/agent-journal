@@ -6,6 +6,7 @@ namespace App\Agents\Contracts;
 
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Support\SelectedAccount;
+use App\Programs\Enums\HookProgram;
 
 /**
  * The account a start of a program runs with, read and locked inside the start's transaction: selection before
@@ -16,5 +17,5 @@ interface ActiveAccountReader
     /**
      * @throws AccountUnavailable
      */
-    public function forStart(string $program): SelectedAccount;
+    public function forStart(HookProgram $program): SelectedAccount;
 }

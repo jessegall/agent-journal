@@ -30,8 +30,8 @@ final readonly class ClassRule
             return count($parts) === 2
                 ? new self(AccessType::from($parts[0]), ResourceAreaType::from($parts[1]))
                 : throw ProfileProposalRefused::classRule($text);
-        } catch (ValueError) {
-            throw ProfileProposalRefused::classRule($text);
+        } catch (ValueError $cause) {
+            throw ProfileProposalRefused::classRule($text, previous: $cause);
         }
     }
 

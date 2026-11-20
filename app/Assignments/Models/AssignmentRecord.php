@@ -187,6 +187,23 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     }
 
     /**
+     * The assignments of several records whoever holds them, read in one query.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<RecordIdentity>  $records
+     */
+    #[Scope]
+    protected function forRecords(Builder $query, array $records): void
+    {
+        $query->withoutGlobalScope(SignedInScope::class)->where(function (Builder $any) use ($records): void {
+            foreach ($records as $record) {
+                $any->orWhere(fn (Builder $one) => $one->where('record_type', $record->type)
+                    ->where('record_id', $record->id));
+            }
+        });
+    }
+
+    /**
      * The ids of the records of one type the holder holds, for a domain's trusted count and pick to filter by. It
      * lifts the signed-in limit, since the engine fills assignments with nobody signed in.
      *

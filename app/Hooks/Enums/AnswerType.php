@@ -50,4 +50,13 @@ enum AnswerType: string
             self::Rewrite => false,
         };
     }
+
+    /**
+     * Whether this answer takes the place of the one a walk kept so far: a denial always does, and any answer does
+     * while what was kept is no denial.
+     */
+    public function replaces(self $kept): bool
+    {
+        return $this === self::Deny || $kept !== self::Deny;
+    }
 }

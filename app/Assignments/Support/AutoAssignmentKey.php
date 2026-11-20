@@ -15,4 +15,12 @@ final readonly class AutoAssignmentKey
         public ActorIdentity $actor,
         public string $assignableType,
     ) {}
+
+    /**
+     * Whether the auto-assignment is this actor's.
+     */
+    public function isOf(ActorIdentity $actor): bool
+    {
+        return $this->actor->isSameAs($actor);
+    }
 }

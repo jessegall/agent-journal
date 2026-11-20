@@ -8,7 +8,6 @@ use App\Actors\Contracts\WorkStackProvider;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Models\AgentSession;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * An agent works on the stack of the session its signed call came from; an agent acting outside a signed call has
@@ -18,16 +17,14 @@ final readonly class AgentWorkStack implements WorkStackProvider
 {
     private const int RUNNING_SESSIONS_READ = 20;
 
-    public function __construct(private Container $container) {}
+    public function __construct(private CurrentSession $session) {}
 
     /**
      * @return list<string>
      */
     public function sessionsToAdmit(): array
     {
-        $session = $this->container->make(CurrentSession::class);
-
-        return $session->hasSession() ? [$session->sessionId()] : [];
+        return $this->session->hasSession() ? [$this->session->sessionId()] : [];
     }
 
     public function sessionsOf(ActorIdentity $actor): array

@@ -42,9 +42,13 @@ final readonly class AskAssignments implements JournalAssignableProvider
         $route = $this->routes->routeFor($ask->requester(), $ask->typeKey());
         $recipient = $this->recipients->resolve($route->target);
 
-        if ($route->target->key !== $pending->key
-            || $recipient === null
-            || ! AssigneeIdentity::ofActorIdentity($recipient)->isSameAs($assignment->recipient)) {
+        $isRecipient = $recipient
+            ->map(fn (ActorIdentity $actor) => AssigneeIdentity::ofActorIdentity($actor))
+            ->map(fn (AssigneeIdentity $assignee) => $assignee->isSameAs($assignment->recipient))
+            ->getOrElse(false);
+        $stillRouted = $route->target->key === $pending->key && $isRecipient;
+
+        if (! $stillRouted) {
             throw AskRefused::routeChanged();
         }
     }
@@ -78,7 +82,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
     {
         $actor = ActorIdentity::of($this->actors->actor());
 
-        if (! $ask->requester()->isSameAs($actor) && ! $this->owner->resolve()->actor?->isSameAs($actor)) {
+        if (! $ask->requester()->isSameAs($actor) && ! $this->owner->resolve()->endsAt($actor)) {
             throw AskRefused::routeChanged();
         }
     }

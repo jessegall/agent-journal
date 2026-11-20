@@ -66,7 +66,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
 
         $agent = Agent::query()->findOrFail($command->agentId);
         $this->sessions->lockForStart($agent);
-        $account = $this->accounts->forStart($selection->program->value);
+        $account = $this->accounts->forStart($selection->program);
         $started = $this->starts->start(
             $agent,
             $selection,

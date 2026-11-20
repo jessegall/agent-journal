@@ -568,17 +568,17 @@ func startOf(
 		return host.AttachRequest{}, err
 	}
 	startArguments = append(startArguments, folderArguments...)
-	environment = append(profile.Environment(drivers.WithoutJournalVariables(environment), start),
+	startEnvironment := append(profile.Environment(drivers.WithoutJournalVariables(environment), start),
 		"JOURNAL_URL="+journalURL, "JOURNAL_START_TOKEN="+grant.Token,
 		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(grant.Runtime.ProcessGeneration),
 		"JOURNAL_BYPASS_LOG="+filepath.Join(start.SettingsFolder, drivers.BypassLogName))
-	environment = append(environment, grant.ProfileEnvironment()...)
-	environment = append(environment, relayVariables...)
+	startEnvironment = append(startEnvironment, grant.ProfileEnvironment()...)
+	startEnvironment = append(startEnvironment, relayVariables...)
 	return host.AttachRequest{
 		RuntimeID: runtimeID,
 		Command:   append([]string{executable}, startArguments...),
 		Folder:    grant.Runtime.Folder,
-		Env:       environment,
+		Env:       startEnvironment,
 	}, nil
 }
 

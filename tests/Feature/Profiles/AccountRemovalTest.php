@@ -95,7 +95,9 @@ final class AccountRemovalTest extends TestCase
         $this->assertSame($generation + 1, $this->account->sign_in_generation);
         $this->assertNull($this->account->live_writer_attempt_id);
         $this->assertSame(SignInState::Cancelled, SignInAttempt::query()->withoutGlobalScopes()->sole()->state);
-        $this->assertNull(ActiveAccount::query()->withoutGlobalScopes()->where('program', 'codex')->value('account_id'));
+        $this->assertNull(
+            ActiveAccount::query()->withoutGlobalScopes()->where('program', 'codex')->value('account_id'),
+        );
     }
 
     public function test_a_host_cleans_only_after_every_process_ended_and_only_with_both_proofs(): void
@@ -242,7 +244,11 @@ final class AccountRemovalTest extends TestCase
 
     private function asHost(Command $command): mixed
     {
-        return $this->app->make(EntryDispatchers::class)->runAsJournal(CommandEntry::HostControl, 'test host', $command);
+        return $this->app->make(EntryDispatchers::class)->runAsJournal(
+            CommandEntry::HostControl,
+            'test host',
+            $command,
+        );
     }
 
     private function reconcile(): void

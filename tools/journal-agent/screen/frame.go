@@ -153,19 +153,20 @@ func (reader *EmulatorReader) runsOfRow(row, columns int) []Run {
 
 // withoutTrailingSpaces cuts the spaces of the default style that end a row, which nobody sees.
 func withoutTrailingSpaces(runs []Run) []Run {
-	for len(runs) > 0 {
-		last := &runs[len(runs)-1]
+	kept := runs
+	for len(kept) > 0 {
+		last := &kept[len(kept)-1]
 		if last.Style != (Style{}) {
-			return runs
+			return kept
 		}
 		last.Text = strings.TrimRight(last.Text, " ")
 		if last.Text != "" {
-			return runs
+			return kept
 		}
-		runs = runs[:len(runs)-1]
+		kept = kept[:len(kept)-1]
 	}
 
-	return runs
+	return kept
 }
 
 // styleOf turns the emulator's cell style into the style a frame carries.

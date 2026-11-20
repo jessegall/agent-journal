@@ -264,11 +264,19 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
+     * Whether the request runs a key script.
+     */
+    public function isKeyScript(): bool
+    {
+        return $this->operation === DriverOperation::KeyScript;
+    }
+
+    /**
      * Whether the request is a key script stopped part way, which a person may resume or cancel.
      */
     public function isStoppedKeyScript(): bool
     {
-        return $this->operation === DriverOperation::KeyScript && ! $this->progress->isFinal();
+        return $this->isKeyScript() && ! $this->progress->isFinal();
     }
 
     /**

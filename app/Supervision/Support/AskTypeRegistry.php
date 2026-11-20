@@ -12,7 +12,9 @@ use App\Supervision\Exceptions\AskRefused;
 
 final readonly class AskTypeRegistry
 {
-    /** @var Registry<AskType> */
+    /**
+     * @var Registry<AskType>
+     */
     private Registry $types;
 
     public function __construct()
@@ -30,7 +32,9 @@ final readonly class AskTypeRegistry
         return $this->types->get($key->key);
     }
 
-    /** @return list<AskType> */
+    /**
+     * @return list<AskType>
+     */
     public function all(): array
     {
         return array_values($this->types->all());

@@ -13,14 +13,9 @@ use App\Actors\Values\PolicyRegistration;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\BuiltInStartProfiles;
 use App\Agents\Contracts\StartProfileAdmission;
+use App\Autoload\Support\FolderClasses;
 use App\Hooks\Contracts\OperationPolicy;
 use App\Processes\Contracts\CommandPermissionResolver;
-use App\Profiles\Console\ProfileActivateCommand;
-use App\Profiles\Console\ProfileListCommand;
-use App\Profiles\Console\ProfileRevokeCommand;
-use App\Profiles\Console\ProfileShowCommand;
-use App\Profiles\Console\ReconcileAccountsCommand;
-use App\Profiles\Console\RunSignInsCommand;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\AccountAbility;
@@ -44,6 +39,7 @@ use App\Profiles\Support\ProfileOperationPolicy;
 use App\Profiles\Support\ProfilePermissionReader;
 use App\Profiles\Support\ProfileStartAdmission;
 use App\Profiles\Support\SignInProtocols;
+use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -101,14 +97,7 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/sign-in-host.php');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                ProfileListCommand::class,
-                ProfileShowCommand::class,
-                ProfileActivateCommand::class,
-                ProfileRevokeCommand::class,
-                ReconcileAccountsCommand::class,
-                RunSignInsCommand::class,
-            ]);
+            $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         }
     }
 

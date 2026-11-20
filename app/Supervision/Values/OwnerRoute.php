@@ -20,4 +20,12 @@ final readonly class OwnerRoute
     {
         return new self(OwnerRouteType::NoOwner, null);
     }
+
+    /**
+     * Whether the route ends at this actor; a route with no owner ends at nobody.
+     */
+    public function endsAt(ActorIdentity $actor): bool
+    {
+        return $this->actor?->isSameAs($actor) ?? false;
+    }
 }

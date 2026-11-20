@@ -32,7 +32,7 @@ final readonly class SignedSignInHost implements SignInHost
 
     public function claim(): ClaimedSignIn|null
     {
-        $response = $this->send('/host/sign-ins/claim', '');
+        $response = $this->send('profiles.sign-in-host.claim', [], '');
 
         if ($response->status() === 204) {
             return null;
@@ -54,25 +54,25 @@ final readonly class SignedSignInHost implements SignInHost
             'generation' => $claimed->generation,
             'identity' => $identity,
         ]);
-        $this->send("/host/sign-ins/{$claimed->attemptId}/report", $body);
+        $this->send('profiles.sign-in-host.report', ['attempt' => $claimed->attemptId], $body);
     }
 
     public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void
     {
         $body = (string) json_encode(['address' => $challenge->address, 'code' => $challenge->code]);
-        $this->send("/host/sign-ins/{$claimed->attemptId}/challenge", $body);
+        $this->send('profiles.sign-in-host.challenge', ['attempt' => $claimed->attemptId], $body);
     }
 
     public function pendingCode(ClaimedSignIn $claimed): string|null
     {
-        $response = $this->send("/host/sign-ins/{$claimed->attemptId}/code", '');
+        $response = $this->send('profiles.sign-in-host.code', ['attempt' => $claimed->attemptId], '');
 
         return $response->status() === 204 ? null : (string) $response->json('code');
     }
 
     public function claimCheck(): ClaimedAccountCheck|null
     {
-        $response = $this->send('/host/accounts/checks/claim', '');
+        $response = $this->send('profiles.account-host.checks.claim', [], '');
 
         if ($response->status() === 204) {
             return null;
@@ -89,17 +89,21 @@ final readonly class SignedSignInHost implements SignInHost
     public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $result): void
     {
         $body = (string) json_encode(['generation' => $claimed->generation, 'result' => $result->value]);
-        $this->send("/host/accounts/{$claimed->accountId}/check", $body);
+        $this->send('profiles.account-host.check', ['account' => $claimed->accountId], $body);
     }
 
     public function reconcileSignIns(array $runningAttemptIds): void
     {
-        $this->send('/host/sign-ins/reconcile', (string) json_encode(['running' => $runningAttemptIds]));
+        $this->send(
+            'profiles.sign-in-host.reconcile',
+            [],
+            (string) json_encode(['running' => $runningAttemptIds]),
+        );
     }
 
     public function claimCleanup(): ClaimedCleanup|null
     {
-        $response = $this->send('/host/accounts/cleanups/claim', '');
+        $response = $this->send('profiles.account-host.cleanups.claim', [], '');
 
         if ($response->status() === 204) {
             return null;
@@ -122,14 +126,19 @@ final readonly class SignedSignInHost implements SignInHost
             'store_removed' => $progress->isStoreRemoved,
             'directory_removed' => $progress->isDirectoryRemoved,
         ]);
-        $path = $claimed->target === CleanupTarget::Account
-            ? "/host/accounts/{$claimed->id}/cleanup"
-            : "/host/sign-ins/{$claimed->id}/cleanup";
-        $this->send($path, $body);
+        [$route, $parameters] = match ($claimed->target) {
+            CleanupTarget::Account => ['profiles.account-host.cleanup', ['account' => $claimed->id]],
+            CleanupTarget::SignInAttempt => ['profiles.sign-in-host.cleanup', ['attempt' => $claimed->id]],
+        };
+        $this->send($route, $parameters, $body);
     }
 
-    private function send(string $path, string $body): Response
+    /**
+     * @param  array<string, string>  $parameters
+     */
+    private function send(string $route, array $parameters, string $body): Response
     {
+        $path = route($route, $parameters, false);
         $callId = (string) Str::uuid();
         $issuedAt = CarbonImmutable::now()->getTimestamp();
         $signature = SignedCall::signatureFor($this->hostSecret, 'POST', $path, $callId, $issuedAt, $body);

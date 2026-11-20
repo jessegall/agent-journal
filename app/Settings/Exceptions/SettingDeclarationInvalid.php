@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Settings\Exceptions;
 
 use LogicException;
+use Throwable;
 
 /**
  * A setting or group declared wrongly; the message names the key, never a value.
@@ -39,9 +40,9 @@ final class SettingDeclarationInvalid extends LogicException
         );
     }
 
-    public static function defaultOutOfBounds(string $key): self
+    public static function defaultOutOfBounds(string $key, Throwable|null $previous = null): self
     {
-        return new self("The default of setting {$key} is outside the values it accepts.");
+        return new self("The default of setting {$key} is outside the values it accepts.", previous: $previous);
     }
 
     public static function coreNotFirst(): self

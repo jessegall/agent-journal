@@ -242,4 +242,3 @@ func (output *boundedOutput) String() string {
 	}
 	return output.kept.String()
 }
-

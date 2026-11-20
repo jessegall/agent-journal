@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Settings\Exceptions;
 
 use RuntimeException;
+use Throwable;
 
 /**
  * A stored settings document whose structure is broken as a whole, so no single entry can be reset; an operator must
@@ -12,9 +13,9 @@ use RuntimeException;
  */
 final class SettingsDocumentInvalid extends RuntimeException
 {
-    public static function notJson(string $owner): self
+    public static function notJson(string $owner, Throwable|null $previous = null): self
     {
-        return new self("The settings document of {$owner} is not valid JSON.");
+        return new self("The settings document of {$owner} is not valid JSON.", previous: $previous);
     }
 
     public static function tooLarge(string $owner, int $bytes, int $mostBytes): self

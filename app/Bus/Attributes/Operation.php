@@ -11,7 +11,9 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class Operation
 {
-    /** @var non-empty-list<AccessType> */
+    /**
+     * @var non-empty-list<AccessType>
+     */
     public array $accessTypes;
 
     public function __construct(

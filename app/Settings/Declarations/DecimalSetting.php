@@ -71,8 +71,8 @@ final readonly class DecimalSetting implements Setting
 
         try {
             $normalizedDefault = $setting->normalized($default);
-        } catch (DecimalInvalid) {
-            throw SettingDeclarationInvalid::defaultOutOfBounds($key);
+        } catch (DecimalInvalid $cause) {
+            throw SettingDeclarationInvalid::defaultOutOfBounds($key, previous: $cause);
         }
 
         return new self($key, $label, $normalizedDefault, $precision, $scale, $minimum, $maximum);

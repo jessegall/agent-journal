@@ -96,7 +96,14 @@ final readonly class SendSignedCalls implements CallSender
             if (in_array($reply->status, self::PROXY_STATUSES, true)) {
                 $message = 'The journal cannot answer now.';
 
-                throw JournalUnavailable::answered(JournalUnavailable::CODE, $message, $callId, $key, []);
+                throw JournalUnavailable::answered(
+                    JournalUnavailable::CODE,
+                    $message,
+                    $callId,
+                    $key,
+                    [],
+                    $unreadable,
+                );
             }
 
             throw AnswerUnreadable::at($declaration->call, 'body', $unreadable);

@@ -28,24 +28,10 @@ final class RecordingSignInHost implements SignInHost
      */
     public array $identities = [];
 
-    public function __construct(private ClaimedSignIn|null $next) {}
-
-    public function claim(): ClaimedSignIn|null
-    {
-        [$claimed, $this->next] = [$this->next, null];
-
-        return $claimed;
-    }
-
     /**
      * @var list<SignInChallenge>
      */
     public array $challenges = [];
-
-    public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void
-    {
-        $this->challenges[] = $challenge;
-    }
 
     /**
      * @var list<AccountCheckResult>
@@ -65,6 +51,20 @@ final class RecordingSignInHost implements SignInHost
      * @var list<list<string>>
      */
     public array $reconciled = [];
+
+    public function __construct(private ClaimedSignIn|null $next) {}
+
+    public function claim(): ClaimedSignIn|null
+    {
+        [$claimed, $this->next] = [$this->next, null];
+
+        return $claimed;
+    }
+
+    public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void
+    {
+        $this->challenges[] = $challenge;
+    }
 
     public function reconcileSignIns(array $runningAttemptIds): void
     {

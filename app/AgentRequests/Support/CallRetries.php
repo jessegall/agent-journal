@@ -53,7 +53,7 @@ final class CallRetries
                 }
 
                 if (CarbonImmutable::now()->addMilliseconds($wait)->greaterThanOrEqualTo($deadline)) {
-                    throw CallDeadlinePassed::for($callId);
+                    throw CallDeadlinePassed::for($callId, previous: $failure);
                 }
 
                 Sleep::for($wait)->milliseconds();

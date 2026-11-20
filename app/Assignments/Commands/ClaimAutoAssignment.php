@@ -14,7 +14,9 @@ use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
-/** @extends Command<AutoAssignmentOutcome> */
+/**
+ * @extends Command<AutoAssignmentOutcome>
+ */
 #[AllowsEngine]
 #[RepeatableRead]
 #[Entry(CommandEntry::EngineMaintenance)]

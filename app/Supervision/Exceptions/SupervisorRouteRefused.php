@@ -11,13 +11,17 @@ use RuntimeException;
 
 final class SupervisorRouteRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    /** @param list<string> $path */
+    /**
+     * @param  list<string>  $path
+     */
     public static function cycle(string $route, array $path): self
     {
         return new self("The {$route} supervisor route has a cycle: ".implode(' → ', $path).'.');
     }
 
-    /** @param list<string> $path */
+    /**
+     * @param  list<string>  $path
+     */
     public static function tooDeep(string $route, array $path): self
     {
         return new self("The {$route} supervisor route exceeds 32 hops: ".implode(' → ', $path).'.');

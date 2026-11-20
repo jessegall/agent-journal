@@ -8,7 +8,6 @@ use App\Contracts\DomainAvailability;
 use App\Domains\Support\DomainRegistry;
 use App\Ui\Declarations\DomainUi;
 use App\Web\Contracts\UiOwnerAvailability as UiOwnerAvailabilityContract;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * Whether the owner of a page, section or navigation item is available now: a listed domain asks its availability
@@ -16,12 +15,10 @@ use Illuminate\Contracts\Container\Container;
  */
 final readonly class UiOwnerAvailability implements UiOwnerAvailabilityContract
 {
-    public function __construct(private DomainRegistry $domains, private Container $container) {}
+    public function __construct(private DomainRegistry $domains, private DomainAvailability $availability) {}
 
     public function isAvailable(DomainUi $owner): bool
     {
-        return ! $this->domains->has($owner->name) || $this->container->make(
-            DomainAvailability::class,
-        )->isEnabled($owner->name);
+        return ! $this->domains->has($owner->name) || $this->availability->isEnabled($owner->name);
     }
 }
