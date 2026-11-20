@@ -29,4 +29,13 @@ final readonly class AssignmentReference
     {
         return $this->id === $other->id && $this->holder->isSameAs($other->holder);
     }
+
+    /** @return array{id: string, holder: array{type: string, id: string}} */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'holder' => ['type' => $this->holder->type, 'id' => $this->holder->id],
+        ];
+    }
 }

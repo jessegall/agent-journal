@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Assignments\Mcp;
+
+use App\Assignments\Commands\ReassignRecord;
+use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Support\ToolArguments;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
+
+#[IsIdempotent]
+#[IsDestructive]
+#[Name('assignments_reassign')]
+#[Dispatches(ReassignRecord::class)]
+#[Description('Move a record to another recipient using the assignment reference you read.')]
+final class ReassignRecordTool extends AssignmentWriteTool
+{
+    protected function writeSchema(JsonSchema $schema): array
+    {
+        return [
+            ...$this->recordSchema($schema),
+            'expected_assignment' => $this->expectedSchema($schema),
+            'recipient' => $this->assigneeSchema($schema),
+        ];
+    }
+
+    protected function command(ToolArguments $arguments): ReassignRecord
+    {
+        return new ReassignRecord(
+            $this->record($arguments),
+            $this->expected($arguments),
+            $this->recipient($arguments),
+        );
+    }
+}

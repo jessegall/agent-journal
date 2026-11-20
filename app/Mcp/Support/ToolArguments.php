@@ -8,6 +8,7 @@ use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use BackedEnum;
+use Illuminate\Support\Str;
 use Laravel\Mcp\Request;
 
 /**
@@ -47,15 +48,49 @@ final readonly class ToolArguments
      */
     public static function read(string $tool, Request $request, array $fields): self
     {
-        $arguments = $request->all();
+        return self::within($tool, $request->all(), $fields);
+    }
 
-        foreach (array_keys($arguments) as $name) {
-            if (! in_array($name, $fields, true)) {
-                throw ToolArgumentUnknown::for($tool, (string) $name);
+    /**
+     * @param  array<array-key, mixed>  $arguments
+     * @param  list<string>  $fields
+     */
+    private static function within(string $context, array $arguments, array $fields): self
+    {
+        $declared = [];
+
+        foreach ($arguments as $name => $value) {
+            if (! is_string($name) || ! in_array($name, $fields, true)) {
+                throw ToolArgumentUnknown::for($context, (string) $name);
             }
+
+            $declared[$name] = $value;
         }
 
-        return new self($arguments);
+        return new self($declared);
+    }
+
+    /** @param list<string> $fields */
+    public function object(string $name, array $fields): self
+    {
+        $value = $this->arguments[$name] ?? null;
+
+        if (! is_array($value) || array_is_list($value)) {
+            throw ToolArgumentInvalid::for($name, 'an object');
+        }
+
+        return self::within($name, $value, $fields);
+    }
+
+    public function ulid(string $name): string
+    {
+        $id = $this->text($name);
+
+        if (! Str::isUlid($id)) {
+            throw ToolArgumentInvalid::for($name, 'a ULID');
+        }
+
+        return strtolower($id);
     }
 
     /**
