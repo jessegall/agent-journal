@@ -113,11 +113,11 @@ final class AgentSession extends Model implements ReadableModel
 
     public static function jobSourceMessage(string $sessionId): string|null
     {
-        return self::jobSourceMessages($sessionId)->value('job_source_message_id');
+        return self::jobSourceMessageIds($sessionId)->value('job_source_message_id');
     }
 
     /** @return Builder<self> */
-    public static function jobSourceMessages(string $sessionId): Builder
+    public static function jobSourceMessageIds(string $sessionId): Builder
     {
         return self::query()->whereKey($sessionId)->select('job_source_message_id');
     }

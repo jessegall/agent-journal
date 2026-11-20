@@ -89,9 +89,9 @@ final readonly class OutputPolicy
             return [$stream];
         }
         $merged = $redirect->type === RedirectType::DuplicateOutput;
-        $needsApart = array_any($part->contracts, fn ($contract) => $contract->output->streams === StreamUse::Separate);
+        $requiresSeparateStreams = array_any($part->contracts, fn ($contract) => $contract->output->streams === StreamUse::Separate);
 
-        return $merged && $needsApart ? ["{$stream} kept apart"] : [];
+        return $merged && $requiresSeparateStreams ? ["{$stream} kept apart"] : [];
     }
 
     private function isBeforeTheLastCommand(ShellTree $tree, ShellNode $pipeline, ShellNode $command): bool

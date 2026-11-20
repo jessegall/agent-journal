@@ -79,6 +79,7 @@ SCRIPT, ['tests' => [
     public static function invalidScripts(): array
     {
         return [
+            ["\xFF", 'invalid_form', 1, 1],
             ['ON STOP'."\n".'  CHECK workspace.missing'."\n".'END', 'unknown_member', 2, 9],
             ['ON STOP'."\n".'IF workspace.dirty', 'unclosed_block', 2, 1],
             ['ON STOP'."\n".'RUN missing'."\n".'END', 'unknown_command', 2, 5],

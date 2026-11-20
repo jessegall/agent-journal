@@ -60,7 +60,7 @@ final readonly class TickDelivery
         }
 
         $passNow = $this->serverClock->now();
-        $passNowReading = $this->clock->nanoseconds();
+        $passClockNanoseconds = $this->clock->nanoseconds();
         $checkpoints = EngineFrameTime::settledAtFor(
             array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates),
         );
@@ -68,7 +68,7 @@ final readonly class TickDelivery
             $batch,
             $passStartNanoseconds,
             $passNow,
-            $passNowReading,
+            $passClockNanoseconds,
             $checkpoints,
         ): array {
             $anyTicked = false;
@@ -90,7 +90,7 @@ final readonly class TickDelivery
                 }
 
                 $start = $this->clock->nanoseconds();
-                $now = $passNow->addMicroseconds(intdiv($start - $passNowReading, self::NANOSECONDS_PER_MICROSECOND));
+                $now = $passNow->addMicroseconds(intdiv($start - $passClockNanoseconds, self::NANOSECONDS_PER_MICROSECOND));
 
                 if ($this->tick($current->get(), $now, $this->deltaFor($current->get(), $start, $now, $checkpoints))) {
                     $settled[] = [$current->get(), $now, $start];
@@ -162,10 +162,10 @@ final readonly class TickDelivery
         CarbonImmutable $now,
         array $checkpoints,
     ): ElapsedTime {
-        $sinceBaseline = $this->baselines->elapsedUntil($candidate->frameId, $start);
+        $elapsedSinceBaseline = $this->baselines->elapsedUntil($candidate->frameId, $start);
 
-        if ($sinceBaseline->isDefined()) {
-            return $sinceBaseline->get();
+        if ($elapsedSinceBaseline->isDefined()) {
+            return $elapsedSinceBaseline->get();
         }
 
         $since = $checkpoints[$candidate->frameId] ?? $candidate->enteredAt;
