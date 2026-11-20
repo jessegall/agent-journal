@@ -1743,6 +1743,7 @@ class	CloseTerminalViewController
 class	CloseTerminalViewHandler
 class	CloseWorkChain
 class	CloseWorkChainHandler
+class	ClosedFolders
 class	CodeReview
 class	CodeReviewDecisions
 class	CodeReviewRefused
@@ -2328,12 +2329,14 @@ class	FileChange
 class	FileChanges
 class	FileDeclaresNoClass
 class	FileEditRequested
+class	FileMissing
 class	FileOutsideAutoload
 class	FileOutsideEveryDomain
 class	FileOutsidePlaces
 class	FilePath
 class	FilePathInvalid
 class	FileRules
+class	FileUnreadable
 class	FindNextSubstitution
 class	FindReplay
 class	FinishCertifiedJob
@@ -2688,6 +2691,8 @@ class	Link
 class	LinkAccess
 class	LinkAddCommand
 class	LinkChanged
+class	LinkLeavesPlace
+class	LinkLoop
 class	LinkRecords
 class	LinkRecordsController
 class	LinkRecordsHandler
@@ -3129,6 +3134,7 @@ class	PartSummary
 class	PartSummaryData
 class	PartTransitionRefused
 class	Passkey
+class	PathConfinement
 class	PendingAgentMessage
 class	PendingAgentMessages
 class	PendingAttemptCleanupData
@@ -5660,6 +5666,7 @@ constant	PackageScripts::HARMLESS_CALLBACKS
 constant	PackageScripts::PACKAGE_FILES
 constant	Page::LARGEST_LIMIT
 constant	PageChanged::NAME
+constant	PathConfinement::LINK_LIMIT
 constant	PendingAgentMessage::DELIVERY_LIMIT
 constant	Phase::LINK_TYPE
 constant	PhaseCheck::CREATED_AT
@@ -8793,6 +8800,9 @@ method	CloseTerminalViewHandler::handle()
 method	CloseWorkChain::__construct()
 method	CloseWorkChainHandler::__construct()
 method	CloseWorkChainHandler::handle()
+method	ClosedFolders::__construct()
+method	ClosedFolders::assertNotClosed()
+method	ClosedFolders::closedIn()
 method	CodeReview::casts()
 method	CodeReview::decision()
 method	CodeReview::failImport()
@@ -10820,6 +10830,7 @@ method	FileEditRequested::leavesAgentIdle()
 method	FileEditRequested::methodName()
 method	FileEditRequested::recordTurn()
 method	FileEditRequested::recordVisit()
+method	FileMissing::at()
 method	FileOperation::accessTypes()
 method	FileOperation::fromPatchAction()
 method	FileOutsideAutoload::for()
@@ -10829,6 +10840,7 @@ method	FileOutsidePlaces::given()
 method	FilePath::__construct()
 method	FilePath::child()
 method	FilePath::in()
+method	FilePath::label()
 method	FilePath::ofAbsolute()
 method	FilePathInvalid::climbs()
 method	FilePathInvalid::nulByte()
@@ -10836,6 +10848,7 @@ method	FileRules::all()
 method	FileRules::flags()
 method	FileRules::paths()
 method	FileRules::rule()
+method	FileUnreadable::at()
 method	FindNextSubstitution::__construct()
 method	FindNextSubstitution::handle()
 method	FindNextSubstitution::insideOf()
@@ -11891,6 +11904,8 @@ method	LinkAccess::__construct()
 method	LinkAccess::among()
 method	LinkAddCommand::handle()
 method	LinkChanged::__construct()
+method	LinkLeavesPlace::from()
+method	LinkLoop::at()
 method	LinkRecordProvider::linkRecords()
 method	LinkRecords::__construct()
 method	LinkRecordsController::__invoke()
@@ -13223,6 +13238,13 @@ method	PartTransitionRefused::between()
 method	PartTransitionRefused::notDrained()
 method	PasswordValidationRules::currentPasswordRules()
 method	PasswordValidationRules::passwordRules()
+method	PathConfinement::__construct()
+method	PathConfinement::absolutePath()
+method	PathConfinement::confined()
+method	PathConfinement::opened()
+method	PathConfinement::resolved()
+method	PathConfinement::resolvedForWrite()
+method	PathConfinement::unresolved()
 method	PendingAgentMessage::casts()
 method	PendingAgentMessage::countAttentionFor()
 method	PendingAgentMessage::countFor()
@@ -13360,6 +13382,7 @@ method	Place::isPrivate()
 method	Place::notPrivate()
 method	Place::rootSetting()
 method	PlaceRoots::__construct()
+method	PlaceRoots::available()
 method	PlaceRoots::existingRoot()
 method	PlaceRoots::innermostPlaceOf()
 method	PlaceRoots::isWithin()
@@ -20115,6 +20138,7 @@ parameter	$cleanupProblem
 parameter	$client
 parameter	$clock
 parameter	$close
+parameter	$closed
 parameter	$closedAt
 parameter	$closedFence
 parameter	$closedStackDays
@@ -23303,6 +23327,8 @@ property	CloseTerminalViewHandler::$views
 property	CloseWorkChain::$work
 property	CloseWorkChainHandler::$chains
 property	CloseWorkChainHandler::$owner
+property	ClosedFolders::$config
+property	ClosedFolders::$roots
 property	CodeReviewDecisions::$admission
 property	CodeReviewDecisions::$asks
 property	CodeReviewDecisions::$assignments
@@ -25883,6 +25909,8 @@ property	PartSummaryData::$purpose
 property	PartSummaryData::$tools
 property	PartSummaryData::$unresolved
 property	Passkey::$fillable
+property	PathConfinement::$closed
+property	PathConfinement::$roots
 property	PendingAttemptCleanupData::$attemptId
 property	PendingAttemptCleanupData::$awaitsRetry
 property	PendingAttemptCleanupData::$lastTriedAt
@@ -30262,6 +30290,7 @@ variable	$configuration
 variable	$configurationId
 variable	$configured
 variable	$configuredField
+variable	$confined
 variable	$confirm
 variable	$conflict
 variable	$conflictingAttributes
@@ -30910,6 +30939,7 @@ variable	$origin
 variable	$original
 variable	$other
 variable	$otherDocumentDraft
+variable	$otherRoot
 variable	$otherType
 variable	$others
 variable	$outcome

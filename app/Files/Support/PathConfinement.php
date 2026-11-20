@@ -30,7 +30,7 @@ final readonly class PathConfinement
     {
         $this->closed->assertNotClosed($file);
         $root = $this->roots->root($file->place);
-        $path = $this->absolute($root, $file);
+        $path = $this->absolutePath($root, $file);
         clearstatcache(true, $path);
         $real = realpath($path);
 
@@ -49,7 +49,7 @@ final readonly class PathConfinement
     {
         $this->closed->assertNotClosed($file);
         $root = $this->roots->root($file->place);
-        $existing = $this->absolute($root, $file);
+        $existing = $this->absolutePath($root, $file);
         $missing = [];
         clearstatcache(true, $existing);
 
@@ -105,7 +105,7 @@ final readonly class PathConfinement
         return $handle;
     }
 
-    private function absolute(string $root, FilePath $file): string
+    private function absolutePath(string $root, FilePath $file): string
     {
         return $file->relative === '' ? $root : "{$root}/{$file->relative}";
     }
@@ -119,7 +119,7 @@ final readonly class PathConfinement
             throw LinkLeavesPlace::from($file);
         }
 
-        $this->closed->assertNotClosed(FilePath::in($file->place, substr($real, strlen($root))));
+        $this->closed->assertNotClosed(FilePath::in($file->place, ltrim(substr($real, strlen($root)), '/')));
 
         return $real;
     }
