@@ -30,7 +30,7 @@ final readonly class SetIntegerSettingHandler implements CommandHandler
 
         return $this->writer->setValue(
             $setting,
-            $this->codec->encodeInteger($command->setting->owner, $setting, $command->value),
+            $this->codec->encodeInteger($command->setting->owner, $setting, $command->settingNumber),
             $command->expectedRevision,
         );
     }

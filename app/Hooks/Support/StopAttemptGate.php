@@ -47,12 +47,12 @@ final readonly class StopAttemptGate implements StopConditionGate
             StopAttempt::FIRST_GENERATION,
             $policy->stopConditions->definitionHashes(),
         );
-        $result = $this->evidence->result(new StopAttemptReference($attempt->id));
+        $stopOutcome = $this->evidence->result(new StopAttemptReference($attempt->id));
 
-        return match ($result->state) {
+        return match ($stopOutcome->state) {
             StopAttemptState::Pending => Decision::allow()->withMessage(self::CHECKS_RUNNING),
             StopAttemptState::Passed => Decision::allow(),
-            StopAttemptState::Failed => Decision::deny($result->failureSummary()),
+            StopAttemptState::Failed => Decision::deny($stopOutcome->failureSummary()),
             StopAttemptState::Unresolved => Decision::deny(self::CHECKS_UNRESOLVED),
         };
     }

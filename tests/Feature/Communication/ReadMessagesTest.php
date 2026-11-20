@@ -67,6 +67,9 @@ final class ReadMessagesTest extends MessagingTestCase
      */
     private function rows(MessageReadBatch $batch): array
     {
-        return array_map(fn ($result) => [$result->messageId, $result->firstRead, $result->takenUp], $batch->results);
+        return array_map(
+            fn ($read) => [$read->messageId, $read->firstRead, $read->takenUp],
+            $batch->messageReads,
+        );
     }
 }

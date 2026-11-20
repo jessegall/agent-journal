@@ -35,12 +35,12 @@ final readonly class ParseFunctionBody extends PipelineAdapter
         return $input->toParse->compound();
     }
 
-    protected function back(object $result, object $input): NodeRead
+    protected function back(object $parsedBody, object $input): NodeRead
     {
         $draft = $input->toParse->draft();
-        $range = new SourceRange($input->start, $draft->range($result->node)->end);
+        $range = new SourceRange($input->start, $draft->range($parsedBody->node)->end);
         $definition = $draft->add(NodeType::Unsupported, $range, null);
-        $draft->adopt($definition, $result->node);
+        $draft->adopt($definition, $parsedBody->node);
         $draft->markUnsupported('A function definition is not supported.', $input->start);
 
         return new NodeRead($definition);

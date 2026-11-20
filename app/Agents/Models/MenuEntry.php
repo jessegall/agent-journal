@@ -149,12 +149,12 @@ final class MenuEntry extends Model implements ReadableModel
         string $fingerprint,
         array $declinedEntries,
     ): self|null {
-        $entries = self::query()->ownedBy($owner)->current()->forProgram($runtime->program)
+        $menuQuery = self::query()->ownedBy($owner)->current()->forProgram($runtime->program)
             ->matching($fingerprint, $goal)->whereNotIn('id', $declinedEntries)->recentFirst();
         $build = $runtime->program_build;
-        $current = (clone $entries)->whereJsonContains('builds', [['build' => $build, 'stale' => false]])->first();
+        $current = (clone $menuQuery)->whereJsonContains('builds', [['build' => $build, 'stale' => false]])->first();
 
-        return $current ?? $entries->whereJsonDoesntContain('builds', [['build' => $build]])->first();
+        return $current ?? $menuQuery->whereJsonDoesntContain('builds', [['build' => $build]])->first();
     }
 
     /**

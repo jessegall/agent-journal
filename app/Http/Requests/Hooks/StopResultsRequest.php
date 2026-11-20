@@ -58,8 +58,8 @@ final class StopResultsRequest extends FormRequest
      */
     public function results(): array
     {
-        $results = StopResultData::collect($this->validated('results'), 'array');
+        $stopReports = StopResultData::collect($this->validated('results'), 'array');
 
-        return array_values(array_map(fn (StopResultData $result) => $result->report(), $results));
+        return array_values(array_map(fn (StopResultData $stepOutput) => $stepOutput->report(), $stopReports));
     }
 }

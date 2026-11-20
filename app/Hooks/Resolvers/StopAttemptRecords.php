@@ -25,9 +25,9 @@ final readonly class StopAttemptRecords implements StopEvidence
         $statuses = [];
         $summaries = [];
 
-        foreach ($record->results as $result) {
-            $statuses[$result->condition_key] = $result->status;
-            $summaries[$result->condition_key] = $result->summary;
+        foreach ($record->results as $stopRecord) {
+            $statuses[$stopRecord->condition_key] = $stopRecord->status;
+            $summaries[$stopRecord->condition_key] = $stopRecord->summary;
         }
 
         return new StopAttemptResult($record->state, $statuses, $summaries);

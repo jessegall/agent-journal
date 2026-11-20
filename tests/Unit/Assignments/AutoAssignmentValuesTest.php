@@ -132,7 +132,7 @@ final class AutoAssignmentValuesTest extends TestCase
         }
 
         foreach ($values as $value) {
-            $this->assertContains($value, $exports->values);
+            $this->assertContains($value, $exports->valueClasses);
         }
 
         $this->assertContains(InvalidRecordIds::class, $exports->exceptions);

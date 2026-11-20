@@ -75,7 +75,7 @@ final readonly class PublicContracts
         return [
             'events' => $exports->events,
             'contracts' => $exports->contracts,
-            'values' => $exports->values,
+            'values' => $exports->valueClasses,
             'commands' => $exports->commands,
             'exceptions' => $exports->exceptions,
             'support' => $exports->support,

@@ -32,10 +32,10 @@ final readonly class ParseOptionStatement extends PipelineAdapter
         return $input->toParse;
     }
 
-    protected function back(object $result, object $input): NodeRead
+    protected function back(object $parsedStatement, object $input): NodeRead
     {
-        $input->toParse->draft()->markStatementUnsupported($result->node, $input->reason);
+        $input->toParse->draft()->markStatementUnsupported($parsedStatement->node, $input->reason);
 
-        return $result;
+        return $parsedStatement;
     }
 }

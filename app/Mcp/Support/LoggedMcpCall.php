@@ -30,14 +30,14 @@ final readonly class LoggedMcpCall implements McpCall
     ) {}
 
     /**
-     * @param  Closure(): ToolResult  $result
+     * @param  Closure(): ToolResult  $toolAnswer
      */
-    public function answerTool(string $tool, Closure $result): ResponseFactory
+    public function answerTool(string $tool, Closure $toolAnswer): ResponseFactory
     {
         return $this->answer(
             'tool',
             $tool,
-            fn (): ResponseFactory => $this->budget->fit($result()),
+            fn (): ResponseFactory => $this->budget->fit($toolAnswer()),
             fn (Refusal $refusal): ResponseFactory => $refusal->toolResponse(),
         );
     }

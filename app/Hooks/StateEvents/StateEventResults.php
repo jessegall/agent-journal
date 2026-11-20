@@ -12,18 +12,18 @@ use App\Agents\Support\StackTarget;
 final readonly class StateEventResults
 {
     /**
-     * @param  list<StateEventResult>  $all
+     * @param  list<StateEventResult>  $listenerResults
      */
-    public function __construct(public StackTarget $target, public array $all) {}
+    public function __construct(public StackTarget $target, public array $listenerResults) {}
 
     public function context(): StateEventContext
     {
         $lines = [];
         $messages = [];
 
-        foreach ($this->all as $result) {
-            array_push($lines, ...$result->commands->context);
-            array_push($messages, ...$result->commands->messages);
+        foreach ($this->listenerResults as $listenerResult) {
+            array_push($lines, ...$listenerResult->commands->context);
+            array_push($messages, ...$listenerResult->commands->messages);
         }
 
         return new StateEventContext($lines, $messages);

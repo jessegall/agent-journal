@@ -21,7 +21,7 @@ final readonly class ShareCursors
 
     public function write(ShareCursor $cursor): string
     {
-        $payload = self::encode(
+        $encodedCursor = self::encode(
             json_encode(
                 [
                     $cursor->shareId,
@@ -35,7 +35,7 @@ final readonly class ShareCursors
             ),
         );
 
-        return $payload.'.'.$this->signatureOf($payload);
+        return $encodedCursor.'.'.$this->signatureOf($encodedCursor);
     }
 
     /**
@@ -48,14 +48,14 @@ final readonly class ShareCursors
      */
     public function read(string $text, ShareCursor $expected): ShareCursor
     {
-        [$payload, $signature] = explode('.', $text, 2) + [1 => ''];
+        [$encodedCursor, $signature] = explode('.', $text, 2) + [1 => ''];
 
-        if (! hash_equals($this->signatureOf($payload), $signature)) {
+        if (! hash_equals($this->signatureOf($encodedCursor), $signature)) {
             throw ShareReadRefused::staleCursor();
         }
 
         try {
-            $cursor = new ShareCursor(...json_decode(self::decode($payload), false, 3, JSON_THROW_ON_ERROR));
+            $cursor = new ShareCursor(...json_decode(self::decode($encodedCursor), false, 3, JSON_THROW_ON_ERROR));
         } catch (JsonException $cause) {
             throw ShareReadRefused::staleCursor(previous: $cause);
         }
@@ -63,9 +63,9 @@ final readonly class ShareCursors
         return $cursor->belongsTo($expected) ? $cursor : throw ShareReadRefused::staleCursor();
     }
 
-    private function signatureOf(string $payload): string
+    private function signatureOf(string $encodedCursor): string
     {
-        return self::encode(hash_hmac('sha256', $payload, $this->key, true));
+        return self::encode(hash_hmac('sha256', $encodedCursor, $this->key, true));
     }
 
     private static function encode(string $bytes): string

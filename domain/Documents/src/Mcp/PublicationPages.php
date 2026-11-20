@@ -62,7 +62,7 @@ final readonly class PublicationPages
         DocumentReadCard|ReportReadCard $card,
     ): ToolResult {
         $page = $this->comments->list($record, new Page($position->filters['after_comment'] ?? null, 1));
-        $entry = $page->items[0] ?? null;
+        $entry = $page->comments[0] ?? null;
         if ($entry === null) {
             return ToolResult::ok([...$card->toArray(), 'comments' => []]);
         }
@@ -80,7 +80,7 @@ final readonly class PublicationPages
             return $commentPage;
         }
 
-        return ToolResult::ok($commentPage->payload, [$this->continuations->link(new Continuation(
+        return ToolResult::ok($commentPage->responseFields, [$this->continuations->link(new Continuation(
             $position->tool,
             $position->selector,
             [...$position->filters, 'after_comment' => $page->nextAfter],

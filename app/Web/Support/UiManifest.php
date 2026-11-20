@@ -222,11 +222,11 @@ final readonly class UiManifest
     }
 
     /**
-     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $templateFields
      */
-    private function render(string $template, array $data): string
+    private function render(string $template, array $templateFields): string
     {
-        return $this->views->file(dirname(__DIR__)."/Templates/{$template}.blade.php", $data)->render();
+        return $this->views->file(dirname(__DIR__)."/Templates/{$template}.blade.php", $templateFields)->render();
     }
 
     /**

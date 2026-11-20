@@ -40,6 +40,6 @@ final class StoredValuesCast implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): string
     {
-        return json_encode(array_map(fn (StoredValue $item): array => $item->toArray(), $value), JSON_THROW_ON_ERROR);
+        return json_encode(array_map(fn (StoredValue $storedValue): array => $storedValue->toArray(), $value), JSON_THROW_ON_ERROR);
     }
 }

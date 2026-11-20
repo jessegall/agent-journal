@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
+use JsonSerializable;
+
 /**
  * One named parameter a key script request gives its script, such as server=journal.
  */
-final readonly class ScriptParameter
+final readonly class ScriptParameter implements JsonSerializable
 {
     public function __construct(
         public string $name,
-        public string $value,
+        public string $parameterText,
     ) {}
 
     /**
@@ -22,17 +24,27 @@ final readonly class ScriptParameter
      */
     public static function byName(array $parameters): array
     {
-        return array_column(array_map(fn (self $parameter) => (array) $parameter, $parameters), 'value', 'name');
+        return array_column($parameters, 'parameterText', 'name');
     }
 
     /**
      * The parameters of names and values, in their order.
      *
-     * @param  array<string, string>  $values
+     * @param  array<string, string>  $parameterTexts
      * @return list<self>
      */
-    public static function listOf(array $values): array
+    public static function listOf(array $parameterTexts): array
     {
-        return array_map(fn (string $name, string $value) => new self($name, $value), array_keys($values), $values);
+        return array_map(
+            fn (string $name, string $parameterText) => new self($name, $parameterText),
+            array_keys($parameterTexts),
+            $parameterTexts,
+        );
+    }
+
+    /** @return array{name: string, value: string} */
+    public function jsonSerialize(): array
+    {
+        return ['name' => $this->name, 'value' => $this->parameterText];
     }
 }

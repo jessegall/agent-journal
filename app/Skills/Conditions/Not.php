@@ -24,12 +24,12 @@ final readonly class Not implements SkillCondition
 
     public function evaluate(SkillContext $context): ConditionResult
     {
-        $result = $this->child->evaluate($context);
+        $evaluation = $this->child->evaluate($context);
 
-        return match ($result->outcome) {
-            ConditionOutcome::Match => ConditionResult::noMatch('not:'.$result->reason),
-            ConditionOutcome::NoMatch => ConditionResult::match('not:'.$result->reason),
-            ConditionOutcome::Unavailable => $result,
+        return match ($evaluation->outcome) {
+            ConditionOutcome::Match => ConditionResult::noMatch('not:'.$evaluation->reason),
+            ConditionOutcome::NoMatch => ConditionResult::match('not:'.$evaluation->reason),
+            ConditionOutcome::Unavailable => $evaluation,
         };
     }
 

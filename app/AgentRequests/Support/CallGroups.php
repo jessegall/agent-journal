@@ -130,7 +130,7 @@ final class CallGroups
             fn (ReflectionParameter $parameter) => "\n        ".self::parameter($parameter).',',
             $parameters,
         ));
-        $values = implode('', array_map(
+        $parameterAssignments = implode('', array_map(
             fn (ReflectionParameter $parameter) => <<<TEXT
 
                         '{$parameter->getName()}' => \${$parameter->getName()},
@@ -144,7 +144,7 @@ final class CallGroups
 
         {$docblock}    public function {$name}({$signature}
             ): {$answer} {
-                return \$this->sender->send(\\{$call}::from([{$values}
+                return \$this->sender->send(\\{$call}::from([{$parameterAssignments}
                 ]));
             }
 
@@ -180,12 +180,12 @@ final class CallGroups
             return ' = \\'.ltrim((string) $parameter->getDefaultValueConstantName(), '\\');
         }
 
-        $value = $parameter->getDefaultValue();
+        $defaultArgument = $parameter->getDefaultValue();
 
         return match (true) {
-            $value instanceof UnitEnum => ' = \\'.$value::class.'::'.$value->name,
-            is_object($value) => ' = new \\'.$value::class.'()',
-            default => ' = '.str_replace(["array (\n)", 'NULL'], ['[]', 'null'], var_export($value, true)),
+            $defaultArgument instanceof UnitEnum => ' = \\'.$defaultArgument::class.'::'.$defaultArgument->name,
+            is_object($defaultArgument) => ' = new \\'.$defaultArgument::class.'()',
+            default => ' = '.str_replace(["array (\n)", 'NULL'], ['[]', 'null'], var_export($defaultArgument, true)),
         };
     }
 

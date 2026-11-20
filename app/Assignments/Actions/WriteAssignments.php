@@ -239,11 +239,11 @@ final readonly class WriteAssignments implements
         ));
     }
 
-    private function published(AssignmentReason $reason, AssignmentResult $result): AssignmentResult
+    private function published(AssignmentReason $reason, AssignmentResult $assignmentChange): AssignmentResult
     {
-        $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $result);
+        $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $assignmentChange);
 
-        return $result;
+        return $assignmentChange;
     }
 
     /**
@@ -277,12 +277,12 @@ final readonly class WriteAssignments implements
         Assignment|null $before,
         Assignment|null $after,
     ): AssignmentResult {
-        $result = new AssignmentResult(
+        $assignmentChange = new AssignmentResult(
             [new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)],
             [new AssignmentChange($record, $before, $after)],
         );
-        $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $result);
+        $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $assignmentChange);
 
-        return $result;
+        return $assignmentChange;
     }
 }

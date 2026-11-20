@@ -20,7 +20,7 @@ final readonly class RecordProvenSkillReads implements Listener
 
     public function handle(ToolCallFinished $event): void
     {
-        $read = ProvenSkillRead::of($event->result);
+        $read = ProvenSkillRead::of($event->finishedTool);
 
         if ($read === null) {
             return;

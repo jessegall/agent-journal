@@ -17,7 +17,7 @@ final readonly class ScriptCompiler
     public function compile(ScriptSource $source, array $handlers): CompiledScript
     {
         $graph = new ScriptGraph();
-        $entries = [];
+        $handlerEntries = [];
 
         foreach ($handlers as $handler) {
             $trigger = $handler->trigger;
@@ -34,13 +34,13 @@ final readonly class ScriptCompiler
                 $source->definitions(),
                 $policy,
             );
-            $entries[$trigger->token] = [
+            $handlerEntries[$trigger->token] = [
                 'entry' => $context->compileBlock($handler->statements),
                 'policy' => $policy,
                 'source' => $handler->source,
             ];
         }
 
-        return $graph->compiled($entries, $source->hash());
+        return $graph->compiled($handlerEntries, $source->hash());
     }
 }

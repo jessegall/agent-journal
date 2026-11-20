@@ -7,6 +7,7 @@ namespace App\Http\Data\Sharing;
 use App\Sharing\Support\ShareAuditEntry;
 use App\Sharing\Support\ShareAuditPage;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -17,11 +18,12 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class ShareAuditData extends Data
 {
     /**
-     * @param  list<ShareAuditEntryData>  $entries
+     * @param  list<ShareAuditEntryData>  $auditEntries
      */
     public function __construct(
+        #[MapName('entries')]
         #[DataCollectionOf(ShareAuditEntryData::class)]
-        public readonly array $entries,
+        public readonly array $auditEntries,
         public readonly string|null $nextAfter,
         public readonly int $prunedAllowedReads,
         public readonly int $prunedDeniedReads,
@@ -32,7 +34,7 @@ final class ShareAuditData extends Data
     public static function fromPage(ShareAuditPage $page): self
     {
         return new self(
-            array_map(fn (ShareAuditEntry $entry) => ShareAuditEntryData::fromEntry($entry), $page->entries),
+            array_map(fn (ShareAuditEntry $entry) => ShareAuditEntryData::fromEntry($entry), $page->auditEntries),
             $page->nextAfter,
             $page->prunedAllowedReads,
             $page->prunedDeniedReads,

@@ -45,8 +45,8 @@ final class MenuRetireTool extends JournalWriteTool
         return new RetireMenuEntry($arguments->text('entry'), $expected);
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $menuEntryId): ToolResult
     {
-        return ToolResult::ok(['retired' => $result], []);
+        return ToolResult::ok(['retired' => $menuEntryId], []);
     }
 }

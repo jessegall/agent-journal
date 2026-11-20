@@ -14,7 +14,7 @@ final class ContinuationRecord
 {
     public bool $called = false;
 
-    public mixed $result = null;
+    public mixed $continuationReply = null;
 
     public Throwable|null $failure = null;
 }

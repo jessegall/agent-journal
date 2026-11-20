@@ -29,12 +29,12 @@ final readonly class JudgedCall implements ProgramCall
     /**
      * A finished tool call the journal judges, answered as an observation.
      */
-    public static function forFinishedTool(HookIdentity $hook, HookPayload $payload): self
+    public static function forFinishedTool(HookIdentity $hook, HookPayload $hookInput): self
     {
-        $result = new ToolResult($payload->toolNameText(), $payload->toolOutcome(), $payload->toolArguments());
+        $finishedTool = new ToolResult($hookInput->toolNameText(), $hookInput->toolOutcome(), $hookInput->toolArguments());
 
         return new self(
-            new ToolFinished($hook, $result),
+            new ToolFinished($hook, $finishedTool),
             fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::PostToolUse, $answer),
         );
     }

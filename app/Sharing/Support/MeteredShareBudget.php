@@ -116,7 +116,7 @@ final class MeteredShareBudget implements ShareBudget
 
         $this->assertTimeWithinBudget();
 
-        return $measurement->value;
+        return $measurement->measuredAnswer;
     }
 
     /**

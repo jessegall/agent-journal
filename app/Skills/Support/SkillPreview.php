@@ -95,7 +95,7 @@ final readonly class SkillPreview
     private function rowFor(SkillEntry $skill, Agent $agent): array
     {
         try {
-            $result = $skill->condition->evaluate($this->contexts->forAgent($agent));
+            $evaluation = $skill->condition->evaluate($this->contexts->forAgent($agent));
         } catch (SkillContextUnavailable $unavailable) {
             return [
                 'agent' => $agent->id,
@@ -108,8 +108,8 @@ final readonly class SkillPreview
         return [
             'agent' => $agent->id,
             'name' => $agent->name,
-            'outcome' => $result->outcome->value,
-            'reason' => $result->reason,
+            'outcome' => $evaluation->outcome->value,
+            'reason' => $evaluation->reason,
         ];
     }
 }

@@ -14,8 +14,8 @@ use Spatie\LaravelData\Optional;
  */
 trait OptionalOrMissing
 {
-    public static function optionalOrMissing(mixed $payload): static|Optional
+    public static function optionalOrMissing(mixed $dataSource): static|Optional
     {
-        return $payload === null ? Optional::create() : static::from($payload);
+        return $dataSource === null ? Optional::create() : static::from($dataSource);
     }
 }

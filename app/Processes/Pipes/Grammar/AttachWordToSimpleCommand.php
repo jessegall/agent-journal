@@ -34,13 +34,13 @@ final readonly class AttachWordToSimpleCommand extends PipelineAdapter
         return $input->toParse->word($word, $input->parts->node, ! $input->parts->hasArguments());
     }
 
-    protected function back(object $result, object $input): SimpleCommandDraft
+    protected function back(object $parsedWord, object $input): SimpleCommandDraft
     {
-        if ($result->isArrayAssignment()) {
+        if ($parsedWord->isArrayAssignment()) {
             return $input->asArrayAssignment();
         }
         $input->toParse->cursor()->advance();
 
-        return $input->withWord($result);
+        return $input->withWord($parsedWord);
     }
 }

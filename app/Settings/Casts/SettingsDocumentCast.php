@@ -50,11 +50,11 @@ final class SettingsDocumentCast implements CastsAttributes
 
         return new SettingsDocument(
             array_map(
-                fn (array $entry) => new EncodedSetting(...$entry),
+                fn (array $entry) => new EncodedSetting($entry['key'], $entry['value']),
                 $this->entries($owner, 'settings', $envelope->settings),
             ),
             array_map(
-                fn (array $entry) => new EncodedToggle(...$entry),
+                fn (array $entry) => new EncodedToggle($entry['key'], $entry['value']),
                 $this->entries($owner, 'toggles', $envelope->toggles),
             ),
         );
@@ -101,16 +101,16 @@ final class SettingsDocumentCast implements CastsAttributes
     /**
      * The entries of one list by key, each as its key and its encoded value.
      *
-     * @param  list<mixed>  $list
+     * @param  list<mixed>  $settingRows
      * @return array<string, array{key: string, value: EncodedValue}>
      *
      * @throws SettingsDocumentInvalid
      */
-    private function entries(string $owner, string $listName, array $list): array
+    private function entries(string $owner, string $listName, array $settingRows): array
     {
-        $entries = [];
+        $settingsByKey = [];
 
-        foreach ($list as $position => $entry) {
+        foreach ($settingRows as $position => $entry) {
             if (! $entry instanceof stdClass
                 || ! $this->holdsExactly($entry, ['key', 'value'])
                 || ! is_string($entry->key)
@@ -118,14 +118,14 @@ final class SettingsDocumentCast implements CastsAttributes
                 throw SettingsDocumentInvalid::malformedEntry($owner, $listName, $position);
             }
 
-            if (array_key_exists($entry->key, $entries)) {
+            if (array_key_exists($entry->key, $settingsByKey)) {
                 throw SettingsDocumentInvalid::duplicateKey($owner, $listName, $position);
             }
 
-            $entries[$entry->key] = ['key' => $entry->key, 'value' => EncodedValue::of($entry->value)];
+            $settingsByKey[$entry->key] = ['key' => $entry->key, 'value' => EncodedValue::of($entry->value)];
         }
 
-        return $entries;
+        return $settingsByKey;
     }
 
     /**

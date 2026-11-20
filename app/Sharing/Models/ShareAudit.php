@@ -121,7 +121,7 @@ final class ShareAudit extends Model implements ReadableModel
             ->whereNotNull('share_id')
             ->where(fn (Builder $query) => $query
                 ->where(
-                    fn (Builder $reads_) => $reads_->whereIn('type', $reads)->where(
+                    fn (Builder $readEntries) => $readEntries->whereIn('type', $reads)->where(
                         'created_at',
                         '<',
                         $now->subDays(self::READ_DAYS),

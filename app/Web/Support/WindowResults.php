@@ -44,13 +44,13 @@ final readonly class WindowResults implements WindowResultsContract
         }
 
         try {
-            $data = $read();
+            $windowContent = $read();
 
-            if (! $data instanceof $resolver->dataClass) {
-                throw ReaderDataMismatch::for($key, $resolver->dataClass, $data::class);
+            if (! $windowContent instanceof $resolver->dataClass) {
+                throw ReaderDataMismatch::for($key, $resolver->dataClass, $windowContent::class);
             }
 
-            return ReadyWindow::of($data->toArray());
+            return ReadyWindow::of($windowContent->toArray());
         } catch (
             AuthenticationException
             |TokenMismatchException

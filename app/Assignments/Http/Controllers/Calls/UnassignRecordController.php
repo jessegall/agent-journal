@@ -20,8 +20,8 @@ final readonly class UnassignRecordController
         CommandBus $commands,
         AssigneeResolver $assignees,
     ): AssignmentResultData {
-        $result = $commands->run(new UnassignRecord($call->record(), $call->expected()));
+        $assignmentChange = $commands->run(new UnassignRecord($call->record(), $call->expected()));
 
-        return AssignmentResultData::of($result, $assignees->holdersOf($result->currentAssignments()));
+        return AssignmentResultData::of($assignmentChange, $assignees->holdersOf($assignmentChange->currentAssignments()));
     }
 }

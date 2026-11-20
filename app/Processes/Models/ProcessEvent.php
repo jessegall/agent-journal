@@ -43,17 +43,17 @@ final class ProcessEvent extends Model implements ReadableModel
     }
 
     /**
-     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $eventFields
      */
-    public static function record(ProcessRun $run, int $sequence, string $type, array $payload): self
+    public static function record(ProcessRun $run, int $sequence, string $type, array $eventFields): self
     {
         $existing = self::query()->ofRun($run)->where('sequence', $sequence)->first();
         if ($existing === null) {
             return self::query()->create(
-                ['process_run_id' => $run->id, 'sequence' => $sequence, 'type' => $type, 'payload' => $payload],
+                ['process_run_id' => $run->id, 'sequence' => $sequence, 'type' => $type, 'payload' => $eventFields],
             );
         }
-        if ($existing->type === $type && $existing->payload === $payload) {
+        if ($existing->type === $type && $existing->payload === $eventFields) {
             return $existing;
         }
         $next = (int) self::query()->ofRun($run)->max('sequence') + 1;
@@ -63,7 +63,7 @@ final class ProcessEvent extends Model implements ReadableModel
                 'process_run_id' => $run->id,
                 'sequence' => $next,
                 'type' => self::OPERATIONAL_ERROR,
-                'payload' => ['conflicts_with' => $sequence, 'type' => $type, 'payload' => $payload],
+                'payload' => ['conflicts_with' => $sequence, 'type' => $type, 'payload' => $eventFields],
             ],
         );
     }

@@ -33,8 +33,8 @@ final readonly class ParseFirstPipedCommand extends PipelineAdapter
         return $input->toParse->command();
     }
 
-    protected function back(object $result, object $input): PipedCommands
+    protected function back(object $parsedCommand, object $input): PipedCommands
     {
-        return $input->withFirst($result->node);
+        return $input->withFirst($parsedCommand->node);
     }
 }

@@ -99,9 +99,9 @@ final readonly class DecimalSetting implements Setting
      *
      * @throws DecimalInvalid
      */
-    public function normalized(Decimal $value): Decimal
+    public function normalized(Decimal $settingInput): Decimal
     {
-        $scaled = $value->toScale($this->scale);
+        $scaled = $settingInput->toScale($this->scale);
 
         if ($scaled->precision() > $this->precision) {
             throw DecimalInvalid::tooManyDigits($this->precision);
@@ -122,9 +122,11 @@ final readonly class DecimalSetting implements Setting
         return $this->default;
     }
 
-    public function catalogueValue(string|bool|int|Decimal|BackedEnum $value): CatalogueValue
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $settingInput): CatalogueValue
     {
-        return DecimalValueData::from(['value' => $value instanceof Decimal ? $value->text : $value]);
+        return DecimalValueData::from([
+            'value' => $settingInput instanceof Decimal ? $settingInput->text : $settingInput,
+        ]);
     }
 
     public function catalogueConstraints(): CatalogueConstraints|Optional

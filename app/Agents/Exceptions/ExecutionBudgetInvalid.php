@@ -13,9 +13,9 @@ use InvalidArgumentException;
  */
 final class ExecutionBudgetInvalid extends InvalidArgumentException implements CommandRefusal
 {
-    public static function notPositive(string $budget, int $value): self
+    public static function notPositive(string $budget, int $budgetAmount): self
     {
-        return new self("The budget {$budget} must be above zero, not {$value}.");
+        return new self("The budget {$budget} must be above zero, not {$budgetAmount}.");
     }
 
     public static function swapDiffers(int $memoryBytes, int $memorySwapBytes): self
@@ -29,8 +29,8 @@ final class ExecutionBudgetInvalid extends InvalidArgumentException implements C
         );
     }
 
-    public static function aboveHost(string $budget, int $value, int $most): self
+    public static function aboveHost(string $budget, int $budgetAmount, int $most): self
     {
-        return new self("The budget {$budget} is at most {$most} on this host, not {$value}.");
+        return new self("The budget {$budget} is at most {$most} on this host, not {$budgetAmount}.");
     }
 }

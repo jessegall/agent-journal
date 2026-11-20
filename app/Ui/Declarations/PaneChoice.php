@@ -9,5 +9,5 @@ namespace App\Ui\Declarations;
  */
 final readonly class PaneChoice
 {
-    public function __construct(public string $value, public string $label) {}
+    public function __construct(public string $choiceKey, public string $label) {}
 }

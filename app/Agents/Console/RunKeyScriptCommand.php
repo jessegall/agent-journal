@@ -44,9 +44,9 @@ final class RunKeyScriptCommand extends Command
     private function parameters(): array
     {
         return array_values(array_map(function (mixed $pair) {
-            [$name, $value] = array_pad(explode('=', (string) $pair, 2), 2, '');
+            [$name, $parameterText] = array_pad(explode('=', (string) $pair, 2), 2, '');
 
-            return new ScriptParameter($name, $value);
+            return new ScriptParameter($name, $parameterText);
         }, (array) $this->option('param')));
     }
 }

@@ -39,8 +39,8 @@ final readonly class CodexAccountSettings
             $settings->passFlag($flag);
         }
 
-        foreach ($accountSettings as $name => $value) {
-            $settings->keepAccountSetting($name, $value);
+        foreach ($accountSettings as $name => $setting) {
+            $settings->keepAccountSetting($name, $setting);
         }
     }
 }

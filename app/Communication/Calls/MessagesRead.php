@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Calls;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 
 /**
@@ -13,10 +14,11 @@ use Spatie\LaravelData\Data;
 final class MessagesRead extends Data
 {
     /**
-     * @param  list<MessageRead>  $results
+     * @param  list<MessageRead>  $messageReads
      */
     public function __construct(
+        #[MapName('results')]
         #[DataCollectionOf(MessageRead::class)]
-        public array $results,
+        public array $messageReads,
     ) {}
 }

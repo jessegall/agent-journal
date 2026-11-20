@@ -121,7 +121,7 @@ final readonly class Explanations
             array_map(fn (ClassFact $fact): string => $fact->class->value.' from '.$fact->origin->reference(), $facts),
             array_map(fn (UnresolvedFact $fact): string => "{$fact->type->value}: {$fact->reason}", $unresolved),
             $parts === [] ? '' : $parts[0]->purpose->label(),
-            array_merge(...array_map(fn (VerificationContract $item): array => $item->description(), $contracts)),
+            array_merge(...array_map(fn (VerificationContract $contract): array => $contract->description(), $contracts)),
         );
     }
 

@@ -118,7 +118,7 @@ final class SettingsCommandsTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(CommandBus::class)->run(
-                new SetIntegerSettingThenFail($change->setting, $change->value, $change->expectedRevision),
+                new SetIntegerSettingThenFail($change->setting, $change->settingNumber, $change->expectedRevision),
             ),
             NoteWorkFailed::class,
         );

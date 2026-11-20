@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 
 /**
@@ -13,12 +14,13 @@ use Spatie\LaravelData\Data;
 final class ToolResult extends Data
 {
     /**
-     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $responseFields
      * @param  list<NextAction>  $nextActions
      */
     public function __construct(
         public readonly string $status,
-        public readonly array $payload,
+        #[MapName('payload')]
+        public readonly array $responseFields,
         #[DataCollectionOf(NextAction::class)]
         public readonly array $nextActions,
     ) {}
@@ -26,12 +28,12 @@ final class ToolResult extends Data
     /**
      * A successful answer.
      *
-     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $responseFields
      * @param  list<NextAction>  $nextActions
      */
-    public static function ok(array $payload, array $nextActions = []): self
+    public static function ok(array $responseFields, array $nextActions = []): self
     {
-        return self::from(['status' => 'ok', 'payload' => $payload, 'nextActions' => $nextActions]);
+        return self::from(['status' => 'ok', 'payload' => $responseFields, 'nextActions' => $nextActions]);
     }
 
     /**
@@ -43,7 +45,7 @@ final class ToolResult extends Data
     {
         return [
             'status' => $this->status,
-            ...$this->payload,
+            ...$this->responseFields,
             'next_actions' => array_map(
                 fn (NextAction $action): array => $action->structuredContent(),
                 $this->nextActions,

@@ -41,13 +41,13 @@ final class PipelineRunner implements PipelineRunnerContract
      */
     public function run(string $definition, object $input, string $output): object
     {
-        $result = $this->step($definition)($input);
+        $pipelineOutput = $this->step($definition)($input);
 
-        if (! $result instanceof $output) {
-            throw StepOutOfOrder::ending($definition, $output, $result);
+        if (! $pipelineOutput instanceof $output) {
+            throw StepOutOfOrder::ending($definition, $output, $pipelineOutput);
         }
 
-        return $result;
+        return $pipelineOutput;
     }
 
     /**
@@ -61,13 +61,13 @@ final class PipelineRunner implements PipelineRunnerContract
      */
     public function runSteps(array $steps, object $input, string $output): object
     {
-        $result = $this->sequence($steps)($input);
+        $pipelineOutput = $this->sequence($steps)($input);
 
-        if (! $result instanceof $output) {
-            throw StepOutOfOrder::endingSteps($output, $result);
+        if (! $pipelineOutput instanceof $output) {
+            throw StepOutOfOrder::endingSteps($output, $pipelineOutput);
         }
 
-        return $result;
+        return $pipelineOutput;
     }
 
     /**
@@ -105,12 +105,12 @@ final class PipelineRunner implements PipelineRunnerContract
         $runs = array_map($this->runOf(...), $steps);
 
         return function (object $input) use ($runs): object {
-            $value = $input;
+            $stepInput = $input;
             foreach ($runs as $run) {
-                $value = $run($value);
+                $stepInput = $run($stepInput);
             }
 
-            return $value;
+            return $stepInput;
         };
     }
 
@@ -121,7 +121,7 @@ final class PipelineRunner implements PipelineRunnerContract
     private function runOf(string|Step $step): Closure
     {
         if (is_string($step)) {
-            return fn (object $value): object => $this->step($step)($value);
+            return fn (object $stepInput): object => $this->step($step)($stepInput);
         }
 
         return $step->run($this->sequence(...));

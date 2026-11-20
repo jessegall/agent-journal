@@ -12,5 +12,5 @@ interface OptionSetting extends Setting
     /**
      * Whether the value is exactly one of the setting's options.
      */
-    public function accepts(string|int $value): bool;
+    public function accepts(string|int $optionKey): bool;
 }

@@ -25,6 +25,6 @@ final readonly class CheckAccount extends Command
         public string $hostId,
         public string $accountId,
         public int $generation,
-        public AccountCheckResult $result,
+        public AccountCheckResult $accountCheck,
     ) {}
 }

@@ -23,7 +23,7 @@ final readonly class ReportPartResults implements Pipe
         $report = $run->report->line('')->line("Output {$run->runId}: read it with journal output read {$run->runId}");
 
         foreach ($summary->parts as $part) {
-            $report = $report->line("{$part->operation}: ".PartResult::fromAnswer($part->result)->describe());
+            $report = $report->line("{$part->operation}: ".PartResult::fromAnswer($part->partSummary)->describe());
         }
 
         return $report;

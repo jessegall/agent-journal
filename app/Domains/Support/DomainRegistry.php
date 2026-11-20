@@ -31,36 +31,36 @@ use App\Ui\Support\UiDeclarations;
 final readonly class DomainRegistry
 {
     /**
-     * @param  array<string, DomainEntry>  $entries
+     * @param  array<string, DomainEntry>  $domainsByName
      */
-    private function __construct(private array $entries) {}
+    private function __construct(private array $domainsByName) {}
 
     /**
      * @param  list<string>  $classNames
      */
     public static function from(array $classNames): self
     {
-        $entries = [];
+        $domainsByName = [];
 
         foreach ($classNames as $className) {
             $entry = DomainEntry::fromClass($className);
 
-            if (array_key_exists($entry->name, $entries)) {
+            if (array_key_exists($entry->name, $domainsByName)) {
                 throw DomainListedTwice::for($entry->name);
             }
 
-            foreach ($entries as $earlier) {
+            foreach ($domainsByName as $earlier) {
                 if ($earlier->overlaps($entry)) {
                     throw AmbiguousDomainRoot::between($earlier->name, $entry->name);
                 }
             }
 
-            $entries[$entry->name] = $entry;
+            $domainsByName[$entry->name] = $entry;
         }
 
-        $listedClasses = array_map(fn (DomainEntry $entry) => $entry->className(), $entries);
+        $listedClasses = array_map(fn (DomainEntry $entry) => $entry->className(), $domainsByName);
 
-        foreach ($entries as $entry) {
+        foreach ($domainsByName as $entry) {
             foreach ($entry->requires as $requiredClass) {
                 if (! in_array($requiredClass, $listedClasses, true)) {
                     throw RequiredDomainMissing::for($entry->name, DomainEntry::nameOf($requiredClass));
@@ -68,15 +68,15 @@ final readonly class DomainRegistry
             }
         }
 
-        foreach ($entries as $entry) {
-            self::refuseCycleFrom($entries, $entry, []);
+        foreach ($domainsByName as $entry) {
+            self::refuseCycleFrom($domainsByName, $entry, []);
         }
 
-        foreach ($entries as $entry) {
-            self::refuseAlwaysOnRequiringSwitchable($entries, $entry);
+        foreach ($domainsByName as $entry) {
+            self::refuseAlwaysOnRequiringSwitchable($domainsByName, $entry);
         }
 
-        return new self($entries);
+        return new self($domainsByName);
     }
 
     /**
@@ -84,17 +84,17 @@ final readonly class DomainRegistry
      */
     public function all(): array
     {
-        return array_values($this->entries);
+        return array_values($this->domainsByName);
     }
 
     public function has(string $name): bool
     {
-        return array_key_exists($name, $this->entries);
+        return array_key_exists($name, $this->domainsByName);
     }
 
     public function get(string $name): DomainEntry
     {
-        return $this->entries[$name] ?? throw DomainNotFound::for($name);
+        return $this->domainsByName[$name] ?? throw DomainNotFound::for($name);
     }
 
     /**
@@ -217,10 +217,10 @@ final readonly class DomainRegistry
     /**
      * Walks the required domains depth first and throws when the walk reaches a domain already on its path.
      *
-     * @param  array<string, DomainEntry>  $entries
+     * @param  array<string, DomainEntry>  $domainsByName
      * @param  list<string>  $path
      */
-    private static function refuseCycleFrom(array $entries, DomainEntry $entry, array $path): void
+    private static function refuseCycleFrom(array $domainsByName, DomainEntry $entry, array $path): void
     {
         $position = array_search($entry->name, $path, true);
 
@@ -229,25 +229,29 @@ final readonly class DomainRegistry
         }
 
         foreach ($entry->requires as $requiredClass) {
-            self::refuseCycleFrom($entries, $entries[DomainEntry::nameOf($requiredClass)], [...$path, $entry->name]);
+            self::refuseCycleFrom(
+                $domainsByName,
+                $domainsByName[DomainEntry::nameOf($requiredClass)],
+                [...$path, $entry->name],
+            );
         }
     }
 
     /**
      * A domain that can never be switched off may require only domains that cannot be either.
      *
-     * @param  array<string, DomainEntry>  $entries
+     * @param  array<string, DomainEntry>  $domainsByName
      *
      * @throws AlwaysOnDomainRequiresSwitchable
      */
-    private static function refuseAlwaysOnRequiringSwitchable(array $entries, DomainEntry $entry): void
+    private static function refuseAlwaysOnRequiringSwitchable(array $domainsByName, DomainEntry $entry): void
     {
         if ($entry->canDisable()) {
             return;
         }
 
         foreach ($entry->requires as $requiredClass) {
-            $required = $entries[DomainEntry::nameOf($requiredClass)];
+            $required = $domainsByName[DomainEntry::nameOf($requiredClass)];
 
             if ($required->canDisable()) {
                 throw AlwaysOnDomainRequiresSwitchable::for($entry->name, $required->name);

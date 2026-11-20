@@ -32,8 +32,8 @@ final readonly class AttachRedirectToCompound extends PipelineAdapter
         return $input->toParse->redirect($input->node);
     }
 
-    protected function back(object $result, object $input): CompoundParts
+    protected function back(object $parsedRedirect, object $input): CompoundParts
     {
-        return $input->withRedirect($result);
+        return $input->withRedirect($parsedRedirect);
     }
 }

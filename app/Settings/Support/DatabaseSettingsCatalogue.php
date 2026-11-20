@@ -94,7 +94,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
     {
         try {
             $enabled = $document->toggle($group->key)
-                ->map(fn (EncodedToggle $toggle) => $this->codec->decodeToggle($owner, $group, $toggle->value))
+                ->map(fn (EncodedToggle $toggle) => $this->codec->decodeToggle($owner, $group, $toggle->encodedToggle))
                 ->getOrElse($group->defaultEnabled);
         } catch (SettingStorageInvalid) {
             return GroupAvailability::Invalid;
@@ -135,7 +135,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
     private function configured(string $owner, Setting $setting, EncodedSetting $entry): CatalogueValue
     {
         try {
-            return $setting->catalogueValue($this->codec->decode($owner, $setting, $entry->value));
+            return $setting->catalogueValue($this->codec->decode($owner, $setting, $entry->encodedSetting));
         } catch (SettingStorageInvalid) {
             return InvalidValueData::from([]);
         }

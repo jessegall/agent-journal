@@ -52,8 +52,8 @@ final class NavigationDoneTool extends JournalWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $completion): ToolResult
     {
-        return ToolResult::ok(['round' => $result->requestId, 'progress' => $result->progress->value], []);
+        return ToolResult::ok(['round' => $completion->requestId, 'progress' => $completion->progress->value], []);
     }
 }

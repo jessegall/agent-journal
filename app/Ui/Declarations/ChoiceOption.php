@@ -31,9 +31,9 @@ final readonly class ChoiceOption implements PageOption
             throw InvalidPageDeclaration::optionWithoutChoices($key);
         }
 
-        $values = array_map(fn (PaneChoice $choice) => $choice->value, $choices);
+        $choiceKeys = array_map(fn (PaneChoice $choice) => $choice->choiceKey, $choices);
 
-        if (! in_array($startsOn, $values, true)) {
+        if (! in_array($startsOn, $choiceKeys, true)) {
             throw InvalidPageDeclaration::unknownChoice($key, $startsOn);
         }
 

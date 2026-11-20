@@ -30,7 +30,7 @@ final readonly class SetIntegerChoice extends Command implements AuthorizedComma
 {
     public function __construct(
         public SettingReference $setting,
-        public int $value,
+        public int $selectedKey,
         public int $expectedRevision,
     ) {}
 

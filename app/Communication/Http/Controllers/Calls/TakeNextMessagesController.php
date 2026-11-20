@@ -20,12 +20,12 @@ final readonly class TakeNextMessagesController
         $batch = $commands->run(new TakeNextMessages($call->inboxId, $call->limit));
 
         return MessagesRead::from(['results' => array_map(
-            fn (MessageReadResult $result) => [
-                'messageId' => $result->messageId,
-                'firstRead' => $result->firstRead,
-                'takenUp' => $result->takenUp,
+            fn (MessageReadResult $messageRead) => [
+                'messageId' => $messageRead->messageId,
+                'firstRead' => $messageRead->firstRead,
+                'takenUp' => $messageRead->takenUp,
             ],
-            $batch->results,
+            $batch->messageReads,
         )]);
     }
 }

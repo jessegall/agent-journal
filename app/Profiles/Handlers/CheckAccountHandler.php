@@ -29,7 +29,7 @@ final readonly class CheckAccountHandler implements CommandHandler
         $selection = ActiveAccount::lockedForJournal($program);
         $account = Account::lockedForJournal($command->accountId);
 
-        if (! $account->applyCheck($command->generation, $command->result, CarbonImmutable::now())) {
+        if (! $account->applyCheck($command->generation, $command->accountCheck, CarbonImmutable::now())) {
             return;
         }
 

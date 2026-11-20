@@ -98,12 +98,12 @@ final readonly class PrivateSignInProcesses
 
         $verification = $this->protocols->for($claimed->program)->verify($claimed->directory);
 
-        $result = match (true) {
+        $accountCheck = match (true) {
             ! $verification->isCertain => AccountCheckResult::Unknown,
             $verification->isSignedIn => AccountCheckResult::SignedIn,
             default => AccountCheckResult::SignedOut,
         };
-        $this->host->reportCheck($claimed, $result);
+        $this->host->reportCheck($claimed, $accountCheck);
 
         return true;
     }

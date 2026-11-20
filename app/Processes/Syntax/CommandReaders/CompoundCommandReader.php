@@ -39,8 +39,8 @@ final readonly class CompoundCommandReader extends PipelineAdapter implements Co
         return $input->compound();
     }
 
-    protected function back(object $result, object $input): NodeRead
+    protected function back(object $parsedCommand, object $input): NodeRead
     {
-        return $result;
+        return $parsedCommand;
     }
 }

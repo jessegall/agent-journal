@@ -57,9 +57,9 @@ final class NavigationAnswerTool extends JournalWriteTool
         );
     }
 
-    protected function present(mixed $result): ToolResult
+    protected function present(mixed $decision): ToolResult
     {
-        return ToolResult::ok(['round' => $result->requestId, 'progress' => $result->progress->value], []);
+        return ToolResult::ok(['round' => $decision->requestId, 'progress' => $decision->progress->value], []);
     }
 
     /**

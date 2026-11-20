@@ -122,7 +122,7 @@ final readonly class SkillAuthoring
      */
     public function conditionOf(string|null $conditions, array $audience): string
     {
-        $named = array_filter($audience, fn (array $values) => $values !== []);
+        $named = array_filter($audience, fn (array $audienceMembers) => $audienceMembers !== []);
 
         if ($conditions !== null && $named !== []) {
             throw SkillConditionInvalid::field(
@@ -131,8 +131,8 @@ final readonly class SkillAuthoring
             );
         }
 
-        foreach ($audience as $type => $values) {
-            if (in_array('', $values, true)) {
+        foreach ($audience as $type => $audienceMembers) {
+            if (in_array('', $audienceMembers, true)) {
                 throw SkillConditionInvalid::field("--{$type}", 'needs a value');
             }
         }
@@ -143,8 +143,8 @@ final readonly class SkillAuthoring
 
         $children = [];
 
-        foreach ($named as $type => $values) {
-            $children[] = ['type' => $type, 'version' => 1, 'keys' => array_values(array_unique($values))];
+        foreach ($named as $type => $audienceMembers) {
+            $children[] = ['type' => $type, 'version' => 1, 'keys' => array_values(array_unique($audienceMembers))];
         }
 
         return $children === [] ? '' : json_encode(
@@ -158,12 +158,12 @@ final readonly class SkillAuthoring
      *
      * @return list<string>
      */
-    public function savedLines(SkillRevisionResult $result): array
+    public function savedLines(SkillRevisionResult $savedRevision): array
     {
-        $skill = Skill::query()->whereKey($result->skillId)->firstOrFail();
+        $skill = Skill::query()->whereKey($savedRevision->skillId)->firstOrFail();
 
         return [
-            "Skill {$result->number} ({$skill->key}): revision {$result->revision} saved; publication pending.",
+            "Skill {$savedRevision->number} ({$skill->key}): revision {$savedRevision->revision} saved; publication pending.",
             ...$this->statusLines($skill),
         ];
     }
@@ -173,16 +173,16 @@ final readonly class SkillAuthoring
      *
      * @return array<string, mixed>
      */
-    public function receipt(SkillRevisionResult $result, string $requestId): array
+    public function receipt(SkillRevisionResult $savedRevision, string $requestId): array
     {
-        $skill = Skill::query()->whereKey($result->skillId)->firstOrFail();
+        $skill = Skill::query()->whereKey($savedRevision->skillId)->firstOrFail();
 
         return SkillWriteReceipt::from([
             'requestId' => $requestId,
-            'skillId' => $result->skillId,
-            'number' => $result->number,
+            'skillId' => $savedRevision->skillId,
+            'number' => $savedRevision->number,
             'key' => $skill->key,
-            'revision' => $result->revision,
+            'revision' => $savedRevision->revision,
             'status' => $this->statusLines($skill),
         ])->toArray();
     }

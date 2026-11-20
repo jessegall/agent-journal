@@ -64,7 +64,7 @@ final class Exports
         return DeclaredExports::make()
             ->events(...array_map(fn (string $name) => $check->event($name), $exports->events))
             ->contracts(...array_map(fn (string $name) => $check->contract($name), $exports->contracts))
-            ->values(...array_map(fn (string $name) => $check->value($name), $exports->values))
+            ->values(...array_map(fn (string $name) => $check->value($name), $exports->valueClasses))
             ->commands(...array_map(fn (string $name) => $check->command($name), $exports->commands))
             ->exceptions(...array_map(fn (string $name) => $check->exception($name), $exports->exceptions))
             ->support(...array_map(fn (string $name) => $check->support($name), $exports->support))
@@ -194,7 +194,7 @@ final class Exports
      *
      * @return ReflectionClass<object>
      */
-    private function ownType(string $list, string $name): ReflectionClass
+    private function ownType(string $exportGroup, string $name): ReflectionClass
     {
         $className = ltrim($name, '\\');
 
@@ -202,7 +202,7 @@ final class Exports
             || trait_exists($className);
 
         if (! $declared) {
-            throw InvalidExports::missing($this->owner, $list, $className);
+            throw InvalidExports::missing($this->owner, $exportGroup, $className);
         }
 
         if (stripos($className, $this->namespace.'\\') !== 0) {

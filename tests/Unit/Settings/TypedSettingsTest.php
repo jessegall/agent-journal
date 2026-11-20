@@ -131,12 +131,12 @@ final class TypedSettingsTest extends TestCase
         $this->assertSame(SettingType::String, $mode->backing);
         $this->assertSame(
             [['quick', 'A quick look'], ['thorough', 'A thorough review']],
-            array_map(fn (Choice $choice) => [$choice->value, $choice->label], $mode->options()),
+            array_map(fn (Choice $choice) => [$choice->optionKey, $choice->label], $mode->options()),
         );
         $this->assertSame(SettingType::Integer, $level->backing);
         $this->assertSame(
             [[1, 'First Pass'], [2, 'Second Pass']],
-            array_map(fn (Choice $choice) => [$choice->value, $choice->label], $level->options()),
+            array_map(fn (Choice $choice) => [$choice->optionKey, $choice->label], $level->options()),
         );
         $this->assertSame(ReviewLevel::SecondPass, $level->caseOf(2));
     }

@@ -33,7 +33,7 @@ final readonly class ParseRedirectSubstitutions extends PipelineAdapter
         return $input->substitutions;
     }
 
-    protected function back(object $result, object $input): Redirect
+    protected function back(object $parsedRedirect, object $input): Redirect
     {
         return $input->redirect;
     }

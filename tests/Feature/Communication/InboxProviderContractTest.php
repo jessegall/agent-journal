@@ -49,7 +49,7 @@ final class InboxProviderContractTest extends MessagingTestCase
         $history = $this->resolver()->history($this->team->id, null, 50);
         $this->assertSame([$messageId], array_column($history->messages, 'id'));
         $read = $this->runOnBus(new ReadMessages($this->team->id, [$messageId]));
-        $this->assertTrue($read->results[0]->firstRead);
+        $this->assertTrue($read->messageReads[0]->firstRead);
 
         $this->asAgent($this->reviewer);
         $this->assertSame([], $this->resolver()->history($this->team->id, null, 50)->messages);

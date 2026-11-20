@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Scripts\Values;
 
+use App\Scripts\Enums\DiagnosticCode;
+use App\Scripts\Exceptions\ScriptSyntaxError;
+
 final readonly class ScriptLine
 {
     private function __construct(
@@ -17,9 +20,17 @@ final readonly class ScriptLine
     {
         $body = ltrim($line);
         $column = mb_strlen($line) - mb_strlen($body) + 1;
-        $statement = rtrim($body);
-        [$token, $operand] = array_pad(preg_split('/\h+/u', $statement, 2) ?: [$statement], 2, '');
-        $offset = $operand === '' ? strlen($token) : strlen($statement) - strlen($operand);
+        $parts = preg_split('/\h+/u', rtrim($body), 2, PREG_SPLIT_OFFSET_CAPTURE);
+        if ($parts === false) {
+            throw ScriptSyntaxError::at(
+                DiagnosticCode::InvalidForm,
+                new ScriptRange($number, $column, 1),
+                'Expected UTF-8.',
+            );
+        }
+
+        $token = $parts[0][0];
+        [$operand, $offset] = $parts[1] ?? ['', strlen($token)];
 
         return new self(
             $token,

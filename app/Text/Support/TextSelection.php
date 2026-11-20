@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Text\Support;
 
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -20,7 +21,8 @@ final class TextSelection extends Data
         public readonly int|null $lastLine = null,
         public readonly bool $bullets = false,
         public readonly string|null $words = null,
-        public readonly bool $all = false,
+        #[MapName('all')]
+        public readonly bool $isWholeText = false,
     ) {}
 
     public function isOutlineOnly(): bool
@@ -29,6 +31,6 @@ final class TextSelection extends Data
             && $this->firstLine === null
             && ! $this->bullets
             && $this->words === null
-            && ! $this->all;
+            && ! $this->isWholeText;
     }
 }

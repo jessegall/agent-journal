@@ -21,8 +21,8 @@ final readonly class ReassignRecordController
         AssigneeResolver $assignees,
     ): AssignmentResultData {
         $command = new ReassignRecord($call->record(), $call->expected(), $call->recipient());
-        $result = $commands->run($command);
+        $assignmentChange = $commands->run($command);
 
-        return AssignmentResultData::of($result, $assignees->holdersOf($result->currentAssignments()));
+        return AssignmentResultData::of($assignmentChange, $assignees->holdersOf($assignmentChange->currentAssignments()));
     }
 }

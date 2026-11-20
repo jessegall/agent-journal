@@ -34,13 +34,13 @@ final readonly class ConditionResult
     /**
      * The first of these results with this outcome, or null when none has it.
      *
-     * @param  list<self>  $results
+     * @param  list<self>  $evaluations
      */
-    public static function firstWith(ConditionOutcome $outcome, array $results): self|null
+    public static function firstWith(ConditionOutcome $outcome, array $evaluations): self|null
     {
-        foreach ($results as $result) {
-            if ($result->outcome === $outcome) {
-                return $result;
+        foreach ($evaluations as $evaluation) {
+            if ($evaluation->outcome === $outcome) {
+                return $evaluation;
             }
         }
 

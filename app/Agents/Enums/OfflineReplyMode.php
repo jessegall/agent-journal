@@ -18,9 +18,9 @@ enum OfflineReplyMode: string
     /**
      * @throws OfflineReplyModeInvalid when the start names no mode the journal grants
      */
-    public static function fromStart(string $value): self
+    public static function fromStart(string $modeText): self
     {
-        return self::tryFrom($value) ?? throw OfflineReplyModeInvalid::for($value);
+        return self::tryFrom($modeText) ?? throw OfflineReplyModeInvalid::for($modeText);
     }
 
     public function passesOutages(): bool

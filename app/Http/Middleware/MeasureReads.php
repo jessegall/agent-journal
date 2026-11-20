@@ -23,6 +23,6 @@ final readonly class MeasureReads
         $measurement = $this->meter->measure($label, fn (): Response => $next($request));
         $this->log->record($label, $measurement->counts);
 
-        return $measurement->value;
+        return $measurement->measuredAnswer;
     }
 }

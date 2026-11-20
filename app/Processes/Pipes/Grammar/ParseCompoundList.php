@@ -32,7 +32,7 @@ final readonly class ParseCompoundList extends PipelineAdapter
         return $input->toParse->list($input->node);
     }
 
-    protected function back(object $result, object $input): CompoundParts
+    protected function back(object $parsedList, object $input): CompoundParts
     {
         return $input;
     }

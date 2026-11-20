@@ -65,21 +65,21 @@ final readonly class StateEventDelivery
         $targets = $dispatch->audience->get()->targets;
 
         $collect = function () use ($targets, $dispatch, $advance): array {
-            $results = array_map(fn (StackTarget $target) => $this->collect($dispatch, $target), $targets);
+            $listenerResults = array_map(fn (StackTarget $target) => $this->collect($dispatch, $target), $targets);
             $advance(StateEventStage::Retention);
 
-            foreach ($results as $result) {
-                $this->messages->retainEvent($result->target, $dispatch, $result->context());
+            foreach ($listenerResults as $targetEffects) {
+                $this->messages->retainEvent($targetEffects->target, $dispatch, $targetEffects->context());
             }
 
-            return $results;
+            return $listenerResults;
         };
         $collected = $this->transaction->runForTargets($targets, $collect);
 
         $advance(StateEventStage::Effects);
 
-        foreach ($collected as $result) {
-            $this->effects->apply($dispatch, $result);
+        foreach ($collected as $targetEffects) {
+            $this->effects->apply($dispatch, $targetEffects);
         }
     }
 
@@ -98,13 +98,13 @@ final readonly class StateEventDelivery
             return new StateEventResults($target, []);
         }
 
-        $results = [];
+        $listenerResults = [];
 
         foreach ($this->selector->forEvent($stack->get(), $dispatch->event) as $selection) {
-            $results[] = $this->invoke($dispatch, $target, $selection);
+            $listenerResults[] = $this->invoke($dispatch, $target, $selection);
         }
 
-        return new StateEventResults($target, $results);
+        return new StateEventResults($target, $listenerResults);
     }
 
     private function invoke(

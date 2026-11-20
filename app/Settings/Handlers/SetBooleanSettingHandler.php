@@ -30,7 +30,7 @@ final readonly class SetBooleanSettingHandler implements CommandHandler
 
         return $this->writer->setValue(
             $setting,
-            $this->codec->encodeBoolean($command->value),
+            $this->codec->encodeBoolean($command->enabled),
             $command->expectedRevision,
         );
     }

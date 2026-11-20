@@ -14,21 +14,21 @@ namespace App\Mcp\Support;
 final readonly class RetainedEntries
 {
     /**
-     * @param  array<string, T>  $entries
+     * @param  array<string, T>  $records
      * @param  array<string, int>  $offsets
      */
-    public function __construct(public array $entries, public array $offsets, public int $unavailableCount) {}
+    public function __construct(public array $records, public array $offsets, public int $unavailableCount) {}
 
     /**
      * Every entry of a page read now, each at its place in the page.
      *
      * @template E
      *
-     * @param  array<string, E>  $entries
+     * @param  array<string, E>  $records
      * @return self<E>
      */
-    public static function wholePage(array $entries): self
+    public static function wholePage(array $records): self
     {
-        return new self($entries, array_flip(array_map(strval(...), array_keys($entries))), 0);
+        return new self($records, array_flip(array_map(strval(...), array_keys($records))), 0);
     }
 }

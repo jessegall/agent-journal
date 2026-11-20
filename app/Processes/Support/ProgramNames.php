@@ -48,11 +48,11 @@ final readonly class ProgramNames
      */
     public function proposalHints(ProgramIdentity $program, array $spellings): array
     {
-        $resembled = array_filter(
+        $matchingFamilies = array_filter(
             $spellings,
             fn (ProgramSpellings $family): bool => $family->resembles($program->family),
         );
 
-        return array_values(array_map(fn (ProgramSpellings $family): string => $family->family, $resembled));
+        return array_values(array_map(fn (ProgramSpellings $family): string => $family->family, $matchingFamilies));
     }
 }

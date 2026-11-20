@@ -31,7 +31,7 @@ final readonly class SetDecimalSetting extends Command implements AuthorizedComm
 {
     public function __construct(
         public SettingReference $setting,
-        public Decimal $value,
+        public Decimal $settingDecimal,
         public int $expectedRevision,
     ) {}
 

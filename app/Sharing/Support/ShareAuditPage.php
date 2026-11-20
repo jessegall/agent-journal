@@ -14,10 +14,10 @@ use Carbon\CarbonImmutable;
 final readonly class ShareAuditPage
 {
     /**
-     * @param  list<ShareAuditEntry>  $entries
+     * @param  list<ShareAuditEntry>  $auditEntries
      */
     public function __construct(
-        public array $entries,
+        public array $auditEntries,
         public string|null $nextAfter,
         public int $prunedAllowedReads,
         public int $prunedDeniedReads,
@@ -28,12 +28,12 @@ final readonly class ShareAuditPage
     /**
      * The page of the share's entries, with the pruning totals the share keeps.
      *
-     * @param  list<ShareAuditEntry>  $entries
+     * @param  list<ShareAuditEntry>  $auditEntries
      */
-    public static function of(Share $share, array $entries, string|null $nextAfter): self
+    public static function of(Share $share, array $auditEntries, string|null $nextAfter): self
     {
         return new self(
-            $entries,
+            $auditEntries,
             $nextAfter,
             $share->pruned_allowed_reads,
             $share->pruned_denied_reads,

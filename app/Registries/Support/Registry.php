@@ -21,7 +21,7 @@ final class Registry
     /**
      * @var array<string, TItem>
      */
-    private array $items = [];
+    private array $registrations = [];
 
     /**
      * @param  Closure(string): Throwable  $missing
@@ -53,22 +53,22 @@ final class Registry
     }
 
     /**
-     * @param  TItem  $item
+     * @param  TItem  $registration
      *
      * @throws Throwable
      */
-    public function put(string $key, mixed $item): void
+    public function put(string $key, mixed $registration): void
     {
         if ($this->has($key) && $this->repeated->isDefined()) {
             throw ($this->repeated->get())($key);
         }
 
-        $this->items[$key] = $item;
+        $this->registrations[$key] = $registration;
     }
 
     public function has(string $key): bool
     {
-        return array_key_exists($key, $this->items);
+        return array_key_exists($key, $this->registrations);
     }
 
     /**
@@ -82,7 +82,7 @@ final class Registry
             throw ($this->missing)($key);
         }
 
-        return $this->items[$key];
+        return $this->registrations[$key];
     }
 
     /**
@@ -90,7 +90,7 @@ final class Registry
      */
     public function find(string $key): Option
     {
-        return $this->has($key) ? new Some($this->items[$key]) : None::create();
+        return $this->has($key) ? new Some($this->registrations[$key]) : None::create();
     }
 
     /**
@@ -98,7 +98,7 @@ final class Registry
      */
     public function all(): array
     {
-        return $this->items;
+        return $this->registrations;
     }
 
     /**
@@ -106,16 +106,16 @@ final class Registry
      */
     public function keys(): array
     {
-        return array_map(strval(...), array_keys($this->items));
+        return array_map(strval(...), array_keys($this->registrations));
     }
 
     public function remove(string $key): void
     {
-        unset($this->items[$key]);
+        unset($this->registrations[$key]);
     }
 
     public function clear(): void
     {
-        $this->items = [];
+        $this->registrations = [];
     }
 }

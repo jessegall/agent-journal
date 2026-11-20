@@ -77,9 +77,9 @@ final class TextResolverTest extends TestCase
 
         $this->assertSame(
             [['Notes', 1], ['Notes', 3]],
-            array_map(fn ($section) => [$section->heading, $section->firstLine], $first->items),
+            array_map(fn ($section) => [$section->heading, $section->firstLine], $first->sections),
         );
-        $this->assertSame(['End'], array_map(fn ($section) => $section->heading, $rest->items));
+        $this->assertSame(['End'], array_map(fn ($section) => $section->heading, $rest->sections));
         $this->assertNull($rest->nextAfterSection);
     }
 
@@ -120,7 +120,7 @@ final class TextResolverTest extends TestCase
 
         $this->expectException(TextSelectionRefused::class);
 
-        $this->resolver()->read($this->record('doc', 1), '1', new TextSelection(all: true));
+        $this->resolver()->read($this->record('doc', 1), '1', new TextSelection(isWholeText: true));
     }
 
     public function test_a_report_has_only_version_one(): void

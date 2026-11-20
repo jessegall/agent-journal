@@ -50,16 +50,16 @@ final readonly class StateEvents
      */
     public function cacheEntries(): array
     {
-        $entries = [];
+        $eventCacheEntries = [];
 
         foreach ($this->byEvent as $declarations) {
             foreach ($declarations as $declaration) {
-                $entries[] = $declaration->cacheEntry();
+                $eventCacheEntries[] = $declaration->cacheEntry();
             }
         }
 
-        sort($entries);
+        sort($eventCacheEntries);
 
-        return $entries;
+        return $eventCacheEntries;
     }
 }

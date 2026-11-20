@@ -49,13 +49,13 @@ final readonly class RunKeyScriptHandler implements CommandHandler
             throw KeyScriptRefused::parameters($command->script, $problems);
         }
 
-        $payload = DriverRequestPayload::keyScript($command->script, $script['version'], $parameters);
+        $driverEnvelope = DriverRequestPayload::keyScript($command->script, $script['version'], $parameters);
 
         $request = $this->requests->append(
             $command->target(),
             DriverOperation::KeyScript,
             $command->idempotencyKey,
-            $payload,
+            $driverEnvelope,
         );
 
         return $request->receipt();

@@ -28,10 +28,10 @@ use Illuminate\Contracts\Container\Container;
 final readonly class SkillCatalogue implements SkillResolver
 {
     /**
-     * @param  array<string, SkillEntry>  $entries
+     * @param  array<string, SkillEntry>  $skillsByKey
      */
     private function __construct(
-        private array $entries,
+        private array $skillsByKey,
     ) {}
 
     /**
@@ -46,7 +46,7 @@ final readonly class SkillCatalogue implements SkillResolver
         ConditionTree $conditions,
         StoredSkillSource $stored,
     ): self {
-        $entries = [];
+        $skillsByKey = [];
 
         foreach ($registry->owners() as $owner) {
             foreach ($owner->skills as $class) {
@@ -57,12 +57,12 @@ final readonly class SkillCatalogue implements SkillResolver
                 $key = SkillKey::from($skill->key());
                 $owner->checkKey($key);
 
-                if (array_key_exists($key->key, $entries)) {
-                    throw SkillConflict::between($key->key, $entries[$key->key]->owner, $owner->name);
+                if (array_key_exists($key->key, $skillsByKey)) {
+                    throw SkillConflict::between($key->key, $skillsByKey[$key->key]->owner, $owner->name);
                 }
 
                 try {
-                    $entries[$key->key] = new SkillEntry(
+                    $skillsByKey[$key->key] = new SkillEntry(
                         $key,
                         $skill->name(),
                         $owner->name,
@@ -83,11 +83,11 @@ final readonly class SkillCatalogue implements SkillResolver
         foreach ($stored->skills() as $skill) {
             $key = SkillKey::from($skill->key());
 
-            if (array_key_exists($key->key, $entries)) {
-                throw SkillConflict::between($key->key, $entries[$key->key]->owner, $storedOwner->name);
+            if (array_key_exists($key->key, $skillsByKey)) {
+                throw SkillConflict::between($key->key, $skillsByKey[$key->key]->owner, $storedOwner->name);
             }
 
-            $entries[$key->key] = new SkillEntry(
+            $skillsByKey[$key->key] = new SkillEntry(
                 $key,
                 $skill->name(),
                 $storedOwner->name,
@@ -99,16 +99,16 @@ final readonly class SkillCatalogue implements SkillResolver
             );
         }
 
-        return new self($entries);
+        return new self($skillsByKey);
     }
 
     public function all(): array
     {
-        return array_values($this->entries);
+        return array_values($this->skillsByKey);
     }
 
     public function find(SkillKey $key): SkillEntry
     {
-        return $this->entries[$key->key] ?? throw SkillMissing::for($key);
+        return $this->skillsByKey[$key->key] ?? throw SkillMissing::for($key);
     }
 }

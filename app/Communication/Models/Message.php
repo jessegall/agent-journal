@@ -173,7 +173,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     public static function sourceConversation(string $sessionId): Builder
     {
         return self::query()->acrossInboxes()
-            ->whereIn('id', AgentSession::jobSourceMessages($sessionId))
+            ->whereIn('id', AgentSession::jobSourceMessageIds($sessionId))
             ->select('conversation_id');
     }
 

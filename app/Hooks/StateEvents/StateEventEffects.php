@@ -33,10 +33,10 @@ final readonly class StateEventEffects
         private LoggerInterface $log,
     ) {}
 
-    public function apply(StateEventDispatch $dispatch, StateEventResults $results): void
+    public function apply(StateEventDispatch $dispatch, StateEventResults $eventResults): void
     {
-        foreach ($results->all as $result) {
-            $origin = new StateEventOrigin($dispatch, $results->target, $result);
+        foreach ($eventResults->listenerResults as $listenerResult) {
+            $origin = new StateEventOrigin($dispatch, $eventResults->target, $listenerResult);
             $status = $this->applyOrigin($origin);
 
             if ($status === CommandOriginStatus::TargetUnavailable) {

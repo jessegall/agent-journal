@@ -29,7 +29,7 @@ interface Setting
     /**
      * A value of this setting as the settings catalogue shows it.
      */
-    public function catalogueValue(string|bool|int|Decimal|BackedEnum $value): CatalogueValue;
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $settingInput): CatalogueValue;
 
     /**
      * The setting's limits as the settings catalogue shows them; a setting without limits shows none.

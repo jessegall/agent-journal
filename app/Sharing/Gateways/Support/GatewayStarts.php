@@ -26,7 +26,7 @@ final readonly class GatewayStarts
     public function __construct(private GatewayChildren $children) {}
 
     /**
-     * @param  Closure(InvokedProcess): GatewayAddressCheck  $look
+     * @param  Closure(InvokedProcess): GatewayAddressCheck  $checkAddress
      *
      * @throws GatewayOpenFailed
      */
@@ -34,18 +34,18 @@ final readonly class GatewayStarts
         string $gatewayKey,
         GatewayOperation $operation,
         InvokedProcess $child,
-        Closure $look,
+        Closure $checkAddress,
     ): GatewayEndpoint {
         $deadline = time() + self::CONNECT_SECONDS;
-        $seen = $look($child);
+        $seen = $checkAddress($child);
 
         while ($seen === GatewayAddressCheck::Waiting && $child->running() && time() < $deadline) {
             usleep(self::LOOK_MICROSECONDS);
-            $seen = $look($child);
+            $seen = $checkAddress($child);
         }
 
         if ($seen === GatewayAddressCheck::Waiting) {
-            $seen = $look($child);
+            $seen = $checkAddress($child);
         }
 
         if ($seen !== GatewayAddressCheck::Confirmed) {

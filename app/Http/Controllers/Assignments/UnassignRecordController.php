@@ -22,10 +22,10 @@ final readonly class UnassignRecordController
         CommandBus $commands,
         AssigneeResolver $assignees,
     ): JsonResponse {
-        $result = $commands->run(new UnassignRecord($request->record(), $request->expected()));
+        $assignmentChange = $commands->run(new UnassignRecord($request->record(), $request->expected()));
 
         return new JsonResponse(
-            AssignmentResultData::of($result, $assignees->holdersOf($result->currentAssignments())),
+            AssignmentResultData::of($assignmentChange, $assignees->holdersOf($assignmentChange->currentAssignments())),
         );
     }
 }

@@ -11,13 +11,13 @@ use JsonSerializable;
  */
 final readonly class EncodedSetting implements JsonSerializable
 {
-    public function __construct(public string $key, public EncodedValue $value) {}
+    public function __construct(public string $key, public EncodedValue $encodedSetting) {}
 
     /**
      * @return array{key: string, value: EncodedValue}
      */
     public function jsonSerialize(): array
     {
-        return ['key' => $this->key, 'value' => $this->value];
+        return ['key' => $this->key, 'value' => $this->encodedSetting];
     }
 }

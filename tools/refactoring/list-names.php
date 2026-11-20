@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Lists every name the code declares, one per line as "type<TAB>name<TAB>file:line", so the names can be read and
- * judged together: classes, interfaces, traits and enums, and their methods, properties, constants and enum cases.
+ * Lists every declared name as "type<TAB>name<TAB>file:line" for review.
  *
  *   php tools/refactoring/list-names.php app tests/Architecture/Support
  *       prints every name.
@@ -44,11 +43,29 @@ final readonly class DeclaredName
     ) {}
 
     /**
-     * The name as the review file keeps it, without its place: `type<TAB>Name`.
+     * The name as the review file keeps it. Review generic Core names one file at a time.
      */
     public function reviewLine(): string
     {
-        return "{$this->declarationType}\t{$this->name}";
+        $name = "{$this->declarationType}\t{$this->name}";
+        $file = substr($this->place, 0, strrpos($this->place, ':'));
+        $corePath = 'app/';
+        $root = dirname(__DIR__, 2).'/';
+
+        if (str_starts_with($file, $root)) {
+            $file = substr($file, strlen($root));
+        }
+
+        if (str_starts_with($file, $corePath)
+            && in_array($this->declarationType, ['parameter', 'variable'], true)
+            && in_array($this->name, [
+                '$all', '$data', '$entries', '$item', '$items', '$list',
+                '$payload', '$result', '$results', '$value', '$values',
+            ], true)) {
+            return "{$name}\t{$file}";
+        }
+
+        return $name;
     }
 }
 
@@ -59,7 +76,7 @@ $names = declaredNames($arguments);
 
 if ($mode === '--list') {
     foreach ($names as $declared) {
-        echo "{$declared->reviewLine()}\t{$declared->place}\n";
+        echo "{$declared->declarationType}\t{$declared->name}\t{$declared->place}\n";
     }
 
     exit(0);

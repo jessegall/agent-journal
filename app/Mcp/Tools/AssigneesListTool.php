@@ -58,14 +58,14 @@ final class AssigneesListTool extends JournalReadTool
                 'limit' => $arguments->positiveIntegerOr('limit', self::DEFAULT_LIMIT, Page::LARGEST_LIMIT),
             ]
             : $this->continuations->open($cursor, $this->name(), $type->value)->filters;
-        $list = $this->assignees->eligible($type->value, new Page($filters['after_id'], $filters['limit']));
-        $nextActions = $list->nextAfterId === null ? [] : [new NextAction($this->name(), [
+        $assigneePage = $this->assignees->eligible($type->value, new Page($filters['after_id'], $filters['limit']));
+        $nextActions = $assigneePage->nextAfterId === null ? [] : [new NextAction($this->name(), [
             'type' => $type->value,
             'continuation' => $this->continuations->issue(
                 new Continuation(
                     $this->name(),
                     $type->value,
-                    ['after_id' => $list->nextAfterId, 'limit' => $filters['limit']],
+                    ['after_id' => $assigneePage->nextAfterId, 'limit' => $filters['limit']],
                     0,
                 ),
             ),
@@ -73,7 +73,7 @@ final class AssigneesListTool extends JournalReadTool
 
         return ToolResult::ok([
             'type' => $type->value,
-            'assignees' => array_map(fn (AssigneeName $assignee) => $assignee->listing(), $list->assignees),
+            'assignees' => array_map(fn (AssigneeName $assignee) => $assignee->listing(), $assigneePage->assignees),
         ], $nextActions);
     }
 }

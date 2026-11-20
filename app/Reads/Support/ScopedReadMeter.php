@@ -51,12 +51,12 @@ final class ScopedReadMeter implements ReadMeter
         $this->open[] = $tally;
 
         try {
-            $value = $work();
+            $measuredOutput = $work();
         } finally {
             array_pop($this->open);
         }
 
-        return new Measurement($label, $tally->counts(), $value);
+        return new Measurement($label, $tally->counts(), $measuredOutput);
     }
 
     /**

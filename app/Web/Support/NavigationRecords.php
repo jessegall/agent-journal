@@ -39,13 +39,16 @@ final readonly class NavigationRecords implements NavigationRecordsContract
     public function tree(Request $request): NavigationData
     {
         $visited = [];
-        $items = [];
+        $navigationLinks = [];
 
         foreach ($this->rootsInOrder() as $root) {
-            array_push($items, ...$this->visible($root, $visited));
+            array_push($navigationLinks, ...$this->visible($root, $visited));
         }
 
-        return NavigationData::from(['items' => $items, 'current' => $this->current($request, $items)]);
+        return NavigationData::from([
+            'items' => $navigationLinks,
+            'current' => $this->current($request, $navigationLinks),
+        ]);
     }
 
     /**
@@ -55,13 +58,15 @@ final readonly class NavigationRecords implements NavigationRecordsContract
     {
         $counts = [];
 
-        foreach ($this->countedItems($this->declarations->navigation()) as $item) {
+        foreach ($this->countedItems($this->declarations->navigation()) as $navigation) {
             try {
-                $counts[$item->key] = $this->container->make((string) $item->item->count)->count();
+                $counts[$navigation->key] = $this->container
+                    ->make((string) $navigation->navigationItem->count)
+                    ->count();
             } catch (Throwable $failure) {
                 $this->log->error(
-                    "The count of {$item->key} failed: {$failure->getMessage()}",
-                    ['key' => $item->key, 'exception' => $failure],
+                    "The count of {$navigation->key} failed: {$failure->getMessage()}",
+                    ['key' => $navigation->key, 'exception' => $failure],
                 );
             }
         }
@@ -75,20 +80,20 @@ final readonly class NavigationRecords implements NavigationRecordsContract
      * @param  array<string, true>  $visited
      * @return list<NavigationItemData>
      */
-    private function visible(RegisteredNavigation $item, array &$visited): array
+    private function visible(RegisteredNavigation $navigation, array &$visited): array
     {
-        if (! $this->isVisible($item)) {
+        if (! $this->isVisible($navigation)) {
             return [];
         }
 
-        if (array_key_exists($item->key, $visited)) {
-            throw UiKeyRepeated::inDomain($item->owner->name, 'navigation', $item->key);
+        if (array_key_exists($navigation->key, $visited)) {
+            throw UiKeyRepeated::inDomain($navigation->owner->name, 'navigation', $navigation->key);
         }
 
-        $visited[$item->key] = true;
+        $visited[$navigation->key] = true;
         $children = [];
 
-        foreach ($this->childrenOf($item) as $child) {
+        foreach ($this->childrenOf($navigation) as $child) {
             array_push($children, ...$this->visible($child, $visited));
         }
 
@@ -96,50 +101,52 @@ final readonly class NavigationRecords implements NavigationRecordsContract
 
         // A value the item does not have is left out, so its key is absent in the browser.
         return [NavigationItemData::from(array_filter([
-            'key' => $item->key,
-            'label' => $item->item->label,
+            'key' => $navigation->key,
+            'label' => $navigation->navigationItem->label,
             'children' => $children,
-            'atFoot' => $item->item->atFoot,
-            'counted' => $item->item->count !== null,
-            'icon' => $item->item->icon,
-            'url' => $item->page === null ? $firstChildUrl : $this->urlOf($item),
-            'group' => $item->item->group,
-        ], fn (mixed $value) => $value !== null))];
+            'atFoot' => $navigation->navigationItem->atFoot,
+            'counted' => $navigation->navigationItem->count !== null,
+            'icon' => $navigation->navigationItem->icon,
+            'url' => $navigation->page === null ? $firstChildUrl : $this->urlOf($navigation),
+            'group' => $navigation->navigationItem->group,
+        ], fn (mixed $optionalField) => $optionalField !== null))];
     }
 
-    private function isVisible(RegisteredNavigation $item): bool
+    private function isVisible(RegisteredNavigation $navigation): bool
     {
-        return $this->owners->isAvailable($item->owner)
-            && ($item->page === null || $this->owners->isAvailable($item->page->owner))
-            && $this->visibility->allow(array_filter([$item->item->visibility]))
-            && ($item->page === null || $this->visibility->allow($item->page->visibilityChecks()));
+        return $this->owners->isAvailable($navigation->owner)
+            && ($navigation->page === null || $this->owners->isAvailable($navigation->page->owner))
+            && $this->visibility->allow(array_filter([$navigation->navigationItem->visibility]))
+            && ($navigation->page === null || $this->visibility->allow($navigation->page->visibilityChecks()));
     }
 
     /**
      * @return list<RegisteredNavigation>
      */
-    private function childrenOf(RegisteredNavigation $item): array
+    private function childrenOf(RegisteredNavigation $navigation): array
     {
-        if ($item->item->childrenResolver === null) {
-            return $item->children;
+        if ($navigation->navigationItem->childrenResolver === null) {
+            return $navigation->children;
         }
 
-        $resolver = $this->container->make($item->item->childrenResolver);
+        $resolver = $this->container->make($navigation->navigationItem->childrenResolver);
 
         return [
-            ...$item->children,
+            ...$navigation->children,
             ...($resolver instanceof NavigationChildren ? $this->declarations->childrenOf(
-                $item,
+                $navigation,
                 $resolver->children(),
             ) : []),
         ];
     }
 
-    private function urlOf(RegisteredNavigation $item): string
+    private function urlOf(RegisteredNavigation $navigation): string
     {
-        $url = $this->urls->route($item->page->routeName(), $item->item->routeValues, false);
+        $url = $this->urls->route($navigation->page->routeName(), $navigation->navigationItem->routeValues, false);
 
-        return $item->item->queryValues === [] ? $url : $url.'?'.http_build_query($item->item->queryValues);
+        $query = $navigation->navigationItem->queryValues;
+
+        return $query === [] ? $url : $url.'?'.http_build_query($query);
     }
 
     /**
@@ -153,20 +160,20 @@ final readonly class NavigationRecords implements NavigationRecordsContract
         $groupPositions = [];
 
         foreach ($roots as $root) {
-            $group = (string) $root->item->group;
-            $groupPositions[$group] = min($groupPositions[$group] ?? PHP_INT_MAX, $root->item->position);
+            $group = (string) $root->navigationItem->group;
+            $groupPositions[$group] = min($groupPositions[$group] ?? PHP_INT_MAX, $root->navigationItem->position);
         }
 
         usort($roots, fn (RegisteredNavigation $one, RegisteredNavigation $other) => [
             $one->page
-                ?->key !== 'web.home', $groupPositions[(string) $one->item->group], $one
-                ->item
+                ?->key !== 'web.home', $groupPositions[(string) $one->navigationItem->group], $one
+                ->navigationItem
                 ->position, $one
                 ->key,
         ] <=> [
             $other->page
-                ?->key !== 'web.home', $groupPositions[(string) $other->item->group], $other
-                ->item
+                ?->key !== 'web.home', $groupPositions[(string) $other->navigationItem->group], $other
+                ->navigationItem
                 ->position, $other
                 ->key,
         ]);
@@ -178,16 +185,16 @@ final readonly class NavigationRecords implements NavigationRecordsContract
      * The keys from the root down to the item that matches this request best: the most route and query values matched,
      * ties broken by key.
      *
-     * @param  list<NavigationItemData>  $items
+     * @param  list<NavigationItemData>  $navigationLinks
      * @return list<string>
      */
-    private function current(Request $request, array $items): array
+    private function current(Request $request, array $navigationLinks): array
     {
         $best = [];
         $bestKey = '';
         $bestScore = -1;
 
-        foreach ($this->paths($items, []) as $key => $path) {
+        foreach ($this->paths($navigationLinks, []) as $key => $path) {
             $score = $this->matchScore($key, $request);
 
             if ($score > $bestScore || ($score === $bestScore && $score >= 0 && $key < $bestKey)) {
@@ -199,17 +206,17 @@ final readonly class NavigationRecords implements NavigationRecordsContract
     }
 
     /**
-     * @param  list<NavigationItemData>  $items
+     * @param  list<NavigationItemData>  $navigationLinks
      * @param  list<string>  $above
      * @return array<string, list<string>> each item's path from the root, by its key
      */
-    private function paths(array $items, array $above): array
+    private function paths(array $navigationLinks, array $above): array
     {
         $paths = [];
 
-        foreach ($items as $item) {
-            $paths[$item->key] = [...$above, $item->key];
-            $paths = [...$paths, ...$this->paths($item->children, $paths[$item->key])];
+        foreach ($navigationLinks as $navigation) {
+            $paths[$navigation->key] = [...$above, $navigation->key];
+            $paths = [...$paths, ...$this->paths($navigation->children, $paths[$navigation->key])];
         }
 
         return $paths;
@@ -221,22 +228,22 @@ final readonly class NavigationRecords implements NavigationRecordsContract
      */
     private function matchScore(string $key, Request $request): int
     {
-        $item = $this->registeredItem($key);
+        $navigation = $this->registeredItem($key);
 
-        if ($item === null || $item->page === null || $request->route()?->getName() !== $item->page->routeName()) {
+        if ($navigation === null || $navigation->page === null || $request->route()?->getName() !== $navigation->page->routeName()) {
             return -1;
         }
 
-        $values = [...$item->item->routeValues, ...$item->item->queryValues];
+        $routeArguments = [...$navigation->navigationItem->routeValues, ...$navigation->navigationItem->queryValues];
         $actual = [...$request->query->all(), ...$request->route()->parameters()];
 
-        foreach ($values as $name => $value) {
-            if ((string) ($actual[$name] ?? '') !== $value) {
+        foreach ($routeArguments as $name => $optionalField) {
+            if ((string) ($actual[$name] ?? '') !== $optionalField) {
                 return -1;
             }
         }
 
-        return count($values);
+        return count($routeArguments);
     }
 
     private function registeredItem(string $key): RegisteredNavigation|null
@@ -247,39 +254,41 @@ final readonly class NavigationRecords implements NavigationRecordsContract
     /**
      * The visible counted items of a tree, with their target pages visible too.
      *
-     * @param  list<RegisteredNavigation>  $items
+     * @param  list<RegisteredNavigation>  $navigationLinks
      * @return list<RegisteredNavigation>
      */
-    private function countedItems(array $items): array
+    private function countedItems(array $navigationLinks): array
     {
         $counted = [];
 
-        foreach ($items as $item) {
-            if (! $this->isVisible($item)) {
+        foreach ($navigationLinks as $navigation) {
+            if (! $this->isVisible($navigation)) {
                 continue;
             }
 
-            if ($item->item->count !== null && is_subclass_of($item->item->count, CountResolver::class)) {
-                $counted[] = $item;
+            $countResolver = $navigation->navigationItem->count;
+
+            if ($countResolver !== null && is_subclass_of($countResolver, CountResolver::class)) {
+                $counted[] = $navigation;
             }
 
-            array_push($counted, ...$this->countedItems($item->children));
+            array_push($counted, ...$this->countedItems($navigation->children));
         }
 
         return $counted;
     }
 
     /**
-     * @param  list<RegisteredNavigation>  $items
+     * @param  list<RegisteredNavigation>  $navigationLinks
      * @return array<string, RegisteredNavigation>
      */
-    private function flatten(array $items): array
+    private function flatten(array $navigationLinks): array
     {
         $flat = [];
 
-        foreach ($items as $item) {
-            $flat[$item->key] = $item;
-            $flat = [...$flat, ...$this->flatten($item->children)];
+        foreach ($navigationLinks as $navigation) {
+            $flat[$navigation->key] = $navigation;
+            $flat = [...$flat, ...$this->flatten($navigation->children)];
         }
 
         return $flat;

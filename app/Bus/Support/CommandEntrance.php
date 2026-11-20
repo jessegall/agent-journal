@@ -18,7 +18,7 @@ final class CommandEntrance
     /**
      * @var list<CommandEntry> innermost last
      */
-    private array $entries = [];
+    private array $entryStack = [];
 
     /**
      * @template TResult
@@ -28,12 +28,12 @@ final class CommandEntrance
      */
     public function through(CommandEntry $entry, Closure $work): mixed
     {
-        $this->entries[] = $entry;
+        $this->entryStack[] = $entry;
 
         try {
             return $work();
         } finally {
-            array_pop($this->entries);
+            array_pop($this->entryStack);
         }
     }
 
@@ -42,7 +42,7 @@ final class CommandEntrance
      */
     public function isOpenedForApplication(): bool
     {
-        return ($this->entries[array_key_last($this->entries) ?? -1] ?? null) === CommandEntry::Application;
+        return ($this->entryStack[array_key_last($this->entryStack) ?? -1] ?? null) === CommandEntry::Application;
     }
 
     /**
@@ -51,15 +51,15 @@ final class CommandEntrance
      */
     public function admits(CommandEntry $entry): bool
     {
-        if ($this->entries === []) {
+        if ($this->entryStack === []) {
             return $entry === CommandEntry::Application;
         }
 
-        return in_array($entry, $this->entries, true);
+        return in_array($entry, $this->entryStack, true);
     }
 
     public function current(): CommandEntry
     {
-        return $this->entries[array_key_last($this->entries) ?? -1] ?? CommandEntry::Application;
+        return $this->entryStack[array_key_last($this->entryStack) ?? -1] ?? CommandEntry::Application;
     }
 }

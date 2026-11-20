@@ -61,7 +61,8 @@ final class PagePropsTest extends TestCase
         $result = $this->homeProp('/?window[shelf.shelves][q]=oak&q=elsewhere', 'window_shelf_shelves');
 
         $this->assertInstanceOf(ReadyWindow::class, $result);
-        $this->assertSame(['oak', '', TestIds::of(1)], $result->data['titles']);
+        $this->assertSame(['oak', '', TestIds::of(1)], $result->windowFields['titles']);
+        $this->assertSame($result->windowFields, $result->toArray()['data']);
     }
 
     public function test_a_window_query_its_request_refuses_is_a_validation_error_not_a_failed_window(): void
@@ -88,7 +89,7 @@ final class PagePropsTest extends TestCase
         $inspector = ($this->pageProps('/shelf?inspect=shelf.shelf&shelf=7')['inspector'])();
 
         $this->assertInstanceOf(ReadyWindow::class, $inspector);
-        $this->assertSame('7', $inspector->data['titles'][1]);
+        $this->assertSame('7', $inspector->windowFields['titles'][1]);
     }
 
     public function test_two_users_in_a_row_each_get_their_own_result(): void
@@ -100,8 +101,8 @@ final class PagePropsTest extends TestCase
 
         $this->assertInstanceOf(ReadyWindow::class, $first);
         $this->assertInstanceOf(ReadyWindow::class, $second);
-        $this->assertSame(TestIds::of(1), $first->data['titles'][2]);
-        $this->assertSame(TestIds::of(2), $second->data['titles'][2]);
+        $this->assertSame(TestIds::of(1), $first->windowFields['titles'][2]);
+        $this->assertSame(TestIds::of(2), $second->windowFields['titles'][2]);
     }
 
     private function homeProp(string $url, string $prop): mixed

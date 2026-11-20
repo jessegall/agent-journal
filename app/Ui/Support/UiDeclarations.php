@@ -81,7 +81,7 @@ final readonly class UiDeclarations
             }
 
             $roots = array_map(
-                fn (NavigationItem $item) => RegisteredNavigation::of($owner, $item, $pages),
+                fn (NavigationItem $navigationItem) => RegisteredNavigation::of($owner, $navigationItem, $pages),
                 $owner->navigation,
             );
             self::assertUniqueKeys(
@@ -184,20 +184,20 @@ final readonly class UiDeclarations
      * Checks the items a children reader returned for a parent the same way as declared items: as children, under the
      * parent's domain, opening that domain's pages, each key once.
      *
-     * @param  list<NavigationItem>  $items
+     * @param  list<NavigationItem>  $navigationItems
      * @return list<RegisteredNavigation>
      */
-    public function childrenOf(RegisteredNavigation $parent, array $items): array
+    public function childrenOf(RegisteredNavigation $parent, array $navigationItems): array
     {
-        foreach ($items as $item) {
-            if ($item->group !== null || $item->atFoot) {
-                throw InvalidNavigationDeclaration::rootOnlyOnChild($parent->key, $item->key);
+        foreach ($navigationItems as $navigationItem) {
+            if ($navigationItem->group !== null || $navigationItem->atFoot) {
+                throw InvalidNavigationDeclaration::rootOnlyOnChild($parent->key, $navigationItem->key);
             }
         }
 
         $children = array_map(
-            fn (NavigationItem $item) => RegisteredNavigation::of($parent->owner, $item, $this->pages),
-            $items,
+            fn (NavigationItem $navigationItem) => RegisteredNavigation::of($parent->owner, $navigationItem, $this->pages),
+            $navigationItems,
         );
         self::assertUniqueKeys(
             $parent->owner,

@@ -39,8 +39,8 @@ final class MessageTakeNextTool extends MessageWriteTool
         );
     }
 
-    protected function payload(mixed $result): array
+    protected function payload(mixed $readBatch): array
     {
-        return ['results' => $result->results];
+        return ['results' => $readBatch->messageReads];
     }
 }

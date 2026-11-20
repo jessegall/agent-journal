@@ -30,7 +30,7 @@ final readonly class SetStringSettingHandler implements CommandHandler
 
         return $this->writer->setValue(
             $setting,
-            $this->codec->encodeString($command->setting->owner, $setting, $command->value),
+            $this->codec->encodeString($command->setting->owner, $setting, $command->settingText),
             $command->expectedRevision,
         );
     }

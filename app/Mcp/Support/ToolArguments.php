@@ -87,12 +87,12 @@ final readonly class ToolArguments
     {
         $declared = [];
 
-        foreach ($arguments as $name => $value) {
+        foreach ($arguments as $name => $argument) {
             if (! is_string($name) || ! in_array($name, $fields, true)) {
                 throw ToolArgumentUnknown::for($context, (string) $name);
             }
 
-            $declared[$name] = $value;
+            $declared[$name] = $argument;
         }
 
         return new self($declared);
@@ -103,13 +103,13 @@ final readonly class ToolArguments
      */
     public function object(string $name, array $fields): self
     {
-        $value = $this->arguments[$name] ?? null;
+        $argument = $this->arguments[$name] ?? null;
 
-        if (! is_array($value) || array_is_list($value)) {
+        if (! is_array($argument) || array_is_list($argument)) {
             throw ToolArgumentInvalid::for($name, 'an object');
         }
 
-        return self::within($name, $value, $fields);
+        return self::within($name, $argument, $fields);
     }
 
     /**
@@ -132,13 +132,13 @@ final readonly class ToolArguments
 
     public function recordReference(string $name): int|string
     {
-        $value = $this->arguments[$name] ?? null;
-        if (is_int($value)) {
+        $argument = $this->arguments[$name] ?? null;
+        if (is_int($argument)) {
             return $this->positiveInteger($name);
         }
-        if (is_string($value) && preg_match('/^[1-9][0-9]{0,18}$/', $value) === 1
-            && (strlen($value) < 19 || strcmp($value, (string) PHP_INT_MAX) <= 0)) {
-            return (int) $value;
+        if (is_string($argument) && preg_match('/^[1-9][0-9]{0,18}$/', $argument) === 1
+            && (strlen($argument) < 19 || strcmp($argument, (string) PHP_INT_MAX) <= 0)) {
+            return (int) $argument;
         }
 
         return $this->ulid($name);
@@ -201,16 +201,16 @@ final readonly class ToolArguments
      */
     public function positiveInteger(string $name, int $largest = PHP_INT_MAX): int
     {
-        $value = $this->arguments[$name] ?? null;
+        $argument = $this->arguments[$name] ?? null;
 
-        if (! is_int($value) || $value < 1 || $value > $largest) {
+        if (! is_int($argument) || $argument < 1 || $argument > $largest) {
             throw ToolArgumentInvalid::for($name, $largest === PHP_INT_MAX ? 'a whole number of at least 1' : sprintf(
                 'a whole number from 1 to %s',
                 $largest,
             ));
         }
 
-        return $value;
+        return $argument;
     }
 
     /**
@@ -220,13 +220,13 @@ final readonly class ToolArguments
      */
     public function wholeNumber(string $name): int
     {
-        $value = $this->arguments[$name] ?? null;
+        $argument = $this->arguments[$name] ?? null;
 
-        if (! is_int($value) || $value < 0) {
+        if (! is_int($argument) || $argument < 0) {
             throw ToolArgumentInvalid::for($name, 'a whole number of at least 0');
         }
 
-        return $value;
+        return $argument;
     }
 
     public function optionalWholeNumber(string $name): int|null
@@ -259,13 +259,13 @@ final readonly class ToolArguments
      */
     public function text(string $name): string
     {
-        $value = $this->arguments[$name] ?? null;
+        $argument = $this->arguments[$name] ?? null;
 
-        if (! is_string($value)) {
+        if (! is_string($argument)) {
             throw ToolArgumentInvalid::for($name, 'text');
         }
 
-        return $value;
+        return $argument;
     }
 
     /**
@@ -289,13 +289,13 @@ final readonly class ToolArguments
      */
     public function list(string $name): array
     {
-        $value = $this->arguments[$name] ?? null;
+        $argument = $this->arguments[$name] ?? null;
 
-        if (! is_array($value) || ! array_is_list($value) || array_filter($value, is_string(...)) !== $value) {
+        if (! is_array($argument) || ! array_is_list($argument) || array_filter($argument, is_string(...)) !== $argument) {
             throw ToolArgumentInvalid::for($name, 'a list of texts');
         }
 
-        return $value;
+        return $argument;
     }
 
     /**
@@ -314,15 +314,15 @@ final readonly class ToolArguments
             return [];
         }
 
-        $values = $this->list($name);
+        $caseNames = $this->list($name);
 
-        foreach ($values as $value) {
-            if ($type::tryFrom($value) === null) {
+        foreach ($caseNames as $argument) {
+            if ($type::tryFrom($argument) === null) {
                 throw ToolArgumentInvalid::for($name, 'a list of '.self::valuesOf($type));
             }
         }
 
-        return $values;
+        return $caseNames;
     }
 
     /**
@@ -335,8 +335,8 @@ final readonly class ToolArguments
      */
     public function enum(string $name, string $type): BackedEnum
     {
-        $value = $this->arguments[$name] ?? null;
-        $case = is_string($value) || is_int($value) ? $type::tryFrom($value) : null;
+        $argument = $this->arguments[$name] ?? null;
+        $case = is_string($argument) || is_int($argument) ? $type::tryFrom($argument) : null;
 
         if ($case === null) {
             throw ToolArgumentInvalid::for($name, 'one of '.self::valuesOf($type));

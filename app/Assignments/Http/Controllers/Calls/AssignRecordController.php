@@ -20,8 +20,8 @@ final readonly class AssignRecordController
         CommandBus $commands,
         AssigneeResolver $assignees,
     ): AssignmentResultData {
-        $result = $commands->run(new AssignRecord($call->record(), $call->recipient()));
+        $assignmentChange = $commands->run(new AssignRecord($call->record(), $call->recipient()));
 
-        return AssignmentResultData::of($result, $assignees->holdersOf($result->currentAssignments()));
+        return AssignmentResultData::of($assignmentChange, $assignees->holdersOf($assignmentChange->currentAssignments()));
     }
 }

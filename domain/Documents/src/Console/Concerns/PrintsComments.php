@@ -26,7 +26,7 @@ trait PrintsComments
 
         return $this->runReport(function () use ($call): CommandReport {
             $commentPage = $this->sendCall($call);
-            $report = $this->commentsReport(CommandReport::ending(self::SUCCESS), $commentPage->items);
+            $report = $this->commentsReport(CommandReport::ending(self::SUCCESS), $commentPage->comments);
 
             return $commentPage->nextAfter === null
                 ? $report

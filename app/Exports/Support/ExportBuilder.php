@@ -17,7 +17,7 @@ final readonly class ExportBuilder
     /**
      * @param  list<class-string<Event>>  $events
      * @param  list<class-string>  $contracts
-     * @param  list<class-string>  $values
+     * @param  list<class-string>  $valueClasses
      * @param  list<class-string>  $commands
      * @param  list<class-string<Throwable>>  $exceptions
      * @param  list<class-string>  $support
@@ -25,7 +25,7 @@ final readonly class ExportBuilder
     private function __construct(
         public array $events = [],
         public array $contracts = [],
-        public array $values = [],
+        public array $valueClasses = [],
         public array $commands = [],
         public array $exceptions = [],
         public array $support = [],
@@ -53,11 +53,11 @@ final readonly class ExportBuilder
     }
 
     /**
-     * @param  class-string  ...$values
+     * @param  class-string  ...$valueClasses
      */
-    public function values(string ...$values): self
+    public function values(string ...$valueClasses): self
     {
-        return clone ($this, ['values' => [...$this->values, ...self::plainList('values', $values)]]);
+        return clone ($this, ['valueClasses' => [...$this->valueClasses, ...self::plainList('values', $valueClasses)]]);
     }
 
     /**
@@ -102,10 +102,10 @@ final readonly class ExportBuilder
      *
      * @throws MalformedExports
      */
-    private static function plainList(string $list, array $names): array
+    private static function plainList(string $exportGroup, array $names): array
     {
         if (! array_is_list($names)) {
-            throw MalformedExports::keyedList($list);
+            throw MalformedExports::keyedList($exportGroup);
         }
 
         return $names;

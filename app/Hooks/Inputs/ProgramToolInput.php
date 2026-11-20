@@ -35,9 +35,9 @@ final readonly class ProgramToolInput
      */
     public function textArgument(string $name): string|null
     {
-        $value = $this->arguments[$name] ?? null;
+        $argument = $this->arguments[$name] ?? null;
 
-        return is_string($value) ? $value : null;
+        return is_string($argument) ? $argument : null;
     }
 
     /**

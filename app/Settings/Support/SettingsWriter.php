@@ -47,7 +47,7 @@ final readonly class SettingsWriter
      * @throws SettingDisabled
      * @throws SettingStorageInvalid
      */
-    public function setValue(Setting $setting, EncodedValue $value, int $expectedRevision): SettingsChange
+    public function setValue(Setting $setting, EncodedValue $encodedSetting, int $expectedRevision): SettingsChange
     {
         $owner = $this->registry->ownerOf($setting)->owner;
         $record = $this->lockedRecord($owner, $setting->key(), $expectedRevision);
@@ -55,14 +55,14 @@ final readonly class SettingsWriter
 
         if ($record->document
             ->setting($setting->key())
-            ->filter(fn (EncodedSetting $stored) => $stored->value->equals($value))
+            ->filter(fn (EncodedSetting $stored) => $stored->encodedSetting->equals($encodedSetting))
             ->isDefined()) {
             return $this->unchanged($record);
         }
 
         return $this->revise(
             $record,
-            $record->document->withSetting(new EncodedSetting($setting->key(), $value)),
+            $record->document->withSetting(new EncodedSetting($setting->key(), $encodedSetting)),
             SettingTarget::Setting,
             $setting->key(),
         );
@@ -105,18 +105,18 @@ final readonly class SettingsWriter
     {
         $owner = $this->registry->ownerOf($group)->owner;
         $record = $this->lockedRecord($owner, $group->key, $expectedRevision);
-        $value = EncodedValue::of($enabled);
+        $encodedToggle = EncodedValue::of($enabled);
 
         if ($record->document
             ->toggle($group->key)
-            ->filter(fn (EncodedToggle $stored) => $stored->value->equals($value))
+            ->filter(fn (EncodedToggle $stored) => $stored->encodedToggle->equals($encodedToggle))
             ->isDefined()) {
             return $this->unchanged($record);
         }
 
         return $this->revise(
             $record,
-            $record->document->withToggle(new EncodedToggle($group->key, $value)),
+            $record->document->withToggle(new EncodedToggle($group->key, $encodedToggle)),
             SettingTarget::Group,
             $group->key,
         );

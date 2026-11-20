@@ -27,10 +27,10 @@ final readonly class AnyOf implements SkillCondition
 
     public function evaluate(SkillContext $context): ConditionResult
     {
-        $results = array_map(fn (SkillCondition $child) => $child->evaluate($context), $this->children);
+        $evaluations = array_map(fn (SkillCondition $child) => $child->evaluate($context), $this->children);
 
-        return ConditionResult::firstWith(ConditionOutcome::Match, $results)
-            ?? ConditionResult::firstWith(ConditionOutcome::Unavailable, $results)
+        return ConditionResult::firstWith(ConditionOutcome::Match, $evaluations)
+            ?? ConditionResult::firstWith(ConditionOutcome::Unavailable, $evaluations)
             ?? ConditionResult::noMatch('none-matched');
     }
 

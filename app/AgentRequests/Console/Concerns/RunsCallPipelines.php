@@ -105,20 +105,20 @@ trait RunsCallPipelines
     {
         try {
             $text = $this->input->getOption($name);
-            $value = json_decode(is_string($text) ? $text : '', true, flags: JSON_THROW_ON_ERROR);
+            $decodedReply = json_decode(is_string($text) ? $text : '', true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $broken) {
             $this->error("The {$name} is not JSON: {$broken->getMessage()}");
 
             return null;
         }
 
-        if (! is_array($value)) {
+        if (! is_array($decodedReply)) {
             $this->error("The {$name} is not a JSON object.");
 
             return null;
         }
 
-        return $value;
+        return $decodedReply;
     }
 
     /**

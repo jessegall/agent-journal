@@ -15,24 +15,24 @@ use App\Settings\Support\SettingKey;
 final readonly class Choice
 {
     /**
-     * @param  TValue  $value
+     * @param  TValue  $optionKey
      */
-    private function __construct(public string|int $value, public string $label) {}
+    private function __construct(public string|int $optionKey, public string $label) {}
 
     /**
      * @template TOption of string|int
      *
-     * @param  TOption  $value
+     * @param  TOption  $optionKey
      * @return self<TOption>
      *
      * @throws SettingDeclarationInvalid
      */
-    public static function make(string|int $value, string $label): self
+    public static function make(string|int $optionKey, string $label): self
     {
         if (! SettingKey::labelFits($label)) {
             throw SettingDeclarationInvalid::badChoiceLabel(SettingKey::LABEL_CHARACTERS);
         }
 
-        return new self($value, $label);
+        return new self($optionKey, $label);
     }
 }

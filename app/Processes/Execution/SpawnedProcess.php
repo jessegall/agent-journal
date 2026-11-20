@@ -85,7 +85,7 @@ final class SpawnedProcess
          * @var array<int, string> $gathered
          */
         $gathered = [1 => '', 2 => ''];
-        $handOn = function (int $descriptor, int $atLeast) use (&$gathered, $onOutput): void {
+        $emitOutput = function (int $descriptor, int $atLeast) use (&$gathered, $onOutput): void {
             if ($gathered[$descriptor] !== '' && strlen($gathered[$descriptor]) >= $atLeast) {
                 $onOutput($descriptor === 1 ? OutputStream::Stdout : OutputStream::Stderr, $gathered[$descriptor]);
                 $gathered[$descriptor] = '';
@@ -102,7 +102,7 @@ final class SpawnedProcess
             foreach ($streams as $descriptor => $stream) {
                 $bytes = fread($stream, 1_048_576);
                 $gathered[$descriptor] .= $bytes === false ? '' : $bytes;
-                $handOn($descriptor, $ready === 0 || feof($stream) ? 1 : self::PIECE_BYTES);
+                $emitOutput($descriptor, $ready === 0 || feof($stream) ? 1 : self::PIECE_BYTES);
                 if (feof($stream)) {
                     fclose($stream);
                     unset($streams[$descriptor]);
@@ -111,14 +111,14 @@ final class SpawnedProcess
             $deadline ??= $this->hasEnded() ? microtime(true) + $drainSeconds : null;
             if ($deadline !== null && $streams !== [] && microtime(true) > $deadline) {
                 array_map(fclose(...), $streams);
-                $handOn(1, 1);
-                $handOn(2, 1);
+                $emitOutput(1, 1);
+                $emitOutput(2, 1);
 
                 return false;
             }
         }
-        $handOn(1, 1);
-        $handOn(2, 1);
+        $emitOutput(1, 1);
+        $emitOutput(2, 1);
 
         return $streams === [];
     }

@@ -20,9 +20,9 @@ final readonly class CallKey
     /**
      * @throws CallKeyInvalid
      */
-    public function __construct(string|null $value = null)
+    public function __construct(string|null $suppliedKey = null)
     {
-        $key = $value ?? Str::ulid()->toString();
+        $key = $suppliedKey ?? Str::ulid()->toString();
 
         if (preg_match(self::PATTERN, $key) !== 1) {
             throw CallKeyInvalid::for($key);

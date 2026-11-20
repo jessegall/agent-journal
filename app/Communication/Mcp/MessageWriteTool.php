@@ -13,13 +13,13 @@ use App\Mcp\Tools\JournalWriteTool;
  */
 abstract class MessageWriteTool extends JournalWriteTool
 {
-    final protected function present(mixed $result): ToolResult
+    final protected function present(mixed $messageAnswer): ToolResult
     {
-        return ToolResult::ok($this->payload($result), []);
+        return ToolResult::ok($this->payload($messageAnswer), []);
     }
 
     /**
      * @return array<string, mixed>
      */
-    abstract protected function payload(mixed $result): array;
+    abstract protected function payload(mixed $messageAnswer): array;
 }

@@ -54,8 +54,8 @@ final readonly class SkillStatusResolver
     {
         $this->visiblePublicationsOf($sessionId);
         $session = AgentSession::byId($sessionId);
-        $entries = $this->skills->all();
-        $selection = $this->selectionOf($session, $entries);
+        $skillEntries = $this->skills->all();
+        $selection = $this->selectionOf($session, $skillEntries);
         $delivered = SkillPublication::latestDeliveredOfSession($sessionId);
         $started = SkillPublication::firstOfSession($sessionId);
         $generation = SkillGeneration::latestReady();
@@ -90,22 +90,22 @@ final readonly class SkillStatusResolver
                 $deliveredEntry !== null && SkillReceipt::hasRead($sessionId, $key, $deliveredEntry['digest']),
                 $reloadsAtNewSession && $selected && ($startedDigest === null || $startedDigest !== $currentDigest),
             );
-        }, $entries);
+        }, $skillEntries);
     }
 
     /**
      * The keys selected now, and the reason each other skill is not; a required-skill conflict selects none.
      *
-     * @param  list<SkillEntry>  $entries
+     * @param  list<SkillEntry>  $skillEntries
      * @return array{selected: list<string>, reasons: array<string, string>}
      */
-    private function selectionOf(AgentSession $session, array $entries): array
+    private function selectionOf(AgentSession $session, array $skillEntries): array
     {
         try {
-            $selected = $this->selection->select($entries, $this->contexts->forSession($session));
+            $selected = $this->selection->select($skillEntries, $this->contexts->forSession($session));
         } catch (SkillSelectionConflict|SkillContextUnavailable $refused) {
             return ['selected' => [], 'reasons' => array_fill_keys(
-                array_map(fn (SkillEntry $entry) => $entry->key->key, $entries),
+                array_map(fn (SkillEntry $entry) => $entry->key->key, $skillEntries),
                 $refused->getMessage(),
             )];
         }

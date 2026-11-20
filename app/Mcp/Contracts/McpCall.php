@@ -15,9 +15,9 @@ use Laravel\Mcp\ResponseFactory;
 interface McpCall
 {
     /**
-     * @param  Closure(): ToolResult  $result
+     * @param  Closure(): ToolResult  $toolAnswer
      */
-    public function answerTool(string $tool, Closure $result): ResponseFactory;
+    public function answerTool(string $tool, Closure $toolAnswer): ResponseFactory;
 
     /**
      * @param  Closure(): Response  $content

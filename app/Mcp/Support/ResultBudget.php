@@ -24,11 +24,11 @@ final readonly class ResultBudget
     /**
      * Whether a payload, counted with the text that mirrors it, leaves the 2 KiB kept for status and recovery.
      *
-     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $responseFields
      */
-    public function payloadFits(array $payload): bool
+    public function payloadFits(array $responseFields): bool
     {
-        return self::payloadBytes($payload) <= self::RESULT_BYTES - self::RECOVERY_BYTES;
+        return self::payloadBytes($responseFields) <= self::RESULT_BYTES - self::RECOVERY_BYTES;
     }
 
     /**
@@ -36,15 +36,15 @@ final readonly class ResultBudget
      *
      * @throws ResultTooLarge
      */
-    public function fit(ToolResult $result): ResponseFactory
+    public function fit(ToolResult $toolResult): ResponseFactory
     {
-        if (! $this->payloadFits($result->payload)) {
+        if (! $this->payloadFits($toolResult->responseFields)) {
             throw ResultTooLarge::for('payload', self::payloadBytes(
-                $result->payload,
+                $toolResult->responseFields,
             ), self::RESULT_BYTES - self::RECOVERY_BYTES);
         }
 
-        $structured = $result->structuredContent();
+        $structured = $toolResult->structuredContent();
         $text = json_encode($structured, self::JSON_FLAGS);
         $resultBytes = strlen(
             json_encode(
@@ -65,10 +65,10 @@ final readonly class ResultBudget
     }
 
     /**
-     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $responseFields
      */
-    private static function payloadBytes(array $payload): int
+    private static function payloadBytes(array $responseFields): int
     {
-        return 2 * strlen(json_encode($payload, self::JSON_FLAGS));
+        return 2 * strlen(json_encode($responseFields, self::JSON_FLAGS));
     }
 }

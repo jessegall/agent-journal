@@ -81,16 +81,16 @@ final readonly class ContractSnapshot
         ));
     }
 
-    private static function sorted(mixed $value): mixed
+    private static function sorted(mixed $snapshotNode): mixed
     {
-        if (! is_array($value)) {
-            return $value;
+        if (! is_array($snapshotNode)) {
+            return $snapshotNode;
         }
 
-        if (! array_is_list($value)) {
-            ksort($value, SORT_STRING);
+        if (! array_is_list($snapshotNode)) {
+            ksort($snapshotNode, SORT_STRING);
         }
 
-        return array_map(self::sorted(...), $value);
+        return array_map(self::sorted(...), $snapshotNode);
     }
 }

@@ -33,25 +33,25 @@ final readonly class SettingCodec
     /**
      * @throws SettingValueInvalid
      */
-    public function encodeString(string $owner, StringSetting $setting, string $value): EncodedValue
+    public function encodeString(string $owner, StringSetting $setting, string $settingInput): EncodedValue
     {
-        return $setting->accepts($value)
-            ? EncodedValue::of($value)
+        return $setting->accepts($settingInput)
+            ? EncodedValue::of($settingInput)
             : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
-    public function encodeBoolean(bool $value): EncodedValue
+    public function encodeBoolean(bool $settingInput): EncodedValue
     {
-        return EncodedValue::of($value);
+        return EncodedValue::of($settingInput);
     }
 
     /**
      * @throws SettingValueInvalid
      */
-    public function encodeInteger(string $owner, IntegerSetting $setting, int $value): EncodedValue
+    public function encodeInteger(string $owner, IntegerSetting $setting, int $settingInput): EncodedValue
     {
-        return $setting->accepts($value)
-            ? EncodedValue::of($value)
+        return $setting->accepts($settingInput)
+            ? EncodedValue::of($settingInput)
             : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
@@ -60,10 +60,10 @@ final readonly class SettingCodec
      *
      * @throws SettingValueInvalid
      */
-    public function encodeDecimal(string $owner, DecimalSetting $setting, Decimal $value): EncodedValue
+    public function encodeDecimal(string $owner, DecimalSetting $setting, Decimal $settingInput): EncodedValue
     {
         try {
-            return EncodedValue::of($setting->normalized($value)->text);
+            return EncodedValue::of($setting->normalized($settingInput)->text);
         } catch (DecimalInvalid $cause) {
             throw SettingValueInvalid::for($owner, $setting->key, $setting->type(), previous: $cause);
         }
@@ -74,10 +74,10 @@ final readonly class SettingCodec
      *
      * @throws SettingValueInvalid
      */
-    public function encodeOption(string $owner, OptionSetting $setting, string|int $value): EncodedValue
+    public function encodeOption(string $owner, OptionSetting $setting, string|int $settingInput): EncodedValue
     {
-        return $setting->accepts($value)
-            ? EncodedValue::of($value)
+        return $setting->accepts($settingInput)
+            ? EncodedValue::of($settingInput)
             : throw SettingValueInvalid::for($owner, $setting->key(), $setting->type());
     }
 
@@ -88,10 +88,10 @@ final readonly class SettingCodec
      *
      * @throws SettingValueInvalid
      */
-    public function encodeEnum(string $owner, EnumSetting $setting, BackedEnum $value): EncodedValue
+    public function encodeEnum(string $owner, EnumSetting $setting, BackedEnum $settingInput): EncodedValue
     {
-        return $value instanceof $setting->enum && $setting->accepts($value->value)
-            ? EncodedValue::of($value->value)
+        return $settingInput instanceof $setting->enum && $setting->accepts($settingInput->value)
+            ? EncodedValue::of($settingInput->value)
             : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
@@ -101,15 +101,18 @@ final readonly class SettingCodec
      * @throws SettingStorageInvalid
      * @throws SettingHandleUnknown for a declaration class outside the settings types
      */
-    public function decode(string $owner, Setting $setting, EncodedValue $value): string|bool|int|Decimal|BackedEnum
-    {
+    public function decode(
+        string $owner,
+        Setting $setting,
+        EncodedValue $settingInput,
+    ): string|bool|int|Decimal|BackedEnum {
         return match (true) {
-            $setting instanceof StringSetting => $this->decodeString($owner, $setting, $value),
-            $setting instanceof BooleanSetting => $this->decodeBoolean($owner, $setting, $value),
-            $setting instanceof IntegerSetting => $this->decodeInteger($owner, $setting, $value),
-            $setting instanceof DecimalSetting => $this->decodeDecimal($owner, $setting, $value),
-            $setting instanceof ChoiceSetting => $this->decodeChoice($owner, $setting, $value),
-            $setting instanceof EnumSetting => $this->decodeEnum($owner, $setting, $value),
+            $setting instanceof StringSetting => $this->decodeString($owner, $setting, $settingInput),
+            $setting instanceof BooleanSetting => $this->decodeBoolean($owner, $setting, $settingInput),
+            $setting instanceof IntegerSetting => $this->decodeInteger($owner, $setting, $settingInput),
+            $setting instanceof DecimalSetting => $this->decodeDecimal($owner, $setting, $settingInput),
+            $setting instanceof ChoiceSetting => $this->decodeChoice($owner, $setting, $settingInput),
+            $setting instanceof EnumSetting => $this->decodeEnum($owner, $setting, $settingInput),
             default => throw SettingHandleUnknown::for($setting::class, $setting->key()),
         };
     }
@@ -117,9 +120,9 @@ final readonly class SettingCodec
     /**
      * @throws SettingStorageInvalid
      */
-    public function decodeString(string $owner, StringSetting $setting, EncodedValue $value): string
+    public function decodeString(string $owner, StringSetting $setting, EncodedValue $settingInput): string
     {
-        return $value->string()->filter($setting->accepts(...))->getOrThrow(
+        return $settingInput->string()->filter($setting->accepts(...))->getOrThrow(
             SettingStorageInvalid::for($owner, $setting->key),
         );
     }
@@ -127,17 +130,17 @@ final readonly class SettingCodec
     /**
      * @throws SettingStorageInvalid
      */
-    public function decodeBoolean(string $owner, BooleanSetting $setting, EncodedValue $value): bool
+    public function decodeBoolean(string $owner, BooleanSetting $setting, EncodedValue $settingInput): bool
     {
-        return $value->boolean()->getOrThrow(SettingStorageInvalid::for($owner, $setting->key));
+        return $settingInput->boolean()->getOrThrow(SettingStorageInvalid::for($owner, $setting->key));
     }
 
     /**
      * @throws SettingStorageInvalid
      */
-    public function decodeInteger(string $owner, IntegerSetting $setting, EncodedValue $value): int
+    public function decodeInteger(string $owner, IntegerSetting $setting, EncodedValue $settingInput): int
     {
-        return $value->integer()->filter($setting->accepts(...))->getOrThrow(
+        return $settingInput->integer()->filter($setting->accepts(...))->getOrThrow(
             SettingStorageInvalid::for($owner, $setting->key),
         );
     }
@@ -147,10 +150,10 @@ final readonly class SettingCodec
      *
      * @throws SettingStorageInvalid
      */
-    public function decodeDecimal(string $owner, DecimalSetting $setting, EncodedValue $value): Decimal
+    public function decodeDecimal(string $owner, DecimalSetting $setting, EncodedValue $settingInput): Decimal
     {
         $invalid = SettingStorageInvalid::for($owner, $setting->key);
-        $text = $value->string()->getOrThrow($invalid);
+        $text = $settingInput->string()->getOrThrow($invalid);
 
         try {
             $decimal = $setting->normalized(Decimal::parse($text));
@@ -169,12 +172,12 @@ final readonly class SettingCodec
      *
      * @throws SettingStorageInvalid
      */
-    public function decodeChoice(string $owner, ChoiceSetting $setting, EncodedValue $value): string|int
+    public function decodeChoice(string $owner, ChoiceSetting $setting, EncodedValue $settingInput): string|int
     {
         /**
          * @var TValue $option one of the setting's own options, which accepts() just checked by exact type
          */
-        $option = $this->choiceValue($value)->filter($setting->accepts(...))->getOrThrow(
+        $option = $this->choiceValue($settingInput)->filter($setting->accepts(...))->getOrThrow(
             SettingStorageInvalid::for($owner, $setting->key),
         );
 
@@ -189,9 +192,9 @@ final readonly class SettingCodec
      *
      * @throws SettingStorageInvalid
      */
-    public function decodeEnum(string $owner, EnumSetting $setting, EncodedValue $value): BackedEnum
+    public function decodeEnum(string $owner, EnumSetting $setting, EncodedValue $settingInput): BackedEnum
     {
-        return $this->choiceValue($value)
+        return $this->choiceValue($settingInput)
             ->filter($setting->accepts(...))
             ->flatMap(fn (string|int $backing) => Option::fromValue($setting->caseOf($backing)))
             ->getOrThrow(SettingStorageInvalid::for($owner, $setting->key));
@@ -202,16 +205,16 @@ final readonly class SettingCodec
      *
      * @throws SettingStorageInvalid
      */
-    public function decodeToggle(string $owner, ToggleGroup $group, EncodedValue $value): bool
+    public function decodeToggle(string $owner, ToggleGroup $group, EncodedValue $settingInput): bool
     {
-        return $value->boolean()->getOrThrow(SettingStorageInvalid::for($owner, $group->key));
+        return $settingInput->boolean()->getOrThrow(SettingStorageInvalid::for($owner, $group->key));
     }
 
     /**
      * @return Option<string|int>
      */
-    private function choiceValue(EncodedValue $value): Option
+    private function choiceValue(EncodedValue $settingInput): Option
     {
-        return $value->string()->orElse($value->integer());
+        return $settingInput->string()->orElse($settingInput->integer());
     }
 }

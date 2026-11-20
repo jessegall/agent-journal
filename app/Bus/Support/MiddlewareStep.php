@@ -35,7 +35,7 @@ final readonly class MiddlewareStep
         $name = $this->entry->middlewareClass();
         $record = new ContinuationRecord();
 
-        $result = $this->middleware->handle($call, function (
+        $middlewareReply = $this->middleware->handle($call, function (
             CommandCall $passed,
         ) use ($call, $next, $name, $record): mixed {
             if ($record->called) {
@@ -46,7 +46,7 @@ final readonly class MiddlewareStep
             $this->assertValidReplacement($call, $passed, $name);
 
             try {
-                return $record->result = $next($passed);
+                return $record->continuationReply = $next($passed);
             } catch (Throwable $failure) {
                 $record->failure = $failure;
 
@@ -62,11 +62,11 @@ final readonly class MiddlewareStep
             throw MiddlewareSwallowedFailure::by($name, $record->failure);
         }
 
-        if ($result !== $record->result) {
+        if ($middlewareReply !== $record->continuationReply) {
             throw CommandResultChanged::by($name);
         }
 
-        return $result;
+        return $middlewareReply;
     }
 
     private function assertValidReplacement(CommandCall $call, CommandCall $passed, string $name): void

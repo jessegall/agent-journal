@@ -57,9 +57,9 @@ final readonly class ReadRequestKey
             }
         }
 
-        $handsKey = $declaration === null || $declaration->endpoint->receipt === ReceiptOwner::CommandBus;
+        $usesBusReceipt = $declaration === null || $declaration->endpoint->receipt === ReceiptOwner::CommandBus;
 
-        if ($handsKey && $request->filled(self::FIELD)) {
+        if ($usesBusReceipt && $request->filled(self::FIELD)) {
             $this->key->set($request->string(self::FIELD)->value());
         }
 

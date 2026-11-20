@@ -60,23 +60,23 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             return new RefreshResult($failed->id, false, true, $broken->getMessage(), 0);
         }
 
-        $entries = $catalogue->all();
-        $catalogueDigest = $this->digestOf($entries);
+        $skillEntries = $catalogue->all();
+        $catalogueDigest = $this->digestOf($skillEntries);
         $previous = SkillGeneration::latestReady();
         $reused = $previous !== null && $previous->catalogue_digest === $catalogueDigest;
         $generation = $reused
             ? $previous
-            : SkillGeneration::ready($catalogueDigest, $registrationDigest, $this->generationEntries($entries));
+            : SkillGeneration::ready($catalogueDigest, $registrationDigest, $this->generationEntries($skillEntries));
 
-        return new RefreshResult($generation->id, $reused, false, '', $this->intendPublications($generation, $entries));
+        return new RefreshResult($generation->id, $reused, false, '', $this->intendPublications($generation, $skillEntries));
     }
 
     /**
      * One pending publication for each running session whose selection changed since its last publication.
      *
-     * @param  list<SkillEntry>  $entries
+     * @param  list<SkillEntry>  $skillEntries
      */
-    private function intendPublications(SkillGeneration $generation, array $entries): int
+    private function intendPublications(SkillGeneration $generation, array $skillEntries): int
     {
         $intents = [];
         $contexts = $this->contexts->forSessions(AgentSession::runningForMaintenance(self::MOST_SESSIONS));
@@ -88,7 +88,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             }
 
             try {
-                $selected = $this->selection->select($entries, $context);
+                $selected = $this->selection->select($skillEntries, $context);
             } catch (SkillSelectionConflict) {
                 continue;
             }
@@ -110,9 +110,9 @@ final readonly class RefreshSkillsHandler implements CommandHandler
     }
 
     /**
-     * @param  list<SkillEntry>  $entries
+     * @param  list<SkillEntry>  $skillEntries
      */
-    private function digestOf(array $entries): string
+    private function digestOf(array $skillEntries): string
     {
         $identities = array_map(fn (SkillEntry $entry) => [
             $entry->key->key,
@@ -120,16 +120,16 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             $entry->revision,
             $entry->rendered->digest,
             $entry->condition->toArray(),
-        ], $entries);
+        ], $skillEntries);
 
         return hash('sha256', json_encode($identities, JSON_THROW_ON_ERROR));
     }
 
     /**
-     * @param  list<SkillEntry>  $entries
+     * @param  list<SkillEntry>  $skillEntries
      * @return list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>
      */
-    private function generationEntries(array $entries): array
+    private function generationEntries(array $skillEntries): array
     {
         return array_map(fn (SkillEntry $entry) => [
             'key' => $entry->key->key,
@@ -137,6 +137,6 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             'revision' => $entry->revision,
             'markdown' => $entry->rendered->markdown,
             'digest' => $entry->rendered->digest,
-        ], $entries);
+        ], $skillEntries);
     }
 }

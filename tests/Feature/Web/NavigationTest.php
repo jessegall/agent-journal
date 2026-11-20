@@ -56,7 +56,7 @@ final class NavigationTest extends TestCase
     public function test_static_and_record_children_come_with_their_urls_and_a_heading_links_its_first_child(): void
     {
         $tree = $this->navigation()->tree($this->requestTo('/library'));
-        $books = $this->item($tree->items, 'library.books');
+        $books = $this->item($tree->navigationLinks, 'library.books');
 
         $this->assertSame('/library', $books->url);
         $this->assertSame(
@@ -89,7 +89,7 @@ final class NavigationTest extends TestCase
 
         $this->assertSame(
             ['library.books', 'shelf.open'],
-            array_map(fn (NavigationItemData $item) => $item->key, $tree->items),
+            array_map(fn (NavigationItemData $item) => $item->key, $tree->navigationLinks),
         );
         $this->assertSame([], $this->calls->readers);
         $this->assertArrayNotHasKey('shelf.secret', $counts->counts);

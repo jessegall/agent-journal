@@ -25,9 +25,9 @@ final readonly class ProcessGrants
      */
     public static function everything(): self
     {
-        $all = CommandClassSet::of(...CommandClass::cases());
+        $commandClasses = CommandClassSet::of(...CommandClass::cases());
 
-        return new self($all, CommandClassSet::empty(), $all, CommandPatternSet::of(), CommandPatternSet::of());
+        return new self($commandClasses, CommandClassSet::empty(), $commandClasses, CommandPatternSet::of(), CommandPatternSet::of());
     }
 
     /**

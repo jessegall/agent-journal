@@ -72,7 +72,7 @@ final class TextOwnerCommentTest extends TestCase
             ['Plan'],
             array_map(
                 fn ($section) => $section->heading,
-                $this->text()->sections($page, '1', 0, PageSize::from(null))->items,
+                $this->text()->sections($page, '1', 0, PageSize::from(null))->sections,
             ),
         );
         $this->assertStringContainsString(
@@ -84,7 +84,7 @@ final class TextOwnerCommentTest extends TestCase
             new PostTextComment($page, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()),
         );
         $this->bus()->run(new PostComment($page, 'About the page.', (string) Str::uuid()));
-        $items = $this->app->make(CommentResolver::class)->list($page, new Page())->items;
+        $items = $this->app->make(CommentResolver::class)->list($page, new Page())->comments;
 
         $this->assertInstanceOf(TextCommentView::class, $items[0]);
         $this->assertInstanceOf(RecordCommentView::class, $items[1]);

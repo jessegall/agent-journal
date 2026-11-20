@@ -82,41 +82,41 @@ final readonly class CodexAdapter implements ProgramAdapter
         return HookProgram::Codex->modelArguments($model);
     }
 
-    public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall
+    public function callFor(HookPayload $hookInput, HookIdentity $hook): ProgramCall
     {
-        $event = $payload->event()->getOrCall(
-            static fn () => throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName),
+        $event = $hookInput->event()->getOrCall(
+            static fn () => throw UnsupportedHook::for(self::PROGRAM, $hookInput->hookEventName),
         );
 
         return match ($event) {
             HookEvent::SessionStart => new JudgedCall(
-                new SessionStarted($hook, $payload->startDetails()),
+                new SessionStarted($hook, $hookInput->startDetails()),
                 fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer),
             ),
             HookEvent::UserPromptSubmit => new JudgedCall(
                 new PromptSubmitted(
                     $hook,
                     new PromptDetails(
-                        $payload->nativePromptId() ?? $hook->hookId,
-                        $payload->promptText(),
-                        $payload->nativePromptId(),
+                        $hookInput->nativePromptId() ?? $hook->hookId,
+                        $hookInput->promptText(),
+                        $hookInput->nativePromptId(),
                     ),
                 ),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
-            HookEvent::PreToolUse => $this->toolCall($payload, $hook),
-            HookEvent::PostToolUse => $this->callsJournalTools($payload)
+            HookEvent::PreToolUse => $this->toolCall($hookInput, $hook),
+            HookEvent::PostToolUse => $this->callsJournalTools($hookInput)
                 ? JournalToolCall::finished()
-                : JudgedCall::forFinishedTool($hook, $payload),
+                : JudgedCall::forFinishedTool($hook, $hookInput),
             HookEvent::Stop => new JudgedCall(
-                new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
+                new StopRequested($hook, new StopDetails($hook->hookId, $hookInput->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
             HookEvent::SessionEnd => new JudgedCall(
-                new SessionEnded($hook, new SessionEndDetails($payload->endReason())),
+                new SessionEnded($hook, new SessionEndDetails($hookInput->endReason())),
                 fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionEnd, $answer),
             ),
-            HookEvent::StopFailure => throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName),
+            HookEvent::StopFailure => throw UnsupportedHook::for(self::PROGRAM, $hookInput->hookEventName),
         };
     }
 
@@ -133,42 +133,42 @@ final readonly class CodexAdapter implements ProgramAdapter
     /**
      * After a call to the journal's own tools nothing walks the stack again; after any other tool the journal is told.
      */
-    private function callsJournalTools(HookPayload $payload): bool
+    private function callsJournalTools(HookPayload $hookInput): bool
     {
-        $tool = CodexTool::tryFrom($payload->toolNameText());
+        $tool = CodexTool::tryFrom($hookInput->toolNameText());
 
-        return $this->journalTools->names($payload->toolNameText())
+        return $this->journalTools->names($hookInput->toolNameText())
             || ($tool instanceof CodexTool && $tool->discoversJournalTools());
     }
 
-    private function toolCall(HookPayload $payload, HookIdentity $hook): ProgramCall
+    private function toolCall(HookPayload $hookInput, HookIdentity $hook): ProgramCall
     {
-        if ($this->journalTools->names($payload->toolNameText())) {
+        if ($this->journalTools->names($hookInput->toolNameText())) {
             return JournalToolCall::starting();
         }
 
-        $tool = CodexTool::named($payload->toolNameText());
+        $tool = CodexTool::named($hookInput->toolNameText());
 
         if ($tool->canReadResources()) {
-            $this->journalTools->requireJournalResource(self::PROGRAM, $payload);
+            $this->journalTools->requireJournalResource(self::PROGRAM, $hookInput);
         }
 
         if ($tool->discoversJournalTools()) {
             return JournalToolCall::starting();
         }
 
-        $original = $payload->toolArguments();
-        $folder = $payload->workFolder();
+        $original = $hookInput->toolArguments();
+        $folder = $hookInput->workFolder();
 
         $isRefusedCommand = $tool->isShell()
-            && $this->protection->refusesCommand($hook->sessionId, $payload->argument('command'), $folder);
+            && $this->protection->refusesCommand($hook->sessionId, $hookInput->argument('command'), $folder);
 
         if ($isRefusedCommand) {
             return new UnjudgedCall(ProgramReplies::denyProtected());
         }
 
         if ($tool->isShell()) {
-            $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
+            $command = $this->parser->parse($hookInput->argument('command'), ShellDialect::Bash);
 
             return $this->files->guardShell($hook, $command, fn () => new JudgedCall(
                 new ShellCommandRequested($hook, $command),
@@ -176,7 +176,7 @@ final readonly class CodexAdapter implements ProgramAdapter
             ));
         }
 
-        $changes = $this->patchChanges($payload->argument('command'));
+        $changes = $this->patchChanges($hookInput->argument('command'));
 
         foreach ($changes->paths() as $path) {
             if ($this->protection->refusesChange(ProtectedFileRead::resolve($folder, $path))) {

@@ -16,9 +16,9 @@ final readonly class RecordRuntimeHandler implements CommandHandler
 
     public function handle(RecordRuntime $command): DriverReceipt
     {
-        $payload = DriverRequestPayload::nothing();
+        $driverEnvelope = DriverRequestPayload::nothing();
 
-        return $this->requests->append($command->target(), $command->operation(), $command->idempotencyKey, $payload)
+        return $this->requests->append($command->target(), $command->operation(), $command->idempotencyKey, $driverEnvelope)
             ->receipt();
     }
 }

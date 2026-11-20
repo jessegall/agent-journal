@@ -72,7 +72,7 @@ final class WholeRecordCommentTest extends TestCase
             new PostComment($this->target(), 'Is this still open?', (string) Str::uuid()),
         );
 
-        $items = $this->app->make(CommentResolver::class)->list($this->target(), new Page())->items;
+        $items = $this->app->make(CommentResolver::class)->list($this->target(), new Page())->comments;
         $location = $this->app->make(CommentResolver::class)->location($this->target(), $commentId);
 
         $this->assertInstanceOf(RecordCommentView::class, $items[0]);

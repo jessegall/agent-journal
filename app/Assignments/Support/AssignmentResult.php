@@ -41,14 +41,14 @@ final readonly class AssignmentResult
     }
 
     /**
-     * @param  list<self>  $results
+     * @param  list<self>  $assignmentBatches
      */
-    public static function combined(array $results): self
+    public static function combined(array $assignmentBatches): self
     {
         return new self(
-            array_merge(...array_map(fn (self $result) => $result->outcomes, $results)),
-            array_merge(...array_map(fn (self $result) => $result->changes, $results)),
-            array_merge(...array_map(fn (self $result) => $result->requests, $results)),
+            array_merge(...array_map(fn (self $assignmentBatch) => $assignmentBatch->outcomes, $assignmentBatches)),
+            array_merge(...array_map(fn (self $assignmentBatch) => $assignmentBatch->changes, $assignmentBatches)),
+            array_merge(...array_map(fn (self $assignmentBatch) => $assignmentBatch->requests, $assignmentBatches)),
         );
     }
 

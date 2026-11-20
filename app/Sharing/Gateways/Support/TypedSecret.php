@@ -12,7 +12,7 @@ final readonly class TypedSecret
 {
     public function __construct(
         public string $name,
-        public string $value,
+        public string $secretText,
     ) {}
 
     /**
@@ -20,10 +20,10 @@ final readonly class TypedSecret
      */
     public function storeIn(GatewaySecrets $secrets): void
     {
-        if ($this->value === '') {
+        if ($this->secretText === '') {
             return;
         }
 
-        $secrets->store($this->name, $this->value);
+        $secrets->store($this->name, $this->secretText);
     }
 }

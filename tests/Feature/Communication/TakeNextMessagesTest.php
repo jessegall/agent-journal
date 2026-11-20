@@ -52,6 +52,6 @@ final class TakeNextMessagesTest extends MessagingTestCase
      */
     private function idsOf(MessageReadBatch $batch): array
     {
-        return array_map(fn ($result) => $result->messageId, $batch->results);
+        return array_map(fn ($result) => $result->messageId, $batch->messageReads);
     }
 }

@@ -36,8 +36,8 @@ final class ClaudeAccountProtection
     {
         $deny = [];
 
-        foreach (self::SECRET_ITEMS as $item) {
-            $path = rtrim($directory, '/').'/'.$item;
+        foreach (self::SECRET_ITEMS as $secretField) {
+            $path = rtrim($directory, '/').'/'.$secretField;
             array_push($deny, "Read(/{$path})", "Read(/{$path}/**)", "Edit(/{$path})", "Edit(/{$path}/**)");
         }
 
