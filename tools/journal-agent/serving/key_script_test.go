@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"journal-agent/client"
 	"journal-agent/drivers/contracts"
@@ -18,11 +19,12 @@ import (
 // scriptRuntime is a terminal runtime whose key script confirms its steps and then waits until the test ends it.
 type scriptRuntime struct {
 	fakeRuntime
-	mutex       sync.Mutex
-	runs        []contracts.KeyScriptRequest
-	receiver    func(keyscripts.Progress)
-	release     chan keyscripts.Result
-	rereadCount int
+	mutex            sync.Mutex
+	runs             []contracts.KeyScriptRequest
+	receiver         func(keyscripts.Progress)
+	release          chan keyscripts.Result
+	rereadCount      int
+	screenUnreadable bool
 	// replay is how a library entry's replay ends on this runtime.
 	replay keyscripts.ReplayResult
 }
@@ -69,7 +71,7 @@ func (runtime *scriptRuntime) Reread(stalled keyscripts.Uncertainty) (keyscripts
 	runtime.mutex.Lock()
 	defer runtime.mutex.Unlock()
 	runtime.rereadCount++
-	return stalled, true
+	return stalled, !runtime.screenUnreadable
 }
 
 func (runtime *scriptRuntime) rereads() int {
@@ -251,6 +253,94 @@ func TestALostAnswerRereadsTheScreenAndSendsTheSameRaiseAgain(t *testing.T) {
 	}
 	if runtime.rereads() != 1 || runtime.stopped {
 		t.Fatalf("the screen was read afresh %d times before the raise was sent again", runtime.rereads())
+	}
+}
+
+type cancelOnRaiseJournal struct {
+	*fakeJournal
+	cancel context.CancelFunc
+}
+
+func (journal cancelOnRaiseJournal) RaiseNavigation(
+	ctx context.Context, runtimeID string, raise client.NavigationRaise,
+) (client.NavigationAnswer, error) {
+	answer, err := journal.fakeJournal.RaiseNavigation(ctx, runtimeID, raise)
+	journal.cancel()
+	return answer, err
+}
+
+func TestCancellingALostRaiseEndsTheRetryAndKeepsTheHold(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	journal := &fakeJournal{answers: []raiseReply{{err: errors.New("connection reset")}}}
+	driver := newScriptRuntime()
+	runtime := &liveRuntime{id: "runtime-1", driver: driver}
+	loop := NewLoop(cancelOnRaiseJournal{journal, cancel}, nil, nil)
+	loop.raiseRetryDelay = time.Minute
+	loop.runtimes[runtime.id] = runtime
+	nav := newNavigation(loop, runtime, keyScriptClaim("script", nil), keyscripts.Uncertainty{})
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		nav.raise(ctx)
+	}()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("the lost raise stayed in its retry delay after cancellation")
+	}
+
+	if journal.raiseCount() != 1 || driver.rereads() != 0 || !loop.heldForNavigation(runtime) {
+		t.Fatal("the cancelled raise retried, reread the screen, or released the runtime")
+	}
+}
+
+func TestAnUnreadableScreenStopsBothWaysOfRaisingAgain(t *testing.T) {
+	cases := []struct {
+		name   string
+		run    func(navigation)
+		raises int
+	}{
+		{"lost answer", func(nav navigation) { nav.raise(context.Background()) }, 1},
+		{"journal wait", func(nav navigation) { nav.askAgainAfter(context.Background(), 0) }, 0},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			journal := &fakeJournal{answers: []raiseReply{{err: errors.New("connection reset")}}}
+			driver := newScriptRuntime()
+			driver.screenUnreadable = true
+			runtime := &liveRuntime{id: "runtime-1", driver: driver, hold: contracts.HoldNavigationNeeded}
+			loop := NewLoop(journal, nil, nil)
+			loop.raiseRetryDelay = 0
+			loop.runtimes[runtime.id] = runtime
+
+			test.run(newNavigation(loop, runtime, keyScriptClaim("script", nil), keyscripts.Uncertainty{}))
+
+			if journal.raiseCount() != test.raises || driver.rereads() != 1 || !loop.heldForNavigation(runtime) {
+				t.Fatal("an unreadable screen was raised again or the runtime was released")
+			}
+		})
+	}
+}
+
+func TestWithoutARereaderOnlyTheJournalWaitCanRaiseAgain(t *testing.T) {
+	journal := &fakeJournal{answers: []raiseReply{{err: errors.New("connection reset")}}}
+	runtime := &liveRuntime{id: "runtime-1", driver: &fakeRuntime{}}
+	loop := NewLoop(journal, nil, nil)
+	loop.runtimes[runtime.id] = runtime
+	seen := keyscripts.Uncertainty{Step: 1, Fingerprint: "fp1:a", Generation: 7}
+	nav := newNavigation(loop, runtime, keyScriptClaim("script", nil), seen)
+
+	nav.raise(context.Background())
+	if journal.raiseCount() != 1 {
+		t.Fatal("a lost raise was retried without a rereader")
+	}
+
+	nav.askAgainAfter(context.Background(), 0)
+	if journal.raiseCount() != 2 || journal.raises[1].Generation != 7 ||
+		journal.raises[1].OperationKey != "script:1:1:ask:1" {
+		t.Fatalf("the journal wait did not reuse the last screen: %+v", journal.raises)
 	}
 }
 
@@ -471,8 +561,8 @@ func TestAWaitEndsWhenTheRuntimeIsNoLongerHeld(t *testing.T) {
 	runtime := &liveRuntime{id: "runtime-1", driver: newScriptRuntime(), hold: contracts.HoldNone}
 	loop.runtimes[runtime.id] = runtime
 
-	loop.askAgainAfter(context.Background(), runtime, keyScriptClaim("script", nil), keyscripts.Uncertainty{},
-		raiseState{}, 0)
+	nav := newNavigation(loop, runtime, keyScriptClaim("script", nil), keyscripts.Uncertainty{})
+	nav.askAgainAfter(context.Background(), 0)
 
 	if journal.raiseCount() != 0 {
 		t.Fatalf("a runtime no longer held raised again")
