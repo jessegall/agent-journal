@@ -6,11 +6,13 @@ namespace App\Communication\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Agents\Contracts\RequestSource;
 use App\Agents\Support\PendingWorkSources;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Enums\AssignmentPurpose;
 use App\Autoload\Support\FolderClasses;
 use App\Communication\Contracts\ConversationResolver;
+use App\Communication\Contracts\AgentMessageReader;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\MessageAbility;
@@ -18,10 +20,12 @@ use App\Communication\Links\MessageLinkRecords;
 use App\Communication\Models\Message;
 use App\Communication\Policies\MessagePolicy;
 use App\Communication\Resolvers\MessageRecords;
+use App\Communication\Resolvers\AgentMessages;
 use App\Communication\Support\MessageAnswerActivation;
 use App\Communication\Support\MessageClaimProvider;
 use App\Communication\Support\PendingInboxWork;
 use App\Communication\Support\RegisteredInboxes;
+use App\Communication\Support\SelectedMessages;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use App\Numbers\Contracts\NumberedModelRegistration;
@@ -42,6 +46,8 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->singleton(InboxResolver::class, RegisteredInboxes::class);
         $this->app->singleton(RegisteredInboxes::class);
         $this->app->scoped(ConversationResolver::class, MessageRecords::class);
+        $this->app->scoped(AgentMessageReader::class, AgentMessages::class);
+        $this->app->scoped(RequestSource::class, SelectedMessages::class);
     }
 
     public function boot(

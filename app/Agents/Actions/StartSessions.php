@@ -15,6 +15,7 @@ use App\Agents\Support\RuntimeIntent;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\StartedAgent;
 use App\Contracts\StartTransaction;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -41,11 +42,12 @@ final readonly class StartSessions
         string $requestId,
         AgentSession|null $parent = null,
         RuntimeIntent|null $intent = null,
+        RecordIdentity|null $authorizedSource = null,
     ): StartedAgent {
         $settings = $this->settingsFor($selection);
 
         return $this->transaction->run(
-            fn () => $this->open($agent, $selection, $requestId, $parent, $settings, $intent),
+            fn () => $this->open($agent, $selection, $requestId, $parent, $settings, $intent, $authorizedSource),
         );
     }
 
@@ -59,8 +61,11 @@ final readonly class StartSessions
         SelectedProgram $selection,
         string $requestId,
         AgentSession|null $parent = null,
+        RecordIdentity|null $authorizedSource = null,
     ): StartedAgent {
-        return $this->open($agent, $selection, $requestId, $parent, $this->settingsFor($selection), null);
+        return $this->open(
+            $agent, $selection, $requestId, $parent, $this->settingsFor($selection), null, $authorizedSource,
+        );
     }
 
     /**
@@ -89,12 +94,13 @@ final readonly class StartSessions
         AgentSession|null $parent,
         IsolatedHookSettings $settings,
         RuntimeIntent|null $intent,
+        RecordIdentity|null $authorizedSource,
     ): StartedAgent {
         $session = $this->sessions->start($agent, $selection, $requestId, $parent);
         $token = $this->credentials->issue($session);
         [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
 
-        $this->events->dispatch(new SessionOpened($agent->id, $session->id));
+        $this->events->dispatch(new SessionOpened($agent->id, $session->id, $authorizedSource));
 
         return new StartedAgent(
             $session,

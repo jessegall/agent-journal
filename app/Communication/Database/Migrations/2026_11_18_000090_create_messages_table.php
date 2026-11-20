@@ -19,7 +19,9 @@ return new class extends Migration
             $table->ulid('destination_inbox_id');
             $table->string('sender_type', 16);
             $table->string('sender_id', 64);
+            $table->ulid('conversation_id')->index();
             $table->text('body');
+            $table->boolean('is_question')->default(false);
             $table->string('state', 32);
             $table->unsignedBigInteger('state_version')->default(0);
             $table->timestampTz('read_at')->nullable();
@@ -59,6 +61,18 @@ return new class extends Migration
                     AND read_participation_assignment_id IS NOT NULL)
             )
             SQL);
+
+        Schema::create('chat_selections', function (Blueprint $table) {
+            $table->ulid('session_id')->primary();
+            $table->ulid('message_id');
+            $table->timestampTz('selected_at');
+        });
+
+        Schema::create('chat_job_sources', function (Blueprint $table) {
+            $table->ulid('session_id')->primary();
+            $table->ulid('message_id');
+            $table->timestampTz('captured_at');
+        });
         DB::statement(<<<'SQL'
             ALTER TABLE messages ADD CONSTRAINT messages_answered_names_answer CHECK (
                 state <> 'answered' OR answer_message_id IS NOT NULL
@@ -74,6 +88,8 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::dropIfExists('chat_job_sources');
+        Schema::dropIfExists('chat_selections');
         Schema::dropIfExists('messages');
     }
 };

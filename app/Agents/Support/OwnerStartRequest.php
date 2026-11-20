@@ -36,7 +36,10 @@ final readonly class OwnerStartRequest
         return sprintf('%s:%s', $work->type, $work->id);
     }
 
-    public function startRequest(string|null $parentSessionId): StartRequest
+    public function startRequest(
+        string|null $parentSessionId,
+        RecordIdentity|null $authorizedSource = null,
+    ): StartRequest
     {
         return new StartRequest(
             $this->requestId,
@@ -48,6 +51,7 @@ final readonly class OwnerStartRequest
             $this->conversationMode,
             $parentSessionId,
             $this->policy,
+            $authorizedSource,
         );
     }
 }

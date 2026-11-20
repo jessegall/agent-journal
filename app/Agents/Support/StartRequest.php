@@ -6,6 +6,7 @@ namespace App\Agents\Support;
 
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
+use App\Records\Support\RecordIdentity;
 
 /**
  * One request to start an agent: its id, which makes a repeat find the same start, the agent, the selected
@@ -23,6 +24,7 @@ final readonly class StartRequest
         public ConversationModeType $conversationMode,
         public string|null $parentSessionId,
         public StartPolicy $policy,
+        public RecordIdentity|null $authorizedSource = null,
     ) {}
 
     public function execution(): ExecutionPolicy
@@ -53,6 +55,7 @@ final readonly class StartRequest
             $this->conversationMode->value,
             $this->parentSessionId,
             $this->policy->digest(),
+            $this->authorizedSource,
         ], JSON_THROW_ON_ERROR));
     }
 }

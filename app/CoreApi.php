@@ -472,6 +472,7 @@ use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Commands\TakeNextMessages;
 use App\Communication\Contracts\ActorInboxResolver;
+use App\Communication\Contracts\AgentMessageReader;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxAccess;
@@ -480,6 +481,10 @@ use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Data\InboxCounts;
+use App\Communication\Data\AgentInboxCounts;
+use App\Communication\Data\AgentInbox;
+use App\Communication\Data\AgentMessageCard;
+use App\Communication\Data\AgentMessageDetails;
 use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
 use App\Communication\Data\MessagePage;
@@ -489,6 +494,8 @@ use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageView;
 use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\DismissalType;
+use App\Communication\Enums\AgentInboxState;
+use App\Communication\Enums\AgentMessageView;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
@@ -1255,6 +1262,7 @@ final class CoreApi
                 CommandHandler::class,
                 CommandProvider::class,
                 McpToolProvider::class,
+                AgentMessageReader::class,
                 RefusalDetails::class,
                 McpCall::class,
                 NumberedPages::class,
@@ -1327,6 +1335,12 @@ final class CoreApi
                 ReceiptState::class,
                 Operation::class,
                 McpToolResult::class,
+                AgentInboxCounts::class,
+                AgentInbox::class,
+                AgentMessageCard::class,
+                AgentMessageDetails::class,
+                AgentInboxState::class,
+                AgentMessageView::class,
                 NextAction::class,
                 OverviewSection::class,
                 ListedPage::class,

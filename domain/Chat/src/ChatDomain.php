@@ -11,6 +11,7 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Mcp\Contracts\McpToolProvider;
 use App\Skills\Contracts\SkillProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
@@ -29,6 +30,7 @@ use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\TakeNextController;
+use Domain\Chat\Mcp\PendingMessagesOverview;
 use Domain\Chat\Models\DockedRecord;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Policies\DockedRecordPolicy;
@@ -41,6 +43,7 @@ use Domain\Chat\Skills\ChatSkill;
 
 final class ChatDomain extends Domain implements
     CommandProvider,
+    McpToolProvider,
     NavigationProvider,
     PageProvider,
     PolicyProvider,
@@ -121,5 +124,20 @@ final class ChatDomain extends Domain implements
     public function skills(): array
     {
         return [ChatSkill::class];
+    }
+
+    public function mcpTools(): array
+    {
+        return [];
+    }
+
+    public function mcpResources(): array
+    {
+        return [];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [PendingMessagesOverview::class];
     }
 }

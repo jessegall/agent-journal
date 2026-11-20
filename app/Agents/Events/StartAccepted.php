@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Events;
 
 use App\Contracts\Event;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
@@ -17,5 +18,6 @@ final readonly class StartAccepted implements Event, ShouldDispatchAfterCommit
         public string $requestId,
         public string $agentId,
         public string $sessionId,
+        public RecordIdentity|null $authorizedSource = null,
     ) {}
 }
