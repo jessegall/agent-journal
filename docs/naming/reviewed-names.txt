@@ -554,6 +554,12 @@ case	PartJoin::Sequence
 case	PartResultType::EvidenceOnly
 case	PartResultType::Receipted
 case	PartResultType::Unavailable
+case	Place::Accounts
+case	Place::HostSkills
+case	Place::Project
+case	Place::SharingSecrets
+case	Place::SharingTunnels
+case	Place::Temporary
 case	PlanEndType::Cancel
 case	PlanEndType::Finish
 case	PlanState::Cancelled
@@ -2020,6 +2026,8 @@ class	DenyAllSettingsAccess
 class	DenyRule
 class	DenyRuleController
 class	DenyRuleHandler
+class	Depth
+class	DepthTooDeep
 class	DeskAssignees
 class	DeskDestinationProvider
 class	DeskInboxAccess
@@ -2322,6 +2330,9 @@ class	FileDeclaresNoClass
 class	FileEditRequested
 class	FileOutsideAutoload
 class	FileOutsideEveryDomain
+class	FileOutsidePlaces
+class	FilePath
+class	FilePathInvalid
 class	FileRules
 class	FindNextSubstitution
 class	FindReplay
@@ -2342,6 +2353,7 @@ class	FlowGraphData
 class	FlowNodeData
 class	FlowShape
 class	FolderClasses
+class	FolderClosed
 class	FolderTrustRefused
 class	FollowingSequenceState
 class	FollowingSequenceStateFactory
@@ -3164,6 +3176,8 @@ class	PipedCommandsToParse
 class	PipelineAdapter
 class	PipelinePump
 class	PipelineRunner
+class	PlaceRoots
+class	PlaceUnavailable
 class	PlaceWord
 class	PlainGroupAvailabilityData
 class	PlainValue
@@ -5444,6 +5458,7 @@ constant	DeliveredSkillsAccess::DELIVERED_SKILL
 constant	DeliveredSkillsAccess::OTHER_RUNTIME
 constant	DeliveredSkillsAccess::RUNTIME_FOLDER
 constant	DeliveredSkillsAccess::SKILL_FILE
+constant	Depth::LEVEL_LIMIT
 constant	DeskPreference::LINK_TYPE
 constant	DeskRecord::ASSIGNEE_TYPE
 constant	DeskRecord::INBOX_PROVIDER
@@ -6144,6 +6159,7 @@ enum	ParseOutcome
 enum	PartEndType
 enum	PartJoin
 enum	PartResultType
+enum	Place
 enum	PlanEndType
 enum	PlanState
 enum	PlanStateGroup
@@ -9770,6 +9786,10 @@ method	DenyRule::__construct()
 method	DenyRuleController::__invoke()
 method	DenyRuleHandler::__construct()
 method	DenyRuleHandler::handle()
+method	Depth::__construct()
+method	Depth::levels()
+method	Depth::one()
+method	DepthTooDeep::asked()
 method	Desk::deskId()
 method	Desk::seatCount()
 method	DeskAssignees::__construct()
@@ -10805,6 +10825,13 @@ method	FileOperation::fromPatchAction()
 method	FileOutsideAutoload::for()
 method	FileOutsideAutoload::missingClass()
 method	FileOutsideEveryDomain::for()
+method	FileOutsidePlaces::given()
+method	FilePath::__construct()
+method	FilePath::child()
+method	FilePath::in()
+method	FilePath::ofAbsolute()
+method	FilePathInvalid::climbs()
+method	FilePathInvalid::nulByte()
 method	FileRules::all()
 method	FileRules::flags()
 method	FileRules::paths()
@@ -10852,6 +10879,8 @@ method	FlowShape::action()
 method	FlowShape::branch()
 method	FolderClasses::in()
 method	FolderClasses::read()
+method	FolderClosed::at()
+method	FolderClosed::privatePlace()
 method	FolderTrustRefused::notEmpty()
 method	FolderTrustRefused::outsideWorkingRoots()
 method	FolderType::ofFolder()
@@ -13326,6 +13355,17 @@ method	PipelineRunner::runOf()
 method	PipelineRunner::runSteps()
 method	PipelineRunner::sequence()
 method	PipelineRunner::step()
+method	Place::folderMode()
+method	Place::isPrivate()
+method	Place::notPrivate()
+method	Place::rootSetting()
+method	PlaceRoots::__construct()
+method	PlaceRoots::existingRoot()
+method	PlaceRoots::innermostPlaceOf()
+method	PlaceRoots::isWithin()
+method	PlaceRoots::realPathOf()
+method	PlaceRoots::root()
+method	PlaceUnavailable::for()
 method	PlaceWord::handle()
 method	PlacedInConversation::conversation()
 method	PlacedInConversation::inConversation()
@@ -20796,6 +20836,7 @@ parameter	$length
 parameter	$letter
 parameter	$letters
 parameter	$level
+parameter	$levels
 parameter	$lexed
 parameter	$lexer
 parameter	$library
@@ -21346,6 +21387,7 @@ parameter	$readers
 parameter	$reading
 parameter	$reads
 parameter	$readyStates
+parameter	$real
 parameter	$reason
 parameter	$reasonCode
 parameter	$receipt
@@ -21399,6 +21441,7 @@ parameter	$relatedRecord
 parameter	$relatedRecords
 parameter	$relation
 parameter	$relations
+parameter	$relative
 parameter	$relativePath
 parameter	$relay
 parameter	$release
@@ -23753,6 +23796,7 @@ property	Denied::$reason
 property	DeniedWindow::$state
 property	DenyRule::$ruleId
 property	DenyRuleHandler::$events
+property	Depth::$levels
 property	DeskAssignees::$actors
 property	DeskPreference::$guarded
 property	DeskRunClaims::$proved
@@ -24400,6 +24444,8 @@ property	FileChange::$path
 property	FileChanges::$changes
 property	FileEditRequested::$changes
 property	FileEditRequested::$hook
+property	FilePath::$place
+property	FilePath::$relative
 property	FindNextSubstitution::$lexer
 property	FinishPlan::$expectedRevision
 property	FinishPlan::$note
@@ -25916,6 +25962,7 @@ property	PipedCommandsToParse::$toParse
 property	PipelineAdapter::$pipelines
 property	PipelineRunner::$container
 property	PipelineRunner::$steps
+property	PlaceRoots::$config
 property	PlainGroupAvailabilityData::$state
 property	Plan::$attributes
 property	PlanAssignmentGroup::$tasks
@@ -30213,6 +30260,7 @@ variable	$config
 variable	$configFile
 variable	$configuration
 variable	$configurationId
+variable	$configured
 variable	$configuredField
 variable	$confirm
 variable	$conflict
@@ -30941,6 +30989,7 @@ variable	$placed
 variable	$placeholders
 variable	$placement
 variable	$placements
+variable	$places
 variable	$plan
 variable	$planId
 variable	$planPage
