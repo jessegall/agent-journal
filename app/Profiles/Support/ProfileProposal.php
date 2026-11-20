@@ -9,6 +9,7 @@ use App\Profiles\Data\PolicyOverrideData;
 use App\Profiles\Data\ProfileConfigurationData;
 use App\Profiles\Data\ProposedProfileData;
 use App\Profiles\Data\ProposedStopConditionData;
+use App\Profiles\Data\WithheldAbilityData;
 use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
@@ -117,6 +118,10 @@ final readonly class ProfileProposal
             array_map(
                 fn (ProposedStopConditionData $condition) => $condition->toStopCondition(),
                 $fields->stopConditions,
+            ),
+            array_map(
+                fn (WithheldAbilityData $withheld) => $withheld->toWithheldAbility(),
+                $fields->withheldAbilities,
             ),
         );
     }

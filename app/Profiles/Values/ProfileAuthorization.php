@@ -10,6 +10,7 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Profiles\Enums\AuthorizationType;
+use App\Profiles\Exceptions\AbilityNotWithheld;
 use BackedEnum;
 
 /**
@@ -22,6 +23,33 @@ final readonly class ProfileAuthorization
      * @param  list<AbilityGrant>  $grants
      */
     public function __construct(public AuthorizationType $type, public array $grants) {}
+
+    /**
+     * These grants less every one a withheld ability names; a withheld ability this profile does not grant is
+     * refused, so a misspelt one never passes as a narrowing.
+     *
+     * @param  list<WithheldAbility>  $withheld
+     *
+     * @throws AbilityNotWithheld
+     */
+    public function without(array $withheld): self
+    {
+        foreach ($withheld as $ability) {
+            if (! array_any($this->grants, fn (AbilityGrant $grant) => $ability->withholds($grant))) {
+                throw AbilityNotWithheld::for($ability->policy, $ability->ability);
+            }
+        }
+
+        $kept = array_filter(
+            $this->grants,
+            fn (AbilityGrant $grant) => ! array_any(
+                $withheld,
+                fn (WithheldAbility $ability) => $ability->withholds($grant),
+            ),
+        );
+
+        return new self($this->type, array_values($kept));
+    }
 
     /**
      * @param  class-string<Policy>  $policy

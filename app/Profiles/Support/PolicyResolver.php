@@ -71,7 +71,8 @@ final readonly class PolicyResolver
             $profile->skillAllowlist,
             $profile->requiredSkills,
             $start,
-            BuiltInAuthorizations::for($profile->base, $this->policies->grantable()),
+            BuiltInAuthorizations::for($profile->base, $this->policies->grantable())
+                ->without($profile->withheldAbilities),
         );
     }
 
