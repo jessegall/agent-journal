@@ -271,8 +271,8 @@ export function addPaneAtRight(
 }
 
 /**
- * The zone of a pane a pointer aims at, as version 5 reads it: over the tab strip, or on an empty pane, it is the
- * centre; otherwise the nearest side when within a quarter of the pane from it, else the centre.
+ * A drop on the tab strip or an empty pane aims at the centre. Elsewhere, it aims at the nearest edge within a
+ * quarter of the pane's size, or the centre outside that range.
  */
 export function zoneAt(
     box: { left: number; top: number; width: number; height: number },

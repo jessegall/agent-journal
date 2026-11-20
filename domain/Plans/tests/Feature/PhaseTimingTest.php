@@ -18,6 +18,7 @@ use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * An agent's tests and checks wait while the current phase of the started plan it holds has open or started tasks,
@@ -76,6 +77,7 @@ final class PhaseTimingTest extends TestCase
         $this->assertTrue($this->timingForAgent()->isAllowed());
     }
 
+    #[TimeLimit(seconds: 20, reason: 'It creates and numbers five hundred phases through the plan model.')]
     public function test_an_open_task_after_five_hundred_phases_still_holds_checks(): void
     {
         foreach ($this->tasks as $task) {

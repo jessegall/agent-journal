@@ -27,18 +27,21 @@ describe('dropping a dragged window', () => {
         { paneId: missingPane, zone: 'below' },
     ];
 
-    it.each(missingTargets)('keeps docked and floating windows on a missing $zone drop', (target) => {
-        const docked = home();
-        const floating = detachWindow(
-            docked,
-            'rules',
-            { left: 100, top: 100 },
-            screen,
-        );
+    it.each(missingTargets)(
+        'keeps docked and floating windows when a $zone drop misses its pane',
+        (target) => {
+            const docked = home();
+            const floating = detachWindow(
+                docked,
+                'rules',
+                { left: 100, top: 100 },
+                screen,
+            );
 
-        expect(dropWindow(docked, 'rules', target)).toBe(docked);
-        expect(dropWindow(floating, 'rules', target)).toBe(floating);
-    });
+            expect(dropWindow(docked, 'rules', target)).toBe(docked);
+            expect(dropWindow(floating, 'rules', target)).toBe(floating);
+        },
+    );
 
     it('lands among the tabs at the place it was let go', () => {
         const dropped = dropWindow(home(), 'chat', {
