@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
+use App\Agents\Models\Agent;
 use App\Records\Support\RecordIdentity;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
@@ -79,21 +77,18 @@ final class HelperRecordsTest extends TestCase
         $job->cancel();
     }
 
-    private function actAsUser(string $userId): ActorIdentity
-    {
-        $actor = ActorContext::forUser($userId);
-        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
-
-        return ActorIdentity::of($actor);
-    }
-
     /**
      * @return array{HelperIdentity, HelperPurpose}
      */
     private function helperFor(ActorIdentity $parent): array
     {
         return [
-            HelperIdentity::declare($parent, 'read-only-helper', 'read-only-helper'),
+            HelperIdentity::declare(
+                $parent,
+                ActorIdentity::of(Agent::named('Helper '.Str::random(6), 'read-only-helper')),
+                'read-only-helper',
+                'read-only-helper',
+            ),
             HelperPurpose::free($parent, 'read-only-helper', 'General review'),
         ];
     }

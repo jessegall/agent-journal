@@ -32,6 +32,7 @@ use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\ExpiresNavigation;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
+use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\NavigationReader;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\RecordsStartHeartbeats;
@@ -52,6 +53,7 @@ use App\Agents\Models\Support\ProcessStartScope;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
+use App\Agents\Resolvers\AgentLaunchCandidates;
 use App\Agents\Resolvers\LinkedAccountUses;
 use App\Agents\Resolvers\ProgramConversationRecords;
 use App\Agents\Resolvers\RecordedHostCapabilities;
@@ -136,6 +138,7 @@ final class AgentsServiceProvider extends ServiceProvider
             fn () => new VerifiedHelperImages(base_path('docs/accounts/helper-image.json')),
         );
         $this->app->bind(SessionPolicyReader::class, FrozenSessionPolicies::class);
+        $this->app->bind(LaunchCandidates::class, AgentLaunchCandidates::class);
         $this->app->singleton(DriverBudgets::class, fn () => new DriverBudgets(
             $this->app->make('config')->integer('agents.driver_budgets.claim_batch_max'),
             $this->app->make('config')->integer('agents.driver_budgets.long_poll_max_seconds'),

@@ -17,9 +17,12 @@ return new class extends Migration
             $table->string('actor_id');
             $table->string('profile_key', 64);
             $table->string('profile_base', 64);
+            $table->string('helper_actor_type', 16);
+            $table->string('helper_actor_id');
             $table->timestampsTz();
 
             $table->index(['actor_type', 'actor_id']);
+            $table->unique(['helper_actor_type', 'helper_actor_id']);
         });
 
         Schema::create('helper_purposes', function (Blueprint $table) {
@@ -53,6 +56,7 @@ return new class extends Migration
             $table->string('result_reference')->nullable();
             $table->string('stop_evidence_reference')->nullable();
             $table->unsignedInteger('profile_revision');
+            $table->timestampTz('finished_at')->nullable();
             $table->timestampsTz();
 
             $table->index(['actor_type', 'actor_id']);

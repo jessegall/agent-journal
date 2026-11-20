@@ -9,10 +9,14 @@ use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Records\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperJobFinished;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,6 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $result_reference
  * @property string|null $stop_evidence_reference
  * @property int $profile_revision
+ * @property CarbonImmutable|null $finished_at
  */
 #[Table('helper_jobs')]
 #[Fillable(['brief', 'source_snapshot', 'request_id', 'state', 'steering', 'profile_revision'])]
@@ -44,7 +49,12 @@ final class HelperJob extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['state' => JobState::class, 'source_snapshot' => 'array', 'steering' => 'array'];
+        return [
+            'state' => JobState::class,
+            'source_snapshot' => 'array',
+            'steering' => 'array',
+            'finished_at' => 'immutable_datetime',
+        ];
     }
 
     /**
@@ -85,6 +95,7 @@ final class HelperJob extends Model implements ReadableModel
     {
         $this->moveTo(JobState::Finished);
         $this->result_reference = $resultReference;
+        $this->finished_at = CarbonImmutable::now();
         $this->save();
     }
 
@@ -114,5 +125,47 @@ final class HelperJob extends Model implements ReadableModel
         }
 
         $this->state = $state;
+    }
+
+    /**
+     * Jobs not yet finished, cancelled or failed; a held or unfinished job still keeps its helper from new work.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function open(Builder $query): void
+    {
+        $query->whereNotIn('state', array_map(
+            fn (JobState $state) => $state->value,
+            array_filter(JobState::cases(), fn (JobState $state) => $state->isFinal()),
+        ));
+    }
+
+    /**
+     * Jobs of the identities named.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $identityIds
+     */
+    #[Scope]
+    protected function ofIdentities(Builder $query, array $identityIds): void
+    {
+        $query->whereIn('helper_identity_id', $identityIds);
+    }
+
+    /**
+     * Jobs that saw the subject: given for a purpose about it, or handed it in their source.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function exposedTo(Builder $query, RecordIdentity $subject): void
+    {
+        $query->where(fn (Builder $exposed) => $exposed
+            ->whereIn('helper_purpose_id', HelperPurpose::query()
+                ->where('subject_type', $subject->type)
+                ->where('subject_id', $subject->id)
+                ->select('id'))
+            ->orWhereJsonContains('source_snapshot->subjects', sprintf('%s:%s', $subject->type, $subject->id)));
     }
 }

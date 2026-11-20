@@ -155,6 +155,7 @@ use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
+use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\NativeTurnRecords;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\RuntimeResolver;
@@ -178,6 +179,7 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\HostCapabilityType;
+use App\Agents\Enums\LaunchCandidateRank;
 use App\Agents\Enums\MenuEntryState;
 use App\Agents\Enums\MenuStaleReason;
 use App\Agents\Enums\ModelSelectionType;
@@ -253,6 +255,9 @@ use App\Agents\Support\HeldAccountUses;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
+use App\Agents\Support\LaunchCandidateFacts;
+use App\Agents\Support\LaunchCandidateQuery;
+use App\Agents\Support\LaunchProfileKey;
 use App\Agents\Support\LibraryEntryAnswer;
 use App\Agents\Support\ManifestMount;
 use App\Agents\Support\ModelSelection;
@@ -261,6 +266,7 @@ use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
+use App\Agents\Support\RankedLaunchCandidate;
 use App\Agents\Support\ScreenReportAnswer;
 use App\Agents\Support\SelectedAccount;
 use App\Agents\Support\SelectedProgram;
@@ -1082,6 +1088,7 @@ final class CoreApi
             )
             ->contracts(
                 SessionPolicyReader::class,
+                LaunchCandidates::class,
                 ActiveAccountReader::class,
                 StartsAgent::class,
                 AccountUses::class,
@@ -1338,6 +1345,11 @@ final class CoreApi
                 ExecutionBudgets::class,
                 ExecutionPolicy::class,
                 StartPolicy::class,
+                LaunchCandidateQuery::class,
+                LaunchCandidateFacts::class,
+                LaunchProfileKey::class,
+                RankedLaunchCandidate::class,
+                LaunchCandidateRank::class,
                 ToolArguments::class,
                 RecordCard::class,
                 StateReferences::class,

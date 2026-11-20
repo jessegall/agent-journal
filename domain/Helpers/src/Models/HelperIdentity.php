@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
@@ -11,17 +12,22 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Domain\Helpers\Exceptions\HelperIdentityFixed;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A helper of one parent actor, declared from a profile; its profile key and base never change. Only its parent reads
- * it; the helper's own responsibility for a job is a Core assignment.
+ * A helper of one parent actor, declared from a profile for the lasting agent actor it represents; its parent, profile
+ * key, base and actor never change, idle or retired. Only its parent reads it; the helper's own responsibility for a
+ * job is a Core assignment.
  *
  * @property string $id
  * @property string $profile_key
  * @property string $profile_base
+ * @property string $helper_actor_type
+ * @property string $helper_actor_id
  */
 #[Table('helper_identities')]
 #[Fillable(['profile_key', 'profile_base'])]
@@ -30,23 +36,75 @@ final class HelperIdentity extends Model implements ReadableModel
     use BelongsToOneActor, BoundedReads, HasUlids;
     use Linkable;
 
+    /**
+     * The columns a declared identity never changes.
+     */
+    private const array FIXED_COLUMNS = [
+        'actor_type',
+        'actor_id',
+        'profile_key',
+        'profile_base',
+        'helper_actor_type',
+        'helper_actor_id',
+    ];
+
     protected static function booted(): void
     {
         self::updating(function (self $identity): void {
-            if ($identity->isDirty(['profile_key', 'profile_base'])) {
+            if ($identity->isDirty(self::FIXED_COLUMNS)) {
                 throw HelperIdentityFixed::forIdentity($identity->id);
             }
         });
     }
 
-    public static function declare(ActorIdentity $parent, string $profileKey, string $profileBase): self
-    {
+    /**
+     * Declares the parent's helper for the agent actor it represents; Agents offers it only while that actor is an
+     * agent with the same profile key.
+     */
+    public static function declare(
+        ActorIdentity $parent,
+        ActorIdentity $helper,
+        string $profileKey,
+        string $profileBase,
+    ): self {
         $identity = new self();
         $identity->profile_key = $profileKey;
         $identity->profile_base = $profileBase;
+        $identity->helper_actor_type = $helper->type->value;
+        $identity->helper_actor_id = $helper->id;
         $identity->belongTo($parent);
         $identity->save();
 
         return $identity;
+    }
+
+    /**
+     * The lasting actor this identity represents.
+     */
+    public function helperActor(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->helper_actor_type), $this->helper_actor_id);
+    }
+
+    /**
+     * The parent's identities of one profile key and base, the only ones a start may reuse for that profile.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofProfile(Builder $query, string $profileKey, string $profileBase): void
+    {
+        $query->where('profile_key', $profileKey)->where('profile_base', $profileBase);
+    }
+
+    /**
+     * The identity that represents the actor, if the parent has one.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function representing(Builder $query, ActorIdentity $helper): void
+    {
+        $query->where('helper_actor_type', $helper->type->value)->where('helper_actor_id', $helper->id);
     }
 }
