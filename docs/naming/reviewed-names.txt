@@ -2327,6 +2327,7 @@ class	FieldOrigin
 class	FieldOriginData
 class	FileChange
 class	FileChanges
+class	FileContents
 class	FileDeclaresNoClass
 class	FileEditRequested
 class	FileMissing
@@ -2339,6 +2340,7 @@ class	FileRules
 class	FileUnreadable
 class	FindNextSubstitution
 class	FindReplay
+class	Fingerprint
 class	FinishCertifiedJob
 class	FinishPlan
 class	FinishPlanCall
@@ -2657,6 +2659,7 @@ class	JournalVisibility
 class	JournalWriteTool
 class	JudgedCall
 class	KeepNavigationAnswer
+class	KeptFile
 class	KeyScriptRefused
 class	KeyedWriteWithoutReceipt
 class	KeywordDefinition
@@ -10819,6 +10822,14 @@ method	FileChange::asOperation()
 method	FileChanges::__construct()
 method	FileChanges::operations()
 method	FileChanges::paths()
+method	FileContents::__construct()
+method	FileContents::decoded()
+method	FileContents::drop()
+method	FileContents::fresh()
+method	FileContents::keep()
+method	FileContents::kept()
+method	FileContents::keptUnder()
+method	FileContents::openCount()
 method	FileDeclaresNoClass::withoutClass()
 method	FileDeclaresNoClass::withoutNamespace()
 method	FileEditRequested::__construct()
@@ -10856,6 +10867,10 @@ method	FindNextSubstitution::isTest()
 method	FindNextSubstitution::substitutionOf()
 method	FindNextSubstitution::wordsInside()
 method	FindReplay::handle()
+method	Fingerprint::__construct()
+method	Fingerprint::isSettled()
+method	Fingerprint::key()
+method	Fingerprint::of()
 method	FinishCertifiedJob::handle()
 method	FinishPlan::__construct()
 method	FinishPlanCall::__construct()
@@ -11776,6 +11791,8 @@ method	KeepNavigationAnswer::handle()
 method	KeepsCleanupTries::hasUsedEveryCleanupTry()
 method	KeepsCleanupTries::recordCleanupTry()
 method	KeepsCleanupTries::resetCleanupTries()
+method	KeptFile::__construct()
+method	KeptFile::size()
 method	KeyScriptRefused::parameters()
 method	KeyScriptRefused::unknown()
 method	KeyedWriteWithoutReceipt::for()
@@ -20545,6 +20562,7 @@ parameter	$field
 parameter	$fieldValue
 parameter	$fields
 parameter	$file
+parameter	$fileByteLimit
 parameter	$fileName
 parameter	$filedAt
 parameter	$files
@@ -20719,6 +20737,7 @@ parameter	$inertia
 parameter	$inherited
 parameter	$initialArguments
 parameter	$inner
+parameter	$inode
 parameter	$input
 parameter	$inputDigest
 parameter	$insideResults
@@ -20985,6 +21004,7 @@ parameter	$models
 parameter	$modelsByClass
 parameter	$modelsFolder
 parameter	$modelsLoaded
+parameter	$modifiedAt
 parameter	$module
 parameter	$moment
 parameter	$monotonicNanoseconds
@@ -21412,6 +21432,7 @@ parameter	$reading
 parameter	$reads
 parameter	$readyStates
 parameter	$real
+parameter	$realPath
 parameter	$reason
 parameter	$reasonCode
 parameter	$receipt
@@ -24468,11 +24489,21 @@ property	FieldOriginData::$origin
 property	FileChange::$operation
 property	FileChange::$path
 property	FileChanges::$changes
+property	FileContents::$byteLimit
+property	FileContents::$fileByteLimit
+property	FileContents::$kept
+property	FileContents::$keptBytes
+property	FileContents::$opens
 property	FileEditRequested::$changes
 property	FileEditRequested::$hook
 property	FilePath::$place
 property	FilePath::$relative
 property	FindNextSubstitution::$lexer
+property	Fingerprint::$changedAt
+property	Fingerprint::$inode
+property	Fingerprint::$modifiedAt
+property	Fingerprint::$realPath
+property	Fingerprint::$size
 property	FinishPlan::$expectedRevision
 property	FinishPlan::$note
 property	FinishPlan::$planId
@@ -24969,6 +25000,9 @@ property	JournalToolCall::$reply
 property	JournalTools::$names
 property	JudgedCall::$input
 property	JudgedCall::$render
+property	KeptFile::$bytes
+property	KeptFile::$decoded
+property	KeptFile::$fingerprint
 property	KeywordDefinition::$category
 property	KeywordDefinition::$documentation
 property	KeywordDefinition::$effects
@@ -31378,6 +31412,7 @@ variable	$starting
 variable	$starts
 variable	$startsExpansion
 variable	$startup
+variable	$stat
 variable	$state
 variable	$stateClass
 variable	$stateEventEntries
