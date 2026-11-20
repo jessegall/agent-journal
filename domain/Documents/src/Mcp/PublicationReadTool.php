@@ -8,6 +8,7 @@ use App\Agents\Values\ReadRequest;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Operations\Enums\ResourceAreaType;
+use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 
 abstract class PublicationReadTool extends JournalReadTool

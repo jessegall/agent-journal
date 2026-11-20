@@ -11,6 +11,7 @@ use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
 use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;

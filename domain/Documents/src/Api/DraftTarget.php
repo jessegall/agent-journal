@@ -10,7 +10,7 @@ namespace Domain\Documents\Api;
 final readonly class DraftTarget
 {
     public function __construct(
-        public int|string $documentNumber,
+        public string $documentNumber,
         public string $token,
         public int|null $expectedVersion = null,
     ) {}

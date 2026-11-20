@@ -12,6 +12,8 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Support\SystemEntryPolicies;
+use App\Agents\Contracts\SessionProvenance as SessionProvenanceContract;
+use App\Agents\Support\SessionProvenance;
 use App\Actors\Values\PolicyRegistration;
 use App\AgentRequests\Console\GenerateCallsCommand;
 use App\AgentRequests\Contracts\AgentRequestClient as AgentRequestClientContract;
@@ -163,6 +165,7 @@ final class AgentsServiceProvider extends ServiceProvider
             fn () => new VerifiedHelperImages(base_path('docs/accounts/helper-image.json')),
         );
         $this->app->bind(SessionPolicyReader::class, FrozenSessionPolicies::class);
+        $this->app->bind(SessionProvenanceContract::class, SessionProvenance::class);
         $this->app->bind(LaunchCandidates::class, AgentLaunchCandidates::class);
         $this->app->bind(StartReservations::class, ReserveStarts::class);
         $this->app->bind(StartReceipts::class, OwnerStartReceipts::class);

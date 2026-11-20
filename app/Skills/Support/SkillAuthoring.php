@@ -18,8 +18,6 @@ use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRevision;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
-use App\Skills\Values\SkillDraftChanges;
-use App\Skills\Values\SkillReference;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
@@ -75,23 +73,6 @@ final readonly class SkillAuthoring
         )->find($key)->origin === SkillOrigin::Shipped
             ? throw ShippedSkillReadOnly::for($key->key)
             : throw SkillMissing::for($key);
-    }
-
-    public function storedId(string|SkillReference $skill): string
-    {
-        return $skill instanceof SkillReference ? $this->stored($skill->numberOrKey)->id : $skill;
-    }
-
-    public function revisedDraft(Skill $skill, SkillDraftChanges $changes): SkillDraft
-    {
-        $current = $this->currentDraft($skill);
-
-        return new SkillDraft(
-            $changes->name ?? $current->name,
-            $changes->description ?? $current->description,
-            $changes->body === null ? $current->sections : $this->sectionsOf($changes->body),
-            $changes->condition ?? $current->condition,
-        );
     }
 
     /**

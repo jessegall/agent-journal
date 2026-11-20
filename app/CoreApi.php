@@ -155,8 +155,8 @@ use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Support\SessionProvenance;
-use App\Communication\Support\InboxNotices;
+use App\Agents\Contracts\SessionProvenance;
+use App\Communication\Contracts\InboxNotices;
 use App\Mcp\Contracts\SearchContribution;
 use App\Mcp\Data\SearchHit;
 use App\Mcp\Data\SearchPage;
@@ -1153,6 +1153,8 @@ final class CoreApi
                 RecordResolver::class,
                 RecordLinker::class,
                 CommandTransaction::class,
+                SessionProvenance::class,
+                InboxNotices::class,
                 CurrentSession::class,
                 SearchContribution::class,
                 ConversationVisits::class,
@@ -2162,8 +2164,6 @@ final class CoreApi
                 SkillOwnerRequired::class,
             )
             ->support(
-                SessionProvenance::class,
-                InboxNotices::class,
                 BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,

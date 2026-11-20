@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Contracts\CommandHandler;
+use App\Numbers\Support\RecordReference;
 use App\Records\Support\RecordIdentity;
 use Domain\Documents\Commands\CommentOnDocument;
 use Domain\Documents\Models\Document;
@@ -17,7 +18,8 @@ final readonly class CommentOnDocumentHandler implements CommandHandler
 
     public function handle(CommentOnDocument $command): string
     {
-        $id = is_int($command->documentId) ? DocumentRecords::published($command->documentId)->id : $command->documentId;
+        $reference = RecordReference::idOrNumber($command->documentId);
+        $id = is_int($reference) ? DocumentRecords::published($reference)->id : $reference;
 
         return $this->comments->post(
             new RecordIdentity(Document::LINK_TYPE, $id),

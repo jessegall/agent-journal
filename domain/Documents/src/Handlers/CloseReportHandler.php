@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Contracts\CommandHandler;
+use App\Numbers\Support\RecordReference;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Commands\CloseReport;
 use Domain\Documents\Models\Report;
@@ -17,7 +18,7 @@ final readonly class CloseReportHandler implements CommandHandler
 
     public function handle(CloseReport $command): void
     {
-        $report = Report::lockedForClosing($command->reportReference);
+        $report = Report::lockedForClosing(RecordReference::idOrNumber($command->reportReference));
 
         $this->changes->requireChangeOf($report);
 

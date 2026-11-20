@@ -82,7 +82,7 @@ final class TextUpload extends Model implements ReadableModel
         return $this->body();
     }
 
-    public function append(int $position, string $text, string $digest): void
+    public function appendChunk(int $position, string $text, string $digest): void
     {
         $bytes = strlen($text);
         if ($bytes < 1 || $bytes > self::CHUNK_BYTES || ! mb_check_encoding($text, 'UTF-8')

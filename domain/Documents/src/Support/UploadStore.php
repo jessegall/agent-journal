@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Agents\Support\SessionProvenance;
+use App\Agents\Contracts\SessionProvenance;
 use App\Bus\Contracts\CommandTransaction;
 use Domain\Documents\Contracts\SealedUploads;
 use Domain\Documents\Enums\UploadType;
@@ -36,7 +36,7 @@ final readonly class UploadStore implements SealedUploads
 
     public function append(string $uploadId, int $index, string $text, string $digest): void
     {
-        TextUpload::locked($uploadId)->append($index, $text, $digest);
+        TextUpload::locked($uploadId)->appendChunk($index, $text, $digest);
     }
 
     public function seal(string $uploadId): void

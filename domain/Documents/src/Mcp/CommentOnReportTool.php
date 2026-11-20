@@ -11,6 +11,7 @@ use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
 use Domain\Documents\Commands\CommentOnReport;
+use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -37,7 +38,7 @@ final class CommentOnReportTool extends JournalWriteTool
 
     protected function command(ToolArguments $arguments): CommentOnReport
     {
-        return new CommentOnReport($arguments->recordReference('report_id'), $arguments->text('body'));
+        return new CommentOnReport((string) $arguments->recordReference('report_id'), $arguments->text('body'));
     }
 
     protected function present(mixed $result): ToolResult

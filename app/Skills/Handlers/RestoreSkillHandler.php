@@ -9,20 +9,16 @@ use App\Skills\Commands\RestoreSkill;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRevision;
 use App\Skills\Resolvers\Support\SkillContextResolver;
-use App\Skills\Support\SkillAuthoring;
 use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SkillRevisionResult;
 
 final readonly class RestoreSkillHandler implements CommandHandler
 {
-    public function __construct(
-        private StoredSkillWrites $writes,
-        private SkillAuthoring $authoring,
-    ) {}
+    public function __construct(private StoredSkillWrites $writes) {}
 
     public function handle(RestoreSkill $command): SkillRevisionResult
     {
-        $skillId = $this->authoring->storedId($command->skill);
+        $skillId = $command->skill;
         return $this->writes->once($command->requestId, hash(
             'sha256',
             "{$skillId}|{$command->revision}|{$command->expectedRevision}",

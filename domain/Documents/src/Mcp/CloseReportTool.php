@@ -11,6 +11,7 @@ use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
 use Domain\Documents\Commands\CloseReport;
+use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -37,7 +38,7 @@ final class CloseReportTool extends JournalWriteTool
 
     protected function command(ToolArguments $arguments): CloseReport
     {
-        return new CloseReport($arguments->recordReference('report_id'), $arguments->text('reason'));
+        return new CloseReport((string) $arguments->recordReference('report_id'), $arguments->text('reason'));
     }
 
     protected function present(mixed $result): ToolResult

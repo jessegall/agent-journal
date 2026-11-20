@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Assignments\Support\AssigneeIdentity;
-use App\Mcp\Support\CapabilitiesResolver;
+use App\Mcp\Servers\JournalServer;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
@@ -87,7 +87,7 @@ final class OrientationToolsTest extends TestCase
             ['HTTP_MCP_PROTOCOL_VERSION' => '2025-11-25'],
         )->json('result.structuredContent');
 
-        $this->assertSame(CapabilitiesResolver::CONTRACT_VERSION, $result['contract_version']);
+        $this->assertSame(JournalServer::contractVersion(), $result['contract_version']);
         $this->assertIsString($result['server_build']);
         $this->assertSame('2025-11-25', $result['protocol_version']);
         $this->assertSame('main-agent', $result['job_profile']);

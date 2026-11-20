@@ -39,7 +39,7 @@ final class DocumentRecordsTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         $document = $bus->run(new CreateDocument('Design', 'Current design.', 'Public text.'));
         $report = $bus->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
-        $bus->run(new OpenDocument($document->number));
+        $bus->run(new OpenDocument((string) $document->number));
 
         $links = $this->app->make(IdentityLinks::class);
         foreach ([Document::query()->sole(), DocumentRevision::query()->sole(), Report::query()->sole()] as $record) {

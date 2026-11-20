@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Providers;
 
 use App\Actors\Support\SystemEntryPolicies;
+use App\Communication\Contracts\InboxNotices as InboxNoticesContract;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Agents\Contracts\RequestSource;
@@ -48,6 +49,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->singleton(InboxResolver::class, RegisteredInboxes::class);
         $this->app->singleton(RegisteredInboxes::class);
         $this->app->scoped(ConversationResolver::class, MessageRecords::class);
+        $this->app->bind(InboxNoticesContract::class, InboxNotices::class);
         $this->app->scoped(AgentMessageReader::class, AgentMessages::class);
         $this->app->scoped(RequestSource::class, SelectedMessages::class);
     }

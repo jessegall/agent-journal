@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
-use App\Agents\Support\SessionProvenance;
+use App\Agents\Contracts\SessionProvenance;
 use App\Contracts\CommandHandler;
 use App\Records\Contracts\RecordLinker;
 use App\Text\Support\MarkdownText;

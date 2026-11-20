@@ -31,7 +31,7 @@ final class OpenDocumentTool extends DraftWriteTool
     protected function command(ToolArguments $arguments): OpenDocument
     {
         return new OpenDocument(
-            $arguments->recordReference('doc_id'),
+            (string) $arguments->recordReference('doc_id'),
             $arguments->positiveInteger('expected_revision'),
         );
     }

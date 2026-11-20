@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Documents\Mcp;
+namespace Domain\Documents\Mcp\Concerns;
 
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\ToolArguments;
@@ -21,7 +21,7 @@ trait PublicationArguments
     protected function target(ToolArguments $arguments, int|null $expectedRevision = null): DraftTarget
     {
         return new DraftTarget(
-            $arguments->recordReference('doc_id'),
+            (string) $arguments->recordReference('doc_id'),
             $arguments->text('edit_id'),
             $expectedRevision,
         );

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Domain\Chat\Listeners;
+namespace Domain\Documents\Listeners;
 
-use App\Communication\Support\InboxNotices;
+use App\Communication\Contracts\InboxNotices;
 use App\Contracts\Listener;
 use Domain\Documents\Api\Events\DraftKept;
 

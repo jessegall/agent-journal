@@ -100,9 +100,9 @@ final class DocumentReaderTest extends TestCase
     private function publish(int $number, string $body): void
     {
         $bus = $this->app->make(CommandBus::class);
-        $draft = $bus->run(new OpenDocument($number));
-        $bus->run(new EditDocument(new DraftTarget($number, $draft->token, $draft->version), '1', $body));
-        $bus->run(new CloseDocument(new DraftTarget($number, $draft->token)));
+        $draft = $bus->run(new OpenDocument((string) $number));
+        $bus->run(new EditDocument(new DraftTarget((string) $number, $draft->token, $draft->version), '1', $body));
+        $bus->run(new CloseDocument(new DraftTarget((string) $number, $draft->token)));
     }
 
     /** @param array<string, mixed> $arguments */

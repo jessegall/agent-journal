@@ -15,13 +15,14 @@ use App\Bus\Support\RequestKey;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\Inbox;
+use App\Communication\Contracts\InboxNotices as InboxNoticesContract;
 use App\Communication\Contracts\InboxResolver;
 use PhpOption\None;
 
 /**
  * Sends a notice from one inbox to another through the one send path, under the caller's request key.
  */
-final readonly class InboxNotices
+final readonly class InboxNotices implements InboxNoticesContract
 {
     public const string SYSTEM_ENTRY = 'inbox notice';
 

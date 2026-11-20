@@ -29,7 +29,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 final readonly class OpenDocument extends Command implements AuthorizedCommand
 {
     public function __construct(
-        public int|string $documentNumber,
+        public string $documentNumber,
         public int|null $expectedRevision = null,
     ) {}
 

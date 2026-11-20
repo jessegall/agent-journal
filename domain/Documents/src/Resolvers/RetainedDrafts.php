@@ -6,7 +6,7 @@ namespace Domain\Documents\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
-use App\Agents\Support\SessionProvenance;
+use App\Agents\Contracts\SessionProvenance;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
 use App\Operations\Enums\AccessType;

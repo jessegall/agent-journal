@@ -22,7 +22,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 #[Operation('comment_on_report', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class CommentOnReport extends Command implements AuthorizedCommand
 {
-    public function __construct(public int|string $reportId, public string $body) {}
+    public function __construct(public string $reportId, public string $body) {}
 
     public function subject(): string
     {

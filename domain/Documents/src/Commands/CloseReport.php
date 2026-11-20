@@ -29,7 +29,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 final readonly class CloseReport extends Command implements AuthorizedCommand
 {
     public function __construct(
-        public int|string $reportReference,
+        public string $reportReference,
         #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)]
         public string $reason,
     ) {}

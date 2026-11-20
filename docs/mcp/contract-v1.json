@@ -1,0 +1,4809 @@
+{
+    "contract_version": "1.0.0",
+    "profiles": {
+        "main-agent": {
+            "assignees_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "after_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "limit": {
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "type": {
+                            "enum": [
+                                "agent",
+                                "user"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ],
+                    "type": "object"
+                },
+                "name": "assignees_list",
+                "outputSchema": null,
+                "title": "Assignees List Tool"
+            },
+            "assignments_assign": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "recipient": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "enum": [
+                                        "agent",
+                                        "user"
+                                    ],
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "id"
+                            ],
+                            "type": "object"
+                        },
+                        "record_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "record_type": {
+                            "maxLength": 100,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "record_type",
+                        "record_id",
+                        "recipient",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "assignments_assign",
+                "outputSchema": null,
+                "title": "Assign Record Tool"
+            },
+            "assignments_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "record_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "record_type": {
+                            "description": "A registered record type such as tasks.task, plans.plan or plans.phase.",
+                            "maxLength": 100,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "record_type",
+                        "record_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "assignments_read",
+                "outputSchema": null,
+                "title": "Assignment Read Tool"
+            },
+            "assignments_reassign": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "expected_assignment": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "holder": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "id": {
+                                            "maxLength": 26,
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "enum": [
+                                                "agent",
+                                                "user"
+                                            ],
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
+                                    "type": "object"
+                                },
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "holder"
+                            ],
+                            "type": "object"
+                        },
+                        "recipient": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "enum": [
+                                        "agent",
+                                        "user"
+                                    ],
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "id"
+                            ],
+                            "type": "object"
+                        },
+                        "record_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "record_type": {
+                            "maxLength": 100,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "record_type",
+                        "record_id",
+                        "expected_assignment",
+                        "recipient",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "assignments_reassign",
+                "outputSchema": null,
+                "title": "Reassign Record Tool"
+            },
+            "assignments_unassign": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "expected_assignment": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "holder": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "id": {
+                                            "maxLength": 26,
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "enum": [
+                                                "agent",
+                                                "user"
+                                            ],
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
+                                    "type": "object"
+                                },
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "holder"
+                            ],
+                            "type": "object"
+                        },
+                        "record_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "record_type": {
+                            "maxLength": 100,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "record_type",
+                        "record_id",
+                        "expected_assignment",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "assignments_unassign",
+                "outputSchema": null,
+                "title": "Unassign Record Tool"
+            },
+            "attachments_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "attachment_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "attachment_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "attachments_read",
+                "outputSchema": null,
+                "title": "Read Attachment Tool"
+            },
+            "capabilities_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                },
+                "name": "capabilities_read",
+                "outputSchema": {
+                    "properties": {
+                        "contract_version": {
+                            "type": "string"
+                        },
+                        "job_profile": {
+                            "type": "string"
+                        },
+                        "next_actions": {
+                            "type": "array"
+                        },
+                        "protocol_version": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "server_build": {
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        },
+                        "tools": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "contract_version",
+                        "server_build",
+                        "protocol_version",
+                        "job_profile",
+                        "tools",
+                        "next_actions"
+                    ],
+                    "type": "object"
+                },
+                "title": "Capabilities Read Tool"
+            },
+            "docs_close": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "edit_id": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id",
+                        "edit_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_close",
+                "outputSchema": null,
+                "title": "Close Document Tool"
+            },
+            "docs_comment": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_comment",
+                "outputSchema": null,
+                "title": "Comment On Document Tool"
+            },
+            "docs_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "abstract": {
+                            "maxLength": 1000,
+                            "type": "string"
+                        },
+                        "body": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "source_references": {
+                            "items": {
+                                "maxLength": 128,
+                                "type": "string"
+                            },
+                            "maxItems": 50,
+                            "type": "array"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "abstract",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_create",
+                "outputSchema": null,
+                "title": "Create Document Tool"
+            },
+            "docs_drafts_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "draft_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "draft_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_drafts_read",
+                "outputSchema": null,
+                "title": "Read Retained Draft Tool"
+            },
+            "docs_drafts_recover": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "draft_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "draft_id",
+                        "expected_revision",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_drafts_recover",
+                "outputSchema": null,
+                "title": "Recover Draft Tool"
+            },
+            "docs_edit": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "edit_id": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "section": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id",
+                        "edit_id",
+                        "expected_revision",
+                        "section",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_edit",
+                "outputSchema": null,
+                "title": "Edit Document Tool"
+            },
+            "docs_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 200,
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "docs_list",
+                "outputSchema": null,
+                "title": "Documents List Tool"
+            },
+            "docs_open": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id",
+                        "expected_revision",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_open",
+                "outputSchema": null,
+                "title": "Open Document Tool"
+            },
+            "docs_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "character_offset": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "line_end": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "line_start": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "section": {
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "body",
+                                "revisions",
+                                "comments"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_read",
+                "outputSchema": null,
+                "title": "Read Document Tool"
+            },
+            "memories_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "weight": {
+                            "maximum": 10,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "text",
+                        "weight",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "memories_create",
+                "outputSchema": null,
+                "title": "Save Memory Tool"
+            },
+            "memories_edit": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "memory_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "weight": {
+                            "maximum": 10,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "memory_id",
+                        "expected_revision",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "memories_edit",
+                "outputSchema": null,
+                "title": "Edit Memory Tool"
+            },
+            "memories_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "memories_list",
+                "outputSchema": null,
+                "title": "Memories List Tool"
+            },
+            "memories_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "memory_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "memory_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "memories_read",
+                "outputSchema": null,
+                "title": "Memory Read Tool"
+            },
+            "memories_remove": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "memory_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "memory_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "memories_remove",
+                "outputSchema": null,
+                "title": "Remove Memory Tool"
+            },
+            "menu_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "program": {
+                            "maxLength": 80,
+                            "type": "string"
+                        },
+                        "state": {
+                            "enum": [
+                                "current",
+                                "superseded",
+                                "retired"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "menu_list",
+                "outputSchema": null,
+                "title": "Menu List Tool"
+            },
+            "menu_show": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "entry": {
+                            "maxLength": 64,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "entry"
+                    ],
+                    "type": "object"
+                },
+                "name": "menu_show",
+                "outputSchema": null,
+                "title": "Menu Show Tool"
+            },
+            "messages_answer": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "reply_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id",
+                        "reply_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_answer",
+                "outputSchema": null,
+                "title": "Answer Message Tool"
+            },
+            "messages_context": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_context",
+                "outputSchema": null,
+                "title": "Message Context Tool"
+            },
+            "messages_dismiss": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "reason": {
+                            "maxLength": 2000,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id",
+                        "reason",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_dismiss",
+                "outputSchema": null,
+                "title": "Dismiss Message Tool"
+            },
+            "messages_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "state": {
+                            "enum": [
+                                "pending",
+                                "answered",
+                                "all"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "messages_list",
+                "outputSchema": null,
+                "title": "Messages List Tool"
+            },
+            "messages_question": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "maxLength": 65536,
+                            "type": "string"
+                        },
+                        "related_record": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "maxLength": 100,
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "id"
+                            ],
+                            "type": "object"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_question",
+                "outputSchema": null,
+                "title": "Ask Question Tool"
+            },
+            "messages_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "context"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_read",
+                "outputSchema": null,
+                "title": "Message Read Tool"
+            },
+            "messages_reply": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "state_version": {
+                            "minimum": 0,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "message_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_reply",
+                "outputSchema": null,
+                "title": "Reply To Message Tool"
+            },
+            "messages_select": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_select",
+                "outputSchema": null,
+                "title": "Select Message Tool"
+            },
+            "navigation_answer": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "choose": {
+                            "maxLength": 200,
+                            "type": "string"
+                        },
+                        "confirm": {
+                            "maxLength": 200,
+                            "type": "string"
+                        },
+                        "generation": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "keys": {
+                            "items": {
+                                "maxLength": 16,
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "type_parameter": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "version": {
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "version",
+                        "generation",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "navigation_answer",
+                "outputSchema": null,
+                "title": "Navigation Answer Tool"
+            },
+            "navigation_done": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "completes": {
+                            "enum": [
+                                "goal",
+                                "step"
+                            ],
+                            "type": "string"
+                        },
+                        "proof": {
+                            "maxLength": 200,
+                            "type": "string"
+                        },
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "version": {
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "version",
+                        "completes",
+                        "proof",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "navigation_done",
+                "outputSchema": null,
+                "title": "Navigation Done Tool"
+            },
+            "navigation_give_up": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reason": {
+                            "maxLength": 500,
+                            "type": "string"
+                        },
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "version": {
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "request",
+                        "version",
+                        "reason",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "navigation_give_up",
+                "outputSchema": null,
+                "title": "Navigation Give Up Tool"
+            },
+            "navigation_show": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request"
+                    ],
+                    "type": "object"
+                },
+                "name": "navigation_show",
+                "outputSchema": null,
+                "title": "Navigation Show Tool"
+            },
+            "operations_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "operations_read",
+                "outputSchema": {
+                    "properties": {
+                        "next_actions": {
+                            "type": "array"
+                        },
+                        "request_key": {
+                            "type": "string"
+                        },
+                        "state": {
+                            "enum": [
+                                "completed",
+                                "refused",
+                                "taken",
+                                "unknown"
+                            ],
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "request_key",
+                        "state",
+                        "next_actions"
+                    ],
+                    "type": "object"
+                },
+                "title": "Operations Read Tool"
+            },
+            "overview_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                },
+                "name": "overview_read",
+                "outputSchema": {
+                    "properties": {
+                        "agent_id": {
+                            "type": "string"
+                        },
+                        "next_actions": {
+                            "type": "array"
+                        },
+                        "sections": {
+                            "type": "object"
+                        },
+                        "session_id": {
+                            "type": "string"
+                        },
+                        "stack_state": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "status": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "agent_id",
+                        "session_id",
+                        "stack_state",
+                        "sections",
+                        "next_actions"
+                    ],
+                    "type": "object"
+                },
+                "title": "Overview Read Tool"
+            },
+            "phases_add_tasks": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "phase_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "task_ids": {
+                            "items": {
+                                "maxLength": 26,
+                                "type": "string"
+                            },
+                            "maxItems": 100,
+                            "minItems": 1,
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "phase_id",
+                        "task_ids",
+                        "expected_revision",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "phases_add_tasks",
+                "outputSchema": null,
+                "title": "Add Phase Tasks Tool"
+            },
+            "phases_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "plan_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "plan_id",
+                        "title",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "phases_create",
+                "outputSchema": null,
+                "title": "Create Phase Tool"
+            },
+            "phases_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "phase_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "phase_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "phases_read",
+                "outputSchema": null,
+                "title": "Phase Read Tool"
+            },
+            "plans_assign_work": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "recipient": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "enum": [
+                                        "agent",
+                                        "user"
+                                    ],
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "id"
+                            ],
+                            "type": "object"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "root": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "enum": [
+                                        "plans.plan",
+                                        "plans.phase"
+                                    ],
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "id"
+                            ],
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "root",
+                        "recipient",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_assign_work",
+                "outputSchema": null,
+                "title": "Assign Plan Work Tool"
+            },
+            "plans_assigned": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "per_page": {
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "states": {
+                            "items": {
+                                "enum": [
+                                    "planned",
+                                    "reviewing",
+                                    "started",
+                                    "paused",
+                                    "cancelled",
+                                    "done"
+                                ],
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "plans_assigned",
+                "outputSchema": null,
+                "title": "Assigned Plans Tool"
+            },
+            "plans_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "brief": {
+                            "maxLength": 20000,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "type": {
+                            "enum": [
+                                "build",
+                                "fix",
+                                "research",
+                                "cleanup"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "brief",
+                        "type",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_create",
+                "outputSchema": null,
+                "title": "Create Plan Tool"
+            },
+            "plans_edit": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "brief": {
+                            "maxLength": 20000,
+                            "type": "string"
+                        },
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "plan_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "type": {
+                            "enum": [
+                                "build",
+                                "fix",
+                                "research",
+                                "cleanup"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "plan_id",
+                        "expected_revision",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_edit",
+                "outputSchema": null,
+                "title": "Edit Plan Tool"
+            },
+            "plans_finish": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "note": {
+                            "maxLength": 8000,
+                            "type": "string"
+                        },
+                        "plan_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "plan_id",
+                        "expected_revision",
+                        "note",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_finish",
+                "outputSchema": null,
+                "title": "Finish Plan Tool"
+            },
+            "plans_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "states": {
+                            "items": {
+                                "enum": [
+                                    "planned",
+                                    "reviewing",
+                                    "started",
+                                    "paused",
+                                    "cancelled",
+                                    "done"
+                                ],
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "plans_list",
+                "outputSchema": null,
+                "title": "Plans List Tool"
+            },
+            "plans_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "plan_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "context"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "plan_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_read",
+                "outputSchema": null,
+                "title": "Plan Read Tool"
+            },
+            "plans_reassign_work": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "expected_assignment": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "holder": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "id": {
+                                            "maxLength": 26,
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "enum": [
+                                                "agent",
+                                                "user"
+                                            ],
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
+                                    "type": "object"
+                                },
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "holder"
+                            ],
+                            "type": "object"
+                        },
+                        "recipient": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "enum": [
+                                        "agent",
+                                        "user"
+                                    ],
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "id"
+                            ],
+                            "type": "object"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "root": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "enum": [
+                                        "plans.plan",
+                                        "plans.phase"
+                                    ],
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "id"
+                            ],
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "root",
+                        "expected_assignment",
+                        "recipient",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_reassign_work",
+                "outputSchema": null,
+                "title": "Reassign Plan Work Tool"
+            },
+            "plans_start": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "plan_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "plan_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_start",
+                "outputSchema": null,
+                "title": "Start Plan Tool"
+            },
+            "plans_unassign_work": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "expected_assignment": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "holder": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "id": {
+                                            "maxLength": 26,
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "enum": [
+                                                "agent",
+                                                "user"
+                                            ],
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
+                                    "type": "object"
+                                },
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "holder"
+                            ],
+                            "type": "object"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "root": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "enum": [
+                                        "plans.plan",
+                                        "plans.phase"
+                                    ],
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "id"
+                            ],
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "root",
+                        "expected_assignment",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_unassign_work",
+                "outputSchema": null,
+                "title": "Unassign Plan Work Tool"
+            },
+            "reports_close": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reason": {
+                            "maxLength": 2000,
+                            "type": "string"
+                        },
+                        "report_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "report_id",
+                        "reason",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_close",
+                "outputSchema": null,
+                "title": "Close Report Tool"
+            },
+            "reports_comment": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "report_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "report_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_comment",
+                "outputSchema": null,
+                "title": "Comment On Report Tool"
+            },
+            "reports_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "abstract": {
+                            "maxLength": 1000,
+                            "type": "string"
+                        },
+                        "body": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "source_references": {
+                            "items": {
+                                "maxLength": 128,
+                                "type": "string"
+                            },
+                            "maxItems": 50,
+                            "type": "array"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "abstract",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_create",
+                "outputSchema": null,
+                "title": "Create Report Tool"
+            },
+            "reports_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 200,
+                            "type": "string"
+                        },
+                        "state": {
+                            "enum": [
+                                "open",
+                                "closed",
+                                "all"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "reports_list",
+                "outputSchema": null,
+                "title": "Reports List Tool"
+            },
+            "reports_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "character_offset": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "line_end": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "line_start": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "report_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "section": {
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "body",
+                                "comments"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "report_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_read",
+                "outputSchema": null,
+                "title": "Read Report Tool"
+            },
+            "rules_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "state": {
+                            "enum": [
+                                "proposed",
+                                "active",
+                                "denied",
+                                "removed"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "rules_list",
+                "outputSchema": null,
+                "title": "Rules List Tool"
+            },
+            "rules_propose": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reason": {
+                            "maxLength": 2000,
+                            "type": "string"
+                        },
+                        "replaces_rule_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "text": {
+                            "maxLength": 2000,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "text",
+                        "reason",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "rules_propose",
+                "outputSchema": null,
+                "title": "Propose Rule Tool"
+            },
+            "rules_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "rule_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "rule_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "rules_read",
+                "outputSchema": null,
+                "title": "Rule Read Tool"
+            },
+            "search": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "query": {
+                            "maxLength": 200,
+                            "minLength": 2,
+                            "type": "string"
+                        },
+                        "types": {
+                            "items": {
+                                "maxLength": 64,
+                                "type": "string"
+                            },
+                            "maxItems": 12,
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "search",
+                "outputSchema": null,
+                "title": "Search Tool"
+            },
+            "tasks_assigned": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "per_page": {
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "states": {
+                            "items": {
+                                "enum": [
+                                    "open",
+                                    "started",
+                                    "blocked",
+                                    "finished",
+                                    "cancelled"
+                                ],
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "tasks_assigned",
+                "outputSchema": null,
+                "title": "Assigned Tasks Tool"
+            },
+            "tasks_block": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reason": {
+                            "maxLength": 8000,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "run_number": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "run_number",
+                        "reason",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_block",
+                "outputSchema": null,
+                "title": "Block Task Tool"
+            },
+            "tasks_cancel": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reason": {
+                            "maxLength": 8000,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "reason",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_cancel",
+                "outputSchema": null,
+                "title": "Cancel Task Tool"
+            },
+            "tasks_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "brief": {
+                            "maxLength": 8000,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "brief",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_create",
+                "outputSchema": null,
+                "title": "Create Task Tool"
+            },
+            "tasks_edit": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "brief": {
+                            "maxLength": 8000,
+                            "type": "string"
+                        },
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "expected_revision",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_edit",
+                "outputSchema": null,
+                "title": "Edit Task Tool"
+            },
+            "tasks_finish": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "note": {
+                            "maxLength": 8000,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "run_number": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "run_number",
+                        "note",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_finish",
+                "outputSchema": null,
+                "title": "Finish Task Tool"
+            },
+            "tasks_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "per_page": {
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "states": {
+                            "items": {
+                                "enum": [
+                                    "open",
+                                    "started",
+                                    "blocked",
+                                    "finished",
+                                    "cancelled"
+                                ],
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "tasks_list",
+                "outputSchema": null,
+                "title": "Tasks List Tool"
+            },
+            "tasks_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "context"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_read",
+                "outputSchema": null,
+                "title": "Task Read Tool"
+            },
+            "tasks_start": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_start",
+                "outputSchema": null,
+                "title": "Start Task Tool"
+            },
+            "uploads_append": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "digest": {
+                            "maxLength": 64,
+                            "minLength": 64,
+                            "type": "string"
+                        },
+                        "index": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "text": {
+                            "maxLength": 49152,
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "upload_id",
+                        "index",
+                        "text",
+                        "digest",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_append",
+                "outputSchema": null,
+                "title": "Append Upload Tool"
+            },
+            "uploads_begin": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "bytes": {
+                            "maximum": 2097152,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "digest": {
+                            "maxLength": 64,
+                            "minLength": 64,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "type": {
+                            "enum": [
+                                "document_body",
+                                "edit_replacement",
+                                "report_body"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "bytes",
+                        "digest",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_begin",
+                "outputSchema": null,
+                "title": "Begin Upload Tool"
+            },
+            "uploads_commit": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "upload_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_commit",
+                "outputSchema": null,
+                "title": "Commit Upload Tool"
+            },
+            "uploads_discard": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "upload_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_discard",
+                "outputSchema": null,
+                "title": "Discard Upload Tool"
+            }
+        },
+        "read-only-helper": {
+            "attachments_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "attachment_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "attachment_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "attachments_read",
+                "outputSchema": null,
+                "title": "Read Attachment Tool"
+            },
+            "capabilities_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                },
+                "name": "capabilities_read",
+                "outputSchema": {
+                    "properties": {
+                        "contract_version": {
+                            "type": "string"
+                        },
+                        "job_profile": {
+                            "type": "string"
+                        },
+                        "next_actions": {
+                            "type": "array"
+                        },
+                        "protocol_version": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "server_build": {
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        },
+                        "tools": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "contract_version",
+                        "server_build",
+                        "protocol_version",
+                        "job_profile",
+                        "tools",
+                        "next_actions"
+                    ],
+                    "type": "object"
+                },
+                "title": "Capabilities Read Tool"
+            },
+            "docs_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 200,
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "docs_list",
+                "outputSchema": null,
+                "title": "Documents List Tool"
+            },
+            "docs_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "character_offset": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "line_end": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "line_start": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "section": {
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "body",
+                                "revisions",
+                                "comments"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_read",
+                "outputSchema": null,
+                "title": "Read Document Tool"
+            },
+            "messages_context": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_context",
+                "outputSchema": null,
+                "title": "Message Context Tool"
+            },
+            "messages_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "state": {
+                            "enum": [
+                                "pending",
+                                "answered",
+                                "all"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "messages_list",
+                "outputSchema": null,
+                "title": "Messages List Tool"
+            },
+            "messages_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "context"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_read",
+                "outputSchema": null,
+                "title": "Message Read Tool"
+            },
+            "messages_reply": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "state_version": {
+                            "minimum": 0,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "message_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_reply",
+                "outputSchema": null,
+                "title": "Reply To Message Tool"
+            },
+            "operations_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "operations_read",
+                "outputSchema": {
+                    "properties": {
+                        "next_actions": {
+                            "type": "array"
+                        },
+                        "request_key": {
+                            "type": "string"
+                        },
+                        "state": {
+                            "enum": [
+                                "completed",
+                                "refused",
+                                "taken",
+                                "unknown"
+                            ],
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "request_key",
+                        "state",
+                        "next_actions"
+                    ],
+                    "type": "object"
+                },
+                "title": "Operations Read Tool"
+            },
+            "overview_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                },
+                "name": "overview_read",
+                "outputSchema": {
+                    "properties": {
+                        "agent_id": {
+                            "type": "string"
+                        },
+                        "next_actions": {
+                            "type": "array"
+                        },
+                        "sections": {
+                            "type": "object"
+                        },
+                        "session_id": {
+                            "type": "string"
+                        },
+                        "stack_state": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "status": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "agent_id",
+                        "session_id",
+                        "stack_state",
+                        "sections",
+                        "next_actions"
+                    ],
+                    "type": "object"
+                },
+                "title": "Overview Read Tool"
+            },
+            "plans_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "plan_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "context"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "plan_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_read",
+                "outputSchema": null,
+                "title": "Plan Read Tool"
+            },
+            "reports_close": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reason": {
+                            "maxLength": 2000,
+                            "type": "string"
+                        },
+                        "report_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "report_id",
+                        "reason",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_close",
+                "outputSchema": null,
+                "title": "Close Report Tool"
+            },
+            "reports_comment": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "report_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "report_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_comment",
+                "outputSchema": null,
+                "title": "Comment On Report Tool"
+            },
+            "reports_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "abstract": {
+                            "maxLength": 1000,
+                            "type": "string"
+                        },
+                        "body": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "source_references": {
+                            "items": {
+                                "maxLength": 128,
+                                "type": "string"
+                            },
+                            "maxItems": 50,
+                            "type": "array"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "abstract",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_create",
+                "outputSchema": null,
+                "title": "Create Report Tool"
+            },
+            "reports_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 200,
+                            "type": "string"
+                        },
+                        "state": {
+                            "enum": [
+                                "open",
+                                "closed",
+                                "all"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "reports_list",
+                "outputSchema": null,
+                "title": "Reports List Tool"
+            },
+            "reports_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "character_offset": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "line_end": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "line_start": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "report_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "section": {
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "body",
+                                "comments"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "report_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_read",
+                "outputSchema": null,
+                "title": "Read Report Tool"
+            },
+            "rules_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "state": {
+                            "enum": [
+                                "proposed",
+                                "active",
+                                "denied",
+                                "removed"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "rules_list",
+                "outputSchema": null,
+                "title": "Rules List Tool"
+            },
+            "rules_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "rule_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "rule_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "rules_read",
+                "outputSchema": null,
+                "title": "Rule Read Tool"
+            },
+            "search": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "query": {
+                            "maxLength": 200,
+                            "minLength": 2,
+                            "type": "string"
+                        },
+                        "types": {
+                            "items": {
+                                "maxLength": 64,
+                                "type": "string"
+                            },
+                            "maxItems": 12,
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "search",
+                "outputSchema": null,
+                "title": "Search Tool"
+            },
+            "tasks_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "context"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_read",
+                "outputSchema": null,
+                "title": "Task Read Tool"
+            },
+            "uploads_append": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "digest": {
+                            "maxLength": 64,
+                            "minLength": 64,
+                            "type": "string"
+                        },
+                        "index": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "text": {
+                            "maxLength": 49152,
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "upload_id",
+                        "index",
+                        "text",
+                        "digest",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_append",
+                "outputSchema": null,
+                "title": "Append Upload Tool"
+            },
+            "uploads_begin": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "bytes": {
+                            "maximum": 2097152,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "digest": {
+                            "maxLength": 64,
+                            "minLength": 64,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "type": {
+                            "enum": [
+                                "document_body",
+                                "edit_replacement",
+                                "report_body"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "bytes",
+                        "digest",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_begin",
+                "outputSchema": null,
+                "title": "Begin Upload Tool"
+            },
+            "uploads_commit": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "upload_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_commit",
+                "outputSchema": null,
+                "title": "Commit Upload Tool"
+            },
+            "uploads_discard": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "upload_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_discard",
+                "outputSchema": null,
+                "title": "Discard Upload Tool"
+            }
+        },
+        "writing-helper": {
+            "attachments_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "attachment_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "attachment_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "attachments_read",
+                "outputSchema": null,
+                "title": "Read Attachment Tool"
+            },
+            "capabilities_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                },
+                "name": "capabilities_read",
+                "outputSchema": {
+                    "properties": {
+                        "contract_version": {
+                            "type": "string"
+                        },
+                        "job_profile": {
+                            "type": "string"
+                        },
+                        "next_actions": {
+                            "type": "array"
+                        },
+                        "protocol_version": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "server_build": {
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        },
+                        "tools": {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "contract_version",
+                        "server_build",
+                        "protocol_version",
+                        "job_profile",
+                        "tools",
+                        "next_actions"
+                    ],
+                    "type": "object"
+                },
+                "title": "Capabilities Read Tool"
+            },
+            "docs_close": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "edit_id": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id",
+                        "edit_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_close",
+                "outputSchema": null,
+                "title": "Close Document Tool"
+            },
+            "docs_comment": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_comment",
+                "outputSchema": null,
+                "title": "Comment On Document Tool"
+            },
+            "docs_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "abstract": {
+                            "maxLength": 1000,
+                            "type": "string"
+                        },
+                        "body": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "source_references": {
+                            "items": {
+                                "maxLength": 128,
+                                "type": "string"
+                            },
+                            "maxItems": 50,
+                            "type": "array"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "abstract",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_create",
+                "outputSchema": null,
+                "title": "Create Document Tool"
+            },
+            "docs_drafts_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "draft_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "draft_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_drafts_read",
+                "outputSchema": null,
+                "title": "Read Retained Draft Tool"
+            },
+            "docs_drafts_recover": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "draft_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "draft_id",
+                        "expected_revision",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_drafts_recover",
+                "outputSchema": null,
+                "title": "Recover Draft Tool"
+            },
+            "docs_edit": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "edit_id": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "section": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id",
+                        "edit_id",
+                        "expected_revision",
+                        "section",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_edit",
+                "outputSchema": null,
+                "title": "Edit Document Tool"
+            },
+            "docs_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 200,
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "docs_list",
+                "outputSchema": null,
+                "title": "Documents List Tool"
+            },
+            "docs_open": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id",
+                        "expected_revision",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_open",
+                "outputSchema": null,
+                "title": "Open Document Tool"
+            },
+            "docs_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "character_offset": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "doc_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "line_end": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "line_start": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "section": {
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "body",
+                                "revisions",
+                                "comments"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "doc_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "docs_read",
+                "outputSchema": null,
+                "title": "Read Document Tool"
+            },
+            "memories_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "weight": {
+                            "maximum": 10,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "text",
+                        "weight",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "memories_create",
+                "outputSchema": null,
+                "title": "Save Memory Tool"
+            },
+            "memories_edit": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "expected_revision": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "memory_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "weight": {
+                            "maximum": 10,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "memory_id",
+                        "expected_revision",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "memories_edit",
+                "outputSchema": null,
+                "title": "Edit Memory Tool"
+            },
+            "memories_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "memories_list",
+                "outputSchema": null,
+                "title": "Memories List Tool"
+            },
+            "memories_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "memory_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "memory_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "memories_read",
+                "outputSchema": null,
+                "title": "Memory Read Tool"
+            },
+            "memories_remove": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "memory_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "memory_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "memories_remove",
+                "outputSchema": null,
+                "title": "Remove Memory Tool"
+            },
+            "messages_answer": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "reply_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id",
+                        "reply_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_answer",
+                "outputSchema": null,
+                "title": "Answer Message Tool"
+            },
+            "messages_context": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_context",
+                "outputSchema": null,
+                "title": "Message Context Tool"
+            },
+            "messages_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "state": {
+                            "enum": [
+                                "pending",
+                                "answered",
+                                "all"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "messages_list",
+                "outputSchema": null,
+                "title": "Messages List Tool"
+            },
+            "messages_question": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "maxLength": 65536,
+                            "type": "string"
+                        },
+                        "related_record": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "maxLength": 100,
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "id"
+                            ],
+                            "type": "object"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_question",
+                "outputSchema": null,
+                "title": "Ask Question Tool"
+            },
+            "messages_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "context"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "message_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_read",
+                "outputSchema": null,
+                "title": "Message Read Tool"
+            },
+            "messages_reply": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "message_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "state_version": {
+                            "minimum": 0,
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "message_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "messages_reply",
+                "outputSchema": null,
+                "title": "Reply To Message Tool"
+            },
+            "operations_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "operations_read",
+                "outputSchema": {
+                    "properties": {
+                        "next_actions": {
+                            "type": "array"
+                        },
+                        "request_key": {
+                            "type": "string"
+                        },
+                        "state": {
+                            "enum": [
+                                "completed",
+                                "refused",
+                                "taken",
+                                "unknown"
+                            ],
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "request_key",
+                        "state",
+                        "next_actions"
+                    ],
+                    "type": "object"
+                },
+                "title": "Operations Read Tool"
+            },
+            "overview_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                },
+                "name": "overview_read",
+                "outputSchema": {
+                    "properties": {
+                        "agent_id": {
+                            "type": "string"
+                        },
+                        "next_actions": {
+                            "type": "array"
+                        },
+                        "sections": {
+                            "type": "object"
+                        },
+                        "session_id": {
+                            "type": "string"
+                        },
+                        "stack_state": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        },
+                        "status": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "agent_id",
+                        "session_id",
+                        "stack_state",
+                        "sections",
+                        "next_actions"
+                    ],
+                    "type": "object"
+                },
+                "title": "Overview Read Tool"
+            },
+            "plans_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "plan_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "context"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "plan_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "plans_read",
+                "outputSchema": null,
+                "title": "Plan Read Tool"
+            },
+            "reports_close": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "reason": {
+                            "maxLength": 2000,
+                            "type": "string"
+                        },
+                        "report_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "report_id",
+                        "reason",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_close",
+                "outputSchema": null,
+                "title": "Close Report Tool"
+            },
+            "reports_comment": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body": {
+                            "type": "string"
+                        },
+                        "report_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "report_id",
+                        "body",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_comment",
+                "outputSchema": null,
+                "title": "Comment On Report Tool"
+            },
+            "reports_create": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "abstract": {
+                            "maxLength": 1000,
+                            "type": "string"
+                        },
+                        "body": {
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "source_references": {
+                            "items": {
+                                "maxLength": 128,
+                                "type": "string"
+                            },
+                            "maxItems": 50,
+                            "type": "array"
+                        },
+                        "title": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "title",
+                        "abstract",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_create",
+                "outputSchema": null,
+                "title": "Create Report Tool"
+            },
+            "reports_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 200,
+                            "type": "string"
+                        },
+                        "state": {
+                            "enum": [
+                                "open",
+                                "closed",
+                                "all"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "reports_list",
+                "outputSchema": null,
+                "title": "Reports List Tool"
+            },
+            "reports_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "character_offset": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "line_end": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "line_start": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "report_id": {
+                            "anyOf": [
+                                {
+                                    "minimum": 1,
+                                    "type": "integer"
+                                },
+                                {
+                                    "maxLength": 26,
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "section": {
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "body",
+                                "comments"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "report_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "reports_read",
+                "outputSchema": null,
+                "title": "Read Report Tool"
+            },
+            "rules_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "state": {
+                            "enum": [
+                                "proposed",
+                                "active",
+                                "denied",
+                                "removed"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "rules_list",
+                "outputSchema": null,
+                "title": "Rules List Tool"
+            },
+            "rules_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "rule_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "rule_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "rules_read",
+                "outputSchema": null,
+                "title": "Rule Read Tool"
+            },
+            "search": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "query": {
+                            "maxLength": 200,
+                            "minLength": 2,
+                            "type": "string"
+                        },
+                        "types": {
+                            "items": {
+                                "maxLength": 64,
+                                "type": "string"
+                            },
+                            "maxItems": 12,
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "search",
+                "outputSchema": null,
+                "title": "Search Tool"
+            },
+            "tasks_assigned": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "page": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "per_page": {
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "search": {
+                            "maxLength": 240,
+                            "type": "string"
+                        },
+                        "states": {
+                            "items": {
+                                "enum": [
+                                    "open",
+                                    "started",
+                                    "blocked",
+                                    "finished",
+                                    "cancelled"
+                                ],
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "tasks_assigned",
+                "outputSchema": null,
+                "title": "Assigned Tasks Tool"
+            },
+            "tasks_finish": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "note": {
+                            "maxLength": 8000,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "run_number": {
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id",
+                        "run_number",
+                        "note",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_finish",
+                "outputSchema": null,
+                "title": "Finish Task Tool"
+            },
+            "tasks_read": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "continuation": {
+                            "type": "string"
+                        },
+                        "task_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "view": {
+                            "enum": [
+                                "summary",
+                                "context"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "task_id"
+                    ],
+                    "type": "object"
+                },
+                "name": "tasks_read",
+                "outputSchema": null,
+                "title": "Task Read Tool"
+            },
+            "uploads_append": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "digest": {
+                            "maxLength": 64,
+                            "minLength": 64,
+                            "type": "string"
+                        },
+                        "index": {
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "text": {
+                            "maxLength": 49152,
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "upload_id",
+                        "index",
+                        "text",
+                        "digest",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_append",
+                "outputSchema": null,
+                "title": "Append Upload Tool"
+            },
+            "uploads_begin": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "bytes": {
+                            "maximum": 2097152,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "digest": {
+                            "maxLength": 64,
+                            "minLength": 64,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "type": {
+                            "enum": [
+                                "document_body",
+                                "edit_replacement",
+                                "report_body"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "bytes",
+                        "digest",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_begin",
+                "outputSchema": null,
+                "title": "Begin Upload Tool"
+            },
+            "uploads_commit": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "upload_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_commit",
+                "outputSchema": null,
+                "title": "Commit Upload Tool"
+            },
+            "uploads_discard": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "upload_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "upload_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "uploads_discard",
+                "outputSchema": null,
+                "title": "Discard Upload Tool"
+            }
+        }
+    },
+    "protocol_versions": [
+        "2025-03-26",
+        "2025-06-18",
+        "2025-11-25",
+        "2026-07-28"
+    ],
+    "refusal_codes": [
+        "admission_refused",
+        "busy",
+        "cancelled",
+        "conflict",
+        "deadline_expired",
+        "forbidden",
+        "invalid_input",
+        "outcome_unknown",
+        "profiles_unavailable",
+        "record_unavailable",
+        "request_key_conflict",
+        "request_key_expired",
+        "stale_continuation",
+        "state_blocked",
+        "unauthenticated",
+        "unavailable",
+        "unsupported_version"
+    ],
+    "resources": {
+        "journal://v1/docs/{id}/revisions/{revision}": {
+            "description": "The Markdown of one published document revision.",
+            "mimeType": "text/markdown",
+            "name": "document_revision",
+            "title": "Document Revision Resource",
+            "uriTemplate": "journal://v1/docs/{id}/revisions/{revision}"
+        },
+        "journal://v1/memories/{id}": {
+            "description": "One of your memories, with the same fields and continuation as memories_read.",
+            "mimeType": "application/json",
+            "name": "memory",
+            "title": "Memory Resource",
+            "uriTemplate": "journal://v1/memories/{id}"
+        },
+        "journal://v1/messages/{id}": {
+            "description": "Read a message without marking it read or selecting it.",
+            "mimeType": "application/json",
+            "name": "message",
+            "title": "Message Resource",
+            "uriTemplate": "journal://v1/messages/{id}"
+        },
+        "journal://v1/operations/{request_key}": {
+            "description": "What became of your write sent with this request_key, and its outcomes; add ?continuation= for the next ones.",
+            "mimeType": "application/json",
+            "name": "operation",
+            "title": "Operation Resource",
+            "uriTemplate": "journal://v1/operations/{request_key}"
+        },
+        "journal://v1/overview": {
+            "description": "Your agent and session, the state your stack answers from, and counts of the work you hold.",
+            "mimeType": "application/json",
+            "name": "overview",
+            "title": "Overview Resource",
+            "uri": "journal://v1/overview"
+        },
+        "journal://v1/plans/{id}": {
+            "description": "Plan details with the same fields and continuation as plans_read.",
+            "mimeType": "application/json",
+            "name": "plan",
+            "title": "Plan Resource",
+            "uriTemplate": "journal://v1/plans/{id}"
+        },
+        "journal://v1/reports/{id}": {
+            "description": "The Markdown of a filed report.",
+            "mimeType": "text/markdown",
+            "name": "report",
+            "title": "Report Resource",
+            "uriTemplate": "journal://v1/reports/{id}"
+        },
+        "journal://v1/rules": {
+            "description": "The active rules, with the same pages as rules_list.",
+            "mimeType": "application/json",
+            "name": "rules",
+            "title": "Rules Resource",
+            "uri": "journal://v1/rules"
+        },
+        "journal://v1/tasks/{id}": {
+            "description": "A task summary or context, with the same fields and continuation as tasks_read.",
+            "mimeType": "application/json",
+            "name": "task",
+            "title": "Task Resource",
+            "uriTemplate": "journal://v1/tasks/{id}"
+        }
+    }
+}

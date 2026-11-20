@@ -7,6 +7,7 @@ namespace App\Agents\Support;
 use App\Actors\Support\ActorContext;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionPolicyReader;
+use App\Agents\Contracts\SessionProvenance as SessionProvenanceContract;
 use App\Agents\Models\AgentSession;
 use App\Agents\Values\Operation;
 use App\Agents\Values\OperationGrant;
@@ -16,7 +17,7 @@ use App\Records\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-final readonly class SessionProvenance
+final readonly class SessionProvenance implements SessionProvenanceContract
 {
     private const string SESSION = 'core.agent-session';
 

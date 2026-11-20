@@ -9,6 +9,7 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
 use Domain\Documents\Commands\CommentOnDocument;
+use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -34,7 +35,7 @@ final class CommentOnDocumentTool extends JournalWriteTool
 
     protected function command(ToolArguments $arguments): CommentOnDocument
     {
-        return new CommentOnDocument($arguments->recordReference('doc_id'), $arguments->text('body'));
+        return new CommentOnDocument((string) $arguments->recordReference('doc_id'), $arguments->text('body'));
     }
 
     protected function present(mixed $result): ToolResult

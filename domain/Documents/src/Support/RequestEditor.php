@@ -6,7 +6,7 @@ namespace Domain\Documents\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\SessionProvenance;
+use App\Agents\Contracts\SessionProvenance;
 use Domain\Documents\Models\DocumentDraft;
 use Illuminate\Container\Attributes\Scoped;
 

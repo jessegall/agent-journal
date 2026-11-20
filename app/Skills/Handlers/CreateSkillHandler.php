@@ -10,30 +10,19 @@ use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyTaken;
 use App\Skills\Models\Skill;
 use App\Skills\Resolvers\Support\SkillContextResolver;
-use App\Skills\Support\SkillAuthoring;
 use App\Skills\Support\StoredSkillWrites;
-use App\Skills\Values\SkillDraft;
-use App\Skills\Values\SkillDraftText;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillOwner;
 use App\Skills\Values\SkillRevisionResult;
 
 final readonly class CreateSkillHandler implements CommandHandler
 {
-    public function __construct(
-        private StoredSkillWrites $writes,
-        private SkillAuthoring $authoring,
-    ) {}
+    public function __construct(private StoredSkillWrites $writes) {}
 
     public function handle(CreateSkill $command): SkillRevisionResult
     {
         $key = SkillKey::from($command->key);
-        $draft = $command->draft instanceof SkillDraftText ? new SkillDraft(
-            $command->draft->name,
-            $command->draft->description,
-            $this->authoring->sectionsOf($command->draft->body),
-            $command->draft->condition,
-        ) : $command->draft;
+        $draft = $command->draft;
 
         return $this->writes->once($command->requestId, hash(
             'sha256',

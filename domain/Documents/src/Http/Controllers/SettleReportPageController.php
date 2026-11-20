@@ -14,7 +14,7 @@ final readonly class SettleReportPageController
 {
     public function __invoke(SettleRecordRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new CloseReport($request->reportNumber(), $request->reason()));
+        $commands->run(new CloseReport((string) $request->reportNumber(), $request->reason()));
 
         return $redirect->back(303);
     }

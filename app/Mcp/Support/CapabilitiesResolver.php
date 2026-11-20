@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Servers\JournalServer;
 use Illuminate\Config\Repository;
 use Illuminate\Http\Request;
 
@@ -14,8 +15,6 @@ use Illuminate\Http\Request;
  */
 final readonly class CapabilitiesResolver
 {
-    public const string CONTRACT_VERSION = '1.0.0';
-
     private const string PROTOCOL_HEADER = 'MCP-Protocol-Version';
 
     public function __construct(
@@ -28,7 +27,7 @@ final readonly class CapabilitiesResolver
     public function read(): ToolResult
     {
         return ToolResult::ok([
-            'contract_version' => self::CONTRACT_VERSION,
+            'contract_version' => JournalServer::contractVersion(),
             'server_build' => $this->config->string('app.version', 'unknown'),
             'protocol_version' => $this->request->header(self::PROTOCOL_HEADER),
             'job_profile' => $this->permissions->profileKey(),

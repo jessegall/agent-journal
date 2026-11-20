@@ -11,6 +11,7 @@ use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
 use Laravel\Mcp\Server\Contracts\Transport;
+use ReflectionClass;
 
 /**
  * The journal's one MCP server: tools and resources only, both with a list that never changes during a connection,
@@ -38,6 +39,11 @@ final class JournalServer extends Server
     public function __construct(Transport $transport, private readonly McpCatalogue $catalogue)
     {
         parent::__construct($transport);
+    }
+
+    public static function contractVersion(): string
+    {
+        return new ReflectionClass(self::class)->getAttributes(Version::class)[0]->newInstance()->value;
     }
 
     protected function boot(): void

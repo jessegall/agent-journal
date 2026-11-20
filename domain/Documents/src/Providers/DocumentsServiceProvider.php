@@ -7,7 +7,7 @@ namespace Domain\Documents\Providers;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Support\SessionProvenance;
+use App\Agents\Contracts\SessionProvenance;
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
 use Domain\Documents\Contracts\DocumentResolver;

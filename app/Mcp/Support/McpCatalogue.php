@@ -220,6 +220,40 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         return $this->overviewContributions;
     }
 
+    /** @return array<string, array<string, mixed>> */
+    public function toolDefinitionsFor(DiscoveryProfile $profile): array
+    {
+        $definitions = [];
+        foreach ($this->tools as $name => $className) {
+            $tool = $this->definitionOf($className);
+            if (! $tool->isVisibleTo($profile)) {
+                continue;
+            }
+
+            $definition = $tool->toArray();
+            $definitions[$name] = [
+                'name' => $definition['name'],
+                'title' => $definition['title'],
+                'inputSchema' => $definition['inputSchema'],
+                'outputSchema' => $definition['outputSchema'] ?? null,
+            ];
+        }
+
+        return $definitions;
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    public function resourceDefinitions(): array
+    {
+        $definitions = [];
+        foreach ($this->resources as $className) {
+            $definition = $this->definitionOf($className)->toArray();
+            $definitions[$definition['uriTemplate'] ?? $definition['uri']] = $definition;
+        }
+
+        return $definitions;
+    }
+
     /**
      * @param  class-string<JournalTool>  $className
      *

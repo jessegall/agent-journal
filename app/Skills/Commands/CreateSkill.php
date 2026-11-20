@@ -16,7 +16,6 @@ use App\Skills\Handlers\CreateSkillHandler;
 use App\Skills\Models\Skill;
 use App\Skills\Policies\SkillAuthoringPolicy;
 use App\Skills\Values\SkillDraft;
-use App\Skills\Values\SkillDraftText;
 use App\Skills\Values\SkillRevisionResult;
 
 /**
@@ -33,7 +32,7 @@ final readonly class CreateSkill extends Command implements AuthorizedCommand
     public function __construct(
         public string $key,
         public string $requestId,
-        public SkillDraft|SkillDraftText $draft,
+        public SkillDraft $draft,
     ) {}
 
     /**

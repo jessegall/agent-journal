@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
+use App\Numbers\Support\RecordReference;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Api\Events\DocumentDraftSaved;
@@ -33,7 +34,7 @@ final readonly class DraftEditing
             throw DraftConflict::withoutVersion();
         }
 
-        $document = Document::lockedForEditing($target->documentNumber);
+        $document = Document::lockedForEditing(RecordReference::idOrNumber($target->documentNumber));
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->first()
             ?? throw DraftMissing::forDocument($document->number);
         $this->refuseUnlessDraftEditor($draft, $this->editors);

@@ -15,7 +15,6 @@ use App\Skills\Enums\SkillAbility;
 use App\Skills\Handlers\RetireSkillHandler;
 use App\Skills\Models\Skill;
 use App\Skills\Policies\SkillAuthoringPolicy;
-use App\Skills\Values\SkillReference;
 use App\Skills\Values\SkillRevisionResult;
 
 /**
@@ -29,7 +28,7 @@ use App\Skills\Values\SkillRevisionResult;
 final readonly class RetireSkill extends Command implements AuthorizedCommand
 {
     public function __construct(
-        public string|SkillReference $skill,
+        public string $skill,
         public int $expectedRevision,
         public string $requestId,
     ) {}

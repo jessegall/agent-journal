@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Actors\Contracts\Actor;
-use App\Agents\Support\SessionProvenance;
+use App\Agents\Contracts\SessionProvenance;
+use App\Numbers\Support\RecordReference;
 use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Api\Events\DocumentClosed;
@@ -83,7 +84,7 @@ final readonly class DraftClosing
         Actor|null $closer,
         string|null $reason,
     ): CloseResult {
-        $document = Document::lockedForEditing($target->documentNumber);
+        $document = Document::lockedForEditing(RecordReference::idOrNumber($target->documentNumber));
         $closed = $document->closeOf($target->token);
 
         if ($closed !== null) {

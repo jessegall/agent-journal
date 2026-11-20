@@ -39,7 +39,11 @@ final class DraftRequest extends FormRequest
 
     public function target(): DraftTarget
     {
-        return new DraftTarget($this->documentNumber(), $this->string('token')->toString(), $this->integer('version'));
+        return new DraftTarget(
+            (string) $this->documentNumber(),
+            $this->string('token')->toString(),
+            $this->integer('version'),
+        );
     }
 
     public function mode(): string

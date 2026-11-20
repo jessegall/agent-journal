@@ -6,6 +6,7 @@ namespace Domain\Documents\Mcp;
 
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Tools\JournalWriteTool;
+use Domain\Documents\Mcp\Concerns\PublicationArguments;
 
 abstract class DraftWriteTool extends JournalWriteTool
 {

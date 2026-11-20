@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
-use App\Agents\Support\SessionProvenance;
+use App\Agents\Contracts\SessionProvenance;
 use App\Contracts\CommandHandler;
+use App\Numbers\Support\RecordReference;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Commands\OpenDocument;
@@ -26,7 +27,7 @@ final readonly class OpenDocumentHandler implements CommandHandler
 
     public function handle(OpenDocument $command): DraftReference
     {
-        $document = Document::lockedForEditing($command->documentNumber);
+        $document = Document::lockedForEditing(RecordReference::idOrNumber($command->documentNumber));
         $base = $document->currentRevisionOrFail();
         if ($command->expectedRevision !== null && $base->number !== $command->expectedRevision) {
             throw StaleRead::revision($command->expectedRevision, $base->number);

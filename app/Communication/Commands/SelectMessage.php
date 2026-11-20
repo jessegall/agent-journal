@@ -18,7 +18,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /** @extends Command<string> */
-#[RequiresRequestKey]
+#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 #[HandledBy(SelectMessageHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[Operation('messages_select', ResourceAreaType::JournalWork, AccessType::Edit)]
