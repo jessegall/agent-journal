@@ -1,4 +1,4 @@
-# The direct file access sites still waiting to move to App\Files\Contracts\Files (plan 39): 46 files, 135 sites.
+# The direct file access sites still waiting to move to App\Files\Contracts\Files (plan 39): 43 files, 131 sites.
 # One line per file and form, without line numbers. A task that moves a site removes its own lines here, in the same task;
 # the list only shrinks. tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed
 # site the code no longer has. Regenerate with: php tools/refactoring/direct-file-sites.php --write
@@ -15,7 +15,6 @@ app/Agents/Resolvers/RecordedHostCapabilities.php file_get_contents()
 app/Agents/Support/DockerImageVerifier.php file_get_contents()
 app/Agents/Support/DockerImageVerifier.php is_file()
 app/Bus/Support/CommandGrammar.php file_get_contents()
-app/CoreApi.php glob()
 app/Hooks/Programs/CodexFolderTrust.php is_dir()
 app/Hooks/Programs/CodexFolderTrust.php is_link()
 app/Hooks/Programs/CodexFolderTrust.php scandir()
@@ -40,8 +39,6 @@ app/Hooks/Support/AccountConfigurationWrite.php unlink()
 app/Http/Responses/Sharing/SharingAssets.php file_get_contents()
 app/Http/Responses/Sharing/SharingAssets.php is_file()
 app/Mcp/Console/ContractSnapshotCommand.php Illuminate\Filesystem\Filesystem
-app/Mcp/Support/McpToolDirectory.php Symfony\Component\Finder\Finder
-app/Mcp/Support/McpToolDirectory.php is_dir()
 app/Processes/Console/CommandTypeImportCommand.php file_get_contents()
 app/Processes/Console/CommandTypeImportCommand.php is_file()
 app/Processes/Console/ProcessExportCommand.php file_put_contents()
@@ -127,7 +124,6 @@ app/Skills/Support/MarkdownParts.php file_get_contents()
 app/Skills/Support/MarkdownParts.php is_file()
 app/Skills/Support/MarkdownParts.php realpath()
 app/Ui/Declarations/DomainUi.php realpath()
-app/Web/Routes/DeclaredRoutes.php file_exists()
 app/Web/Support/UiManifest.php file_put_contents()
 app/Web/Support/UiManifest.php glob()
 app/Web/Support/UiManifest.php is_dir()

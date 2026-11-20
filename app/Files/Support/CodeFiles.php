@@ -89,7 +89,10 @@ final class CodeFiles
     {
         $this->assertProject($pattern);
 
-        return $this->folders[$pattern->relative] ??= $this->counted($pattern, fn () => $this->walker->expand($pattern));
+        return $this->folders[$pattern->relative] ??= $this->counted(
+            $pattern,
+            fn () => $this->walker->expand($pattern),
+        );
     }
 
     /**

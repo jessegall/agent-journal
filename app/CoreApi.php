@@ -585,6 +585,7 @@ use App\Files\Exceptions\FolderMissing;
 use App\Files\Exceptions\LinkLeavesPlace;
 use App\Files\Exceptions\LinkLoop;
 use App\Files\Exceptions\PlaceUnavailable;
+use App\Files\Support\CodeFiles;
 use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
 use App\Files\Values\Fingerprint;
@@ -1175,11 +1176,6 @@ final class CoreApi
      * What Core exports and where its listeners live, built once per process: both come from the code alone.
      */
     private static Exports|null $exports = null;
-
-    /**
-     * @var list<string>|null
-     */
-    private static array|null $listenerFolders = null;
 
     public static function exports(): Exports
     {
@@ -2369,6 +2365,15 @@ final class CoreApi
      */
     public static function listenerFolders(): array
     {
-        return self::$listenerFolders ??= glob(__DIR__.'/*/Listeners', GLOB_ONLYDIR) ?: [];
+        $code = CodeFiles::ofProcess();
+        $folders = [];
+
+        foreach ($code->folder($code->projectPathOf(__DIR__.'/*/Listeners')) as $entry) {
+            if ($entry->isFolder()) {
+                $folders[] = $entry->fingerprint->realPath;
+            }
+        }
+
+        return $folders;
     }
 }
