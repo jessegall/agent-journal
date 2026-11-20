@@ -616,6 +616,11 @@ case	ProfileAbility::EditDraft
 case	ProfileChangeType::Added
 case	ProfileChangeType::Changed
 case	ProfileChangeType::Unchanged
+case	ProfileRunState::Failed
+case	ProfileRunState::Finished
+case	ProfileRunState::Running
+case	ProfileRunState::Suspended
+case	ProfileRunState::Uncertain
 case	ProgramEvidence::ContractPassed
 case	ProgramEvidence::NativeShown
 case	ProgramEvidence::PrerequisiteMissing
@@ -2925,6 +2930,8 @@ class	NumbersSeeder
 class	NumbersServiceProvider
 class	ObjectDefinition
 class	ObjectMember
+class	ObjectRead
+class	ObjectReader
 class	ObjectReflection
 class	ObjectRegistry
 class	OccupiedForwardingSeats
@@ -3256,6 +3263,8 @@ class	ProfileRevisionReference
 class	ProfileRevisionRevoked
 class	ProfileRevisionUnreadable
 class	ProfileRevokeCommand
+class	ProfileRun
+class	ProfileRunRefused
 class	ProfileScriptCompiler
 class	ProfileSelection
 class	ProfileShowCommand
@@ -3263,6 +3272,7 @@ class	ProfileSnapshot
 class	ProfileStartAdmission
 class	ProfileStartPolicy
 class	ProfileStartPolicyCast
+class	ProfileStepResult
 class	Profiles
 class	ProfilesPages
 class	ProfilesServiceProvider
@@ -3583,6 +3593,8 @@ class	RecordRunEventsController
 class	RecordRuntime
 class	RecordRuntimeCommand
 class	RecordRuntimeHandler
+class	RecordScriptStepResult
+class	RecordScriptStepResultHandler
 class	RecordSettled
 class	RecordSettlement
 class	RecordSkillRead
@@ -3801,6 +3813,8 @@ class	ReportStoppedHandler
 class	ReportUnchangeable
 class	ReportView
 class	ReportWindowResolver
+class	ReportWorkspaceRead
+class	ReportWorkspaceReadHandler
 class	ReportsListTool
 class	RequestEditor
 class	RequestKey
@@ -3886,6 +3900,7 @@ class	RetainedEntries
 class	RetainedNumberedPages
 class	RetainedPage
 class	RetainedPages
+class	RetainedWorkspaceReads
 class	RetentionPeriods
 class	RetentionTooShort
 class	RetireAgent
@@ -5108,7 +5123,11 @@ class	WorkingOnTaskStateFactory
 class	WorkingOnTaskStateReference
 class	WorkspaceFacts
 class	WorkspaceObject
+class	WorkspaceRead
+class	WorkspaceReadController
+class	WorkspaceReadPending
 class	WorkspaceReadReference
+class	WorkspaceReadReportRequest
 class	WrapperRule
 class	WrapperRules
 class	WriteAssignments
@@ -5822,6 +5841,7 @@ constant	UserWords::WORD
 constant	VerbNamedTypes::VERBS
 constant	WorkingOnPlanStateReference::TYPE_KEY
 constant	WorkingOnTaskStateReference::TYPE_KEY
+constant	WorkspaceReadController::PENDING_LIMIT
 enum	AccessRuleType
 enum	AccessType
 enum	AccountAbility
@@ -5968,6 +5988,7 @@ enum	ProcessAbility
 enum	ProcessStartState
 enum	ProfileAbility
 enum	ProfileChangeType
+enum	ProfileRunState
 enum	ProgramEvidence
 enum	ProgramFailure
 enum	ProgramPermission
@@ -12472,6 +12493,14 @@ method	NumbersServiceProvider::boot()
 method	NumbersServiceProvider::register()
 method	ObjectDefinition::__construct()
 method	ObjectMember::__construct()
+method	ObjectRead::__construct()
+method	ObjectRead::failed()
+method	ObjectRead::hasFailed()
+method	ObjectRead::isPending()
+method	ObjectRead::pending()
+method	ObjectRead::value()
+method	ObjectReader::__construct()
+method	ObjectReader::read()
 method	ObjectReflection::__construct()
 method	ObjectReflection::contextParameter()
 method	ObjectReflection::describe()
@@ -13603,6 +13632,13 @@ method	ProfileRevisionReference::__construct()
 method	ProfileRevisionRevoked::__construct()
 method	ProfileRevisionUnreadable::forRevision()
 method	ProfileRevokeCommand::handle()
+method	ProfileRun::casts()
+method	ProfileRun::lockedForStep()
+method	ProfileRun::recordStep()
+method	ProfileRun::results()
+method	ProfileRun::start()
+method	ProfileRun::suspendOn()
+method	ProfileRunRefused::stepNotAwaited()
 method	ProfileScriptCompiler::__construct()
 method	ProfileScriptCompiler::assertAllowed()
 method	ProfileScriptCompiler::compile()
@@ -13630,6 +13666,8 @@ method	ProfileStartPolicyCast::get()
 method	ProfileStartPolicyCast::models()
 method	ProfileStartPolicyCast::origins()
 method	ProfileStartPolicyCast::set()
+method	ProfileStepResult::casts()
+method	ProfileStepResult::record()
 method	Profiles::__construct()
 method	Profiles::evaluate()
 method	Profiles::keyTexts()
@@ -14507,6 +14545,8 @@ method	RecordRuntime::target()
 method	RecordRuntimeCommand::handle()
 method	RecordRuntimeHandler::__construct()
 method	RecordRuntimeHandler::handle()
+method	RecordScriptStepResult::__construct()
+method	RecordScriptStepResultHandler::handle()
 method	RecordSettled::__construct()
 method	RecordSettlement::booted()
 method	RecordSettlement::card()
@@ -15042,6 +15082,9 @@ method	ReportUnchangeable::status()
 method	ReportView::__construct()
 method	ReportWindowResolver::__construct()
 method	ReportWindowResolver::read()
+method	ReportWorkspaceRead::__construct()
+method	ReportWorkspaceReadHandler::__construct()
+method	ReportWorkspaceReadHandler::handle()
 method	ReportsListTool::__construct()
 method	ReportsListTool::read()
 method	ReportsListTool::schema()
@@ -15256,6 +15299,7 @@ method	RetainedPage::prunable()
 method	RetainedPages::__construct()
 method	RetainedPages::keep()
 method	RetainedPages::resolve()
+method	RetainedWorkspaceReads::read()
 method	RetentionPeriods::__construct()
 method	RetentionPeriods::assertLongerThan()
 method	RetentionTooShort::forDays()
@@ -17827,6 +17871,7 @@ method	StepOutcome::completed()
 method	StepOutcome::failed()
 method	StepOutcome::negated()
 method	StepOutcome::pending()
+method	StepOutcome::reported()
 method	StepOutcome::then()
 method	StepOutcome::uncertain()
 method	StepOutcome::withContext()
@@ -19190,7 +19235,20 @@ method	WorkingOnTaskStateReference::forTask()
 method	WorkspaceFacts::__construct()
 method	WorkspaceObject::__construct()
 method	WorkspaceObject::facts()
+method	WorkspaceRead::answer()
+method	WorkspaceRead::byReference()
+method	WorkspaceRead::casts()
+method	WorkspaceRead::facts()
+method	WorkspaceRead::pendingOn()
+method	WorkspaceRead::reference()
+method	WorkspaceRead::retain()
+method	WorkspaceReadController::__invoke()
+method	WorkspaceReadController::index()
+method	WorkspaceReadPending::__construct()
+method	WorkspaceReadPending::for()
 method	WorkspaceReadReference::__construct()
+method	WorkspaceReadReportRequest::reference()
+method	WorkspaceReadReportRequest::rules()
 method	WorkspaceReader::read()
 method	WrapperRule::__construct()
 method	WrapperRule::optionFor()
@@ -20486,6 +20544,7 @@ parameter	$numberOrKey
 parameter	$numbered
 parameter	$numbers
 parameter	$object
+parameter	$objectKey
 parameter	$objects
 parameter	$obligation
 parameter	$observationAgeSeconds
@@ -20625,6 +20684,7 @@ parameter	$pause
 parameter	$payloadDigest
 parameter	$pending
 parameter	$pendingCleanups
+parameter	$pendingReference
 parameter	$pendingStarts
 parameter	$pendingWork
 parameter	$perPage
@@ -21022,6 +21082,7 @@ parameter	$runtimeId
 parameter	$runtimes
 parameter	$same
 parameter	$sample
+parameter	$sampledAt
 parameter	$samples
 parameter	$savedAt
 parameter	$savedPreview
@@ -21246,6 +21307,7 @@ parameter	$stepNumber
 parameter	$stepOutcome
 parameter	$stepOutcomes
 parameter	$stepOutput
+parameter	$stepReference
 parameter	$stepText
 parameter	$steps
 parameter	$stop
@@ -21385,6 +21447,7 @@ parameter	$transportProfile
 parameter	$tree
 parameter	$treeDigest
 parameter	$trigger
+parameter	$triggerReference
 parameter	$truncated
 parameter	$trust
 parameter	$trustedEntry
@@ -21455,6 +21518,7 @@ parameter	$value	app/Profiles/Casts/ProfileStartPolicyCast.php
 parameter	$value	app/Profiles/Casts/SupervisorRoutesCast.php
 parameter	$value	app/Profiles/Exceptions/ProfileProposalRefused.php
 parameter	$value	app/Reads/Support/BoundedReads.php
+parameter	$value	app/Scripts/Values/ObjectRead.php
 parameter	$value	app/Settings/Casts/SettingsDocumentCast.php
 parameter	$value	app/Sharing/Casts/GatewaySettingsCast.php
 parameter	$value	app/Sharing/Casts/SelectedTargetsCast.php
@@ -24852,6 +24916,10 @@ property	ObjectDefinition::$members
 property	ObjectDefinition::$owner
 property	ObjectMember::$name
 property	ObjectMember::$read
+property	ObjectRead::$diagnostic
+property	ObjectRead::$pendingReference
+property	ObjectRead::$value
+property	ObjectReader::$objects
 property	ObjectReflection::$operations
 property	ObjectRegistry::$container
 property	ObjectRegistry::$objects
@@ -26171,6 +26239,12 @@ property	RecordRuntime::$stop
 property	RecordRuntimeCommand::$description
 property	RecordRuntimeCommand::$signature
 property	RecordRuntimeHandler::$requests
+property	RecordScriptStepResult::$evidence
+property	RecordScriptStepResult::$hostId
+property	RecordScriptStepResult::$port
+property	RecordScriptStepResult::$runId
+property	RecordScriptStepResult::$status
+property	RecordScriptStepResult::$stepReference
 property	RecordSettled::$recordId
 property	RecordSettled::$recordType
 property	RecordSkillRead::$evidence
@@ -26606,6 +26680,13 @@ property	ReportWindowResolver::$records
 property	ReportWindowResolver::$reports
 property	ReportWindowResolver::$request
 property	ReportWindowResolver::$shares
+property	ReportWorkspaceRead::$generation
+property	ReportWorkspaceRead::$hostId
+property	ReportWorkspaceRead::$isAvailable
+property	ReportWorkspaceRead::$isClean
+property	ReportWorkspaceRead::$isDirty
+property	ReportWorkspaceRead::$reference
+property	ReportWorkspaceReadHandler::$clock
 property	ReportsListTool::$publications
 property	RequestEditor::$actors
 property	RequestEditor::$provenance
@@ -28993,14 +29074,17 @@ property	WorkStackPushes::$workStacks
 property	WorkingOnPlanState::$plan
 property	WorkingOnTaskState::$task
 property	WorkingOnTaskStateFactory::$tasks
+property	WorkspaceFacts::$generation
 property	WorkspaceFacts::$isAvailable
 property	WorkspaceFacts::$isClean
 property	WorkspaceFacts::$isDirty
+property	WorkspaceFacts::$sampledAt
 property	WorkspaceObject::$available
 property	WorkspaceObject::$clean
 property	WorkspaceObject::$context
 property	WorkspaceObject::$dirty
 property	WorkspaceObject::$workspaces
+property	WorkspaceReadPending::$reference
 property	WorkspaceReadReference::$key
 property	WrapperRule::$classes
 property	WrapperRule::$family
@@ -29131,6 +29215,7 @@ variable	$agentId
 variable	$agentIds
 variable	$agentInboxId
 variable	$agents
+variable	$agentsOnHost
 variable	$alias
 variable	$aliases
 variable	$allTaskIds
@@ -30222,6 +30307,8 @@ variable	$resource
 variable	$response
 variable	$rest
 variable	$restored
+variable	$result	app/Scripts/Models/ProfileRun.php
+variable	$result	app/Scripts/Models/ProfileStepResult.php
 variable	$resultBytes
 variable	$resultNumber
 variable	$resumed
@@ -30528,6 +30615,7 @@ variable	$usesBusReceipt
 variable	$valid
 variable	$validation
 variable	$validator
+variable	$value	app/Scripts/Support/ObjectReader.php
 variable	$variable
 variable	$variables
 variable	$verb

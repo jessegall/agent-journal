@@ -29,6 +29,14 @@ final readonly class StepOutcome
         return new self(StepStatus::Pending, null, $reference);
     }
 
+    /**
+     * The outcome a host reported for a step it ran or read.
+     */
+    public static function reported(StepStatus $status, string|null $port, string|null $evidence): self
+    {
+        return new self($status, $port, $evidence);
+    }
+
     public static function uncertain(string $evidence): self
     {
         return new self(StepStatus::Uncertain, null, $evidence);

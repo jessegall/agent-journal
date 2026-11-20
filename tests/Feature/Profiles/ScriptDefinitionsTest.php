@@ -35,7 +35,7 @@ final class ScriptDefinitionsTest extends TestCase
 
         $this->assertSame(['available', 'clean', 'dirty'], $names);
         $this->assertSame('workspace.status', $workspace->members['dirty']->read->key);
-        $this->assertFalse($this->app->bound(WorkspaceReader::class));
+        $this->assertFalse($this->app->resolved(WorkspaceReader::class));
         $this->assertThrows(fn () => $objects->register(WorkspaceObject::class), ScriptDefinitionRefused::class);
         $this->assertThrows(fn () => $objects->register(InvalidScriptObject::class), ScriptDefinitionRefused::class);
     }

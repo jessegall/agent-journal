@@ -23,6 +23,7 @@ use App\Http\Controllers\Agents\Host\StaleEntryController;
 use App\Http\Controllers\Agents\Host\StartGrantController;
 use App\Http\Controllers\Agents\Host\ToolDiscoveryController;
 use App\Http\Controllers\Agents\Host\TurnReportController;
+use App\Http\Controllers\Agents\Host\WorkspaceReadController;
 use App\Http\Controllers\Hooks\Host\PendingStopAttemptsController;
 use App\Http\Controllers\Hooks\Host\StopResultsController;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,8 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/starts/{start}/running', ReportRunningController::class)->name('starts.running');
     Route::post('/starts/{start}/stopped', ReportStoppedController::class)->name('starts.stopped');
     Route::post('/starts/{start}/failure', ReportFailureController::class)->name('starts.failure');
+    Route::get('/workspace-reads', [WorkspaceReadController::class, 'index'])->name('workspace-reads.pending');
+    Route::post('/workspace-reads/{reference}', WorkspaceReadController::class)->name('workspace-reads.report');
     Route::get('/cleanups', [CleanupReportController::class, 'index'])->name('cleanups.pending');
     Route::post('/cleanups/{session}', CleanupReportController::class)->name('cleanups.report');
     Route::get('/starts/{start}/outputs', OutputGrantController::class)->name('starts.outputs');

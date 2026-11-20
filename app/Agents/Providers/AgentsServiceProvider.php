@@ -51,6 +51,7 @@ use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Contracts\StartReservations;
 use App\Agents\Contracts\TerminalViewCloser;
 use App\Agents\Contracts\ToolDiscovery;
+use App\Agents\Contracts\WorkspaceReader;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Models\Agent;
@@ -94,6 +95,7 @@ use App\Agents\Support\PendingNavigationWork;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\ReadGrant;
 use App\Agents\Support\RequestSession;
+use App\Agents\Support\RetainedWorkspaceReads;
 use App\Agents\Support\SessionProvenance;
 use App\Agents\Support\SessionToolDiscovery;
 use App\Agents\Support\TerminalViews;
@@ -146,6 +148,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->alias(RequestSession::class, CurrentSession::class);
         $this->app->alias(RequestSession::class, AgentCallContext::class);
         $this->app->bind(ToolDiscovery::class, SessionToolDiscovery::class);
+        $this->app->bind(WorkspaceReader::class, RetainedWorkspaceReads::class);
         $this->app->bind(NavigationReader::class, NavigationRecords::class);
         $this->app->bind(TerminalViewCloser::class, TerminalViews::class);
         $this->app->bind(StartExecutor::class, fn () => new HostStartExecutor(

@@ -12,6 +12,7 @@ use App\Agents\Commands\ReportCleanup;
 use App\Agents\Commands\ReportFailure;
 use App\Agents\Commands\ReportRunning;
 use App\Agents\Commands\ReportStopped;
+use App\Agents\Commands\ReportWorkspaceRead;
 use App\Agents\Commands\StartAgent;
 use App\Assignments\Commands\AssignRecordForMaintenance;
 use App\Assignments\Commands\ClaimAutoAssignment;
@@ -64,6 +65,7 @@ use App\Profiles\Commands\ReleaseSignInAgain;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Commands\SaveProfileDraft;
 use App\Profiles\Commands\TakeSignInCode;
+use App\Scripts\Commands\RecordScriptStepResult;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Commands\ExpireShares;
 use App\Sharing\Commands\PruneShareAudit;
@@ -127,6 +129,8 @@ final class CoreCommandsTest extends CommandBusTestCase
             ReportFailure::class,
             ReconcileStarts::class,
             ReportCleanup::class,
+            ReportWorkspaceRead::class,
+            RecordScriptStepResult::class,
             PublishSignInChallenge::class,
             TakeSignInCode::class,
             RecordAccountFailure::class,
