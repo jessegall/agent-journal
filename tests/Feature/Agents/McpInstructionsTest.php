@@ -9,8 +9,8 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Programs\ProgramCapabilities;
@@ -86,7 +86,7 @@ final class McpInstructionsTest extends TestCase
         );
         $start = new SessionStarted(
             TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', 'call-1')),
-            new SessionStartDetails('native-1', SessionStartSource::Startup, null),
+            new SessionStartDetails('native-1', ContextStartType::Start, null),
         );
         $capabilities = new ProgramCapabilities(
             'Test program',

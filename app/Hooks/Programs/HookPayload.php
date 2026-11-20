@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Programs;
 
 use App\Agents\Enums\ProgramFailure;
+use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\SessionEndReason;
-use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Inputs\ProgramToolInput;
@@ -171,11 +171,18 @@ final class HookPayload extends Data
         };
     }
 
-    public function startSource(): SessionStartSource
+    /**
+     * Why the context starts, read from the source both programs send on SessionStart; they call a start startup.
+     */
+    public function startSource(): ContextStartType
     {
-        $source = $this->required($this->source, 'source');
-
-        return SessionStartSource::tryFrom($source) ?? throw UnreadablePayload::forValue('source', $source);
+        return match ($this->required($this->source, 'source')) {
+            'startup' => ContextStartType::Start,
+            'resume' => ContextStartType::Resume,
+            'clear' => ContextStartType::Clear,
+            'compact' => ContextStartType::Compact,
+            default => throw UnreadablePayload::forValue('source', (string) $this->source),
+        };
     }
 
     public function isStopContinuation(): bool

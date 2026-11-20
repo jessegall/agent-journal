@@ -14,16 +14,6 @@ enum ContextStartType: string
     case Resume = 'resume';
     case Compact = 'compact';
 
-    public static function fromSource(SessionStartSource $source): self
-    {
-        return match ($source) {
-            SessionStartSource::Startup => self::Start,
-            SessionStartSource::Clear => self::Clear,
-            SessionStartSource::Resume => self::Resume,
-            SessionStartSource::Compact => self::Compact,
-        };
-    }
-
     /**
      * Whether the context starts empty again, after a clear or a compaction.
      */

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
@@ -43,8 +43,8 @@ final class SessionContextTest extends TestCase
     public function test_a_start_like_a_codex_start_and_a_clear_like_claude_codes_both_carry_the_reminders(): void
     {
         foreach ([
-            ['call-1', SessionStartSource::Startup],
-            ['call-2', SessionStartSource::Clear],
+            ['call-1', ContextStartType::Start],
+            ['call-2', ContextStartType::Clear],
         ] as [$callId, $source]) {
             $context = $this->start($callId, $source);
 
@@ -55,13 +55,13 @@ final class SessionContextTest extends TestCase
 
     public function test_a_replayed_start_carries_the_recorded_reminders_without_running_listeners(): void
     {
-        $first = $this->start('call-1', SessionStartSource::Resume);
+        $first = $this->start('call-1', ContextStartType::Resume);
         $received = 0;
         Event::listen(ContextStarted::class, function () use (&$received): void {
             $received++;
         });
 
-        $again = $this->start('call-1', SessionStartSource::Resume);
+        $again = $this->start('call-1', ContextStartType::Resume);
 
         $this->assertSame([$first, 0], [$again, $received]);
     }
@@ -70,7 +70,7 @@ final class SessionContextTest extends TestCase
     {
         $this->app->instance(ContextBudget::class, new ContextBudget(5));
 
-        $context = $this->start('call-1', SessionStartSource::Startup);
+        $context = $this->start('call-1', ContextStartType::Start);
 
         $this->assertStringContainsString("Rule {$this->rule->id}: No phase waits on the user.", $context);
         $this->assertStringNotContainsString('Memory: Use plain words.', $context);
@@ -84,7 +84,7 @@ final class SessionContextTest extends TestCase
     /**
      * The additional context the SessionStart reply carries.
      */
-    private function start(string $callId, SessionStartSource $source): string
+    private function start(string $callId, ContextStartType $source): string
     {
         $this->callAs($callId, hash('sha256', $callId));
         $start = new SessionStarted(

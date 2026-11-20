@@ -10,7 +10,6 @@ use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
-use App\Hooks\Enums\ContextStartType;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -49,7 +48,7 @@ final readonly class SessionStarted implements HookInput
 
     public function contextStart(): Option
     {
-        return Some::create(ContextStartType::fromSource($this->start->source));
+        return Some::create($this->start->source);
     }
 
     public function recordVisit(ConversationVisits $visits, string $sessionId, CarbonImmutable $at): void

@@ -8,8 +8,9 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\HookInput;
+use App\Hooks\Enums\ContextStartType;
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\HookIdentity;
@@ -73,7 +74,7 @@ final class MemoryContextTest extends TestCase
             'call-2',
             new SessionStarted(
                 $this->identity('call-2'),
-                new SessionStartDetails('codex-thread-1', SessionStartSource::Startup),
+                new SessionStartDetails('codex-thread-1', ContextStartType::Start, null),
             ),
             'onSessionStart',
         );
@@ -101,7 +102,7 @@ final class MemoryContextTest extends TestCase
             $input,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
+            fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer),
         )->stdout;
     }
 }

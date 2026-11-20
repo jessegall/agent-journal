@@ -593,7 +593,6 @@ use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SessionEndReason;
-use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Enums\TransitionType;
@@ -1560,7 +1559,6 @@ final class CoreApi
                 SessionEndReason::class,
                 SessionStarted::class,
                 SessionStartDetails::class,
-                SessionStartSource::class,
                 ShellCommandRequested::class,
                 ToolRequested::class,
                 ShellCommand::class,

@@ -7,8 +7,8 @@ namespace Tests\Feature\Hooks;
 use App\Agents\Models\AgentSession;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Models\HookCall;
@@ -160,7 +160,7 @@ final class HookTransactionTest extends TestCase
         $this->callAs('call-start', hash('sha256', 'call-start'));
         $start = new SessionStarted(
             TestActors::hookIdentity(1, 10, 'call-start', hash('sha256', 'call-start')),
-            new SessionStartDetails($vendorSessionId, SessionStartSource::Startup, null),
+            new SessionStartDetails($vendorSessionId, ContextStartType::Start, null),
         );
 
         $this->machine()->answer(

@@ -10,10 +10,10 @@ use App\Hooks\Actions\RecordProgramFailure;
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
 use App\Hooks\Enums\ClaudeCodeTool;
+use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\FileAccess;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
@@ -140,7 +140,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     private function startCall(HookPayload $hookInput, HookIdentity $hook): ProgramCall
     {
         $source = $hookInput->startSource();
-        $input = $source === SessionStartSource::Compact
+        $input = $source === ContextStartType::Compact
             ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
             : new SessionStarted($hook, $hookInput->startDetails());
 
