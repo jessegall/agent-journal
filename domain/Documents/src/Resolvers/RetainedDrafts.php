@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Agents\Contracts\SessionProvenance;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
@@ -13,12 +13,28 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Api\RetainedDraftView;
 use Domain\Documents\Contracts\DraftReader;
+use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Exceptions\DraftMissing;
+use Domain\Documents\Models\Document;
 use Domain\Documents\Models\RetainedDraft;
+use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
 final readonly class RetainedDrafts implements DraftReader
 {
-    public function __construct(private CurrentActor $actors, private SessionProvenance $provenance) {}
+    public function __construct(
+        private CurrentActor $actors,
+        private CurrentAuthorizer $authorizer,
+        private SessionProvenance $provenance,
+    ) {}
+
+    public function mayAdminister(): bool
+    {
+        return $this->actors->hasActor() && $this->authorizer->filterActions(
+            DocumentAdministrationPolicy::class,
+            Document::class,
+            [DocumentAbility::Administer],
+        ) !== [];
+    }
 
     public function draft(string $id): RetainedDraftView
     {
@@ -27,10 +43,10 @@ final readonly class RetainedDrafts implements DraftReader
 
     public function requireReadable(string $id): RetainedDraft
     {
-        $actor = $this->actors->actor();
+        $this->actors->actor();
         $draft = RetainedDraft::forRecovery()->find($id) ?? throw DraftMissing::unavailable();
 
-        if ($actor->type === ActorType::User || $this->provenance->isFromCurrentSession($draft)) {
+        if ($this->mayAdminister() || $this->provenance->isFromCurrentSession($draft)) {
             return $draft;
         }
 

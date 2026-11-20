@@ -6,6 +6,7 @@ namespace App\Supervision\Models;
 
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Profiles\Casts\SupervisorRoutesCast;
 use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\SupervisorRoutes;
@@ -25,7 +26,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['routes', 'versions'])]
 final class SupervisorLink extends Model implements ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids;
+    use BelongsToOneActor, BoundedReads, HasUlids, Linkable;
+
+    public const string LINK_TYPE = 'core.supervisor-link';
 
     protected function casts(): array
     {

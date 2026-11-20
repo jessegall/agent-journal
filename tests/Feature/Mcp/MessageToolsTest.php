@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use App\Agents\Models\AgentSession;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\MessageSelection;
 use App\Communication\Models\Message;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\MessagingTestCase;
@@ -18,13 +18,6 @@ final class MessageToolsTest extends MessagingTestCase
 {
     use SendsMcpFrames;
     use SendsSignedCalls;
-
-    protected function tearDown(): void
-    {
-        $this->emptyTables('chat_selections', 'chat_job_sources');
-
-        parent::tearDown();
-    }
 
     public function test_inbox_and_resource_reads_keep_control_like_text_in_the_body_and_select_nothing(): void
     {
@@ -54,7 +47,7 @@ final class MessageToolsTest extends MessagingTestCase
             'uri' => "journal://v1/messages/{$question}?view=context",
         ])->assertOk()->json('result.contents.0.text');
         $this->assertSame($read['body'], json_decode($resource, true, flags: JSON_THROW_ON_ERROR)['body']);
-        $this->assertNull(MessageSelection::messageFor($caller->session->id));
+        $this->assertNull(AgentSession::selectedMessage($caller->session->id));
         $this->assertNull(Message::query()->acrossInboxes()->findOrFail($question)->read_at);
     }
 
@@ -68,7 +61,7 @@ final class MessageToolsTest extends MessagingTestCase
             ->assertJsonPath('result.structuredContent.message_id', $question);
         $this->signed($caller, '/agent/communication/select', $select)->assertOk()
             ->assertJsonPath('message_id', $question);
-        $this->assertSame($question, MessageSelection::messageFor($caller->session->id));
+        $this->assertSame($question, AgentSession::selectedMessage($caller->session->id));
 
         $arguments = ['message_id' => $question, 'body' => 'Port 8080.', 'request_key' => 'reply-question'];
         $reply = $this->callMcpTool($caller, 'messages_reply', $arguments)

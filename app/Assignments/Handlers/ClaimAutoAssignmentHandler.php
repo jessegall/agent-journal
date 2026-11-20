@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Assignments\Handlers;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Actions\AutoAssignmentAvailability;
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecordForMaintenance;
 use App\Assignments\Commands\ClaimAutoAssignment;
 use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Contracts\MaintenanceAdmission;
-use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AutoAssignmentFact;
 use App\Assignments\Support\AutoAssignmentOutcome;
@@ -36,13 +33,7 @@ final readonly class ClaimAutoAssignmentHandler implements CommandHandler
 
     public function handle(ClaimAutoAssignment $command): AutoAssignmentOutcome
     {
-        $caller = ActorIdentity::of($command->dispatchedBy());
-
-        if ($caller->type !== ActorType::Engine) {
-            throw AssignmentDenied::forCaller($caller);
-        }
-
-        $this->maintenance->assertMaintenanceGranted(AssignRecord::MAINTENANCE_SCOPE);
+        $this->maintenance->assertMaintenanceGranted(AssignRecordForMaintenance::FILL_SCOPE);
 
         return $this->writer->claim($command->key, $this->claim(...));
     }
@@ -74,7 +65,7 @@ final readonly class ClaimAutoAssignmentHandler implements CommandHandler
 
         $record = new RecordIdentity($type, $candidates[0]);
         $assigner->requireCandidate($record);
-        $result = $this->commands->run(new AssignRecord($record, $holder));
+        $result = $this->commands->run(new AssignRecordForMaintenance($record, $holder));
 
         return $result->hasChanges() ? AutoAssignmentOutcome::assigned($record) : AutoAssignmentOutcome::unchanged();
     }

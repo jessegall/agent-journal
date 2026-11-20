@@ -1239,7 +1239,6 @@ class	AlarmWatchdog
 class	AliasLookup
 class	AliasOrigin
 class	AllOf
-class	AllowsEngine
 class	AlwaysOnDomainRequiresSwitchable
 class	AmbiguousDomainRoot
 class	AnchorMismatch
@@ -7623,7 +7622,6 @@ method	CheckCommandStart::handle()
 method	CheckCommandStart::timesCompound()
 method	CheckEntry::__construct()
 method	CheckEntry::handle()
-method	CheckEntry::isEngineMaintenance()
 method	CheckEntry::mayRunApplicationCommands()
 method	CheckExportedCommands::handle()
 method	CheckFailedAccount::__construct()
@@ -8085,7 +8083,6 @@ method	CommandRegistry::handlerMap()
 method	CommandRegistry::handlerOf()
 method	CommandRegistry::has()
 method	CommandRegistry::hasActorScopedReceipt()
-method	CommandRegistry::isEngineAllowed()
 method	CommandRegistry::isExported()
 method	CommandRegistry::middlewareFor()
 method	CommandRegistry::needsRepeatableRead()
@@ -8749,7 +8746,6 @@ method	DeclaredCommand::authorization()
 method	DeclaredCommand::effect()
 method	DeclaredCommand::entry()
 method	DeclaredCommand::hasActorScopedReceipt()
-method	DeclaredCommand::isEngineAllowed()
 method	DeclaredCommand::isRequestKeyRequired()
 method	DeclaredCommand::needsRepeatableRead()
 method	DeclaredCommand::operation()
@@ -17881,7 +17877,6 @@ parameter	$implementation
 parameter	$index
 parameter	$instruction
 parameter	$isCredentialWriteInProgress
-parameter	$isEngineAllowed
 parameter	$isNegated
 parameter	$isOpen
 parameter	$isWorkRequired
@@ -22407,7 +22402,6 @@ property	RegisteredCommand::$effect
 property	RegisteredCommand::$entry
 property	RegisteredCommand::$exported
 property	RegisteredCommand::$handler
-property	RegisteredCommand::$isEngineAllowed
 property	RegisteredCommand::$middleware
 property	RegisteredCommand::$operation
 property	RegisteredCommand::$owner

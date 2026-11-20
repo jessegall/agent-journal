@@ -63,17 +63,6 @@ return new class extends Migration
             )
             SQL);
 
-        Schema::create('chat_selections', function (Blueprint $table) {
-            $table->ulid('session_id')->primary();
-            $table->ulid('message_id');
-            $table->timestampTz('selected_at');
-        });
-
-        Schema::create('chat_job_sources', function (Blueprint $table) {
-            $table->ulid('session_id')->primary();
-            $table->ulid('message_id');
-            $table->timestampTz('captured_at');
-        });
         DB::statement(<<<'SQL'
             ALTER TABLE messages ADD CONSTRAINT messages_answered_names_answer CHECK (
                 state <> 'answered' OR answer_message_id IS NOT NULL
@@ -89,8 +78,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('chat_job_sources');
-        Schema::dropIfExists('chat_selections');
         Schema::dropIfExists('messages');
     }
 };

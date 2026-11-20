@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\Contracts\RequestKey as RequestKeyContract;
 use App\Bus\Exceptions\RequestKeyInvalid;
 use App\Bus\Exceptions\RequestKeyMissing;
 use Closure;
@@ -14,10 +15,8 @@ use Illuminate\Container\Attributes\Scoped;
  * outermost one: only that one is receipted under the key. Scoped, so the next request starts with none.
  */
 #[Scoped]
-final class RequestKey
+final class RequestKey implements RequestKeyContract
 {
-    public const int LONGEST = 128;
-
     private const string FORM = '/^[A-Za-z0-9-]+$/';
 
     private string|null $key = null;

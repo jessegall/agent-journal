@@ -12,7 +12,7 @@ use App\Mcp\Data\ToolResult;
 
 /**
  * The caller's write under a request key as operations_read and its resource give it: where it stands, its refusal or
- * result, and a result's outcomes 20 at a time, each page read again for the calling session. A key this session
+ * result, and up to 20 outcomes per page, each page read again for the calling session. A key this session
  * never wrote under, or whose write rolled back, reads as unknown.
  */
 final readonly class OperationsResolver
@@ -23,7 +23,11 @@ final readonly class OperationsResolver
 
     private const string UNKNOWN = 'unknown';
 
-    public function __construct(private OperationResolver $operations, private Continuations $continuations) {}
+    public function __construct(
+        private OperationResolver $operations,
+        private Continuations $continuations,
+        private ResultBudget $budget,
+    ) {}
 
     public function read(string $requestKey, string|null $cursor): ToolResult
     {
@@ -43,9 +47,8 @@ final readonly class OperationsResolver
         $result = is_array($operation->result) ? $operation->result : ['value' => $operation->result];
         $outcomes = is_array($result['outcomes'] ?? null) ? array_values($result['outcomes']) : [];
         unset($result['outcomes']);
-        $next = $offset + self::OUTCOMES_PER_PAGE;
 
-        return ToolResult::ok([
+        $payload = [
             'request_key' => $operation->requestKey,
             'command' => $operation->command,
             'state' => $operation->state->value,
@@ -56,8 +59,19 @@ final readonly class OperationsResolver
             'result' => $result,
             'outcome_count' => count($outcomes),
             'outcome_offset' => $offset,
-            'outcomes' => array_slice($outcomes, $offset, self::OUTCOMES_PER_PAGE),
-        ], $next < count($outcomes) ? [new NextAction(self::TOOL, [
+            'outcomes' => [],
+        ];
+        foreach (array_slice($outcomes, $offset, self::OUTCOMES_PER_PAGE) as $outcome) {
+            $page = [...$payload['outcomes'], $outcome];
+            if ($payload['outcomes'] !== [] && ! $this->budget->payloadFits([...$payload, 'outcomes' => $page])) {
+                break;
+            }
+
+            $payload['outcomes'] = $page;
+        }
+        $next = $offset + count($payload['outcomes']);
+
+        return ToolResult::ok($payload, $next < count($outcomes) ? [new NextAction(self::TOOL, [
             'request_key' => $operation->requestKey,
             'continuation' => $this->continuations->issue(
                 new Continuation(self::TOOL, $operation->requestKey, [], $next),

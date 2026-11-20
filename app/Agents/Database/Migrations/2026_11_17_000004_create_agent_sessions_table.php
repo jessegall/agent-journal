@@ -24,6 +24,8 @@ return new class extends Migration
             $table->ulid('start_request_id')->index();
             $table->ulid('skill_generation_id')->nullable();
             $table->ulid('current_conversation_id')->nullable();
+            $table->ulid('selected_message_id')->nullable();
+            $table->ulid('job_source_message_id')->nullable();
             $table->string('status', 16)->default('active');
             $table->timestampTz('ended_at')->nullable();
             $table->timestampTz('last_heartbeat_at')->nullable();

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequestKey;
+use App\Bus\Contracts\RequestKey;
 use App\Comments\Commands\PostComment;
 use App\Records\Support\RecordIdentity;
 

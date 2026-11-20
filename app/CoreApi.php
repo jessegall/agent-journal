@@ -280,7 +280,7 @@ use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\RankedLaunchCandidate;
-use App\Agents\Support\ReadGrant;
+use App\Agents\Contracts\ReadGrant;
 use App\Agents\Support\ScreenReportAnswer;
 use App\Agents\Support\SelectedAccount;
 use App\Agents\Support\SelectedProgram;
@@ -292,6 +292,9 @@ use App\Agents\Support\StartReceipt;
 use App\Agents\Support\StartRecordDetails;
 use App\Agents\Support\StartRequest;
 use App\Agents\Support\TerminalViewReceipt;
+use App\Agents\Values\WorkspaceReadReference;
+use App\Agents\Values\WorkReference;
+use App\Agents\Values\NavigationUncertainty;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\ClassGrant;
@@ -360,7 +363,7 @@ use App\Assignments\Exceptions\AutoAssignmentSizeInvalid;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Exceptions\InvalidRecordIds;
-use App\Assignments\Mcp\Concerns\ReadsAssignmentArguments;
+use App\Mcp\Tools\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeIdentity;
@@ -446,7 +449,7 @@ use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
-use App\Bus\Support\RequestKey;
+use App\Bus\Contracts\RequestKey;
 use App\Bus\Values\RecoveryCall;
 use App\Comments\Calls\ListCommentsCall;
 use App\Comments\Commands\PostComment;
@@ -558,6 +561,7 @@ use App\Engine\Values\FrameSettlement;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
+use App\Hooks\Stack\StackVerdict;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\WorkRecordState;
@@ -650,11 +654,11 @@ use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ListedPage;
-use App\Mcp\Support\JobPermissionReader;
+use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Support\Continuations;
+use App\Mcp\Contracts\Continuations;
 use App\Mcp\Support\TextChunk;
-use App\Mcp\Support\TextFields;
+use App\Mcp\Contracts\TextFields;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalWriteTool;
@@ -757,7 +761,6 @@ use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Commands\SaveProfileDraft;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
@@ -773,6 +776,8 @@ use App\Profiles\Commands\SubmitSignInCode;
 use App\Profiles\Commands\SwitchAccount;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
+use App\Profiles\Enums\SupervisorCoverageType;
+use App\Profiles\Enums\CommandDirectory;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
@@ -800,6 +805,17 @@ use App\Profiles\Support\OperationRule;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
+use App\Profiles\Values\SupervisorTarget;
+use App\Profiles\Values\SupervisorOverride;
+use App\Profiles\Values\ExpectedDraftRevision;
+use App\Profiles\Values\SupervisorRoutes;
+use App\Profiles\Values\SupervisorProfile;
+use App\Profiles\Values\SupervisorCoverage;
+use App\Profiles\Values\ScriptDiff;
+use App\Profiles\Values\ProfileRevisionReference;
+use App\Profiles\Values\NamedCommand;
+use App\Profiles\Values\DraftExpectations;
+use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\AbilityGrant;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\FieldOrigin;
@@ -1043,11 +1059,6 @@ use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 use App\Skills\Values\StartProfile;
-use App\Supervision\Commands\AskSupervisor;
-use App\Supervision\Commands\ChangeSupervisor;
-use App\Supervision\Commands\ReplyToAsk;
-use App\Supervision\Commands\RouteAsk;
-use App\Supervision\Commands\WithdrawAsk;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
@@ -1147,6 +1158,11 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                JobPermissionReader::class,
+                TextFields::class,
+                Continuations::class,
+                RequestKey::class,
+                ReadGrant::class,
                 SessionPolicyReader::class,
                 LaunchCandidates::class,
                 StartReservations::class,
@@ -1344,6 +1360,23 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                SupervisorTarget::class,
+                SupervisorOverride::class,
+                ExpectedDraftRevision::class,
+                SupervisorRoutes::class,
+                SupervisorProfile::class,
+                SupervisorCoverage::class,
+                ScriptDiff::class,
+                ProfileRevisionReference::class,
+                NamedCommand::class,
+                DraftExpectations::class,
+                AskTypeKey::class,
+                SupervisorCoverageType::class,
+                CommandDirectory::class,
+                StackVerdict::class,
+                WorkspaceReadReference::class,
+                WorkReference::class,
+                NavigationUncertainty::class,
                 EventCommands::class,
                 StackWide::class,
                 FolderClasses::class,
@@ -1837,7 +1870,6 @@ final class CoreApi
             )
             ->commands(
                 ActivateProfiles::class,
-                SaveProfileDraft::class,
                 RevokeProfiles::class,
                 StartProfileMain::class,
                 SwitchAccount::class,
@@ -1872,11 +1904,6 @@ final class CoreApi
                 ReleaseMessageClaim::class,
                 RequireMessageAnswer::class,
                 DismissMessage::class,
-                ChangeSupervisor::class,
-                RouteAsk::class,
-                AskSupervisor::class,
-                ReplyToAsk::class,
-                WithdrawAsk::class,
                 RetireAgent::class,
                 StartAgent::class,
                 StartOwnedAgent::class,
@@ -2208,11 +2235,6 @@ final class CoreApi
                 JournalReadTool::class,
                 JournalWriteTool::class,
                 ReadsAssignmentArguments::class,
-                RequestKey::class,
-                ReadGrant::class,
-                Continuations::class,
-                TextFields::class,
-                JobPermissionReader::class,
                 JournalResource::class,
                 RendersRefusal::class,
                 RunsCallPipelines::class,

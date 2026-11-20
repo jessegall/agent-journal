@@ -6,8 +6,8 @@ namespace Domain\Plans\Mcp;
 
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Support\Continuations;
-use App\Mcp\Support\TextFields;
+use App\Mcp\Contracts\Continuations;
+use App\Mcp\Contracts\TextFields;
 use App\Mcp\Support\ToolArguments;
 use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanPhaseTasks;

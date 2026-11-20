@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Assignments\Mcp;
+namespace App\Mcp\Tools;
 
 use App\Assignments\Commands\ReassignRecord;
 use App\Mcp\Attributes\Dispatches;
@@ -14,6 +14,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
+use App\Mcp\Tools\AssignmentWriteTool;
 
 #[IsIdempotent]
 #[IsDestructive]

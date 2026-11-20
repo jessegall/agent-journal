@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
+use App\Agents\Models\AgentSession;
+use App\Communication\Enums\AgentInboxState;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Models\JobMessageSource;
 use App\Assignments\Contracts\Assignable;
 use App\Communication\Data\MessageReader;
 use App\Communication\Enums\DismissalType;
@@ -168,7 +169,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     public static function sourceConversation(string $sessionId): Builder
     {
         return self::query()->acrossInboxes()
-            ->whereIn('id', JobMessageSource::messagesFor($sessionId))
+            ->whereIn('id', AgentSession::jobSourceMessages($sessionId))
             ->select('conversation_id');
     }
 
@@ -180,6 +181,19 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     public function revision(): int
     {
         return $this->state_version + 1;
+    }
+
+    /** @param Builder<self> $messages */
+    #[Scope]
+    protected function forInboxState(Builder $messages, AgentInboxState $state): void
+    {
+        match ($state) {
+            AgentInboxState::Pending => $messages->where(fn (Builder $pending) => $pending
+                ->where('state', MessageState::WaitingForAnswer)
+                ->orWhere(fn (Builder $unread) => $unread->whereNull('read_at')->where('state', MessageState::Sent))),
+            AgentInboxState::Answered => $messages->where('state', MessageState::Answered),
+            AgentInboxState::All => $messages,
+        };
     }
 
     /**

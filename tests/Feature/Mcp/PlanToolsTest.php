@@ -41,6 +41,7 @@ final class PlanToolsTest extends TestCase
 
     public function test_an_agent_builds_starts_reads_and_finishes_a_plan_across_the_two_surfaces(): void
     {
+        $this->caller->openStack($this->app);
         $create = [
             'title' => 'Release', 'brief' => 'Ship the release.', 'type' => 'build', 'request_key' => 'make-plan',
         ];
@@ -54,8 +55,9 @@ final class PlanToolsTest extends TestCase
         $this->addTask($first, $build, 'add-build-task');
         $this->addTask($second, $check, 'add-check-task');
 
-        $this->callMcpTool($this->caller, 'plans_start', ['plan_id' => $id, 'request_key' => 'start-plan'])
-            ->assertJsonPath('result.isError', false)->assertJsonPath('result.structuredContent.state', 'started');
+        $started = $this->callMcpTool($this->caller, 'plans_start', ['plan_id' => $id, 'request_key' => 'start-plan']);
+        $this->assertFalse($started->json('result.isError'), $started->getContent());
+        $started->assertJsonPath('result.structuredContent.state', 'started');
         $this->callMcpTool($this->caller, 'phases_read', ['phase_id' => $first])
             ->assertJsonPath('result.structuredContent.task_ids', [$build->id]);
         $build->finish();

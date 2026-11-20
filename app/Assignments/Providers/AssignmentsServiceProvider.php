@@ -27,6 +27,7 @@ use App\Assignments\Contracts\AutoAssignmentTrigger;
 use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Contracts\ClaimRelease;
 use App\Assignments\Contracts\JournalAssignmentWriter;
+use App\Assignments\Contracts\MaintenanceAssignmentWriter;
 use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Enums\AssignmentAbility;
@@ -69,6 +70,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->bind(AssignmentFactPublisher::class, AssignmentFacts::class);
         $this->app->scoped(AssignmentWriter::class, WriteAssignments::class);
         $this->app->scoped(JournalAssignmentWriter::class, WriteAssignments::class);
+        $this->app->scoped(MaintenanceAssignmentWriter::class, WriteAssignments::class);
         $this->app->scoped(ResponsibilityWriter::class, WriteResponsibilities::class);
         $this->app->scoped(AssigneeLocks::class, OrderedAssigneeLocks::class);
         $this->app->scoped(AdmitPublicAssignments::class);

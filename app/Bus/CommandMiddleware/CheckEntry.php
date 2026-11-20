@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Bus\CommandMiddleware;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandNotRegistered;
@@ -34,12 +33,8 @@ final readonly class CheckEntry implements CommandMiddleware
     {
         $entry = $this->registry->entryOf($call->name());
 
-        if ($entry === CommandEntry::Application && $this->isEngineMaintenance()) {
-            if (! $this->registry->isEngineAllowed($call->name())) {
-                throw CommandNotRegistered::for($call->name());
-            }
-
-            return $next($call);
+        if ($entry === CommandEntry::Application && $this->entrance->current() === CommandEntry::EngineMaintenance) {
+            throw CommandNotRegistered::for($call->name());
         }
 
         $hasDisallowedEntry = ! $this->entrance->admits($entry);
@@ -57,12 +52,6 @@ final readonly class CheckEntry implements CommandMiddleware
         }
 
         return $next($call);
-    }
-
-    private function isEngineMaintenance(): bool
-    {
-        return $this->entrance->current() === CommandEntry::EngineMaintenance && $this->actors->hasActor()
-            && $this->actors->actor()->type === ActorType::Engine;
     }
 
     /**
