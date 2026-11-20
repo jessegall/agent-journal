@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('goal_script');
             $table->unsignedInteger('goal_version');
             $table->json('goal_parameters');
+            $table->char('goal_key', 64);
             $table->unsignedInteger('stalled_step');
             $table->string('reason', 16);
             $table->json('screen');
@@ -41,7 +42,7 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->unique(['agent_runtime_id', 'operation_key']);
-            $table->index(['actor_type', 'actor_id']);
+            $table->index(['actor_type', 'actor_id', 'program', 'build', 'fingerprint', 'goal_key']);
         });
 
         // One open request per runtime: a second is refused by the database, not by a check that could race.

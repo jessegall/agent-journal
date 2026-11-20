@@ -28,15 +28,8 @@ final readonly class RaiseNavigationController
             $raise->operationKey,
             $raise->requestId,
             $raise->attempt,
-            $raise->step,
-            $raise->reason,
-            $raise->fingerprint,
-            $raise->rows,
-            $raise->highlight,
-            $raise->generation,
+            $raise->uncertainty(),
             $raise->declinedEntries,
-            $raise->staleEntry,
-            $raise->sentSteps,
         ));
 
         return new JsonResponse($answer);

@@ -113,7 +113,7 @@ final class MenuEntry extends Model implements ReadableModel
         $entry->goal_version = $goal->version;
         $entry->goal_parameters = $goal->sortedParameters();
         $entry->goal_key = $goal->key();
-        $entry->steps = array_map(fn (MenuStep $step) => $step->toStored(), $steps);
+        $entry->steps = self::storedSteps($steps);
         $entry->completes = $completes;
         $entry->next_step = $source->next_step;
         $entry->proof = $proof;
@@ -124,6 +124,46 @@ final class MenuEntry extends Model implements ReadableModel
         $entry->save();
 
         return $entry;
+    }
+
+    /**
+     * @param  non-empty-list<MenuStep>  $steps
+     */
+    public static function lockForPath(NavigationRequest $navigation, array $steps): self|null
+    {
+        return self::query()->ownedBy($navigation->owner())->current()->forProgram($navigation->program)
+            ->matching($steps[0]->fingerprint, $navigation->goal())
+            ->whereRaw('steps::jsonb = ?::jsonb', [json_encode(self::storedSteps($steps), JSON_THROW_ON_ERROR)])
+            ->lockForUpdate()
+            ->recentFirst()
+            ->first();
+    }
+
+    /**
+     * @param  list<string>  $declinedEntries
+     */
+    public static function replayFor(
+        ActorIdentity $owner,
+        AgentRuntime $runtime,
+        ScriptGoal $goal,
+        string $fingerprint,
+        array $declinedEntries,
+    ): self|null {
+        $entries = self::query()->ownedBy($owner)->current()->forProgram($runtime->program)
+            ->matching($fingerprint, $goal)->whereNotIn('id', $declinedEntries)->recentFirst();
+        $build = $runtime->program_build;
+        $current = (clone $entries)->whereJsonContains('builds', [['build' => $build, 'stale' => false]])->first();
+
+        return $current ?? $entries->whereJsonDoesntContain('builds', [['build' => $build]])->first();
+    }
+
+    /**
+     * @param  non-empty-list<MenuStep>  $steps
+     * @return non-empty-list<array{fingerprint: string, choose: string|null, key: string|null, proof: string|null}>
+     */
+    private static function storedSteps(array $steps): array
+    {
+        return array_map(fn (MenuStep $step) => $step->toStored(), $steps);
     }
 
     public function goal(): ScriptGoal
@@ -267,7 +307,7 @@ final class MenuEntry extends Model implements ReadableModel
     #[Scope]
     protected function recentFirst(Builder $query): void
     {
-        $query->orderByDesc('updated_at');
+        $query->orderByDesc('updated_at')->orderByDesc('id');
     }
 
     /**

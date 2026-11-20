@@ -45,6 +45,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $goal_script
  * @property int $goal_version
  * @property array<string, string> $goal_parameters
+ * @property string $goal_key
  * @property int $stalled_step
  * @property NavigationReason $reason
  * @property NavigationScreen $screen
@@ -69,6 +70,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'goal_script',
     'goal_version',
     'goal_parameters',
+    'goal_key',
     'completes',
     'proof',
     'fingerprint',
@@ -126,11 +128,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         string $operationKey,
         CarbonImmutable $expiresAt,
     ): self {
-        $raisedBefore = self::query()
-            ->acrossActors()
-            ->where('agent_runtime_id', $request->agent_runtime_id)
-            ->where('operation_key', $operationKey)
-            ->first();
+        $raisedBefore = self::raisedForOperation($request->agent_runtime_id, $operationKey);
         if ($raisedBefore !== null) {
             return $raisedBefore;
         }
@@ -146,6 +144,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         $navigation->goal_script = $goal->script;
         $navigation->goal_version = $goal->version;
         $navigation->goal_parameters = $goal->parameters;
+        $navigation->goal_key = $goal->key();
         $navigation->stalled_step = $uncertainty->stalledStep;
         $navigation->reason = $uncertainty->reason;
         $navigation->screen = $uncertainty->screen;
@@ -158,6 +157,29 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         $navigation->save();
 
         return $navigation;
+    }
+
+    public static function raisedForOperation(string $runtimeId, string $operationKey): self|null
+    {
+        return self::query()->acrossActors()
+            ->where('agent_runtime_id', $runtimeId)
+            ->where('operation_key', $operationKey)
+            ->first();
+    }
+
+    public static function isSameMenuOpenElsewhere(
+        ActorIdentity $owner,
+        AgentRuntime $runtime,
+        ScriptGoal $goal,
+        string $fingerprint,
+    ): bool {
+        return self::query()->ownedBy($owner)->open()
+            ->where('agent_runtime_id', '!=', $runtime->id)
+            ->where('program', $runtime->program)
+            ->where('build', $runtime->program_build)
+            ->where('fingerprint', $fingerprint)
+            ->where('goal_key', $goal->key())
+            ->exists();
     }
 
     /**

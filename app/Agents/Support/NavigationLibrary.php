@@ -20,7 +20,7 @@ final readonly class NavigationLibrary
      */
     public function save(NavigationRequest $navigation, array $steps): MenuEntry
     {
-        $entry = $this->samePath($navigation, $steps);
+        $entry = MenuEntry::lockForPath($navigation, $steps);
         if ($entry === null) {
             $completes = $navigation->completes ?? NavigationCompletion::Goal;
             $proof = (string) $navigation->proof;
@@ -35,25 +35,5 @@ final readonly class NavigationLibrary
         $navigation->savedAs($entry);
 
         return $entry;
-    }
-
-    /**
-     * The owner's current entry with the same first screen, goal and steps, when there is one.
-     *
-     * @param  non-empty-list<MenuStep>  $steps
-     */
-    private function samePath(NavigationRequest $navigation, array $steps): MenuEntry|null
-    {
-        $stored = array_map(fn (MenuStep $step) => $step->toStored(), $steps);
-
-        return MenuEntry::query()
-            ->ownedBy($navigation->owner())
-            ->current()
-            ->forProgram($navigation->program)
-            ->matching($steps[0]->fingerprint, $navigation->goal())
-            ->lockForUpdate()
-            ->readLimit(20)
-            ->get()
-            ->first(fn (MenuEntry $entry) => $entry->steps === $stored);
     }
 }

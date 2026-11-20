@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Data\Agents;
 
 use App\Agents\Enums\NavigationReason;
+use App\Agents\Values\NavigationScreen;
+use App\Agents\Values\NavigationUncertainty;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -35,4 +37,22 @@ final class NavigationRaiseData extends Data
         public readonly string|null $staleEntry = null,
         public readonly array $sentSteps = [],
     ) {}
+
+    public function uncertainty(): NavigationUncertainty
+    {
+        $screen = NavigationScreen::from([
+            'rows' => $this->rows,
+            'highlight' => $this->highlight >= 0 ? $this->highlight : null,
+            'generation' => $this->generation,
+        ]);
+
+        return NavigationUncertainty::fromHost(
+            $this->reason,
+            $this->step,
+            $this->fingerprint,
+            $screen,
+            $this->staleEntry,
+            $this->sentSteps,
+        );
+    }
 }

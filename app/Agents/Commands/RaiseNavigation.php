@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Enums\NavigationReason;
 use App\Agents\Handlers\RaiseNavigationHandler;
 use App\Agents\Support\NavigationRaiseAnswer;
+use App\Agents\Values\NavigationUncertainty;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
@@ -24,9 +24,7 @@ use App\Bus\Support\Command;
 final readonly class RaiseNavigation extends Command
 {
     /**
-     * @param  list<string>  $rows
      * @param  list<string>  $declinedEntries
-     * @param  list<string>  $sentSteps
      */
     public function __construct(
         public string $hostId,
@@ -34,14 +32,7 @@ final readonly class RaiseNavigation extends Command
         public string $operationKey,
         public string $requestId,
         public int $attempt,
-        public int $step,
-        public NavigationReason $reason,
-        public string $fingerprint,
-        public array $rows,
-        public int $highlight,
-        public int $generation,
+        public NavigationUncertainty $uncertainty,
         public array $declinedEntries = [],
-        public string|null $staleEntry = null,
-        public array $sentSteps = [],
     ) {}
 }
