@@ -16,7 +16,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('inbox_history')]
-#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper)]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 #[Description('Page back through the history of an inbox you sit at, with a cursor to older pages.')]
 final class InboxHistoryTool extends JournalReadTool
 {

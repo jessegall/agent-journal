@@ -12,5 +12,7 @@ use Domain\Rules\Api\RuleList;
  */
 interface RuleResolver
 {
+    public const int PER_PAGE = 30;
+
     public function list(RuleFilters $filters): RuleList;
 }

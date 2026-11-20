@@ -19,8 +19,6 @@ use Illuminate\Container\Attributes\Scoped;
 #[Scoped]
 final readonly class RuleRecords implements RuleResolver
 {
-    public const int PER_PAGE = 30;
-
     public function __construct(private CurrentActor $actors) {}
 
     /**
@@ -36,10 +34,15 @@ final readonly class RuleRecords implements RuleResolver
     public function list(RuleFilters $filters): RuleList
     {
         $this->actors->actor();
-        $total = Rule::query()->matching($filters->search)->count();
+        $matching = Rule::query()->matching($filters->search);
+        if ($filters->state !== null) {
+            $matching->where('state', $filters->state);
+        }
+
+        $total = (clone $matching)->count();
         $lastPage = max(1, (int) ceil($total / self::PER_PAGE));
         $page = min(max(1, $filters->page), $lastPage);
-        $rules = Rule::query()->matching($filters->search)->orderByDesc('id')->forPage($page, self::PER_PAGE)->get();
+        $rules = $matching->orderByDesc('id')->forPage($page, self::PER_PAGE)->get();
         $selected = $filters->selectedRuleId === null ? null : Rule::query()->find($filters->selectedRuleId);
 
         return new RuleList(

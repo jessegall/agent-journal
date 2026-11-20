@@ -109,6 +109,11 @@ final readonly class ToolArguments
         return self::normalizedUlid($name, $this->text($name));
     }
 
+    public function optionalUlid(string $name): string|null
+    {
+        return array_key_exists($name, $this->arguments) ? $this->ulid($name) : null;
+    }
+
     /** @return non-empty-list<string> */
     public function ulids(string $name): array
     {

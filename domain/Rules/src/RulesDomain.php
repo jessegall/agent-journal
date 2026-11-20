@@ -40,6 +40,10 @@ use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
 use Domain\Rules\Mcp\ActiveRulesOverview;
+use Domain\Rules\Mcp\ProposeRuleTool;
+use Domain\Rules\Mcp\RuleReadTool;
+use Domain\Rules\Mcp\RulesListTool;
+use Domain\Rules\Mcp\RulesResource;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RulesWindowResolver;
@@ -126,12 +130,12 @@ final class RulesDomain extends Domain implements
 
     public function mcpTools(): array
     {
-        return [];
+        return [RulesListTool::class, RuleReadTool::class, ProposeRuleTool::class];
     }
 
     public function mcpResources(): array
     {
-        return [];
+        return [RulesResource::class];
     }
 
     public function overviewContributions(): array
