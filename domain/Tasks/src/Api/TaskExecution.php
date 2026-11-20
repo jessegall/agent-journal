@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Api;
 
 use App\Actors\Enums\ActorType;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 
 /**
  * Who works on a task now, apart from who holds it: the actor and its label (null when the caller may not see that
@@ -18,6 +18,6 @@ final readonly class TaskExecution
         public string $actorId,
         public string|null $actorLabel,
         public int $runNumber,
-        public TaskWorkState $workState,
+        public TaskState $state,
     ) {}
 }

@@ -6,7 +6,7 @@ namespace Domain\Tasks\Http\Data;
 
 use App\Actors\Enums\ActorType;
 use Domain\Tasks\Api\TaskExecution;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 use Spatie\LaravelData\Data;
 
 /**
@@ -21,7 +21,7 @@ final class TaskExecutionData extends Data
         public readonly string $actorId,
         public readonly string|null $actorLabel,
         public readonly int $runNumber,
-        public readonly TaskWorkState $workState,
+        public readonly TaskState $state,
     ) {}
 
     public static function fromExecution(TaskExecution $execution): self
@@ -31,7 +31,7 @@ final class TaskExecutionData extends Data
             $execution->actorId,
             $execution->actorLabel,
             $execution->runNumber,
-            $execution->workState,
+            $execution->state,
         );
     }
 
@@ -41,6 +41,6 @@ final class TaskExecutionData extends Data
     public function label(): string
     {
         return "run {$this->runNumber} by ".($this->actorLabel
-            ?? "{$this->actorType->value} {$this->actorId}").", {$this->workState->value}";
+            ?? "{$this->actorType->value} {$this->actorId}").", {$this->state->value}";
     }
 }

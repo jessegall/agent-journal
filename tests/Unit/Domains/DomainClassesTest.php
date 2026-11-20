@@ -53,7 +53,6 @@ final class DomainClassesTest extends TestCase
             'TaskFilters',
             'TaskList',
             'TaskState',
-            'TaskWorkState',
             'TaskListResolver',
             'TaskDetailsResolver',
             'TaskExecution',

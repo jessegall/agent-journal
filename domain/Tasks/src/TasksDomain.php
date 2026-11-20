@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks;
 
-use Domain\Tasks\Mcp\TaskSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AutoAssignmentProvider;
@@ -52,11 +51,11 @@ use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskView;
-use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Mcp\TaskResource;
+use Domain\Tasks\Mcp\TaskSearch;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Policies\TaskPolicy;
@@ -127,7 +126,6 @@ final class TasksDomain extends Domain implements
                 TaskFilters::class,
                 TaskList::class,
                 TaskState::class,
-                TaskWorkState::class,
                 TaskExecution::class,
                 TaskDetails::class,
                 TaskView::class,

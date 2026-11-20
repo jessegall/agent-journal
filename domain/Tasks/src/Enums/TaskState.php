@@ -16,19 +16,6 @@ enum TaskState: string
     case Cancelled = 'cancelled';
 
     /**
-     * What the stack sees of the current run in this state.
-     */
-    public function workState(): TaskWorkState
-    {
-        return match ($this) {
-            self::Started => TaskWorkState::Active,
-            self::Blocked => TaskWorkState::Blocked,
-            self::Open, self::Finished => TaskWorkState::Finished,
-            self::Cancelled => TaskWorkState::Cancelled,
-        };
-    }
-
-    /**
      * Whether the task's work is over: finished or cancelled.
      */
     public function hasEnded(): bool

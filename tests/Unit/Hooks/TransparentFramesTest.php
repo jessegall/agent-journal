@@ -25,7 +25,7 @@ use App\Processes\Values\ShellCommand;
 use Carbon\CarbonImmutable;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\States\WorkingOnPlanState;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
 use Tests\Fixtures\Hooks\AllowedStops;
@@ -144,7 +144,7 @@ final class TransparentFramesTest extends TestCase
 
     private function stack(Frame ...$frames): AgentStack
     {
-        $pushed = fn (): AgentState => new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active));
+        $pushed = fn (): AgentState => new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started));
 
         return new AgentStack(array_values($frames), new InMemoryStateFactory(['tasks.working' => $pushed]));
     }
@@ -169,7 +169,7 @@ final class TransparentFramesTest extends TestCase
 
     private function task(bool $finished = false): Frame
     {
-        $work = new TaskWork(41, 3, $finished ? TaskWorkState::Finished : TaskWorkState::Active);
+        $work = new TaskWork(41, 3, $finished ? TaskState::Finished : TaskState::Started);
 
         return $this->frame('task', 'tasks.working', '41', new WorkingOnTaskState($work));
     }

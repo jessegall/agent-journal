@@ -26,11 +26,10 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
-use Domain\Tasks\Enums\TaskTextLimit;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskTextLimit;
 use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
@@ -303,7 +302,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
             $runner->id,
             $labels->nameOf($runner),
             $this->run_number,
-            $this->state->workState(),
+            $this->state,
         );
     }
 
@@ -346,11 +345,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
      */
     public function workFor(int $runNumber): TaskWork
     {
-        if ($runNumber !== $this->run_number) {
-            return new TaskWork($this->number, $runNumber, TaskWorkState::Finished);
-        }
-
-        return new TaskWork($this->number, $runNumber, $this->state->workState());
+        return new TaskWork($this->number, $runNumber, $this->state, $runNumber === $this->run_number);
     }
 
     public function assignmentIdentity(): RecordIdentity

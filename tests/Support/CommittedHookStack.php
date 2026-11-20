@@ -36,7 +36,7 @@ use App\Hooks\Support\StackTransaction;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
@@ -72,7 +72,7 @@ trait CommittedHookStack
         config(['processes.runner' => true]);
         $this->target = $this->startedTarget();
         $this->openRuntime();
-        $this->tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
+        $this->tasks = new InMemoryTaskLoader([42 => TaskState::Started, 43 => TaskState::Started]);
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
         $tasks = $this->tasks;
         $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, function (

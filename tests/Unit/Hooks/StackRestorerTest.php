@@ -6,12 +6,12 @@ namespace Tests\Unit\Hooks;
 
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateLoader;
-use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
+use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\InvalidBottomState;
 use App\Hooks\Exceptions\StateClassMismatch;
@@ -27,7 +27,7 @@ use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use Carbon\CarbonImmutable;
 use Closure;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
@@ -48,7 +48,7 @@ final class StackRestorerTest extends TestCase
     {
         parent::setUp();
 
-        $this->tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
+        $this->tasks = new InMemoryTaskLoader([42 => TaskState::Started, 43 => TaskState::Started]);
         $this->restorer = $this->restorerWith($this->tasks);
     }
 
@@ -65,7 +65,7 @@ final class StackRestorerTest extends TestCase
         $records = $this->records($this->bottom(), $this->task('task-42', 42));
 
         $before = $this->restorer->restore($records);
-        $this->tasks->tasks[42] = TaskWorkState::Finished;
+        $this->tasks->tasks[42] = TaskState::Finished;
         $after = $this->restorer->restore($records);
 
         $this->assertSame([false], array_map(fn ($frame) => $frame->isFinished(), array_slice($before->frames(), 1)));
@@ -74,7 +74,7 @@ final class StackRestorerTest extends TestCase
 
     public function test_restoring_keeps_a_finished_frame_and_only_an_exposed_one_is_popped(): void
     {
-        $this->tasks->tasks[42] = TaskWorkState::Cancelled;
+        $this->tasks->tasks[42] = TaskState::Cancelled;
 
         $stack = $this->restorer->restore(
             $this->records($this->bottom(), $this->task('task-42', 42), $this->task('task-43', 43)),
@@ -142,7 +142,7 @@ final class StackRestorerTest extends TestCase
 
     public function test_a_frame_stored_in_an_unknown_version_is_an_error(): void
     {
-        $restorer = $this->restorerWith(new InMemoryTaskLoader([42 => TaskWorkState::Active], version: 2));
+        $restorer = $this->restorerWith(new InMemoryTaskLoader([42 => TaskState::Started], version: 2));
 
         $this->expectException(StateSchemaUnknown::class);
 

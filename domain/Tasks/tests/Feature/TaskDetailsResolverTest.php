@@ -24,8 +24,8 @@ use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskView;
-use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
@@ -90,12 +90,12 @@ final class TaskDetailsResolverTest extends TestCase
 
         $this->assertSame($desk->id, $details->holder->get()->holder()->id);
         $this->assertSame(
-            [$runner->agent_id, 'Runner', 1, TaskWorkState::Active],
+            [$runner->agent_id, 'Runner', 1, TaskState::Started],
             [
                 $details->execution?->actorId,
                 $details->execution?->actorLabel,
                 $details->execution?->runNumber,
-                $details->execution?->workState,
+                $details->execution?->state,
             ],
         );
         $this->assertSame('Held by one, run by another.', $details->brief);

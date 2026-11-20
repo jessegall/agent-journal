@@ -36,7 +36,7 @@ use Carbon\CarbonImmutable;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\States\FollowingSequenceState;
 use Domain\Sequences\Support\SequenceWork;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
@@ -54,19 +54,19 @@ final class AgentStackTest extends TestCase
     public function test_live_task_and_message_obligations_both_answer_a_stop(): void
     {
         $stop = $this->stop();
-        $both = $this->exampleStack(TaskWorkState::Active, messageWaits: true);
+        $both = $this->exampleStack(TaskState::Started, messageWaits: true);
 
         $this->assertSame(
             ['message-95 deny keep', 'task-42 deny keep'],
             $this->stepsOf($both->answer($stop)),
         );
 
-        $answered = $this->exampleStack(TaskWorkState::Active, messageWaits: false)->withoutExposedInactive();
+        $answered = $this->exampleStack(TaskState::Started, messageWaits: false)->withoutExposedInactive();
 
         $this->assertSame(['ready', 'task-42'], $answered->frameIds());
         $this->assertSame(['task-42 deny keep'], $this->stepsOf($answered->answer($stop)));
 
-        $done = $this->exampleStack(TaskWorkState::Finished, messageWaits: false)->withoutExposedInactive();
+        $done = $this->exampleStack(TaskState::Finished, messageWaits: false)->withoutExposedInactive();
         $answer = $done->answer($stop);
 
         $this->assertSame(AnswerType::Allow, $answer->decision->answerType());
@@ -75,7 +75,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_shell_write_is_refused_by_the_message_and_the_task_is_not_asked(): void
     {
-        $answer = $this->exampleStack(TaskWorkState::Active, messageWaits: true)
+        $answer = $this->exampleStack(TaskState::Started, messageWaits: true)
             ->answer(HookInputs::all()['shell command']);
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
@@ -94,7 +94,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.working', '42'),
-                new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)),
+                new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started)),
                 CarbonImmutable::now(),
             ),
         ], $factory);
@@ -352,7 +352,7 @@ final class AgentStackTest extends TestCase
 
     public function test_pushing_a_state_already_on_the_stack_changes_nothing(): void
     {
-        $stack = $this->exampleStack(TaskWorkState::Active, messageWaits: true);
+        $stack = $this->exampleStack(TaskState::Started, messageWaits: true);
 
         $this->assertSame($stack, $stack->withStateOnTop($this->reference('tasks.working', '42')));
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->frameIds());
@@ -406,14 +406,14 @@ final class AgentStackTest extends TestCase
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_a_finished_state_is_never_asked(HookInput $input): void
     {
-        $stack = $this->exampleStack(TaskWorkState::Finished, messageWaits: false);
+        $stack = $this->exampleStack(TaskState::Finished, messageWaits: false);
 
         $this->assertSame(['ready'], array_map(fn (WalkStep $step) => $step->frameId, $stack->answer($input)->steps));
     }
 
     public function test_a_finished_state_in_the_middle_stays_buried_when_the_top_is_popped(): void
     {
-        $stack = $this->exampleStack(TaskWorkState::Finished, messageWaits: true);
+        $stack = $this->exampleStack(TaskState::Finished, messageWaits: true);
 
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->withoutExposedInactive()->frameIds());
         $this->assertSame(['ready'], $stack->poppedOf($stack->frames()[2])->frameIds());
@@ -421,7 +421,7 @@ final class AgentStackTest extends TestCase
 
     public function test_the_records_list_every_frame_bottom_first(): void
     {
-        $records = $this->exampleStack(TaskWorkState::Active, messageWaits: true)->records()->all();
+        $records = $this->exampleStack(TaskState::Started, messageWaits: true)->records()->all();
 
         $this->assertSame(['ready', 'task-42', 'message-95'], array_map(fn ($record) => $record->id, $records));
         $this->assertSame([true, false, false], array_map(fn ($record) => $record->isBottom, $records));
@@ -456,7 +456,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.working', '42'),
-                new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)),
+                new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started)),
                 CarbonImmutable::now(),
             ),
             $this->frame('review', $switchedOff),
@@ -474,7 +474,7 @@ final class AgentStackTest extends TestCase
             new Frame(
                 'task-42',
                 $this->reference('tasks.working', '42'),
-                new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)),
+                new WorkingOnTaskState(new TaskWork(42, 1, TaskState::Started)),
                 CarbonImmutable::now(),
             ),
             $this->frame('notes', new SwitchableState(true)),
@@ -484,7 +484,7 @@ final class AgentStackTest extends TestCase
         $this->assertSame(['ready', 'review', 'task-42', 'notes'], $stack->withoutExposedInactive()->frameIds());
     }
 
-    private function exampleStack(TaskWorkState $taskState, bool $messageWaits): AgentStack
+    private function exampleStack(TaskState $taskState, bool $messageWaits): AgentStack
     {
         return $this->stack(
             $this->ready(),

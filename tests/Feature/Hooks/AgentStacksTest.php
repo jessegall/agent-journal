@@ -30,7 +30,7 @@ use App\Settings\Models\SettingsRecord;
 use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -74,7 +74,7 @@ final class AgentStacksTest extends TestCase
                 null,
             ),
         );
-        $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
+        $tasks = new InMemoryTaskLoader([42 => TaskState::Started, 43 => TaskState::Started]);
         Event::listen(
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $tasks),

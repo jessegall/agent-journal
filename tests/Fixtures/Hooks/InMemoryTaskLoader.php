@@ -12,7 +12,7 @@ use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
 
@@ -22,7 +22,7 @@ use Domain\Tasks\Support\TaskWork;
 final class InMemoryTaskLoader implements StateLoader
 {
     /**
-     * @param  array<int, TaskWorkState>  $tasks  task number to its current state
+     * @param  array<int, TaskState>  $tasks  task number to its current state
      */
     public function __construct(
         public array $tasks = [],

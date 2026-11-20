@@ -22,7 +22,7 @@ use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Storage\WalkStep;
 use Closure;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestActors;
@@ -58,7 +58,7 @@ final class AgentStateMachineTest extends TestCase
     public function test_a_finished_task_is_passed_over_and_stays_stored_when_the_stop_is_allowed(): void
     {
         $this->pushState($this->task(42));
-        $this->tasks->tasks[42] = TaskWorkState::Finished;
+        $this->tasks->tasks[42] = TaskState::Finished;
 
         $reply = $this->machine()->answer(
             $this->stop(),
@@ -122,7 +122,7 @@ final class AgentStateMachineTest extends TestCase
             $this->stopReply(),
         );
         $versionAfterFirst = AgentStackRow::query()->sole()->version;
-        $this->tasks->tasks[42] = TaskWorkState::Finished;
+        $this->tasks->tasks[42] = TaskState::Finished;
 
         $retry = $this->machine()->answer(
             $this->stop(),
@@ -149,7 +149,7 @@ final class AgentStateMachineTest extends TestCase
     public function test_a_failure_before_the_commit_keeps_nothing(): void
     {
         $this->pushState($this->task(42));
-        $this->tasks->tasks[42] = TaskWorkState::Finished;
+        $this->tasks->tasks[42] = TaskState::Finished;
 
         try {
             $this->machine()->answer(

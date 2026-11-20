@@ -18,7 +18,7 @@ use App\Hooks\States\ReadyState;
 use App\Hooks\States\Support\ReadyStateLoader;
 use App\Hooks\States\Support\StateTypeRegistry;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
@@ -123,7 +123,7 @@ final class StateLoaderTest extends TestCase
 
     public function test_a_pushed_frame_reads_its_subject_through_the_registered_type(): void
     {
-        $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active]);
+        $tasks = new InMemoryTaskLoader([42 => TaskState::Started]);
         $events = new Dispatcher();
         $events->listen(
             StateTypesRequested::class,
