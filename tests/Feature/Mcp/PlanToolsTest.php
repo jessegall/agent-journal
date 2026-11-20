@@ -60,8 +60,8 @@ final class PlanToolsTest extends TestCase
         $started->assertJsonPath('result.structuredContent.state', 'started');
         $this->callMcpTool($this->caller, 'phases_read', ['phase_id' => $first])
             ->assertJsonPath('result.structuredContent.task_ids', [$build->id]);
-        $build->finish();
-        $check->finish();
+        $build->finish('Done.');
+        $check->finish('Done.');
 
         $read = $this->callMcpTool($this->caller, 'plans_read', ['plan_id' => $id, 'view' => 'context'])
             ->assertJsonPath('result.structuredContent.progress.done', 2)

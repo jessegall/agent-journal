@@ -140,9 +140,9 @@ final class PlanFinishCancelTest extends TestCase
 
         match ($state) {
             TaskState::Started => $task->start(),
-            TaskState::Blocked => $task->block(),
-            TaskState::Finished => $task->finish(),
-            TaskState::Cancelled => $task->cancel(),
+            TaskState::Blocked => $task->block('Waits.'),
+            TaskState::Finished => $task->finish('Done.'),
+            TaskState::Cancelled => $task->cancel('Not needed.'),
             TaskState::Open => null,
         };
 

@@ -74,9 +74,9 @@ final class AssignableRecordsTest extends TestCase
     {
         $open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);
-        $finished->finish();
+        $finished->finish('Done.');
         $cancelled = Task::factory()->create(['title' => 'Cancelled']);
-        $cancelled->cancel();
+        $cancelled->cancel('Not needed.');
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
 
         $overTasks = $this->registry->recordProvider(Task::LINK_TYPE)->finishedRecords([$open, $finished, $cancelled]);
@@ -96,9 +96,9 @@ final class AssignableRecordsTest extends TestCase
         $allEnded = $plan->addPhase('All ended');
         $mixed = $plan->addPhase('Mixed');
         $done = Task::factory()->create(['title' => 'Done']);
-        $done->finish();
+        $done->finish('Done.');
         $dropped = Task::factory()->create(['title' => 'Dropped']);
-        $dropped->cancel();
+        $dropped->cancel('Not needed.');
         $running = Task::factory()->create(['title' => 'Running']);
         $allEnded->addTasks([$done->id, $dropped->id]);
         $mixed->addTasks([$running->id]);

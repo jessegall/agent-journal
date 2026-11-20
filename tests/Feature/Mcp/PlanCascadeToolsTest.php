@@ -48,7 +48,7 @@ final class PlanCascadeToolsTest extends TestCase
         $phase = $plan->addPhase('Release');
         $tasks = Task::factory()->count(20)->create();
         $finished = Task::factory()->create();
-        $finished->finish();
+        $finished->finish('Done.');
         $phase->addTasks([...$tasks->modelKeys(), $finished->id]);
 
         $summary = $this->callMcpTool($this->caller, 'plans_assign_work', $this->assignArguments($plan))

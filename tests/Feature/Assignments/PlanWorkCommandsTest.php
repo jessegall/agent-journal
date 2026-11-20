@@ -56,7 +56,7 @@ final class PlanWorkCommandsTest extends TestCase
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);
-        $finished->finish();
+        $finished->finish('Done.');
         $this->plan->addPhase('Working')->addTasks([$open->id]);
         $this->plan->addPhase('Over')->addTasks([$finished->id]);
     }

@@ -23,7 +23,7 @@ final readonly class BlockTaskHandler extends TaskCommandHandler
     public function handle(BlockTask $command, Task $task): void
     {
         $this->assertCurrentTaskRun($task, $command->runNumber);
-        $task->blockRun($command->reason);
+        $task->block($command->reason);
         $this->events->dispatch(new TaskBlocked($command->taskId));
     }
 }

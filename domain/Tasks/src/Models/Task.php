@@ -194,37 +194,6 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Starts a new run; a task that is already started keeps its run.
-     */
-    public function start(): void
-    {
-        if ($this->state !== TaskState::Started) {
-            $this->run_number++;
-        }
-
-        $this->state = TaskState::Started;
-        $this->save();
-    }
-
-    public function finish(): void
-    {
-        $this->state = TaskState::Finished;
-        $this->save();
-    }
-
-    public function block(): void
-    {
-        $this->state = TaskState::Blocked;
-        $this->save();
-    }
-
-    public function cancel(): void
-    {
-        $this->state = TaskState::Cancelled;
-        $this->save();
-    }
-
-    /**
      * Gives the task a new title and brief, as a new revision.
      */
     public function describe(string $title, string $brief): void
@@ -240,7 +209,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
      *
      * @throws TaskRestartRefused
      */
-    public function startRun(): void
+    public function start(): void
     {
         if ($this->state->hasEnded()) {
             throw TaskRestartRefused::forTask($this->number, $this->state->value);
@@ -254,21 +223,21 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         $this->save();
     }
 
-    public function finishRun(string $note): void
+    public function finish(string $note): void
     {
         $this->state = TaskState::Finished;
         $this->result_note = $note;
         $this->save();
     }
 
-    public function blockRun(string $reason): void
+    public function block(string $reason): void
     {
         $this->state = TaskState::Blocked;
         $this->block_reason = $reason;
         $this->save();
     }
 
-    public function cancelWith(string $reason): void
+    public function cancel(string $reason): void
     {
         $this->state = TaskState::Cancelled;
         $this->cancel_reason = $reason;

@@ -27,7 +27,7 @@ final readonly class FinishTaskHandler extends TaskCommandHandler
     public function handle(FinishTask $command, Task $task): void
     {
         $this->assertCurrentTaskRun($task, $command->runNumber);
-        $task->finishRun($command->note);
+        $task->finish($command->note);
         $run = $task->currentRun();
 
         if ($run !== null) {

@@ -56,7 +56,7 @@ final class AssignedListsTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $held = Task::factory()->create(['title' => 'Write the reader']);
         $finished = Task::factory()->create(['title' => 'Write the store']);
-        $finished->finish();
+        $finished->finish('Done.');
         $othersTask = Task::factory()->create(['title' => 'Not mine']);
         Task::factory()->create(['title' => 'Nobody holds this']);
         $writer->assign($finished->assignmentIdentity(), AssigneeIdentity::of($this->main));

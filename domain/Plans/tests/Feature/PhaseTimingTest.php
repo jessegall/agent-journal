@@ -71,7 +71,7 @@ final class PhaseTimingTest extends TestCase
     public function test_once_the_phase_tasks_ended_the_agent_may_run_its_checks(): void
     {
         foreach ($this->tasks as $task) {
-            $task->finish();
+            $task->finish('Done.');
         }
 
         $this->assertTrue($this->timingForAgent()->isAllowed());
@@ -81,7 +81,7 @@ final class PhaseTimingTest extends TestCase
     public function test_an_open_task_after_five_hundred_phases_still_holds_checks(): void
     {
         foreach ($this->tasks as $task) {
-            $task->finish();
+            $task->finish('Done.');
         }
         for ($number = 2; $number <= 500; $number++) {
             $this->plan->addPhase("Phase {$number}");
@@ -100,7 +100,7 @@ final class PhaseTimingTest extends TestCase
     public function test_a_blocked_phase_allows_checks_even_when_a_later_phase_has_open_tasks(): void
     {
         foreach ($this->tasks as $task) {
-            $task->block();
+            $task->block('Waits.');
         }
         $later = Task::factory()->create(['title' => 'Wait for the build']);
         $this->plan->addPhase('Later')->addTasks([$later->id]);

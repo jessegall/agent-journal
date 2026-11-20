@@ -49,7 +49,7 @@ final class PlanRecordsTest extends TestCase
         $this->build = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $read = $this->build->addPhase('Read');
         $done = Task::factory()->create(['title' => 'Done']);
-        $done->finish();
+        $done->finish('Done.');
         $read->addTasks([$done->id]);
         $this->build->addPhase('Start')->addTasks([Task::factory()->create(['title' => 'Open'])->id]);
         $this->empty = Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);

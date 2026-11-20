@@ -66,7 +66,7 @@ final class AssignmentCascadeTest extends TestCase
         $this->unheld = Task::factory()->create(['title' => 'Unheld']);
         $this->writer()->assign($this->open->assignmentIdentity(), $this->other);
         $this->writer()->assign($this->finished->assignmentIdentity(), $this->other);
-        $this->finished->finish();
+        $this->finished->finish('Done.');
     }
 
     public function test_the_root_and_every_unfinished_record_go_to_the_recipient_and_finished_ones_are_skipped(): void

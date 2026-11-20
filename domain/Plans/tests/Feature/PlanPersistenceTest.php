@@ -62,7 +62,7 @@ final class PlanPersistenceTest extends TestCase
             new OwnerAuthority('test'),
         );
         $done = $this->task('Done');
-        $done->finish();
+        $done->finish('Done.');
         $started = $this->task('Started');
         $started->start();
         $open = $this->task('Open');

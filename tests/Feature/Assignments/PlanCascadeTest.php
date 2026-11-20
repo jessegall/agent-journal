@@ -65,8 +65,8 @@ final class PlanCascadeTest extends TestCase
         $this->open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);
         $cancelled = Task::factory()->create(['title' => 'Cancelled']);
-        $finished->finish();
-        $cancelled->cancel();
+        $finished->finish('Done.');
+        $cancelled->cancel('Not needed.');
         $this->working = $this->plan->addPhase('Working');
         $this->working->addTasks([$this->open->id]);
         $this->over = $this->plan->addPhase('Over');

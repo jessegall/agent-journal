@@ -18,7 +18,7 @@ final readonly class CancelTaskHandler extends TaskCommandHandler
 
     public function handle(CancelTask $command, Task $task): void
     {
-        $task->cancelWith($command->reason);
+        $task->cancel($command->reason);
         $this->events->dispatch(new TaskCancelled($command->taskId));
     }
 }

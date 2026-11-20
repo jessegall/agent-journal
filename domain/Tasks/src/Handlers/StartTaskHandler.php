@@ -40,7 +40,7 @@ final readonly class StartTaskHandler extends TaskCommandHandler
     {
         $actor = ActorIdentity::of($command->dispatchedBy());
         $this->requireRunNotTaken($task, $actor);
-        $task->startRun();
+        $task->start();
         $run = TaskRun::currentFor($task, $actor, $this->replyInboxes->replyInboxIdFor($actor));
         $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), $actor);
         $this->events->dispatch(new TaskStarted($command->taskId, $actor));

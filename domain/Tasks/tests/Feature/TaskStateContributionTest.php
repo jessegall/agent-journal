@@ -69,7 +69,7 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
 
         $held = $this->answerStop('call-1');
-        $task->finish();
+        $task->finish('Done.');
         $allowed = $this->answerStop('call-2');
 
         $this->assertStringContainsString("Task {$task->number} still needs work", $held);
@@ -81,7 +81,7 @@ final class TaskStateContributionTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
-        $task->block();
+        $task->block('Waits.');
 
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
 

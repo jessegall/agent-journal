@@ -77,12 +77,12 @@ final class TaskAuthoringTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $task->startRun();
+        $task->start();
         $this->assertSame([1, TaskState::Started], [$task->run_number, $task->state]);
 
-        $task->blockRun('Waits on the schema.');
-        $task->startRun();
-        $task->finishRun('Built and tested.');
+        $task->block('Waits on the schema.');
+        $task->start();
+        $task->finish('Built and tested.');
         $fresh = $task->fresh();
 
         $this->assertSame(
@@ -95,7 +95,7 @@ final class TaskAuthoringTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $task->cancelWith('No longer needed.');
+        $task->cancel('No longer needed.');
 
         $this->assertSame(
             [TaskState::Cancelled, 'No longer needed.'],

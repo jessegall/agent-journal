@@ -46,7 +46,7 @@ final class TaskReadsTest extends TestCase
             new OwnerAuthority('test'),
         );
         $done = Task::factory()->create(['title' => 'Write the walk']);
-        $done->finish();
+        $done->finish('Done.');
         $open = Task::factory()->create(['title' => 'Test the walk']);
 
         $progress = $this->app->make(TaskProgressCounter::class)->progressByGroup(

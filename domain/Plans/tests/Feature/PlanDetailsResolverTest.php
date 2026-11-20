@@ -32,7 +32,7 @@ final class PlanDetailsResolverTest extends TestCase
         $plan = Plan::factory()->create(['title' => 'Counted plan', 'brief' => 'Count it.']);
         $tasks = Task::factory()->count(3)->create();
         $plan->addPhase('Work')->addTasks(array_values($tasks->modelKeys()));
-        $tasks[0]->finish();
+        $tasks[0]->finish('Done.');
         $resolver = $this->app->make(PlanDetailsResolver::class);
 
         $details = $resolver->plan($plan->id, ReadView::Context);
@@ -43,7 +43,7 @@ final class PlanDetailsResolverTest extends TestCase
         $this->assertSame('Count it.', $details->brief);
         $this->assertNull($resolver->plan($plan->id, ReadView::Summary)->brief);
 
-        $tasks[1]->finish();
+        $tasks[1]->finish('Done.');
 
         $this->assertSame(2, $resolver->plan($plan->id, ReadView::Summary)->progress->done);
     }
