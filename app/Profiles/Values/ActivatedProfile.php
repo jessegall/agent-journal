@@ -12,9 +12,11 @@ use App\Profiles\Enums\ProfileChangeType;
  */
 final readonly class ActivatedProfile
 {
+    /** @param list<SupervisorCoverage> $supervisorCoverage */
     public function __construct(
         public ProfileKey $key,
         public int $revision,
         public ProfileChangeType $change,
+        public array $supervisorCoverage = [],
     ) {}
 }

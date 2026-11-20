@@ -104,9 +104,9 @@ final class ProfilePolicyTest extends TestCase
             'allow_operations' => [['name' => 'shell:rm.everything']],
         ]]]), ProfilePolicyRefused::class, 'shell:rm.everything');
         $this->assertThrows(
-            fn () => $this->activate(['profiles' => ['journal-worker' => [...self::WORKER, 'supervisor' => 'main']]]),
+            fn () => $this->activate(['profiles' => ['journal-worker' => [...self::WORKER, 'instances' => 'single']]]),
             ProfileProposalRefused::class,
-            'supervisor',
+            'instances',
         );
         $this->assertThrows(
             fn () => $this->activate(['profiles' => ['journal-worker' => [...self::WORKER, 'container' => 'host']]]),

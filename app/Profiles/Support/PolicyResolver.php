@@ -73,6 +73,7 @@ final readonly class PolicyResolver
             $start,
             BuiltInAuthorizations::for($profile->base, $this->policies->grantable())
                 ->without($profile->withheldAbilities),
+            $profile->supervisor,
         );
     }
 

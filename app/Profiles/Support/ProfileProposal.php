@@ -11,8 +11,10 @@ use App\Profiles\Data\ProposedProfileData;
 use App\Profiles\Data\ProposedStopConditionData;
 use App\Profiles\Data\WithheldAbilityData;
 use App\Profiles\Exceptions\ProfileProposalRefused;
+use App\Profiles\Exceptions\SupervisorRouteInvalid;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\SupervisorRoutes;
 use App\Programs\Enums\HookProgram;
 use Spatie\LaravelData\Exceptions\CannotCastEnum;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
@@ -30,7 +32,7 @@ final readonly class ProfileProposal
     /**
      * Feature fields of later work; a proposal naming one is refused as unsupported.
      */
-    private const array UNSUPPORTED_FIELDS = ['supervisor', 'instances', 'script', 'commands'];
+    private const array UNSUPPORTED_FIELDS = ['instances', 'script', 'commands'];
 
     /**
      * @param  list<BaseOverride>  $baseOverrides
@@ -123,7 +125,22 @@ final readonly class ProfileProposal
                 fn (WithheldAbilityData $withheld) => $withheld->toWithheldAbility(),
                 $fields->withheldAbilities,
             ),
+            self::supervisors($profile),
         );
+    }
+
+    /** @param array<string, mixed> $profile */
+    private static function supervisors(array $profile): SupervisorRoutes
+    {
+        if (! array_key_exists('supervisor', $profile)) {
+            return new SupervisorRoutes();
+        }
+
+        if (! is_array($profile['supervisor'])) {
+            throw SupervisorRouteInvalid::missingDefault();
+        }
+
+        return SupervisorRoutes::fromArray($profile['supervisor']);
     }
 
     /**

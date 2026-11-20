@@ -24,6 +24,7 @@ final readonly class ProfileDefinition
         public array $requiredSkills,
         public ProfileStartPolicy $start,
         public ProfileAuthorization $authorization,
+        public SupervisorRoutes $supervisor = new SupervisorRoutes(),
     ) {}
 
     /**
@@ -46,6 +47,12 @@ final readonly class ProfileDefinition
             || $mine->access != $theirs->access
             || $mine->stopConditions != $theirs->stopConditions
             || $mine->execution != $theirs->execution
-            || $this->authorization != $active->authorization;
+            || $this->authorization != $active->authorization
+            || $this->supervisor != $active->supervisor;
+    }
+
+    public function supervisorProfile(): SupervisorProfile
+    {
+        return new SupervisorProfile($this->key, $this->supervisor, $this->start->access);
     }
 }

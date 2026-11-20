@@ -8,6 +8,7 @@ use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
+use App\Profiles\Values\SupervisorProfile;
 
 /**
  * Reads the current revision of a profile by its stable key.
@@ -27,6 +28,9 @@ interface ProfileResolver
     public function snapshotAt(ProfileKey $key, int $revision): ProfileSnapshot;
 
     public function has(ProfileKey $key): bool;
+
+    /** @return list<SupervisorProfile> */
+    public function supervisorProfiles(): array;
 
     /**
      * A start's pinned revision, refused when the profile is no longer admitted; a pin older than the current

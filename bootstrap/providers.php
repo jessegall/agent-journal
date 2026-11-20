@@ -24,6 +24,7 @@ use App\Records\Providers\RecordsServiceProvider;
 use App\Settings\Providers\SettingsServiceProvider;
 use App\Sharing\Providers\SharingServiceProvider;
 use App\Skills\Providers\SkillsServiceProvider;
+use App\Supervision\Providers\SupervisionServiceProvider;
 use App\Text\Providers\TextServiceProvider;
 use App\Web\Providers\TypeScriptServiceProvider;
 use App\Web\Providers\WebServiceProvider;
@@ -44,6 +45,7 @@ return [
     DomainEventServiceProvider::class,
     CoreServiceProvider::class,
     ProfilesServiceProvider::class,
+    SupervisionServiceProvider::class,
     ActorsServiceProvider::class,
     AgentsServiceProvider::class,
     AssignmentsServiceProvider::class,

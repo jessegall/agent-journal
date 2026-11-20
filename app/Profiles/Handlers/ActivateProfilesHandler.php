@@ -11,6 +11,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Contracts\ProfileResolver;
+use App\Profiles\Contracts\SupervisorDefinitions;
 use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Models\Profile;
@@ -31,6 +32,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         private PolicyResolver $resolver,
         private ProfileResolver $profiles,
         private PolicyCatalogue $catalogue,
+        private SupervisorDefinitions $supervisors,
     ) {}
 
     /**
@@ -66,6 +68,9 @@ final readonly class ActivateProfilesHandler implements CommandHandler
             $definition->authorization->requireGrantableIn($this->catalogue);
         }
 
+        $coverage = $this->supervisors->validate(
+            array_map(fn (ProfileDefinition $definition) => $definition->supervisorProfile(), $definitions),
+        );
         $changes = array_map($this->changeOf(...), $definitions);
         $author = ActorIdentity::of($actor);
 
@@ -74,6 +79,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
                 $definition->key,
                 Profile::activate($definition, $author)->revision,
                 $change,
+                $coverage[$definition->key->key],
             ),
             $definitions,
             $changes,

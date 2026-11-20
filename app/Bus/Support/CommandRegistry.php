@@ -202,6 +202,17 @@ final readonly class CommandRegistry
         return $this->entry($command)->operation;
     }
 
+    public function operationNamed(string $name): Operation|null
+    {
+        foreach ($this->commands as $command) {
+            if ($command->operation?->name === $name) {
+                return $command->operation;
+            }
+        }
+
+        return null;
+    }
+
     public function requiresRequestKey(string $command): bool
     {
         return $this->entry($command)->requiresRequestKey;

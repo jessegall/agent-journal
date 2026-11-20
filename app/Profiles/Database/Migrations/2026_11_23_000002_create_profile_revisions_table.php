@@ -29,6 +29,7 @@ return new class extends Migration
             $table->json('provenance');
             $table->string('authorization_type', 32);
             $table->json('ability_grants');
+            $table->json('supervisor');
             $table->string('author_type', 16);
             $table->string('author_id');
             $table->timestampTz('created_at');

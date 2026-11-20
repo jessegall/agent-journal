@@ -27,6 +27,7 @@ final class ProfileSnapshot extends Data
         public readonly array $requiredSkills,
         public readonly ProfileStartPolicy $start,
         public readonly ProfileAuthorization $authorization,
+        public readonly SupervisorRoutes $supervisor = new SupervisorRoutes(),
     ) {}
 
     /**

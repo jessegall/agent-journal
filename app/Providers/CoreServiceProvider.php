@@ -68,6 +68,7 @@ final class CoreServiceProvider extends ServiceProvider
         'Settings',
         'Sharing',
         'Skills',
+        'Supervision',
         'Web',
     ];
 
