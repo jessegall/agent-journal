@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Files\Support;
 
 use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Files\Exceptions\FileJsonInvalid;
 use App\Files\Exceptions\FileReadReentered;
 use App\Files\Exceptions\FileUnreadable;
+use App\Files\Exceptions\PlaceUnavailable;
+use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
 use App\Files\Values\Fingerprint;
+use App\Files\Values\FolderEntries;
 use Closure;
 use JsonException;
 
@@ -25,8 +29,10 @@ final class LocalFiles implements Files
     private FilePath|null $reading = null;
 
     public function __construct(
+        private readonly PlaceRoots $roots,
         private readonly PathConfinement $confinement,
         private readonly FileContents $contents,
+        private readonly FolderWalker $walker,
     ) {}
 
     public function read(FilePath $file): string
@@ -92,6 +98,27 @@ final class LocalFiles implements Files
     public function fingerprint(FilePath $file): Fingerprint
     {
         return Fingerprint::of($file, $this->confinement->resolved($file));
+    }
+
+    public function list(FilePath $folder, Depth $depth = new Depth(1), string $pattern = '*'): FolderEntries
+    {
+        return $this->whileReading($folder, fn () => $this->walker->walk($folder, $depth, $pattern));
+    }
+
+    public function matching(FilePath $pattern): FolderEntries
+    {
+        return $this->whileReading($pattern, fn () => $this->walker->expand($pattern));
+    }
+
+    public function freeSpace(Place $place): int
+    {
+        $free = disk_free_space($this->roots->root($place));
+
+        if ($free === false) {
+            throw PlaceUnavailable::for($place);
+        }
+
+        return (int) $free;
     }
 
     public function readCount(FilePath $file): int

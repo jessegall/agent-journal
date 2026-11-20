@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Files\Contracts;
 
+use App\Files\Enums\Place;
+use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
 use App\Files\Values\Fingerprint;
+use App\Files\Values\FolderEntries;
 
 /**
  * The one way code reads the files of its places: inside the place, never through a link out or a closed folder,
@@ -40,6 +43,22 @@ interface Files
     public function isFolder(FilePath $folder): bool;
 
     public function fingerprint(FilePath $file): Fingerprint;
+
+    /**
+     * The entries of a folder down to the depth asked, one level unless more is asked, whose names match the
+     * pattern; links are listed and never entered, closed folders left out.
+     */
+    public function list(FilePath $folder, Depth $depth = new Depth(1), string $pattern = '*'): FolderEntries;
+
+    /**
+     * The entries a pattern names, each '*' matching within one name.
+     */
+    public function matching(FilePath $pattern): FolderEntries;
+
+    /**
+     * The bytes free on the disk that holds the place's root.
+     */
+    public function freeSpace(Place $place): int;
 
     /**
      * How often this process opened the file to read it.
