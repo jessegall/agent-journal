@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Files\Support;
 
 use App\Files\Values\Fingerprint;
+use App\Files\Values\KeptDigest;
 use App\Files\Values\KeptFile;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -29,6 +30,13 @@ final class FileContents
      * @var array<string, int>
      */
     private array $opens = [];
+
+    /**
+     * The sha256 of each hashed file by real path.
+     *
+     * @var array<string, KeptDigest>
+     */
+    private array $digests = [];
 
     public function __construct(
         #[Config('files.cached_bytes')]
@@ -90,8 +98,29 @@ final class FileContents
         return $loader();
     }
 
+    /**
+     * The file's sha256: the one hashed before while its fingerprint holds, else the hasher's.
+     *
+     * @param  Closure(): string  $hasher
+     */
+    public function digest(Fingerprint $fingerprint, Closure $hasher): string
+    {
+        $digest = $this->digests[$fingerprint->realPath] ?? null;
+
+        if ($digest !== null && $digest->fingerprint->key() === $fingerprint->key()) {
+            return $digest->digest;
+        }
+
+        $hashed = $this->fresh($fingerprint, $hasher);
+        $this->digests[$fingerprint->realPath] = new KeptDigest($fingerprint, $hashed);
+
+        return $hashed;
+    }
+
     public function drop(string $realPath): void
     {
+        unset($this->digests[$realPath]);
+
         if (! isset($this->kept[$realPath])) {
             return;
         }

@@ -41,6 +41,18 @@ final readonly class PathConfinement
     }
 
     /**
+     * The real path of what is at a path, or false when nothing is; a link out of the place is still refused.
+     */
+    public function existingRealPath(FilePath $file): string|false
+    {
+        $this->closed->assertNotClosed($file);
+        $root = $this->roots->root($file->place);
+        $real = $this->freshRealPath($root, $file);
+
+        return $real === false ? false : $this->confined($file, $root, $real);
+    }
+
+    /**
      * The real path of an existing folder; FolderMissing when nothing, or a file, is there.
      */
     public function resolvedFolder(FilePath $folder): string
@@ -105,6 +117,10 @@ final readonly class PathConfinement
 
         if (is_link($real)) {
             throw LinkLeavesPlace::from($file);
+        }
+
+        if (! is_file($real)) {
+            throw FileUnreadable::at($file);
         }
 
         $handle = @fopen($real, $mode);
