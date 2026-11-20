@@ -29,7 +29,7 @@ final readonly class DocumentSearch implements SearchContribution
     public function search(string $query, int $page): SearchPage
     {
         $matches = $this->documents->list($query, $page, self::PAGE_SIZE);
-        $hits = array_map(fn (DocumentCard $doc): SearchHit => SearchHit::matching(
+        $hits = array_map(fn (DocumentCard $doc) => SearchHit::matching(
             $this->recordType(),
             $doc->id,
             $doc->title,

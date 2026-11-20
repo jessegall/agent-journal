@@ -41,7 +41,10 @@ final class MessagesListTool extends JournalReadTool
                 'state' => $first->enumOr('state', AgentInboxState::Pending)->value,
                 'page' => $first->positiveIntegerOr('page', 1),
             ],
-            fn (array $filters) => $this->page(AgentInboxState::from($filters['state']), $filters['page']),
+            fn (ToolArguments $filters) => $this->page(
+                $filters->enum('state', AgentInboxState::class),
+                $filters->positiveInteger('page'),
+            ),
         );
     }
 

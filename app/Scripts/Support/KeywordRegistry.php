@@ -7,11 +7,12 @@ namespace App\Scripts\Support;
 use App\Contracts\DomainAvailability;
 use App\Registries\Support\Registry;
 use App\Scripts\Contracts\ScriptKeywordDefinition;
+use App\Scripts\Contracts\ScriptKeywordRegistration;
 use App\Scripts\Exceptions\ScriptDefinitionRefused;
 use App\Scripts\Values\RegisteredKeyword;
 use Illuminate\Contracts\Container\Container;
 
-final readonly class KeywordRegistry
+final readonly class KeywordRegistry implements ScriptKeywordRegistration
 {
     /**
      * @var Registry<RegisteredKeyword>

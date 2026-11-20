@@ -6,12 +6,13 @@ namespace App\Scripts\Support;
 
 use App\Contracts\DomainAvailability;
 use App\Registries\Support\Registry;
+use App\Scripts\Contracts\ScriptObjectRegistration;
 use App\Scripts\Exceptions\ScriptDefinitionRefused;
 use App\Scripts\Values\ObjectDefinition;
 use App\Scripts\Values\ScriptContext;
 use Illuminate\Container\Container;
 
-final readonly class ObjectRegistry
+final readonly class ObjectRegistry implements ScriptObjectRegistration
 {
     /**
      * @var Registry<ObjectDefinition>

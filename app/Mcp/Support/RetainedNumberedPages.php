@@ -30,7 +30,7 @@ final readonly class RetainedNumberedPages implements NumberedPages
     /**
      * @param  Closure(ToolArguments): array<string, mixed>  $filtersOf  the first-page filters, with the page number
      *                                                                   under page
-     * @param  Closure(array<string, mixed>): ListedPage  $read  the owner's reader for those filters
+     * @param  Closure(ToolArguments): ListedPage  $read  the owner's reader for those filters
      *
      * @throws ContinuationInvalid
      * @throws ContinuationStale
@@ -41,7 +41,7 @@ final readonly class RetainedNumberedPages implements NumberedPages
 
         if ($cursor === null) {
             $filters = $filtersOf($arguments);
-            $page = $read($filters);
+            $page = $read(ToolArguments::fromPageFilters($filters));
 
             return $this->fit(
                 new Continuation($tool, self::SELECTOR, $filters, 0),
@@ -52,7 +52,7 @@ final readonly class RetainedNumberedPages implements NumberedPages
 
         $continuation = $this->continuations->open($cursor, $tool, self::SELECTOR);
         $retainedPageId = $continuation->retainedPageId ?? throw ContinuationInvalid::unreadable();
-        $page = $read($continuation->filters);
+        $page = $read(ToolArguments::fromPageFilters($continuation->filters));
 
         return $this->fit(
             $continuation,

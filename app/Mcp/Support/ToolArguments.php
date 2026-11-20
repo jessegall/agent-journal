@@ -43,6 +43,14 @@ final readonly class ToolArguments
     private function __construct(public array $arguments) {}
 
     /**
+     * @param  array<string, mixed>  $filters
+     */
+    public static function fromPageFilters(array $filters): self
+    {
+        return new self($filters);
+    }
+
+    /**
      * The request's arguments, refused when one is not among the tool's declared fields.
      *
      * @param  list<string>  $fields
@@ -155,7 +163,7 @@ final readonly class ToolArguments
             throw ToolArgumentInvalid::for($name, 'at least one ULID');
         }
 
-        return array_map(fn (string $id): string => self::normalizedUlid($name, $id), $ids);
+        return array_map(fn (string $id) => self::normalizedUlid($name, $id), $ids);
     }
 
     private static function normalizedUlid(string $name, string $id): string

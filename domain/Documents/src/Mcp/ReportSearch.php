@@ -30,7 +30,7 @@ final readonly class ReportSearch implements SearchContribution
     public function search(string $query, int $page): SearchPage
     {
         $matches = $this->reports->list($query, ReportState::All, $page, self::PAGE_SIZE);
-        $hits = array_map(fn (ReportCard $report): SearchHit => SearchHit::matching(
+        $hits = array_map(fn (ReportCard $report) => SearchHit::matching(
             $this->recordType(),
             $report->id,
             $report->title,

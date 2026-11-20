@@ -19,7 +19,10 @@ use App\Domains\Contracts\ScriptObjectProvider;
 use App\Domains\Contracts\StateProvider;
 use App\Domains\Exceptions\CapabilityWithoutTrait;
 use App\Exports\Support\Exports;
+use App\Mcp\Support\McpToolDirectory;
+use App\Mcp\Tools\JournalTool;
 use App\Numbers\Contracts\NumberedModelProvider;
+use ReflectionClass;
 
 /**
  * One domain of the application: what it owns, the domains it may use, and the steps its boot runs. Every domain loads
@@ -71,6 +74,16 @@ abstract class Domain
      * one by one. Empty exports are a domain nothing outside may use; there is no wildcard.
      */
     abstract public function exports(): Exports;
+
+    /**
+     * @return list<class-string<JournalTool>>
+     */
+    public function mcpTools(): array
+    {
+        $domainFile = (string) new ReflectionClass($this)->getFileName();
+
+        return McpToolDirectory::classesIn(dirname($domainFile).'/Mcp');
+    }
 
     /**
      * Every step the domain's boot runs, in order: its migrations, its traits' steps, then its own.

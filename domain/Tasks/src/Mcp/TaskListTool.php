@@ -47,10 +47,10 @@ abstract class TaskListTool extends JournalReadTool
                 'page' => $first->positiveIntegerOr('page', 1),
                 'per_page' => $first->positiveIntegerOr('per_page', 20, NumberedPage::LARGEST_SIZE),
             ],
-            fn (array $filters) => $this->page(new TaskFilters(
-                search: $filters['search'],
-                states: array_values(array_map(TaskState::from(...), $filters['states'])),
-                page: new NumberedPage($filters['page'], $filters['per_page']),
+            fn (ToolArguments $filters) => $this->page(new TaskFilters(
+                search: $filters->text('search'),
+                states: array_map(TaskState::from(...), $filters->list('states')),
+                page: new NumberedPage($filters->positiveInteger('page'), $filters->positiveInteger('per_page')),
             )),
         );
     }

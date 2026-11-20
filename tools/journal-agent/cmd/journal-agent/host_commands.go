@@ -198,7 +198,7 @@ func (opener runtimeOpener) codexRuntime(
 	if err != nil {
 		return nil, err
 	}
-	transport := contracts.TransportProfile(prepared.Claim.Recipe.TransportProfile)
+	transport := prepared.Transport()
 	root, err := host.CodexPreparationOf(installation).PrepareRoot(ctx, host.CodexRootRequest{
 		Account: account, WorkingRoots: workingRoots, Root: runtimeID, Hooks: hooks, HookTables: tables,
 		Transport: transport,
@@ -214,13 +214,14 @@ func (opener runtimeOpener) codexRuntime(
 	if err != nil {
 		return nil, err
 	}
+	runtime := prepared.Runtime()
 	settings := host.CodexThreadSettings{
-		Root: root, WritableRoots: []string{prepared.Grant.Runtime.Folder}, Transport: transport,
+		Root: root, WritableRoots: []string{runtime.Folder}, Transport: transport,
 	}
-	if prepared.Grant.Runtime.Model != nil {
-		settings.Model = *prepared.Grant.Runtime.Model
+	if runtime.Model != nil {
+		settings.Model = *runtime.Model
 	}
-	return drivers.NewCodexDriver(owner, settings, prepared.Grant.Runtime.ProcessGeneration), nil
+	return drivers.NewCodexDriver(owner, settings, runtime.ProcessGeneration), nil
 }
 
 // processRuntime opens a runtime run one child per turn from its launch grant, with a conversation of its own, the
@@ -418,16 +419,10 @@ func installedProgram(installationFolder string, profile contracts.ProgramProfil
 // installation and the runtime as the launch's reference.
 func accountOf(prepared host.PreparedStart, installationFolder, runtimeID string) *contracts.AccountStart {
 	installation := host.Installation{Folder: installationFolder}
-	return &contracts.AccountStart{
-		Folder:     prepared.Claim.Directory,
-		Protection: prepared.Claim.Recipe.ProtectionSettings,
-		Transport:  contracts.TransportProfile(prepared.Claim.Recipe.TransportProfile),
-		JournalServer: &contracts.JournalServer{
-			Command: installation.Path(installedPHP),
-			Relay:   installation.Path(installedMcpRelay),
-		},
-		LaunchReference: runtimeID,
-	}
+	return prepared.AccountStart(&contracts.JournalServer{
+		Command: installation.Path(installedPHP),
+		Relay:   installation.Path(installedMcpRelay),
+	}, runtimeID)
 }
 
 // The protected installation's PHP binary and the journal's MCP relay it runs.
