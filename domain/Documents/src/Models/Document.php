@@ -187,7 +187,9 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
      */
     public function foundRevision(string $relation): DocumentRevision
     {
-        $matchingRevision = $relation === 'revisions' ? $this->revisions->sortByDesc('number')->first() : $this->currentRevision;
+        $matchingRevision = $relation === 'revisions'
+            ? $this->revisions->sortByDesc('number')->first()
+            : $this->currentRevision;
 
         return $matchingRevision ?? $this->currentRevisionOrFail();
     }

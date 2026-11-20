@@ -70,7 +70,8 @@ final readonly class ChatWindowResolver implements PageResolver
         $agentInboxId = $this->destinations->resolve($agent)->inboxId();
         $page = $this->messages->between($actorInboxId, $agentInboxId, null, MessagePage::DEFAULT_LIMIT);
 
-        $docked = $this->records->visibleCards($this->docked->docked(new ConversationPair($actorInboxId, $agentInboxId)));
+        $pair = new ConversationPair($actorInboxId, $agentInboxId);
+        $docked = $this->records->visibleCards($this->docked->docked($pair));
 
         return ConversationData::fromPage($actorInboxId, $agentInboxId, $page, (string) $session->sessionId, $docked);
     }

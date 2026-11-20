@@ -207,7 +207,10 @@ final readonly class Supervisor
             $environmentAssignments[$substitution->node] = rtrim($output, "\n");
         }
         if ($step->argv === []) {
-            $assignments = array_map(fn (PlanWord $word) => $this->text($word, $environmentAssignments), $step->assignments);
+            $assignments = array_map(
+                fn (PlanWord $word) => $this->text($word, $environmentAssignments),
+                $step->assignments,
+            );
 
             return new StepOutcome(0, $context->withEnvironment([...$context->environment, ...$assignments]));
         }
@@ -371,7 +374,10 @@ final readonly class Supervisor
      */
     private function text(PlanWord $word, array $environmentAssignments): string
     {
-        $pieces = array_map(fn (string|int $piece) => is_int($piece) ? $environmentAssignments[$piece] : $piece, $word->pieces);
+        $pieces = array_map(
+            fn (string|int $piece) => is_int($piece) ? $environmentAssignments[$piece] : $piece,
+            $word->pieces,
+        );
 
         return implode('', $pieces);
     }

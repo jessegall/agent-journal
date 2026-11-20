@@ -95,11 +95,11 @@ final readonly class DocumentPages implements DocumentReader
         ToolArguments $arguments,
         DocumentReadCard $card,
     ): ToolResult {
-        $position = $arguments->continuation() === null
+        $bodyPosition = $arguments->continuation() === null
             ? $this->chunks->range($position, MarkdownText::body($revision->body), $arguments)
             : $position;
 
-        return $this->chunks->page($revision->body, $position, self::KEY, $card->toArray());
+        return $this->chunks->page($revision->body, $bodyPosition, self::KEY, $card->toArray());
     }
 
     private function revisions(Document $document, Continuation $position, DocumentReadCard $card): ToolResult

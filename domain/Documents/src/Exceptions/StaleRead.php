@@ -16,7 +16,9 @@ final class StaleRead extends RuntimeException implements CodedRefusal, CommandR
 {
     public static function revision(int $expectedRevision, int $currentRevision): self
     {
-        return new self("The record is at revision {$currentRevision} now, not {$expectedRevision}; read it again from the start.");
+        return new self(
+            "The record is at revision {$currentRevision} now, not {$expectedRevision}; read it again from the start.",
+        );
     }
 
     public function refusalCode(): RefusalCode

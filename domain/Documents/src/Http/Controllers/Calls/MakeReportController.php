@@ -18,7 +18,10 @@ final readonly class MakeReportController
 {
     public function __invoke(MakeReportCall $call, CommandBus $commands, RecordResolver $records): RecordFiled
     {
-        $relatedRecords = array_map(fn (string $name) => $records->identify(RecordReference::parse(trim($name))), $call->relatedRecords);
+        $relatedRecords = array_map(
+            fn (string $name) => $records->identify(RecordReference::parse(trim($name))),
+            $call->relatedRecords,
+        );
         $created = $commands->run(new CreateReport(
             $call->title,
             $call->abstract,

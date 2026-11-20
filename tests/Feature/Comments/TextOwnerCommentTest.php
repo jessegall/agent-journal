@@ -77,7 +77,7 @@ final class TextOwnerCommentTest extends TestCase
         );
         $this->assertStringContainsString(
             'Second line.',
-            $this->text()->read($page, '1', new TextSelection(firstLine: 1))->text,
+            $this->text()->read($page, '1', TextSelection::from(['firstLine' => 1]))->text,
         );
 
         $this->bus()->run(

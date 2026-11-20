@@ -89,11 +89,11 @@ final class TextResolverTest extends TestCase
             "# Long\n".implode("\n", array_map(fn (int $line) => "Line {$line}.", range(1, 300)))."\n",
         );
 
-        $first = $this->resolver()->read($this->record('doc', 1), '1', new TextSelection(firstLine: 1));
+        $first = $this->resolver()->read($this->record('doc', 1), '1', TextSelection::from(['firstLine' => 1]));
         $next = $this->resolver()->read(
             $this->record('doc', 1),
             '1',
-            new TextSelection(firstLine: (int) $first->nextLine),
+            TextSelection::from(['firstLine' => (int) $first->nextLine]),
         );
 
         $this->assertSame([1, 200, 201], [$first->firstLine, $first->lastLine, $first->nextLine]);
@@ -107,7 +107,7 @@ final class TextResolverTest extends TestCase
 
         $this->expectException(TextLineTooLong::class);
 
-        $this->resolver()->read($this->record('doc', 1), '1', new TextSelection(firstLine: 2));
+        $this->resolver()->read($this->record('doc', 1), '1', TextSelection::from(['firstLine' => 2]));
     }
 
     public function test_the_whole_text_at_once_is_refused(): void
@@ -120,7 +120,7 @@ final class TextResolverTest extends TestCase
 
         $this->expectException(TextSelectionRefused::class);
 
-        $this->resolver()->read($this->record('doc', 1), '1', new TextSelection(isWholeText: true));
+        $this->resolver()->read($this->record('doc', 1), '1', TextSelection::from(['all' => true]));
     }
 
     public function test_a_report_has_only_version_one(): void

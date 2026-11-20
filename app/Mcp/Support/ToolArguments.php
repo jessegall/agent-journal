@@ -291,7 +291,10 @@ final readonly class ToolArguments
     {
         $argument = $this->arguments[$name] ?? null;
 
-        if (! is_array($argument) || ! array_is_list($argument) || array_filter($argument, is_string(...)) !== $argument) {
+        if (! is_array($argument)
+            || ! array_is_list($argument)
+            || array_filter($argument, is_string(...)) !== $argument
+        ) {
             throw ToolArgumentInvalid::for($name, 'a list of texts');
         }
 

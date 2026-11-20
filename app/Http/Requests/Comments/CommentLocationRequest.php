@@ -32,9 +32,9 @@ final class CommentLocationRequest extends RecordTargetRequest
 
     public function selection(): TextSelection
     {
-        return $this->filled('first_line') ? new TextSelection(
-            firstLine: $this->integer('first_line'),
-            lastLine: $this->integer('last_line'),
-        ) : new TextSelection();
+        return $this->filled('first_line') ? TextSelection::from([
+            'firstLine' => $this->integer('first_line'),
+            'lastLine' => $this->integer('last_line'),
+        ]) : TextSelection::from([]);
     }
 }

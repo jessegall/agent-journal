@@ -27,7 +27,13 @@ final readonly class ProcessGrants
     {
         $commandClasses = CommandClassSet::of(...CommandClass::cases());
 
-        return new self($commandClasses, CommandClassSet::empty(), $commandClasses, CommandPatternSet::of(), CommandPatternSet::of());
+        return new self(
+            $commandClasses,
+            CommandClassSet::empty(),
+            $commandClasses,
+            CommandPatternSet::of(),
+            CommandPatternSet::of(),
+        );
     }
 
     /**

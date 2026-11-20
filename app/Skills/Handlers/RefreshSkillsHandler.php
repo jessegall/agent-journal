@@ -68,7 +68,13 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             ? $previous
             : SkillGeneration::ready($catalogueDigest, $registrationDigest, $this->generationEntries($skillEntries));
 
-        return new RefreshResult($generation->id, $reused, false, '', $this->intendPublications($generation, $skillEntries));
+        return new RefreshResult(
+            $generation->id,
+            $reused,
+            false,
+            '',
+            $this->intendPublications($generation, $skillEntries),
+        );
     }
 
     /**

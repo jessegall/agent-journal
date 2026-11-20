@@ -20,4 +20,9 @@ final readonly class DraftReference
         public int $baseRevisionNumber,
         public array $outline,
     ) {}
+
+    public function target(): DraftTarget
+    {
+        return new DraftTarget((string) $this->documentNumber, $this->token, $this->version);
+    }
 }

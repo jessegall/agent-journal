@@ -8,7 +8,6 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Text\Exceptions\SectionMissing;
 use App\Text\Exceptions\TextMatchInvalid;
-use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\ChangeDocumentDetails;
 use Domain\Documents\Commands\CloseDocument;
@@ -82,13 +81,13 @@ final class DraftsTest extends TestCase
     public function test_two_saves_close_into_exactly_one_next_revision(): void
     {
         $draft = $this->bus()->run(new OpenDocument('1'));
-        $draft = $this->bus()->run(new EditDocument($this->target($draft), '3', <<<'TEXT'
+        $draft = $this->bus()->run(new EditDocument($draft->target(), '3', <<<'TEXT'
         ## Risks
         Late.
 
         TEXT));
-        $draft = $this->bus()->run(new ChangeDocumentDetails($this->target($draft), 'Design', 'What we build next'));
-        $closed = $this->bus()->run(new CloseDocument($this->target($draft)));
+        $draft = $this->bus()->run(new ChangeDocumentDetails($draft->target(), 'Design', 'What we build next'));
+        $closed = $this->bus()->run(new CloseDocument($draft->target()));
 
         $this->assertSame(3, $draft->version);
         $this->assertSame([2, true], [$closed->revisionNumber, $closed->published]);
@@ -111,10 +110,10 @@ final class DraftsTest extends TestCase
     public function test_an_unchanged_draft_adds_no_revision_and_a_repeated_close_returns_the_first_outcome(): void
     {
         $draft = $this->bus()->run(new OpenDocument('1'));
-        $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'One.', 'Two.'));
-        $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Two.', 'One.'));
-        $first = $this->bus()->run(new CloseDocument($this->target($draft)));
-        $repeated = $this->bus()->run(new CloseDocument($this->target($draft)));
+        $draft = $this->bus()->run(new ReplaceDocumentText($draft->target(), 'One.', 'Two.'));
+        $draft = $this->bus()->run(new ReplaceDocumentText($draft->target(), 'Two.', 'One.'));
+        $first = $this->bus()->run(new CloseDocument($draft->target()));
+        $repeated = $this->bus()->run(new CloseDocument($draft->target()));
 
         $this->assertSame([1, false], [$first->revisionNumber, $first->published]);
         $this->assertEquals($first, $repeated);
@@ -143,10 +142,10 @@ final class DraftsTest extends TestCase
     public function test_a_save_on_an_old_version_is_refused_and_the_first_save_stands(): void
     {
         $opened = $this->bus()->run(new OpenDocument('1'));
-        $this->bus()->run(new ReplaceDocumentText($this->target($opened), 'One.', 'Two.'));
+        $this->bus()->run(new ReplaceDocumentText($opened->target(), 'One.', 'Two.'));
 
         try {
-            $this->bus()->run(new ReplaceDocumentText($this->target($opened), 'One.', 'Three.'));
+            $this->bus()->run(new ReplaceDocumentText($opened->target(), 'One.', 'Three.'));
             $this->fail('A save on an old version was accepted.');
         } catch (DraftConflict) {
             $this->assertStringContainsString('Two.', DocumentDraft::query()->sole()->body);
@@ -157,9 +156,9 @@ final class DraftsTest extends TestCase
     {
         $draft = $this->bus()->run(new OpenDocument('1'));
         $refusals = [
-            [new ReplaceDocumentText($this->target($draft), '.', '!'), TextMatchInvalid::class],
+            [new ReplaceDocumentText($draft->target(), '.', '!'), TextMatchInvalid::class],
             [
-                new EditDocument($this->target($draft), 'Missing', <<<'TEXT'
+                new EditDocument($draft->target(), 'Missing', <<<'TEXT'
                 ## Missing
                 Text.
 
@@ -184,7 +183,7 @@ final class DraftsTest extends TestCase
     {
         $draft = $this->bus()->run(new OpenDocument('1'));
         $tooLong = new ChangeDocumentDetails(
-            $this->target($draft),
+            $draft->target(),
             str_repeat('a', Document::TITLE_CHARACTERS + 1),
             'What we build',
         );
@@ -202,11 +201,6 @@ final class DraftsTest extends TestCase
         $this->expectExceptionMessage('doc:open 1');
 
         $this->bus()->run(new ReplaceDocumentText(new DraftTarget('1', 'unknown', 1), 'One.', 'Two.'));
-    }
-
-    private function target(DraftReference $draft): DraftTarget
-    {
-        return new DraftTarget((string) $draft->documentNumber, $draft->token, $draft->version);
     }
 
     private function documents(): DocumentResolver

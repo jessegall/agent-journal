@@ -26,7 +26,10 @@ enum StopAttemptState: string
             return self::Failed;
         }
 
-        if (array_all($stepOutcomes, fn (StopResultType $stepOutcome): bool => $stepOutcome === StopResultType::Passed)) {
+        if (array_all(
+            $stepOutcomes,
+            fn (StopResultType $stepOutcome): bool => $stepOutcome === StopResultType::Passed,
+        )) {
             return self::Passed;
         }
 

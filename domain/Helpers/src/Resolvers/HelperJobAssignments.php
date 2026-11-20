@@ -30,7 +30,10 @@ final readonly class HelperJobAssignments implements AssignableProvider
             ->pluck('id')
             ->all();
 
-        return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $visibleJobIds, true)));
+        return array_values(array_filter(
+            $records,
+            fn (RecordIdentity $record) => in_array($record->id, $visibleJobIds, true),
+        ));
     }
 
     public function finishedRecords(array $records): array

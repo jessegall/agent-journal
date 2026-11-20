@@ -155,7 +155,9 @@ final class DocumentDraft extends Model implements ReadableModel
 
     public function hasChangesFrom(DocumentRevision $baseRevision): bool
     {
-        return $this->title !== $baseRevision->title || $this->abstract !== $baseRevision->abstract || $this->body !== $baseRevision->body;
+        return $this->title !== $baseRevision->title
+            || $this->abstract !== $baseRevision->abstract
+            || $this->body !== $baseRevision->body;
     }
 
     public function reference(Document $document): DraftReference

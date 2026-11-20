@@ -31,7 +31,11 @@ final readonly class JudgedCall implements ProgramCall
      */
     public static function forFinishedTool(HookIdentity $hook, HookPayload $hookInput): self
     {
-        $finishedTool = new ToolResult($hookInput->toolNameText(), $hookInput->toolOutcome(), $hookInput->toolArguments());
+        $finishedTool = new ToolResult(
+            $hookInput->toolNameText(),
+            $hookInput->toolOutcome(),
+            $hookInput->toolArguments(),
+        );
 
         return new self(
             new ToolFinished($hook, $finishedTool),

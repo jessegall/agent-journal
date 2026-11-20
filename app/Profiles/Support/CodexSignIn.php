@@ -85,7 +85,9 @@ final readonly class CodexSignIn implements SignInProtocol
         $answer = $this->messageWith($process, 'id', self::LOGIN_REQUEST);
         $challengeFields = is_array($answer['result'] ?? null) ? $answer['result'] : [];
 
-        if (! is_string($challengeFields['verificationUrl'] ?? null) || ! is_string($challengeFields['userCode'] ?? null)) {
+        if (! is_string($challengeFields['verificationUrl'] ?? null)
+            || ! is_string($challengeFields['userCode'] ?? null)
+        ) {
             return null;
         }
 

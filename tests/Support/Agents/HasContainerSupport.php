@@ -14,7 +14,7 @@ trait HasContainerSupport
     protected function setUpHasContainerSupport(): void
     {
         $this->mock(HostCapabilities::class)->shouldReceive('capability')->andReturnUsing(
-            fn (HostCapabilityQuery $query): HostCapability => new HostCapability(
+            fn (HostCapabilityQuery $query) => new HostCapability(
                 $query,
                 CapabilityStatusType::Supported,
                 'Test evidence',

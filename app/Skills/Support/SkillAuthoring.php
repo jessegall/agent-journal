@@ -163,7 +163,8 @@ final readonly class SkillAuthoring
         $skill = Skill::query()->whereKey($savedRevision->skillId)->firstOrFail();
 
         return [
-            "Skill {$savedRevision->number} ({$skill->key}): revision {$savedRevision->revision} saved; publication pending.",
+            "Skill {$savedRevision->number} ({$skill->key}): revision {$savedRevision->revision} saved;"
+            .' publication pending.',
             ...$this->statusLines($skill),
         ];
     }

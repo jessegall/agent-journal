@@ -52,7 +52,9 @@ final readonly class ReportPages implements ReportReader
             ),
             PublicationView::Body => $this->chunks->page(
                 $report->body,
-                $cursor === null ? $this->chunks->range($position, MarkdownText::body($report->body), $arguments) : $position,
+                $cursor === null
+                    ? $this->chunks->range($position, MarkdownText::body($report->body), $arguments)
+                    : $position,
                 self::KEY,
                 $card->toArray(),
             ),

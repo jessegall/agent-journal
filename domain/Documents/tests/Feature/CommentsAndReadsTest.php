@@ -24,8 +24,6 @@ use App\Records\Support\RecordIdentity;
 use App\Text\Exceptions\AnchorMismatch;
 use App\Text\Support\TextSelection;
 use App\Text\Values\TextRange;
-use Domain\Documents\Api\DraftReference;
-use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\CloseDocument;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
@@ -137,9 +135,9 @@ final class CommentsAndReadsTest extends TestCase
         );
         $draft = $this->bus()->run(new OpenDocument('2'));
         $draft = $this->bus()->run(
-            new ReplaceDocumentText($this->target($draft), 'Third part.', 'A rewritten third part.'),
+            new ReplaceDocumentText($draft->target(), 'Third part.', 'A rewritten third part.'),
         );
-        $this->bus()->run(new CloseDocument($this->target($draft)));
+        $this->bus()->run(new CloseDocument($draft->target()));
 
         $sectionPlace = $this->comments()->location($this->documentNumbered(2), $section);
         $linesPlace = $this->comments()->location($this->documentNumbered(2), $lines);
@@ -204,8 +202,8 @@ final class CommentsAndReadsTest extends TestCase
 
         TEXT));
 
-        $outline = $this->documents()->read(2, new TextSelection());
-        $part = $this->documents()->read(2, new TextSelection(section: '1'));
+        $outline = $this->documents()->read(2, TextSelection::from([]));
+        $part = $this->documents()->read(2, TextSelection::from(['section' => '1']));
 
         $this->assertSame(['1 Long (lines 1-302)'], $outline->outline);
         $this->assertSame('1-200', $part->lines);
@@ -216,19 +214,19 @@ final class CommentsAndReadsTest extends TestCase
     public function test_a_continuation_after_a_new_revision_is_refused(): void
     {
         $draft = $this->bus()->run(new OpenDocument('1'));
-        $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'None.', 'Late.'));
-        $this->bus()->run(new CloseDocument($this->target($draft)));
+        $draft = $this->bus()->run(new ReplaceDocumentText($draft->target(), 'None.', 'Late.'));
+        $this->bus()->run(new CloseDocument($draft->target()));
 
         $this->expectException(StaleRead::class);
 
-        $this->documents()->read(1, new TextSelection(firstLine: 2), expectedRevision: 1);
+        $this->documents()->read(1, TextSelection::from(['firstLine' => 2]), expectedRevision: 1);
     }
 
     public function test_search_finds_a_body_phrase_with_its_revision_and_never_a_draft_or_a_wildcard(): void
     {
         $this->bus()->run(new CreateReport('Check', 'What we found', "Rates of 50%_off\n"));
         $draft = $this->bus()->run(new OpenDocument('1'));
-        $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'None.', 'Only in the draft.'));
+        $this->bus()->run(new ReplaceDocumentText($draft->target(), 'None.', 'Only in the draft.'));
 
         $found = $this->documents()->list(new DocumentFilters(query: 'ship THE editor'));
 
@@ -254,11 +252,6 @@ final class CommentsAndReadsTest extends TestCase
             ['5', '4', '3', '2', '1'],
             array_map(fn ($row) => $row->number, [...$first->rows, ...$second->rows, ...$third->rows]),
         );
-    }
-
-    private function target(DraftReference $draft): DraftTarget
-    {
-        return new DraftTarget((string) $draft->documentNumber, $draft->token, $draft->version);
     }
 
     private function documents(): DocumentResolver

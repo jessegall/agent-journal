@@ -138,7 +138,8 @@ final readonly class CommandGrammar
 
         $class = $property->getDeclaringClass();
 
-        return self::importsOf((string) $class->getFileName())[$elementType] ?? $class->getNamespaceName().'\\'.$elementType;
+        return self::importsOf((string) $class->getFileName())[$elementType]
+            ?? $class->getNamespaceName().'\\'.$elementType;
     }
 
     /**

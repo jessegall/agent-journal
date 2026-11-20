@@ -196,7 +196,11 @@ final readonly class UiDeclarations
         }
 
         $children = array_map(
-            fn (NavigationItem $navigationItem) => RegisteredNavigation::of($parent->owner, $navigationItem, $this->pages),
+            fn (NavigationItem $navigationItem) => RegisteredNavigation::of(
+                $parent->owner,
+                $navigationItem,
+                $this->pages,
+            ),
             $navigationItems,
         );
         self::assertUniqueKeys(
