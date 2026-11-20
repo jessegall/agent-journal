@@ -39,6 +39,9 @@ type Tracker struct {
 	// Waited is the time spent telling the journal of an end while its server was away, which no limit counts: a command that ends while
 	// the server restarts is not moved to the background for the time the restart took.
 	Waited time.Duration
+	// Folding is set while the line's end is told: the parts that ended with it are not reported one by one, since
+	// the journal ends them from their status files when it hears the end.
+	Folding bool
 }
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
@@ -167,7 +170,7 @@ func (tracker *Tracker) markStarted(position int) bool {
 }
 
 func (tracker *Tracker) partStarted(position int) {
-	if tracker.markStarted(position) {
+	if tracker.markStarted(position) || tracker.Folding {
 		return
 	}
 	tracker.report("process", "part-start", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position))
@@ -180,6 +183,9 @@ func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {
 	if stdout != io.Discard {
 		tracker.showLateOutput(stdout)
 		tracker.showPart(stdout, position)
+	}
+	if tracker.Folding {
+		return
 	}
 	tracker.report("process", "part-end", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position), "--exit-code", strconv.Itoa(code))
 }
@@ -225,7 +231,9 @@ func (tracker *Tracker) report(arguments ...string) {
 
 // finish reports a part the shell ended before it could write its status, then the end of the chain.
 func (tracker *Tracker) finish(stdout io.Writer, code int) int {
+	tracker.Folding = true
 	tracker.reportParts(stdout)
+	tracker.Folding = false
 	for position := tracker.Parts; position >= 1; position-- {
 		if tracker.Reported[position] {
 			break

@@ -10,21 +10,26 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.support.prepared_read import PreparedRead
 from core.modules.processes.support.reader_step import ReaderStep
 from core.modules.processes.support.run_visibility import RunVisibility
+from core.modules.processes.support.run_ends.run_folder_ends import RunFolderEnds
 
 
 class EndProcessHandler(Handler[EndProcess, Process]):
     """Ends a process and keeps its complete output until the process is removed. A merge the journal ran itself
     ends with moves of its own and its output is never read for a reader, so no listener of an agent's ended
     run hears it. The final read of the output runs its reader before the read is saved, so a long output never
-    holds the write turn while the reader goes through it."""
+    holds the write turn while the reader goes through it. The parts that ended with the line are ended here from
+    their status files, as the runner tells no part that ends with the line on its own."""
 
     command = EndProcess
 
-    def __init__(self, rows: EventRows, repository: Repository, outputs: OutputQuery, bus: Bus, visibility: RunVisibility, step: ReaderStep) -> None:
+    def __init__(self, rows: EventRows, repository: Repository, outputs: OutputQuery, bus: Bus, visibility: RunVisibility, step: ReaderStep, folder_ends: RunFolderEnds) -> None:
         self.rows, self.repository, self.outputs, self.bus, self.visibility, self.step = rows, repository, outputs, bus, visibility, step
+        self.folder_ends = folder_ends
 
     def handle(self, command: EndProcess, context: Context) -> Process:
         process = self.rows.required(Process, command.row_id)
+        for part_end in self.folder_ends.parts_ended(process):
+            self.bus.dispatch(part_end, context)
         exit_code = command.exit_code or self.failed_test_code(process)
         ended = self.ended(process, context, exit_code)
         ended = self.repository.save_change(process, ended, context)

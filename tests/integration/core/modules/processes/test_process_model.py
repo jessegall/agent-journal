@@ -1,6 +1,7 @@
 import pytest
 
 from core.modules.processes.commands.end_process.end_process import EndProcess
+from core.modules.processes.support.output_folder import OutputFolder
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.enums.actor_type import ActorType
@@ -58,3 +59,13 @@ def test_the_parts_of_a_process_go_with_it(journal, agent):
     end_process(journal, agent, 1, BYTES_LONG, 80)
     journal.run("process delete 1", agent)
     assert "nothing found" in journal.run(PARTS).text
+
+
+def test_the_end_of_a_line_ends_the_parts_its_folder_holds_a_status_for(journal, agent):
+    start_process_of(journal, agent, "make test && echo done")
+    folder = journal.container.get(OutputFolder)
+    folder.write_status(1, 1, 0)
+    folder.write_status(1, 2, 3)
+    end_process(journal, agent, 1, BYTES_SHORT, 1)
+    parts = text_of(journal, PARTS)
+    assert "finished" in parts and "failed" in parts and "waiting" not in parts, parts

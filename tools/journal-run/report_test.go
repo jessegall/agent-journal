@@ -1,32 +1,29 @@
 package main
 
 import (
+	"io"
+	"os"
 	"strings"
 	"testing"
 	"time"
 )
 
-func TestEachPartThatRanAndTheEndOfTheChainAreReportedThroughTheClient(t *testing.T) {
-	client := newClient()
-	run(t, options(t, "echo one && sh -c 'exit 2' && echo skipped"), client)
-	reported := strings.Join(client.reported(), "\n")
-	for _, want := range []string{"process part-end 4 --position 1 --exit-code 0", "process part-end 4 --position 2 --exit-code 2", "process end 4 --exit-code 2 --bytes 4 --lines 1"} {
-		if !strings.Contains(reported, want) {
-			t.Errorf("reported %q, which lacks %q", reported, want)
+func TestThePartsThatEndWithTheLineAreToldOnlyByItsEnd(t *testing.T) {
+	setup := options(t, "echo one && echo two")
+	folder := NewFolder(setup.Home, setup.Process)
+	if err := folder.Start(setup.Line, Parts(setup.Line), "true"); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"1.started", "1.status", "2.started", "2.status"} {
+		if err := os.WriteFile(folderOf(setup)+"/"+name, []byte("0"), 0o644); err != nil {
+			t.Fatal(err)
 		}
 	}
-	if strings.Contains(reported, "--position 3") {
-		t.Errorf("a skipped part was reported: %q", reported)
-	}
-}
-
-func TestEachPartStartIsReportedBeforeItsEnd(t *testing.T) {
 	client := newClient()
-	run(t, options(t, "echo one && echo two"), client)
-	want := []string{"process part-start 4 --position 1", "process part-end 4 --position 1 --exit-code 0", "process part-start 4 --position 2", "process part-end 4 --position 2 --exit-code 0"}
-	actual := client.reported()
-	if len(actual) < len(want) || strings.Join(actual[:len(want)], "\n") != strings.Join(want, "\n") {
-		t.Errorf("reported %q, which does not open with %q", actual, want)
+	tracker := Tracker{Options: setup, Client: client, Folder: folder, Parts: 2, Reported: map[int]bool{}}
+	tracker.finish(io.Discard, 0)
+	if reported := client.reported(); len(reported) != 1 || !strings.HasPrefix(reported[0], "process end 4 --exit-code 0") {
+		t.Errorf("reported %q, not the end alone", reported)
 	}
 }
 
