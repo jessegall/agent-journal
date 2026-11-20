@@ -1,4 +1,5 @@
 from engine.command.context import Context
+from engine.event.change import Change
 from engine.event.created import Created
 from engine.event.updated import Updated
 from engine.listener.save_listener import SaveListener
@@ -16,4 +17,6 @@ class ReaderRunCountResetListener(SaveListener[Created[Reader] | Updated[Reader]
         self.run_counts = run_counts
 
     def handle(self, event: Created[Reader] | Updated[Reader], context: Context) -> None:
+        if isinstance(event, Updated) and Change.event_change(event, context).fields == ["proved_on"]:
+            return
         self.run_counts.reset(lambda command_key: ReaderSelection.matches(event.row.commands, command_key), context)
