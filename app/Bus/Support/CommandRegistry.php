@@ -33,9 +33,9 @@ final readonly class CommandRegistry
      *
      * @param  list<CommandOwner>  $owners  Core first, then the domains in bootstrap/domains.php order
      */
-    public static function from(array $owners, PipelineRunner $pipelines): self
+    public static function from(array $owners, PipelineRunner $runner): self
     {
-        return $pipelines->runSteps(
+        return $runner->runSteps(
             [
                 ReadCommandHandlers::class,
                 CheckCommandHandlers::class,

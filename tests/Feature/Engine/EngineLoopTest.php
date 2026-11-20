@@ -72,8 +72,8 @@ final class EngineLoopTest extends TestCase
         $exitCode = $this->app->make(EngineLoop::class)->run();
 
         $this->assertSame(EngineLoop::STOPPED, $exitCode);
-        $this->assertCount(1, $listener->heard);
-        $this->assertSame(10_000, $listener->heard[0]->sincePrevious->milliseconds());
+        $this->assertCount(1, $listener->received);
+        $this->assertSame(10_000, $listener->received[0]->sincePrevious->milliseconds());
         $log->shouldHaveReceived('warning')->withArgs(
             fn (string $line, array $context) => $context === ['missed_intervals' => 9],
         )->once();
@@ -92,7 +92,7 @@ final class EngineLoopTest extends TestCase
         $this->assertSame(EngineLoop::STOPPED, $exitCode);
         $this->assertSame(
             [1000, 1000, 1000],
-            array_map(fn ($event) => $event->sincePrevious->milliseconds(), $listener->heard),
+            array_map(fn ($event) => $event->sincePrevious->milliseconds(), $listener->received),
         );
         $this->assertSame(3, $this->watchdog->armings);
         $this->assertFalse($this->watchdog->armed);
@@ -110,7 +110,7 @@ final class EngineLoopTest extends TestCase
         $exitCode = $this->app->make(EngineLoop::class)->run();
 
         $this->assertSame(EngineLoop::LOCK_LOST, $exitCode);
-        $this->assertSame([], $listener->heard);
+        $this->assertSame([], $listener->received);
     }
 
     private function stopAfter(int $passes): StoppingEngineListener

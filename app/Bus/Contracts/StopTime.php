@@ -9,5 +9,8 @@ namespace App\Bus\Contracts;
  */
 interface StopTime
 {
+    /**
+     * @phpstan-impure
+     */
     public function remainingMilliseconds(): int;
 }

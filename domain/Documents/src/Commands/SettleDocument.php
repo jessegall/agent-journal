@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\SettleDocumentHandler;
 use Domain\Documents\Models\Document;
@@ -26,7 +26,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 #[HandledBy(SettleDocumentHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 #[Operation('settle_document', ResourceAreaType::JournalContent, AccessType::Edit)]
-final readonly class SettleDocument extends Command implements HasAuthorizationSubject
+final readonly class SettleDocument extends Command implements AuthorizedCommand
 {
     public function __construct(
         public int $documentNumber,

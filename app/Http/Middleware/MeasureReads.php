@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Reads\Contracts\LogsReads;
+use App\Reads\Contracts\ReadLog;
 use App\Reads\Contracts\ReadMeter;
 use Closure;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class MeasureReads
 {
-    public function __construct(private ReadMeter $meter, private LogsReads $log) {}
+    public function __construct(private ReadMeter $meter, private ReadLog $log) {}
 
     public function handle(Request $request, Closure $next): Response
     {

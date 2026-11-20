@@ -16,7 +16,7 @@ enum ViolationType: string
     case DisallowedCategory = 'disallowed-category';
     case CompositionMisuse = 'composition-misuse';
     case BindingMisuse = 'binding-misuse';
-    case PrivateEventHeard = 'private-event-heard';
+    case PrivateEventListenedTo = 'private-event-listened-to';
     case OutsideEveryDomain = 'outside-every-domain';
     case TableOfNoDomain = 'table-of-no-domain';
     case OtherOwnersTable = 'other-owners-table';
@@ -82,7 +82,7 @@ enum ViolationType: string
                 $violation->owner,
             ),
             self::BindingMisuse => "binds {$violation->used}, but {$violation->detail}",
-            self::PrivateEventHeard => "hears {$violation->used}, an event {$violation->owner} does not publish",
+            self::PrivateEventListenedTo => "listens to {$violation->used}, an event {$violation->owner} does not publish",
             self::OutsideEveryDomain => "uses {$violation->used}, which is project code outside every domain",
             self::TableOfNoDomain => "uses table {$violation->used}, which no domain owns",
             self::OtherOwnersTable => sprintf(

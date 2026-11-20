@@ -7,7 +7,7 @@ namespace App\Profiles\Support;
 use App\Agents\Commands\CancelAccountUses;
 use App\Agents\Commands\HoldAccountUses;
 use App\Agents\Commands\SettleAccountUses;
-use App\Agents\Exceptions\AccountUsesRemain;
+use App\Agents\Exceptions\AccountInUse;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\MaintainAccount;
 use App\Profiles\Models\Account;
@@ -36,7 +36,7 @@ final readonly class AccountMaintenance
 
         try {
             $this->commands->run(new SettleAccountUses($identity));
-        } catch (AccountUsesRemain) {
+        } catch (AccountInUse) {
             return new MaintenanceProgress($held->sessionIds, $cancelled, false, false);
         }
 

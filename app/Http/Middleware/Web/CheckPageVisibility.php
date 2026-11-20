@@ -7,7 +7,7 @@ namespace App\Http\Middleware\Web;
 use App\Actors\Contracts\CurrentActor;
 use App\Http\Support\Web\DeclaredRouteKey;
 use App\Ui\Support\UiDeclarations;
-use App\Web\Contracts\ChecksUiOwnerAvailability;
+use App\Web\Contracts\UiOwnerAvailability;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ final readonly class CheckPageVisibility
         private UiDeclarations $declarations,
         private CurrentActor $actors,
         private Container $container,
-        private ChecksUiOwnerAvailability $owners,
+        private UiOwnerAvailability $owners,
     ) {}
 
     /**

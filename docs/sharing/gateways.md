@@ -28,7 +28,7 @@ supervisor's run, the endpoint version and the lease under which it acts.
 ## Registration
 
 Core registers its own gateways, `tunler` and `ngrok`, in `App\Sharing\Providers\SharingServiceProvider`. A domain
-brings its own by implementing `App\Sharing\Contracts\ProvidesShareGateways`, returning each key with its class. A key
+brings its own by implementing `App\Sharing\Contracts\ShareGatewayProvider`, returning each key with its class. A key
 registered twice stops the boot.
 
 ## Running a gateway

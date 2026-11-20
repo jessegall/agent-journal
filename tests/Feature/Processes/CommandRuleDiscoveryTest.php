@@ -12,7 +12,7 @@ use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\TestCase;
 
 /**
- * A module declares its own programs through ProvidesCommandRules; the domain foundation hands them to Core without
+ * A module declares its own programs through CommandRuleProvider; the domain foundation hands them to Core without
  * Core importing the module, and Core holds them for review.
  */
 final class CommandRuleDiscoveryTest extends TestCase

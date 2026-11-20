@@ -12,7 +12,7 @@ final class PlansDomain extends Domain
 {
     public function description(): string
     {
-        return 'A fixture domain that hears Tasks events.';
+        return 'A fixture domain that listens to Tasks events.';
     }
 
     public function requires(): array

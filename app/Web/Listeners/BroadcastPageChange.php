@@ -6,7 +6,7 @@ namespace App\Web\Listeners;
 
 use App\Actors\Contracts\AdmittedRecipients;
 use App\Contracts\Listener;
-use App\Ui\Contracts\UpdatesUserInterface;
+use App\Ui\Contracts\UserInterfaceUpdater;
 use App\Web\Events\PageChanged;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -21,7 +21,7 @@ final readonly class BroadcastPageChange implements Listener
         private Dispatcher $events,
     ) {}
 
-    public function handle(UpdatesUserInterface $fact): void
+    public function handle(UserInterfaceUpdater $fact): void
     {
         $userIds = $this->recipients->userIds();
 

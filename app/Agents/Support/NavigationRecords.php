@@ -13,7 +13,7 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\MenuEntry;
 use App\Agents\Models\NavigationRequest;
-use App\Agents\Values\MenuBuild;
+use App\Agents\Values\MenuEntryBuild;
 use App\Agents\Values\MenuStep;
 use App\Assignments\Contracts\AssignmentTransaction;
 
@@ -25,7 +25,7 @@ final readonly class NavigationRecords implements NavigationReader
     private const int PAGE_SIZE = 50;
 
     public function __construct(
-        private NavigationAnswering $answering,
+        private NavigationAnswerCheck $answering,
         private AssignmentTransaction $transaction,
     ) {}
 
@@ -50,7 +50,7 @@ final readonly class NavigationRecords implements NavigationReader
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
             'builds' => array_values(array_map(
-                fn (MenuBuild $build) => ['build' => $build->build, 'stale' => $build->stale],
+                fn (MenuEntryBuild $build) => ['build' => $build->build, 'stale' => $build->stale],
                 $entry->builds(),
             )),
             'uses' => $entry->uses,
@@ -74,7 +74,7 @@ final readonly class NavigationRecords implements NavigationReader
             'proof' => $entry->proof,
             'state' => $entry->state->value,
             'superseded_by' => $entry->superseded_by_id,
-            'builds' => array_values(array_map(fn (MenuBuild $build) => [
+            'builds' => array_values(array_map(fn (MenuEntryBuild $build) => [
                 'build' => $build->build,
                 'stale' => $build->stale,
                 'stale_reason' => $build->staleReason,

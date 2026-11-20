@@ -9,12 +9,12 @@ use App\Communication\Commands\SendMessage;
 use App\Communication\Models\Message;
 use App\Communication\States\Support\AnsweringMessageStateReference;
 use App\CoreCommands;
-use App\Domains\Contracts\ProvidesLinkRecords;
-use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Contracts\LinkRecordProvider;
+use App\Domains\Contracts\StateProvider;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\States\Support\StateTypeRegistry;
 use App\Links\Support\LinkTypeRegistry;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Contracts\NumberedModelProvider;
 use Domain\Chat\ChatDomain;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\TestCase;
@@ -34,9 +34,9 @@ final class CoreMessagingWithoutChatTest extends TestCase
             $chat->commands(),
             fn (string $command) => str_starts_with($command, 'App\\Communication\\'),
         )));
-        $this->assertNotInstanceOf(ProvidesStates::class, $chat);
-        $this->assertNotInstanceOf(ProvidesLinkRecords::class, $chat);
-        $this->assertNotInstanceOf(ProvidesNumberedModels::class, $chat);
+        $this->assertNotInstanceOf(StateProvider::class, $chat);
+        $this->assertNotInstanceOf(LinkRecordProvider::class, $chat);
+        $this->assertNotInstanceOf(NumberedModelProvider::class, $chat);
     }
 
     public function test_core_registers_the_messaging_mechanics(): void

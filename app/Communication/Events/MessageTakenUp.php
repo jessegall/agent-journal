@@ -6,12 +6,12 @@ namespace App\Communication\Events;
 
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
-use App\Contracts\LogsListenerFailures;
+use App\Contracts\ListenerFailureLog;
 
 /**
  * A waiting message was taken up by the actor that answers it.
  */
-final readonly class MessageTakenUp implements Event, LogsListenerFailures
+final readonly class MessageTakenUp implements Event, ListenerFailureLog
 {
     public function __construct(
         public string $messageId,

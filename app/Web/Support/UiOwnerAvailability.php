@@ -7,14 +7,14 @@ namespace App\Web\Support;
 use App\Contracts\DomainAvailability;
 use App\Domains\Support\DomainRegistry;
 use App\Ui\Declarations\DomainUi;
-use App\Web\Contracts\ChecksUiOwnerAvailability;
+use App\Web\Contracts\UiOwnerAvailability as UiOwnerAvailabilityContract;
 use Illuminate\Contracts\Container\Container;
 
 /**
  * Whether the owner of a page, section or navigation item is available now: a listed domain asks its availability
  * for this request; Web's own pages and a module outside the domain list have no switch, so they always are.
  */
-final readonly class UiOwnerAvailability implements ChecksUiOwnerAvailability
+final readonly class UiOwnerAvailability implements UiOwnerAvailabilityContract
 {
     public function __construct(private DomainRegistry $domains, private Container $container) {}
 

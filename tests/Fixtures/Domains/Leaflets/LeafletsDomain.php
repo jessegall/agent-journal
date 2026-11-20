@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\Leaflets;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordRegistration;
 use Tests\Fixtures\Domains\Pamphlets\Pamphlet;
 use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
@@ -14,7 +14,7 @@ use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
 /**
  * Registers a second provider under the pamphlets' alias.
  */
-final class LeafletsDomain extends Domain implements ProvidesShareRecords
+final class LeafletsDomain extends Domain implements ShareRecordContributor
 {
     public function description(): string
     {

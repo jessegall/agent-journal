@@ -25,7 +25,7 @@ use Tests\Fixtures\Domains\Rounds\RoundsDomain;
 use Tests\TestCase;
 
 /**
- * Domains declare auto-assigners and pools through ProvidesAutoAssignments; the registry keeps them under the
+ * Domains declare auto-assigners and pools through AutoAssignmentProvider; the registry keeps them under the
  * declaring domain's name, builds each through the container on every lookup, and refuses at boot a declaration the
  * application cannot run with.
  */

@@ -7,7 +7,7 @@ namespace App\Profiles\Models;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Links\Support\Linkable;
-use App\Profiles\Models\Support\HumanAccounts;
+use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -77,7 +77,7 @@ final class ActiveAccount extends Model implements ReadableModel
     public static function lockedAccountForStart(HookProgram $program): Account
     {
         $selection = self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->ofProgram($program)
             ->lockForUpdate()
             ->first();
@@ -96,7 +96,7 @@ final class ActiveAccount extends Model implements ReadableModel
     public static function lockedForJournal(HookProgram $program): self
     {
         $now = Carbon::now();
-        self::query()->withoutGlobalScope(HumanAccounts::class)->insertOrIgnore([
+        self::query()->withoutGlobalScope(AccountOwnerScope::class)->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'program' => $program->value,
             'has_selected' => false,
@@ -106,7 +106,7 @@ final class ActiveAccount extends Model implements ReadableModel
         ]);
 
         return self::query()
-            ->withoutGlobalScope(HumanAccounts::class)
+            ->withoutGlobalScope(AccountOwnerScope::class)
             ->ofProgram($program)
             ->lockForUpdate()
             ->firstOrFail();

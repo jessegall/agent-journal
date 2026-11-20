@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use Domain\Memory\Enums\MemoryAbility;
 use Domain\Memory\Handlers\SaveMemoryHandler;
 use Domain\Memory\Models\Memory;
@@ -27,7 +27,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 #[HandledBy(SaveMemoryHandler::class)]
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
 #[Operation('save_memory', ResourceAreaType::JournalWork, AccessType::Create, AccessType::Edit)]
-final readonly class SaveMemory extends Command implements HasAuthorizationSubject
+final readonly class SaveMemory extends Command implements AuthorizedCommand
 {
     public function __construct(
         #[Required]

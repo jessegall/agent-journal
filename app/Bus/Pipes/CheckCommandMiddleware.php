@@ -8,11 +8,11 @@ use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Exceptions\MiddlewareDeclarationInvalid;
 use App\Bus\Exceptions\MiddlewareListedTwice;
-use App\Bus\Support\BuiltFresh;
 use App\Bus\Support\CommandDeclarations;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\RegisteredMiddleware;
+use App\Bus\Support\SharedBindingCheck;
 use App\Pipelines\Contracts\Pipe;
 
 /**
@@ -48,7 +48,7 @@ final readonly class CheckCommandMiddleware implements Pipe
                     throw MiddlewareListedTwice::for($class);
                 }
 
-                BuiltFresh::check(
+                SharedBindingCheck::check(
                     $class,
                     static fn (string $problem) => MiddlewareDeclarationInvalid::for($class, $problem),
                 );

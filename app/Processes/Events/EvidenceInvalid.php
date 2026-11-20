@@ -8,7 +8,7 @@ use App\Contracts\Event;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * A check's run gave no result: its assessment found problems. Heard once per assessment after it is stored, by the
+ * A check's run gave no result: its assessment found problems. Raised once per assessment after it is stored, for the
  * run's actor and the project owner, with every problem code.
  */
 final readonly class EvidenceInvalid implements Event, ShouldDispatchAfterCommit

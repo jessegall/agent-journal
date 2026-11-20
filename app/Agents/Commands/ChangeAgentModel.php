@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Agents\Contracts\TargetsAgentStack;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\ChangeAgentModelHandler;
@@ -16,8 +13,11 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 
 /**
  * Changes the model a runtime uses; a later model replaces an earlier one that has not run.
@@ -27,7 +27,7 @@ use App\Bus\Support\Command;
 #[HandledBy(ChangeAgentModelHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 #[Operation('change_agent_model', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class ChangeAgentModel extends Command implements HasAuthorizationSubject, TargetsAgentStack
+final readonly class ChangeAgentModel extends Command implements AuthorizedCommand, TargetsAgentStack
 {
     public function __construct(
         public string $agentId,

@@ -86,7 +86,7 @@ public function occurrenceGuard(): WorkOccurrenceGuard
 }
 ```
 
-A command that changes work besides its origin implements `App\Hooks\Contracts\LocksTickSubjects` and names every
+A command that changes work besides its origin implements `App\Hooks\Contracts\TickSubjectLocks` and names every
 other subject it locks. The engine takes the origin first, then those subjects ordered by type and id, so two ticks
 never wait on each other in opposite order; a command nested inside it that locks undeclared work is refused
 (`TickSubjectUndeclared`).

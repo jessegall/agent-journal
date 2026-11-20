@@ -27,7 +27,7 @@ final class DomainListenerGateTest extends TestCase
 
     public function test_a_gated_listener_runs_only_while_its_domain_is_available_asked_at_delivery(): void
     {
-        CountingListener::$heard = 0;
+        CountingListener::$received = 0;
         $available = new class implements DomainAvailability
         {
             public bool $plansOn = false;
@@ -41,11 +41,11 @@ final class DomainListenerGateTest extends TestCase
         $gate = new AvailableListener('Plans', CountingListener::class);
 
         $gate(new stdClass());
-        $this->assertSame(0, CountingListener::$heard);
+        $this->assertSame(0, CountingListener::$received);
 
         $available->plansOn = true;
         $gate(new stdClass());
-        $this->assertSame(1, CountingListener::$heard);
+        $this->assertSame(1, CountingListener::$received);
     }
 
     public function test_domain_listeners_are_gated_by_their_own_domain_and_the_map_keeps_every_declaration(): void

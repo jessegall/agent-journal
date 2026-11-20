@@ -26,14 +26,14 @@ final class MessageEventsTest extends MessagingTestCase
     /**
      * @var list<string>
      */
-    private array $heard = [];
+    private array $received = [];
 
     protected function setUp(): void
     {
         parent::setUp();
 
         Event::listen(MessageSent::class, function (MessageSent $sent): void {
-            $this->heard[] = $sent->messageId;
+            $this->received[] = $sent->messageId;
         });
     }
 
@@ -47,7 +47,7 @@ final class MessageEventsTest extends MessagingTestCase
         $this->asOwner();
         $this->runOnBus($command, $key);
 
-        $this->assertSame([$first], $this->heard);
+        $this->assertSame([$first], $this->received);
     }
 
     public function test_a_failing_listener_leaves_the_message_and_the_success_alone(): void
@@ -60,7 +60,7 @@ final class MessageEventsTest extends MessagingTestCase
         $messageId = $this->ownerSends($this->inboxIdOf($this->builder), 'Still saved.');
 
         $this->assertSame('Still saved.', Message::query()->findOrFail($messageId)->body);
-        $this->assertSame([$messageId], $this->heard);
+        $this->assertSame([$messageId], $this->received);
     }
 
     public function test_no_message_fact_carries_a_body_or_a_model(): void

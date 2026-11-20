@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Relay;
 
-use App\AgentRequests\Contracts\SendsAgentRequests;
+use App\AgentRequests\Contracts\AgentRequestClient;
 use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\AgentCallReply;
@@ -42,7 +42,7 @@ final readonly class HookRelay
     private const string READ_TOOL = 'Read';
 
     public function __construct(
-        private SendsAgentRequests $client,
+        private AgentRequestClient $client,
         private Filesystem $files,
         private OutputGrantSeal $grantSeal,
     ) {}

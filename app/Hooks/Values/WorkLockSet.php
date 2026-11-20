@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Values;
 
-use App\Hooks\Contracts\LocksTickSubjects;
+use App\Hooks\Contracts\TickSubjectLocks;
 
 /**
  * The work subjects one tick command locks: its origin first, then every subject it declares, ordered by state type and
@@ -19,7 +19,7 @@ final readonly class WorkLockSet
 
     public static function for(WorkOccurrence $origin, object $command): self
     {
-        $declared = $command instanceof LocksTickSubjects ? $command->lockedSubjects() : [];
+        $declared = $command instanceof TickSubjectLocks ? $command->lockedSubjects() : [];
         $others = array_values(array_filter(
             $declared,
             fn (WorkOccurrence $subject): bool => ! $subject->isSameWorkAs($origin),
@@ -45,7 +45,7 @@ final readonly class WorkLockSet
      */
     public function covers(object $command): bool
     {
-        if (! $command instanceof LocksTickSubjects) {
+        if (! $command instanceof TickSubjectLocks) {
             return true;
         }
 

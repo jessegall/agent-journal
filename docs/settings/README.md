@@ -7,12 +7,12 @@ shows how a domain declares settings, reads them at runtime and changes them, us
 
 ## Declaring settings
 
-A domain that has settings implements `App\Settings\Contracts\ProvidesSettings` on its Domain class and returns a
+A domain that has settings implements `App\Settings\Contracts\SettingsProvider` on its Domain class and returns a
 separate final definition class. The definition implements `SettingsDefinition`: each setting and group is a typed
 readonly property, assigned once in the constructor, and each setting is listed in exactly one group.
 
 ```php
-final class ReviewsDomain extends Domain implements ProvidesSettings
+final class ReviewsDomain extends Domain implements SettingsProvider
 {
     public function settings(): ReviewSettings
     {

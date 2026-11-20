@@ -19,9 +19,9 @@ use App\Profiles\Resolvers\AccountNoticesSection;
 use App\Profiles\Resolvers\AccountsWindowResolver;
 use App\Profiles\Resolvers\StartAccountWindowResolver;
 use App\Profiles\Support\AccountOwnerCheck;
-use App\Ui\Contracts\ProvidesNavigation;
-use App\Ui\Contracts\ProvidesPages;
-use App\Ui\Contracts\ProvidesSections;
+use App\Ui\Contracts\NavigationProvider;
+use App\Ui\Contracts\PageProvider;
+use App\Ui\Contracts\SectionProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
@@ -34,7 +34,7 @@ use App\Ui\Enums\SlotContextType;
  * The pages Core's Profiles declares, for the owner alone, under /accounts: the saved Claude Code and Codex accounts,
  * with choosing the one each program starts with and renaming one.
  */
-final class ProfilesPages implements ProvidesNavigation, ProvidesPages, ProvidesSections
+final class ProfilesPages implements NavigationProvider, PageProvider, SectionProvider
 {
     public function pages(): array
     {

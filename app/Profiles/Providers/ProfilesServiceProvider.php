@@ -30,7 +30,7 @@ use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\Profile;
 use App\Profiles\Models\SignInAttempt;
-use App\Profiles\Models\Support\HumanAccounts;
+use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Policies\AccountPolicy;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Resolvers\ActiveAccountRecords;
@@ -91,7 +91,7 @@ final class ProfilesServiceProvider extends ServiceProvider
             AccountAbility::class,
             ownerOnly: [AccountAbility::Read, AccountAbility::Manage],
         ));
-        $this->scopeAccountsToTheirOwner($events);
+        $this->scopeAccountsToOwner($events);
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('accounts:reconcile')->everyMinute()->withoutOverlapping(),
@@ -115,9 +115,9 @@ final class ProfilesServiceProvider extends ServiceProvider
     /**
      * Every account query asks, when it runs, whether the actor of that request may read accounts.
      */
-    private function scopeAccountsToTheirOwner(Dispatcher $events): void
+    private function scopeAccountsToOwner(Dispatcher $events): void
     {
-        $scope = new HumanAccounts(
+        $scope = new AccountOwnerScope(
             static fn () => Container::getInstance()->make(CurrentActor::class),
             static fn () => Container::getInstance()->make(CurrentAuthorizer::class),
         );

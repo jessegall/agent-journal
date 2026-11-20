@@ -231,6 +231,7 @@ function move(
     // the moved file leaves its neighbours behind, and it named them without an import because they
     // stood beside it — each of those now needs one, or the class resolves under its NEW namespace
     $pending[$where] = keepingNeighbours($pending[$where] ?? file_get_contents($where), $where, $to);
+    $pending = array_map(contractsAliased(...), $pending);
 
     $refused = unparsable($pending);
 
@@ -324,7 +325,7 @@ function replace(
     $imported = imports($files, $onward, $new, [$where, $kept], $dry, $pending, $taken, $naming);
 
     // a replace can repoint an import onto one the file ALREADY has, and PHP fatals on the second
-    $pending = array_map(deduplicated(...), $pending);
+    $pending = array_map(contractsAliased(...), array_map(deduplicated(...), $pending));
 
     // the replaced file is deleted, so whatever the repoint did to its own body is never written
     unset($pending[$where]);
@@ -394,9 +395,12 @@ function rewrite(
         // what this file will CALL the class, decided before anything is written: a file that already
         // means another class by the new name calls ours by as much of its namespace as tells them
         // apart, and that is the name written in — renaming to the bare one first would collide
-        $calls = $ours && ! in_array($file, $declaring, true) && clashes($was, $new, $from, $onward, $file, $declaring[0])
-            ? qualifying($was, $onward, $new)
-            : ['import' => $onward, 'named' => $new];
+        $clash = $ours && ! in_array($file, $declaring, true) && clashes($was, $new, $from, $onward, $file, $declaring[0]);
+        $calls = match (true) {
+            $clash && isContract($onward) => ['import' => $onward.' as '.$new.'Contract', 'named' => $new.'Contract'],
+            $clash => qualifying($was, $onward, $new),
+            default => ['import' => $onward, 'named' => $new],
+        };
 
         if ($ours) {
             $naming[$file] = $calls;
@@ -406,6 +410,11 @@ function rewrite(
         // Qualifying here would reach inside `use` lines, where a name is absolute and a relative one
         // resolves to nothing — `use Protocol\Wire as SceneWire;` parses, and means `\Protocol\Wire`
         $now = repointed($was, $from, $onward);
+
+        // a contract whose new name the file already gives another class is imported under its alias
+        if ($clash && isContract($onward)) {
+            $now = str_replace('use '.$onward.';', 'use '.$calls['import'].';', $now);
+        }
 
         if ($old !== $new && $ours) {
             $now = renamed($now, $old, $calls['named']);
@@ -840,9 +849,18 @@ function importing(string $body, string $onward): string
  * `Ui\Client\Client` once rewrote `'src/Ui/Client/ScriptCompiler.php'` inside a `#[MustFailWhen]` to a
  * directory that does not exist, and the run reported no dangling references because a path is not one.
  */
+/**
+ * The lookbehinds that keep a member of the same name: `case Name`, `const Name`, `function Name` and `->Name`
+ * declare or reach a member, never the class (an enum case once took the renamed class's name).
+ */
+function memberLookbehinds(): string
+{
+    return '(?<!->)(?<!case )(?<!const )(?<!function )';
+}
+
 function renamed(string $body, string $old, string $new): string
 {
-    $pattern = '/(?<!::)(?<!\\\\)(?<!\\/)\b'.preg_quote($old, '/').'\b(?!\\\\)(?!\\/)/';
+    $pattern = '/'.memberLookbehinds().'(?<!::)(?<!\\\\)(?<!\\/)\b'.preg_quote($old, '/').'\b(?!\\\\)(?!\\/)/';
 
     return implode('', array_map(
         static fn (array $run): string => $run[1] ? $run[0] : (string) preg_replace($pattern, $new, $run[0]),
@@ -900,6 +918,69 @@ function repointed(string $body, string $from, string $onward): string
         static fn (): string => $onward,
         $body,
     );
+}
+
+/**
+ * Whether the class sits in a Contracts namespace, whose name a class of the same name may implement.
+ */
+function isContract(string $qualified): bool
+{
+    return str_contains($qualified, '\\Contracts\\');
+}
+
+/**
+ * The body with each contract imported under an alias when the file also means another class by the same
+ * short name: the class it declares, or one it names through part of a namespace (`Support\PipelineRunner`).
+ * The contract is then `PipelineRunnerContract` and the class keeps the plain name, so neither is written
+ * with a namespace in front of it (user message 9357).
+ */
+function contractsAliased(string $body): string
+{
+    preg_match_all('/^use\s+((?:\w+\\\\)+Contracts\\\\(\w+));$/m', $body, $contracts, PREG_SET_ORDER);
+
+    foreach ($contracts as [$line, $qualified, $short]) {
+        $declared = preg_match('/^(?:final\s+|abstract\s+|readonly\s+)*(?:class|interface|enum)\s+'.$short.'\b/m', $body) === 1;
+        $partial = preg_match('/(?<![\\\\\w])(\w+)\\\\'.$short.'\b/', $body, $through) === 1
+            && preg_match('/^use\s+((?:\w+\\\\)*'.$through[1].');$/m', $body, $segment) === 1;
+
+        if (! $declared && ! $partial) {
+            continue;
+        }
+
+        $alias = $short.'Contract';
+        $body = str_replace($line, 'use '.$qualified.' as '.$alias.';', $body);
+        $body = contractNamed($body, $short, $alias);
+
+        if ($partial) {
+            $body = str_replace($through[1].'\\'.$short, $short, $body);
+
+            if (preg_match('/(?<![\\\\\w])'.$through[1].'\\\\/', $body) !== 1) {
+                $body = str_replace('use '.$segment[1].';', 'use '.$segment[1].'\\'.$short.';', $body);
+            } else {
+                $body = importing($body, $segment[1].'\\'.$short);
+            }
+        }
+    }
+
+    return $body;
+}
+
+/**
+ * Every bare use of the short name past the last import, which now means the contract, renamed to its
+ * alias; the class the file declares under that name, a string and every namespaced mention keep theirs.
+ */
+function contractNamed(string $body, string $short, string $alias): string
+{
+    $imports = preg_match_all('/^use\s+[^;]+;$/m', $body, $found, PREG_OFFSET_CAPTURE) > 0
+        ? end($found[0])[1] + strlen(end($found[0])[0])
+        : 0;
+    $pattern = '/'.memberLookbehinds().'(?<!::)(?<!\\\\)(?<!\\/)(?<!class )(?<!interface )(?<!enum )\b'.$short.'\b(?!\\\\)(?!\\/)/';
+    $rest = implode('', array_map(
+        static fn (array $run): string => $run[1] ? $run[0] : (string) preg_replace($pattern, $alias, $run[0]),
+        literals(substr($body, $imports)),
+    ));
+
+    return substr($body, 0, $imports).$rest;
 }
 
 /**
@@ -1320,6 +1401,8 @@ function rewrites(): array
         ['a bare word inside a string literal', "placeholder('Confirmations are due')", 'Confirmations', 'ConfirmationScripts', "placeholder('Confirmations are due')"],
         ['a bare word inside a double-quoted string', '$x = "a Confirmations line";', 'Confirmations', 'ConfirmationScripts', '$x = "a Confirmations line";'],
         ['the name in a docblock', '/** A Confirmations script. */', 'Confirmations', 'ConfirmationScripts', '/** A ConfirmationScripts script. */'],
+        ['an enum case of the same name', 'case Confirmations = \'c\';', 'Confirmations', 'ConfirmationScripts', 'case Confirmations = \'c\';'],
+        ['a property reached through ->', '$x->Confirmations;', 'Confirmations', 'ConfirmationScripts', '$x->Confirmations;'],
     ];
 }
 
@@ -1382,6 +1465,30 @@ function duplicates(): array
         ['two different imports', "<?php\nuse A\\B;\nuse A\\C;\n", "<?php\nuse A\\B;\nuse A\\C;\n"],
         ['a repeated aliased import', "<?php\nuse A\\B as C;\nuse A\\B as C;\n", "<?php\nuse A\\B as C;\n"],
         ['a trait used twice in one class', "<?php\nfinal class A\n{\n    use Loud;\n    use Loud;\n}", "<?php\nfinal class A\n{\n    use Loud;\n    use Loud;\n}"],
+    ];
+}
+
+/**
+ * @return list<array{string, string, string}>
+ */
+function aliases(): array
+{
+    return [
+        [
+            'the class implementing its own contract',
+            "<?php\nnamespace A\\Support;\n\nuse A\\Contracts\\Runner;\n\nfinal class Runner implements Runner\n{\n}\n",
+            "<?php\nnamespace A\\Support;\n\nuse A\\Contracts\\Runner as RunnerContract;\n\nfinal class Runner implements RunnerContract\n{\n}\n",
+        ],
+        [
+            'a binding naming both through a namespace',
+            "<?php\nuse A\\Contracts\\Runner;\nuse A\\Support;\n\n\$app->bind(Runner::class, Support\\Runner::class);\n",
+            "<?php\nuse A\\Contracts\\Runner as RunnerContract;\nuse A\\Support\\Runner;\n\n\$app->bind(RunnerContract::class, Runner::class);\n",
+        ],
+        [
+            'a contract alone',
+            "<?php\nuse A\\Contracts\\Runner;\n\nfinal class Other { public function __construct(Runner \$runner) {} }\n",
+            "<?php\nuse A\\Contracts\\Runner;\n\nfinal class Other { public function __construct(Runner \$runner) {} }\n",
+        ],
     ];
 }
 
@@ -1478,6 +1585,17 @@ function selfTest(): int
 
     foreach (duplicates() as [$why, $body, $want]) {
         $got = deduplicated($body);
+        $ran++;
+
+        if ($got !== $want) {
+            $failed++;
+        }
+
+        printf("  %s  %-48s %s\n", $got === $want ? 'ok  ' : 'FAIL', $why, $got === $want ? '' : sprintf('(wanted %s, got %s)', var_export($want, true), var_export($got, true)));
+    }
+
+    foreach (aliases() as [$why, $body, $want]) {
+        $got = contractsAliased($body);
         $ran++;
 
         if ($got !== $want) {

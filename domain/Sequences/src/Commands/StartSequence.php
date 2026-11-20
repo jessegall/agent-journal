@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use Domain\Sequences\Enums\SequenceAbility;
 use Domain\Sequences\Handlers\StartSequenceHandler;
 use Domain\Sequences\Models\SequenceRun;
@@ -24,7 +24,7 @@ use Domain\Sequences\Policies\SequencePolicy;
 #[HandledBy(StartSequenceHandler::class)]
 #[Authorize(SequencePolicy::class, SequenceAbility::Work)]
 #[Operation('start_sequence', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class StartSequence extends Command implements HasAuthorizationSubject
+final readonly class StartSequence extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string $sequenceRunId,

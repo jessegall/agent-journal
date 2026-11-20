@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Processes\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with command rules, their requests, approvals and process output.
  */
-enum ProcessAbility: string implements DeclaresClassLevelAbilities
+enum ProcessAbility: string implements ClassLevelAbilities
 {
     case Administer = 'administer';
     case Work = 'work';

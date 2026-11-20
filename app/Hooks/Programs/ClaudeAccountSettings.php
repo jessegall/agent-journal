@@ -27,7 +27,7 @@ final readonly class ClaudeAccountSettings
         $settings->setVariable('CLAUDE_CONFIG_DIR', $directory);
         $settings->setVariable('JOURNAL_ACCOUNTS_ROOT', $accountsRoot);
         $settings->protectWith(ClaudeAccountProtection::settingsFor($directory, $accountsRoot));
-        $settings->pointAtEmptyFolder('ANTHROPIC_CONFIG_DIR');
+        $settings->setEmptyFolderVariable('ANTHROPIC_CONFIG_DIR');
 
         foreach (self::OTHER_CREDENTIALS as $variable) {
             $settings->removeVariable($variable);

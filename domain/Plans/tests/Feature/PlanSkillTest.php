@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use Tests\Support\RefreshHookDatabase;
 
 /**
- * Plans supplies the journal-plans skill through ProvidesSkills: a written section, then two heading subtrees of
+ * Plans supplies the journal-plans skill through SkillProvider: a written section, then two heading subtrees of
  * resources/skills/plans.md, in that order.
  */
 final class PlanSkillTest extends TestCase

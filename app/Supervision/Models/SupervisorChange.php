@@ -21,7 +21,7 @@ final class SupervisorChange extends Model
 
     protected static function booted(): void
     {
-        self::updating(fn () => throw SupervisorRouteRefused::historyIsImmutable());
+        self::updating(fn () => throw SupervisorRouteRefused::historyEdited());
     }
 
     public static function record(
@@ -35,7 +35,7 @@ final class SupervisorChange extends Model
             'supervisor_link_id' => $link->id,
             'actor_type' => $author->type->value,
             'actor_id' => $author->id,
-            'route' => $type?->key ?? 'default',
+            'route' => AskTypeKey::routeOf($type),
             'previous_target' => $previous->key,
             'target' => $target->key,
             'version' => $link->versionFor($type),

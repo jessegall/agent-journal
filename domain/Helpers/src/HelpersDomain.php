@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Helpers;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandProvider;
 use App\Bus\Support\Command;
 use App\Domains\Concerns\HasAssignables;
-use App\Domains\Contracts\ProvidesInternalAssignables;
+use App\Domains\Contracts\InternalAssignableContributor;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use Domain\Helpers\Commands\SendHelper;
@@ -34,7 +34,7 @@ use Domain\Helpers\Support\HelperReceipt;
 use Domain\Helpers\Support\HelperWork;
 use Domain\Helpers\Support\JobLaunch;
 
-final class HelpersDomain extends Domain implements ProvidesCommands, ProvidesInternalAssignables, ProvidesPolicies
+final class HelpersDomain extends Domain implements CommandProvider, InternalAssignableContributor, PolicyProvider
 {
     use HasAssignables;
 

@@ -10,7 +10,7 @@ use App\Agents\Enums\MenuEntryState;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Support\EntryGoalAnswer;
 use App\Agents\Support\LibraryEntryAnswer;
-use App\Agents\Values\MenuBuild;
+use App\Agents\Values\MenuEntryBuild;
 use App\Agents\Values\MenuStep;
 use App\Agents\Values\ScriptGoal;
 use App\Links\Support\Linkable;
@@ -118,7 +118,7 @@ final class MenuEntry extends Model implements ReadableModel
         $entry->next_step = $source->next_step;
         $entry->proof = $proof;
         $entry->state = MenuEntryState::Current;
-        $entry->builds = [MenuBuild::proven($source->build, CarbonImmutable::now())->toArray()];
+        $entry->builds = [MenuEntryBuild::proven($source->build, CarbonImmutable::now())->toArray()];
         $entry->source_request_id = $source->id;
         $entry->belongTo($owner);
         $entry->save();
@@ -142,13 +142,13 @@ final class MenuEntry extends Model implements ReadableModel
     /**
      * The builds the entry was proven on, by build.
      *
-     * @return array<string, MenuBuild>
+     * @return array<string, MenuEntryBuild>
      */
     public function builds(): array
     {
         $builds = [];
         foreach ($this->builds as $stored) {
-            $build = MenuBuild::from($stored);
+            $build = MenuEntryBuild::from($stored);
             $builds[$build->build] = $build;
         }
 
@@ -204,7 +204,7 @@ final class MenuEntry extends Model implements ReadableModel
     public function provenOn(string $build): void
     {
         $builds = $this->builds();
-        $builds[$build] = MenuBuild::proven($build, CarbonImmutable::now());
+        $builds[$build] = MenuEntryBuild::proven($build, CarbonImmutable::now());
         $this->storeBuilds($builds);
     }
 
@@ -216,7 +216,7 @@ final class MenuEntry extends Model implements ReadableModel
     public function markStaleOn(string $build, string $reason, array $screen): void
     {
         $builds = $this->builds();
-        $builds[$build] = ($builds[$build] ?? MenuBuild::proven($build, CarbonImmutable::now()))
+        $builds[$build] = ($builds[$build] ?? MenuEntryBuild::proven($build, CarbonImmutable::now()))
             ->markedStale($reason, $screen);
         $this->storeBuilds($builds);
     }
@@ -277,11 +277,11 @@ final class MenuEntry extends Model implements ReadableModel
     }
 
     /**
-     * @param  array<string, MenuBuild>  $builds
+     * @param  array<string, MenuEntryBuild>  $builds
      */
     private function storeBuilds(array $builds): void
     {
-        $this->builds = array_values(array_map(fn (MenuBuild $build) => $build->toArray(), $builds));
+        $this->builds = array_values(array_map(fn (MenuEntryBuild $build) => $build->toArray(), $builds));
         $this->save();
     }
 

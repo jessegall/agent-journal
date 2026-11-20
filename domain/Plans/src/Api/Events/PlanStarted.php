@@ -6,14 +6,14 @@ namespace Domain\Plans\Api\Events;
 
 use App\Actors\Support\ActorContext;
 use App\Contracts\Event;
-use App\Ui\Contracts\UpdatesUserInterface;
+use App\Ui\Contracts\UserInterfaceUpdater;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * A plan started, and who started it. Raised only once the start has committed, so a listener never hears of a start
+ * A plan started, and who started it. Raised only once the start has committed, so a listener never receives a start
  * that rolled back.
  */
-final readonly class PlanStarted implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
+final readonly class PlanStarted implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
 {
     public function __construct(
         public string $planId,

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What only the owner does with documents and reports: recover a draft, and change a record another actor created.
  */
-enum DocumentAbility: string implements DeclaresClassLevelAbilities
+enum DocumentAbility: string implements ClassLevelAbilities
 {
     case Administer = 'administer';
     case ChangeOthersRecords = 'change-others-records';

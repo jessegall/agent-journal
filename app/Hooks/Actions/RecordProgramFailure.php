@@ -12,7 +12,7 @@ use App\Hooks\Models\FailureReceipt;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Hears a program's failure notification once per native event and publishes it as a safe fact; a retry of the
+ * Receives a program's failure notification once per native event and publishes it as a safe fact; a retry of the
  * same event publishes nothing.
  */
 final readonly class RecordProgramFailure

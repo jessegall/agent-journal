@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace Domain\Tasks;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
-use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
-use App\Domains\Contracts\ProvidesAssignables;
-use App\Domains\Contracts\ProvidesInternalAssignables;
-use App\Domains\Contracts\ProvidesLinkRecords;
-use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Contracts\AssignableContributor;
+use App\Domains\Contracts\InternalAssignableContributor;
+use App\Domains\Contracts\LinkRecordProvider;
+use App\Domains\Contracts\StateProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Mcp\Contracts\ProvidesMcpTools;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Mcp\Contracts\McpToolProvider;
+use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
-use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\SkillProvider;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
@@ -67,16 +67,16 @@ use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
 final class TasksDomain extends Domain implements
-    ProvidesAssignables,
-    ProvidesAutoAssignments,
-    ProvidesCommands,
-    ProvidesInternalAssignables,
-    ProvidesLinkRecords,
-    ProvidesMcpTools,
-    ProvidesNumberedModels,
-    ProvidesPolicies,
-    ProvidesSkills,
-    ProvidesStates
+    AssignableContributor,
+    AutoAssignmentProvider,
+    CommandProvider,
+    InternalAssignableContributor,
+    LinkRecordProvider,
+    McpToolProvider,
+    NumberedModelProvider,
+    PolicyProvider,
+    SkillProvider,
+    StateProvider
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 

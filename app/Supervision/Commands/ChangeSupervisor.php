@@ -8,7 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
@@ -24,7 +24,7 @@ use App\Supervision\Values\SupervisorChangeReceipt;
 #[HandledBy(ChangeSupervisorHandler::class)]
 #[Authorize(SupervisorPolicy::class, SupervisorAbility::ChangeRoute)]
 #[Operation('change_supervisor', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class ChangeSupervisor extends Command implements HasAuthorizationSubject
+final readonly class ChangeSupervisor extends Command implements AuthorizedCommand
 {
     public function __construct(
         public ActorIdentity $actor,

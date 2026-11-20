@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Supervision\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
-enum AskAbility: string implements DeclaresClassLevelAbilities
+enum AskAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

@@ -73,7 +73,7 @@ Links are explicit; mentioning a record in the text links nothing.
   transaction as the record, so an unreadable target creates nothing.
 - A page lists only the links its reader may see; a hidden link leaves no trace.
 
-Another domain makes its records linkable by implementing `ProvidesLinkRecords` on its domain class. That method
+Another domain makes its records linkable by implementing `LinkRecordProvider` on its domain class. That method
 returns its link alias with a provider class implementing `App\Records\Contracts\RecordProvider`. Most providers use
 the `App\Records\Support\ProvidesModelRecords` trait and supply four things:
 

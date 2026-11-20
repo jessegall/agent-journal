@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Settings\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with the journal settings.
  */
-enum SettingAbility: string implements DeclaresClassLevelAbilities
+enum SettingAbility: string implements ClassLevelAbilities
 {
     case Administer = 'administer';
 

@@ -23,11 +23,11 @@ use App\Sharing\Commands\RequestShare;
 use App\Sharing\Commands\RetryShare;
 use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Commands\SaveSharePreview;
-use App\Sharing\Contracts\ProvidesShareGateways;
-use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\Shareable;
 use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\Contracts\ShareGatewayProvider;
 use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Contracts\ShareRecordProvider;
 use App\Sharing\Events\ShareActivated;
 use App\Sharing\Events\ShareCreated;
@@ -80,8 +80,8 @@ final class SharingBoundaryTest extends TestCase
         Shareable::class,
         ShareRecordProvider::class,
         ShareGateway::class,
-        ProvidesShareRecords::class,
-        ProvidesShareGateways::class,
+        ShareRecordContributor::class,
+        ShareGatewayProvider::class,
         SharePolicy::class,
     ];
 

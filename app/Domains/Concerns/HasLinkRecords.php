@@ -8,7 +8,7 @@ use App\Domains\Bootstrappers\RegisterLinkRecords;
 use App\Domains\Contracts\DomainBootstrapper;
 
 /**
- * Boots the record providers a domain declares through ProvidesLinkRecords.
+ * Boots the record providers a domain declares through LinkRecordProvider.
  */
 trait HasLinkRecords
 {

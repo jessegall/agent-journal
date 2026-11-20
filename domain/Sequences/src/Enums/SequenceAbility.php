@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with sequences.
  */
-enum SequenceAbility: string implements DeclaresClassLevelAbilities
+enum SequenceAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

@@ -19,7 +19,7 @@ final readonly class ActiveStackPermission implements StackPermission
             return StackVerdict::allow();
         }
 
-        return AgentStackRow::activeFor($target)
+        return AgentStackRow::activeAuthorizedFor($target)
             ->map(fn (AgentStackRow $row) => $this->restorer->restore($row->frames)->permission())
             ->getOrCall(StackVerdict::allow(...));
     }

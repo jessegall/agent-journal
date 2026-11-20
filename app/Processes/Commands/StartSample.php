@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\StartSampleHandler;
 use App\Processes\Models\CommandRequest;
@@ -24,7 +24,7 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
 #[HandledBy(StartSampleHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
 #[Operation('start_sample', ResourceAreaType::Workspace, AccessType::Test)]
-final readonly class StartSample extends Command implements HasAuthorizationSubject
+final readonly class StartSample extends Command implements AuthorizedCommand
 {
     public function __construct(public string $commandRequestId, public string $permitId, public string $requestKey) {}
 

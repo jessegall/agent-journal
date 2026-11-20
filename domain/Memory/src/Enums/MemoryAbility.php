@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with memories.
  */
-enum MemoryAbility: string implements DeclaresClassLevelAbilities
+enum MemoryAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

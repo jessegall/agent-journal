@@ -14,8 +14,8 @@ use Domain\Tasks\Events\TaskStarted;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Hears the Tasks facts and tells that the progress of the plan holding that task moved; a task sits in one phase at
- * most, so one plan at most hears of it.
+ * Receives the Tasks facts and tells that the progress of the plan holding that task moved; a task sits in one phase at
+ * most, so one plan at most is told.
  */
 final readonly class RaisePlanProgressChanged implements Listener
 {

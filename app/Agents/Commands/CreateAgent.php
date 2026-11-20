@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\CreateAgentHandler;
@@ -14,8 +11,11 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
@@ -27,7 +27,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 #[HandledBy(CreateAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 #[Operation('create_agent', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class CreateAgent extends Command implements HasAuthorizationSubject
+final readonly class CreateAgent extends Command implements AuthorizedCommand
 {
     public function __construct(
         #[Required]

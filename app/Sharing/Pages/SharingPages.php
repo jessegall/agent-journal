@@ -19,7 +19,7 @@ use App\Sharing\Resolvers\ShareDetailResolver;
 use App\Sharing\Resolvers\ShareListResolver;
 use App\Sharing\Resolvers\SharePreviewResolver;
 use App\Sharing\Support\SharingOwnerCheck;
-use App\Ui\Contracts\ProvidesPages;
+use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\Page;
@@ -30,7 +30,7 @@ use App\Ui\Enums\Icon;
  * with its reveal, retry and revoke, the gateway settings with configure, default and disable, and the preview of
  * sharing one record, which confirms, approves or refreshes.
  */
-final class SharingPages implements ProvidesPages
+final class SharingPages implements PageProvider
 {
     public function pages(): array
     {

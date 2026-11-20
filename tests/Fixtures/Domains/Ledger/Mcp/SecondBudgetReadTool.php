@@ -10,8 +10,8 @@ use App\Mcp\Tools\JournalReadTool;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
-#[Name('budget_read')]
 #[IsReadOnly]
+#[Name('budget_read')]
 final class SecondBudgetReadTool extends JournalReadTool
 {
     protected function read(ToolArguments $arguments): ToolResult

@@ -8,15 +8,15 @@ use App\Actors\Enums\ActorType;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Domains\Concerns\HasAssignables;
-use App\Domains\Contracts\ProvidesAssignees;
+use App\Domains\Contracts\AssigneeContributor;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\SkillProvider;
 use Domain\Access\Skills\AccessSkill;
 use Domain\Access\Support\UserActivity;
 use Domain\Access\Support\UserAssignees;
 
-final class AccessDomain extends Domain implements ProvidesAssignees, ProvidesSkills
+final class AccessDomain extends Domain implements AssigneeContributor, SkillProvider
 {
     use HasAssignables;
 

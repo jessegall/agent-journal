@@ -1,0 +1,43 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "nameMood": "third-person"
+            }
+        ],
+        "reject": [
+            {
+                "kind": "Stmt_Trait"
+            },
+            {
+                "child": {
+                    "all": [
+                        {
+                            "field": "attrGroups"
+                        },
+                        {
+                            "descendant": {
+                                "name": "Attribute"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "nameMatches": "^[A-Z][a-z]+$"
+            },
+            {
+                "nameMatches": "^(Domains|Exports|Links|Processes|Reads|Records)[A-Z]"
+            }
+        ]
+    },
+    "sin": {
+        "description": "A class, interface or enum is named with a verb phrase about what its implementer does.",
+        "name": "type-name-is-noun",
+        "rule": "Name a type with a noun for what it is or the role it plays (PipelineRunner, PageProvider), never a verb phrase such as RunsPipelines; traits and attributes keep verb names (rule 43).",
+        "skill": "type-name-is-noun"
+    }
+}

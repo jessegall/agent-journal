@@ -6,10 +6,10 @@ namespace Tests\Fixtures\Domains\Binders;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordRegistration;
 
-final class BindersDomain extends Domain implements ProvidesShareRecords
+final class BindersDomain extends Domain implements ShareRecordContributor
 {
     public function description(): string
     {

@@ -9,7 +9,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
@@ -26,7 +26,7 @@ use Tests\Fixtures\Bus\Shop\Handlers\EnumLimitedItemHandler;
 #[HandledBy(EnumLimitedItemHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
 #[Operation('enum_limited_item', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class EnumLimitedItem extends Command implements HasAuthorizationSubject
+final readonly class EnumLimitedItem extends Command implements AuthorizedCommand
 {
     public function __construct(
         #[Max(5)]

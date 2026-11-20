@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Bus\CommandMiddleware;
 
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Bus\Contracts\AnswersFromReceipt;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Contracts\ReceiptRefusal;
 use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Models\CommandReceipt;
@@ -81,6 +81,6 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
      */
     private function isFirstRefusal(Throwable $failure): bool
     {
-        return $failure instanceof CommandRefusal && ! $failure instanceof AnswersFromReceipt;
+        return $failure instanceof CommandRefusal && ! $failure instanceof ReceiptRefusal;
     }
 }

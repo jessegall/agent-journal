@@ -6,13 +6,13 @@ namespace Domain\Documents\Api\Events;
 
 use App\Actors\Support\ActorContext;
 use App\Contracts\Event;
-use App\Ui\Contracts\UpdatesUserInterface;
+use App\Ui\Contracts\UserInterfaceUpdater;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A report was filed. It carries ids and the number, never the text.
  */
-final readonly class ReportFiled implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
+final readonly class ReportFiled implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
 {
     public function __construct(
         public string $reportId,

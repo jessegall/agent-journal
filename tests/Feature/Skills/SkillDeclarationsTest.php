@@ -16,7 +16,7 @@ use Tests\Fixtures\Modules\Notes\Skills\NotesSkill;
 use Tests\TestCase;
 
 /**
- * Skills are declared like commands: Core first, then each domain or registered module through ProvidesSkills, with
+ * Skills are declared like commands: Core first, then each domain or registered module through SkillProvider, with
  * every class checked when its owner is registered.
  */
 final class SkillDeclarationsTest extends TestCase

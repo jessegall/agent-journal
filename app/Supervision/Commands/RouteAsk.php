@@ -10,7 +10,7 @@ use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
@@ -28,7 +28,7 @@ use App\Supervision\Values\AskReference;
 #[Effect(CommandEffectType::AssignmentChange)]
 #[Authorize(AskPolicy::class, AskAbility::Work)]
 #[Operation('route_ask', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class RouteAsk extends Command implements HasAuthorizationSubject
+final readonly class RouteAsk extends Command implements AuthorizedCommand
 {
     public function __construct(
         public AskReference $ask,

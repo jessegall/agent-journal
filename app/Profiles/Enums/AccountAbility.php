@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Profiles\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with the saved Claude Code and Codex accounts: read them, or change them and sign them in.
  */
-enum AccountAbility: string implements DeclaresClassLevelAbilities
+enum AccountAbility: string implements ClassLevelAbilities
 {
     case Read = 'read';
     case Manage = 'manage';

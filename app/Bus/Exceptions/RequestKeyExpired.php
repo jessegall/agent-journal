@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Bus\Exceptions;
 
-use App\Bus\Contracts\AnswersFromReceipt;
 use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Contracts\ReceiptRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * A request key whose receipt is past its retention: the write it named is not run again and its answer is gone.
  */
-final class RequestKeyExpired extends RuntimeException implements AnswersFromReceipt, CodedRefusal, CommandRefusal
+final class RequestKeyExpired extends RuntimeException implements CodedRefusal, CommandRefusal, ReceiptRefusal
 {
     use RendersRefusal;
 

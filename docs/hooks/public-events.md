@@ -31,7 +31,7 @@ Each fact implements `ShouldDispatchAfterCommit`, so a listener hears it only on
 
 `AssignmentsChanged` is raised once per command, never per record, and only from the attempt that committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises one fact for all its changes.
 
-A fact that changes what users see also implements `App\Ui\Contracts\UpdatesUserInterface` (Chat's three, Plans' two and Rules' three today). Web's `BroadcastPageChange` listens for that marker, and the checked provider turns it into one listener for each exported event that implements it, so a new domain's or module's exported fact refreshes the open pages without any change to Web, while a fact nobody exports refreshes nothing; Core owns the marker and names no domain.
+A fact that changes what users see also implements `App\Ui\Contracts\UserInterfaceUpdater` (Chat's three, Plans' two and Rules' three today). Web's `BroadcastPageChange` listens for that marker, and the checked provider turns it into one listener for each exported event that implements it, so a new domain's or module's exported fact refreshes the open pages without any change to Web, while a fact nobody exports refreshes nothing; Core owns the marker and names no domain.
 
 `TaskStarted` is exported and raised at once, not after the commit: its listeners push stack states inside the same transaction. Plans hears it through its approved requirement of Tasks. `SequenceStarted` and `MessageNeedsAnswer` are internal: their owners do not export them, so only their own listeners hear them.
 
@@ -113,7 +113,7 @@ for that target.
 A synchronous dispatch runs in its caller's work. A fact marked `ShouldDispatchAfterCommit` retains its captured audience
 until the outermost commit. A rollback discards the deferred delivery. Failure reports identify collection, retention
 or effects. After commit the original write and any committed effects remain. Events opting into
-`LogsListenerFailures` log failures without failing the caller. There is no automatic replay or exactly-once delivery.
+`ListenerFailureLog` log failures without failing the caller. There is no automatic replay or exactly-once delivery.
 The active target, frame and event key detects cycles, same-stack evaluation refuses reentry, and nesting is capped
 at ten deliveries. Distinct sequential dispatches can run independently.
 

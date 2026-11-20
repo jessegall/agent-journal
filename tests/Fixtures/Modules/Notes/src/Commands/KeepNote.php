@@ -10,7 +10,7 @@ use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Tests\Fixtures\Modules\Notes\Enums\NoteWorkAbility;
 use Tests\Fixtures\Modules\Notes\Handlers\KeepNoteHandler;
@@ -26,7 +26,7 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 #[Operation('keep_note', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class KeepNote extends Command implements HasAuthorizationSubject
+final readonly class KeepNote extends Command implements AuthorizedCommand
 {
     public function __construct(public string $text) {}
 

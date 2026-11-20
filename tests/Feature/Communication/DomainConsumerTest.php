@@ -14,7 +14,7 @@ use Tests\Support\MessagingTestCase;
 
 /**
  * A domain other than Chat asks for an answer and reads it back through Core's exported messaging API alone, and
- * hears the message it sent.
+ * receives the message it sent.
  */
 final class DomainConsumerTest extends MessagingTestCase
 {

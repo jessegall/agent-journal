@@ -45,7 +45,7 @@ final class DomainEventCallTest extends TestCase
         yield 'an action raising its own events by class' => ['Plans/Actions/ClassEvents.php', [
             '16 registers a listener for '.PlanStarted::class.' by hand; write a concrete typed listener in a Listeners folder',
         ]];
-        yield 'a listener hearing an event by class' => ['Plans/Listeners/QuietListener.php', []];
+        yield 'a listener receiving an event by class' => ['Plans/Listeners/QuietListener.php', []];
         yield 'listeners registered by hand' => ['Plans/Providers/RegistersByHand.php', [
             '16 registers a listener for '.PlanStarted::class.' by hand; write a concrete typed listener in a Listeners folder',
             '17 names the event plans.* by a string; name its event class instead',

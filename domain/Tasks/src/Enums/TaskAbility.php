@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with a task's run.
  */
-enum TaskAbility: string implements DeclaresClassLevelAbilities
+enum TaskAbility: string implements ClassLevelAbilities
 {
     case Start = 'start';
     case Finish = 'finish';

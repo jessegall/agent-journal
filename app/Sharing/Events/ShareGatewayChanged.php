@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Events;
 
 use App\Contracts\Event;
-use App\Ui\Contracts\UpdatesUserInterface;
+use App\Ui\Contracts\UserInterfaceUpdater;
 use DateTimeImmutable;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
@@ -14,7 +14,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  * configuration, its version and whether it is now disabled, never a setting or secret. The owner's open sharing pages
  * reread on it.
  */
-final readonly class ShareGatewayChanged implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
+final readonly class ShareGatewayChanged implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
 {
     public function __construct(
         public string $configurationId,

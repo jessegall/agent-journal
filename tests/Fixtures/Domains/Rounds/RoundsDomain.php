@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Rounds;
 
-use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Support\PoolDefinition;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Support\Domain;
@@ -15,7 +15,7 @@ use Tests\Fixtures\Domains\Errands\OpenErrandPools;
 /**
  * A fixture domain that requires Errands and declares a pool of its errands, with no record type of its own.
  */
-final class RoundsDomain extends Domain implements ProvidesAutoAssignments
+final class RoundsDomain extends Domain implements AutoAssignmentProvider
 {
     use HasAssignables;
 

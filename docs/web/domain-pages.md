@@ -9,7 +9,7 @@ this file is how it works now.
 A domain's descriptor implements the interfaces it needs, each in `App\Ui\Contracts` (the declarations are in `App\Ui\Declarations` and the enums in `App\Ui\Enums`, all on CoreApi's list):
 
 ```php
-final class NotesDomain implements Domain, ProvidesNavigation, ProvidesPages, ProvidesSections
+final class NotesDomain implements Domain, NavigationProvider, PageProvider, SectionProvider
 {
     public function pages(): array
     {

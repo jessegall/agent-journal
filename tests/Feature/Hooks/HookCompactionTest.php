@@ -99,14 +99,14 @@ final class HookCompactionTest extends TestCase
     public function test_a_replayed_compaction_runs_no_reminder_listener(): void
     {
         $this->compact('call-1');
-        $heard = 0;
-        Event::listen(ContextStarted::class, function () use (&$heard): void {
-            $heard++;
+        $received = 0;
+        Event::listen(ContextStarted::class, function () use (&$received): void {
+            $received++;
         });
 
         $this->compact('call-1');
 
-        $this->assertSame(0, $heard);
+        $this->assertSame(0, $received);
     }
 
     /**

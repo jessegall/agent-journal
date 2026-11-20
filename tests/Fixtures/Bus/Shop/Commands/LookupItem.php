@@ -9,7 +9,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
@@ -25,7 +25,7 @@ use Tests\Fixtures\Bus\Shop\Handlers\LookupItemHandler;
 #[HandledBy(LookupItemHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
 #[Operation('lookup_item', ResourceAreaType::JournalWork, AccessType::Read)]
-final readonly class LookupItem extends Command implements HasAuthorizationSubject
+final readonly class LookupItem extends Command implements AuthorizedCommand
 {
     public function __construct(
         #[Exists('items', 'id')]

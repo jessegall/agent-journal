@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Domain\Documents;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
-use App\Domains\Contracts\ProvidesLinkRecords;
+use App\Domains\Contracts\LinkRecordProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
-use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordRegistration;
-use App\Ui\Contracts\ProvidesNavigation;
-use App\Ui\Contracts\ProvidesPages;
-use App\Ui\Contracts\ProvidesSections;
+use App\Ui\Contracts\NavigationProvider;
+use App\Ui\Contracts\PageProvider;
+use App\Ui\Contracts\SectionProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -108,14 +108,14 @@ use Domain\Documents\Support\DocumentShareProvider;
 use Domain\Documents\Support\ReportShareProvider;
 
 final class DocumentsDomain extends Domain implements
-    ProvidesCommands,
-    ProvidesLinkRecords,
-    ProvidesNavigation,
-    ProvidesNumberedModels,
-    ProvidesPages,
-    ProvidesPolicies,
-    ProvidesSections,
-    ProvidesShareRecords
+    CommandProvider,
+    LinkRecordProvider,
+    NavigationProvider,
+    NumberedModelProvider,
+    PageProvider,
+    PolicyProvider,
+    SectionProvider,
+    ShareRecordContributor
 {
     use HasLinkRecords, HasNumberedModels;
 

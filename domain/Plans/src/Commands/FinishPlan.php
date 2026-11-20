@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\FinishPlanHandler;
 use Domain\Plans\Models\Plan;
@@ -26,7 +26,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 #[HandledBy(FinishPlanHandler::class)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
 #[Operation('finish_plan', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class FinishPlan extends Command implements HasAuthorizationSubject
+final readonly class FinishPlan extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string $planId,

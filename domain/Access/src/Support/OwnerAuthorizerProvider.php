@@ -10,7 +10,7 @@ use App\Actors\Contracts\AuthorizerProvider;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\AllowsEverything;
+use App\Actors\Support\UnrestrictedAuthorizer;
 use App\Actors\Values\OwnerAuthority;
 
 /**
@@ -30,7 +30,7 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
     public function forActor(Actor $actor): Authorizer
     {
         if ($this->actors->authority() instanceof OwnerAuthority) {
-            return new AllowsEverything();
+            return new UnrestrictedAuthorizer();
         }
 
         return $this->forTarget($actor);
@@ -41,6 +41,6 @@ final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
      */
     public function forTarget(Actor $target): Authorizer
     {
-        return $this->admission->admits($target) ? new AllowsEverything() : throw ActorNotAllowed::asNonOwner();
+        return $this->admission->admits($target) ? new UnrestrictedAuthorizer() : throw ActorNotAllowed::asNonOwner();
     }
 }

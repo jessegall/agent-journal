@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Support;
 
 use App\Contracts\Event;
-use App\Contracts\LogsListenerFailures;
+use App\Contracts\ListenerFailureLog;
 use App\Domains\Exceptions\InvalidListener;
 use App\Exports\Support\Exports;
 use App\Hooks\Declarations\StateEventDeclaration;
@@ -14,15 +14,15 @@ use App\Hooks\Declarations\StateMethod;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\Support\StateTypeRegistry;
-use App\Ui\Contracts\UpdatesUserInterface;
+use App\Ui\Contracts\UserInterfaceUpdater;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionUnionType;
 
 /**
- * Decides which event and listener pairs the application may register: an owner hears its own events, a domain hears
- * an event of a domain it requires only when that event is exported under events, and any domain hears Core's exported
+ * Decides which event and listener pairs the application may register: an owner listens to its own events, a domain listens to
+ * an event of a domain it requires only when that event is exported under events, and any domain listens to Core's exported
  * events. It holds declarations only, never request or actor state.
  */
 final readonly class ListenerPolicy
@@ -39,22 +39,22 @@ final readonly class ListenerPolicy
     ) {}
 
     /**
-     * Turns a listener of UpdatesUserInterface into a listener of each exported event that implements it.
+     * Turns a listener of UserInterfaceUpdater into a listener of each exported event that implements it.
      *
      * @param  array<string, list<string>>  $events
      * @return array<string, list<string>>
      */
     public function expand(array $events): array
     {
-        $listeners = $events[UpdatesUserInterface::class] ?? [];
-        unset($events[UpdatesUserInterface::class]);
+        $listeners = $events[UserInterfaceUpdater::class] ?? [];
+        unset($events[UserInterfaceUpdater::class]);
 
         if ($listeners === []) {
             return $events;
         }
 
         foreach ($this->exportedEvents() as $event) {
-            if (is_subclass_of($event, UpdatesUserInterface::class)) {
+            if (is_subclass_of($event, UserInterfaceUpdater::class)) {
                 $events[$event] = array_values(array_unique([...$events[$event] ?? [], ...$listeners]));
             }
         }
@@ -108,7 +108,7 @@ final readonly class ListenerPolicy
                     fn (DomainEntry $entry) => $entry->holdsListenerFile($file),
                 );
                 $available = $domain === null ? $listener : new AvailableListener($domain->name, $listener);
-                $gated[$event][] = is_subclass_of($event, LogsListenerFailures::class)
+                $gated[$event][] = is_subclass_of($event, ListenerFailureLog::class)
                     ? new FailureLoggingListener($event, $available)
                     : $available;
             }
@@ -137,8 +137,8 @@ final readonly class ListenerPolicy
             throw InvalidListener::notAConcreteEvent($listener, $event);
         }
 
-        $hearer = $this->listenerDomain($class, $listener, $event);
-        $this->checkOwnership($event, $listener, $method, $hearer);
+        $listenerDomain = $this->listenerDomain($class, $listener, $event);
+        $this->checkOwnership($event, $listener, $method, $listenerDomain);
     }
 
     public function stateEvents(StateTypeRegistry $types, StateMethods $methods): StateEvents
@@ -159,40 +159,40 @@ final readonly class ListenerPolicy
     public function checkStateEvent(string $event, StateMethod $method): string
     {
         $listener = $method->stateClass.'@'.$method->name;
-        $hearer = $this->stateDomain($method->stateClass, $listener, $event);
+        $listenerDomain = $this->stateDomain($method->stateClass, $listener, $event);
         $declaring = $this->stateDomain($method->declaringClass, $listener, $event);
 
-        if ($declaring !== $hearer) {
+        if ($declaring !== $listenerDomain) {
             $this->checkOwnership($event, $listener, $method->name, $declaring);
         }
 
         $file = new ReflectionMethod($method->stateClass, $method->name)->getFileName();
         $source = $this->stateSource($file, $listener, $event);
 
-        if ($source !== $hearer && $source !== $declaring) {
+        if ($source !== $listenerDomain && $source !== $declaring) {
             $this->checkOwnership($event, $listener, $method->name, $source);
         }
 
-        $this->checkOwnership($event, $listener, $method->name, $hearer);
+        $this->checkOwnership($event, $listener, $method->name, $listenerDomain);
 
-        return $hearer->name ?? self::CORE;
+        return $listenerDomain->name ?? self::CORE;
     }
 
-    private function checkOwnership(string $event, string $listener, string $method, DomainEntry|null $hearer): void
+    private function checkOwnership(string $event, string $listener, string $method, DomainEntry|null $listenerDomain): void
     {
         $owner = $this->eventDomain($event, $listener);
 
         if ($owner === null) {
-            $hearsItself = $hearer === null;
-            if (! $hearsItself && ! $this->coreExports->hasEvent($event)) {
+            $isCoreListener = $listenerDomain === null;
+            if (! $isCoreListener && ! $this->coreExports->hasEvent($event)) {
                 throw InvalidListener::privateEvent($listener, $method, $event, self::CORE);
             }
 
             return;
         }
 
-        if ($hearer === null) {
-            $isExportedUiEvent = $owner->exportsEvent($event) && is_subclass_of($event, UpdatesUserInterface::class);
+        if ($listenerDomain === null) {
+            $isExportedUiEvent = $owner->exportsEvent($event) && is_subclass_of($event, UserInterfaceUpdater::class);
             if (! $isExportedUiEvent) {
                 throw InvalidListener::privateEvent($listener, $method, $event, $owner->name);
             }
@@ -200,11 +200,11 @@ final readonly class ListenerPolicy
             return;
         }
 
-        if ($hearer === $owner) {
+        if ($listenerDomain === $owner) {
             return;
         }
 
-        if (! $hearer->requiresDomain($owner)) {
+        if (! $listenerDomain->requiresDomain($owner)) {
             throw InvalidListener::notRequired($listener, $event, $owner->name);
         }
 

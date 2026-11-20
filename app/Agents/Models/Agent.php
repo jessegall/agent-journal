@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Actors\Contracts\ForwardsToDesk;
-use App\Actors\Contracts\ReceivesMessages;
-use App\Actors\Contracts\SendsMessages;
+use App\Actors\Contracts\MessageRecipient;
+use App\Actors\Contracts\MessageSender;
+use App\Actors\Contracts\SeatedActor;
 use App\Actors\Enums\ActorType;
 use App\Agents\Support\RunningRuntime;
 use App\Agents\Support\StackTarget;
@@ -38,7 +38,7 @@ use PhpOption\Some;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'profile_key'])]
-final class Agent extends Model implements Assignee, ForwardsToDesk, ReadableModel, ReceivesMessages, SendsMessages
+final class Agent extends Model implements Assignee, MessageRecipient, MessageSender, ReadableModel, SeatedActor
 {
     use BoundedReads;
     use HasUlids, Linkable;

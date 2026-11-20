@@ -9,7 +9,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Tests\Fixtures\Modules\Notes\Enums\NoteWorkAbility;
 use Tests\Fixtures\Modules\Notes\Handlers\EngineCopyNoteHandler;
@@ -24,7 +24,7 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 #[HandledBy(EngineCopyNoteHandler::class)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
 #[Operation('engine_copy_note', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class EngineCopyNote extends Command implements HasAuthorizationSubject
+final readonly class EngineCopyNote extends Command implements AuthorizedCommand
 {
     public function __construct(public string $text) {}
 

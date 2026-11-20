@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with its own docked records.
  */
-enum DockedRecordAbility: string implements DeclaresClassLevelAbilities
+enum DockedRecordAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

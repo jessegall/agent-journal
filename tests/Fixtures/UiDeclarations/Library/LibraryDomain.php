@@ -6,8 +6,8 @@ namespace Tests\Fixtures\UiDeclarations\Library;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Ui\Contracts\ProvidesNavigation;
-use App\Ui\Contracts\ProvidesPages;
+use App\Ui\Contracts\NavigationProvider;
+use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -18,7 +18,7 @@ use App\Ui\Enums\SlotContextType;
 /**
  * A fixture domain with a list page, a record page offering a slot, an action and nested navigation.
  */
-final class LibraryDomain extends Domain implements ProvidesNavigation, ProvidesPages
+final class LibraryDomain extends Domain implements NavigationProvider, PageProvider
 {
     public function description(): string
     {

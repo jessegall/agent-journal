@@ -11,7 +11,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * A project owner rejects a proposal with a reason its author hears; an agent is refused.
+ * A project owner rejects a proposal with a reason its author is told; an agent is refused.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeRejectCommand extends Command

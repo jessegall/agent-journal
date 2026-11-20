@@ -82,7 +82,7 @@ final class SharingEventsTest extends TestCase
     /**
      * @var list<object>
      */
-    private array $heard = [];
+    private array $received = [];
 
     protected function setUp(): void
     {
@@ -93,7 +93,7 @@ final class SharingEventsTest extends TestCase
         $this->share = TestShares::grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::request($this->configuration, GatewayOperationType::Open);
         Event::listen([ShareActivated::class, ShareRevoked::class], function (object $event): void {
-            $this->heard[] = $event;
+            $this->received[] = $event;
         });
     }
 
@@ -112,20 +112,20 @@ final class SharingEventsTest extends TestCase
         $this->asSystem($outcome);
         $this->asSystem($outcome);
 
-        $this->assertCount(1, $this->heard);
-        $this->assertInstanceOf(ShareActivated::class, $this->heard[0]);
+        $this->assertCount(1, $this->received);
+        $this->assertInstanceOf(ShareActivated::class, $this->received[0]);
         $this->assertSame(
             [$this->share->id, $this->configuration->id, ShareState::Active, Share::FIRST_SCOPE_VERSION],
             [
-                $this->heard[0]->share->shareId,
-                $this->heard[0]->share->configurationId,
-                $this->heard[0]->share->state,
-                $this->heard[0]->share->scopeVersion,
+                $this->received[0]->share->shareId,
+                $this->received[0]->share->configurationId,
+                $this->received[0]->share->state,
+                $this->received[0]->share->scopeVersion,
             ],
         );
         $this->assertStringNotContainsString(
             (string) $this->share->fresh()?->token_ciphertext,
-            serialize($this->heard[0]),
+            serialize($this->received[0]),
         );
     }
 
@@ -144,13 +144,13 @@ final class SharingEventsTest extends TestCase
             $database->unprepared('DROP TRIGGER refuse_disabled_audit ON share_audits; DROP FUNCTION refuse_disabled_audit();');
         }
 
-        $this->assertSame([], $this->heard);
+        $this->assertSame([], $this->received);
         $this->assertSame(ShareState::Pending, $this->share->fresh()?->state);
 
         $this->asOwner(new RevokeShare($this->share->id, (string) Str::ulid()));
         $this->asOwner(new RevokeShare($this->share->id, (string) Str::ulid()));
 
-        $this->assertSame([ShareRevoked::class], array_map(fn (object $event) => $event::class, $this->heard));
+        $this->assertSame([ShareRevoked::class], array_map(fn (object $event) => $event::class, $this->received));
     }
 
     /**

@@ -6,13 +6,13 @@ namespace Tests\Fixtures\Domains\BadSettings;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Settings\Contracts\ProvidesSettings;
+use App\Settings\Contracts\SettingsProvider;
 use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Declarations\SettingGroup;
 use App\Settings\Declarations\StringSetting;
 use Tests\Fixtures\Settings\SettingsList;
 
-final class BadSettingsDomain extends Domain implements ProvidesSettings
+final class BadSettingsDomain extends Domain implements SettingsProvider
 {
     public function description(): string
     {

@@ -17,7 +17,7 @@ use PhpParser\PrettyPrinter\Standard;
 use Tests\Support\ScanCache\FileScan;
 
 /**
- * Every call of a file that raises or hears an event, with the type of event it passes.
+ * Every call of a file that raises or listens to an event, with the type of event it passes.
  *
  * @implements FileScan<EventCall>
  */
@@ -26,7 +26,7 @@ final readonly class EventCallScan implements FileScan
     private const array EVENT_FACADES = ['Illuminate\\Support\\Facades\\Event', 'Event'];
 
     /**
-     * Each call that raises or hears an event, and whether it raises.
+     * Each call that raises or listens to an event, and whether it raises.
      */
     private const array FACADE_METHODS = ['listen' => false, 'subscribe' => false, 'dispatch' => true, 'until' => true];
 

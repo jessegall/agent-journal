@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Writes a comment for the author it is given: the record is authorized first, a retry under the same submission key
- * returns the first comment, and listeners hear of it once it commits.
+ * returns the first comment, and listeners receive it once it commits.
  */
 final readonly class CommentWriter
 {

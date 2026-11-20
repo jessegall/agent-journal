@@ -49,7 +49,7 @@ Reads go through `ConversationResolver`: `detail`, `between` and `history` in ke
 its first reader and claim holder are absent until there is one.
 
 Facts (`MessageSent`, `MessageRead`, `MessageTakenUp`, `MessageAnswered`, `MessageAnswerRequired`, `MessageDismissed`,
-`MessageClaimReleased`) carry ids and actors, never a body, dispatch after commit and are `LogsListenerFailures`: a
+`MessageClaimReleased`) carry ids and actors, never a body, dispatch after commit and are `ListenerFailureLog`: a
 failing listener is logged and cannot undo the message.
 
 ## Attention and the hooks

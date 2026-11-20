@@ -6,12 +6,12 @@ namespace App\Communication\Events;
 
 use App\Assignments\Support\AssignmentReference;
 use App\Contracts\Event;
-use App\Contracts\LogsListenerFailures;
+use App\Contracts\ListenerFailureLog;
 
 /**
  * A stalled claim on a waiting message was ended by recovery; the message waits for another member to take it up.
  */
-final readonly class MessageClaimReleased implements Event, LogsListenerFailures
+final readonly class MessageClaimReleased implements Event, ListenerFailureLog
 {
     public function __construct(
         public string $messageId,

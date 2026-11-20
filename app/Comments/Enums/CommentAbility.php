@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Comments\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with comments.
  */
-enum CommentAbility: string implements DeclaresClassLevelAbilities
+enum CommentAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

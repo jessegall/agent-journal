@@ -57,7 +57,7 @@ Version 5's viewer is a set of **windows**. A module declared each window (`src/
 - a page of its own opened from the sidebar;
 - a part of the bar.
 
-Version 6 keeps all four. The thing a domain declares through `ProvidesPages` is such a window. Each window has one component and one Data, wherever it is shown. A record opens in version 5's inspector panel.
+Version 6 keeps all four. The thing a domain declares through `PageProvider` is such a window. Each window has one component and one Data, wherever it is shown. A record opens in version 5's inspector panel.
 
 ### 1.1 Shell (artboard 01)
 
@@ -197,9 +197,9 @@ Each window, section and count owns its state; one never affects another (sectio
 - `tests/Architecture/DomainDeclarationTest.php`: `SHARED_PLACE_FILES` lists every new foundation file: the interfaces, the values, the enums, `UiDeclarations.php` and the new exceptions.
 
 ```php
-interface ProvidesNavigation   { /** @return list<NavigationItem> */ public function navigation(): array; }
-interface ProvidesPages        { /** @return list<Page> */           public function pages(): array; }
-interface ProvidesSections     { /** @return list<Section> */        public function sections(): array; }
+interface NavigationProvider   { /** @return list<NavigationItem> */ public function navigation(): array; }
+interface PageProvider        { /** @return list<Page> */           public function pages(): array; }
+interface SectionProvider     { /** @return list<Section> */        public function sections(): array; }
 
 interface VisibilityCheck      { public function allows(Actor $actor): bool; }   // App\Actors\Contracts\Actor
 interface PageReader           { public function read(): Data; }                 // built per request: its own request class and the actor come through its constructor
@@ -234,7 +234,7 @@ None is bound globally to the shared interface. Web resolves the class the decla
 - the route name prefix `<name>.`;
 - the Vue root `<domain folder>/Resources/js`.
 
-`UiDeclarations` reads the three interfaces the way `registerStatesIn` reads `ProvidesStates` (`domains/Support/DomainRegistry.php:84-97`). At start-up it refuses:
+`UiDeclarations` reads the three interfaces the way `registerStatesIn` reads `StateProvider` (`domains/Support/DomainRegistry.php:84-97`). At start-up it refuses:
 
 - repeated keys or route names;
 - duplicate or unnormalised paths within an owner;
@@ -337,7 +337,7 @@ With no session chosen, or no record open, the section is not resolved and shows
 
 | Domain | Declares |
 | --- | --- |
-| WebDomain | Home (pinned first) and the slot `web.bar`. ProvidesPages for Home only: the shell, layouts and the generic page controller are its own code, not declarations. |
+| WebDomain | Home (pinned first) and the slot `web.bar`. PageProvider for Home only: the shell, layouts and the generic page controller are its own code, not declarations. |
 | ChatDomain (the user's example) | A navigation item "Chat" in group Work. The page `chat.conversation` (home position 10, with the slot `chat.dock` that takes a Session). The action `chat.send`. |
 | PlansDomain | A navigation item "Plans" with children Open, Waiting for you and Closed: one page `plans.list` with the query values `state=open`, `state=waiting` and `state=closed`. The record page `plans.plan` (`/plans/{plan}`, opens in the inspector, slot `plans.inspector` that takes a Record, parameter `plan`). The action `plans.start`. The section `plans.waiting` in `chat.dock`. |
 | RulesDomain | A navigation item "Rules" in group Agents, the page `rules.list`, and the actions `rules.approve` and `rules.deny` |
@@ -346,7 +346,7 @@ With no session chosen, or no record open, the section is not resolved and shows
 **Approval Notes needs.** To check the plan it is shown, `notes.on-plan` uses Plans' export, so the Notes domain must require Plans. Under rule 9 that edge needs the user's approval. The fixture requires nothing today, so the example stands only once that is approved; without it, Notes would offer the section only for Nothing or Session slots.
 
 ```php
-final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages
+final class ChatDomain implements Domain, NavigationProvider, PageProvider
 {
     public function navigation(): array
     {

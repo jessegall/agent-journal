@@ -4,35 +4,35 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
-use App\Bus\Contracts\ProvidesCommandMiddleware;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandMiddlewareProvider;
+use App\Bus\Contracts\CommandProvider;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
-use App\Domains\Contracts\ProvidesAssignables;
-use App\Domains\Contracts\ProvidesLinkRecords;
-use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Contracts\AssignableContributor;
+use App\Domains\Contracts\LinkRecordProvider;
+use App\Domains\Contracts\StateProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
-use App\Processes\Contracts\ProvidesCommandRules;
+use App\Processes\Contracts\CommandRuleProvider;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Values\ArgumentGrammar;
 use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ProgramSpellings;
-use App\Skills\Contracts\ProvidesSkillConditions;
-use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\SkillConditionProvider;
+use App\Skills\Contracts\SkillProvider;
 use App\Skills\Values\SkillConditionRegistration;
-use App\Ui\Contracts\ProvidesNavigation;
-use App\Ui\Contracts\ProvidesPages;
-use App\Ui\Contracts\ProvidesSections;
+use App\Ui\Contracts\NavigationProvider;
+use App\Ui\Contracts\PageProvider;
+use App\Ui\Contracts\SectionProvider;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
@@ -87,19 +87,19 @@ use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
  * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
 final class NotesDomain extends Domain implements
-    ProvidesAssignables,
-    ProvidesCommandMiddleware,
-    ProvidesCommandRules,
-    ProvidesCommands,
-    ProvidesLinkRecords,
-    ProvidesNavigation,
-    ProvidesNumberedModels,
-    ProvidesPages,
-    ProvidesPolicies,
-    ProvidesSections,
-    ProvidesSkillConditions,
-    ProvidesSkills,
-    ProvidesStates
+    AssignableContributor,
+    CommandMiddlewareProvider,
+    CommandRuleProvider,
+    CommandProvider,
+    LinkRecordProvider,
+    NavigationProvider,
+    NumberedModelProvider,
+    PageProvider,
+    PolicyProvider,
+    SectionProvider,
+    SkillConditionProvider,
+    SkillProvider,
+    StateProvider
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 

@@ -9,7 +9,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use Tests\Fixtures\Modules\Notes\Enums\NoteWorkAbility;
 use Tests\Fixtures\Modules\Notes\Handlers\ClearNotesHandler;
@@ -22,7 +22,7 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 #[HandledBy(ClearNotesHandler::class)]
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
 #[Operation('clear_notes', ResourceAreaType::JournalWork, AccessType::Delete)]
-final readonly class ClearNotes extends Command implements HasAuthorizationSubject
+final readonly class ClearNotes extends Command implements AuthorizedCommand
 {
     public function __construct() {}
 

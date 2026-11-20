@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Bus\Pipes;
 
 use App\Actors\Contracts\Policy;
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Contracts\AuthorizedCommand;
+use App\Bus\Contracts\ClassLevelAbilities;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandAuthorizationInvalid;
 use App\Bus\Exceptions\CommandAuthorizationMissing;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\HandlerInOtherOwner;
-use App\Bus\Support\BuiltFresh;
 use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandDeclarations;
 use App\Bus\Support\DeclaredCommand;
+use App\Bus\Support\SharedBindingCheck;
 use App\Pipelines\Contracts\Pipe;
 use ReflectionClass;
 use ReflectionMethod;
@@ -56,7 +56,7 @@ final readonly class CheckCommandHandlers implements Pipe
             throw CommandDeclarationInvalid::for($handler, 'a handler is a final class that can be built');
         }
 
-        BuiltFresh::check(
+        SharedBindingCheck::check(
             $handler,
             static fn (string $problem) => CommandDeclarationInvalid::for($handler, $problem),
         );
@@ -106,7 +106,7 @@ final readonly class CheckCommandHandlers implements Pipe
         string $handler,
         ReflectionMethod $handle,
     ): void {
-        if (! is_subclass_of($command, HasAuthorizationSubject::class)) {
+        if (! is_subclass_of($command, AuthorizedCommand::class)) {
             throw CommandAuthorizationInvalid::subjectMissing($command);
         }
 
@@ -134,7 +134,7 @@ final readonly class CheckCommandHandlers implements Pipe
             throw CommandAuthorizationInvalid::abilityMismatched($command, $ability::class, $abilityType);
         }
 
-        $classLevel = $ability instanceof DeclaresClassLevelAbilities && $ability->isClassLevel();
+        $classLevel = $ability instanceof ClassLevelAbilities && $ability->isClassLevel();
 
         if ($subject === 'string' && ! $classLevel) {
             throw CommandAuthorizationInvalid::classSubjectOnInstanceAbility($command, $ability::class);

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with the decks.
  */
-enum DeckAbility: string implements DeclaresClassLevelAbilities
+enum DeckAbility: string implements ClassLevelAbilities
 {
     case Work = 'work';
 

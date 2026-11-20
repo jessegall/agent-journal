@@ -10,7 +10,7 @@ use App\Assignments\Contracts\AssignmentPool;
 use App\Assignments\Contracts\AssignmentPoolFactory;
 use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Contracts\AutoAssigner;
-use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Enums\PoolInputType;
 use App\Assignments\Enums\PoolMembersType;
 use App\Assignments\Exceptions\InvalidRecordIds;
@@ -114,7 +114,7 @@ final class AutoAssignmentValuesTest extends TestCase
             AssignedWorkResolver::class,
             AssignedWorkProvider::class,
             AssignmentQuery::class,
-            ProvidesAutoAssignments::class,
+            AutoAssignmentProvider::class,
         ];
         $values = [
             OrderedRecordIds::class,

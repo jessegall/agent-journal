@@ -9,7 +9,7 @@ use Attribute;
 use BackedEnum;
 
 /**
- * The policy and ability a command is authorized by; the command names its subject through HasAuthorizationSubject.
+ * The policy and ability a command is authorized by; the command names its subject through AuthorizedCommand.
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class Authorize

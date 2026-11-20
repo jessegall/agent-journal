@@ -9,14 +9,14 @@ use App\Engine\Events\EngineTicked;
 use App\Engine\Support\EngineAccess;
 
 /**
- * An engine listener that keeps the events it heard and which scopes it was granted.
+ * An engine listener that keeps the events it received and which scopes it was granted.
  */
 final class RecordingEngineListener implements EngineListener
 {
     /**
      * @var list<EngineTicked>
      */
-    public array $heard = [];
+    public array $received = [];
 
     /**
      * @var list<string>
@@ -32,7 +32,7 @@ final class RecordingEngineListener implements EngineListener
 
     public function __invoke(EngineTicked $event): void
     {
-        $this->heard[] = $event;
+        $this->received[] = $event;
         $this->allowed = SeenScopes::of($this->access, ['fixtures.first', 'fixtures.second']);
     }
 }

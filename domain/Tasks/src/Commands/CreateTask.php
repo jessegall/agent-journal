@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\CreateTaskHandler;
 use Domain\Tasks\Models\Task;
@@ -26,7 +26,7 @@ use Spatie\LaravelData\Attributes\Validation\Max;
 #[HandledBy(CreateTaskHandler::class)]
 #[Authorize(TaskPolicy::class, TaskAbility::Work)]
 #[Operation('create_task', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class CreateTask extends Command implements HasAuthorizationSubject
+final readonly class CreateTask extends Command implements AuthorizedCommand
 {
     public function __construct(
         #[Max(Task::TITLE_CHARACTERS)]

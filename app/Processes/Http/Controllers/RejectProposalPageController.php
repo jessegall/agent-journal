@@ -10,7 +10,7 @@ use App\Processes\Commands\RejectRuleProposal;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * The owner rejects a proposal of the request shown, with the reason its author hears.
+ * The owner rejects a proposal of the request shown, with the reason its author is told.
  */
 final readonly class RejectProposalPageController
 {

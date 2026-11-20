@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Listeners;
 
 /**
- * A test listener that counts the events it heard.
+ * A test listener that counts the events it received.
  */
 final class CountingListener
 {
-    public static int $heard = 0;
+    public static int $received = 0;
 
     public function handle(object $event): void
     {
-        self::$heard++;
+        self::$received++;
     }
 }

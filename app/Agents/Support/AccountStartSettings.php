@@ -50,7 +50,7 @@ final class AccountStartSettings
         $this->environment[] = new StartSetting($name, $value);
     }
 
-    public function pointAtEmptyFolder(string $name): void
+    public function setEmptyFolderVariable(string $name): void
     {
         $this->emptyFolderVariables[] = $name;
     }

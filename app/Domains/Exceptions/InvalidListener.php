@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Exceptions;
 
 /**
- * A listener the application may not register: it hears an event its domain may not see, or the event cache no
+ * A listener the application may not register: it listens to an event its domain may not see, or the event cache no
  * longer matches the code.
  */
 final class InvalidListener extends DomainDeclarationError
@@ -14,7 +14,7 @@ final class InvalidListener extends DomainDeclarationError
     {
         return new self(
             sprintf(
-                '%s (%s) hears %s, which %s does not export under events; %s must export it, or the listener must go.',
+                '%s (%s) listens to %s, which %s does not export under events; %s must export it, or the listener must go.',
                 $listener,
                 $method,
                 $event,
@@ -28,7 +28,7 @@ final class InvalidListener extends DomainDeclarationError
     {
         return new self(
             sprintf(
-                '%s hears %s of %s, a domain its own domain does not require; hear it through an event of a domain it requires, or move the listener.',
+                '%s listens to %s of %s, a domain its own domain does not require; listen to it through an event of a domain it requires, or move the listener.',
                 $listener,
                 $event,
                 $owner,
@@ -40,7 +40,7 @@ final class InvalidListener extends DomainDeclarationError
     {
         return new self(
             sprintf(
-                '%s hears %s, which is not a concrete class implementing App\\Contracts\\Event; type the listener on the concrete event.',
+                '%s listens to %s, which is not a concrete class implementing App\\Contracts\\Event; type the listener on the concrete event.',
                 $listener,
                 $event,
             ),
@@ -51,7 +51,7 @@ final class InvalidListener extends DomainDeclarationError
     {
         return new self(
             sprintf(
-                '%s hears %s, but the listener or the event belongs to no domain and not to Core; put the listener in a Listeners folder of its owner.',
+                '%s listens to %s, but the listener or the event belongs to no domain and not to Core; put the listener in a Listeners folder of its owner.',
                 $listener,
                 $event,
             ),
@@ -61,7 +61,7 @@ final class InvalidListener extends DomainDeclarationError
     public static function staleCache(string $listener, string $event): self
     {
         return new self(
-            "{$listener} no longer hears {$event} as the event map says; run php artisan event:cache to rebuild it.",
+            "{$listener} no longer listens to {$event} as the event map says; run php artisan event:cache to rebuild it.",
         );
     }
 

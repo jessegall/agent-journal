@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
-use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
 use Tests\Fixtures\Modules\Ledger\Bootstrappers\RegisterLedgerLinkTypes;
 use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger;
@@ -23,7 +23,7 @@ use Tests\Fixtures\Modules\Ledger\Policies\LedgerPolicy;
 /**
  * A test module of numbered records: ledgers numbered across the journal, and entries numbered within their ledger.
  */
-final class LedgerDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesPolicies
+final class LedgerDomain extends Domain implements CommandProvider, NumberedModelProvider, PolicyProvider
 {
     use HasNumberedModels;
 

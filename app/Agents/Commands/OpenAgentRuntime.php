@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Bus\Attributes\Operation;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use App\Agents\Contracts\StartsAgent;
+use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\DriverType;
 use App\Agents\Handlers\OpenAgentRuntimeHandler;
@@ -16,8 +13,11 @@ use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Attributes\Operation;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 
 /**
  * Opens a runtime for an agent on an enrolled host: a user may pick any host and permitted folder, an agent only
@@ -29,7 +29,7 @@ use App\Bus\Support\Command;
 #[HandledBy(OpenAgentRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
 #[Operation('open_agent_runtime', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class OpenAgentRuntime extends Command implements HasAuthorizationSubject, StartsAgent
+final readonly class OpenAgentRuntime extends Command implements AuthorizedCommand, AgentStartCommand
 {
     public function __construct(
         public string $agentId,

@@ -7,7 +7,7 @@ namespace App\Http\Middleware\Web;
 use App\Actors\Support\ActorContext;
 use App\Sharing\Contracts\SharePolicy;
 use App\Web\Contracts\CurrentUserResolver;
-use App\Web\Contracts\RecordsNavigation;
+use App\Web\Contracts\NavigationRecords;
 use App\Web\Data\CurrentUserData;
 use App\Web\Data\SharedData;
 use Illuminate\Container\Attributes\Config;
@@ -33,7 +33,7 @@ class HandleInertiaRequests extends Middleware
         #[Config('app.name')]
         private readonly string $appName,
         private readonly CurrentUserResolver $users,
-        private readonly RecordsNavigation $navigation,
+        private readonly NavigationRecords $navigation,
         private readonly ResponseFactory $inertia,
         private readonly SharePolicy $sharing,
     ) {}

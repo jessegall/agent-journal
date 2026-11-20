@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Ui\Declarations;
 
-use App\Ui\Contracts\ProvidesNavigation;
-use App\Ui\Contracts\ProvidesPages;
-use App\Ui\Contracts\ProvidesSections;
+use App\Ui\Contracts\NavigationProvider;
+use App\Ui\Contracts\PageProvider;
+use App\Ui\Contracts\SectionProvider;
 use App\Ui\Exceptions\UiComponentMissing;
 use App\Ui\Exceptions\UiKeyInvalid;
 use App\Ui\Exceptions\UiResolverInvalid;
@@ -34,7 +34,7 @@ final readonly class DomainUi
     ) {}
 
     /**
-     * Reads what a domain or module declares through ProvidesPages, ProvidesNavigation and ProvidesSections, given its
+     * Reads what a domain or module declares through PageProvider, NavigationProvider and SectionProvider, given its
      * name, namespace and folder.
      */
     public static function of(object $domain, string $name, string $namespace, string $scriptFolder): self
@@ -43,9 +43,9 @@ final readonly class DomainUi
             $name,
             $namespace,
             $scriptFolder,
-            pages: $domain instanceof ProvidesPages ? $domain->pages() : [],
-            navigation: $domain instanceof ProvidesNavigation ? $domain->navigation() : [],
-            sections: $domain instanceof ProvidesSections ? $domain->sections() : [],
+            pages: $domain instanceof PageProvider ? $domain->pages() : [],
+            navigation: $domain instanceof NavigationProvider ? $domain->navigation() : [],
+            sections: $domain instanceof SectionProvider ? $domain->sections() : [],
         );
     }
 

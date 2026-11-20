@@ -6,7 +6,7 @@ program reads are a projection of those sources, written by the journal.
 
 ## Declaring a skill in a domain or module
 
-- The owner's domain class implements `App\Skills\Contracts\ProvidesSkills` and lists its skill classes in `skills()`.
+- The owner's domain class implements `App\Skills\Contracts\SkillProvider` and lists its skill classes in `skills()`.
   Core lists its own in `App\Skills\Support\CoreSkills`.
 - A skill class implements `App\Skills\Contracts\Skill`: its key, name, description, condition and
   `sections(): SkillSections`. Keys are lowercase words joined by hyphens; `journal-*` is reserved for Core and the
@@ -33,7 +33,7 @@ program reads are a projection of those sources, written by the journal.
 A skill's condition is a tree of `App\Skills\Conditions\Conditions`: `everyone()`, `mainAgent()`, `profiles(...)`,
 `agentTypes(...)`, `programs(...)`, `providers(...)`, `environments(...)`, `named(key, parameters)` and the groups
 `all`, `any` and `not`. A result is match, no match or unavailable; unavailable never becomes a match. A domain adds
-named conditions through `ProvidesSkillConditions`, each evaluator reading only its own facts; a write inside an
+named conditions through `SkillConditionProvider`, each evaluator reading only its own facts; a write inside an
 evaluation is refused. A profile's skill allowlist narrows the selection (absent keeps all, empty keeps none), and its
 required skills must be selected or the start is refused naming the skill.
 

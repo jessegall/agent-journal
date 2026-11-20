@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Skills\Enums;
 
-use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\ClassLevelAbilities;
 
 /**
  * What an actor may do with the stored skills.
  */
-enum SkillAbility: string implements DeclaresClassLevelAbilities
+enum SkillAbility: string implements ClassLevelAbilities
 {
     case Administer = 'administer';
     case Work = 'work';

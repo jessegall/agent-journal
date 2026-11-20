@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards;
 
-use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
-use App\Bus\Contracts\ProvidesCommandMiddleware;
-use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\CommandMiddlewareProvider;
+use App\Bus\Contracts\CommandProvider;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Domains\Support\Domain;
@@ -22,7 +22,7 @@ use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
 /**
  * A second test module standing in for another owner of commands: one exported, one private.
  */
-final class CardsDomain extends Domain implements ProvidesCommandMiddleware, ProvidesCommands, ProvidesPolicies
+final class CardsDomain extends Domain implements CommandMiddlewareProvider, CommandProvider, PolicyProvider
 {
     public function description(): string
     {

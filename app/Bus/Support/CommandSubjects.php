@@ -6,8 +6,8 @@ namespace App\Bus\Support;
 
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Exceptions\ActorNotAllowed;
+use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Contracts\Command;
-use App\Bus\Contracts\HasAuthorizationSubject;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 
@@ -41,7 +41,7 @@ final class CommandSubjects
         $authorization = $this->registry->authorizationOf($call->name());
         $command = $call->command();
 
-        if ($authorization->isEmpty() || ! $command instanceof HasAuthorizationSubject) {
+        if ($authorization->isEmpty() || ! $command instanceof AuthorizedCommand) {
             return $call;
         }
 
