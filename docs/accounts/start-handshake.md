@@ -77,6 +77,8 @@ A row becomes `supported` only with a native run recorded here: the exact comman
 
 Required-container admission checks the account transport before the runtime, so an unverified or unsupported
 account combination answers `account-container-unsupported` before account selection or host preparation.
+Activating a required-container profile that names a program checks the same evidence. A profile with no program
+supplies policy for a later selection. Every required-container start checks its selected program again.
 The launch network, protected bridge, and native launch evidence are tracked in task 1357, which depends on
 the protected host in task 258.
 

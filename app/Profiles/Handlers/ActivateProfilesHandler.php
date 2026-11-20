@@ -8,6 +8,8 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Support\ContainerAdmission;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Contracts\ProfileResolver;
@@ -39,6 +41,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         private ProfileResolver $profiles,
         private PolicyCatalogue $catalogue,
         private SupervisorDefinitions $supervisors,
+        private ContainerAdmission $containers,
     ) {}
 
     /**
@@ -76,6 +79,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         );
         foreach ($definitions as $definition) {
             $definition->authorization->requireGrantableIn($this->catalogue);
+            $this->assertContainerSupport($definition);
         }
 
         $coverage = $this->supervisors->validate(
@@ -128,5 +132,14 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         return $definition->differsFrom($this->profiles->snapshotFor($definition->key))
             ? ProfileChangeType::Changed
             : ProfileChangeType::Unchanged;
+    }
+
+    private function assertContainerSupport(ProfileDefinition $definition): void
+    {
+        $start = $definition->start;
+
+        if ($start->execution->mode === ExecutionModeType::RequiredContainer && $start->program !== null) {
+            $this->containers->assertSupported($start->program);
+        }
     }
 }
