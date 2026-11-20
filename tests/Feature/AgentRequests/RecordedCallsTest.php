@@ -8,7 +8,7 @@ use App\AgentRequests\Exceptions\StateBlocked;
 use App\AgentRequests\Pipelines\RunSignedCallPipeline;
 use App\AgentRequests\Values\CallToSend;
 use App\AgentRequests\Values\CommandReport;
-use App\Pipelines\Support\Pipelines;
+use App\Pipelines\Support\PipelineRunner;
 use Tests\Fixtures\AgentRequests\NoteAnswer;
 use Tests\Fixtures\AgentRequests\WriteNoteCall;
 use Tests\Support\RecordedCalls;
@@ -24,7 +24,7 @@ final class RecordedCallsTest extends TestCase
     {
         $calls = RecordedCalls::bind()->answer(WriteNoteCall::class, new NoteAnswer('note-1'));
 
-        $report = $this->app->make(Pipelines::class)->run(
+        $report = $this->app->make(PipelineRunner::class)->run(
             RunSignedCallPipeline::class,
             new CallToSend($this->noteCall(), true),
             CommandReport::class,
@@ -42,7 +42,7 @@ final class RecordedCallsTest extends TestCase
 
         $this->expectException(StateBlocked::class);
 
-        $this->app->make(Pipelines::class)->run(
+        $this->app->make(PipelineRunner::class)->run(
             RunSignedCallPipeline::class,
             new CallToSend($this->noteCall()),
             CommandReport::class,

@@ -16,7 +16,7 @@ use App\Domains\Support\DomainSwitches;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Domains\Support\SettingsDomainAvailability;
 use App\Mcp\Support\McpCatalogue;
-use App\Pipelines\Contracts\RunsPipelines;
+use App\Pipelines\Contracts\PipelineRunner;
 use App\Processes\Rules\CoreRules;
 use App\Processes\Support\CommandRuleRegistry;
 use App\Settings\Support\CoreSettings;
@@ -50,7 +50,7 @@ class DomainServiceProvider extends ServiceProvider
             CommandRegistry::class,
             fn (Application $app) => $registry->commandDeclarations(
                 CoreCommands::owner(),
-                $app->make(RunsPipelines::class),
+                $app->make(PipelineRunner::class),
             ),
         );
         $this->app->singleton(McpCatalogue::class, fn () => $this->mcpCatalogue($registry));

@@ -21,8 +21,8 @@ use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
 use App\Mcp\Models\RetainedPage;
-use App\Pipelines\Contracts\RunsPipelines;
-use App\Pipelines\Support\Pipelines;
+use App\Pipelines\Contracts\PipelineRunner as PipelineRunnerContract;
+use App\Pipelines\Support\PipelineRunner;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\Profile;
@@ -73,7 +73,7 @@ final class CoreServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->bind(RunsPipelines::class, Pipelines::class);
+        $this->app->bind(PipelineRunnerContract::class, PipelineRunner::class);
     }
 
     public function boot(LinkTypeRegistry $links): void

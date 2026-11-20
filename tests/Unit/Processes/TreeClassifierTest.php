@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Pipelines\Contracts\RunsPipelines;
-use App\Pipelines\Support\Pipelines;
+use App\Pipelines\Contracts\PipelineRunner as PipelineRunnerContract;
+use App\Pipelines\Support\PipelineRunner;
 use App\Processes\Classification\RedirectFacts;
 use App\Processes\Classification\TreeClassifier;
 use App\Processes\Enums\CommandClass;
@@ -154,7 +154,7 @@ final class TreeClassifierTest extends TestCase
     private function classify(string $line): Classification
     {
         $container = new Container();
-        $container->bind(RunsPipelines::class, Pipelines::class);
+        $container->bind(PipelineRunnerContract::class, PipelineRunner::class);
         $container->instance(ContainerContract::class, $container);
         $parser = $container->make(TreeParser::class);
         $tree = $parser->parse($line, ShellDialect::Bash);

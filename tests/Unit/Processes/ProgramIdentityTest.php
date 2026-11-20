@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Pipelines\Contracts\RunsPipelines;
-use App\Pipelines\Support\Pipelines;
+use App\Pipelines\Contracts\PipelineRunner as PipelineRunnerContract;
+use App\Pipelines\Support\PipelineRunner;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Support\ExecutableCheck;
@@ -135,7 +135,7 @@ final class ProgramIdentityTest extends TestCase
     private function parser(): TreeParser
     {
         $container = new Container();
-        $container->bind(RunsPipelines::class, Pipelines::class);
+        $container->bind(PipelineRunnerContract::class, PipelineRunner::class);
         $container->instance(ContainerContract::class, $container);
 
         return $container->make(TreeParser::class);

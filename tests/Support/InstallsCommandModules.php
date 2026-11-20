@@ -13,7 +13,7 @@ use App\CoreCommands;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use App\Numbers\Support\NumberedTypeRegistry;
-use App\Pipelines\Contracts\RunsPipelines;
+use App\Pipelines\Contracts\PipelineRunner;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
@@ -83,7 +83,7 @@ trait InstallsCommandModules
 
         $this->app->instance(CommandRegistry::class, CommandRegistry::from(
             [CoreCommands::owner(), ...$owners],
-            $this->app->make(RunsPipelines::class),
+            $this->app->make(PipelineRunner::class),
         ));
         $this->registerPoliciesOf($domains, [CardsDomain::class, LedgerDomain::class, NotesDomain::class]);
         $this->app->forgetScopedInstances();
@@ -134,7 +134,7 @@ trait InstallsCommandModules
         $this->app->instance(DomainRegistry::class, $domains);
         $this->app->instance(CommandRegistry::class, $domains->commandDeclarations(
             CoreCommands::owner(),
-            $this->app->make(RunsPipelines::class),
+            $this->app->make(PipelineRunner::class),
         ));
 
         foreach ($moduleClasses as $moduleClass) {

@@ -6,7 +6,7 @@ namespace App\Processes\Console;
 
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\AgentRequests\Values\CommandReport;
-use App\Pipelines\Support\Pipelines;
+use App\Pipelines\Support\PipelineRunner;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Calls\ProcessCalls;
 use App\Processes\Enums\JournalRouteType;
@@ -28,7 +28,7 @@ final class ReaderSampleRunCommand extends Command
 
     protected $description = 'Run the approved evidence sample of a command request once';
 
-    public function handle(ProcessCalls $processes, Pipelines $pipelines): int
+    public function handle(ProcessCalls $processes, PipelineRunner $pipelines): int
     {
         $commandRequest = (string) $this->argument('request');
         $key = $this->requestKey();
