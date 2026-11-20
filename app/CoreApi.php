@@ -1777,6 +1777,8 @@ final class CoreApi
                 ProfileKey::class,
                 ScriptSource::class,
                 ScriptContext::class,
+                ScriptObject::class,
+                ScriptMember::class,
                 ProfileBase::class,
                 OfflineReplyMode::class,
                 ProfileSnapshot::class,
@@ -2184,8 +2186,6 @@ final class CoreApi
                 SkillOwnerRequired::class,
             )
             ->support(
-                ScriptObject::class,
-                ScriptMember::class,
                 BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,

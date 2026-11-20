@@ -131,7 +131,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'authorization' => $definition->authorization,
             'supervisor' => $definition->supervisor,
             'script_source' => $source->text,
-            'script_commands' => $source->commands,
+            'script_commands' => $source->definitions(),
             'compiled_script' => $compiled?->graph,
             'script_definition_digest' => $compiled?->definitionDigest,
             'author_type' => $author->type,

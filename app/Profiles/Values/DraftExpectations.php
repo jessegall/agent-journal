@@ -8,7 +8,7 @@ use App\Profiles\Exceptions\ProfileDraftRefused;
 
 final readonly class DraftExpectations
 {
-    /** @param array<string, int> $revisions */
+    /** @param list<ExpectedDraftRevision> $revisions */
     public function __construct(public array $revisions = []) {}
 
     /** @param list<string> $options */
@@ -25,14 +25,20 @@ final readonly class DraftExpectations
                 throw ProfileDraftRefused::invalidExpectation($option);
             }
 
-            $revisions[$key->key] = (int) $revision;
+            $revisions[$key->key] = new ExpectedDraftRevision($key, (int) $revision);
         }
 
-        return new self($revisions);
+        return new self(array_values($revisions));
     }
 
     public function revisionOf(ProfileKey $profile): int
     {
-        return $this->revisions[$profile->key] ?? 0;
+        foreach ($this->revisions as $expected) {
+            if ($expected->profile->key === $profile->key) {
+                return $expected->revision;
+            }
+        }
+
+        return 0;
     }
 }

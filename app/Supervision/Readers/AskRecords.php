@@ -69,7 +69,6 @@ final readonly class AskRecords implements AskReader
             'id' => $ask->id,
             'type' => $ask->type_key,
             'body' => $ask->body,
-            'work' => $ask->work,
             'open' => $ask->open,
             'obligation' => $assignments->forRecord($ask->assignmentIdentity())
                 ->map(fn (Assignment $assignment) => $assignment->holder()->isSameAs($holder))

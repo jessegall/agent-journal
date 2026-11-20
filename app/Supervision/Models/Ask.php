@@ -26,7 +26,6 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 use PhpOption\Option;
 
 /**
@@ -56,7 +55,7 @@ final class Ask extends Model implements Assignable, ReadableModel
 
     public static function newReference(): AskReference
     {
-        return new AskReference((string) Str::ulid());
+        return new AskReference(new self()->newUniqueId());
     }
 
     /** @return Option<self> */

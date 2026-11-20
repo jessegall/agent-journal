@@ -66,7 +66,7 @@ final class ProfileDraftTest extends TestCase
         $latest = ProfileDraftRevision::query()->where('revision', 2)->sole();
         $this->assertSame($actor->id, $latest->getAttribute('author_id'));
         $this->assertEquals($draft, $latest->scriptSource());
-        $this->assertSame(CommandDirectory::Workspace, $latest->scriptSource()->commands['tests']->directory);
+        $this->assertSame(CommandDirectory::Workspace, $latest->scriptSource()->definitions()['tests']->directory);
         $this->assertThrows(fn () => $commands->run(new ActivateProfiles($this->proposal())), ActorNotAllowed::class);
     }
 
@@ -77,13 +77,13 @@ final class ProfileDraftTest extends TestCase
         $profile = ProfileKey::from('draft-test');
 
         $commands->run(new SaveProfileDraft($profile, 0, new ScriptSource()));
-        $activation = new ActivateProfiles($this->proposal(), new DraftExpectations(['draft-test' => 1]));
+        $activation = new ActivateProfiles($this->proposal(), DraftExpectations::fromOptions(['draft-test=1']));
         $first = $commands->run($activation);
         $this->assertTrue($first->profiles[0]->script->after->isEmpty());
 
         $commands->run(new SaveProfileDraft($profile, 1, new ScriptSource('RUN tests')));
         $this->assertThrows(fn () => $commands->run($activation), ProfileDraftRefused::class, 'revision 2');
-        $updated = new ActivateProfiles($this->proposal(), new DraftExpectations(['draft-test' => 2]));
+        $updated = new ActivateProfiles($this->proposal(), DraftExpectations::fromOptions(['draft-test=2']));
         $this->assertThrows(
             fn () => $commands->run($updated),
             InvalidScript::class,

@@ -17,6 +17,7 @@ final readonly class NamedCommand implements JsonSerializable
      * @param non-empty-list<AccessType> $effects
      */
     private function __construct(
+        public string $key,
         public string $executable,
         public array $arguments,
         public CommandDirectory $directory,
@@ -47,6 +48,7 @@ final readonly class NamedCommand implements JsonSerializable
         }
 
         return new self(
+            $key,
             $executable,
             $arguments,
             CommandDirectory::Workspace,

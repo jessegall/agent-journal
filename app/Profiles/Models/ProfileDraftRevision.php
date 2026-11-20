@@ -43,7 +43,7 @@ final class ProfileDraftRevision extends Model implements ReadableModel
             'profile_key' => $draft->profile_key,
             'revision' => $draft->revision + 1,
             'source' => $script->text,
-            'commands' => $script->commands,
+            'commands' => $script->definitions(),
             'author_type' => $author->type,
             'author_id' => $author->id,
         ]);
