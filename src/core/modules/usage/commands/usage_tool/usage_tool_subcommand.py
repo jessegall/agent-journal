@@ -75,8 +75,10 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
             return ""
         if newest_process.queued_at is not None:
             return QUEUE_LINE
-        parts = tuple(self.queries.query(ProcessPart).filter(process_id=newest_process.id).ordered("position").get())
-        return next((part.text for state in (PartState.RUNNING, PartState.WAITING) for part in parts if part.state is state), parts[-1].text if parts else "")
+        parts = self.queries.query(ProcessPart).filter(process_id=newest_process.id)
+        shown = next((part for state in (PartState.RUNNING, PartState.WAITING) if (part := parts.filter(state=state).ordered("position").first()) is not None),
+                     parts.descending("position").first())
+        return shown.text if shown is not None else ""
 
     def line_changes(self, call: HookCall) -> str:
         return f"+{call.lines_added} -{call.lines_removed}" if call.lines_added or call.lines_removed else ""

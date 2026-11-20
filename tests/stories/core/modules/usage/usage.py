@@ -22,6 +22,8 @@ from engine.testing.expectations.expect_row import expect_row
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 HELPER_START = "agent start s-2 claude worker --parent {parent} --environment main"
+# more parts than one read may return
+LONG_CHAIN_PARTS = 55
 
 
 @pytest.fixture
@@ -368,3 +370,13 @@ def test_an_open_session_that_names_no_window_shows_no_figure_from_an_earlier_ac
     story.expect_text("usage show --environment main", "plan: 7 days 85% used", actor=story.user)
     save_status_file(story, "s-1", {"context_window": {"used_percentage": 3}})
     story.expect_absent("usage show --environment main", "plan:", actor=story.user)
+
+
+def test_the_tool_of_a_chain_longer_than_a_read_names_the_part_that_runs_now(new_story):
+    story = new_story(fixture=UserJoined)
+    words = [f"step-{number}" for number in range(1, LONG_CHAIN_PARTS + 1)]
+    line = " && ".join(f"echo {word}" for word in words)
+    story.hook("s-1", HookSamples.shell(line, *(ShellPart("echo", CommandCategory.READ, [word]) for word in words)))
+    process = start_process(story, line)
+    story.run_command(StartProcessPart(process.id, LONG_CHAIN_PARTS - 1), story.agent, environment_id=process.environment_id)
+    story.expect_text("usage tool --environment main", f"Bash echo step-{LONG_CHAIN_PARTS - 1}", actor=story.user)
