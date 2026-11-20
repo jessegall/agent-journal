@@ -14,7 +14,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One request on a runtime's ledger as stored: its place, progress and outcome, the timing expected when it was
- * accepted and the time it last changed, why it is held, and the recoveries a person may run on it now, with the
+ * accepted and the time it last changed, why it is held, and the recoveries a user may run on it now, with the
  * row version they must name.
  */
 #[TypeScript]

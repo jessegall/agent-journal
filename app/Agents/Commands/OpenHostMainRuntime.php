@@ -13,7 +13,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * Opens an agent's main runtime as a terminal on the host the person attached from, for journal-agent attach. Run for
+ * Opens an agent's main runtime as a terminal on the host the user attached from, for journal-agent attach. Run for
  * an authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<OpenedRuntime>

@@ -303,9 +303,9 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * The program's sign-in started and now waits for its person; only from here may a verified result complete it.
+     * The program's sign-in started and now waits for its user; only from here may a verified result complete it.
      */
-    public function waitForPerson(): void
+    public function waitForUser(): void
     {
         if ($this->state !== SignInState::Starting) {
             return;

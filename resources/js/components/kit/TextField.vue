@@ -2,7 +2,7 @@
 import FormField from '@/components/kit/FormField.vue';
 
 /**
- * A labelled one-line text field. A code field shows what a person types from another screen, such as a sign-in
+ * A labelled one-line text field. A code field shows what a user types from another screen, such as a sign-in
  * code, in a fixed-width face, and is never filled in by the browser or kept by it.
  */
 const props = withDefaults(

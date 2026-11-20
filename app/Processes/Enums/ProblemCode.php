@@ -35,7 +35,7 @@ enum ProblemCode: string
     }
 
     /**
-     * The next action a person or agent takes for this problem.
+     * The next action a user or agent takes for this problem.
      */
     public function nextAction(): string
     {

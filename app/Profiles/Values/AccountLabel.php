@@ -7,7 +7,7 @@ namespace App\Profiles\Values;
 use App\Profiles\Exceptions\AccountLabelInvalid;
 
 /**
- * The name a person gives a saved account, trimmed, 1 to 80 characters, with no control character or path separator,
+ * The name a user gives a saved account, trimmed, 1 to 80 characters, with no control character or path separator,
  * so it never becomes a path or a command. Two accounts of a program never share its case-folded form.
  */
 final readonly class AccountLabel

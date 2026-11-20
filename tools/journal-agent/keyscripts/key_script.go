@@ -28,8 +28,8 @@ const (
 	Scroll Action = "scroll"
 	// WaitForScreen sends nothing and only waits for its expected screen.
 	WaitForScreen Action = "wait-for-screen"
-	// WaitForHuman stops the script for the person to act, with the step named.
-	WaitForHuman Action = "wait-for-human"
+	// WaitForUser stops the script for the user to act, with the step named.
+	WaitForUser Action = "wait-for-user"
 	// SelectEntry reads the menu on screen, finds the entry by its label and moves the highlight onto it from the
 	// highlighted entry, one confirmed move at a time; a label not on screen sends nothing.
 	SelectEntry Action = "select-entry"

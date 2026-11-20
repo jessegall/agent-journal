@@ -20,7 +20,7 @@ type fakeJournal struct {
 	holds    []string
 	exits    int
 	raises   []client.NavigationRaise
-	// interrupts are the navigation requests the host reported the person took over.
+	// interrupts are the navigation requests the host reported the user took over.
 	interrupts []string
 	// replayed are the library entries the host reported it replayed.
 	replayed []string

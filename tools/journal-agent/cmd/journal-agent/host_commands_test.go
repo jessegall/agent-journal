@@ -130,7 +130,7 @@ func TestAKeyScriptOfAServedTerminalRunsOnTheLiveScreenAndGate(t *testing.T) {
 	}
 }
 
-func TestAPersonAttachedToAServedTerminalTypesThroughItsGate(t *testing.T) {
+func TestAUserAttachedToAServedTerminalTypesThroughItsGate(t *testing.T) {
 	socket, opened, program := openedTerminal(t)
 
 	connection, err := net.Dial("unix", socket.Path())
@@ -150,8 +150,8 @@ func TestAPersonAttachedToAServedTerminalTypesThroughItsGate(t *testing.T) {
 	for program.keys() != "hi" && time.Now().Before(deadline) {
 		time.Sleep(10 * time.Millisecond)
 	}
-	if program.keys() != "hi" || opened.Gate.HumanInputs() != 1 {
-		t.Fatalf("the program got %q after %d inputs of the person", program.keys(), opened.Gate.HumanInputs())
+	if program.keys() != "hi" || opened.Gate.UserInputs() != 1 {
+		t.Fatalf("the program got %q after %d inputs of the user", program.keys(), opened.Gate.UserInputs())
 	}
 }
 

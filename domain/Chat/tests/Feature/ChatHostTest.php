@@ -17,7 +17,7 @@ use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
- * Chat asks from the person's own inbox to the chosen agent's inbox and shows the exchange between those two
+ * Chat asks from the user's own inbox to the chosen agent's inbox and shows the exchange between those two
  * inboxes, so Core's messages are the conversation Chat displays.
  */
 final class ChatHostTest extends TestCase
@@ -44,7 +44,7 @@ final class ChatHostTest extends TestCase
         'links',
     ];
 
-    public function test_a_person_sends_to_the_chosen_agent_and_sees_the_pair_exchange(): void
+    public function test_a_user_sends_to_the_chosen_agent_and_sees_the_pair_exchange(): void
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));

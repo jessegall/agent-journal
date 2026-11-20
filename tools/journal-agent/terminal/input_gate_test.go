@@ -46,14 +46,14 @@ func newGate(t *testing.T) (*InputGate, *screen.EmulatorReader, *bytes.Buffer) {
 	return NewInputGate(program, reader, layout.Composer, func() time.Time { return time.Unix(100, 0) }), reader, program
 }
 
-func TestThePersonTypingDuringADriverWriteWinsAndTheDriverLineIsNotSubmitted(t *testing.T) {
+func TestTheUserTypingDuringADriverWriteWinsAndTheDriverLineIsNotSubmitted(t *testing.T) {
 	gate, reader, program := newGate(t)
 	line, err := gate.Type("request-1", 1, "run the tests", reader.Generation("composer"))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if err := gate.Human([]byte("x")); err != nil {
+	if err := gate.UserTyped([]byte("x")); err != nil {
 		t.Fatal(err)
 	}
 	reader.Feed([]byte("run the tests"))
@@ -62,7 +62,7 @@ func TestThePersonTypingDuringADriverWriteWinsAndTheDriverLineIsNotSubmitted(t *
 		t.Fatalf("a typed-over driver line was submitted: %v", err)
 	}
 	if program.String() != "run the testsx" {
-		t.Fatalf("the program got %q: the person's key must pass through and no Enter may follow", program.String())
+		t.Fatalf("the program got %q: the user's key must pass through and no Enter may follow", program.String())
 	}
 }
 
@@ -85,7 +85,7 @@ func TestADriverLineWithItsEchoIsSubmittedOnce(t *testing.T) {
 	}
 }
 
-func TestALostEchoIsDeliveryUncertainNeverHumanInput(t *testing.T) {
+func TestALostEchoIsDeliveryUncertainNeverUserInput(t *testing.T) {
 	gate, reader, program := newGate(t)
 	line, err := gate.Type("request-1", 1, "hello", reader.Generation("composer"))
 	if err != nil {
@@ -96,21 +96,21 @@ func TestALostEchoIsDeliveryUncertainNeverHumanInput(t *testing.T) {
 		t.Fatalf("a line with no echo read as %s, %v", delivery, err)
 	}
 	if _, found := gate.Draft(); found {
-		t.Fatal("the driver's own unechoed line was taken for the person's draft")
+		t.Fatal("the driver's own unechoed line was taken for the user's draft")
 	}
 	if program.String() != "hello" {
 		t.Fatalf("the program got %q: no Enter may follow a lost echo", program.String())
 	}
 }
 
-func TestThePersonsDraftIsNeverErasedOrRetyped(t *testing.T) {
+func TestTheUsersDraftIsNeverErasedOrRetyped(t *testing.T) {
 	gate, reader, program := newGate(t)
-	gate.Human([]byte("my draft"))
+	gate.UserTyped([]byte("my draft"))
 	reader.Feed([]byte("my draft"))
 
 	_, err := gate.Type("request-1", 1, "journal work", reader.Generation("composer"))
 	if !errors.Is(err, ErrComposerHeld) {
-		t.Fatalf("a driver line was typed over the person's draft: %v", err)
+		t.Fatalf("a driver line was typed over the user's draft: %v", err)
 	}
 	draft, found := gate.Draft()
 	if !found || draft.Text == "" || draft.Age(time.Unix(160, 0)) != time.Minute {
@@ -136,16 +136,16 @@ func TestADriverLineIsRefusedOnAComposerThatChangedSinceItWasRead(t *testing.T) 
 	}
 }
 
-func TestEveryInputOfThePersonIsCountedAlsoTheEnterThatGivesTheComposerBack(t *testing.T) {
+func TestEveryInputOfTheUserIsCountedAlsoTheEnterThatGivesTheComposerBack(t *testing.T) {
 	gate, _, _ := newGate(t)
 
 	for _, keys := range []string{"h", "i", "\r"} {
-		if err := gate.Human([]byte(keys)); err != nil {
+		if err := gate.UserTyped([]byte(keys)); err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	if gate.HumanInputs() != 3 || gate.Owner() != NobodyOwns {
-		t.Fatalf("%d inputs counted, the composer is %v's", gate.HumanInputs(), gate.Owner())
+	if gate.UserInputs() != 3 || gate.Owner() != NobodyOwns {
+		t.Fatalf("%d inputs counted, the composer is %v's", gate.UserInputs(), gate.Owner())
 	}
 }

@@ -7,7 +7,7 @@ namespace App\Actors\Enums;
 /**
  * Who acts in a request or an operation: a started agent through its signed hook calls, a user through the browser,
  * the system, the journal's own service principal, which only trusted Core code can act as, or the engine inside its
- * own pass. Neither the system nor the engine is a person: no request or command line may name them.
+ * own pass. Neither the system nor the engine is a user: no request or command line may name them.
  */
 enum ActorType: string
 {

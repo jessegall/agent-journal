@@ -12,7 +12,7 @@ use Illuminate\Contracts\Config\Repository;
 /**
  * Codex's own sign-in on the host, into one private account folder: the folder as CODEX_HOME with its sign-in kept
  * in its own auth.json, then `codex app-server` asked for a device-code sign-in (`account/login/start`, type
- * `chatgptDeviceCode`) until it announces `account/login/completed`. The address and code go only to the person; the
+ * `chatgptDeviceCode`) until it announces `account/login/completed`. The address and code go only to the user; the
  * program exchanges every token itself. `codex login status` is the check.
  */
 final readonly class CodexSignIn implements SignInProtocol
@@ -49,7 +49,7 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * A device sign-in's code goes out to the person only; nothing typed is ever given to the program.
+     * A device sign-in's code goes out to the user only; nothing typed is ever given to the program.
      */
     public function acceptCode(PrivateAccountProcess $process, string $code): void {}
 
@@ -75,7 +75,7 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * The address and code the person enters to approve the sign-in, from the program's answer to the start; none
+     * The address and code the user enters to approve the sign-in, from the program's answer to the start; none
      * until it answered.
      *
      * @return array{address: string, code: string}|null
@@ -120,7 +120,7 @@ final readonly class CodexSignIn implements SignInProtocol
 
     /**
      * The account's configuration keeps its sign-in in the folder's own auth.json, never a keyring shared with other
-     * accounts or the person's own login.
+     * accounts or the user's own login.
      */
     private static function useFileCredentialStore(string $directory): void
     {

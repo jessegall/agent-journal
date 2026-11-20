@@ -26,7 +26,7 @@ enum CommandClass: string
     case JournalOperation = 'journal_operation';
 
     /**
-     * The class as a person reads it; verification is shown as Tests and checks.
+     * The class as a user reads it; verification is shown as Tests and checks.
      */
     public function label(): string
     {

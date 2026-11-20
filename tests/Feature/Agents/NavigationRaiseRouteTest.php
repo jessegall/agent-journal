@@ -41,7 +41,7 @@ use Tests\TestCase;
 /**
  * The host's one call at an uncertain point: it opens one navigation request, holds the runtime and wakes the main
  * desk's occupant; a repeated raise answers the same; a runtime raising the same menu waits; the main agent's own
- * runtime stays held for the person; another host is refused.
+ * runtime stays held for the user; another host is refused.
  */
 final class NavigationRaiseRouteTest extends TestCase
 {
@@ -117,7 +117,7 @@ final class NavigationRaiseRouteTest extends TestCase
         $this->assertSame(1, NavigationRequest::query()->acrossActors()->count());
     }
 
-    public function test_the_main_agents_own_runtime_is_held_for_the_person(): void
+    public function test_the_main_agents_own_runtime_is_held_for_the_user(): void
     {
         [$host, $opened, $request] = $this->stalledScript();
         $this->seat(Agent::query()->findOrFail($this->agentIdOf($opened)));

@@ -10,8 +10,8 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Encryption\Encrypter;
 
 /**
- * The short-lived, encrypted exchange between the host running a sign-in and the person approving it: the challenge
- * the program printed, and the code the person typed back. Each lives only until the attempt's deadline, and a typed
+ * The short-lived, encrypted exchange between the host running a sign-in and the user approving it: the challenge
+ * the program printed, and the code the user typed back. Each lives only until the attempt's deadline, and a typed
  * code is handed to the host once.
  */
 final readonly class SignInChallenges
@@ -43,7 +43,7 @@ final readonly class SignInChallenges
     }
 
     /**
-     * The code the person typed, handed over once.
+     * The code the user typed, handed over once.
      */
     public function takeCode(string $attemptId): string|null
     {

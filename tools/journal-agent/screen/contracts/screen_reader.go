@@ -34,13 +34,13 @@ func (snapshot Snapshot) Status() string {
 		snapshot.Cursor.Row, snapshot.Cursor.Column, snapshot.Cursor.Visible, snapshot.Buffer)
 }
 
-// ScreenReader turns a program's raw terminal output into the screen a person would see. Feeding bytes in any
+// ScreenReader turns a program's raw terminal output into the screen a user would see. Feeding bytes in any
 // split gives the same screen; a feed or size past the limits fails with ScreenUnreadable instead of a guess.
 type ScreenReader interface {
 	// Feed takes the next raw bytes the program wrote, split anywhere.
 	Feed(bytes []byte) error
 
-	// Resize changes the terminal's size, as a resize of the person's window does.
+	// Resize changes the terminal's size, as a resize of the user's window does.
 	Resize(columns, rows int) error
 
 	// Snapshot reads the screen as it stands.

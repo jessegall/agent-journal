@@ -17,7 +17,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /**
- * A person says, from evidence, whether an uncertain delivery arrived; one that did not may then be
+ * A user says, from evidence, whether an uncertain delivery arrived; one that did not may then be
  * retried. The request's new row version is the answer.
  *
  * @extends Command<int>

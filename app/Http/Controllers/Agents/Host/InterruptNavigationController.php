@@ -10,7 +10,7 @@ use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\Response;
 
 /**
- * Takes the host's report that the person took over a runtime whose navigation request was open. The host's calls
+ * Takes the host's report that the user took over a runtime whose navigation request was open. The host's calls
  * run as the journal itself, never an actor.
  */
 final readonly class InterruptNavigationController

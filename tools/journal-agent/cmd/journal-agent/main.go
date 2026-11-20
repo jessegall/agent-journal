@@ -87,7 +87,7 @@ func main() {
 	os.Exit(exitCode)
 }
 
-// record runs the program once, forwards the person's keys and resizes, and writes the session as a fixture.
+// record runs the program once, forwards the user's keys and resizes, and writes the session as a fixture.
 func record(arguments []string) (int, error) {
 	flags := flag.NewFlagSet("record", flag.ContinueOnError)
 	program := flags.String("program", "", "the agent program: claude or codex")
@@ -186,8 +186,8 @@ func runProcess(command []string, environment []string, recorder *recording.Reco
 	return exitCodeOf(child.Run())
 }
 
-// runTerminal runs the program in a pseudo-terminal of the person's size, in its own session, and passes the
-// person's keys and resizes through.
+// runTerminal runs the program in a pseudo-terminal of the user's size, in its own session, and passes the
+// user's keys and resizes through.
 func runTerminal(command []string, environment []string, stopAfter time.Duration, keys keyScript, recorder *recording.Recorder) (int, error) {
 	child := exec.Command(command[0], command[1:]...)
 	child.Env = environment
@@ -233,7 +233,7 @@ func runTerminal(command []string, environment []string, stopAfter time.Duration
 	return exitCodeOf(child.Wait())
 }
 
-// followResizes copies the person's terminal size onto the program's terminal and records each change.
+// followResizes copies the user's terminal size onto the program's terminal and records each change.
 func followResizes(resizes <-chan os.Signal, terminal *os.File, recorder *recording.Recorder) {
 	for range resizes {
 		columns, rows, err := term.GetSize(int(os.Stdin.Fd()))
@@ -272,7 +272,7 @@ func (tee *inputTee) Read(buffer []byte) (int, error) {
 	return len(kept), err
 }
 
-// outputTee shows the program's output to the person and records it.
+// outputTee shows the program's output to the user and records it.
 type outputTee struct {
 	stream   string
 	sink     io.Writer

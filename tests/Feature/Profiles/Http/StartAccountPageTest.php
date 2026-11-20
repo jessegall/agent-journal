@@ -23,7 +23,7 @@ use Tests\TestCase;
 
 /**
  * The owner opens the account a start ran with from the account list, and still reaches it, under its label, after
- * the account was removed; a guessed start or another person sees nothing.
+ * the account was removed; a guessed start or another user sees nothing.
  */
 final class StartAccountPageTest extends TestCase
 {
@@ -54,7 +54,7 @@ final class StartAccountPageTest extends TestCase
                 ->missing('page.data.directory'));
     }
 
-    public function test_a_guessed_start_and_another_person_see_nothing(): void
+    public function test_a_guessed_start_and_another_user_see_nothing(): void
     {
         $this->chooseActiveAccounts();
         $this->startUserRequestAs($this->owner->id);

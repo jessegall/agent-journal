@@ -7,7 +7,7 @@ namespace App\Bus\Exceptions;
 use LogicException;
 
 /**
- * An application command declares no Authorize: every command a person or an agent sends names the policy and
+ * An application command declares no Authorize: every command a user or an agent sends names the policy and
  * ability that decide it, and only a trusted entry may leave it out.
  */
 final class CommandAuthorizationMissing extends LogicException

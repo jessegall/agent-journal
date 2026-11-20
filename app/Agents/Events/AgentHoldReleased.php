@@ -9,7 +9,7 @@ use App\Agents\Enums\HoldReason;
 use App\Contracts\Event;
 
 /**
- * A person released a runtime's hold: the audit record of which hold, who released it and why.
+ * A user released a runtime's hold: the audit record of which hold, who released it and why.
  */
 final readonly class AgentHoldReleased implements Event
 {

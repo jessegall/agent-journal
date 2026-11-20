@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Enums;
 
 /**
- * What a person did to a driver request that went wrong or waits on them (doc 40 revision 3, section 20).
+ * What a user did to a driver request that went wrong or waits on them (doc 40 revision 3, section 20).
  */
 enum RecoveryAction: string
 {

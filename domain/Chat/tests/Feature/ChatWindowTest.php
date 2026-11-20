@@ -23,7 +23,7 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
- * Chat reads only the incoming messages a person was shown, for everyone at the inbox, and a reply to a message that
+ * Chat reads only the incoming messages a user was shown, for everyone at the inbox, and a reply to a message that
  * changed since it was shown is refused without writing anything.
  */
 final class ChatWindowTest extends TestCase

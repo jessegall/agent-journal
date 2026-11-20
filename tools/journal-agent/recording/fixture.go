@@ -34,7 +34,7 @@ type OutputChunk struct {
 	Bytes  []byte        `json:"bytes"`
 }
 
-// InputEvent is what the person typed. Secret input is never written: only its length and that it was secret.
+// InputEvent is what the user typed. Secret input is never written: only its length and that it was secret.
 type InputEvent struct {
 	Offset time.Duration `json:"offset"`
 	Bytes  []byte        `json:"bytes,omitempty"`

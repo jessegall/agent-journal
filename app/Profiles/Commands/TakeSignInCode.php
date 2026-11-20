@@ -11,7 +11,7 @@ use App\Bus\Support\Command;
 use App\Profiles\Handlers\TakeSignInCodeHandler;
 
 /**
- * The host's runner takes the code the person typed for the attempt it runs, once; nothing while none waits. Run for
+ * The host's runner takes the code the user typed for the attempt it runs, once; nothing while none waits. Run for
  * an authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<string|null>

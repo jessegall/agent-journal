@@ -17,7 +17,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /**
- * A person lets a key script stopped part way go on from its recorded step; the request's new row version is
+ * A user lets a key script stopped part way go on from its recorded step; the request's new row version is
  * the answer.
  *
  * @extends Command<int>

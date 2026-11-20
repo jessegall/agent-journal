@@ -662,7 +662,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame('low', AgentRuntime::query()->findOrFail($opened->runtimeId)->requested_effort);
     }
 
-    public function test_a_person_releases_an_interrupt_but_never_a_hold_the_program_shows(): void
+    public function test_a_user_releases_an_interrupt_but_never_a_hold_the_program_shows(): void
     {
         [$host, $opened] = $this->openRuntime();
         $agentId = $this->agentIdOf($opened);
@@ -702,7 +702,7 @@ final class AgentDriverLedgerTest extends TestCase
                 RequestProgress::Applying,
                 null,
                 null,
-                new ScriptProgress(2, 7, 'paused: a person typed'),
+                new ScriptProgress(2, 7, 'paused: a user typed'),
             ));
             $request->refresh();
         }

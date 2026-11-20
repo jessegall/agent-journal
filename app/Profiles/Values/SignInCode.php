@@ -7,7 +7,7 @@ namespace App\Profiles\Values;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 
 /**
- * A code the person typed for a sign-in: trimmed, 1 to 512 characters, one line with no control character, so it is
+ * A code the user typed for a sign-in: trimmed, 1 to 512 characters, one line with no control character, so it is
  * typed into the program as nothing but itself.
  */
 final readonly class SignInCode

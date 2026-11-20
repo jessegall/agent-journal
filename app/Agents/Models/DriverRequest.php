@@ -186,7 +186,7 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * Whether a person may send the request again: it failed or was unavailable, so nothing of it was written.
+     * Whether a user may send the request again: it failed or was unavailable, so nothing of it was written.
      */
     public function canRetry(): bool
     {
@@ -213,7 +213,7 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * Whether a person may say how an uncertain delivery ended; a wake has no delivery to resolve.
+     * Whether a user may say how an uncertain delivery ended; a wake has no delivery to resolve.
      */
     public function canResolve(): bool
     {
@@ -221,15 +221,15 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * A person found evidence that the uncertain delivery arrived.
+     * A user found evidence that the uncertain delivery arrived.
      */
     public function resolveAsApplied(): void
     {
-        $this->markApplied('resolved_by_person');
+        $this->markApplied('resolved_by_user');
     }
 
     /**
-     * A person found evidence that the uncertain delivery never arrived, so it may be retried.
+     * A user found evidence that the uncertain delivery never arrived, so it may be retried.
      */
     public function resolveAsNotApplied(): void
     {
@@ -245,7 +245,7 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * Whether a person may repair the request in place: a setting change that failed or could not be made.
+     * Whether a user may repair the request in place: a setting change that failed or could not be made.
      */
     public function canRepair(): bool
     {
@@ -272,7 +272,7 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * Whether the request is a key script stopped part way, which a person may resume or cancel.
+     * Whether the request is a key script stopped part way, which a user may resume or cancel.
      */
     public function isStoppedKeyScript(): bool
     {
@@ -327,7 +327,7 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
-     * The host could not carry the request out at all, such as when its runtime could not be opened; a person may
+     * The host could not carry the request out at all, such as when its runtime could not be opened; a user may
      * send it again.
      */
     public function markUnavailable(RequestOutcome $outcome): void

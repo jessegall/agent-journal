@@ -160,7 +160,7 @@ const (
 	NavigationEntry  = "entry"
 )
 
-// NavigationAnswer mirrors App\Agents\Support\NavigationRaiseAnswer: a navigation request is open, the person holds
+// NavigationAnswer mirrors App\Agents\Support\NavigationRaiseAnswer: a navigation request is open, the user holds
 // the runtime, or the host waits and asks again.
 type NavigationAnswer struct {
 	Answer            string  `json:"answer"`
@@ -380,7 +380,7 @@ func (client *Client) ReportStale(ctx context.Context, entryID string, report En
 	return client.call(ctx, "/host/menu-entries/"+entryID+"/stale", report, nil)
 }
 
-// InterruptNavigation reports that the person took over a runtime whose navigation request was open.
+// InterruptNavigation reports that the user took over a runtime whose navigation request was open.
 func (client *Client) InterruptNavigation(ctx context.Context, navigationID string) error {
 	return client.call(ctx, "/host/navigation/"+navigationID+"/interrupt", nil, nil)
 }

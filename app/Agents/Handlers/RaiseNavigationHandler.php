@@ -26,7 +26,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Container\Attributes\Config;
 
 /**
- * Takes a host's raise at an uncertain point: the person keeps holding the main agent's own runtime, a runtime waits
+ * Takes a host's raise at an uncertain point: the user keeps holding the main agent's own runtime, a runtime waits
  * behind another one's open request of the same menu, and any other raise opens one navigation request, holds the
  * runtime for it and puts it in front of the main desk. A repeated raise answers what the first did.
  */
@@ -71,7 +71,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
         if ($library !== null) {
             return $library;
         }
-        if ($this->dispatch->answererFor($runtime) === NavigationAnswerer::Person) {
+        if ($this->dispatch->answererFor($runtime) === NavigationAnswerer::User) {
             return NavigationRaiseAnswer::held();
         }
         if ($this->sameMenuOpenElsewhere($command, $runtime, $request, $owner)) {

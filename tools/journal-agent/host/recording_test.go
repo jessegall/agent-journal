@@ -14,9 +14,9 @@ func TestARecordingKeepsNothingTypedDuringALoginAndIsCutAtItsBound(t *testing.T)
 	rec := StartRecording(t.TempDir(), "runtime", recording.Fixture{}, RecordingBounds{MaxBytes: 10, MaxAge: time.Hour}, clock.Now)
 
 	rec.Output("stdout", []byte("hello"))
-	rec.PauseForPerson()
+	rec.PauseForUser()
 	rec.Input([]byte("my-password"), false)
-	rec.ResumeAfterPerson()
+	rec.ResumeAfterUser()
 	rec.Input([]byte("ok"), false)
 	rec.Output("stdout", []byte("more than the bound"))
 

@@ -26,7 +26,7 @@ use Tests\TestCase;
 
 /**
  * A navigation request ends with its work: it expires on the first engine pass past its time, it is cancelled with
- * its key script or its runtime, and the host's report that the person took over interrupts it once.
+ * its key script or its runtime, and the host's report that the user took over interrupts it once.
  */
 final class NavigationLifecycleTest extends TestCase
 {
@@ -97,7 +97,7 @@ final class NavigationLifecycleTest extends TestCase
         $this->assertSame(NavigationState::Cancelled, $navigation->fresh()?->state);
     }
 
-    public function test_the_hosts_report_that_the_person_took_over_interrupts_the_request_once(): void
+    public function test_the_hosts_report_that_the_user_took_over_interrupts_the_request_once(): void
     {
         [$host, $opened] = $this->openRuntime();
         $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));

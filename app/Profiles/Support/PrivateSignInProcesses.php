@@ -170,7 +170,7 @@ final readonly class PrivateSignInProcesses
     }
 
     /**
-     * Hands the person the program's challenge once it printed one, and answers whether it did.
+     * Hands the user the program's challenge once it printed one, and answers whether it did.
      */
     private function publishChallenge(
         SignInProtocol $protocol,

@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One message a person or agent pinned in one conversation, its own and nobody else's: a seat change never moves it.
+ * One message a user or agent pinned in one conversation, its own and nobody else's: a seat change never moves it.
  *
  * @property string $id
  * @property string $actor_type

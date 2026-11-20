@@ -50,7 +50,7 @@ type MenuFamily struct {
 	Hold string
 	// LaterKeys are the recorded keys that choose a menu's harmless Later; empty means nothing is answered.
 	LaterKeys string
-	// Secret is whether this family's screen asks the person for a password, key or other secret.
+	// Secret is whether this family's screen asks the user for a password, key or other secret.
 	Secret bool
 }
 

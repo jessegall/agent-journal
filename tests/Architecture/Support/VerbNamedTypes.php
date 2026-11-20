@@ -21,7 +21,7 @@ use Tests\Support\ScanCache\FileScan;
 final readonly class VerbNamedTypes implements FileScan
 {
     /**
-     * Third-person verbs a type name has opened with; a plural noun or an area name such as Reads is never one.
+     * Verbs ending in s that a type name has opened with; a plural noun or an area name such as Reads is never one.
      */
     public const array VERBS = [
         'Accepts', 'Admits', 'Allows', 'Answers', 'Applies', 'Asks', 'Authorizes', 'Binds', 'Boots', 'Builds', 'Can',

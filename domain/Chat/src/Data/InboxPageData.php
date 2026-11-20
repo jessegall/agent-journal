@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Every inbox the person sits at, each with its counts and newest messages.
+ * Every inbox the user sits at, each with its counts and newest messages.
  */
 #[TypeScript]
 final class InboxPageData extends Data

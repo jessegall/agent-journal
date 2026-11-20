@@ -39,7 +39,7 @@ type AttachRequest struct {
 // TerminalStarter starts the program of a runtime the host does not run yet; it returns the PTY.
 type TerminalStarter func(request AttachRequest) (*os.File, error)
 
-// AttachSocket lets a person's terminal attach to the programs the host runs: an owner-only Unix socket in the
+// AttachSocket lets a user's terminal attach to the programs the host runs: an owner-only Unix socket in the
 // host's private folder. The host owns each program; a client that detaches leaves it running.
 type AttachSocket struct {
 	Folder    string
@@ -114,7 +114,7 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 		}
 		switch kind {
 		case frameData:
-			if err := terminal.gate.Human(payload); err != nil {
+			if err := terminal.gate.UserTyped(payload); err != nil {
 				return
 			}
 		case frameResize:
@@ -182,14 +182,14 @@ func (terminal *hostTerminal) resize(rows, columns uint16) {
 }
 
 // Terminal is a program the host runs as a driver sees it: the screen read from its output and the one gate every
-// key passes through, the person's included.
+// key passes through, the user's included.
 type Terminal struct {
 	Reader *screen.EmulatorReader
 	Gate   *inputs.InputGate
 }
 
 // Open starts the runtime's program on a PTY the host owns, or finds the one it already runs under the runtime's id,
-// such as one a person attached first; a person may attach to it afterwards.
+// such as one a user attached first; a user may attach to it afterwards.
 func (socket *AttachSocket) Open(request AttachRequest) (Terminal, error) {
 	terminal, err := socket.terminalFor(request)
 	if err != nil {

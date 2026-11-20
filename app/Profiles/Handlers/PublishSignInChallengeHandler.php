@@ -13,7 +13,7 @@ use App\Profiles\Values\SignInChallenge;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Keeps the challenge for the person until the attempt's deadline, and tells the page a challenge waits, without it.
+ * Keeps the challenge for the user until the attempt's deadline, and tells the page a challenge waits, without it.
  */
 final readonly class PublishSignInChallengeHandler implements CommandHandler
 {

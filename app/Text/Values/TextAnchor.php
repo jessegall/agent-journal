@@ -97,7 +97,7 @@ final class TextAnchor extends Data
     }
 
     /**
-     * Where the anchor points, as a person reads it: its version and lines, and its quote when it has one.
+     * Where the anchor points, as a user reads it: its version and lines, and its quote when it has one.
      */
     public function description(): string
     {

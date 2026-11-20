@@ -15,7 +15,7 @@ enum HoldReason: string
     case None = 'none';
     case Interrupted = 'interrupted';
     case Compacting = 'compacting';
-    case HumanInput = 'human_input';
+    case UserInput = 'user_input';
     case DriverInput = 'driver_input';
     case PermissionRequired = 'permission_required';
     case TrustRequired = 'trust_required';
@@ -29,9 +29,9 @@ enum HoldReason: string
     case NavigationNeeded = 'navigation_needed';
 
     /**
-     * Whether only a person can clear the hold: a screen the program shows that the journal never answers alone.
+     * Whether only a user can clear the hold: a screen the program shows that the journal never answers alone.
      */
-    public function needsAPerson(): bool
+    public function needsAUser(): bool
     {
         return match ($this) {
             self::PermissionRequired, self::TrustRequired, self::OnboardingRequired, self::LoginRequired,
@@ -40,7 +40,7 @@ enum HoldReason: string
             self::None,
             self::Interrupted,
             self::Compacting,
-            self::HumanInput,
+            self::UserInput,
             self::DriverInput,
             self::UsageLimited => false,
         };

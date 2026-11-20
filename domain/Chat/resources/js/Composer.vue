@@ -12,7 +12,7 @@ import type { MessageInput } from '@generated/types/chat';
 import type { MessageView } from '@kit/CoreTypes';
 
 /**
- * Asks the agent of the chosen conversation, from the person's inbox to the agent's (doc 4, 6.5). The text is the draft of this conversation, so switching
+ * Asks the agent of the chosen conversation, from the user's inbox to the agent's (doc 4, 6.5). The text is the draft of this conversation, so switching
  * conversations or reloading keeps it; a send keeps the target it was sent to, even when the user switches while it
  * is on its way, and clears only that draft, only if it was not typed on since.
  */

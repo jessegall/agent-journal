@@ -8,7 +8,7 @@ use App\Agents\Commands\ContinueStart;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * A person continues the start of the session the route names, for the agent it names.
+ * A user continues the start of the session the route names, for the agent it names.
  */
 final class ContinueStartRequest extends FormRequest
 {

@@ -117,21 +117,21 @@ func TestAScreenThatIsNotTheExpectedOneStopsTheScriptAtItsStep(t *testing.T) {
 	}
 }
 
-func TestAPersonsKeyPausesTheScriptAndResumeStartsFromAFreshCheckpoint(t *testing.T) {
+func TestAUsersKeyPausesTheScriptAndResumeStartsFromAFreshCheckpoint(t *testing.T) {
 	run := newRun(t)
 	script := trustScript(Choose("folder-trust", trustedFolder, 2*time.Second))
-	run.gate.Human([]byte("\x1b[A"))
+	run.gate.UserTyped([]byte("\x1b[A"))
 
 	result, err := run.runner.Run(script, nil)
 	if err != nil || result.Outcome != Paused || result.Step != 0 {
 		t.Fatalf("the run ended %+v, %v, not paused at its first step", result, err)
 	}
 	if run.menu.sent() != "\x1b[A" {
-		t.Fatalf("the program got %q: only the person's key may have gone through", run.menu.sent())
+		t.Fatalf("the program got %q: only the user's key may have gone through", run.menu.sent())
 	}
 
 	run.gate.Choose(terminal.CancelPendingWork, "")
-	run.gate.Human([]byte("\r"))
+	run.gate.UserTyped([]byte("\r"))
 	before := run.clock.Now()
 	result, err = run.runner.Resume(script, 0, nil)
 	if err != nil || result.Outcome != Finished || run.menu.chosen != trustedFolder || !run.clock.Now().After(before) {

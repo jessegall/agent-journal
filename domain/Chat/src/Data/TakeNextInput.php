@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The inbox a person takes the next waiting question from.
+ * The inbox a user takes the next waiting question from.
  */
 #[TypeScript]
 final class TakeNextInput extends Data

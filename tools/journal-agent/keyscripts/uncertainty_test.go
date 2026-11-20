@@ -49,16 +49,16 @@ func TestAnUnknownPickerMetByAnotherStepNeedsNavigationAndSendsNoKey(t *testing.
 	}
 }
 
-func TestAPersonTypingAtAMenuNeedsNoNavigation(t *testing.T) {
+func TestAUserTypingAtAMenuNeedsNoNavigation(t *testing.T) {
 	run := newRun(t)
-	if err := run.gate.Human([]byte("n")); err != nil {
+	if err := run.gate.UserTyped([]byte("n")); err != nil {
 		t.Fatal(err)
 	}
 
 	result, _ := run.runner.Run(trustScript(expectPrompt), nil)
 
 	if result.Outcome == NavigationNeeded || result.Uncertainty != nil {
-		t.Fatalf("a person typing was put to the main agent: %+v", result)
+		t.Fatalf("a user typing was put to the main agent: %+v", result)
 	}
 }
 

@@ -382,7 +382,7 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
-     * Whether a person may release the runtime's hold: an interrupt or a call for attention. A hold the program
+     * Whether a user may release the runtime's hold: an interrupt or a call for attention. A hold the program
      * itself shows, such as compacting or a login, ends only on the program's own evidence.
      */
     public function canReleaseHold(): bool

@@ -31,7 +31,7 @@ use Tests\TestCase;
 
 /**
  * A navigation request of a helper's runtime goes to the main desk and wakes its occupant once per round; the main
- * agent's own runtime keeps its hold for the person; with nobody seated the request waits at the desk.
+ * agent's own runtime keeps its hold for the user; with nobody seated the request waits at the desk.
  */
 final class NavigationDispatchTest extends TestCase
 {
@@ -94,7 +94,7 @@ final class NavigationDispatchTest extends TestCase
         $this->assertTrue($this->inTransaction(fn () => $pending->hasWorkFor(ActorIdentity::of($main))));
     }
 
-    public function test_the_main_agents_own_runtime_is_held_for_the_person(): void
+    public function test_the_main_agents_own_runtime_is_held_for_the_user(): void
     {
         $navigation = $this->raise($this->stalledScript(), 'raise-1');
         $runtime = $this->runtimeOf($navigation);
@@ -103,7 +103,7 @@ final class NavigationDispatchTest extends TestCase
         $dispatch = $this->app->make(NavigationDispatch::class);
         $answerer = $this->inTransaction(fn () => $dispatch->answererFor($runtime));
 
-        $this->assertSame(NavigationAnswerer::Person, $answerer);
+        $this->assertSame(NavigationAnswerer::User, $answerer);
     }
 
     public function test_with_nobody_seated_the_request_waits_at_the_desk_and_wakes_nobody(): void

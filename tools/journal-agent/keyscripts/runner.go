@@ -16,12 +16,12 @@ type Outcome string
 const (
 	// Finished is a run whose every step saw its screen and took its action.
 	Finished Outcome = "finished"
-	// Paused is a run the person's keys stopped; it resumes only from a freshly matched checkpoint.
+	// Paused is a run the user's keys stopped; it resumes only from a freshly matched checkpoint.
 	Paused Outcome = "paused"
 	// ScriptFailed is a run whose step did not see its screen in time; no later key was sent.
 	ScriptFailed Outcome = "script-failed"
-	// WaitingForHuman is a run that reached a step for the person to act.
-	WaitingForHuman Outcome = "waiting-for-human"
+	// WaitingForUser is a run that reached a step for the user to act.
+	WaitingForUser Outcome = "waiting-for-user"
 	// EntryUnavailable is a run whose wanted entry the menu on screen did not show by its label, or showed more than
 	// once: no key was sent for it and nothing was chosen.
 	EntryUnavailable Outcome = "entry-unavailable"
@@ -91,7 +91,7 @@ type Runner struct {
 // composer, so a run stops for a user who types.
 type Gate interface {
 	Keys(keys string) error
-	HumanInputs() uint64
+	UserInputs() uint64
 	Owner() terminal.Owner
 }
 
@@ -134,8 +134,8 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 		if !matched {
 			return runner.unmatched(index, step, seen), nil
 		}
-		if step.Action == WaitForHuman {
-			return Result{Outcome: WaitingForHuman, Step: index, Name: step.Name, Seen: seen}, nil
+		if step.Action == WaitForUser {
+			return Result{Outcome: WaitingForUser, Step: index, Name: step.Name, Seen: seen}, nil
 		}
 
 		if err := runner.act(step, values); err != nil {
@@ -203,7 +203,7 @@ func (runner *Runner) navigation(
 func (runner *Runner) unmatched(index int, step KeyStep, seen screen.Classification) Result {
 	failed := Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}
 	pickable := seen.Kind == screen.MenuShown || (seen.Kind == screen.Unknown && seen.Options)
-	typing := runner.gate.Owner() == terminal.HumanInput
+	typing := runner.gate.Owner() == terminal.UserInput
 	if !seen.Stable || !pickable || typing {
 		return failed
 	}
@@ -254,7 +254,7 @@ func (runner *Runner) uncertainty(
 		HostRows:    snapshot.Rows,
 		Highlight:   highlight,
 		Generation:  seen.Generation,
-		Epoch:       runner.gate.HumanInputs(),
+		Epoch:       runner.gate.UserInputs(),
 	}
 }
 
@@ -317,7 +317,7 @@ func uncertaintyOf(err error) (UncertaintyReason, bool) {
 // stoppedBy is the outcome of a run whose step failed with err, and the error the run gives back, if any.
 func stoppedBy(err error) (Outcome, error) {
 	switch {
-	case errors.Is(err, terminal.ErrPersonTyping):
+	case errors.Is(err, terminal.ErrUserTyping):
 		return Paused, nil
 	case errors.Is(err, errLabelMissing), errors.Is(err, errLabelAmbiguous):
 		return EntryUnavailable, nil
@@ -433,7 +433,7 @@ func (runner *Runner) act(step KeyStep, values map[string]string) error {
 		}
 
 		return runner.gate.Keys(enterKey)
-	case WaitForScreen, WaitForHuman:
+	case WaitForScreen, WaitForUser:
 		return nil
 	default:
 		return fmt.Errorf("%w: %q in step %s", ErrUnknownAction, step.Action, step.Name)

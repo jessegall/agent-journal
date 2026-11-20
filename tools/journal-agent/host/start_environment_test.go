@@ -13,7 +13,7 @@ import (
 func TestAPreparedStartKeepsOnlyPlatformVariablesAndItsRecipe(t *testing.T) {
 	folder := t.TempDir()
 	inherited := []string{
-		"LANG=en_US.UTF-8", "TERM=xterm-256color", "HOME=/Users/person", "PATH=/opt/homebrew/bin:/usr/bin",
+		"LANG=en_US.UTF-8", "TERM=xterm-256color", "HOME=/Users/user", "PATH=/opt/homebrew/bin:/usr/bin",
 		"ANTHROPIC_API_KEY=secret", "CLAUDE_CODE_OAUTH_TOKEN=secret", "OPENAI_BASE_URL=https://elsewhere",
 		"AWS_PROFILE=personal",
 	}

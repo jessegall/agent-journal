@@ -13,7 +13,7 @@ use App\Profiles\Handlers\ReportSignInHandler;
 
 /**
  * The host's sign-in runner reports a safe outcome of the attempt it runs, in the generation it ran in: waiting for
- * the person, verified by the program's own check outside any transaction, or failed. Run for an authenticated host
+ * the user, verified by the program's own check outside any transaction, or failed. Run for an authenticated host
  * by the journal itself (internal, not exported).
  *
  * @extends Command<null>

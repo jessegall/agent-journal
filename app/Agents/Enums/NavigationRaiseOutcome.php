@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Enums;
 
 /**
- * What the journal answers a host that raised an uncertain point: a navigation request is open for it, the person
+ * What the journal answers a host that raised an uncertain point: a navigation request is open for it, the user
  * holds it as today, another runtime's open request of the same menu is answered first and the host asks again, or
  * the owner's library has an entry the host replays.
  */

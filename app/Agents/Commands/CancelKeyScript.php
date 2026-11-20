@@ -17,7 +17,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /**
- * A person cancels a key script stopped part way; the request's new row version is the answer.
+ * A user cancels a key script stopped part way; the request's new row version is the answer.
  *
  * @extends Command<int>
  */

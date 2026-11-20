@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The incoming messages a person deliberately read in one conversation: the ids the timeline showed, at most a page.
+ * The incoming messages a user deliberately read in one conversation: the ids the timeline showed, at most a page.
  */
 #[TypeScript]
 final class ReadShownInput extends Data

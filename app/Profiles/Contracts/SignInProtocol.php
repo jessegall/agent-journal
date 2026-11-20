@@ -10,7 +10,7 @@ use App\Profiles\Values\SignInVerification;
 
 /**
  * One program's own sign-in on the host, run against a private account folder: start it, and check afterwards
- * whether the folder is signed in. The challenge it shows goes only to the person, never through this contract.
+ * whether the folder is signed in. The challenge it shows goes only to the user, never through this contract.
  */
 interface SignInProtocol
 {
@@ -20,12 +20,12 @@ interface SignInProtocol
     public function begin(string $directory): PrivateAccountProcess;
 
     /**
-     * What the person needs to approve the sign-in, once the program printed it; none before.
+     * What the user needs to approve the sign-in, once the program printed it; none before.
      */
     public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null;
 
     /**
-     * Gives the program the code the person typed, for a sign-in that asks for one; others ignore it.
+     * Gives the program the code the user typed, for a sign-in that asks for one; others ignore it.
      */
     public function acceptCode(PrivateAccountProcess $process, string $code): void;
 

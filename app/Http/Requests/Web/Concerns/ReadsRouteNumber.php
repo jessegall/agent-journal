@@ -7,7 +7,7 @@ namespace App\Http\Requests\Web\Concerns;
 use App\Http\Support\Web\RouteNumber;
 
 /**
- * Reads a record number from a human route, or the page is not found.
+ * Reads a record number from a user route, or the page is not found.
  */
 trait ReadsRouteNumber
 {

@@ -35,7 +35,7 @@ final class ConversationData extends Data
     ) {}
 
     /**
-     * The messages between the person's inbox and the chosen agent's inbox, shown for the session the window has
+     * The messages between the user's inbox and the chosen agent's inbox, shown for the session the window has
      * chosen; the session is only the window's choice.
      *
      * @param  list<RecordCard>  $dockedCards

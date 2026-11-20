@@ -324,7 +324,7 @@ func (loop *Loop) scriptResult(
 
 // raiseNavigation asks the journal what to do with a script stopped on a menu it could not be certain of, sending the
 // same raise again, its screen read afresh, while the answer is lost; no key is sent meanwhile and the runtime stays
-// held. A refusal ends the script as one the person holds.
+// held. A refusal ends the script as one the user holds.
 func (loop *Loop) raiseNavigation(
 	ctx context.Context,
 	runtime *liveRuntime,
@@ -385,7 +385,7 @@ type screenRereader interface {
 }
 
 // answerNavigation carries out the journal's answer to a raise: an opened request leaves the script stopped and
-// resumable at its step, the runtime held for the main agent; the person's own hold ends the script as before; a
+// resumable at its step, the runtime held for the main agent; the user's own hold ends the script as before; a
 // wait keeps the runtime held until it asks again.
 func (loop *Loop) answerNavigation(
 	ctx context.Context,
@@ -538,7 +538,7 @@ func sentSteps(entry keyscripts.Entry, failedAt int) []string {
 
 // askAgainAfter waits out the journal's wait while another runtime's request on the same menu is open, then reads the
 // screen afresh and raises again under a new key. No key is sent meanwhile and the runtime stays held; a stop, an
-// exit or the person taking over ends the wait, since the runtime is then no longer held for this navigation.
+// exit or the user taking over ends the wait, since the runtime is then no longer held for this navigation.
 func (loop *Loop) askAgainAfter(
 	ctx context.Context,
 	runtime *liveRuntime,
@@ -629,7 +629,7 @@ func (loop *Loop) holdRuntime(runtime *liveRuntime) {
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.Hold() })
 }
 
-// endForNavigation ends a script that stopped on a menu the person holds: its request ends entry_unavailable at the
+// endForNavigation ends a script that stopped on a menu the user holds: its request ends entry_unavailable at the
 // stalled step with only the reason as evidence, never the screen's rows, and the runtime stays held.
 func (loop *Loop) endForNavigation(
 	ctx context.Context,
@@ -679,7 +679,7 @@ func (loop *Loop) runNavigation(ctx context.Context, runtime *liveRuntime, reque
 	loop.advance(ctx, runtime.id)
 }
 
-// reportRound reports what a round left: the person's keys end it paused and the navigation request interrupted;
+// reportRound reports what a round left: the user's keys end it paused and the navigation request interrupted;
 // otherwise the screen after it, its actions, its refusal and whether its proof showed.
 func (loop *Loop) reportRound(ctx context.Context, request client.ClaimedRequest, result keyscripts.RoundResult) {
 	if result.Paused {
@@ -778,7 +778,7 @@ func (loop *Loop) reportStep(
 }
 
 // scriptEnd is how a run that stopped ends its request: applied only when the script proved its result on screen,
-// failed with the reason otherwise, and held for the person when the person typed or a step waits for them.
+// failed with the reason otherwise, and held for the user when the user typed or a step waits for them.
 func scriptEnd(result keyscripts.Result) contracts.OperationResult {
 	switch result.Outcome {
 	case keyscripts.Finished:

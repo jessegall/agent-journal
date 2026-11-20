@@ -10,7 +10,7 @@ import (
 )
 
 // stepDeadline is how long a step waits for its screen: the recorded screens follow their key within five seconds,
-// the longest being a person's pause before Codex drew its reasoning picker.
+// the longest being a user's pause before Codex drew its reasoning picker.
 const stepDeadline = 5 * time.Second
 
 // claudeCode and codex are the program builds the scripts are recorded for.

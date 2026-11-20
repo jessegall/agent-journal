@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 /**
- * Hands the host's runner the code the person typed, once, or nothing. The host's calls run as the journal itself.
+ * Hands the host's runner the code the user typed, once, or nothing. The host's calls run as the journal itself.
  */
 final readonly class TakeSignInCodeController
 {

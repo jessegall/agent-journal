@@ -11,7 +11,7 @@ use Domain\Access\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 
 /**
- * A person who registers gets their own desk at once, so they have an inbox to send from and be written to.
+ * A user who registers gets their own desk at once, so they have an inbox to send from and be written to.
  */
 final class RegistrationDeskTest extends TestCase
 {
@@ -27,7 +27,7 @@ final class RegistrationDeskTest extends TestCase
         'command_receipts',
     ];
 
-    public function test_a_registered_person_has_their_own_inbox(): void
+    public function test_a_registered_user_has_their_own_inbox(): void
     {
         $user = $this->app->make(CreateNewUser::class)->create([
             'name' => 'Ada',

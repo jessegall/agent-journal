@@ -38,7 +38,7 @@ const unreadShown = computed(() =>
 );
 
 /**
- * Reads the incoming messages this conversation shows, for everyone at the inbox. It runs when the person opens the
+ * Reads the incoming messages this conversation shows, for everyone at the inbox. It runs when the user opens the
  * conversation or asks for it, never on a background refresh.
  */
 function readShown(): void {

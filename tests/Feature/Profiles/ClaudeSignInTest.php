@@ -12,7 +12,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Claude Code's own sign-in run against a stand-in program: the address comes from its private output, the person's
+ * Claude Code's own sign-in run against a stand-in program: the address comes from its private output, the user's
  * code is typed only when it is one clean line, and only the program's own check of this folder signs it in.
  */
 #[TimeLimit(seconds: 4, reason: 'It runs a stand-in program as a host process several times.')]
@@ -46,7 +46,7 @@ final class ClaudeSignInTest extends TestCase
 
         $verification = $protocol->verify($this->directory);
         $this->assertTrue($verification->isSignedIn);
-        $this->assertSame('person@example.test', $verification->identity);
+        $this->assertSame('user@example.test', $verification->identity);
     }
 
     public function test_a_wrong_code_leaves_the_folder_signed_out_and_a_control_character_never_reaches_it(): void

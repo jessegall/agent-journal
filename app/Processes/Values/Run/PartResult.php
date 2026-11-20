@@ -67,7 +67,7 @@ final readonly class PartResult
     }
 
     /**
-     * The result as one line for a person to read.
+     * The result as one line for a user to read.
      */
     public function describe(): string
     {

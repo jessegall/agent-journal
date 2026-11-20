@@ -95,7 +95,7 @@ trait OpensLedgerRuntimes
     }
 
     /**
-     * Runs a command as the person who owns the journal, as the web and the CLI do.
+     * Runs a command as the user who owns the journal, as the web and the CLI do.
      *
      * @template TResult
      *

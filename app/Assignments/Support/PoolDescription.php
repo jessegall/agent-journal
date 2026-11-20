@@ -7,7 +7,7 @@ namespace App\Assignments\Support;
 use App\Assignments\Enums\PoolInputType;
 
 /**
- * What a person reads about a pool: its label, a line of help, and what a reference to it must carry.
+ * What a user reads about a pool: its label, a line of help, and what a reference to it must carry.
  */
 final readonly class PoolDescription
 {

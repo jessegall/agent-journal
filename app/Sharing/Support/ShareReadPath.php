@@ -13,7 +13,7 @@ use App\Sharing\Exceptions\UnknownShareRelation;
 /**
  * The way a public read goes from the shared root: at most four steps, each a relation the record of that step
  * declares and the record it leads to by link alias and ULID, written as relation/alias/id per step. A record is
- * never visited twice; human numbers are not part of a path.
+ * never visited twice; user numbers are not part of a path.
  */
 final readonly class ShareReadPath
 {

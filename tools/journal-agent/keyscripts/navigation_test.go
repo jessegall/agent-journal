@@ -52,7 +52,7 @@ func TestARawEnterOnAMenuIsRefusedAndAnArrowIsSent(t *testing.T) {
 	}
 }
 
-func TestAChangedScreenOrThePersonsInputSendsNoKey(t *testing.T) {
+func TestAChangedScreenOrTheUsersInputSendsNoKey(t *testing.T) {
 	runner, menu := codexPicker(t)
 	stale := Round{Generation: liveGeneration(runner) + 1, Keys: []string{"down"}}
 	if result := runner.Navigate(stale, 0, Uncertainty{}, nil); result.Refusal != RefusedScreenChanged {
@@ -61,24 +61,24 @@ func TestAChangedScreenOrThePersonsInputSendsNoKey(t *testing.T) {
 
 	current := Round{Generation: liveGeneration(runner), Keys: []string{"down"}}
 	if result := runner.Navigate(current, 1, Uncertainty{}, nil); result.Refusal != RefusedScreenChanged {
-		t.Fatalf("a round the person's input came after ended %+v", result)
+		t.Fatalf("a round the user's input came after ended %+v", result)
 	}
 	if menu.sent() != "" {
 		t.Fatalf("the program got %q", menu.sent())
 	}
 }
 
-func TestAPersonTypingPausesTheRound(t *testing.T) {
+func TestAUserTypingPausesTheRound(t *testing.T) {
 	runner, menu := codexPicker(t)
-	if err := runner.gate.(*terminal.InputGate).Human([]byte("x")); err != nil {
+	if err := runner.gate.(*terminal.InputGate).UserTyped([]byte("x")); err != nil {
 		t.Fatal(err)
 	}
-	epoch := runner.gate.HumanInputs()
+	epoch := runner.gate.UserInputs()
 
 	result := runner.Navigate(Round{Generation: liveGeneration(runner), Keys: []string{"down"}}, epoch, Uncertainty{}, nil)
 
 	if !result.Paused || strings.Contains(menu.sent(), arrowDown) {
-		t.Fatalf("a typing person left the round %+v after %q", result, menu.sent())
+		t.Fatalf("a typing user left the round %+v after %q", result, menu.sent())
 	}
 }
 

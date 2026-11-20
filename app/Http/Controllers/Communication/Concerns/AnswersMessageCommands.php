@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Communication\Concerns;
 
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
+use App\Communication\Contracts\MessageCommand;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -23,9 +24,9 @@ trait AnswersMessageCommands
     }
 
     /**
-     * @param  Command<mixed>&object{messageId: string}  $command
+     * @param  MessageCommand<mixed>  $command
      */
-    private function answerWithActedMessage(CommandBus $commands, Command $command): JsonResponse
+    private function answerWithActedMessage(CommandBus $commands, MessageCommand $command): JsonResponse
     {
         $commands->run($command);
 

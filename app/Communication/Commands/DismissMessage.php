@@ -13,6 +13,7 @@ use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Support\Command;
+use App\Communication\Contracts\MessageCommand;
 use App\Communication\Enums\MessageAbility;
 use App\Communication\Handlers\DismissMessageHandler;
 use App\Communication\Models\Message;
@@ -25,6 +26,8 @@ use App\Operations\Enums\ResourceAreaType;
  * it, or the owner cancels it on inspection.
  *
  * @extends Command<null>
+ *
+ * @implements MessageCommand<null>
  */
 #[RepeatableRead]
 #[RetainedActorRequestKey]
@@ -32,7 +35,7 @@ use App\Operations\Enums\ResourceAreaType;
 #[HandledBy(DismissMessageHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[Operation('messages_dismiss', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class DismissMessage extends Command implements AuthorizedCommand
+final readonly class DismissMessage extends Command implements AuthorizedCommand, MessageCommand
 {
     public function __construct(
         public string $messageId,

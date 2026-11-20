@@ -29,7 +29,7 @@ const (
 	Adopted Reconciliation = "adopted"
 	// Exited: the marked process is gone.
 	Exited Reconciliation = "exited"
-	// NeedsAttention: the host cannot prove what runs; it starts nothing and a person must look.
+	// NeedsAttention: the host cannot prove what runs; it starts nothing and a user must look.
 	NeedsAttention Reconciliation = "needs_attention"
 )
 

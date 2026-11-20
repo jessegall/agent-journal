@@ -79,7 +79,7 @@ final readonly class VerificationContract
     }
 
     /**
-     * The contract as lines a person reads in an explanation.
+     * The contract as lines a user reads in an explanation.
      *
      * @return list<string>
      */

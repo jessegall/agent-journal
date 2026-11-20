@@ -2,7 +2,7 @@
 import type { MessageView } from '@kit/CoreTypes';
 
 /**
- * The messages between two inboxes, oldest first: the person's own on the right, the other inbox's on the left with
+ * The messages between two inboxes, oldest first: the user's own on the right, the other inbox's on the left with
  * the name of whoever wrote it, and for each incoming question whether it is unread, waiting or taken up. Bodies are
  * shown as text, never as HTML.
  */

@@ -26,7 +26,7 @@ final readonly class ReportSignInHandler implements CommandHandler
         $attempt = SignInAttempt::runBy($command->hostId, $command->attemptId);
 
         match ($command->outcome) {
-            SignInOutcome::Waiting => $attempt->waitForPerson(),
+            SignInOutcome::Waiting => $attempt->waitForUser(),
             SignInOutcome::Verified => $this->completion->complete(
                 $attempt->id,
                 $command->generation,

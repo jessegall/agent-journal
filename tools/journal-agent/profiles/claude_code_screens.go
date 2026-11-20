@@ -23,7 +23,7 @@ func claudeCodeMenu(name, hold string, keywords ...string) screen.MenuFamily {
 	}
 }
 
-// asksForSecret marks a family whose screen asks the person for a key or password, so no text of it leaves the host.
+// asksForSecret marks a family whose screen asks the user for a key or password, so no text of it leaves the host.
 func asksForSecret(family screen.MenuFamily) screen.MenuFamily {
 	family.Secret = true
 
@@ -34,7 +34,7 @@ func asksForSecret(family screen.MenuFamily) screen.MenuFamily {
 // composer is the ❯ row fenced by two rules on the normal buffer, empty while the cursor sits after the ❯. A spinner
 // redraw lands about every 100 ms, so 300 ms of stillness is three missed frames. The menu families come from report
 // 175 (the program's own dialog code): each is known by its ❯ option list and two of its keywords, and holds the
-// runtime for a person; none is answered automatically. The effort picker is a slider instead, recorded in
+// runtime for a user; none is answered automatically. The effort picker is a slider instead, recorded in
 // keyscripts/effort-change.
 func (ClaudeCode) Screens() screen.Layout {
 	return screen.Layout{
@@ -55,11 +55,11 @@ func (ClaudeCode) Screens() screen.Layout {
 				"accept terms"),
 			claudeCodeMenu("usage-limit", "usage_limited", "wait for limit to reset", "spend limit", "hit your",
 				"upgrade"),
-			claudeCodeMenu("resume-conversation", "human_input", "resume this conversation", "inactive",
+			claudeCodeMenu("resume-conversation", "user_input", "resume this conversation", "inactive",
 				"tokens long", "summary"),
-			claudeCodeMenu("question", "human_input", "chat about this", "type something", "review your answers",
+			claudeCodeMenu("question", "user_input", "chat about this", "type something", "review your answers",
 				"submit answers"),
-			claudeCodeMenu("model-picker", "human_input", "select model", "switch between claude models",
+			claudeCodeMenu("model-picker", "user_input", "select model", "switch between claude models",
 				"default for new sessions", "effort"),
 			{
 				Name:        "effort-picker",
@@ -67,7 +67,7 @@ func (ClaudeCode) Screens() screen.Layout {
 				Keywords:    []string{"faster", "smarter", "to adjust", "for this session only"},
 				MinKeywords: 2,
 				StableFor:   300 * time.Millisecond,
-				Hold:        "human_input",
+				Hold:        "user_input",
 			},
 			claudeCodeMenu("tool-permission", "permission_required", "do you want to", "don't ask again",
 				"what to do differently", "allow all edits", "allow this connection"),

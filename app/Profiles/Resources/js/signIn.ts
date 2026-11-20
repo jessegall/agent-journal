@@ -4,7 +4,7 @@ import { xsrfToken } from '@kit/xsrfToken';
 
 /**
  * Which way a sign-in's code travels: Claude Code shows an address and asks for the code the provider's page gives
- * back; Codex shows the person a code to enter on the provider's page and takes nothing back.
+ * back; Codex shows the user a code to enter on the provider's page and takes nothing back.
  */
 export type CodeDirection = 'paste-back' | 'outgoing';
 

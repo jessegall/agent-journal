@@ -120,7 +120,7 @@ const (
 	Proven ReplayOutcome = "proven"
 	// Stale is a replay that stopped before a key whose check failed; the entry no longer fits this build.
 	Stale ReplayOutcome = "stale"
-	// ReplayPaused is a replay the person's keys stopped.
+	// ReplayPaused is a replay the user's keys stopped.
 	ReplayPaused ReplayOutcome = "paused"
 	// ReplayRefused is a replay that ended any other way, such as on a screen that may not leave the host.
 	ReplayRefused ReplayOutcome = "refused"

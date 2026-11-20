@@ -18,15 +18,15 @@ const (
 	// Delivered is a line whose echo was seen in the composer before its one Enter.
 	Delivered Delivery = "delivered"
 	// DeliveryUncertain is a line whose echo was lost or changed, or whose Enter may already have submitted it: the
-	// journal does not know, so it never retries blindly and never calls it the person's text.
+	// journal does not know, so it never retries blindly and never calls it the user's text.
 	DeliveryUncertain Delivery = "delivery-uncertain"
 )
 
 var (
 	// ErrComposerHeld refuses a driver line while the composer holds text or changed since the caller read it.
 	ErrComposerHeld = errors.New("the composer holds text or changed since it was read: the driver line waits")
-	// ErrLineInvalidated refuses to submit a driver line the person typed over; their keys went through instead.
-	ErrLineInvalidated = errors.New("the person typed while the driver line was pending: it is not submitted")
-	// ErrPersonTyping refuses driver keys while the person holds the input.
-	ErrPersonTyping = errors.New("the person holds the input: driver keys wait")
+	// ErrLineInvalidated refuses to submit a driver line the user typed over; their keys went through instead.
+	ErrLineInvalidated = errors.New("the user typed while the driver line was pending: it is not submitted")
+	// ErrUserTyping refuses driver keys while the user holds the input.
+	ErrUserTyping = errors.New("the user holds the input: driver keys wait")
 )

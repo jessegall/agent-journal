@@ -9,7 +9,7 @@ use App\Agents\Enums\RecoveryAction;
 use App\Contracts\Event;
 
 /**
- * A person retried, cancelled or resolved a driver request: the audit record of who did what, and why.
+ * A user retried, cancelled or resolved a driver request: the audit record of who did what, and why.
  */
 final readonly class DriverRequestRecovered implements Event
 {

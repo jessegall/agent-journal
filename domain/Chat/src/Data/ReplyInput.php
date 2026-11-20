@@ -11,7 +11,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A reply to one message at the version the person saw.
+ * A reply to one message at the version the user saw.
  */
 #[TypeScript]
 final class ReplyInput extends Data

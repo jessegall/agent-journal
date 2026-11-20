@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One problem of a part's output as a person reads it: stable code, stream and byte range, the reader revision, the
+ * One problem of a part's output as a user reads it: stable code, stream and byte range, the reader revision, the
  * explanation and the next action.
  */
 #[TypeScript]

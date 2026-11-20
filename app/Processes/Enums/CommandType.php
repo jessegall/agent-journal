@@ -16,7 +16,7 @@ enum CommandType: string
     case Unknown = 'unknown';
 
     /**
-     * The purpose as a person reads it; verification is shown as Tests and checks.
+     * The purpose as a user reads it; verification is shown as Tests and checks.
      */
     public function label(): string
     {

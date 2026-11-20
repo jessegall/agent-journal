@@ -5,7 +5,7 @@ import { takeNext as takeNextRoute } from '@generated/routes/chat';
 import MessageList from './MessageList.vue';
 
 /**
- * Every inbox the person sits at, with what is unread and what waits, and its newest messages. Looking at it marks
+ * Every inbox the user sits at, with what is unread and what waits, and its newest messages. Looking at it marks
  * nothing read; 'Take next' takes up the oldest question nobody has taken up.
  */
 defineProps<{ data: InboxPageData }>();

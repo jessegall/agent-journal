@@ -37,7 +37,7 @@ func (recorder *Recorder) Output(stream string, bytes []byte) {
 	recorder.fixture.Output = append(recorder.fixture.Output, OutputChunk{Offset: recorder.offset(), Stream: stream, Bytes: redacted})
 }
 
-// Input records what the person typed; secret input keeps only its length.
+// Input records what the user typed; secret input keeps only its length.
 func (recorder *Recorder) Input(bytes []byte, secret bool) {
 	recorder.mutex.Lock()
 	defer recorder.mutex.Unlock()

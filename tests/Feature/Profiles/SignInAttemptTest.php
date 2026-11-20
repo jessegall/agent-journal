@@ -66,7 +66,7 @@ final class SignInAttemptTest extends TestCase
     public function test_a_verified_sign_in_makes_the_first_account_and_chooses_it_once(): void
     {
         $started = $this->begin('request-1');
-        SignInAttempt::query()->whereKey($started->attemptId)->sole()->waitForPerson();
+        SignInAttempt::query()->whereKey($started->attemptId)->sole()->waitForUser();
 
         $this->complete($started->attemptId, 0, 'work@example.test');
 

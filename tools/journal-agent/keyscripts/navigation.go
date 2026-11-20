@@ -57,7 +57,7 @@ type ActionRecord struct {
 }
 
 // RoundResult is what came of a round: the screen after it (no rows on a secret screen), the actions carried out,
-// the refusal that stopped it, whether its proof showed, and whether the person's keys paused it.
+// the refusal that stopped it, whether its proof showed, and whether the user's keys paused it.
 type RoundResult struct {
 	ScreenAfter *Uncertainty
 	Actions     []ActionRecord
@@ -69,7 +69,7 @@ type RoundResult struct {
 }
 
 // Navigate carries out one round of the main agent on a stalled screen: never on a secret screen, never on a screen
-// that changed or that the person typed on since the main agent saw it (epoch is the person's input count then), a
+// that changed or that the user typed on since the main agent saw it (epoch is the user's input count then), a
 // menu entry chosen only by its label, and a proof checked against the live rows and refused when the stalled screen
 // already showed it.
 func (runner *Runner) Navigate(round Round, epoch uint64, stalled Uncertainty, values map[string]string) RoundResult {
@@ -78,7 +78,7 @@ func (runner *Runner) Navigate(round Round, epoch uint64, stalled Uncertainty, v
 	if !runner.program.Layout.Exportable(snapshot) {
 		return RoundResult{Refusal: RefusedSecretScreen}
 	}
-	if seen.Generation != round.Generation || runner.gate.HumanInputs() != epoch {
+	if seen.Generation != round.Generation || runner.gate.UserInputs() != epoch {
 		return runner.after(RoundResult{Refusal: RefusedScreenChanged}, values)
 	}
 
@@ -180,10 +180,10 @@ func (runner *Runner) checkProof(text string, stalled Uncertainty, values map[st
 	return RoundResult{ProofSeen: proof.SeenIn(runner.screen.Snapshot().Rows)}
 }
 
-// stoppedRound is a round a key failed in: the person's keys pause it, a refusal of the label helper is reported by
+// stoppedRound is a round a key failed in: the user's keys pause it, a refusal of the label helper is reported by
 // its reason.
 func (runner *Runner) stoppedRound(result RoundResult, err error) RoundResult {
-	if errors.Is(err, terminal.ErrPersonTyping) {
+	if errors.Is(err, terminal.ErrUserTyping) {
 		result.Paused = true
 		return result
 	}

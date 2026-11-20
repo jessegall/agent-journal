@@ -17,7 +17,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /**
- * A person gives a failed setting change a new value in its own place in the queue; the request's new row
+ * A user gives a failed setting change a new value in its own place in the queue; the request's new row
  * version is the answer.
  *
  * @extends Command<int>

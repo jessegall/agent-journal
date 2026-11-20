@@ -39,7 +39,7 @@ interface SignInHost
     public function reportCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void;
 
     /**
-     * The code the person typed for the sign-in, handed over once; none while none waits.
+     * The code the user typed for the sign-in, handed over once; none while none waits.
      */
     public function pendingCode(ClaimedSignIn $claimed): string|null;
 }

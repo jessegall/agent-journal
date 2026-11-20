@@ -24,7 +24,7 @@ const (
 
 // Uncertainty is where a run stopped because it could not be certain, as the main agent is asked about it: why, at
 // which step, and the stable screen it stopped on, its rows redacted, with its fingerprint, the highlighted entry
-// (-1 when none), the screen generation and the count of the person's inputs it was read at.
+// (-1 when none), the screen generation and the count of the user's inputs it was read at.
 type Uncertainty struct {
 	Reason      UncertaintyReason
 	Step        int

@@ -24,7 +24,7 @@ final class CreateNewUser implements CreatesNewUsers
     ) {}
 
     /**
-     * Validates and registers the person, then gives them their own desk, so they have an inbox from the start.
+     * Validates and registers the user, then gives them their own desk, so they have an inbox from the start.
      *
      * @param  array<string, string>  $input
      */

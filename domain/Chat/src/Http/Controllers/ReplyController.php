@@ -13,7 +13,7 @@ use Illuminate\Routing\Redirector;
 final readonly class ReplyController
 {
     /**
-     * Replies at the version the person saw; a message that changed since is refused and the page shows it anew.
+     * Replies at the version the user saw; a message that changed since is refused and the page shows it anew.
      */
     public function __invoke(ReplyInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {

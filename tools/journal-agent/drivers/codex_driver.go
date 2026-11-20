@@ -18,7 +18,7 @@ type CodexThreads interface {
 	TurnEnds(threadID string) <-chan host.CodexTurnEnd
 }
 
-// ErrTurnInterrupted is the end of a turn the person or the journal interrupted.
+// ErrTurnInterrupted is the end of a turn the user or the journal interrupted.
 var ErrTurnInterrupted = errors.New("the turn was interrupted")
 
 // CodexDriver runs one runtime as one thread on its account's shared app-server: each turn is a turn/start on the

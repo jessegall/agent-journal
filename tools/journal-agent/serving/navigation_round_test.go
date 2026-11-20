@@ -81,7 +81,7 @@ func TestARoundIsAdmittedWhileHeldAndReportedWithTheScreenAfterIt(t *testing.T) 
 	}
 }
 
-func TestATypingPersonInterruptsTheNavigation(t *testing.T) {
+func TestATypingUserInterruptsTheNavigation(t *testing.T) {
 	runtime := &roundRuntime{result: keyscripts.RoundResult{Paused: true}}
 	loop, journal := heldLoop(runtime)
 

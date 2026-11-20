@@ -12,7 +12,7 @@ use Domain\Chat\Data\InboxPageData;
 use Domain\Chat\Data\InboxPanelData;
 
 /**
- * Reads the Inbox page: each inbox the person sits at with its counts and newest page. Reading marks nothing read.
+ * Reads the Inbox page: each inbox the user sits at with its counts and newest page. Reading marks nothing read.
  */
 final readonly class InboxPageResolver implements PageResolver
 {

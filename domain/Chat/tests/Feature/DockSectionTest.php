@@ -22,8 +22,8 @@ use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
- * A record the person docked in a conversation shows above the composer as its owner's card, and nothing is docked
- * until the person docks it.
+ * A record the user docked in a conversation shows above the composer as its owner's card, and nothing is docked
+ * until the user docks it.
  */
 final class DockSectionTest extends TestCase
 {

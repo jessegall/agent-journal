@@ -17,7 +17,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /**
- * A person sends a failed or unavailable driver request again, as a new attempt under its own key; the
+ * A user sends a failed or unavailable driver request again, as a new attempt under its own key; the
  * request's new row version is the answer.
  *
  * @extends Command<int>

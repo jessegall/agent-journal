@@ -85,7 +85,7 @@ func (Codex) Arguments(start contracts.Start) ([]string, error) {
 }
 
 // foreignSkillsSwitchedOff is the setting that turns off every skill the journal did not select which codex-cli 0.165.0
-// would still offer whatever CODEX_HOME is (report 171): the person's own ~/.agents/skills and the work folder's
+// would still offer whatever CODEX_HOME is (report 171): the user's own ~/.agents/skills and the work folder's
 // .agents/skills. Each is reported with its path and left unchanged; empty when there is none.
 func foreignSkillsSwitchedOff(workFolder string) string {
 	folders := []string{}
@@ -178,26 +178,22 @@ func (Codex) RejectContrary(extraArguments []string) error {
 	return nil
 }
 
-// codexHookEvent is one hook event of Codex: its name in hooks.json, its key in a trust entry, and whether its
-// definition carries a matcher.
+// codexHookEvent is one hook event of Codex: its name in hooks.json, its key in a trust entry, and its timeout.
 type codexHookEvent struct {
-	name       string
-	key        string
-	hasMatcher bool
-	timeout    int
+	name    string
+	key     string
+	timeout int
 }
 
 var codexHookEvents = []codexHookEvent{
-	{"SessionStart", "session_start", true, 600},
-	{"UserPromptSubmit", "user_prompt_submit", false, 600},
-	{"PreToolUse", "pre_tool_use", true, 600},
-	{"PostToolUse", "post_tool_use", true, 600},
-	{"Stop", "stop", false, 600},
-	{"SessionEnd", "session_end", true, 1},
+	{"SessionStart", "session_start", 600},
+	{"UserPromptSubmit", "user_prompt_submit", 600},
+	{"PreToolUse", "pre_tool_use", 600},
+	{"PostToolUse", "post_tool_use", 600},
+	{"Stop", "stop", 600},
+	{"SessionEnd", "session_end", 1},
 }
 
-// codexHooks gives the hooks.json that runs the command on every event, and the [hooks.state] tables that mark each
-// hook trusted, hashed the way Codex hashes a command hook's identity, so the hooks run without a trust prompt.
 // CodexAccountHooks are a saved account's hooks.json, which relays every native event to the journal, and the
 // config.toml tables that trust each of those hooks, one table a hook.
 func CodexAccountHooks(accountFolder, hookCommand string) ([]byte, []string, error) {
@@ -214,6 +210,8 @@ func CodexAccountHooks(accountFolder, hookCommand string) ([]byte, []string, err
 	return hooks, tables, nil
 }
 
+// codexHooks gives the hooks.json that runs the command on every event, and the [hooks.state] tables that mark each
+// hook trusted, hashed the way Codex hashes a command hook's identity, so the hooks run without a trust prompt.
 func codexHooks(hookFile, command string) ([]byte, string, error) {
 	events := map[string]any{}
 	var trust strings.Builder

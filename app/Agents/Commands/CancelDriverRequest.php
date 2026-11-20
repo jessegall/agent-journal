@@ -17,7 +17,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /**
- * A person cancels a driver request that has not started; cancelling a setting change puts the runtime's
+ * A user cancels a driver request that has not started; cancelling a setting change puts the runtime's
  * requested settings back to what the requests still open ask for. The request's new row version is the answer.
  *
  * @extends Command<int>

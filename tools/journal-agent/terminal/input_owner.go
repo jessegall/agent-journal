@@ -1,4 +1,4 @@
-// Package terminal guards what is written to an agent program's terminal: the person's keys and the journal's lines
+// Package terminal guards what is written to an agent program's terminal: the user's keys and the journal's lines
 // pass one gate, so neither overwrites the other.
 package terminal
 
@@ -10,14 +10,14 @@ type Owner string
 const (
 	// NobodyOwns is an empty composer: the journal may type into it.
 	NobodyOwns Owner = "nobody"
-	// HumanInput is text the person typed: the journal never erases, retypes or submits it on its own.
-	HumanInput Owner = "human"
-	// DriverInput is exactly the line the journal last typed, with no key of the person's since.
+	// UserInput is text the user typed: the journal never erases, retypes or submits it on its own.
+	UserInput Owner = "user"
+	// DriverInput is exactly the line the journal last typed, with no key of the user's since.
 	DriverInput Owner = "driver"
 )
 
-// Draft is the person's unsent text in the composer and how long it has waited, so the journal can show its age and
-// offer the person's own choices for it.
+// Draft is the user's unsent text in the composer and how long it has waited, so the journal can show its age and
+// offer the user's own choices for it.
 type Draft struct {
 	Text  string
 	Since time.Time
@@ -28,11 +28,11 @@ func (draft Draft) Age(now time.Time) time.Duration {
 	return now.Sub(draft.Since)
 }
 
-// DraftChoice is what the person decides for a draft that holds up the journal's work. The gate never decides it.
+// DraftChoice is what the user decides for a draft that holds up the journal's work. The gate never decides it.
 type DraftChoice string
 
 const (
-	// SendDraft submits the person's draft as it stands.
+	// SendDraft submits the user's draft as it stands.
 	SendDraft DraftChoice = "send"
 	// SaveAndClearDraft keeps the draft in the local draft buffer and empties the composer.
 	SaveAndClearDraft DraftChoice = "save-and-clear"

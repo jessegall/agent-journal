@@ -288,7 +288,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     }
 
     /**
-     * The main agent gives up, saying why; the runtime keeps its hold for the person.
+     * The main agent gives up, saying why; the runtime keeps its hold for the user.
      */
     public function abandon(string $reason): void
     {
@@ -298,7 +298,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     }
 
     /**
-     * The person typed, or the screen changed with no round sent.
+     * The user typed, or the screen changed with no round sent.
      */
     public function interrupt(): void
     {

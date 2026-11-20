@@ -12,6 +12,7 @@ use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
+use App\Communication\Contracts\MessageCommand;
 use App\Communication\Enums\MessageAbility;
 use App\Communication\Handlers\ReleaseMessageClaimHandler;
 use App\Communication\Models\Message;
@@ -24,13 +25,15 @@ use App\Operations\Enums\ResourceAreaType;
  * removed. The first read and the message's state stay.
  *
  * @extends Command<null>
+ *
+ * @implements MessageCommand<null>
  */
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 #[HandledBy(ReleaseMessageClaimHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Recover)]
 #[Operation('release_message_claim', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class ReleaseMessageClaim extends Command implements AuthorizedCommand
+final readonly class ReleaseMessageClaim extends Command implements AuthorizedCommand, MessageCommand
 {
     public function __construct(
         public string $messageId,

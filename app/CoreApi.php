@@ -152,6 +152,7 @@ use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\AgentResolver;
+use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
@@ -168,7 +169,6 @@ use App\Agents\Contracts\StartReadiness;
 use App\Agents\Contracts\StartReceipts;
 use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Contracts\StartReservations;
-use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
@@ -473,6 +473,7 @@ use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Contracts\MessageCommand;
 use App\Communication\Data\InboxCounts;
 use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
@@ -1183,6 +1184,7 @@ final class CoreApi
                 PolicyProvider::class,
                 WorkStackProvider::class,
                 AuthorizedCommand::class,
+                MessageCommand::class,
                 ClassLevelAbilities::class,
                 Authorizer::class,
                 AuthorizerProvider::class,

@@ -21,7 +21,7 @@ type RecordingBounds struct {
 var DefaultRecordingBounds = RecordingBounds{MaxBytes: 8 << 20, MaxAge: 30 * time.Minute}
 
 // RuntimeRecording records one runtime on an operator's request, redacted as it is written: output keeps no email
-// address, and nothing typed is kept while the program waits for a person or a login, nor any secret input.
+// address, and nothing typed is kept while the program waits for a user or a login, nor any secret input.
 type RuntimeRecording struct {
 	mutex    sync.Mutex
 	folder   string
@@ -68,7 +68,7 @@ func (rec *RuntimeRecording) Output(stream string, bytes []byte) {
 	rec.recorder.Output(stream, bytes)
 }
 
-// Input records what was typed: only its length while the program waits for a person or a login, or when it is a
+// Input records what was typed: only its length while the program waits for a user or a login, or when it is a
 // secret.
 func (rec *RuntimeRecording) Input(bytes []byte, secret bool) {
 	rec.mutex.Lock()
@@ -80,15 +80,15 @@ func (rec *RuntimeRecording) Input(bytes []byte, secret bool) {
 	rec.recorder.Input(bytes, secret || rec.paused)
 }
 
-// PauseForPerson stops keeping typed input while the program waits for a person or a login.
-func (rec *RuntimeRecording) PauseForPerson() {
+// PauseForUser stops keeping typed input while the program waits for a user or a login.
+func (rec *RuntimeRecording) PauseForUser() {
 	rec.mutex.Lock()
 	defer rec.mutex.Unlock()
 	rec.paused = true
 }
 
-// ResumeAfterPerson keeps typed input again once the person or login step is over.
-func (rec *RuntimeRecording) ResumeAfterPerson() {
+// ResumeAfterUser keeps typed input again once the user or login step is over.
+func (rec *RuntimeRecording) ResumeAfterUser() {
 	rec.mutex.Lock()
 	defer rec.mutex.Unlock()
 	rec.paused = false

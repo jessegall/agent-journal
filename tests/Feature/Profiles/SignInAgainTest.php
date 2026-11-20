@@ -100,7 +100,7 @@ final class SignInAgainTest extends TestCase
     {
         $attemptId = $this->again('tab-1');
         $generation = $this->account->refresh()->sign_in_generation;
-        SignInAttempt::query()->whereKey($attemptId)->sole()->waitForPerson();
+        SignInAttempt::query()->whereKey($attemptId)->sole()->waitForUser();
 
         $this->asHost(new CompleteSignIn($attemptId, $generation, 'me@example.com'));
 

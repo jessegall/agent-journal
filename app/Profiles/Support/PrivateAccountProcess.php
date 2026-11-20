@@ -8,7 +8,7 @@ use App\Profiles\Exceptions\SignInProtocolMissing;
 
 /**
  * A program's sign-in process on the host: started with exactly the arguments and environment given, its standard
- * input kept for the person's code, its output read into a small private buffer that is never logged or recorded,
+ * input kept for the user's code, its output read into a small private buffer that is never logged or recorded,
  * and stopped when its attempt ends.
  */
 final class PrivateAccountProcess
@@ -45,7 +45,7 @@ final class PrivateAccountProcess
     }
 
     /**
-     * Gives the program a line on its standard input, such as the code the person typed.
+     * Gives the program a line on its standard input, such as the code the user typed.
      */
     public function send(string $line): void
     {

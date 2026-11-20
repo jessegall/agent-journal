@@ -20,7 +20,7 @@ use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Values\ProfileKey;
 
 /**
- * A person starts a main agent from a main_agent profile, with an explicit model or the profile's default and,
+ * A user starts a main agent from a main_agent profile, with an explicit model or the profile's default and,
  * when the profile does not pin one, a program of their choosing.
  *
  * @extends Command<StartReceipt>

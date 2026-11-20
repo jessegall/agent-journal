@@ -21,7 +21,7 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
 /**
- * The Inbox page lists every inbox a person sits at with what waits in it, marks nothing read by being looked at,
+ * The Inbox page lists every inbox a user sits at with what waits in it, marks nothing read by being looked at,
  * and takes up the next waiting question on request.
  */
 final class InboxPageTest extends TestCase
@@ -45,7 +45,7 @@ final class InboxPageTest extends TestCase
         'links',
     ];
 
-    public function test_a_person_at_two_inboxes_sees_both_and_takes_the_next_question(): void
+    public function test_a_user_at_two_inboxes_sees_both_and_takes_the_next_question(): void
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));

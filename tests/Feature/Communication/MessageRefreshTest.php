@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Event;
 use Tests\Support\MessagingTestCase;
 
 /**
- * A message only tells each person's own private channel that the page changed, with nothing in it; what the page
+ * A message only tells each user's own private channel that the page changed, with nothing in it; what the page
  * then reads is what the reader may see now, so an occupant removed from an inbox sees nothing of it.
  */
 final class MessageRefreshTest extends MessagingTestCase

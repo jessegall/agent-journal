@@ -19,7 +19,7 @@ use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Support\ConversationPair;
 
 /**
- * Pins one readable message of a conversation for the person or agent asking.
+ * Pins one readable message of a conversation for the user or agent asking.
  *
  * @extends Command<null>
  */

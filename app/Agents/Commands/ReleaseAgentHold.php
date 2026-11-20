@@ -20,7 +20,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /**
- * A person releases the hold they read on an agent's runtime: an interrupt or a call for attention, never a hold the
+ * A user releases the hold they read on an agent's runtime: an interrupt or a call for attention, never a hold the
  * program itself shows.
  *
  * @extends Command<void>

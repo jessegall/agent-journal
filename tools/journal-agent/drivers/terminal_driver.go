@@ -63,7 +63,7 @@ type TerminalDriver struct {
 }
 
 // stalledScript is a key script run stopped on a screen it could not be certain of: that screen, the run's values,
-// and the count of the person's inputs the main agent's next round must find unchanged.
+// and the count of the user's inputs the main agent's next round must find unchanged.
 type stalledScript struct {
 	uncertainty keyscripts.Uncertainty
 	values      map[string]string
@@ -149,7 +149,7 @@ func (driver *TerminalDriver) ChangeEffort(
 	return staged(change.Request), nil
 }
 
-// Interrupt stops the running turn and holds the runtime until a person or a new delivery releases it.
+// Interrupt stops the running turn and holds the runtime until a user or a new delivery releases it.
 func (driver *TerminalDriver) Interrupt(
 	_ context.Context,
 	interrupt contracts.InterruptRequest,
@@ -205,7 +205,7 @@ func (driver *TerminalDriver) RunKeyScript(
 }
 
 // NavigateRound carries out a round of the main agent on the stalled key script's screen. With no stalled script, as
-// after a restart, there is no live screen to answer and the round ends paused, for the person.
+// after a restart, there is no live screen to answer and the round ends paused, for the user.
 func (driver *TerminalDriver) NavigateRound(round keyscripts.Round) keyscripts.RoundResult {
 	driver.mutex.Lock()
 	stalled := driver.stalled
@@ -217,7 +217,7 @@ func (driver *TerminalDriver) NavigateRound(round keyscripts.Round) keyscripts.R
 	result := driver.runtime.Runner.Navigate(round, stalled.epoch, stalled.uncertainty, stalled.values)
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
-	stalled.epoch = driver.runtime.Gate.HumanInputs()
+	stalled.epoch = driver.runtime.Gate.UserInputs()
 	stalled.actions = append(stalled.actions, result.Actions...)
 	stalled.secret = stalled.secret || result.Refusal == keyscripts.RefusedSecretScreen
 	if round.Proof != "" && result.ProofSeen {

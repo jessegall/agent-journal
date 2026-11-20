@@ -18,7 +18,7 @@ func TestACodexAccountStartUsesTheAccountHomeAndWritesNoSettings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	environment := Codex{}.Environment([]string{"CODEX_HOME=/Users/person/.codex", "LANG=C"}, start)
+	environment := Codex{}.Environment([]string{"CODEX_HOME=/Users/user/.codex", "LANG=C"}, start)
 
 	if len(files) != 0 {
 		t.Fatalf("an account start wrote %d settings files", len(files))

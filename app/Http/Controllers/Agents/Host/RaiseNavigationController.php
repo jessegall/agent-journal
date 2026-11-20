@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 
 /**
  * Takes a host's raise at an uncertain point of a key script run and answers whether a navigation request is open,
- * the person holds it, or the host waits. The host's calls run as the journal itself, never an actor.
+ * the user holds it, or the host waits. The host's calls run as the journal itself, never an actor.
  */
 final readonly class RaiseNavigationController
 {

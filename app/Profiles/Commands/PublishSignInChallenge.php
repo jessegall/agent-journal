@@ -11,7 +11,7 @@ use App\Bus\Support\Command;
 use App\Profiles\Handlers\PublishSignInChallengeHandler;
 
 /**
- * The host's runner hands over the challenge its program printed for the attempt it runs, for the person only. Run
+ * The host's runner hands over the challenge its program printed for the attempt it runs, for the user only. Run
  * for an authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<null>

@@ -13,7 +13,7 @@ use Domain\Documents\Models\Report;
 
 /**
  * Suggests documents and reports for Chat's dock: the newest ones still asking for attention. It stores nothing;
- * docking one is the person's own action in Chat.
+ * docking one is the user's own action in Chat.
  */
 final readonly class DocumentDockResolver implements SectionResolver
 {

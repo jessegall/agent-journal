@@ -11,7 +11,7 @@ use App\Http\Data\Agents\MainRuntimeRequestData;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Opens an agent's main runtime as a terminal on the calling host, for journal-agent attach. The person at that
+ * Opens an agent's main runtime as a terminal on the calling host, for journal-agent attach. The user at that
  * machine enrolled it, so the journal opens the root runtime itself; the host still may only use its own folders.
  */
 final readonly class OpenMainRuntimeController

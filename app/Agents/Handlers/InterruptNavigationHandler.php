@@ -14,8 +14,8 @@ use App\Agents\Support\HostRuntimes;
 use App\Contracts\CommandHandler;
 
 /**
- * Interrupts a navigation request the person took over: its key script stays stopped at its step for the person to
- * resume or cancel, and the runtime is held for the person. A request already interrupted is left as it is.
+ * Interrupts a navigation request the user took over: its key script stays stopped at its step for the user to
+ * resume or cancel, and the runtime is held for the user. A request already interrupted is left as it is.
  */
 final readonly class InterruptNavigationHandler implements CommandHandler
 {

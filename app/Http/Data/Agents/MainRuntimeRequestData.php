@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
- * The person's ask, through their host, to open an agent's main runtime in a folder of that host.
+ * The user's ask, through their host, to open an agent's main runtime in a folder of that host.
  */
 #[MapInputName(SnakeCaseMapper::class)]
 final class MainRuntimeRequestData extends Data

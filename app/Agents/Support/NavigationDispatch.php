@@ -14,7 +14,7 @@ use App\Agents\Models\NavigationRequest;
 
 /**
  * Puts a navigation request in front of whoever answers it: the main desk, whose occupant is woken once per request
- * and round, unless the stopped runtime is that occupant's own, which the person keeps holding.
+ * and round, unless the stopped runtime is that occupant's own, which the user keeps holding.
  */
 final readonly class NavigationDispatch
 {
@@ -24,7 +24,7 @@ final readonly class NavigationDispatch
     ) {}
 
     /**
-     * Who answers a key script stopped on the runtime: the person for the main desk occupant's own runtime, the main
+     * Who answers a key script stopped on the runtime: the user for the main desk occupant's own runtime, the main
      * desk for any other.
      */
     public function answererFor(AgentRuntime $runtime): NavigationAnswerer
@@ -34,7 +34,7 @@ final readonly class NavigationDispatch
             ->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($owner))
             ->getOrElse(false);
 
-        return $ownRuntime ? NavigationAnswerer::Person : NavigationAnswerer::MainDesk;
+        return $ownRuntime ? NavigationAnswerer::User : NavigationAnswerer::MainDesk;
     }
 
     /**

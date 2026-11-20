@@ -12,7 +12,7 @@ import (
 // enterKey submits the composer's line.
 const enterKey = "\r"
 
-// InputGate is the one way into a program's terminal: the person's keys, the journal's typed lines, its Enter and
+// InputGate is the one way into a program's terminal: the user's keys, the journal's typed lines, its Enter and
 // any explicit draft choice all go through it, so a write lands only on the composer state it was meant for.
 type InputGate struct {
 	mutex      sync.Mutex
@@ -23,9 +23,9 @@ type InputGate struct {
 	owner      Owner
 	draftSince time.Time
 	pending    *TypedLine
-	// humanInputs counts every input of the person's, so a check before an action sees whether the person typed
+	// userInputs counts every input of the user's, so a check before an action sees whether the user typed
 	// since it last looked, even when their Enter already gave the composer back.
-	humanInputs uint64
+	userInputs uint64
 }
 
 // NewInputGate guards writes to the program, reading its composer from the reader; now is the clock of draft ages.
@@ -38,21 +38,21 @@ func NewInputGate(
 	return &InputGate{program: program, reader: reader, composer: composer, now: now, owner: NobodyOwns}
 }
 
-// Human forwards the person's keys at once. Any driver line still pending is invalidated, never submitted, and the
-// composer is the person's from their first key until they submit with Enter.
-func (gate *InputGate) Human(keys []byte) error {
+// UserTyped forwards the user's keys at once. Any driver line still pending is invalidated, never submitted, and the
+// composer is the user's from their first key until they submit with Enter.
+func (gate *InputGate) UserTyped(keys []byte) error {
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
 
-	gate.humanInputs++
+	gate.userInputs++
 	if gate.pending != nil {
 		gate.pending.invalidated = true
 		gate.pending = nil
 	}
 	if strings.HasSuffix(string(keys), enterKey) {
 		gate.owner, gate.draftSince = NobodyOwns, time.Time{}
-	} else if gate.owner != HumanInput {
-		gate.owner, gate.draftSince = HumanInput, gate.now()
+	} else if gate.owner != UserInput {
+		gate.owner, gate.draftSince = UserInput, gate.now()
 	}
 
 	_, err := gate.program.Write(keys)
@@ -60,12 +60,12 @@ func (gate *InputGate) Human(keys []byte) error {
 	return err
 }
 
-// HumanInputs is how many inputs the person has sent through the gate; it only grows.
-func (gate *InputGate) HumanInputs() uint64 {
+// UserInputs is how many inputs the user has sent through the gate; it only grows.
+func (gate *InputGate) UserInputs() uint64 {
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
 
-	return gate.humanInputs
+	return gate.userInputs
 }
 
 // Type writes a driver line into an empty composer whose generation is still the one the caller read; anything else
@@ -87,7 +87,7 @@ func (gate *InputGate) Type(requestID string, attempt int, text string, readGene
 	return gate.pending, nil
 }
 
-// Submit presses Enter once for a typed line whose echo is in the composer. A line the person typed over is refused;
+// Submit presses Enter once for a typed line whose echo is in the composer. A line the user typed over is refused;
 // a line with no echo is DeliveryUncertain, and so is a second Enter beyond the profile's retry bound.
 func (gate *InputGate) Submit(line *TypedLine, enterRetries int) (Delivery, error) {
 	gate.mutex.Lock()
@@ -119,14 +119,14 @@ func (gate *InputGate) mayEnter(line *TypedLine, enterRetries int) bool {
 	return gate.pending == line && gate.echoes(line.Text) && line.enters <= enterRetries
 }
 
-// Keys sends a driver's keys, such as a menu move, unless the person holds the input: a person's key since the
-// last driver write pauses the driver until a person's Enter or explicit choice hands the input back.
+// Keys sends a driver's keys, such as a menu move, unless the user holds the input: a user's key since the
+// last driver write pauses the driver until a user's Enter or explicit choice hands the input back.
 func (gate *InputGate) Keys(keys string) error {
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
 
-	if gate.owner == HumanInput {
-		return ErrPersonTyping
+	if gate.owner == UserInput {
+		return ErrUserTyping
 	}
 	_, err := io.WriteString(gate.program, keys)
 
@@ -141,19 +141,19 @@ func (gate *InputGate) Owner() Owner {
 	return gate.owner
 }
 
-// Draft is the person's unsent text and since when it waits; found is false while the composer is not theirs.
+// Draft is the user's unsent text and since when it waits; found is false while the composer is not theirs.
 func (gate *InputGate) Draft() (draft Draft, found bool) {
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
 
-	if gate.owner != HumanInput {
+	if gate.owner != UserInput {
 		return Draft{}, false
 	}
 
 	return Draft{Text: gate.composerText(), Since: gate.draftSince}, true
 }
 
-// Choose carries out the person's explicit choice for their draft; clearKeys is the profile's key that empties the
+// Choose carries out the user's explicit choice for their draft; clearKeys is the profile's key that empties the
 // composer line. It returns the saved text for SaveAndClearDraft. The gate never makes this choice itself.
 func (gate *InputGate) Choose(choice DraftChoice, clearKeys string) (string, error) {
 	gate.mutex.Lock()
