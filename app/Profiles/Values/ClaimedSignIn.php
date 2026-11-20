@@ -19,5 +19,7 @@ final readonly class ClaimedSignIn
         public string $directory,
         public int $generation,
         public string $expiresAt,
+        // The account a reconnect signs in again, none for a new account.
+        public string|null $accountId,
     ) {}
 }

@@ -144,6 +144,7 @@ final class AccountRemovalTest extends TestCase
             $directory,
             1,
             false,
+            'account',
         );
         $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null);
 
@@ -156,6 +157,7 @@ final class AccountRemovalTest extends TestCase
             $directory.'-x',
             1,
             false,
+            'account',
         );
         mkdir($directory.'-x');
         $runner->cleanNext();
@@ -184,10 +186,11 @@ final class AccountRemovalTest extends TestCase
             $directory,
             1,
             false,
+            'account',
         );
         $stillRunning = new class implements AccountOwnerDrain
         {
-            public function drain(string $directory): bool
+            public function drain(string $directory, string|null $accountId): bool
             {
                 return false;
             }

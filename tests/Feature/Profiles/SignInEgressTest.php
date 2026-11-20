@@ -1,0 +1,91 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Profiles;
+
+use App\Profiles\Support\ClaudeProgram;
+use App\Profiles\Support\CodexProgram;
+use App\Profiles\Support\SignInEgress;
+use Tests\TestCase;
+
+/**
+ * On a server every sign-in program goes out through the allow-list proxy; on the Mac, with none set, its clean
+ * environment stays as it was (doc 61, decision 5).
+ */
+final class SignInEgressTest extends TestCase
+{
+    private const array PROXY_VARIABLES = ['HTTPS_PROXY', 'HTTP_PROXY', 'https_proxy', 'http_proxy', 'NO_PROXY', 'no_proxy'];
+
+    private string $folder = '';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->folder = sys_get_temp_dir().'/sign-in-egress-'.uniqid();
+        mkdir($this->folder, 0o700);
+        $program = $this->folder.'/program';
+        file_put_contents($program, "#!/bin/sh\nenv > \"\$HOME/environment\"\n");
+        chmod($program, 0o700);
+        config(['accounts.claude_program' => $program, 'accounts.codex_program' => $program]);
+    }
+
+    protected function tearDown(): void
+    {
+        array_map(unlink(...), glob($this->folder.'/*') ?: []);
+        rmdir($this->folder);
+
+        parent::tearDown();
+    }
+
+    public function test_without_a_proxy_no_program_gets_a_proxy_variable(): void
+    {
+        $this->app->instance(SignInEgress::class, new SignInEgress(''));
+
+        foreach ($this->environments() as $environment) {
+            $this->assertSame([], array_intersect_key($environment, array_flip(self::PROXY_VARIABLES)));
+        }
+    }
+
+    public function test_with_a_proxy_every_program_goes_out_through_it_and_reaches_the_app_directly(): void
+    {
+        $this->app->instance(SignInEgress::class, new SignInEgress('http://egress:3128'));
+
+        foreach ($this->environments() as $environment) {
+            $this->assertSame('http://egress:3128', $environment['HTTPS_PROXY'] ?? null);
+            $this->assertSame('http://egress:3128', $environment['http_proxy'] ?? null);
+            $this->assertSame('app', $environment['NO_PROXY'] ?? null);
+            $this->assertSame('app', $environment['no_proxy'] ?? null);
+        }
+    }
+
+    /**
+     * The environment each program was started with, as the fake program wrote it.
+     *
+     * @return list<array<string, string>>
+     */
+    private function environments(): array
+    {
+        $this->app->make(ClaudeProgram::class)->start([], $this->folder)->finish();
+        $claude = $this->readEnvironment();
+        $this->app->make(CodexProgram::class)->start([], $this->folder)->finish();
+
+        return [$claude, $this->readEnvironment()];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function readEnvironment(): array
+    {
+        $variables = [];
+
+        foreach (file($this->folder.'/environment', FILE_IGNORE_NEW_LINES) ?: [] as $line) {
+            [$name, $value] = explode('=', $line, 2) + [1 => ''];
+            $variables[$name] = $value;
+        }
+
+        return $variables;
+    }
+}

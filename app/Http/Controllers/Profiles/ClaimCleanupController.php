@@ -29,6 +29,7 @@ final readonly class ClaimCleanupController
                 'directory' => $claimed->directory,
                 'generation' => $claimed->generation,
                 'store_removed' => $claimed->isStoreRemoved,
+                'account_id' => $claimed->accountId,
             ]);
     }
 }

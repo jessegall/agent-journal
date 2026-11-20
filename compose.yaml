@@ -269,6 +269,61 @@ services:
             timeout: 5s
             retries: 30
 
+    # The sign-in runner as an always-on service (doc 61): it runs every sign-in, check and cleanup of the
+    # journal's accounts in /accounts, reaches the app on journal-api and the providers only through egress, and
+    # resolves neither postgres nor redis. Its host secret comes from the compose secret, never the environment.
+    accounts:
+        profiles: [contained]
+        restart: unless-stopped
+        image: ${RUNNER_IMAGE:-journal-runner:unset}
+        user: '10001:10001'
+        command: ['php', '/app/artisan', 'accounts:run-sign-ins']
+        environment:
+            ACCOUNTS_ROOT: /accounts
+            JOURNAL_URL: http://app:8000
+            JOURNAL_HOST_SECRET_FILE: /run/secrets/journal_host_secret
+            AGENTS_HOST_START_SOCKET: /run/journal-start/start.sock
+            AGENTS_ARRANGEMENT: contained
+            AGENTS_INSTALLATION_NAME: ${AGENTS_INSTALLATION_NAME:-journal}
+            JOURNAL_EGRESS_PROXY: http://egress:3128
+        secrets:
+            - journal_host_secret
+        volumes:
+            - accounts-data:/accounts
+            - host-start-socket:/run/journal-start
+        networks:
+            - journal-api
+            - egress-internal
+        depends_on:
+            agent-host:
+                condition: service_healthy
+            egress:
+                condition: service_healthy
+        healthcheck:
+            # The runner image has no pgrep: the process is looked for by its command line.
+            test: ['CMD-SHELL', 'grep -qs accounts:run-sign-ins /proc/[0-9]*/cmdline']
+            interval: 10s
+            timeout: 5s
+            retries: 6
+
+    # The allow-list proxy: CONNECT on 443 to the domains in .docker/egress/allowed-domains.txt and nothing else.
+    # It is the one contained service with a way out.
+    egress:
+        profiles: [contained]
+        restart: unless-stopped
+        image: ${EGRESS_PROXY_IMAGE:-ubuntu/squid:6.13-25.04_beta}
+        volumes:
+            - ./.docker/egress/squid.conf:/etc/squid/squid.conf:ro
+            - ./.docker/egress/allowed-domains.txt:/etc/squid/allowed-domains.txt:ro
+        networks:
+            - egress-internal
+            - default
+        healthcheck:
+            test: ['CMD-SHELL', 'squidclient -h 127.0.0.1 -p 3128 mgr:info >/dev/null 2>&1 || bash -c "exec 3<>/dev/tcp/127.0.0.1/3128"']
+            interval: 10s
+            timeout: 5s
+            retries: 6
+
 volumes:
     postgres-data:
     redis-data:
@@ -292,4 +347,7 @@ networks:
     # The internal network the app shares with the contained agent host and the sign-in service; it reaches no
     # outside address.
     journal-api:
+        internal: true
+    # The sign-in service's network to the egress proxy; it reaches no outside address itself.
+    egress-internal:
         internal: true

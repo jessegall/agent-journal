@@ -3719,6 +3719,7 @@ class	RefusalExceptions
 class	RefusalMapper
 class	RefusalReplayed
 class	RefuseArrayAssignment
+class	RefuseRunnerOfOtherArrangement
 class	RefuseStaleRuns
 class	RefuseWritesDuringEvaluation
 class	RegisterAnsweringAskState
@@ -4141,6 +4142,7 @@ class	RunState
 class	RunUpdates
 class	RunWindowData
 class	RunWindowResolver
+class	RunnerArrangementRefused
 class	RunnerCapability
 class	RunnerUnavailable
 class	RunningCommand
@@ -4555,6 +4557,7 @@ class	SignInCode
 class	SignInCodeInvalid
 class	SignInCompletion
 class	SignInDeadline
+class	SignInEgress
 class	SignInIdentity
 class	SignInMethodData
 class	SignInMethodMissing
@@ -4563,6 +4566,7 @@ class	SignInProtocolMissing
 class	SignInProtocols
 class	SignInReconcileRequest
 class	SignInReportRequest
+class	SignInRunnerRefused
 class	SignInSecret
 class	SignInSecretUnwritable
 class	SignInStarted
@@ -7482,6 +7486,7 @@ method	ArithmeticCommandReader::reads()
 method	ArithmeticCommandReader::reason()
 method	ArrangementSetting::__construct()
 method	ArrangementSetting::assertFits()
+method	ArrangementSetting::assertRunnerFits()
 method	ArrangementSetting::fromConfig()
 method	ArrangementSetting::mountRules()
 method	ArrangementType::isContained()
@@ -15042,6 +15047,8 @@ method	RefusalReplayed::refusalCode()
 method	RefusalReplayed::refusalDetails()
 method	RefusalReplayed::status()
 method	RefuseArrayAssignment::handle()
+method	RefuseRunnerOfOtherArrangement::__construct()
+method	RefuseRunnerOfOtherArrangement::handle()
 method	RefuseStaleRuns::__construct()
 method	RefuseStaleRuns::handle()
 method	RefuseWritesDuringEvaluation::__construct()
@@ -16034,6 +16041,7 @@ method	RunReconciler::reconcile()
 method	RunRowData::__construct()
 method	RunRowData::fromRun()
 method	RunSignInsCommand::handle()
+method	RunSignInsCommand::reportOnce()
 method	RunSignedCallPipeline::pipes()
 method	RunSnapshotData::__construct()
 method	RunSnapshotResolver::__construct()
@@ -16055,6 +16063,9 @@ method	RunWindowResolver::__construct()
 method	RunWindowResolver::outputsOf()
 method	RunWindowResolver::problemsOf()
 method	RunWindowResolver::read()
+method	RunnerArrangementRefused::between()
+method	RunnerArrangementRefused::refusalCode()
+method	RunnerArrangementRefused::status()
 method	RunnerCapability::__construct()
 method	RunnerCapability::isOn()
 method	RunnerUnavailable::switchedOff()
@@ -17415,6 +17426,8 @@ method	SignInCompletion::endWithout()
 method	SignInCompletion::starterMayStillAdd()
 method	SignInDeadline::__construct()
 method	SignInDeadline::handle()
+method	SignInEgress::__construct()
+method	SignInEgress::variables()
 method	SignInHost::claim()
 method	SignInHost::claimCheck()
 method	SignInHost::claimCleanup()
@@ -17459,6 +17472,7 @@ method	SignInReportRequest::identity()
 method	SignInReportRequest::outcome()
 method	SignInReportRequest::rules()
 method	SignInReportRequest::text()
+method	SignInRunnerRefused::byJournal()
 method	SignInSecret::__construct()
 method	SignInSecret::fingerprintFor()
 method	SignInSecret::from()
@@ -17482,6 +17496,7 @@ method	SignedCallRules::writesOfReadCommands()
 method	SignedInScope::__construct()
 method	SignedInScope::apply()
 method	SignedSignInHost::__construct()
+method	SignedSignInHost::accountIdOf()
 method	SignedSignInHost::claim()
 method	SignedSignInHost::claimCheck()
 method	SignedSignInHost::claimCleanup()
@@ -20325,6 +20340,7 @@ parameter	$effect
 parameter	$effectiveTop
 parameter	$effects
 parameter	$effort
+parameter	$egress
 parameter	$either
 parameter	$elapsedSeconds
 parameter	$elementType
@@ -20723,6 +20739,7 @@ parameter	$jobId
 parameter	$jobState
 parameter	$jobs
 parameter	$join
+parameter	$journal
 parameter	$journalAdmission
 parameter	$journalTools
 parameter	$journalUrl
@@ -21196,6 +21213,7 @@ parameter	$previewChecksum
 parameter	$previewId
 parameter	$previous
 parameter	$previousPassStart
+parameter	$printed
 parameter	$privileged
 parameter	$probe
 parameter	$problem
@@ -21268,6 +21286,7 @@ parameter	$providerId
 parameter	$providerKey
 parameter	$providers
 parameter	$provisioning
+parameter	$proxy
 parameter	$prunable
 parameter	$pruned
 parameter	$prunedAllowedReads
@@ -23120,6 +23139,7 @@ property	ClaimedAccountCheck::$directory
 property	ClaimedAccountCheck::$generation
 property	ClaimedAccountCheck::$method
 property	ClaimedAccountCheck::$program
+property	ClaimedCleanup::$accountId
 property	ClaimedCleanup::$directory
 property	ClaimedCleanup::$generation
 property	ClaimedCleanup::$id
@@ -23144,6 +23164,7 @@ property	ClaimedRequest::$scriptStep
 property	ClaimedRequest::$scriptVersion
 property	ClaimedRequest::$sequence
 property	ClaimedRequests::$requests
+property	ClaimedSignIn::$accountId
 property	ClaimedSignIn::$attemptId
 property	ClaimedSignIn::$directory
 property	ClaimedSignIn::$expiresAt
@@ -23178,6 +23199,7 @@ property	ClaudeCodeAdapter::$journalTools
 property	ClaudeCodeAdapter::$parser
 property	ClaudeCodeAdapter::$protection
 property	ClaudeProgram::$config
+property	ClaudeProgram::$egress
 property	ClaudeSecretSignIn::$claude
 property	ClaudeSignIn::$claude
 property	ClaudeStatus::$authMethod
@@ -23255,6 +23277,7 @@ property	CodexJournalServer::$command
 property	CodexJournalServer::$relay
 property	CodexKeySignIn::$codex
 property	CodexProgram::$config
+property	CodexProgram::$egress
 property	CodexSignIn::$codex
 property	CodexStatus::$exitCode
 property	CodexStatus::$hasAuthFile
@@ -24702,6 +24725,7 @@ property	HookWalk::$walkTop
 property	HostAccess::$accesses
 property	HostAccess::$scope
 property	HostAccess::$type
+property	HostAccountDrain::$arrangement
 property	HostAccountDrain::$socket
 property	HostCapability::$evidence
 property	HostCapability::$query
@@ -26992,6 +27016,7 @@ property	Refusal::$message
 property	RefusalMapper::$exceptions
 property	RefusalReplayed::$storedCode
 property	RefusalReplayed::$storedDetails
+property	RefuseRunnerOfOtherArrangement::$setting
 property	RefuseStaleRuns::$commands
 property	RefuseWritesDuringEvaluation::$guard
 property	RegisterAnsweringAskState::$states
@@ -28619,6 +28644,7 @@ property	SignInCode::$code
 property	SignInCompletion::$authorizer
 property	SignInCompletion::$events
 property	SignInDeadline::$attemptId
+property	SignInEgress::$proxy
 property	SignInIdentity::$display
 property	SignInIdentity::$expiresAt
 property	SignInIdentity::$subject
@@ -28641,6 +28667,7 @@ property	SignedCall::$callId
 property	SignedCall::$issuedAt
 property	SignedInScope::$actors
 property	SignedInScope::$visibility
+property	SignedSignInHost::$arrangement
 property	SignedSignInHost::$hostSecret
 property	SignedSignInHost::$http
 property	SignedSignInHost::$journalUrl

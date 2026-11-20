@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Console;
 
+use App\Agents\Support\ArrangementSetting;
+use App\Profiles\Exceptions\SignInRunnerRefused;
 use App\Profiles\Support\HostAccountDrain;
 use App\Profiles\Support\HostSecret;
 use App\Profiles\Support\PrivateSignInProcesses;
@@ -22,22 +24,29 @@ final class RunSignInsCommand extends Command
 
     protected $description = 'Run the journal sign-ins on this host';
 
-    public function handle(Factory $http, SignInProtocols $protocols): int
+    public function handle(Factory $http, SignInProtocols $protocols, ArrangementSetting $arrangement): int
     {
         $runner = new PrivateSignInProcesses(
             new SignedSignInHost($http, (string) getenv('JOURNAL_URL'), HostSecret::fromEnvironment(
                 (string) getenv('JOURNAL_HOST_SECRET_FILE'),
                 (string) getenv('JOURNAL_HOST_SECRET'),
-            )),
+            ), $arrangement->arrangement),
             $protocols,
             static fn () => usleep(500_000),
-            new HostAccountDrain((string) getenv('AGENTS_HOST_START_SOCKET')),
+            new HostAccountDrain((string) getenv('AGENTS_HOST_START_SOCKET'), $arrangement->arrangement),
         );
 
         $runner->reconcileAtStart();
+        $refusal = null;
 
         do {
-            $ran = $runner->runNext() || $runner->checkNext() || $runner->cleanNext();
+            $ran = false;
+
+            try {
+                $ran = $runner->runNext() || $runner->checkNext() || $runner->cleanNext();
+            } catch (SignInRunnerRefused $refused) {
+                $refusal = $this->reportOnce($refused, $refusal);
+            }
 
             if (! $ran && ! $this->option('once')) {
                 sleep(2);
@@ -45,5 +54,18 @@ final class RunSignInsCommand extends Command
         } while (! $this->option('once'));
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Prints a refusal the first time the journal gives it, so a runner it refuses waits quietly instead of repeating
+     * the same line every poll.
+     */
+    private function reportOnce(SignInRunnerRefused $refused, string|null $printed): string
+    {
+        if ($refused->getMessage() !== $printed) {
+            $this->error($refused->getMessage());
+        }
+
+        return $refused->getMessage();
     }
 }

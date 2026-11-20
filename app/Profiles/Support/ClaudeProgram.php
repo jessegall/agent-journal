@@ -20,7 +20,10 @@ final readonly class ClaudeProgram
      */
     private const string NO_KEYCHAIN = 'tools/accounts/no-keychain';
 
-    public function __construct(private Repository $config) {}
+    public function __construct(
+        private Repository $config,
+        private SignInEgress $egress,
+    ) {}
 
     /**
      * Runs the program in the account folder, with extra variables that name no secret and files it reads on their
@@ -79,6 +82,7 @@ final readonly class ClaudeProgram
             'PATH' => base_path(self::NO_KEYCHAIN).PATH_SEPARATOR.(string) getenv('PATH'),
             'HOME' => $directory,
             'CLAUDE_CONFIG_DIR' => $directory,
+            ...$this->egress->variables(),
         ];
     }
 }

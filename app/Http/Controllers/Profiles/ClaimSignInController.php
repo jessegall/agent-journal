@@ -29,6 +29,7 @@ final readonly class ClaimSignInController
                 'directory' => $claimed->directory,
                 'generation' => $claimed->generation,
                 'expires_at' => $claimed->expiresAt,
+                'account_id' => $claimed->accountId,
             ]);
     }
 }

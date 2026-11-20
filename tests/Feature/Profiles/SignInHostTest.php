@@ -278,7 +278,7 @@ final class SignInHostTest extends TestCase
      */
     private static function claimed(string $program, SignInMethod $method, string $directory): ClaimedSignIn
     {
-        return new ClaimedSignIn('attempt-1', $program, $method, $directory, 0, '2099-01-01T00:00:00+00:00');
+        return new ClaimedSignIn('attempt-1', $program, $method, $directory, 0, '2099-01-01T00:00:00+00:00', null);
     }
 
     private function attempt(string $attemptId): SignInAttempt

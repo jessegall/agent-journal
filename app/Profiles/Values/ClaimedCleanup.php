@@ -21,5 +21,7 @@ final readonly class ClaimedCleanup
         public string $directory,
         public int $generation,
         public bool $isStoreRemoved,
+        // The account whose folder this is, none for a new account's attempt.
+        public string|null $accountId,
     ) {}
 }

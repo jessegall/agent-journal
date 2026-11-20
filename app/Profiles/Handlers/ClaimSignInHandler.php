@@ -27,6 +27,7 @@ final readonly class ClaimSignInHandler implements CommandHandler
             (string) $attempt->directory,
             $attempt->generation,
             $attempt->expires_at->toIso8601String(),
+            $attempt->account_id,
         );
     }
 }

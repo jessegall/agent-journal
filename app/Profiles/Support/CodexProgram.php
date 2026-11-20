@@ -14,7 +14,10 @@ use Illuminate\Contracts\Config\Repository;
  */
 final readonly class CodexProgram
 {
-    public function __construct(private Repository $config) {}
+    public function __construct(
+        private Repository $config,
+        private SignInEgress $egress,
+    ) {}
 
     /**
      * Runs the program in the account folder, its file credential store set first.
@@ -26,7 +29,7 @@ final readonly class CodexProgram
         self::useFileCredentialStore($directory);
         $command = [$this->config->string('accounts.codex_program'), ...$arguments];
 
-        return PrivateAccountProcess::start($command, self::environment($directory), $directory);
+        return PrivateAccountProcess::start($command, $this->environment($directory), $directory);
     }
 
     public function status(string $directory): CodexStatus
@@ -69,12 +72,13 @@ final readonly class CodexProgram
     /**
      * @return array<string, string>
      */
-    private static function environment(string $directory): array
+    private function environment(string $directory): array
     {
         return [
             'PATH' => (string) getenv('PATH'),
             'HOME' => $directory,
             'CODEX_HOME' => $directory,
+            ...$this->egress->variables(),
         ];
     }
 }

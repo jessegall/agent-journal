@@ -20,15 +20,27 @@ type protectedExecutor struct {
 	reports     *host.StartReports
 	reporter    host.StartReporter
 	codexOwners *host.CodexOwners
+	arrangement host.Arrangement
 	mutex       sync.Mutex
 	executions  map[string]execution
 }
 
 // execution is one start the executor runs: its driver, the start key its reports carry and its account.
 type execution struct {
-	runtime  serving.Runtime
-	startKey string
-	account  string
+	runtime   serving.Runtime
+	startKey  string
+	account   string
+	accountID string
+}
+
+// belongsTo is whether the execution runs on the account a drain names: by its id on a contained host, by its
+// folder on a local one.
+func (running execution) belongsTo(request host.DrainRequest, arrangement host.Arrangement) bool {
+	if arrangement.IsContained() {
+		return running.accountID == request.AccountID
+	}
+
+	return running.account == request.Account
 }
 
 // drainBound is how long a drain waits for each owner and execution of the account to be proven ended.
@@ -57,6 +69,7 @@ func (executor *protectedExecutor) Start(ctx context.Context, request host.Start
 	}
 	executor.executions[executionID] = execution{
 		runtime: runtime, startKey: prepared.Claim.StartKey, account: prepared.Claim.Directory,
+		accountID: prepared.Claim.AccountID,
 	}
 	executor.mutex.Unlock()
 	executor.report(ctx, host.StartReport{
@@ -91,10 +104,13 @@ func (executor *protectedExecutor) Stop(ctx context.Context, request host.StopRe
 // and answers drained only when all of them are gone. Runtimes serve opened from claimed requests end through the
 // journal's own stop requests before maintenance claims the account.
 func (executor *protectedExecutor) Drain(ctx context.Context, request host.DrainRequest) (host.DrainReply, error) {
+	if executor.arrangement.IsContained() && request.AccountID == "" {
+		return host.DrainReply{Reason: "a contained host drains an account by its id, and none was given"}, nil
+	}
 	executor.mutex.Lock()
 	var executionIDs []string
 	for executionID, running := range executor.executions {
-		if running.account == request.Account {
+		if running.belongsTo(request, executor.arrangement) {
 			executionIDs = append(executionIDs, executionID)
 		}
 	}

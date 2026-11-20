@@ -51,6 +51,7 @@ use App\Profiles\Support\ProfileAuthorizerProvider;
 use App\Profiles\Support\ProfileOperationPolicy;
 use App\Profiles\Support\ProfilePermissionReader;
 use App\Profiles\Support\ProfileStartAdmission;
+use App\Profiles\Support\SignInEgress;
 use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Support\StackCommandAdmission;
 use Illuminate\Console\Command;
@@ -79,6 +80,9 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->bind(BuiltInStartProfiles::class, BuiltInProfilePins::class);
         $this->app->bind(ActiveAccountReader::class, ActiveAccountRecords::class);
         $this->app->singleton(SignInProtocols::class);
+        $this->app->singleton(SignInEgress::class, fn () => new SignInEgress(
+            $this->app->make('config')->string('accounts.egress_proxy'),
+        ));
         $this->callAfterResolving(
             SignInProtocols::class,
             function (SignInProtocols $protocols): void {

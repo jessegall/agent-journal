@@ -8,6 +8,7 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Exceptions\ArrangementUnknown;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\InstallationNameMissing;
+use App\Agents\Exceptions\RunnerArrangementRefused;
 use App\Agents\Models\Host;
 
 /**
@@ -59,5 +60,17 @@ final readonly class ArrangementSetting
         throw $this->arrangement->isContained()
             ? HostArrangementRefused::localHost()
             : HostArrangementRefused::containedHost();
+    }
+
+    /**
+     * Refuses a sign-in runner of the other arrangement.
+     *
+     * @throws RunnerArrangementRefused
+     */
+    public function assertRunnerFits(ArrangementType $runner): void
+    {
+        if ($runner !== $this->arrangement) {
+            throw RunnerArrangementRefused::between($this->arrangement, $runner);
+        }
     }
 }

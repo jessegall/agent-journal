@@ -14,4 +14,9 @@ return [
     'codex_program' => env('ACCOUNTS_CODEX_PROGRAM', 'codex'),
 
     'root' => env('ACCOUNTS_ROOT', storage_path('app/private/accounts')),
+
+    /*
+    | The allow-list proxy every sign-in program goes out through on a server (doc 61, decision 5); empty on the Mac.
+    */
+    'egress_proxy' => (string) env('JOURNAL_EGRESS_PROXY', ''),
 ];

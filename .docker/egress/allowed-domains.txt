@@ -1,0 +1,8 @@
+# UNVERIFIED: the first guess at the sign-in domains, replaced by the list task 1482 records on a test server.
+.claude.ai
+.claude.com
+console.anthropic.com
+api.anthropic.com
+auth.openai.com
+chatgpt.com
+api.openai.com

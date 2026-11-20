@@ -35,6 +35,7 @@ type ClaimedStart struct {
 	StartKey   string        `json:"start_key"`
 	SessionID  string        `json:"session_id"`
 	Directory  string        `json:"directory"`
+	AccountID  string        `json:"account_id"`
 	Generation int           `json:"generation"`
 	Recipe     AccountRecipe `json:"recipe"`
 	// ConversationTarget is the native conversation the journal chose for a resume, empty for a fresh one. The host

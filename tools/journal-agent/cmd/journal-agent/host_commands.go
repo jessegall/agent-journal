@@ -171,7 +171,7 @@ func serve(arguments []string) error {
 	}
 	startSocket := host.StartSocket{Folder: *startSocketFolder, Executor: &protectedExecutor{
 		preparation: preparation, open: opener.open, reports: reports, reporter: journal,
-		codexOwners: opener.codexOwners,
+		codexOwners: opener.codexOwners, arrangement: arrangement,
 	}}
 	startListener, err := startSocket.Listen()
 	if err != nil {

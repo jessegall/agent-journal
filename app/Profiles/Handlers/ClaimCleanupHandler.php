@@ -26,6 +26,7 @@ final readonly class ClaimCleanupHandler implements CommandHandler
                 (string) $account->directory,
                 $account->sign_in_generation,
                 $account->store_removed,
+                $account->id,
             );
         }
 
@@ -39,6 +40,7 @@ final readonly class ClaimCleanupHandler implements CommandHandler
             (string) $attempt->directory,
             $attempt->generation,
             $attempt->store_removed,
+            $attempt->account_id,
         );
     }
 }

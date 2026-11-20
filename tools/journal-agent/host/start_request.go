@@ -52,7 +52,10 @@ type StopReply struct {
 // DrainRequest asks the host to end, with proof, the shared owner and every execution of one saved account before
 // its sign-in is replaced or removed.
 type DrainRequest struct {
+	// Account is the account's folder, by which a local host knows the account.
 	Account string `json:"account"`
+	// AccountID is the account's id, by which a contained host knows it: the runner's folder is no path of its own.
+	AccountID string `json:"accountId"`
 }
 
 // DrainReply answers whether nothing of the account runs any more.

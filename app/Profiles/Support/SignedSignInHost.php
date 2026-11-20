@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\AgentRequests\Support\SignedCall;
+use App\Agents\Enums\ArrangementType;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\CleanupTarget;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInOutcome;
+use App\Profiles\Exceptions\SignInRunnerRefused;
 use App\Profiles\Values\ClaimedAccountCheck;
 use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
@@ -31,11 +33,12 @@ final readonly class SignedSignInHost implements SignInHost
         private Factory $http,
         private string $journalUrl,
         private string $hostSecret,
+        private ArrangementType $arrangement,
     ) {}
 
     public function claim(): ClaimedSignIn|null
     {
-        $response = $this->send('profiles.sign-in-host.claim', [], '');
+        $response = $this->claimFrom('profiles.sign-in-host.claim');
 
         if ($response->status() === 204) {
             return null;
@@ -48,6 +51,7 @@ final readonly class SignedSignInHost implements SignInHost
             (string) $response->json('directory'),
             (int) $response->json('generation'),
             (string) $response->json('expires_at'),
+            self::accountIdOf($response),
         );
     }
 
@@ -81,7 +85,7 @@ final readonly class SignedSignInHost implements SignInHost
 
     public function claimCheck(): ClaimedAccountCheck|null
     {
-        $response = $this->send('profiles.account-host.checks.claim', [], '');
+        $response = $this->claimFrom('profiles.account-host.checks.claim');
 
         if ($response->status() === 204) {
             return null;
@@ -113,7 +117,7 @@ final readonly class SignedSignInHost implements SignInHost
 
     public function claimCleanup(): ClaimedCleanup|null
     {
-        $response = $this->send('profiles.account-host.cleanups.claim', [], '');
+        $response = $this->claimFrom('profiles.account-host.cleanups.claim');
 
         if ($response->status() === 204) {
             return null;
@@ -127,6 +131,7 @@ final readonly class SignedSignInHost implements SignInHost
             (string) $response->json('directory'),
             (int) $response->json('generation'),
             (bool) $response->json('store_removed'),
+            self::accountIdOf($response),
         );
     }
 
@@ -145,7 +150,19 @@ final readonly class SignedSignInHost implements SignInHost
     }
 
     /**
+     * A claim, which names this runner's arrangement so the journal refuses a runner of the other one.
+     *
+     * @throws SignInRunnerRefused
+     */
+    private function claimFrom(string $route): Response
+    {
+        return $this->send($route, ['arrangement' => $this->arrangement->value], '');
+    }
+
+    /**
      * @param  array<string, string>  $parameters
+     *
+     * @throws SignInRunnerRefused
      */
     private function send(string $route, array $parameters, string $body): Response
     {
@@ -154,7 +171,7 @@ final readonly class SignedSignInHost implements SignInHost
         $issuedAt = CarbonImmutable::now()->getTimestamp();
         $signature = SignedCall::signatureFor($this->hostSecret, 'POST', $path, $callId, $issuedAt, $body);
 
-        return $this->http
+        $response = $this->http
             ->withToken($this->hostSecret)
             ->withHeaders([
                 SignedCall::ID_HEADER => $callId,
@@ -162,7 +179,22 @@ final readonly class SignedSignInHost implements SignInHost
                 SignedCall::SIGNATURE_HEADER => $signature,
             ])
             ->withBody($body, 'application/json')
-            ->post(rtrim($this->journalUrl, '/').$path)
-            ->throw();
+            ->post(rtrim($this->journalUrl, '/').$path);
+
+        if ($response->status() === 409) {
+            throw SignInRunnerRefused::byJournal((string) $response->json('message'));
+        }
+
+        return $response->throw();
+    }
+
+    /**
+     * The account a claim names, none for a new account's sign-in.
+     */
+    private static function accountIdOf(Response $response): string|null
+    {
+        $accountId = $response->json('account_id');
+
+        return $accountId === null ? null : (string) $accountId;
     }
 }
