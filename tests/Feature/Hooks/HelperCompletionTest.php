@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Commands\CancelLaunch;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverOperation;
@@ -20,6 +22,13 @@ use App\Agents\Support\StartPolicy;
 use App\Agents\Support\StartRequest;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\CommandEntrance;
+use App\Bus\Support\RequestKey;
+use App\Engine\Support\EngineAccess;
+use App\Engine\Support\EngineActor;
+use App\Hooks\Commands\CertifyPassedStops;
 use App\Hooks\Commands\RecordStopResults;
 use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Decisions\Decision;
@@ -47,7 +56,8 @@ use Tests\TestCase;
 /**
  * A started helper's work is complete only on stop evidence (task 415): a passed stop certifies it once, a reader
  * with no conditions finishes on its stack checks alone, a failed stop refuses and the third unchanged failure ends
- * the turn with one held notice, and a cancel stops the runtime and tells the owner while the workspace stays.
+ * the turn with one held notice, a passed stop that never comes back is certified once by the engine, and a cancel
+ * stops the runtime and tells the owner while the workspace stays.
  */
 #[TimeLimit(seconds: 5, reason: 'It starts test agent sessions, opens a runtime and empties the hook tables.')]
 final class HelperCompletionTest extends TestCase
@@ -75,6 +85,22 @@ final class HelperCompletionTest extends TestCase
             HelperCompletionCertified::class,
             fn (HelperCompletionCertified $event) => $event->work->id === $work->id,
         );
+    }
+
+    public function test_a_stop_that_never_comes_back_is_certified_once_by_the_engine(): void
+    {
+        Event::fake([HelperCompletionCertified::class]);
+        $start = $this->helperWithConditions();
+        $this->startedFor($start);
+        $this->stop($start, 'stop-1');
+        $this->settle('stop-1', StopResultType::Passed, 'clean');
+
+        $this->certifyPassedStops('pass-1');
+        $this->certifyPassedStops('pass-2');
+        $this->stop($start, 'stop-1');
+
+        $this->assertNotNull(StopAttempt::query()->withoutGlobalScopes()->sole()->certified_at);
+        Event::assertDispatchedTimes(HelperCompletionCertified::class, 1);
     }
 
     public function test_a_dirty_writer_cannot_finish_while_its_checks_run_or_fail(): void
@@ -222,5 +248,20 @@ final class HelperCompletionTest extends TestCase
                 false,
             ),
         ]));
+    }
+
+    /**
+     * Runs the engine's sweep of passed stops, as one engine pass does.
+     */
+    private function certifyPassedStops(string $pass): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
+        $this->app->make(EngineAccess::class)->grantMaintenance(CertifyPassedStops::MAINTENANCE_SCOPE);
+        $this->app->make(RequestKey::class)->set($pass);
+        $bus = $this->app->make(CommandBus::class);
+        $this->app->make(CommandEntrance::class)->through(
+            CommandEntry::EngineMaintenance,
+            fn () => $bus->run(new CertifyPassedStops()),
+        );
     }
 }

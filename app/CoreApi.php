@@ -562,6 +562,7 @@ use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
 use App\Hooks\Attributes\StackWide;
+use App\Hooks\Commands\CertifyPassedStops;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
@@ -1975,6 +1976,7 @@ final class CoreApi
                 ReportRuntimeScreen::class,
                 OpenHostMainRuntime::class,
                 MarkSilentSessions::class,
+                CertifyPassedStops::class,
                 EndTerminalViews::class,
                 EnforceLaunchLimits::class,
                 AdvanceAsk::class,

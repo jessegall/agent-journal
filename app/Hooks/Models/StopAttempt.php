@@ -127,6 +127,24 @@ final class StopAttempt extends Model implements ReadableModel
     }
 
     /**
+     * Attempts whose final checks passed and whose work is not yet certified, oldest first: their stop was answered
+     * before the host reported, or never came back.
+     *
+     * @return list<self>
+     */
+    public static function passedUncertified(int $limit): array
+    {
+        return array_values(self::query()
+            ->withoutGlobalScope(AgentSessionScope::class)
+            ->where('state', StopAttemptState::Passed->value)
+            ->whereNull('certified_at')
+            ->orderBy('created_at')
+            ->readLimit($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
      * The settled attempts of this session, newest first, at most this many.
      *
      * @return list<self>

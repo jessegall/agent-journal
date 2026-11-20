@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Support;
 
 use App\Agents\Contracts\SessionPolicyReader;
-use App\Agents\Models\CertifiedWork;
 use App\Agents\Models\StartRecord;
 use App\Agents\Support\StackTarget;
 use App\Agents\Support\StartPolicy;
@@ -16,7 +15,6 @@ use App\Hooks\Contracts\StopPreparer;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Enums\StopPreparationState;
-use App\Hooks\Events\HelperCompletionCertified;
 use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\StopAttempt;
@@ -60,6 +58,7 @@ final readonly class StopAttemptGate implements StopConditionGate
         private SessionPolicyReader $policies,
         private StopEvidence $evidence,
         private StopPreparer $preparer,
+        private StopCertification $certification,
         private Dispatcher $events,
     ) {}
 
@@ -154,21 +153,9 @@ final readonly class StopAttemptGate implements StopConditionGate
         return $this->certifyCompletion($attempt, Decision::allow()->withMessage(self::NO_CHECKS_REQUIRED));
     }
 
-    /**
-     * Certifies the work of the session complete by this passed attempt, once, and answers with the decision.
-     */
     private function certifyCompletion(StopAttempt $attempt, Decision $decision): Decision
     {
-        if ($attempt->isCertified()) {
-            return $decision;
-        }
-
-        $attempt->certify();
-
-        StartRecord::ownerStartOf($attempt->session_id)->forAll(function (StartRecord $start) use ($attempt): void {
-            CertifiedWork::record($start, $attempt->id);
-            $this->events->dispatch(new HelperCompletionCertified($start->ownerWork(), $attempt->reference()));
-        });
+        $this->certification->certify($attempt);
 
         return $decision;
     }

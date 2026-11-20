@@ -14,6 +14,7 @@ use App\Engine\Contracts\Sleeper;
 use App\Engine\Contracts\Watchdog;
 use App\Engine\Support\AdvisoryEngineLock;
 use App\Engine\Support\AlarmWatchdog;
+use App\Engine\Support\CertifyPassedStopsOnTick;
 use App\Engine\Support\EndTerminalViewsOnTick;
 use App\Engine\Support\EnforceLaunchLimitsOnTick;
 use App\Engine\Support\EngineAccess;
@@ -78,6 +79,7 @@ final class EngineServiceProvider extends ServiceProvider
     ): void {
         $authorizers->register(ActorType::Engine, EngineAuthorizerProvider::class);
         $listeners->add(MarkSilentSessionsOnTick::class);
+        $listeners->add(CertifyPassedStopsOnTick::class);
         $listeners->add(EndTerminalViewsOnTick::class);
         $listeners->add(ExpireNavigationRequestsOnTick::class);
         $listeners->add(EnforceLaunchLimitsOnTick::class);

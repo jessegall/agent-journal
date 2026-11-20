@@ -1606,6 +1606,9 @@ class	CapturedChunk
 class	CapturedPart
 class	CatalogueOnFirstRead
 class	CertifiedWork
+class	CertifyPassedStops
+class	CertifyPassedStopsHandler
+class	CertifyPassedStopsOnTick
 class	ChallengeProbe
 class	ChangeAgentEffort
 class	ChangeAgentEffortHandler
@@ -4727,6 +4730,7 @@ class	StopAttemptMissing
 class	StopAttemptRecords
 class	StopAttemptReference
 class	StopAttemptResult
+class	StopCertification
 class	StopCondition
 class	StopConditionRunData
 class	StopConditions
@@ -5234,6 +5238,8 @@ constant	CanonicalRenderer::MOST_BYTES
 constant	CanonicalRenderer::MOST_DESCRIPTION_BYTES
 constant	CanonicalRenderer::MOST_SECTIONS
 constant	CapabilitiesResolver::PROTOCOL_HEADER
+constant	CertifyPassedStops::MAINTENANCE_SCOPE
+constant	CertifyPassedStopsHandler::PASS_LIMIT
 constant	ChallengeProbe::SECONDS
 constant	ChannelRunEvents::HEARTBEAT_SECONDS
 constant	CheckRules::PHP_SPELLINGS
@@ -8243,6 +8249,11 @@ method	CatalogueOnFirstRead::find()
 method	CertifiedWork::importRef()
 method	CertifiedWork::of()
 method	CertifiedWork::record()
+method	CertifyPassedStopsHandler::__construct()
+method	CertifyPassedStopsHandler::handle()
+method	CertifyPassedStopsOnTick::__construct()
+method	CertifyPassedStopsOnTick::__invoke()
+method	CertifyPassedStopsOnTick::maintenanceScope()
 method	ChallengeProbe::__construct()
 method	ChallengeProbe::health()
 method	ChangeAgentEffort::__construct()
@@ -17955,6 +17966,7 @@ method	StopAttempt::isFor()
 method	StopAttempt::isSettled()
 method	StopAttempt::latestSettledOf()
 method	StopAttempt::openFor()
+method	StopAttempt::passedUncertified()
 method	StopAttempt::pendingOf()
 method	StopAttempt::reference()
 method	StopAttempt::results()
@@ -17977,6 +17989,8 @@ method	StopAttemptReference::__construct()
 method	StopAttemptResult::__construct()
 method	StopAttemptResult::failureSummary()
 method	StopAttemptState::settledBy()
+method	StopCertification::__construct()
+method	StopCertification::certify()
 method	StopCondition::__construct()
 method	StopCondition::cleanWorktree()
 method	StopCondition::definitionHash()
@@ -19653,6 +19667,7 @@ parameter	$cause
 parameter	$ceiling
 parameter	$cells
 parameter	$certificate
+parameter	$certification
 parameter	$chain
 parameter	$challenge
 parameter	$challenges
@@ -22588,6 +22603,9 @@ property	CapturedPart::$partId
 property	CapturedPart::$state
 property	CatalogueOnFirstRead::$build
 property	CatalogueOnFirstRead::$catalogue
+property	CertifyPassedStopsHandler::$access
+property	CertifyPassedStopsHandler::$certification
+property	CertifyPassedStopsOnTick::$commands
 property	ChallengeProbe::$addresses
 property	ChallengeProbe::$challenges
 property	ChallengeProbe::$http
@@ -28444,6 +28462,7 @@ property	StopAgent::$agentId
 property	StopAgent::$idempotencyKey
 property	StopAgent::$sessionId
 property	StopAgentHandler::$requests
+property	StopAttemptGate::$certification
 property	StopAttemptGate::$events
 property	StopAttemptGate::$evidence
 property	StopAttemptGate::$policies
@@ -28452,6 +28471,7 @@ property	StopAttemptReference::$attemptId
 property	StopAttemptResult::$state
 property	StopAttemptResult::$statuses
 property	StopAttemptResult::$summaries
+property	StopCertification::$events
 property	StopCondition::$accessTypes
 property	StopCondition::$arguments
 property	StopCondition::$directory
