@@ -51,6 +51,10 @@ final class TimeLimitExtension implements Extension
                 public function notify(Finished $event): void
                 {
                     TestAlarm::disarm();
+
+                    if (TestAlarm::hasRung()) {
+                        InterruptedModelBoots::forget();
+                    }
                 }
             },
         );
