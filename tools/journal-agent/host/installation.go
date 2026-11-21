@@ -22,10 +22,12 @@ const (
 
 // Artifact is one file of the protected installation: where it is installed, where it comes from and the SHA-256
 // it must have. The pinned agent programs, journal-agent, PHP and the relay with its dependencies are artifacts.
+// A release manifest also records the measured byte size of each file.
 type Artifact struct {
 	Name       string `json:"name"`
 	Source     string `json:"source,omitempty"`
 	SHA256     string `json:"sha256"`
+	Size       int64  `json:"size,omitempty"`
 	Executable bool   `json:"executable"`
 }
 

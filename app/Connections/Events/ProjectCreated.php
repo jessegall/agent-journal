@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Connections\Events;
+
+use App\Contracts\Event;
+use DateTimeImmutable;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
+
+/**
+ * A project was connected from another machine and recorded under its key. Raised after the transaction committed.
+ */
+final readonly class ProjectCreated implements Event, ShouldDispatchAfterCommit
+{
+    public function __construct(
+        public string $projectId,
+        public DateTimeImmutable $occurredAt,
+    ) {}
+}

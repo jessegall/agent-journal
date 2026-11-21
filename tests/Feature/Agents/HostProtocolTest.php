@@ -42,7 +42,8 @@ final class HostProtocolTest extends TestCase
 
         $this->signedHostCall($host, 'POST', self::CLAIM, '', protocol: $other)
             ->assertStatus(426)
-            ->assertJsonPath('message', HostProtocolMismatch::speaks((string) $other, HostProtocolVersion::current()->value)->getMessage());
+            ->assertJsonPath('message', HostProtocolMismatch::speaks((string) $other, HostProtocolVersion::current()->value)->getMessage())
+            ->assertJsonPath('protocolVersions', HostProtocolVersion::spoken());
     }
 
     public function test_a_host_of_this_protocol_claims_and_keeps_its_version_and_combinations(): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Scripts;
 
+use App\Agents\Values\CommitObservation;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\ReportWorkspaceRead;
 use App\Agents\Models\WorkspaceRead;
@@ -173,7 +174,7 @@ final class StopPreparationTest extends TestCase
     private function answerReads(bool $dirty): void
     {
         foreach (WorkspaceRead::query()->whereNull('sampled_at')->limit(10)->get() as $read) {
-            $this->asSystem(new ReportWorkspaceRead('host-1', $read->reference(), true, $dirty, ! $dirty, 7));
+            $this->asSystem(new ReportWorkspaceRead('host-1', $read->reference(), true, $dirty, ! $dirty, 7, CommitObservation::versionOne()));
         }
     }
 

@@ -1,6 +1,9 @@
 package profiles
 
-import "strings"
+import (
+	"path/filepath"
+	"strings"
+)
 
 // The names the journal gives the programs; its hook relay is told which program calls it.
 const (
@@ -16,4 +19,10 @@ func relayCommand(hookCommand, journalName string) string {
 	}
 
 	return hookCommand + " " + journalName
+}
+
+// LocalProjectHookCommand is the hook command of a session of a project connected to a server journal: the sealed
+// hook adapter of the installation, never the PHP relay. Only the local-project arrangement runs it.
+func LocalProjectHookCommand(installation string) string {
+	return filepath.Join(installation, "bin", "journal-hook")
 }

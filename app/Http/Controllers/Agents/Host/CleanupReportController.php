@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Agents\Host;
 use App\Agents\Commands\ReportCleanup;
 use App\Agents\Enums\CleanupStep;
 use App\Agents\Models\CleanupOperation;
-use App\Agents\Support\HostContext;
+use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\CleanupReportRequest;
 use Illuminate\Http\JsonResponse;

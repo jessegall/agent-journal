@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Hooks\Host;
 
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Models\ProcessStart;
-use App\Agents\Support\HostContext;
+use App\Agents\Values\HostContext;
 use App\Hooks\Models\StopAttempt;
 use App\Http\Data\Hooks\PendingStopAttemptData;
 use Illuminate\Http\JsonResponse;

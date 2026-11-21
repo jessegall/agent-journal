@@ -18,11 +18,14 @@ const (
 	protocolHeader  = "X-Journal-Protocol"
 )
 
-// HostProtocolVersion is the version of the protocol this host speaks with the journal (App\Agents\Enums\HostProtocolVersion);
-// both change together in a release, and the journal refuses every call of a host that speaks another.
+// HostProtocolVersion is the version of the protocol an enrolled host speaks with the journal
+// (App\Agents\Enums\HostProtocolVersion::First), and RemoteProjectProtocolVersion the one of the relay of a project
+// connected to a server journal (HostProtocolVersion::RemoteProject); each changes together with its PHP case in a
+// release, and the journal refuses every call of a host that speaks another.
 const (
-	HostProtocolVersion = 1
-	hostProtocolHeader  = "Journal-Host-Protocol"
+	HostProtocolVersion          = 1
+	RemoteProjectProtocolVersion = 2
+	hostProtocolHeader           = "Journal-Host-Protocol"
 )
 
 var errLineBreak = errors.New("a signed field holds a line break")

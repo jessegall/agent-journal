@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Support;
+namespace App\Agents\Values;
 
 use App\AgentRequests\Support\SignedCall;
 

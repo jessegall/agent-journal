@@ -17,6 +17,7 @@ enum Place: string
     case Temporary = 'temporary';
     case ProcessOutput = 'process-output';
     case HookRuntime = 'hook-runtime';
+    case Releases = 'releases';
 
     /**
      * The places a path given from outside, such as a command's --file, may lie in.
@@ -32,7 +33,7 @@ enum Place: string
     {
         return match ($this) {
             self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HookRuntime => true,
-            self::Project, self::HostSkills, self::Temporary, self::ProcessOutput => false,
+            self::Project, self::HostSkills, self::Temporary, self::ProcessOutput, self::Releases => false,
         };
     }
 
@@ -52,7 +53,7 @@ enum Place: string
         return match ($this) {
             self::Project => ['.journal/worktrees', '.git', 'vendor', 'node_modules', 'storage/app/private'],
             self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HostSkills, self::Temporary,
-            self::ProcessOutput, self::HookRuntime => [],
+            self::ProcessOutput, self::HookRuntime, self::Releases => [],
         };
     }
 
@@ -66,7 +67,8 @@ enum Place: string
             self::SharingSecrets => 'sharing.secrets_dir',
             self::SharingTunnels => 'sharing.tunnels_dir',
             self::ProcessOutput => 'filesystems.disks.process-output.root',
-            self::Project, self::HostSkills, self::Temporary, self::HookRuntime => "files.places.{$this->value}",
+            self::Project, self::HostSkills, self::Temporary, self::HookRuntime,
+            self::Releases => "files.places.{$this->value}",
         };
     }
 }

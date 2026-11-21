@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Agents\Host;
 
 use App\Agents\Commands\RecordHostProtection;
 use App\Agents\Data\ProtectionReportData;
-use App\Agents\Support\HostContext;
+use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\Response;
 

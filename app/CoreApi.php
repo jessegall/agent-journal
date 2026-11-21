@@ -557,6 +557,35 @@ use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
+use App\Agents\Values\CommitObservation;
+use App\Connections\Commands\ApproveDeviceGrant;
+use App\Connections\Commands\AssertBindingStart;
+use App\Connections\Commands\RenewRuntimeLease;
+use App\Connections\Commands\SubmitWorktreeDelivery;
+use App\Connections\Values\RuntimeLease;
+use App\Connections\Values\DeliveryReceipt;
+use App\Connections\Values\DeliverySubmission;
+use App\Connections\Commands\CancelProjectCommandRun;
+use App\Connections\Commands\PollDeviceGrant;
+use App\Connections\Commands\RevokeDeviceGrant;
+use App\Connections\Commands\StartDeviceGrant;
+use App\Connections\Values\DeviceGrantStart;
+use App\Connections\Commands\FinishProjectCommandRun;
+use App\Connections\Commands\IssueProjectInvitation;
+use App\Connections\Commands\RecordProjectCommandProcess;
+use App\Connections\Commands\StartProjectCommandRun;
+use App\Connections\Values\CommandFrame;
+use App\Connections\Values\CommandRunStart;
+use App\Connections\Commands\RecordBindingPresence;
+use App\Connections\Commands\RecoverProjectBinding;
+use App\Connections\Commands\RedeemProjectInvitation;
+use App\Connections\Commands\RevokeProjectBinding;
+use App\Connections\Commands\RevokeProjectInvitation;
+use App\Connections\Values\BindingFolder;
+use App\Connections\Values\IssuedInvitation;
+use App\Connections\Values\PresenceReceipt;
+use App\Connections\Values\PresenceReport;
+use App\Connections\Values\Redemption;
 use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Attributes\RequiresListener;
 use App\Contracts\CommandHandler;
@@ -1997,6 +2026,18 @@ final class CoreApi
                 SharedContent::class,
                 ShareSelectedTarget::class,
                 GatewayConfiguration::class,
+                IssuedInvitation::class,
+                Redemption::class,
+                BindingFolder::class,
+                PresenceReport::class,
+                CommitObservation::class,
+                DeliveryReceipt::class,
+                RuntimeLease::class,
+                DeliverySubmission::class,
+                PresenceReceipt::class,
+                CommandFrame::class,
+                CommandRunStart::class,
+                DeviceGrantStart::class,
                 GatewaySettings::class,
                 GatewayOperation::class,
                 GatewayEndpoint::class,
@@ -2237,6 +2278,23 @@ final class CoreApi
                 RetryShare::class,
                 ConfigureShareGateway::class,
                 DisableShareGateway::class,
+                IssueProjectInvitation::class,
+                RevokeProjectInvitation::class,
+                RedeemProjectInvitation::class,
+                RecoverProjectBinding::class,
+                RevokeProjectBinding::class,
+                RecordBindingPresence::class,
+                StartProjectCommandRun::class,
+                RecordProjectCommandProcess::class,
+                FinishProjectCommandRun::class,
+                CancelProjectCommandRun::class,
+                StartDeviceGrant::class,
+                AssertBindingStart::class,
+                SubmitWorktreeDelivery::class,
+                RenewRuntimeLease::class,
+                PollDeviceGrant::class,
+                ApproveDeviceGrant::class,
+                RevokeDeviceGrant::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

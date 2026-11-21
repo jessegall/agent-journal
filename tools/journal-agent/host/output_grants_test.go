@@ -34,7 +34,7 @@ func TestASnapshotIsSavedAsTheJournalSealedIt(t *testing.T) {
 
 func TestAFailedRefreshRemovesTheStaleSnapshot(t *testing.T) {
 	folder := t.TempDir()
-	if err := writePrivateFile(filepath.Join(folder, OutputGrantsName), []byte(`{"generation":1}`)); err != nil {
+	if err := WritePrivateFile(filepath.Join(folder, OutputGrantsName), []byte(`{"generation":1}`)); err != nil {
 		t.Fatal(err)
 	}
 

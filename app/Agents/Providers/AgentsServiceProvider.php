@@ -25,6 +25,7 @@ use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\AgentRequests\Support\SignedCallSender;
 use App\AgentRequests\Support\StartEnvironment;
 use App\Agents\Actions\ReserveStarts;
+use App\Agents\Actions\SignedHostCalls;
 use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
@@ -36,6 +37,7 @@ use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\DockerImageVerifier as DockerImageVerifierContract;
 use App\Agents\Contracts\DriverConversationResolver;
 use App\Agents\Contracts\HelperCommitImport as HelperCommitImportContract;
+use App\Agents\Contracts\HostCalls;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\MergeAdmission;
@@ -96,6 +98,7 @@ use App\Agents\Support\GrantedSessionOutputs;
 use App\Agents\Support\HelperCommitImport;
 use App\Agents\Support\HostStartExecutor;
 use App\Agents\Support\HostStartPreflight;
+use App\Agents\Support\InstallLineAvailability;
 use App\Agents\Support\LaunchProfiles;
 use App\Agents\Support\NavigationExpiry;
 use App\Agents\Support\NavigationRecords;
@@ -103,9 +106,11 @@ use App\Agents\Support\NavigationRequestProvider;
 use App\Agents\Support\PendingNavigationWork;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\ProtectedMerge;
+use App\Agents\Support\PublishedReleases;
 use App\Agents\Support\ReadGrant;
 use App\Agents\Support\RequestSession;
 use App\Agents\Support\RetainedWorkspaceReads;
+use App\Agents\Support\ServerOrigin;
 use App\Agents\Support\SessionProvenance;
 use App\Agents\Support\SessionToolDiscovery;
 use App\Agents\Support\TerminalViews;
@@ -123,6 +128,8 @@ use App\Files\Enums\Place;
 use App\Files\Values\FilePath;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
+use App\Settings\Contracts\SettingsResolver;
+use App\Settings\Support\CoreSettings;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
@@ -210,6 +217,20 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->string('agents.installation_name'),
             $this->app->make('config')->string('agents.workspaces'),
         ));
+        $this->app->singleton(PublishedReleases::class, fn () => new PublishedReleases(
+            $this->app->make(Files::class),
+            $this->app->make('config')->string('agents.release'),
+        ));
+        $this->app->bind(InstallLineAvailability::class, fn () => new InstallLineAvailability(
+            $this->app->make(SettingsResolver::class),
+            $this->app->make(CoreSettings::class),
+            $this->app->make(PublishedReleases::class),
+            $this->app->make(ServerOrigin::class),
+        ));
+        $this->app->bind(HostCalls::class, SignedHostCalls::class);
+        $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
+            $this->app->make('config')->string('agents.server_origin'),
+        ));
         $this->app->bind(LaunchProfiles::class, fn () => new LaunchProfiles(
             $this->app->make(ArrangementSetting::class),
             $this->app->make(HostCapabilities::class),
@@ -283,6 +304,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/releases.php');
         $this->commands([
             ...FolderClasses::in(dirname(__DIR__).'/Console', Command::class),
             GenerateCallsCommand::class,

@@ -76,6 +76,7 @@ final readonly class LineAdmission implements ShellAdmission
         ExecutionContext $context,
         string $requestKey,
     ): Admission {
+        $this->projects->assertFolderAllowed($context->workingFolder);
         $actor = ActorIdentity::of($this->actors->actor());
         $tree = $this->syntax->parse($line, $dialect);
         $earlier = ProcessRun::query()->acrossActors()->where('admission_id', $requestKey)->first();

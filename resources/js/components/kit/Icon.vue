@@ -39,6 +39,8 @@ const shapes = {
     window: '<rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>',
     accounts:
         '<circle cx="6.5" cy="6" r="2.25"/><path d="M2.5 13a4 4 0 0 1 8 0"/><path d="M11 5.5h2.5M11 8h2.5"/>',
+    connections:
+        '<rect x="2.5" y="3" width="11" height="7.5" rx="1.2"/><path d="M1.5 13h13M8 5v3M6.5 6.5 8 8l1.5-1.5"/>',
     trash: '<path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/>',
     download: '<path d="M8 2.5v7.5M5 7l3 3 3-3"/><path d="M3 11v2h10v-2"/>',
     upload: '<path d="M8 10V2.5M5 5.5l3-3 3 3"/><path d="M3 11v2h10v-2"/>',

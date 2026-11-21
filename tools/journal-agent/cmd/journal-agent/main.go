@@ -64,6 +64,8 @@ func main() {
 	hostCommands := map[string]func([]string) error{
 		"enroll": enroll, "serve": serve, "attach": attach, "protection": protection,
 		"install": install, "installation": installation, "status-line": statusLine,
+		"protection-probe": protectionProbe, "connect": connect,
+		"install-release": installRelease, "relay": relay,
 	}
 	if len(os.Args) >= 2 && hostCommands[os.Args[1]] != nil {
 		if err := hostCommands[os.Args[1]](os.Args[2:]); err != nil {

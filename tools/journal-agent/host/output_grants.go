@@ -28,5 +28,5 @@ func RefreshOutputGrants(ctx context.Context, source OutputGrantSource, startKey
 		}
 		return errors.Join(err, removed)
 	}
-	return writePrivateFile(path, snapshot)
+	return WritePrivateFile(path, snapshot)
 }

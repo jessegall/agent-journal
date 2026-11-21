@@ -193,3 +193,16 @@ never native evidence.
 | Codex 0.165.0 | shared owner: one `codex app-server` owns sign-in and refresh, each launch a thread on it, with `cli_auth_credentials_store = "file"` | prerequisite missing: hooks on threads, separate thread identities and refresh under parallel threads need a signed-in run | `tools/accounts/check-codex.php` (`docs/accounts/codex-native-evidence.md`) |
 
 The Accounts pages stay available while a state is missing; only account launches are refused.
+
+## The local-project profile
+
+A project connected to a server journal runs Claude Code on the owner's own machine (`journal claude`), with the
+same pinned start profile and disabled delegation as above. Its hooks run the sealed native adapter
+(`bin/journal-hook` of the remote-project installation, `tools/journal-agent/hookadapter`), not the PHP relay, and
+its capabilities are registered apart from the contained ones, which stay as they are.
+
+| Capability | Local-project profile |
+|---|---|
+| Native children | refused: a PreToolUse call to Claude Code's Task or Agent tool, or to Codex's collaboration tools, gets the native deny naming `journal helper start`; no unregistered subprocess passes as a managed helper |
+| Journal unreachable | the native blocking reply within five seconds: the PreToolUse deny, the UserPromptSubmit block |
+| Codex | withheld: codex-cli 0.165.0 gives hook calls no per-thread capability, so a callback cannot be bound to its thread |

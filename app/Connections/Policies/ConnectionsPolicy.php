@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Connections\Policies;
+
+use App\Actors\Contracts\OwnerPolicy;
+use App\Connections\Models\ProjectInvitation;
+
+/**
+ * Who may connect projects from other machines: the owner alone issues and revokes install lines.
+ */
+final readonly class ConnectionsPolicy implements OwnerPolicy
+{
+    public static function model(): string
+    {
+        return ProjectInvitation::class;
+    }
+}

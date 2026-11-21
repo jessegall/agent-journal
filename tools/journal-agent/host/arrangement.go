@@ -16,10 +16,13 @@ const (
 	Local Arrangement = "local"
 	// Contained runs every agent in a container of the agent daemon, as the agent-host service does.
 	Contained Arrangement = "contained"
+	// LocalProject runs the agents of a project connected to a server journal on the owner's own machine, each
+	// confined by the platform's native mechanism to its assigned folder.
+	LocalProject Arrangement = "local-project"
 )
 
-// ErrUnknownArrangement is returned for an --arrangement that is neither local nor contained.
-var ErrUnknownArrangement = errors.New("the arrangement is neither local nor contained")
+// ErrUnknownArrangement is returned for an --arrangement that is not local, contained or local-project.
+var ErrUnknownArrangement = errors.New("the arrangement is not local, contained or local-project")
 
 // ErrContainedNeedsDocker is returned when a contained host has no agent daemon socket to start containers through.
 var ErrContainedNeedsDocker = errors.New("a contained host needs --docker, the agent daemon's socket")
@@ -30,7 +33,7 @@ var ErrContainedNeedsInstallationName = errors.New("a contained host needs --ins
 // ParseArrangement reads the --arrangement flag.
 func ParseArrangement(value string) (Arrangement, error) {
 	switch Arrangement(value) {
-	case Local, Contained:
+	case Local, Contained, LocalProject:
 		return Arrangement(value), nil
 	}
 

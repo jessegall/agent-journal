@@ -39,7 +39,7 @@ final class DomainSwitchesTest extends TestCase
     {
         $core = $this->app->make(SettingRegistry::class)->definition('Core');
         $this->assertInstanceOf(CoreSettings::class, $core);
-        $switches = array_slice($core->groups(), 1);
+        $switches = array_values(array_filter($core->groups(), fn ($group) => $group instanceof ToggleGroup));
         $keys = array_map(fn (ToggleGroup $group) => $group->key, $switches);
 
         $this->assertSame('general', $core->groups()[0]->key());

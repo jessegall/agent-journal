@@ -35,15 +35,6 @@ import (
 	"journal-agent/serving"
 )
 
-// defaultStateFolder is the host's private folder unless --state names another.
-func defaultStateFolder() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return ".journal-agent"
-	}
-	return filepath.Join(home, ".journal-agent")
-}
-
 // enroll stores the host id and the secret agents:host-enroll printed. The secret is read from standard input or
 // from the file --secret-file names, so it never appears in the environment, the process list or the shell history:
 // an operator passes the file's path, never the secret. An enrollment already held for the same journal and host is
@@ -52,7 +43,7 @@ func enroll(arguments []string) error {
 	flags := flag.NewFlagSet("enroll", flag.ContinueOnError)
 	journalURL := flags.String("journal", "", "the journal's URL")
 	hostID := flags.String("host", "", "the host id agents:host-enroll printed")
-	stateFolder := flags.String("state", defaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	secretFile := flags.String("secret-file", "", "a file holding the secret, instead of standard input")
 	if err := flags.Parse(arguments); err != nil {
 		return err
@@ -109,7 +100,7 @@ func verifyArrangement(arrangement host.Arrangement, pinned host.PinnedImages, d
 // claimed request is only logged by its identity, never by its content.
 func serve(arguments []string) error {
 	flags := flag.NewFlagSet("serve", flag.ContinueOnError)
-	stateFolder := flags.String("state", defaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	hookCommand := flags.String("hook-command", "", "the hook relay command the programs call")
 	installationFolder := flags.String("installation", "", "the protected installation saved-account starts run from")
 	arrangementFlag := flags.String("arrangement", string(host.Local), "where agents run: local or contained")
@@ -487,7 +478,7 @@ const detachKey = 0x1d
 // resizes go to the program, its output comes back; Ctrl-] detaches and leaves it running.
 func attach(arguments []string) error {
 	flags := flag.NewFlagSet("attach", flag.ContinueOnError)
-	stateFolder := flags.String("state", defaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	agentID := flags.String("agent", "", "the agent whose main runtime to open")
 	runtimeID := flags.String("runtime", "", "a runtime the host already runs, to attach to again")
 	folder := flags.String("folder", "", "the folder the agent works in")

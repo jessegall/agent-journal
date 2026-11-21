@@ -284,11 +284,24 @@ type Client struct {
 	now        func() time.Time
 	// arrangement is where this host runs agents, local or contained, reported on every claim; empty reports local.
 	arrangement string
+	// protocol is the host protocol version every call says it speaks: HostProtocolVersion unless set.
+	protocol int
 }
 
 // New returns a client for the enrollment.
 func New(enrollment Enrollment) *Client {
-	return &Client{enrollment: enrollment, http: &http.Client{Timeout: 30 * time.Second}, now: time.Now}
+	return &Client{
+		enrollment: enrollment,
+		http:       &http.Client{Timeout: 30 * time.Second},
+		now:        time.Now,
+		protocol:   HostProtocolVersion,
+	}
+}
+
+// ForRemoteProject is a client for the relay of a project connected to a server journal: it speaks
+// RemoteProjectProtocolVersion over the HTTP client given.
+func ForRemoteProject(enrollment Enrollment, transport *http.Client) *Client {
+	return &Client{enrollment: enrollment, http: transport, now: time.Now, protocol: RemoteProjectProtocolVersion}
 }
 
 // WithArrangement makes every claim report where this host runs agents, local or contained.
@@ -557,7 +570,7 @@ func (client *Client) send(ctx context.Context, method, target string, content [
 	request.Header.Set(issuedAtHeader, strconv.FormatInt(issuedAt, 10))
 	request.Header.Set(signatureHeader, signed)
 	request.Header.Set(protocolHeader, protocolVersion)
-	request.Header.Set(hostProtocolHeader, strconv.Itoa(HostProtocolVersion))
+	request.Header.Set(hostProtocolHeader, strconv.Itoa(client.protocol))
 
 	response, err := client.http.Do(request)
 	if err != nil {
@@ -586,6 +599,8 @@ func refusalOf(response *http.Response, target string) error {
 	switch {
 	case response.StatusCode == http.StatusConflict:
 		return errors.Join(ErrConflict, ErrRefused, failure)
+	case response.StatusCode == http.StatusPreconditionRequired:
+		return errors.Join(ErrAwaitingApproval, ErrRefused, failure)
 	case response.StatusCode == http.StatusUnauthorized:
 		return errors.Join(ErrUnauthenticated, ErrRefused, failure)
 	case response.StatusCode >= 400 && response.StatusCode < 500:

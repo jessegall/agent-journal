@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Agents\Values\CommitObservation;
 use App\Agents\Values\WorkspaceReadReference;
 use App\Bus\Attributes\Entry;
 use App\Bus\Enums\CommandEntry;
@@ -26,5 +27,6 @@ final readonly class ReportWorkspaceRead extends Command
         public bool $isDirty,
         public bool $isClean,
         public int $generation,
+        public CommitObservation $commit,
     ) {}
 }

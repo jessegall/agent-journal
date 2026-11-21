@@ -67,6 +67,7 @@ use App\Processes\Support\OpenTiming;
 use App\Processes\Support\OutputDocking;
 use App\Processes\Support\ProgramClassifiers;
 use App\Processes\Support\ProjectReceipts;
+use App\Processes\Support\ProjectKey;
 use App\Processes\Support\ProjectRules;
 use App\Processes\Support\ReceiptPublisher;
 use App\Processes\Support\RequiredServices;
@@ -91,6 +92,7 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->scoped(ShellCommandParser::class, ShellParser::class);
         $this->app->singleton(TreeParser::class);
         $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
+        $this->app->scoped(ProjectKey::class);
         $this->app->scoped(ProjectRules::class);
         $this->app->scoped(ActiveRules::class);
         $this->app->scoped(ShellAdmission::class, LineAdmission::class);
