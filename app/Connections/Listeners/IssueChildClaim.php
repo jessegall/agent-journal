@@ -7,7 +7,6 @@ namespace App\Connections\Listeners;
 use App\Agents\Events\ChildCheckoutRequested;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\WorkspaceRead;
-use App\Agents\Values\ChildCheckout;
 use App\Connections\Enums\ChildRole;
 use App\Connections\Models\ChildClaim;
 use App\Connections\Models\ProjectBinding;

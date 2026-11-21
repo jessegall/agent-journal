@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Values\ChildCheckout;
+
 /**
  * What a host needs to make a claimed start's process: its key for every later report, the session, the account
  * folder on the host with the sign-in generation it runs in and the method its account signed in by, the program's

@@ -22,7 +22,7 @@ final readonly class DriverCompatibility
      * @param  array<string, string>  $settings  the checked settings each account's own configuration holds
      * @param  string|null  $containedShortfall  what keeps a contained start back; null where starts are not contained
      * @param  bool  $awaitsContainedReport  whether the shortfall is only that no contained host reported yet, which
-     *                                          a later report may lift, rather than a report this build fails
+     *                                       a later report may lift, rather than a report this build fails
      */
     public function __construct(
         public HookDriver $driver,
