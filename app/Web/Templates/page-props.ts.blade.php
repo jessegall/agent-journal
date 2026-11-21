@@ -12,7 +12,7 @@ import type { DockOfferData } from './core';
  */
 export type WindowResult<T> =
     | { state: 'ready'; data: T; dockOffer?: DockOfferData }
-    | { state: 'failed'; message: string }
+    | { state: 'failed'; message: string; reason?: string | null }
     | { state: 'denied' }
     | { state: 'unavailable' };
 @foreach ($pages as $type => $members)

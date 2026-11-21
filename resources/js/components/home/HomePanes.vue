@@ -106,6 +106,7 @@ function componentOf(window: HomeWindowData): Component {
                             :component="componentOf(hosted.window)"
                             :prop-name="hosted.propName"
                             :page-key="hosted.queryKey"
+                            :subject="hosted.window.title"
                         />
                     </template>
                 </template>

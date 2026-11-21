@@ -14,7 +14,9 @@ import ResultView from './ResultView.vue';
  * A declared page of its own: its reader's result, handed to the page's component as its one data prop, and the
  * offer to dock the source it shows when there is one.
  */
-defineProps<{ component: Component; page: WindowResult<unknown> }>();
+withDefaults(defineProps<{ component: Component; page: WindowResult<unknown>; subject?: string }>(), {
+    subject: 'item',
+});
 
 useLiveReload();
 </script>
@@ -34,6 +36,8 @@ useLiveReload();
     <ResultView
         :result="page"
         is-window
+        :subject="subject"
+        placement="page"
         @retry="router.reload({ only: ['page'] })"
     >
         <template #content="{ data }">

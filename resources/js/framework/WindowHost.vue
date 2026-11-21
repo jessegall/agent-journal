@@ -15,9 +15,13 @@ const props = withDefaults(
         propName: string;
         pageKey?: string;
         askOnStart?: boolean;
+        // The registration's public title, which names this window in its loading and failure words.
+        subject?: string;
     }>(),
-    { pageKey: undefined, askOnStart: true },
+    { pageKey: undefined, askOnStart: true, subject: undefined },
 );
+
+const emit = defineEmits<{ close: [] }>();
 const { result, keptData, retry } = useWindowProps(
     props.propName,
     props.askOnStart,
@@ -34,7 +38,10 @@ if (props.pageKey !== undefined) {
         :result="result"
         :kept-data="keptData"
         :is-window="pageKey !== undefined"
+        :subject="subject ?? (pageKey !== undefined ? 'this window' : 'this section')"
+        :placement="pageKey !== undefined ? 'pane' : 'section'"
         @retry="retry"
+        @close="emit('close')"
     >
         <template #content="{ data }">
             <component :is="component" :data="data" />
