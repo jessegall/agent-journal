@@ -43,6 +43,7 @@ yours to resolve at its source.
 
 ## Testing a plan, phase by phase (user messages 11168, 11179, 11183)
 
+- **A worker runs no tests or checks at all** (user messages 13733, 13735): no test of any kind, no Pint, PHPStan, vue-tsc, judge, names or texts check, not at a phase end and not after a fix. It writes its whole unit, proves each point with file:line, and asks for the merge once at the end. The main agent runs every check below at the merge and sends back what fails. The rest of this section is for the main agent.
 - Work a plan phase by phase. Inside a phase, write every task back to back and run no tests, Pint, PHPStan or judge between tasks.
 - At the end of each phase, once: `composer test:affected`, then Pint, PHPStan and the judge (`journal commandments-judge-changes`).
 - After a failure, rerun only the failed test methods by name: `composer test:run -- --filter=<method> <file>`. Never rerun `composer test:affected` to check one fix.
