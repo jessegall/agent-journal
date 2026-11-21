@@ -1,0 +1,47 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "php",
+    "tags": ["advisory"],
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {"file": "**/Handlers/**"},
+                    {"file": "**/Listeners/**"},
+                    {"file": "**/samples/WorkStackDecision.php"}
+                ]
+            },
+            {
+                "any": [
+                    {
+                        "all": [
+                            {"kind": "Expr_StaticCall"},
+                            {"resolvesLike": "*\\States\\Support\\Working*StateReference", "of": "child:class"}
+                        ]
+                    },
+                    {
+                        "all": [
+                            {"nameIn": ["current", "currentRecord", "pruneCurrent", "push", "pushFor", "offerFor"]},
+                            {"resolves": "App\\Hooks\\Contracts\\ActorWorkStacks", "of": "child:var"}
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {"file": "domain/Tasks/src/Listeners/PushTaskState.php"},
+            {"file": "domain/Plans/src/Listeners/PushPlanState.php"},
+            {"file": "domain/Sequences/src/Listeners/PushSequenceState.php"},
+            {"file": "domain/Tasks/src/Handlers/ResumeTaskRunHandler.php"},
+            {"file": "app/Supervision/Handlers/AskSupervisorHandler.php"},
+            {"file": "tests/**"}
+        ]
+    },
+    "sin": {
+        "name": "work-stack-decision",
+        "description": "A handler or listener reads the current work or puts work on a stack itself. Advisory: a push is not proof of misplaced behaviour, and a dynamic wrapper is missed. The documented owners are exempt: the start listeners of tasks, plans and sequences activate their first frame, the explicit resume activates its exact run, an ask names the work it is about, message recovery and the incoming work list recover held work, and ask attention coordinates asks.",
+        "rule": "A handler changes domain truth and a state answers with the commands the engine runs; only the documented owners activate, recover or coordinate frames. Review the finding with the owner of the work stack.",
+        "skill": "work-stack-decision"
+    }
+}
