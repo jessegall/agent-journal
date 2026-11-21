@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Scripts;
+namespace App\Scripts\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\SaveProfileDraft;

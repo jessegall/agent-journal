@@ -65,6 +65,8 @@ final class ContainerManifestTest extends TestCase
             ProfileBase::writingHelper()->defaultAccess(),
             $this->policy(),
             'journal-start-1',
+            MountRules::local(),
+            null,
         );
 
         $this->assertSame(
@@ -101,6 +103,8 @@ final class ContainerManifestTest extends TestCase
                 ProfileBase::readOnlyHelper()->defaultAccess(),
                 $this->policy(),
                 'journal-start-1',
+                MountRules::local(),
+                null,
             )->mounts[0]->writable,
         );
     }
@@ -110,7 +114,14 @@ final class ContainerManifestTest extends TestCase
         $writerAccess = ProfileBase::writingHelper()->defaultAccess();
         $readerStart = $this->prepared();
 
-        $manifest = ContainerManifest::compile($readerStart, $writerAccess, $this->policy(), 'journal-start-1');
+        $manifest = ContainerManifest::compile(
+            $readerStart,
+            $writerAccess,
+            $this->policy(),
+            'journal-start-1',
+            MountRules::local(),
+            null,
+        );
 
         $this->assertTrue($manifest->mounts[0]->writable);
     }
@@ -272,18 +283,26 @@ final class ContainerManifestTest extends TestCase
 
         $this->assertSame(
             [
-                ['type' => 'volume', 'source' => 'acme-workspace-s1', 'target' => '/workspace', 'writable' => false],
+                [
+                    'type' => 'volume',
+                    'source' => 'acme-workspace-s1',
+                    'target' => '/workspace',
+                    'writable' => false,
+                    'mustExist' => false,
+                ],
                 [
                     'type' => 'daemon-bind',
                     'source' => '/srv/journal/accounts/a1',
                     'target' => '/home/journal/.account',
                     'writable' => true,
+                    'mustExist' => false,
                 ],
                 [
                     'type' => 'volume',
                     'source' => 'acme-history-s1',
                     'target' => '/home/journal/.account/projects',
                     'writable' => true,
+                    'mustExist' => false,
                 ],
             ],
             $wire['mounts'],
@@ -302,11 +321,55 @@ final class ContainerManifestTest extends TestCase
             ProfileBase::writingHelper()->defaultAccess(),
             $this->policy(),
             'journal-start-1',
+            MountRules::local(),
+            null,
         );
 
         $this->assertSame(
-            ['type' => 'bind', 'source' => '/workspaces/helper-7', 'target' => '/workspace', 'writable' => true],
+            [
+                'type' => 'bind',
+                'source' => '/workspaces/helper-7',
+                'target' => '/workspace',
+                'writable' => true,
+                'mustExist' => false,
+            ],
             json_decode((string) json_encode($manifest), true)['mounts'][0],
+        );
+    }
+
+    public function test_an_image_loaded_from_a_saved_file_is_pinned_by_its_id(): void
+    {
+        $id = 'sha256:'.str_repeat('a', 64);
+        $manifest = ContainerManifest::make(
+            $id,
+            '10001:10001',
+            true,
+            [],
+            false,
+            'acme-s1',
+            $this->containedMounts(),
+            [],
+            ExecutionBudgets::defaults(),
+            MountRules::contained('acme', '/srv/journal/accounts/a1'),
+            SecurityOptions::none(),
+        );
+
+        $this->assertSame($id, $manifest->image);
+    }
+
+    public function test_a_contained_session_gets_its_own_history_and_a_resume_the_history_it_resumes(): void
+    {
+        $contained = MountRules::contained('acme', null);
+
+        $this->assertSame([], MountRules::local()->sessionMounts('s1', null));
+        $this->assertEquals(
+            [ManifestMount::volume('acme-history-s1', '/home/journal/.account/projects', true)],
+            $contained->sessionMounts('s1', null),
+        );
+        $this->assertNotEquals($contained->sessionMounts('s1', null), $contained->sessionMounts('s2', null));
+        $this->assertEquals(
+            [ManifestMount::existingVolume('acme-history-s1', '/home/journal/.account/projects', true)],
+            $contained->sessionMounts('s2', 's1'),
         );
     }
 

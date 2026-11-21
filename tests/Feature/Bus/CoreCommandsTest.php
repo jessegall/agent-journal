@@ -9,6 +9,7 @@ use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\FenceProfileRevision;
 use App\Agents\Commands\MergeReviewedWork;
 use App\Agents\Commands\ReconcileStarts;
+use App\Agents\Commands\RecordHostProtection;
 use App\Agents\Commands\ReportCleanup;
 use App\Agents\Commands\ReportFailure;
 use App\Agents\Commands\ReportRunning;
@@ -135,6 +136,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             RecordStopResults::class,
             ReportFailure::class,
             ReconcileStarts::class,
+            RecordHostProtection::class,
             ReportCleanup::class,
             ReportWorkspaceRead::class,
             RecordScriptStepResult::class,

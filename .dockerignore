@@ -15,3 +15,5 @@ public/hot
 corpus
 tools/journal-agent/testdata
 tools/shell-oracle/bin
+# The saved agent and runner images (build.sh): loaded into the agent daemon, never part of another image.
+images

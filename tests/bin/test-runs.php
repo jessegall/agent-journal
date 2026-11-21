@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use Tests\Support\AffectedTests;
 
+require_once __DIR__.'/worktree-databases.php';
+
+// The workers a run starts when its --processes names none: room is left for the containers beside it.
+const DEFAULT_PROCESSES = 4;
+
 /**
  * Runs a command in the given environment: its output answered when kept, otherwise shown as it comes and its exit
  * code answered.
@@ -81,42 +86,21 @@ function configurationFor(string $root, array $paths): string
 }
 
 /**
- * Drops a run's own database and the copies a parallel run made of it, when the run was given one to drop; the
- * shared test databases are never dropped.
- */
-function dropRunDatabase(string $root): void
-{
-    $database = (string) getenv('DB_DATABASE');
-    $isRunDatabase = preg_match('/^journal_hooks_test_wt_[a-z0-9]+$/', $database) === 1;
-
-    if (getenv('JOURNAL_DROP_RUN_DATABASE') !== '1' || ! $isRunDatabase) {
-        return;
-    }
-
-    $server = testServer($root);
-    $names = $server->prepare('select datname from pg_database where datname = ? or datname ~ ?');
-    $names->execute([$database, sprintf('^%s_test_[0-9]+$', $database)]);
-
-    foreach ($names->fetchAll(PDO::FETCH_COLUMN) as $name) {
-        $server->exec(sprintf('drop database if exists "%s" with (force)', $name));
-    }
-}
-
-/**
  * Makes each parallel worker's database a copy of one migrated template, so a run migrates nothing while no migration
  * changed: the template is rebuilt once when the migration fingerprint differs, and every worker database is dropped
- * and copied from it, stamped with the fingerprint the tests compare.
+ * and copied from it, stamped with the fingerprint the tests compare. The answered connection holds the run's
+ * databases until the run ends, and the databases of removed worktrees are dropped first.
  *
  * @param  array<string, string>  $environment
- * @param  list<string>  $options  the run's options, which may name its --processes
  */
-function prepareWorkerDatabases(string $root, array $environment, array $options): void
+function prepareWorkerDatabases(string $root, array $environment, int $processes): PDO
 {
     $named = (string) getenv('DB_DATABASE');
     $database = str_starts_with($named, 'journal_hooks_test') ? $named : 'journal_hooks_test';
     $template = "{$database}_template";
+    $server = holdRunDatabases($root, $database);
+    dropDatabasesOfRemovedWorktrees($server, $root, $database);
     $fingerprint = run(['php', 'tests/bin/migration-fingerprint.php'], $environment, $root, true);
-    $server = testServer($root);
     $stored = $server->prepare(
         "select shobj_description(oid, 'pg_database') from pg_database where datname = ?",
     );
@@ -134,28 +118,115 @@ function prepareWorkerDatabases(string $root, array $environment, array $options
         $server->exec(sprintf('comment on database "%s" is %s', $template, $server->quote($fingerprint)));
     }
 
-    foreach (range(1, processesOf($options)) as $token) {
+    foreach (range(1, $processes) as $token) {
         $worker = "{$database}_test_{$token}";
         $server->exec(sprintf('drop database if exists "%s" with (force)', $worker));
         $server->exec(sprintf('create database "%s" template "%s"', $worker, $template));
         $server->exec(sprintf('comment on database "%s" is %s', $worker, $server->quote($fingerprint)));
     }
+
+    return $server;
 }
 
 /**
- * How many workers the run starts: its --processes, or one per CPU as ParaTest does.
+ * Holds the run's databases until its connection closes: a second run of the same checkout waits here until the first
+ * ends, since both use the same databases.
+ */
+function holdRunDatabases(string $root, string $database): PDO
+{
+    $server = testServer($root);
+    $server->prepare('select pg_advisory_lock(hashtext(?))')->execute([$database]);
+
+    return $server;
+}
+
+/**
+ * Drops the test databases of worktrees whose folder is gone, never the running one's, the main checkout's or the
+ * shared ones; a worktree whose run holds its databases is left for a later run.
+ */
+function dropDatabasesOfRemovedWorktrees(PDO $server, string $root, string $running): void
+{
+    $marker = strpos($root, '/.journal/worktrees/');
+    $project = $marker === false ? $root : substr($root, 0, $marker);
+    $kept = array_map(
+        fn (string $folder) => worktreeDatabaseOf(basename($folder)),
+        glob("{$project}/.journal/worktrees/*/*", GLOB_ONLYDIR) ?: [],
+    );
+    $kept[] = worktreeDatabaseOf('main');
+    $kept[] = $running;
+    $pattern = '^journal_hooks_test_wt_[a-z0-9]+(_template|_test_[0-9]+)?$';
+    $names = $server->prepare('select datname from pg_database where datname ~ ?');
+    $names->execute([$pattern]);
+    $removed = [];
+
+    foreach ($names->fetchAll(PDO::FETCH_COLUMN) as $name) {
+        $base = (string) preg_replace('/(_template|_test_[0-9]+)$/', '', (string) $name);
+
+        if (! in_array($base, $kept, true)) {
+            $removed[$base][] = (string) $name;
+        }
+    }
+
+    foreach ($removed as $base => $databases) {
+        $held = $server->prepare('select pg_try_advisory_lock(hashtext(?))');
+        $held->execute([$base]);
+
+        if ($held->fetchColumn() !== true) {
+            continue;
+        }
+
+        foreach ($databases as $name) {
+            $server->exec(sprintf('drop database if exists "%s" with (force)', $name));
+        }
+
+        $server->prepare('select pg_advisory_unlock(hashtext(?))')->execute([$base]);
+    }
+}
+
+/**
+ * How many workers a run of these paths starts: its --processes, else at most four, and never more than the test
+ * files it runs, since each worker gets a database copy of its own.
  *
  * @param  list<string>  $options
+ * @param  list<string>  $paths  the run's folders and test files; none runs every test
  */
-function processesOf(array $options): int
+function processesFor(string $root, array $options, array $paths): int
 {
     foreach ($options as $option) {
-        if (preg_match('/^--processes=(\d+)$/', $option, $count) === 1) {
+        if (preg_match('/^--processes=(\\d+)$/', $option, $count) === 1) {
             return max(1, (int) $count[1]);
         }
     }
 
-    return max(1, (int) trim((string) shell_exec('nproc')));
+    if ($paths === [] || $paths === AffectedTests::EVERYTHING) {
+        return DEFAULT_PROCESSES;
+    }
+
+    return max(1, min(DEFAULT_PROCESSES, testFileCount($root, $paths)));
+}
+
+/**
+ * @param  list<string>  $paths
+ */
+function testFileCount(string $root, array $paths): int
+{
+    $count = 0;
+
+    foreach ($paths as $path) {
+        if (is_file("{$root}/{$path}")) {
+            $count++;
+
+            continue;
+        }
+
+        $folder = new RecursiveDirectoryIterator("{$root}/{$path}", FilesystemIterator::SKIP_DOTS);
+
+        foreach (new RecursiveIteratorIterator($folder) as $file) {
+            $count += str_ends_with($file->getFilename(), 'Test.php') ? 1 : 0;
+        }
+    }
+
+    return $count;
 }
 
 /**

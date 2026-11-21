@@ -74,7 +74,7 @@ final class HostStartsTest extends TestCase
             {
                 $pinned = ProgramCompatibility::pinned($program);
 
-                return $pinned->withEvidence(ProgramEvidence::NativeShown);
+                return $pinned->withEvidence(ProgramEvidence::NativeShown, 'this test');
             }
         });
     }

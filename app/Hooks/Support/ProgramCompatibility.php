@@ -63,11 +63,11 @@ final readonly class ProgramCompatibility
     }
 
     /**
-     * The same compatibility with the evidence its arrangement now has.
+     * The same compatibility with the evidence its arrangement now has, and who shows what it still lacks.
      */
-    public function withEvidence(ProgramEvidence $evidence): self
+    public function withEvidence(ProgramEvidence $evidence, string $owner): self
     {
-        return clone ($this, ['arrangementEvidence' => $evidence]);
+        return clone ($this, ['arrangementEvidence' => $evidence, 'evidenceOwner' => $owner]);
     }
 
     /**

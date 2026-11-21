@@ -54,6 +54,8 @@ final readonly class ContainerManifest
         AccessPolicy $access,
         ExecutionPolicy $policy,
         string $network,
+        MountRules $rules,
+        string|null $resumedSessionId,
     ): self {
         $writable = $access->changesFiles();
         $mount = ManifestMount::bind($start->workspace, self::WORKDIR, $writable);
@@ -65,10 +67,10 @@ final readonly class ContainerManifest
             [],
             false,
             $network,
-            [$mount],
+            [$mount, ...$rules->sessionMounts($start->sessionId, $resumedSessionId)],
             [],
             $policy->budgets,
-            MountRules::local(),
+            $rules,
             SecurityOptions::none(),
         );
     }
@@ -93,7 +95,7 @@ final readonly class ContainerManifest
         MountRules $rules,
         SecurityOptions $securityOptions,
     ): self {
-        if (preg_match('/@sha256:[0-9a-f]{64}$/', $image) !== 1) {
+        if (preg_match('/(^|@)sha256:[0-9a-f]{64}$/', $image) !== 1) {
             throw ManifestRefused::because("the image {$image} is not named by its digest");
         }
 

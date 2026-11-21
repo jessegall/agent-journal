@@ -12,6 +12,8 @@ services:
             # Where agents run (doc 61): local on this machine, or contained in the agent daemon's containers.
             AGENTS_ARRANGEMENT: ${AGENTS_ARRANGEMENT:-local}
             AGENTS_INSTALLATION_NAME: ${AGENTS_INSTALLATION_NAME:-journal}
+            # Where the agent host holds the profiles a contained manifest names (.docker/helper/seccomp-agent.json).
+            AGENTS_SECURITY_PROFILES: /etc/journal/security
         ports:
             - '127.0.0.1:${APP_PORT:-54700}:8000'
         networks:
@@ -176,8 +178,9 @@ services:
             timeout: 5s
             retries: 30
 
-    # Loads the two pinned images into the agent daemon by digest once it answers, and fails when a loaded digest
-    # differs from the one docs/accounts/docker-images.json records; a running agent never pulls an image.
+    # Loads the two pinned images into the agent daemon from the files .docker/helper/build.sh saved in images/ once it
+    # answers, and fails when a loaded image's id differs from the pin docs/accounts/docker-images.json records; a
+    # running agent never pulls an image.
     agent-images:
         profiles: [contained]
         restart: 'no'
@@ -194,19 +197,22 @@ services:
             - |
               set -eu
               if [ -z "$$AGENT_IMAGE" ] || [ -z "$$RUNNER_IMAGE" ]; then
-                  echo "Name AGENT_IMAGE and RUNNER_IMAGE by digest in .env." >&2
+                  echo "Name AGENT_IMAGE and RUNNER_IMAGE by image id in .env." >&2
                   exit 1
               fi
+              for archive in /images/*.tar; do
+                  docker load --quiet --input "$$archive"
+              done
               for image in "$$AGENT_IMAGE" "$$RUNNER_IMAGE"; do
-                  docker pull "$$image"
-                  digest="$$(docker image inspect --format '{{index .RepoDigests 0}}' "$$image")"
-                  if [ "$$digest" != "$$image" ]; then
-                      echo "The loaded image is $$digest, not the pinned $$image." >&2
+                  loaded="$$(docker image inspect --format '{{.Id}}' "$$image" 2>/dev/null || true)"
+                  if [ "$$loaded" != "$$image" ]; then
+                      echo "The agent daemon holds no image $$image: build it and copy images/ here." >&2
                       exit 1
                   fi
               done
         volumes:
             - agent-docker-socket:/run/agent-docker
+            - ./images:/images:ro
         networks:
             - agent-egress
 
@@ -252,10 +258,13 @@ services:
             - --installation-name=${AGENTS_INSTALLATION_NAME:-journal}
             - --agent-image=${AGENT_IMAGE:-}
             - --runner-image=${RUNNER_IMAGE:-}
+            - --seccomp-profile=/etc/journal/security/seccomp-agent.json
         volumes:
             - host-state:/var/lib/journal-host
             - host-start-socket:/run/journal-start
             - agent-docker-socket:/run/agent-docker
+            # The seccomp profile agent containers run under, read by the Docker client (docs/accounts/host-protection.md).
+            - ./.docker/helper/seccomp-agent.json:/etc/journal/security/seccomp-agent.json:ro
         networks:
             - journal-api
         depends_on:

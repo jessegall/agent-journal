@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os/exec"
 	"path"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -40,6 +41,8 @@ type ContainerMount struct {
 	Source   string    `json:"source"`
 	Target   string    `json:"target"`
 	Writable bool      `json:"writable"`
+	// MustExist is a volume the host finds and never makes, such as the history of a resumed conversation.
+	MustExist bool `json:"mustExist"`
 }
 
 // ContainerBudgets mirrors App\Agents\Support\ExecutionBudgets: the bounds a container runs under.
@@ -80,6 +83,14 @@ type ContainerManifest struct {
 	Attachable bool `json:"attachable"`
 }
 
+// imageIDPattern is an image named by its id, the config digest a loaded image keeps.
+var imageIDPattern = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
+
+// IsPinnedReference is whether an image reference names exactly one image: by its id, or by name and digest.
+func IsPinnedReference(reference string) bool {
+	return imageIDPattern.MatchString(reference) || strings.Contains(reference, "@sha256:")
+}
+
 // ContainerRules are what decides what a manifest may ask for: the host's arrangement and, when contained, the
 // installation name every volume of its containers opens with and the one agent image its containers run.
 type ContainerRules struct {
@@ -105,6 +116,7 @@ var (
 	ErrManifestUnsafe = errors.New("the container manifest asks for more than a helper may have")
 )
 
+
 // RequireContainerTransport refuses a saved-account arrangement inside a required container before anything is
 // created.
 func RequireContainerTransport(arrangement string) error {
@@ -115,7 +127,7 @@ func RequireContainerTransport(arrangement string) error {
 // exact image digest, a named user, security profiles that are one value each, and only the mounts the rules allow.
 func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
 	isConfined := !manifest.Privileged && len(manifest.Capabilities) == 0 && len(manifest.PublishedPorts) == 0
-	isPinned := strings.Contains(manifest.Image, "@sha256:") && manifest.User != ""
+	isPinned := IsPinnedReference(manifest.Image) && manifest.User != ""
 
 	return isConfined && isPinned && rules.permitsImage(manifest.Image) && manifest.SecurityOptions.isPlain() &&
 		rules.permit(manifest.Mounts)
@@ -303,8 +315,63 @@ func (containers Containers) Create(
 	if err != nil {
 		return "", err
 	}
+
+	if err := containers.EnsureVolumes(ctx, manifest, labels); err != nil {
+		return "", err
+	}
+
 	output, err := containers.command(ctx, arguments...).Output()
 	return strings.TrimSpace(string(output)), err
+}
+
+// agentUser is the unprivileged user agent containers run as, mirroring ContainerManifest::USER.
+const agentUser = "10001:10001"
+
+// RunCheck runs one program of the agent image in a throwaway container, as the agent's user, with no account, no
+// network, every capability dropped and the seccomp profile agent containers run under, and answers what it printed.
+// The container is removed with its anonymous volumes when the program ends.
+func (containers Containers) RunCheck(ctx context.Context, seccomp, program string, arguments ...string) (string, error) {
+	run := []string{
+		"run", "--rm", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+		"--user", agentUser, "--label", installationLabel + "=" + string(containers.Rules.InstallationName),
+	}
+	if seccomp != "" {
+		run = append(run, "--security-opt", "seccomp="+seccomp)
+	}
+
+	run = append(run, "--entrypoint", program, containers.Rules.AgentImage)
+	output, err := containers.command(ctx, append(run, arguments...)...).CombinedOutput()
+
+	return strings.TrimSpace(string(output)), err
+}
+
+// ErrHistoryMissing refuses a resume whose history volume is gone, so it never starts with an empty history.
+var ErrHistoryMissing = errors.New("the history of the resumed conversation is gone")
+
+// EnsureVolumes makes each named volume of the manifest that the agent daemon lacks, labelled with the installation
+// and the session but no launch, so a launch's cleanup keeps it; a volume that must exist and does not refuses.
+func (containers Containers) EnsureVolumes(ctx context.Context, manifest ContainerManifest, labels LaunchLabels) error {
+	for _, mount := range manifest.Mounts {
+		if mount.Type != MountVolume || containers.command(ctx, "volume", "inspect", mount.Source).Run() == nil {
+			continue
+		}
+
+		if mount.MustExist {
+			return fmt.Errorf("%w: %s", ErrHistoryMissing, mount.Source)
+		}
+
+		create := []string{
+			"volume", "create",
+			"--label", installationLabel + "=" + labels.Installation,
+			"--label", sessionLabel + "=" + labels.Session,
+			mount.Source,
+		}
+		if output, err := containers.command(ctx, create...).CombinedOutput(); err != nil {
+			return fmt.Errorf("creating the volume %s failed: %w: %s", mount.Source, err, strings.TrimSpace(string(output)))
+		}
+	}
+
+	return nil
 }
 
 // Attach is the command that attaches to an attachable container's terminal, for the host's pty to run as it runs a

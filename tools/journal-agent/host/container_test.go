@@ -208,3 +208,54 @@ func TestAnAttachableManifestGetsATerminalAndHelpersDoNot(t *testing.T) {
 		t.Fatalf("the attach is %v", attach.Args)
 	}
 }
+
+func TestAnImageIsPinnedByItsIdOrByNameAndDigest(t *testing.T) {
+	id := "sha256:" + strings.Repeat("a", 64)
+
+	for _, pinned := range []string{id, "journal-agent@sha256:abc"} {
+		if !IsPinnedReference(pinned) {
+			t.Fatalf("%s is not taken as pinned", pinned)
+		}
+	}
+
+	for _, unpinned := range []string{"journal-agent:latest", "sha256:abc", "journal-agent"} {
+		if IsPinnedReference(unpinned) {
+			t.Fatalf("%s is taken as pinned", unpinned)
+		}
+	}
+}
+
+func TestASessionsHistoryVolumeIsMadeAndAResumedOneMustExist(t *testing.T) {
+	calls := filepath.Join(t.TempDir(), "calls")
+	daemon := fakeImageDocker(t, `echo "$*" >> `+calls+`
+[ "$3 $4" = "volume inspect" ] && { [ "$5" = journal-history-kept ] || exit 1; }
+exit 0`)
+	labels := LaunchLabels{Installation: "journal", Launch: "launch-1", Session: "s1"}
+	session := containedManifest()
+	session.Mounts[2] = ContainerMount{Type: MountVolume, Source: "journal-history-s1", Target: "/home/journal/.account/projects", Writable: true}
+
+	if err := daemon.EnsureVolumes(context.Background(), session, labels); err != nil {
+		t.Fatal(err)
+	}
+
+	made, _ := os.ReadFile(calls)
+	if !strings.Contains(string(made), "volume create --label journal.installation=journal --label journal.session=s1 journal-history-s1") {
+		t.Fatalf("the session's history volume was not made with its labels: %s", made)
+	}
+
+	if strings.Contains(string(made), "launch-1") {
+		t.Fatalf("a history volume carries the launch label, so its cleanup would remove it: %s", made)
+	}
+
+	resumed := containedManifest()
+	resumed.Mounts[2] = ContainerMount{Type: MountVolume, Source: "journal-history-gone", Target: "/home/journal/.account/projects", MustExist: true}
+	if err := daemon.EnsureVolumes(context.Background(), resumed, labels); !errors.Is(err, ErrHistoryMissing) {
+		t.Fatalf("a resume whose history is gone gave %v, not a refusal naming it", err)
+	}
+
+	kept := containedManifest()
+	kept.Mounts[2] = ContainerMount{Type: MountVolume, Source: "journal-history-kept", Target: "/home/journal/.account/projects", MustExist: true}
+	if err := daemon.EnsureVolumes(context.Background(), kept, labels); err != nil {
+		t.Fatalf("a resume with its history gave %v", err)
+	}
+}

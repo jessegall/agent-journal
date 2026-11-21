@@ -66,8 +66,15 @@ if docker history --no-trunc "$tag" | grep -Eiq "(token|secret|password)[a-z_]*=
     exit 1
 fi
 
-digest="$(docker image inspect --format '{{index .RepoDigests 0}}' "$tag" 2>/dev/null \
-    || docker image inspect --format '{{.Id}}' "$tag")"
+# The agent daemon has no registry: the image reaches it as a saved file, and it is pinned by its config digest,
+# the image id a loaded image keeps (a repository digest does not survive a load).
+mkdir -p images
+archive="images/$name-$(echo "$architecture" | tr / -).tar"
+docker save -o "$archive" "$tag"
+# The rootless agent daemon loads it as its own user; an image holds no secret (checked above).
+chmod 0644 "$archive"
+config="$(tar -xOf "$archive" manifest.json | php -r 'echo json_decode(stream_get_contents(STDIN), true)[0]["Config"];')"
+digest="sha256:$(basename "$config" .json)"
 php -r '
     $path = "docs/accounts/docker-images.json";
     $record = json_decode(file_get_contents($path), true);

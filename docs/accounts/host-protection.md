@@ -27,6 +27,13 @@ platform: a record for another build or another platform does not count.
 The evidence file is `native-evidence.json` in the host's private state folder, readable by the host's owner alone;
 the native evidence procedures write it (doc 57 step 28).
 
+A contained host asks about the agent image, where its tools run: `journal-agent protection --program claude --build
+2.1.323 --arrangement=contained --docker=<agent daemon socket> --installation-name=<name> --agent-image=<image id>
+--seccomp-profile=/etc/journal/security/seccomp-agent.json` reports platform `linux-container`. It runs socat and
+bubblewrap with Claude Code's sandbox flags in throwaway containers of the agent image, as the agent's user, with no
+network and no account, and never looks at the host's own PATH. Its evidence is kept under
+`linux-container@<agent image id>`, so a new image needs new evidence.
+
 ## What the pinned clients have today
 
 On macOS, Claude Code 2.1.323's sandbox (`sandbox.enabled`, a Seatbelt profile for Bash and its children) and its
@@ -40,3 +47,30 @@ read `auth.json` and other threads' sessions. Only protected writes have a mecha
 So neither program's protected arrangement is available yet: Claude Code lacks a native boundary for foreign history
 and process inspection, Codex for reads. The journal keeps both arrangements refused (`ProgramCompatibility`) until a
 host reports one available.
+
+## In a container
+
+On a server the agent runs in the agent image on the agent daemon, with every capability dropped and
+no-new-privileges. Claude Code's bubblewrap sandbox needs a user namespace, its own mounts, `pivot_root` and a fresh
+`/proc`. On the test server (Ubuntu 26.04, kernel 7.0.0-42, Docker 29.7, AppArmor on and
+`kernel.apparmor_restrict_unprivileged_userns=1`) three things stand in its way:
+
+| Denial | Cause | Narrow fix |
+|---|---|---|
+| `No permissions to create new namespace` | Docker's default seccomp profile allows `unshare`, `mount`, `umount2`, `setns` and namespace flags on `clone` only with `CAP_SYS_ADMIN`, and has no rule for `pivot_root` | `.docker/helper/seccomp-agent.json`: Docker's default profile (moby/profiles `seccomp/default.json`) with one added rule allowing `clone`, `unshare`, `mount`, `umount2`, `pivot_root` and `setns`; with no capability they act only inside the new user namespace |
+| `setting up uid map: Permission denied`, `loopback: Failed RTM_NEWADDR` | Ubuntu gives an unconfined process that makes a user namespace no capabilities in it, and Docker's default AppArmor profile denies mounts | `.docker/helper/apparmor-agent`: Docker's default rules with `userns`, `mount`, `umount` and `pivot_root` allowed |
+| `Can't mount proc on /newroot/proc: Operation not permitted` | The kernel mounts a new `/proc` inside a user namespace only where a `/proc` is fully visible, and Docker masks and makes read-only parts of the container's `/proc` (`/proc/kcore`, `/proc/keys`, `/proc/sys` and others) | none: only `systempaths=unconfined` lifts the masks, and that is not accepted |
+
+Under the pair and with the masks lifted (a diagnosis only), bwrap with Claude Code's flags starts and its `/proc`
+shows only its own four processes. With the masks in place it stops at the `/proc` mount. Claude Code's weaker nested
+mode (`enableWeakerNestedSandbox`) binds the container's `/proc` instead, so a tool sees every process of the
+container, Claude Code's own among them, and can read its environment; it is not accepted either.
+
+So process inspection has no native mechanism for Claude Code in a container, and the journal keeps it refused there
+until the provider transport (task 1357) moves the sign-in out of the agent container. The pair stays in the repository:
+it is what the agent container runs under, and it is all bubblewrap needs once a `/proc` can be mounted.
+
+The probes ran on the server's own Docker daemon, which applies both profiles. The rootless agent daemon applies the
+seccomp profile, which the agent host's Docker client sends with each container, but rootless Docker applies no
+AppArmor profile, so the AppArmor half takes effect only where the agent daemon runs with Sysbox or as root. The
+`/proc` masks are the same on every daemon.

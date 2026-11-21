@@ -11,6 +11,8 @@ if (! isset($argv[1])) {
     exit(2);
 }
 
+require __DIR__.'/worktree-databases.php';
+
 $script = $argv[1];
 $arguments = array_slice($argv, 2);
 $command = ['composer', 'run-script', $script, '--', ...$arguments];
@@ -45,9 +47,9 @@ $process = proc_open($command, [STDIN, STDOUT, STDERR], $pipes, $checkout);
 exit(is_resource($process) ? proc_close($process) : 1);
 
 /**
- * Each run in a worktree gets a database of its own, journal_hooks_test_wt_<folder>r<run>, so two runs of one
- * worktree, such as two checkpoints, never share rows; the run drops it and its parallel copies when it ends. The main
- * checkout keeps the default.
+ * A worktree's runs use its own databases, journal_hooks_test_wt_<folder>, kept from run to run so their migrated
+ * template is reused; two runs of one worktree take turns on them (holdRunDatabases). The main checkout keeps the
+ * default.
  *
  * @return list<string>
  */
@@ -57,10 +59,7 @@ function worktreeDatabase(string $checkout, int|false $worktreeAt): array
         return [];
     }
 
-    $folder = substr((string) preg_replace('/[^a-z0-9]/', '', strtolower(basename($checkout))), 0, 20);
-    $database = sprintf('journal_hooks_test_wt_%sr%s', $folder, bin2hex(random_bytes(4)));
-
-    return ['-e', 'DB_DATABASE='.$database, '-e', 'JOURNAL_DROP_RUN_DATABASE=1'];
+    return ['-e', 'DB_DATABASE='.worktreeDatabaseOf(basename($checkout))];
 }
 
 /**

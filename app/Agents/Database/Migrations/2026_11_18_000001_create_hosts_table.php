@@ -15,6 +15,8 @@ return new class extends Migration
             $table->string('installation_name');
             $table->char('credential_hash', 64)->unique();
             $table->jsonb('start_roots');
+            // The latest protection report per program and build (journal-agent protection), as a contained host sent it.
+            $table->jsonb('protection')->default('{}');
             $table->string('arrangement')->default('local');
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampsTz();

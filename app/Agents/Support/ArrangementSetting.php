@@ -8,8 +8,10 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Exceptions\ArrangementUnknown;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\InstallationNameMissing;
+use App\Agents\Exceptions\ProgramNotContainable;
 use App\Agents\Exceptions\RunnerArrangementRefused;
 use App\Agents\Models\Host;
+use App\Programs\Enums\HookProgram;
 
 /**
  * The arrangement this journal runs its agents in, read once from AGENTS_ARRANGEMENT; the one place that answers it,
@@ -60,6 +62,19 @@ final readonly class ArrangementSetting
         throw $this->arrangement->isContained()
             ? HostArrangementRefused::localHost()
             : HostArrangementRefused::containedHost();
+    }
+
+    /**
+     * Refuses, contained, a program whose sandbox does not keep its tools from its sign-in, whatever the account's
+     * sign-in method: Codex limits writes only (doc 61, decision 8).
+     *
+     * @throws ProgramNotContainable
+     */
+    public function assertContainable(HookProgram $program): void
+    {
+        if ($this->arrangement->isContained() && $program === HookProgram::Codex) {
+            throw ProgramNotContainable::codex();
+        }
     }
 
     /**

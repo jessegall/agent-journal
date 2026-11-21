@@ -6,7 +6,7 @@ import type { ProfileDraftData, ProfileScriptPageData } from '@generated/types/s
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';
 import { postJson } from '@kit/jsonRequests';
-import { check as checkDraft, save as saveDraft } from '@/routes/profiles/draft';
+import { check as checkDraft, save as saveDraft } from '@generated/routes/scripts/draft';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { editorDiagnostics, scriptCompletion, scriptHighlighting, type ScriptVocabulary } from './scriptLanguage';
 import ScriptFlowchart from './ScriptFlowchart.vue';

@@ -49,3 +49,18 @@ func TestAContainedHostNamesBothImagesByDigest(t *testing.T) {
 		t.Fatalf("the lines are %q", got)
 	}
 }
+
+func TestOnlyACodexStartOnAContainedHostIsRefused(t *testing.T) {
+	if err := Contained.AssertContainable("codex"); !errors.Is(err, ErrProgramNotContainable) {
+		t.Fatalf("a contained Codex start gave %v", err)
+	}
+
+	for _, admitted := range []struct {
+		arrangement Arrangement
+		program     string
+	}{{Contained, "claude-code"}, {Local, "codex"}, {Local, "claude-code"}} {
+		if err := admitted.arrangement.AssertContainable(admitted.program); err != nil {
+			t.Fatalf("%s on a %s host was refused: %v", admitted.program, admitted.arrangement, err)
+		}
+	}
+}

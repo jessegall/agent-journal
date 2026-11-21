@@ -62,8 +62,9 @@ type NativeEvidence struct {
 
 const evidenceName = "native-evidence.json"
 
-// shown answers the identifier of the run that showed the item hold, or "" when none did.
-func (evidence NativeEvidence) shown(program, build string, item BoundaryItem) (string, error) {
+// shown answers the identifier of the run that showed the item hold on the platform kept under that evidence key,
+// or "" when none did.
+func (evidence NativeEvidence) shown(program, build, platform string, item BoundaryItem) (string, error) {
 	content, err := os.ReadFile(filepath.Join(evidence.Folder, evidenceName))
 	if errors.Is(err, os.ErrNotExist) {
 		return "", nil
@@ -78,21 +79,39 @@ func (evidence NativeEvidence) shown(program, build string, item BoundaryItem) (
 	if err := json.Unmarshal(content, &records); err != nil {
 		return "", err
 	}
-	return records[program+"@"+build+"/"+runtime.GOOS][item], nil
+	return records[program+"@"+build+"/"+platform][item], nil
+}
+
+// ProtectionPlatform is where a program's tools run: the name a report gives it, the key its evidence is kept under,
+// and the mechanisms the pinned clients have there.
+type ProtectionPlatform struct {
+	Name        string
+	EvidenceKey string
+	Mechanisms  map[string]ProgramMechanisms
+}
+
+// LocalPlatform is this host's own operating system, where a local host's tools run.
+func LocalPlatform() ProtectionPlatform {
+	return ProtectionPlatform{Name: runtime.GOOS, EvidenceKey: runtime.GOOS, Mechanisms: platformMechanisms()}
 }
 
 // ProgramMechanisms is how one program's pinned client applies each boundary item on this platform.
 type ProgramMechanisms map[BoundaryItem]BoundaryMechanism
 
-// InspectProtection reports which items of the program's protected arrangement this host can enforce now.
-func InspectProtection(program, build string, evidence NativeEvidence) (ProtectionCapability, error) {
-	mechanisms, known := platformMechanisms()[program]
+// InspectProtection reports which items of the program's protected arrangement this host can enforce now, on the
+// platform its tools run on.
+func InspectProtection(
+	platform ProtectionPlatform,
+	program, build string,
+	evidence NativeEvidence,
+) (ProtectionCapability, error) {
+	mechanisms, known := platform.Mechanisms[program]
 	if !known {
 		return ProtectionCapability{}, ErrUnknownProgram
 	}
-	capability := ProtectionCapability{Platform: runtime.GOOS, Program: program, Build: build, Available: true}
+	capability := ProtectionCapability{Platform: platform.Name, Program: program, Build: build, Available: true}
 	for _, item := range BoundaryItems {
-		result, err := judgeItem(program, build, item, mechanisms[item], evidence)
+		result, err := judgeItem(program, build, platform.EvidenceKey, item, mechanisms[item], evidence)
 		if err != nil {
 			return ProtectionCapability{}, err
 		}
@@ -103,7 +122,7 @@ func InspectProtection(program, build string, evidence NativeEvidence) (Protecti
 }
 
 func judgeItem(
-	program, build string,
+	program, build, platform string,
 	item BoundaryItem,
 	mechanism BoundaryMechanism,
 	evidence NativeEvidence,
@@ -113,7 +132,7 @@ func judgeItem(
 		result.Reason = "no native mechanism: " + mechanism.Missing
 		return result, nil
 	}
-	shown, err := evidence.shown(program, build, item)
+	shown, err := evidence.shown(program, build, platform, item)
 	if err != nil {
 		return BoundaryResult{}, err
 	}

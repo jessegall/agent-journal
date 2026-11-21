@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Scripts;
+namespace App\Scripts\Http\Controllers;
 
 use App\Profiles\Models\ProfileDraft;
 use App\Profiles\Values\ProfileKey;

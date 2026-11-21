@@ -20,7 +20,9 @@ final readonly class MountRules
 
     private const int MOST_CONTAINED_MOUNTS = 3;
 
-    private const array CONTAINED_TARGETS = ['/workspace', '/home/journal/.account', '/home/journal/.account/projects'];
+    private const string PROJECTS_TARGET = '/home/journal/.account/projects';
+
+    private const array CONTAINED_TARGETS = ['/workspace', '/home/journal/.account', self::PROJECTS_TARGET];
 
     /**
      * Host folders that hold accounts, credentials or host control; no local mount may name them.
@@ -53,6 +55,29 @@ final readonly class MountRules
     public static function contained(string $installationName, string|null $accountSource): self
     {
         return new self($installationName, $accountSource);
+    }
+
+    /**
+     * The mounts a contained session has beside its workspace: its own history volume over the account's projects
+     * folder, so sessions on one account never read each other's conversations (doc 61, decision 7). A session that
+     * resumes a conversation mounts the history of the session that held it, which must still exist. A local session
+     * has none; its sandbox profile hides the other sessions' history.
+     *
+     * @return list<ManifestMount>
+     */
+    public function sessionMounts(string $sessionId, string|null $resumedSessionId): array
+    {
+        if ($this->installationName === null) {
+            return [];
+        }
+
+        if ($resumedSessionId !== null) {
+            $history = "{$this->installationName}-history-{$resumedSessionId}";
+
+            return [ManifestMount::existingVolume($history, self::PROJECTS_TARGET, true)];
+        }
+
+        return [ManifestMount::volume("{$this->installationName}-history-{$sessionId}", self::PROJECTS_TARGET, true)];
     }
 
     /**

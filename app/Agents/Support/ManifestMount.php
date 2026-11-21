@@ -16,6 +16,8 @@ final readonly class ManifestMount
         public string $source,
         public string $target,
         public bool $writable,
+        // A volume the host must find, never make: the history of a conversation being resumed.
+        public bool $mustExist = false,
     ) {}
 
     /**
@@ -32,6 +34,14 @@ final readonly class ManifestMount
     public static function volume(string $name, string $target, bool $writable): self
     {
         return new self(MountType::Volume, $name, $target, $writable);
+    }
+
+    /**
+     * A named volume that must already exist on the agent daemon, such as a resumed conversation's history.
+     */
+    public static function existingVolume(string $name, string $target, bool $writable): self
+    {
+        return new self(MountType::Volume, $name, $target, $writable, true);
     }
 
     /**

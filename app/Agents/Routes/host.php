@@ -11,6 +11,7 @@ use App\Http\Controllers\Agents\Host\HeartbeatReportController;
 use App\Http\Controllers\Agents\Host\InterruptNavigationController;
 use App\Http\Controllers\Agents\Host\OpenMainRuntimeController;
 use App\Http\Controllers\Agents\Host\OutputGrantController;
+use App\Http\Controllers\Agents\Host\ProtectionReportController;
 use App\Http\Controllers\Agents\Host\RaiseNavigationController;
 use App\Http\Controllers\Agents\Host\ReconcileStartsController;
 use App\Http\Controllers\Agents\Host\ReplayedEntryController;
@@ -44,6 +45,7 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/reports/heartbeat', HeartbeatReportController::class)->name('reports.heartbeat');
     Route::post('/reports/exit', ExitReportController::class)->name('reports.exit');
     Route::post('/reports/screen', ScreenReportController::class)->name('reports.screen');
+    Route::post('/reports/protection', ProtectionReportController::class)->name('reports.protection');
     Route::get('/stop-attempts', PendingStopAttemptsController::class)->name('stop-attempts.pending');
     Route::post('/stop-attempts/{attempt}/results', StopResultsController::class)->name('stop-attempts.results');
     Route::post('/starts/claim', ClaimStartController::class)->name('starts.claim');

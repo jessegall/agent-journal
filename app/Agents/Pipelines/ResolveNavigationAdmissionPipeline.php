@@ -10,7 +10,7 @@ use App\Agents\Pipes\ReplayMenuEntry;
 use App\Agents\Pipes\RespectNavigationHold;
 use App\Agents\Pipes\WaitForOpenNavigation;
 use App\Agents\Support\NavigationRaiseAnswer;
-use App\Agents\Values\NavigationAdmission;
+use App\Agents\Pipelines\NavigationAdmission;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\Step;
 

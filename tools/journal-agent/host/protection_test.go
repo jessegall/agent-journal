@@ -9,7 +9,7 @@ import (
 )
 
 func TestAnItemWithoutRecordedEvidenceIsNotEnforced(t *testing.T) {
-	capability, err := InspectProtection("claude", "2.1.323", NativeEvidence{Folder: t.TempDir()})
+	capability, err := InspectProtection(LocalPlatform(), "claude", "2.1.323", NativeEvidence{Folder: t.TempDir()})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestRecordedEvidenceEnforcesOnlyAnItemWithANativeMechanism(t *testing.T) {
 	}
 	writeEvidence(t, folder, map[string]map[BoundaryItem]string{"codex@0.165.0/" + runtime.GOOS: shown})
 
-	capability, err := InspectProtection("codex", "0.165.0", NativeEvidence{Folder: folder})
+	capability, err := InspectProtection(LocalPlatform(), "codex", "0.165.0", NativeEvidence{Folder: folder})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +59,7 @@ func TestEvidenceOfAnotherBuildDoesNotCount(t *testing.T) {
 		"claude@2.1.322/" + runtime.GOOS: {InstallWrites: "run-old"},
 	})
 
-	capability, err := InspectProtection("claude", "2.1.323", NativeEvidence{Folder: folder})
+	capability, err := InspectProtection(LocalPlatform(), "claude", "2.1.323", NativeEvidence{Folder: folder})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,13 +78,13 @@ func TestEvidenceOthersCanReadIsRefused(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := InspectProtection("claude", "2.1.323", NativeEvidence{Folder: folder}); err == nil {
+	if _, err := InspectProtection(LocalPlatform(), "claude", "2.1.323", NativeEvidence{Folder: folder}); err == nil {
 		t.Fatal("evidence readable by others was accepted")
 	}
 }
 
 func TestAnUnknownProgramIsRefused(t *testing.T) {
-	if _, err := InspectProtection("gemini", "1.0.0", NativeEvidence{Folder: t.TempDir()}); err != ErrUnknownProgram {
+	if _, err := InspectProtection(LocalPlatform(), "gemini", "1.0.0", NativeEvidence{Folder: t.TempDir()}); err != ErrUnknownProgram {
 		t.Fatalf("got %v, want ErrUnknownProgram", err)
 	}
 }

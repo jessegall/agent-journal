@@ -35,7 +35,7 @@ final class AccountSecretStartTest extends TestCase
         {
             public function for(HookProgram $program): ProgramCompatibility
             {
-                return ProgramCompatibility::pinned($program)->withEvidence(ProgramEvidence::NativeShown);
+                return ProgramCompatibility::pinned($program)->withEvidence(ProgramEvidence::NativeShown, 'this test');
             }
         });
     }

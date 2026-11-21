@@ -16,7 +16,7 @@ use App\Agents\Pipelines\ResolveNavigationAdmissionPipeline;
 use App\Agents\Support\HostRuntimes;
 use App\Agents\Support\NavigationDispatch;
 use App\Agents\Support\NavigationRaiseAnswer;
-use App\Agents\Values\NavigationAdmission;
+use App\Agents\Pipelines\NavigationAdmission;
 use App\Contracts\CommandHandler;
 use App\Pipelines\Contracts\PipelineRunner;
 

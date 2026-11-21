@@ -14,6 +14,7 @@ use App\Agents\Enums\DriverType;
 use App\Agents\Exceptions\ArrangementUnknown;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\InstallationNameMissing;
+use App\Agents\Exceptions\ProgramNotContainable;
 use App\Agents\Models\Agent;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\ArrangementSetting;
@@ -127,26 +128,49 @@ final class HostArrangementTest extends TestCase
             );
     }
 
+    public function test_a_contained_codex_start_is_refused_whatever_its_sign_in_and_creates_no_start(): void
+    {
+        $this->useArrangement(ArrangementType::Contained);
+
+        try {
+            $this->openOn(ArrangementType::Contained, 'codex');
+            $this->fail('a contained Codex start was not refused');
+        } catch (ProgramNotContainable $refusal) {
+            $this->assertSame(ProgramNotContainable::codex()->getMessage(), $refusal->getMessage());
+        }
+
+        $this->assertSame(0, ProcessStart::query()->count());
+        $this->assertNotSame('', $this->openOn(ArrangementType::Contained)->runtimeId);
+    }
+
+    public function test_a_local_codex_start_is_not_refused_by_the_container_check(): void
+    {
+        $this->assertNotSame('', $this->openOn(ArrangementType::Local, 'codex')->runtimeId);
+    }
+
     private function useArrangement(ArrangementType $arrangement): void
     {
         $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig($arrangement->value, 'journal'));
     }
 
-    private function openOn(ArrangementType $arrangement): OpenedRuntime
+    private function openOn(ArrangementType $arrangement, string $program = 'claude-code'): OpenedRuntime
     {
         $host = $this->asSystem(new EnrollHost('test host '.Str::random(6), [self::FOLDER], $arrangement));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent');
+        [$build, $profile, $model] = $program === 'codex'
+            ? ['0.165.0', 'codex', 'gpt-5.5']
+            : ['2.1.323', 'claude', 'claude-opus-5-5'];
 
         return $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
             $agent->id,
             $host->hostId,
             self::FOLDER,
-            'claude-code',
-            '2.1.323',
-            'claude',
+            $program,
+            $build,
+            $profile,
             DriverType::Process,
-            'claude-opus-5-5',
+            $model,
         ));
     }
 }

@@ -43,6 +43,20 @@ func (arrangement Arrangement) IsContained() bool {
 }
 
 // AssertServable refuses a contained host that lacks the agent daemon's socket or its installation name; a local host
+// ErrProgramNotContainable refuses a Codex start on a contained host, whatever its account's sign-in method: Codex's
+// sandbox limits writes only, so its tools could read its sign-in (doc 61, decision 8).
+var ErrProgramNotContainable = errors.New("Codex's sandbox does not keep tools from its sign-in; container starts " +
+	"wait for the provider transport")
+
+// AssertContainable refuses, on a contained host, a program whose sandbox does not keep its tools from its sign-in.
+func (arrangement Arrangement) AssertContainable(program string) error {
+	if arrangement.IsContained() && program == "codex" {
+		return ErrProgramNotContainable
+	}
+
+	return nil
+}
+
 // needs neither.
 func (arrangement Arrangement) AssertServable(dockerSocket string, installationName InstallationName) error {
 	if !arrangement.IsContained() {
@@ -61,7 +75,7 @@ func (arrangement Arrangement) AssertServable(dockerSocket string, installationN
 }
 
 // ErrContainedNeedsImages is returned when a contained host is not told which agent and runner images to run.
-var ErrContainedNeedsImages = errors.New("a contained host needs --agent-image and --runner-image, each by digest")
+var ErrContainedNeedsImages = errors.New("a contained host needs --agent-image and --runner-image, each by id or digest")
 
 // PinnedImages are the agent and sign-in runner images a contained host runs, each named by its digest: the sealed
 // installation of the contained arrangement (doc 61, decision 4).
@@ -74,7 +88,7 @@ type PinnedImages struct {
 // digest.
 func (images PinnedImages) AssertLoaded(ctx context.Context, containers Containers) error {
 	for _, reference := range []string{images.Agent, images.Runner} {
-		if !strings.Contains(reference, "@sha256:") {
+		if !IsPinnedReference(reference) {
 			return ErrContainedNeedsImages
 		}
 

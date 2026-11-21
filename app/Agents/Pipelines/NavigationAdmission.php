@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Values;
+namespace App\Agents\Pipelines;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\RaiseNavigation;

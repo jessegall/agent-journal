@@ -70,3 +70,6 @@ frankenphp-worker.php
 # Compose secret files of the contained arrangement; only secrets/README.md is committed.
 secrets/*
 !secrets/README.md
+
+# The saved agent and runner images .docker/helper/build.sh writes for the agent daemon to load.
+/images/

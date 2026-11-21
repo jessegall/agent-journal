@@ -6,7 +6,7 @@ namespace App\Agents\Pipes;
 
 use App\Agents\Models\NavigationRequest;
 use App\Agents\Support\NavigationRaiseAnswer;
-use App\Agents\Values\NavigationAdmission;
+use App\Agents\Pipelines\NavigationAdmission;
 use App\Pipelines\Contracts\Pipe;
 use Illuminate\Container\Attributes\Config;
 

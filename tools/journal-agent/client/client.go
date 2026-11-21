@@ -199,6 +199,23 @@ type LivenessReport struct {
 	Evidence          string `json:"evidence"`
 }
 
+// ProtectionReport mirrors App\Agents\Data\ProtectionReportData: what a contained host found of one program's
+// protected arrangement in the agent image, item by item.
+type ProtectionReport struct {
+	Program  string           `json:"program"`
+	Build    string           `json:"build"`
+	Platform string           `json:"platform"`
+	Items    []ProtectionItem `json:"items"`
+}
+
+// ProtectionItem mirrors App\Agents\Data\ProtectedItemData.
+type ProtectionItem struct {
+	Item     string `json:"item"`
+	Enforced bool   `json:"enforced"`
+	Evidence string `json:"evidence"`
+	Reason   string `json:"reason"`
+}
+
 // ErrRefused is returned when the journal refuses a call outright (4xx): a retry would be refused again.
 var ErrRefused = errors.New("the journal refused the call")
 
@@ -412,6 +429,10 @@ func (client *Client) ReportTurn(ctx context.Context, report TurnReport) error {
 
 func (client *Client) ReportHeartbeat(ctx context.Context, report LivenessReport) error {
 	return client.call(ctx, "/host/reports/heartbeat", report, nil)
+}
+
+func (client *Client) ReportProtection(ctx context.Context, report ProtectionReport) error {
+	return client.call(ctx, "/host/reports/protection", report, nil)
 }
 
 func (client *Client) ReportExit(ctx context.Context, report LivenessReport) error {

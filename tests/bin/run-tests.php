@@ -20,17 +20,16 @@ $environment = [...getenv(), 'APP_ENV' => 'testing'];
 $arguments = array_slice($_SERVER['argv'] ?? [], 1);
 $paths = array_values(array_filter($arguments, fn (string $argument) => ! str_starts_with($argument, '-')));
 $options = array_values(array_filter($arguments, fn (string $argument) => str_starts_with($argument, '-')));
-$command = ['php', 'artisan', 'test', '--parallel', ...$options];
-prepareWorkerDatabases($root, $environment, $options);
+$processes = processesFor($root, $options, $paths);
+$otherOptions = array_values(array_filter($options, fn (string $option) => ! str_starts_with($option, '--processes=')));
+$command = ['php', 'artisan', 'test', '--parallel', "--processes={$processes}", ...$otherOptions];
+$heldDatabases = prepareWorkerDatabases($root, $environment, $processes);
 
 if (count($paths) <= 1) {
-    $exitCode = (int) run([...$command, ...$paths], $environment, $root, false);
-    dropRunDatabase($root);
-    exit($exitCode);
+    exit((int) run([...$command, ...$paths], $environment, $root, false));
 }
 
 $configuration = configurationFor($root, $paths);
 $exitCode = (int) run([...$command, "--configuration={$configuration}"], $environment, $root, false);
 @unlink($configuration);
-dropRunDatabase($root);
 exit($exitCode);

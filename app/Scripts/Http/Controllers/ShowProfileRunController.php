@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Scripts;
+namespace App\Scripts\Http\Controllers;
 
 use App\Scripts\Calls\ShowProfileRunCall;
 use App\Scripts\Data\ProfileRunData;

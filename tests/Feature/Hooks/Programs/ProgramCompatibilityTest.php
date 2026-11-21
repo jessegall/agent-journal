@@ -74,17 +74,17 @@ final class ProgramCompatibilityTest extends TestCase
 
     public function test_only_native_evidence_lets_a_start_through(): void
     {
-        $shown = $this->withEvidence(ProgramEvidence::NativeShown);
+        $shown = $this->withEvidence(ProgramEvidence::NativeShown, 'this test');
         $shown->assertStartable();
 
         $this->expectException(ProgramArrangementUnproven::class);
 
-        $this->withEvidence(ProgramEvidence::ContractPassed)->assertStartable();
+        $this->withEvidence(ProgramEvidence::ContractPassed, 'this test')->assertStartable();
     }
 
     private function withEvidence(ProgramEvidence $evidence): ProgramCompatibility
     {
-        return $this->compatibilityOf(HookProgram::Codex)->withEvidence($evidence);
+        return $this->compatibilityOf(HookProgram::Codex)->withEvidence($evidence, 'this test');
     }
 
     private function compatibilityOf(HookProgram $program): ProgramCompatibility

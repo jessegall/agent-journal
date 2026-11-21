@@ -6,7 +6,7 @@ namespace App\Agents\Pipes;
 
 use App\Agents\Models\MenuEntry;
 use App\Agents\Support\NavigationRaiseAnswer;
-use App\Agents\Values\NavigationAdmission;
+use App\Agents\Pipelines\NavigationAdmission;
 use App\Pipelines\Contracts\Pipe;
 
 /**

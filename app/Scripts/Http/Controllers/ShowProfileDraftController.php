@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Scripts;
+namespace App\Scripts\Http\Controllers;
 
 use App\Scripts\Calls\ShowProfileDraftCall;
 use App\Scripts\Data\ProfileDraftData;

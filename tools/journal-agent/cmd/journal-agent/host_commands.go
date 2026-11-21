@@ -117,6 +117,7 @@ func serve(arguments []string) error {
 	startSocketFolder := flags.String("start-socket-dir", "", "an owner-only folder for the start socket, the state folder by default")
 	agentImage := flags.String("agent-image", "", "the agent image a contained host runs, by digest")
 	runnerImage := flags.String("runner-image", "", "the sign-in runner image of a contained host, by digest")
+	seccomp := flags.String("seccomp-profile", "", "the seccomp profile a contained host's agent containers run under")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -157,6 +158,13 @@ func serve(arguments []string) error {
 		sessions, err = host.ContainerSessionsOf(ctx, host.Containers{Docker: "docker", Host: *dockerSocket}, string(installation))
 		if err != nil {
 			return err
+		}
+		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
+		containers := host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
+		evidence := host.NativeEvidence{Folder: *stateFolder}
+		// Without a report the journal refuses every contained start, so a failed report stops no other work.
+		if err := host.ReportContainedProtection(ctx, containers, *seccomp, evidence, journal); err != nil {
+			log.Printf("the protection of the agent image was not reported: %v", err)
 		}
 	}
 	outcomes, err := host.ReconcileOnBoot(ctx, journal, preparation.States, reports, sessions)
@@ -550,7 +558,7 @@ func protectedStartAllowed(stateFolder, installationFolder string, grant client.
 	if _, err := (host.Installation{Folder: installationFolder}).Verify(); err != nil {
 		return err
 	}
-	capability, err := host.InspectProtection(profile.Program(), claim.Recipe.ProgramVersion,
+	capability, err := host.InspectProtection(host.LocalPlatform(), profile.Program(), claim.Recipe.ProgramVersion,
 		host.NativeEvidence{Folder: stateFolder})
 	if err != nil {
 		return err
