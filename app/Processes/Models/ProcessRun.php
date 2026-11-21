@@ -22,6 +22,7 @@ use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\PartEndType;
 use App\Processes\Enums\RunMode;
+use App\Processes\Enums\RunRequestIntent;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\RetryRefused;
 use App\Processes\Values\ExecutionPlan;
@@ -69,6 +70,11 @@ use Illuminate\Support\Carbon;
  * @property CarbonImmutable|null $heartbeat_at
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $ended_at
+ * @property RunRequestIntent $request_intent
+ * @property string|null $responsible_type
+ * @property string|null $responsible_id
+ * @property string|null $outcome_user_id
+ * @property string|null $attempt_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -124,6 +130,7 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
             'plan' => ExecutionPlan::class,
             'consumed_at' => 'immutable_datetime',
             'heartbeat_at' => 'immutable_datetime',
+            'request_intent' => RunRequestIntent::class,
         ];
     }
 
@@ -143,6 +150,11 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
         $run->policy_revision = $admission->policyRevision;
         $run->working_folder = $admission->workingFolder;
         $run->plan = $admission->plan;
+        $run->request_intent = $admission->intent;
+        $run->responsible_type = $admission->intent->isRequested() ? $actor->type->value : null;
+        $run->responsible_id = $admission->intent->isRequested() ? $actor->id : null;
+        $run->outcome_user_id = $admission->outcomeUserId;
+        $run->attempt_id = $run->newUniqueId();
         $run->belongTo($actor);
         $run->save();
 
@@ -157,6 +169,14 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
     public static function ofAnyActor(string $id): self
     {
         return self::query()->acrossActors()->findOrFail($id);
+    }
+
+    /**
+     * The run under its row lock, whichever actor owns it: the lock its attempt's one result is recorded under.
+     */
+    public static function lockedForOutcome(string $id): self
+    {
+        return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
     // ----------[ Mutations ]----------

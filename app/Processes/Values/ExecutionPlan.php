@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Processes\Enums\StepType;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 
@@ -26,5 +27,18 @@ final class ExecutionPlan extends Data
     public function steps(): array
     {
         return $this->root->flatten();
+    }
+
+    /**
+     * Whether the plan's only action starts a child in the background, so its root ends with zero whatever the child
+     * does later: its success says only that the requested plan finished.
+     */
+    public function startsOnlyInBackground(): bool
+    {
+        $actions = in_array($this->root->type, [StepType::Sequence, StepType::Group], true)
+            ? $this->root->children
+            : [$this->root];
+
+        return count($actions) === 1 && $actions[0]->type === StepType::Background;
     }
 }
