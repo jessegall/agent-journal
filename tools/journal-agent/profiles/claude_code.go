@@ -35,6 +35,9 @@ var nativeHookEvents = []string{"SessionStart", "UserPromptSubmit", "PreToolUse"
 // answer a prompt: reading and editing files, the journal's own commands and read-only git. Anything else is refused.
 var claudeCodeAllowedWithoutAsking = []string{"Read", "Edit", "Write", "NotebookEdit", "Bash(journal:*)", "Bash(ls:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"}
 
+// claudeCodeJournalServer is the name of the journal's MCP server in a launch's server list.
+const claudeCodeJournalServer = "journal"
+
 // claudeCodeJournalTools is the one MCP allow rule of a launch: the journal's own server, never a wildcard for others.
 const claudeCodeJournalTools = "mcp__journal__*"
 
@@ -247,7 +250,7 @@ func journalDescriptor(start contracts.Start) ([]byte, error) {
 			return nil, fmt.Errorf("%w: the journal MCP path %q", errUnresolvedLaunchSetting, path)
 		}
 	}
-	return json.MarshalIndent(map[string]any{"mcpServers": map[string]any{"journal": map[string]any{
+	return json.MarshalIndent(map[string]any{"mcpServers": map[string]any{claudeCodeJournalServer: map[string]any{
 		"type":    "stdio",
 		"command": server.Command,
 		"args":    []string{server.Relay},

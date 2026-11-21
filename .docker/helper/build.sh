@@ -36,6 +36,8 @@ if [ "$name" = agent ]; then
     for protected in bin/journal-init bin/journal-exec bin/journal-shell shell/bash; do
         docker run --rm --entrypoint stat "$tag" -c '%U:%G %a' "/opt/journal/$protected" | grep -qx 'root:root 555'
     done
+    docker run --rm --entrypoint stat "$tag" -c '%U:%G %a' /etc/claude-code/managed-settings.json \
+        | grep -qx 'root:root 444'
     docker run --rm --entrypoint id "$tag" journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
     docker run --rm --entrypoint stat "$tag" -c '%u:%g %a' /workspace | grep -qx '10001:10010 2770'
     docker run --rm --entrypoint bwrap "$tag" --version >/dev/null

@@ -88,8 +88,55 @@ and parent.
 - **Through the bridge**, the same tool call printed `PIPED`, `10002` and `/workspace`; `redirected.txt` was owned by
   10002 with group journal-work (10010), mode 0660, holding `hello /home/journal-tools`; Claude Code read the output and
   exit code 0, and its `pwd -P` file under `/tmp` was written without an error.
-- A protected-account container sets `CLAUDE_CODE_SHELL=/opt/journal/shell/bash` (`host/container.go`); the managed
-  settings must keep a project's settings from naming another shell (task 1760).
+- A protected start sets `CLAUDE_CODE_SHELL=/opt/journal/shell/bash` from Claude Code's start profile
+  (`profiles/claude_code.go`, `Environment` when `Start.Protected`), and `RejectContrary` refuses an argument naming
+  another shell, a shell prefix or a config folder (task 1760).
+
+## Managed policy
+
+The agent image installs `.docker/helper/claude-managed-settings.json` at `/etc/claude-code/managed-settings.json`
+(root, mode 0444; the Linux managed path of the settings documentation). The program's user 10001 can read the account
+folder, so Claude Code's own file tools must never be pointed at it; the policy does that, and nothing a project, a
+user or a launch writes can loosen it:
+
+- `allowManagedPermissionRulesOnly`, `allowManagedHooksOnly` and `allowManagedMcpServersOnly` make the managed allow,
+  ask and deny rules, hooks and MCP allowlist the only ones in force; rules in a project's `.claude/settings.json`, the
+  user's settings and the launch's `--settings` file are ignored. The policy therefore carries the launch's own rules
+  itself: the delegation and nested-program denies, the noninteractive allow list, the journal's MCP tools and its hook
+  on every event. `TestTheManagedPolicyCarriesEveryRuleAndHookOfTheLaunch` (`profiles`) fails when the two drift.
+- `allowedMcpServers` names only the journal's server; `permissions.disableBypassPermissionsMode` is `disable`.
+- File rules are allowed only under `/workspace` and `/tmp`; reads and edits are denied under `/home`, `/root`,
+  `/proc`, `/dev/fd`, `/run` and `/sys`, edits under `/etc` and `/opt`, and reads of `/etc/claude-code`.
+
+Every path-taking tool of the start's tool list, and what covers it:
+
+| Tool | Opens | Covered by |
+|---|---|---|
+| Read | the file it names | `Read` rules; a symlink is judged by its target |
+| Edit, Write | the file it names | `Edit` rules, and `Read` denies, which also refuse writing |
+| NotebookEdit | the notebook it names | `Edit` rules; it also needs the notebook read first, which the `Read` deny refuses |
+| Grep, Glob | the folder they search | `Read` rules |
+| Bash | anything, as the executor's user 10002 | the shell bridge (section Shell handoff) and file modes; paths in a command are also checked against the `Read` denies |
+| WebFetch | only `http` and `https` URLs | a `file:` URL is refused as invalid before any read |
+| WebSearch, ToolSearch | no local file | nothing to cover |
+
+No tool had to leave the list for protected starts.
+
+Checked in the arm64 agent image as 10001, with the shell bridge and the executor running, against a fake Messages
+API that issued one tool call per turn and recorded each answer (scratchpad probe `policy/`; the launch's `--settings`
+and a workspace `.claude/settings.json` both allowed `Read(//home/**)` and `Edit(//home/**)`):
+
+- Read of `/workspace/marker.txt` answered its text; Write of `/workspace/written.txt` and NotebookEdit of a workspace
+  notebook succeeded; `ls /workspace` through Bash answered the listing.
+- Refused before access, each with `File is in a directory that is denied by your permission settings` or
+  `Permission to read ... has been denied`: Read of `/home/journal/.account/.credentials.json`, of its `.backup`, of
+  `/workspace/account-link/.credentials.json` and `/workspace/credentials-link.json` (links into the account folder),
+  of `/proc/self/root/home/journal/.account/.credentials.json`, `/proc/self/environ`, `/dev/fd/0` and
+  `/workspace/../home/journal/.account/.credentials.json`; Grep and Glob of the account folder; Write and Edit in it,
+  and Write through the workspace link (`File is covered by a Read deny rule`); NotebookEdit through the link; Bash
+  `ls -la /home/journal/.account`.
+- WebFetch of `file:///home/journal/.account/.credentials.json` answered `Invalid URL`, also with WebFetch allowed.
+- The two settings files that allowed the account folder changed none of these answers.
 
 ## Checked and unchecked
 
@@ -105,5 +152,6 @@ and parent.
 | `authMethod claude.ai` and `configDirectory` of a signed-in account | unchecked: needs sign-in | task 250 |
 | Parallel starts on one account share a refresh safely | unchecked: needs sign-in | task 250 |
 | Bash tool commands run as the executor user, not the program user | checked for one-shot | section Shell handoff, fake API in the agent image |
+| Native file tools never reach the account folder, whatever a project or launch allows | checked for one-shot | section Managed policy, fake API in the agent image |
 | An agent reads its own saved output but no other session's or the credentials | unchecked: needs sign-in and the protected host | task 250 and the starter |
 | Model commands cannot read the Keychain entry | unchecked: needs sign-in | task 250 |
