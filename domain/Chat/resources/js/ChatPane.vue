@@ -24,6 +24,7 @@ const props = defineProps<{
     chat: ChatData;
     offersChoice: boolean;
     agentUrl: (agent: AgentOptionData) => string;
+    questionUrl: (messageId: string) => string;
     loadMore: (token: string) => void;
     protectedProp: string;
 }>();
@@ -168,6 +169,7 @@ function retryFocused(): void {
                     :pending="pending"
                     :refused="refused"
                     :own-inbox-id="conversation.sourceInboxId"
+                    :question-url="questionUrl"
                     @reply="(message) => (replyingTo = message)"
                     @check-again="(intent) => owner?.checkAgain(intent)"
                     @restore="(intentKey) => owner?.restore(intentKey)"
