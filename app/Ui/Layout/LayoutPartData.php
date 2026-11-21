@@ -141,6 +141,7 @@ final class LayoutPartData extends Data
             }
 
             $keys[$child->key] = true;
+
             $parts += $child->assertWithinCatalogue(
                 "{$path}.{$child->key}",
                 $depth + 1,

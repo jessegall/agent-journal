@@ -31,8 +31,8 @@ final readonly class RulesWindowResolver implements PageResolver
     public function read(): DeclaredLayoutData
     {
         $filters = $this->request->filters();
-        $rulePage = $this->records->list($filters->toDomain());
-        $selected = $filters->onPage($rulePage->page)->rule;
+        $page = $this->records->list($filters->toDomain());
+        $selected = $filters->onPage($page->page)->rule;
 
         return DeclaredLayoutData::of(LayoutPartData::box(
             'rules',
@@ -40,7 +40,7 @@ final readonly class RulesWindowResolver implements PageResolver
             LayoutPartData::box(
                 'top',
                 'header',
-                LayoutPartData::text('title', "Rules ({$rulePage->total})", 'heading'),
+                LayoutPartData::text('title', "Rules ({$page->total})", 'heading'),
                 LayoutPartData::field(
                     'search',
                     'Search rules',
@@ -50,15 +50,15 @@ final readonly class RulesWindowResolver implements PageResolver
             LayoutPartData::box(
                 'split',
                 'split',
-                $this->listOf($rulePage, is_string($selected) ? $selected : ''),
-                $this->readerOf($rulePage),
+                $this->listOf($page, is_string($selected) ? $selected : ''),
+                $this->readerOf($page),
             ),
         ));
     }
 
-    private function listOf(RuleList $rulePage, string $selected): LayoutPartData
+    private function listOf(RuleList $page, string $selected): LayoutPartData
     {
-        if ($rulePage->rules === []) {
+        if ($page->rules === []) {
             return LayoutPartData::notice('list', 'empty', 'No rules match these filters.');
         }
 
@@ -68,50 +68,51 @@ final readonly class RulesWindowResolver implements PageResolver
             "{$rule->number} · {$rule->state->label()}",
             ['rule' => $rule->id],
             $rule->id === $selected,
-        ), $rulePage->rules);
+        ), $page->rules);
 
         return LayoutPartData::box(
             'list',
             'stack',
             LayoutPartData::collection('rows', 'list', $rows),
-            $this->pagerOf($rulePage),
+            $this->pagerOf($page),
         );
     }
 
-    private function pagerOf(RuleList $rulePage): LayoutPartData
+    private function pagerOf(RuleList $page): LayoutPartData
     {
-        $pages = [LayoutPartData::text('page', "Page {$rulePage->page} of {$rulePage->lastPage}", 'muted')];
+        $controls = [LayoutPartData::text('page', "Page {$page->page} of {$page->lastPage}", 'muted')];
 
-        if ($rulePage->page > 1) {
-            $pages[] = LayoutPartData::action(
+        if ($page->page > 1) {
+            $controls[] = LayoutPartData::action(
                 'previous',
                 'Previous',
-                LayoutActionData::changing(['page' => (string) ($rulePage->page - 1)]),
+                LayoutActionData::changing(['page' => (string) ($page->page - 1)]),
             );
         }
 
-        if ($rulePage->page < $rulePage->lastPage) {
-            $pages[] = LayoutPartData::action(
+        if ($page->page < $page->lastPage) {
+            $controls[] = LayoutPartData::action(
                 'next',
                 'Next',
-                LayoutActionData::changing(['page' => (string) ($rulePage->page + 1)]),
+                LayoutActionData::changing(['page' => (string) ($page->page + 1)]),
             );
         }
 
-        return LayoutPartData::box('pager', 'row', ...$pages);
+        return LayoutPartData::box('pager', 'row', ...$controls);
     }
 
-    private function readerOf(RuleList $rulePage): LayoutPartData
+    private function readerOf(RuleList $page): LayoutPartData
     {
-        $rule = $rulePage->selection();
+        $rule = $page->selection();
 
         if ($rule->isEmpty()) {
-            return $rulePage->selectionMissing
+            return $page->selectionMissing
                 ? LayoutPartData::notice('reader', 'empty', 'This rule does not exist.')
                 : LayoutPartData::notice('reader', 'empty', 'Choose a rule to read it.');
         }
 
         $shown = $rule->get();
+
         $parts = [
             LayoutPartData::box(
                 'meta',
