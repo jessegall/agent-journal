@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Commands;
 
 use App\Bus\Attributes\Authorize;
+use App\Bus\Contracts\TargetedCommand;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -24,12 +25,26 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 #[RetainedActorRequestKey]
 #[Effect(CommandEffectType::Recovery)]
 #[Authorize(MessagePolicy::class, AccessType::Create)]
-final readonly class ReplyToMessage extends Command
+final readonly class ReplyToMessage extends Command implements TargetedCommand
 {
     public function __construct(
         public string $messageId,
         public int|null $expectedStateVersion,
         #[Required]
         public string $body,
+        public string|null $agent = null,
     ) {}
+
+    /**
+     * What a reply to this message writes to, as its receipt keeps it.
+     */
+    public static function targetOf(string $messageId): string
+    {
+        return "reply:{$messageId}";
+    }
+
+    public function receiptTarget(): string
+    {
+        return self::targetOf($this->messageId);
+    }
 }

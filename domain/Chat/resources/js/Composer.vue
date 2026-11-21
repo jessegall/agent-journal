@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import Button from '@kit/Button';
-import FormErrors from '@kit/FormErrors';
+import { onPurge } from '@kit/protectedView';
 import Icon from '@kit/Icon';
 import { useComposerHeight } from './composables/useComposerHeight';
+import { useConversationIntents } from './composables/useConversationIntents';
 import { useMessageDrafts } from './composables/useMessageDrafts';
-import { formSendingHooks } from '@kit/usePageChanges';
-import { reply as replyRoute, send as sendRoute } from '@generated/routes/chat';
-import type { MessageInput } from '@generated/types/chat';
 import type { MessageView } from '@kit/CoreTypes';
 
 /**
@@ -25,6 +22,7 @@ const props = defineProps<{
     sourceInboxId: string;
     destinationInboxId: string;
     replyingTo: MessageView | null;
+    conversationProp: string;
 }>();
 
 const emit = defineEmits<{ replied: [] }>();
@@ -32,81 +30,60 @@ const emit = defineEmits<{ replied: [] }>();
 const drafts = useMessageDrafts();
 const body = ref('');
 const textarea = ref<HTMLTextAreaElement | null>(null);
-const form = useForm<MessageInput>({
-    body: '',
-    agent: props.agent,
-    expectedSessionId: props.sessionId,
-    expectedGeneration: props.sessionGeneration,
-    sourceInboxId: props.sourceInboxId,
-    destinationInboxId: props.destinationInboxId,
-});
 const hasText = computed(() => body.value.trim() !== '');
 
 useComposerHeight(textarea, body);
 
-// The stored draft is read in the browser only, after the server-rendered page has been taken over.
+// The stored draft is read in the browser only, after the server-rendered page has been taken over; the composer is
+// mounted only once its conversation is revealed. A denial or sign-out empties it, which removes the stored draft.
 onMounted(() => (body.value = drafts.read(props.draftKey)));
+onBeforeUnmount(onPurge(() => (body.value = '')));
 
 watch(
     () => props.draftKey,
-    (key) => {
-        body.value = drafts.read(key);
-        form.clearErrors();
-    },
+    (key) => (body.value = drafts.read(key)),
 );
 watch(body, (text) => drafts.write(props.draftKey, text));
+// A refused send put back into the draft shows in the field.
+watch(
+    () => drafts.read(props.draftKey),
+    (text) => {
+        if (text !== body.value) {
+            body.value = text;
+        }
+    },
+);
 
+/**
+ * Sends the draft through the conversation's owner: the text clears and a Sending bubble shows at once, and the
+ * owner settles it; a reply goes to the message at the version shown, so a stale one is refused with its text kept.
+ */
 function submit(): void {
-    if (!hasText.value || form.processing) {
+    if (!hasText.value) {
         return;
     }
 
-    const sent = {
-        key: props.draftKey,
-        body: body.value,
+    const owner = useConversationIntents(props.draftKey);
+    const draft = {
+        draftKey: props.draftKey,
+        text: body.value,
         agent: props.agent,
         expectedSessionId: props.sessionId,
         expectedGeneration: props.sessionGeneration,
         sourceInboxId: props.sourceInboxId,
         destinationInboxId: props.destinationInboxId,
-        replyingTo: props.replyingTo,
     };
-    const hooks = {
-        preserveScroll: true,
-        ...formSendingHooks(),
-        onSuccess: () => {
-            drafts.clearSent(sent.key, sent.body);
+    const replyingTo = props.replyingTo;
+    const intent = replyingTo === null
+        ? owner.beginSend(draft)
+        : owner.beginReply(draft, replyingTo, replyingTo.stateVersion);
+    body.value = drafts.read(props.draftKey);
 
-            if (props.draftKey === sent.key) {
-                body.value = drafts.read(sent.key);
-            }
-
-            if (sent.replyingTo !== null) {
-                emit('replied');
-            }
-        },
-    };
-
-    // A reply goes to the message at the version shown; a stale one is refused and the draft stays.
-    if (sent.replyingTo !== null) {
-        form.transform(() => ({
-            messageId: sent.replyingTo?.id,
-            stateVersion: sent.replyingTo?.stateVersion,
-            body: sent.body,
-            agent: sent.agent,
-        })).submit(replyRoute(), hooks);
-
-        return;
+    if (replyingTo !== null) {
+        emit('replied');
     }
 
-    form.transform(() => ({
-        body: sent.body,
-        agent: sent.agent,
-        expectedSessionId: sent.expectedSessionId,
-        expectedGeneration: sent.expectedGeneration,
-        sourceInboxId: sent.sourceInboxId,
-        destinationInboxId: sent.destinationInboxId,
-    })).submit(sendRoute(), hooks);
+    owner.submit(intent, props.conversationProp);
 }
 
 function sendOnEnter(event: KeyboardEvent): void {
@@ -156,7 +133,6 @@ function sendOnEnter(event: KeyboardEvent): void {
                         type="submit"
                         size="small"
                         variant="primary"
-                        :pending="form.processing"
                         >Send</Button
                     >
                 </template>
@@ -172,6 +148,5 @@ function sendOnEnter(event: KeyboardEvent): void {
                 </template>
             </span>
         </div>
-        <FormErrors :errors="form.errors" />
     </form>
 </template>

@@ -63,3 +63,20 @@ export function keepStored(area: StorageArea, key: string, value: string): void 
         console.warn(`The browser refused to keep ${key} in its ${area} storage.`, error);
     }
 }
+
+/**
+ * Whether the browser lets this page keep values in the storage area, so a caller can say when they last only as
+ * long as the page stays open.
+ */
+export function isStorageAvailable(area: StorageArea): boolean {
+    const probe = 'journal.storage-probe';
+
+    try {
+        storageOf(area).setItem(probe, probe);
+        storageOf(area).removeItem(probe);
+
+        return true;
+    } catch {
+        return false;
+    }
+}

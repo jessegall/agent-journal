@@ -29,6 +29,14 @@ final class ConversationUnavailable extends RuntimeException implements CommandR
         return new self('You take part in no conversation yet: open the chat first, or name one with --chat.');
     }
 
+    /**
+     * A repeated send whose message the caller can no longer see; it names no message.
+     */
+    public static function sentMessageHidden(): self
+    {
+        return new self('The message this request sent is no longer available to you.');
+    }
+
     public static function withPeer(Throwable $cause): self
     {
         return new self('This conversation is not available.', 0, $cause);

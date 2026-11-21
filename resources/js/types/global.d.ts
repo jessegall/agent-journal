@@ -15,11 +15,19 @@ declare module 'vite/client' {
     }
 }
 
+import type { LiveTraceEntry } from '@/composables/liveTrace';
 import type { SharedData } from './generated';
 
 declare module '@inertiajs/core' {
     export interface InertiaConfig {
         sharedPageProps: SharedData;
+    }
+}
+
+declare global {
+    interface Window {
+        /** The live connection's last milestones, read from the browser console. */
+        journalLiveTrace?: () => LiveTraceEntry[];
     }
 }
 

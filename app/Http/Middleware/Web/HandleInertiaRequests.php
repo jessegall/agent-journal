@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Web;
 
 use App\Actors\Support\ActorContext;
+use App\Contracts\CommandRefusal;
 use App\Sharing\Contracts\SharePolicy;
 use App\Web\Contracts\CurrentUserResolver;
 use App\Web\Contracts\InstalledVersion;
@@ -76,6 +77,7 @@ class HandleInertiaRequests extends Middleware
                     'version' => $this->version->label(),
                     'currentUser' => CurrentUserData::from($user->get()),
                     'canShare' => $this->sharing->mayManage(ActorContext::forUser($user->get()->id)),
+                    ...$this->refusalCodeOf($request),
                 ],
             )->toArray(),
             // The navigation the signed-in user may see, and its counts after the page, so a slow count never holds it
@@ -83,5 +85,17 @@ class HandleInertiaRequests extends Middleware
             'navigation' => fn () => $this->navigation->tree($request),
             'navigationCounts' => $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),
         ];
+    }
+
+    /**
+     * The stable code of the refusal the last form was answered with, when it was refused.
+     *
+     * @return array{refusalCode?: string}
+     */
+    private function refusalCodeOf(Request $request): array
+    {
+        $code = $request->session()->get(CommandRefusal::CODE_FLASH_KEY);
+
+        return is_string($code) ? ['refusalCode' => $code] : [];
     }
 }

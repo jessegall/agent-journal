@@ -9,8 +9,8 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * What every page receives beside its own page object: the application name and, once signed in, the user and
- * whether they may share records.
+ * What every page receives beside its own page object: the application name and, once signed in, the user,
+ * whether they may share records and the stable code of the refusal the last form was answered with.
  */
 #[TypeScript]
 final class SharedData extends Data
@@ -21,5 +21,6 @@ final class SharedData extends Data
         public readonly string $version,
         public readonly CurrentUserData|Optional $currentUser = new Optional(),
         public readonly bool|Optional $canShare = new Optional(),
+        public readonly string|Optional $refusalCode = new Optional(),
     ) {}
 }

@@ -29,6 +29,7 @@ use Domain\Chat\Http\Controllers\CancelMessageController;
 use Domain\Chat\Http\Controllers\DockController;
 use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
+use Domain\Chat\Http\Controllers\RequestOutcomeController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\TakeNextController;
 use Domain\Chat\Http\Controllers\UndockController;
@@ -102,6 +103,7 @@ final class ChatDomain extends Domain implements
                     ActionRoute::post('messages', SendMessageController::class, 'send'),
                     ActionRoute::post('messages/read', ReadShownController::class, 'read'),
                     ActionRoute::post('messages/reply', ReplyController::class, 'reply'),
+                    ActionRoute::get('messages/outcome', RequestOutcomeController::class, 'outcome'),
                     ActionRoute::post('dock', DockController::class, 'dock'),
                     ActionRoute::post('dock/remove', UndockController::class, 'undock'),
                 ),

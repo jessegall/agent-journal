@@ -8,11 +8,12 @@ use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\DismissalType;
 use App\Contracts\Event;
 use App\Contracts\ListenerFailureLog;
+use App\Ui\Contracts\UserInterfaceUpdater;
 
 /**
  * A message was closed without an answer: by whom and in which way, never the reason's text.
  */
-final readonly class MessageDismissed implements Event, ListenerFailureLog
+final readonly class MessageDismissed implements Event, ListenerFailureLog, UserInterfaceUpdater
 {
     public function __construct(
         public string $messageId,

@@ -19,6 +19,7 @@ use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
 use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\MessageMissing;
+use App\Bus\Models\CommandReceipt;
 use App\Communication\Models\Message;
 use App\Communication\Models\MessageAttention;
 use App\Communication\Policies\MessageAdministrationPolicy;
@@ -47,6 +48,11 @@ final readonly class MessageRecords implements ConversationResolver
         $message = Message::query()->findOr($messageId, fn () => throw MessageMissing::forId($messageId));
 
         return $this->viewsOf([$message])[0];
+    }
+
+    public function canSee(string $messageId): bool
+    {
+        return Message::query()->whereKey($messageId)->exists();
     }
 
     public function between(
@@ -172,6 +178,9 @@ final readonly class MessageRecords implements ConversationResolver
         );
 
         $holderFields = array_map(fn ($claim) => ['claimHolder' => MessageClaimHolder::ofClaim($claim)], $claims);
+        $requestKeys = CommandReceipt::readableKeysOf(array_values(array_unique(
+            array_map(fn (Message $message) => $message->origin_receipt_id, $messages),
+        )));
 
         return array_map(fn (Message $message) => MessageView::from([
             'id' => $message->id,
@@ -190,6 +199,7 @@ final readonly class MessageRecords implements ConversationResolver
             'firstReader' => $message->firstRead(),
             ...$holderFields[$message->id] ?? [],
             'sentAt' => (string) $message->created_at?->toIso8601String(),
+            'requestKey' => $requestKeys[$message->origin_receipt_id] ?? null,
         ]), $messages);
     }
 }
