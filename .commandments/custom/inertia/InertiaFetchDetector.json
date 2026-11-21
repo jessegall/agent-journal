@@ -1,0 +1,20 @@
+{
+    "$schema": "../../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "call",
+        "where": [
+            {"name": "fetch"}
+        ],
+        "reject": [
+            {"file": "resources/js/framework/jsonRequests.ts"},
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "inertia-bypass",
+        "description": "A frontend file sends a request with fetch, around Inertia: its answer is no page and its errors never reach the page's props.",
+        "rule": "Never bypass Inertia (user message 13525): read through the page's props and a partial router.reload({ only: [...] }), and change through router.post/put/delete to the page's own action routes.",
+        "skill": "inertia-bypass"
+    }
+}
