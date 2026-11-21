@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Reflection;
 
 use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Exceptions\QuestionNotNegatable;
 use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Reflection\Support\Reflector;
 use PHPUnit\Framework\TestCase;
@@ -58,6 +59,13 @@ final class ReflectorTypeQuestionsTest extends TestCase
         $this->assertTrue($marked->not()->is(ParcelSize::class));
         $this->assertTrue($marked->not()->hasMethod('absent'));
         $this->assertFalse($marked->not()->uses(Stamped::class));
+    }
+
+    public function test_not_refuses_a_method_that_answers_no_yes_or_no(): void
+    {
+        $this->expectException(QuestionNotNegatable::class);
+
+        Reflector::of(MarkedParcel::class)->not()->name();
     }
 
     public function test_the_factory_hands_out_the_catalogue_reflectors_for_a_name_or_an_object(): void

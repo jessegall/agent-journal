@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Reflection\Support;
 
+use App\Reflection\Exceptions\QuestionNotNegatable;
+
 /**
- * A Reflector's yes-or-no questions turned around, so a caller reads $type->not()->is(X) instead of a bang.
+ * A Reflector's yes-or-no questions turned around, so a caller reads $type->not()->is(X) instead of a bang. It asks
+ * the wrapped Reflector the same question and answers the opposite, so every question the Reflector answers with a
+ * bool works here with no second copy; any other method is refused.
  *
  * @template T of object
+ *
+ * @mixin Reflector<T>
  */
 final readonly class ReflectorNegation
 {
@@ -16,98 +22,35 @@ final readonly class ReflectorNegation
      */
     public function __construct(private Reflector $type) {}
 
-    public function isClass(): bool
+    /**
+     * @param  list<mixed>  $arguments
+     *
+     * @throws QuestionNotNegatable
+     */
+    public function __call(string $method, array $arguments): bool
     {
-        return ! $this->type->isClass();
-    }
+        if (! self::isQuestion($method)) {
+            throw QuestionNotNegatable::for($method);
+        }
 
-    public function isInterface(): bool
-    {
-        return ! $this->type->isInterface();
-    }
-
-    public function isEnum(): bool
-    {
-        return ! $this->type->isEnum();
-    }
-
-    public function isTrait(): bool
-    {
-        return ! $this->type->isTrait();
-    }
-
-    public function isAbstract(): bool
-    {
-        return ! $this->type->isAbstract();
-    }
-
-    public function isFinal(): bool
-    {
-        return ! $this->type->isFinal();
-    }
-
-    public function isReadOnly(): bool
-    {
-        return ! $this->type->isReadOnly();
-    }
-
-    public function isInstantiable(): bool
-    {
-        return ! $this->type->isInstantiable();
+        return ! $this->type->{$method}(...$arguments);
     }
 
     /**
-     * @param  class-string  $type
+     * Whether the Reflector has a public instance method of this name that answers bool.
      */
-    public function is(string $type): bool
+    private static function isQuestion(string $method): bool
     {
-        return ! $this->type->is($type);
-    }
+        $reflector = Reflector::of(Reflector::class);
 
-    /**
-     * @param  class-string  $type
-     */
-    public function isSubclassOf(string $type): bool
-    {
-        return ! $this->type->isSubclassOf($type);
-    }
+        if (! $reflector->hasMethod($method)) {
+            return false;
+        }
 
-    /**
-     * @param  class-string  $interface
-     */
-    public function implements(string $interface): bool
-    {
-        return ! $this->type->implements($interface);
-    }
+        $question = $reflector->method($method);
 
-    /**
-     * @param  class-string  $trait
-     */
-    public function uses(string $trait): bool
-    {
-        return ! $this->type->uses($trait);
-    }
-
-    public function isInstance(mixed $value): bool
-    {
-        return ! $this->type->isInstance($value);
-    }
-
-    public function hasMethod(string $name): bool
-    {
-        return ! $this->type->hasMethod($name);
-    }
-
-    public function hasProperty(string $name): bool
-    {
-        return ! $this->type->hasProperty($name);
-    }
-
-    /**
-     * @param  class-string  $type
-     */
-    public function hasAttribute(string $type): bool
-    {
-        return ! $this->type->hasAttribute($type);
+        return $question->isPublic()
+            && ! $question->isStatic()
+            && $question->returnType()->filter(fn (DeclaredType $type) => $type->isNamedAs('bool'))->isDefined();
     }
 }

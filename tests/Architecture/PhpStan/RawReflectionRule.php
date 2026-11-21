@@ -43,6 +43,7 @@ final class RawReflectionRule implements Rule
      */
     public const array WRAPPER_FILES = [
         'app/Reflection/Enums/AttributeMatch.php',
+        'app/Reflection/Support/AttributeEntry.php',
         'app/Reflection/Support/DeclarationAttributes.php',
         'app/Reflection/Support/DeclaredType.php',
         'app/Reflection/Support/ReflectedEnumCase.php',
