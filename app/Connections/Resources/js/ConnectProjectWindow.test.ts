@@ -115,7 +115,7 @@ describe('ConnectProjectWindow', () => {
         const text = windowWith(true).text();
 
         expect(text).toMatch(/darwin-arm64: 9\.0 MB to\s+download and install\.\s+Needs\s+git, curl\./);
-        expect(text).toMatch(/linux-amd64 is not offered yet: it does not run\s+codex\s+yet\./);
+        expect(text).toMatch(/linux-amd64 is not offered yet, because it does not\s+run\s+codex\./);
     });
 
     it('generates a line, copies exactly its bytes and replaces it under the same action', async () => {
