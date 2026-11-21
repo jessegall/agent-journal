@@ -42,7 +42,20 @@ final readonly class LaunchProfiles
 
     public function for(HookDriver $driver, SelectedAccount|null $account): LaunchProfileType
     {
-        if ($account === null || ! $this->arrangement->arrangement->isContained()) {
+        if ($account === null) {
+            return LaunchProfileType::Standard;
+        }
+
+        return $this->forSignedIn($driver);
+    }
+
+    /**
+     * The launch profile a signed-in start of the driver uses, which is the one whose protection decides whether the
+     * driver may start contained at all.
+     */
+    public function forSignedIn(HookDriver $driver): LaunchProfileType
+    {
+        if (! $this->arrangement->arrangement->isContained()) {
             return LaunchProfileType::Standard;
         }
 

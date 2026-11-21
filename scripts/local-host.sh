@@ -44,6 +44,10 @@ setting ACCOUNTS_ROOT /srv/journal/accounts
 setting AGENT_DAEMON_IMAGE docker:28-dind
 setting AGENT_DAEMON_DATA /var/lib/docker
 setting AGENT_DAEMON_SOCKET_GROUP 1000
+# Agents start in /workspace of their container, from the environment main's folder under the workspaces folder.
+mkdir -p "$HOME/.agent-journal-6/workspaces/main"
+setting AGENTS_WORKSPACES_FOLDER "$HOME/.agent-journal-6/workspaces"
+setting AGENTS_WORKSPACES '{"main":{"folder":"main"}}'
 # An image's pin is its config digest, the id the agent daemon gives it once loaded; the Mac's own Docker shows another
 # id, so it is read from the saved archive.
 pin() {
@@ -65,7 +69,7 @@ sh scripts/prepare-hook-test-database.sh
 
 # The host is enrolled once: its id lives in .env and its secret in secrets/, both kept on a later run.
 if ! grep -q '^AGENTS_HOST_ID=.' .env || [ ! -s secrets/journal_host_secret ]; then
-    enrolment=$(docker compose exec -T app php artisan agents:host-enroll local --contained)
+    enrolment=$(docker compose exec -T app php artisan agents:host-enroll local --contained --root /workspace)
     host=$(printf '%s\n' "$enrolment" | sed -n 's/^Host \([^ ]*\) is enrolled.*/\1/p')
     [ -n "$host" ] || { echo "The host enrolment printed no host id." >&2; exit 1; }
     mkdir -p secrets
@@ -76,4 +80,5 @@ fi
 
 docker compose up -d --wait
 docker compose exec -T app php artisan profile:activate
+docker compose exec -T app php artisan agents:install
 echo "The local host is enrolled and running."

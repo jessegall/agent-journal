@@ -117,7 +117,7 @@ agent host run from it. The agent daemon loads both from `images/` by itself whe
 
 ```sh
 docker compose up -d --wait
-docker compose exec app php artisan agents:host-enroll <installation name>
+docker compose exec app php artisan agents:host-enroll <installation name> --contained --root /workspace
 ```
 
 The second command prints the host id and the secret: the id goes in `.env` as `AGENTS_HOST_ID`, the secret in

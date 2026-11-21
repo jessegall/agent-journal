@@ -107,10 +107,10 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * The protection a contained host of this installation last reported for the program's build, or an unreported
-     * one when no contained host has.
+     * The protection a contained host of this installation last reported for the program's build on the platform a
+     * launch profile names, or an unreported one when no contained host has.
      */
-    public static function containedProtectionOf(HookDriver $driver, string $build): ProtectionReport
+    public static function containedProtectionOf(HookDriver $driver, string $build, string $platform): ProtectionReport
     {
         $host = self::query()
             ->where('arrangement', ArrangementType::Contained)
@@ -119,10 +119,10 @@ final class Host extends Model implements ReadableModel
             ->first();
 
         if ($host === null) {
-            return ProtectionReport::unreported($driver, $build);
+            return ProtectionReport::unreported($driver, $build, $platform);
         }
 
-        return $host->protectionOf($driver, $build);
+        return $host->protectionOf($driver, $build, $platform);
     }
 
     /**
@@ -162,8 +162,7 @@ final class Host extends Model implements ReadableModel
 
     public function recordProtection(ProtectionReport $report): void
     {
-        $key = ProtectionReport::keyOf($report->driver, $report->build);
-        $this->protection = [...$this->protection, $key => $report->stored()];
+        $this->protection = [...$this->protection, $report->key() => $report->stored()];
         $this->save();
     }
 
@@ -233,12 +232,12 @@ final class Host extends Model implements ReadableModel
         return $this->start_roots[0] ?? throw HostUnavailable::withoutStartFolder($this->id);
     }
 
-    public function protectionOf(HookDriver $driver, string $build): ProtectionReport
+    public function protectionOf(HookDriver $driver, string $build, string $platform): ProtectionReport
     {
-        $key = ProtectionReport::keyOf($driver, $build);
+        $key = ProtectionReport::keyOf($driver, $build, $platform);
 
         if (! array_key_exists($key, $this->protection)) {
-            return ProtectionReport::unreported($driver, $build);
+            return ProtectionReport::unreported($driver, $build, $platform);
         }
 
         return ProtectionReport::fromStored($this->protection[$key]);

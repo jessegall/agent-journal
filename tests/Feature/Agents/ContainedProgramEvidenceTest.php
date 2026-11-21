@@ -68,7 +68,7 @@ final class ContainedProgramEvidenceTest extends TestCase
             fn () => $this->compatibility(HookDriver::Codex)->assertStartable(),
             DriverArrangementUnproven::class,
             'codex 0.165.0 cannot start in a container: no contained host has reported the protection of codex '
-                .'0.165.0 in the agent image (journal-agent protection --arrangement=contained).',
+                .'0.165.0 in the agent image for linux-container (journal-agent protection --arrangement=contained).',
         );
     }
 
@@ -82,6 +82,27 @@ final class ContainedProgramEvidenceTest extends TestCase
         $this->compatibility(HookDriver::ClaudeCode)->assertStartable();
 
         $this->assertFalse($this->compatibility(HookDriver::Codex)->arrangementEvidence->isNativeShown());
+    }
+
+    public function test_a_driver_whose_signed_in_starts_run_protected_is_admitted_by_its_protected_report_only(): void
+    {
+        $this->useArrangement(ArrangementType::Contained);
+        config(['agents.protected_account_trial' => 'claude-code']);
+        $host = $this->containedHost();
+        $reason = "no native mechanism: Claude Code's sandbox does not start in the agent container: bwrap: no proc";
+        $this->report($host, 'claude-code', '2.1.323', $this->items(self::ITEMS, $reason))->assertNoContent();
+
+        $this->assertThrows(
+            fn () => $this->compatibility(HookDriver::ClaudeCode)->assertStartable(),
+            DriverArrangementUnproven::class,
+            'no contained host has reported the protection of claude-code 2.1.323 in the agent image for '
+                .'linux-container-protected',
+        );
+
+        $this->report($host, 'claude-code', '2.1.323', $this->items([], ''), 'linux-container-protected')
+            ->assertNoContent();
+
+        $this->compatibility(HookDriver::ClaudeCode)->assertStartable();
     }
 
     private function compatibility(HookDriver $driver): DriverCompatibility
@@ -104,12 +125,17 @@ final class ContainedProgramEvidenceTest extends TestCase
     /**
      * @param  list<array<string, mixed>>  $items
      */
-    private function report(EnrolledHost $host, string $driver, string $build, array $items): TestResponse
-    {
+    private function report(
+        EnrolledHost $host,
+        string $driver,
+        string $build,
+        array $items,
+        string $platform = 'linux-container',
+    ): TestResponse {
         return $this->hostCall($host, '/host/reports/protection', [
             'driver' => $driver,
             'build' => $build,
-            'platform' => 'linux-container',
+            'platform' => $platform,
             'items' => $items,
         ]);
     }
