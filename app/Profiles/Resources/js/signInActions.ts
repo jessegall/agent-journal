@@ -14,6 +14,7 @@ import { formSendingHooks } from '@kit/usePageChanges';
 import type { Ref } from 'vue';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { readChallenge, readReceipt } from './signIn';
+import type { ReceiptTarget } from './signIn';
 import type { SignInChallenge } from './signIn';
 
 /**
@@ -46,28 +47,40 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     const isAnswerLost = ref(false);
 
     /**
-     * A new account's start whose reply was lost: its request key is read back until the receipt says what became of
-     * it. Only a receipt that knows of no start lets the same start be sent again, under the same key.
+     * How the last challenge read went: still reading, read, failed to reach the journal (Retry), or denied because
+     * the reader may no longer see the sign-in, which clears every private field and challenge at once.
+     */
+    const challengeRead = ref<'reading' | 'read' | 'failed' | 'denied'>(
+        'reading',
+    );
+
+    /**
+     * A start whose reply was lost, of a new account or of an account again: its request key is read back until the
+     * receipt says what became of it. Only a receipt that knows of no start lets the same start be sent again, under
+     * the same key. Two tabs renewing one account are both answered with the one attempt that runs.
      */
     const isReconnecting = ref(false);
     const reconnected = ref<SignInReceiptData | null>(null);
     let lastStart: {
         key: string;
-        driver: string;
-        method: SignInMethod;
+        target: ReceiptTarget;
+        method: SignInMethod | null;
         isAbsent: boolean;
     } | null = null;
     let receiptTimer: ReturnType<typeof setTimeout> | undefined;
 
-    async function reconnect(key: string, driver: string): Promise<void> {
-        const receipt = await readReceipt(key, driver);
+    async function reconnect(
+        key: string,
+        target: ReceiptTarget,
+    ): Promise<void> {
+        const receipt = await readReceipt(key, target);
 
         if (lastStart?.key !== key) {
             return;
         }
 
         if (receipt === null || receipt.status === 'pending') {
-            receiptTimer = setTimeout(() => void reconnect(key, driver), 2000);
+            receiptTimer = setTimeout(() => void reconnect(key, target), 2000);
 
             return;
         }
@@ -112,13 +125,38 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
             return;
         }
 
-        challenge.value = read;
+        if (read.status === 'denied') {
+            forget();
+            challengeRead.value = 'denied';
 
-        if (read.address === null) {
+            return;
+        }
+
+        if (read.status === 'failed') {
+            challengeRead.value = 'failed';
+
+            return;
+        }
+
+        challengeRead.value = 'read';
+        challenge.value = read.challenge;
+
+        if (read.challenge.address === null) {
             timer = setTimeout(
                 () => void pollChallenge(attemptId, asked),
                 2000,
             );
+        }
+    }
+
+    /**
+     * Reads the followed attempt's challenge again after a read that could not reach the journal; the attempt itself
+     * is left as it was.
+     */
+    function retryChallenge(): void {
+        if (followed.value !== undefined) {
+            challengeRead.value = 'reading';
+            void pollChallenge(followed.value.id);
         }
     }
 
@@ -127,6 +165,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         clearTimeout(timer);
         challenge.value = { address: null, code: null };
         isAnswerLost.value = false;
+        challengeRead.value = 'reading';
         answer.reset();
         answer.clearErrors();
     }
@@ -166,47 +205,77 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
      * Starts a new account's sign-in. A start the receipt said never happened goes again under its own key; any other
      * start gets a new one. A reply that never comes reconnects through the receipt.
      */
-    function begin(driver: string, method: SignInMethod): void {
-        generation++;
-        clearTimeout(receiptTimer);
+    /**
+     * The request key a start goes under: the key of the same start the receipt said never happened, else a new one.
+     */
+    function keyFor(
+        target: ReceiptTarget,
+        method: SignInMethod | null,
+    ): string {
         const isRetry =
             lastStart?.isAbsent === true &&
-            lastStart.driver === driver &&
+            JSON.stringify(lastStart.target) === JSON.stringify(target) &&
             lastStart.method === method;
         const key =
             isRetry && lastStart !== null ? lastStart.key : crypto.randomUUID();
-        lastStart = { key, driver, method, isAbsent: false };
-        reconnected.value = null;
-        start.clearErrors();
+        lastStart = { key, target, method, isAbsent: false };
+
+        return key;
+    }
+
+    /**
+     * The visit options of a start under its key: a reply that never comes reconnects through the receipt.
+     */
+    function startOptions(key: string, target: ReceiptTarget) {
         const sending = formSendingHooks();
         let isAnswered = false;
 
-        start
-            .transform(() => ({ driver, method }))
-            .submit(startSignIn(), {
-                ...KEEP_THE_WIZARD,
-                headers: { 'Idempotency-Key': key },
-                ...sending,
-                onSuccess: () => (isAnswered = true),
-                onError: () => (isAnswered = true),
-                onFinish: () => {
-                    sending.onFinish();
+        return {
+            ...KEEP_THE_WIZARD,
+            headers: { 'Idempotency-Key': key },
+            ...sending,
+            onSuccess: () => (isAnswered = true),
+            onError: () => (isAnswered = true),
+            onFinish: () => {
+                sending.onFinish();
 
-                    if (!isAnswered && lastStart?.key === key) {
-                        isReconnecting.value = true;
-                        void reconnect(key, driver);
-                    }
-                },
-            });
+                if (!isAnswered && lastStart?.key === key) {
+                    isReconnecting.value = true;
+                    void reconnect(key, target);
+                }
+            },
+        };
     }
 
+    /**
+     * Starts a new account's sign-in under its request key.
+     */
+    function begin(driver: string, method: SignInMethod): void {
+        generation++;
+        clearTimeout(receiptTimer);
+        reconnected.value = null;
+        start.clearErrors();
+        const target = { driver };
+        const key = keyFor(target, method);
+
+        start
+            .transform(() => ({ driver, method }))
+            .submit(startSignIn(), startOptions(key, target));
+    }
+
+    /**
+     * Signs an account in again under its request key; a second tab doing the same joins the attempt that runs.
+     */
     function beginAgain(accountId: string): void {
         generation++;
-        again.submit(signInAgain({ account: accountId }), {
-            ...KEEP_THE_WIZARD,
-            headers: { 'Idempotency-Key': crypto.randomUUID() },
-            ...formSendingHooks(),
-        });
+        clearTimeout(receiptTimer);
+        reconnected.value = null;
+        const target = { account: accountId };
+
+        again.submit(
+            signInAgain({ account: accountId }),
+            startOptions(keyFor(target, null), target),
+        );
     }
 
     /**
@@ -276,6 +345,8 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         isReconnecting,
         reconnected,
         isAnswerLost,
+        challengeRead,
+        retryChallenge,
         begin,
         beginAgain,
         send,

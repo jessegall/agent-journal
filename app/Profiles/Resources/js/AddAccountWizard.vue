@@ -185,6 +185,19 @@ watch(
 );
 
 /**
+ * A reader who may no longer see the sign-in loses the whole form at once: its fields and challenge are already
+ * cleared, and the wizard closes; reopening it needs the access back.
+ */
+watch(
+    () => actions.challengeRead.value,
+    (read) => {
+        if (read === 'denied') {
+            close();
+        }
+    },
+);
+
+/**
  * A sign-in of another method already running for the program, such as a subscription sign-in while a key was
  * asked for in another tab: it shows with Resume or Cancel before it takes any input.
  */

@@ -107,7 +107,21 @@ const openLink =
 
 <template>
     <ChosenSignIn :driver="driver" :method="method" />
-    <template v-if="isStarting">
+    <template v-if="actions.challengeRead.value === 'failed'">
+        <div
+            class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"
+            role="alert"
+        >
+            <p class="text-field text-text-2">
+                Could not reach the journal for this sign-in. It keeps waiting
+                on the host.
+            </p>
+            <Button size="small" @click="actions.retryChallenge()"
+                >Retry</Button
+            >
+        </div>
+    </template>
+    <template v-else-if="isStarting">
         <div
             class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"
             role="status"

@@ -96,11 +96,18 @@ export function endedMessage(attempt: SignInAttemptData): string | null {
 }
 
 /**
+ * What a challenge read came to: the challenge, a refusal because the reader may no longer see the sign-in, or a
+ * failure to reach the journal at all.
+ */
+export type ChallengeRead =
+    | { status: 'read'; challenge: SignInChallenge }
+    | { status: 'denied' }
+    | { status: 'failed' };
+
+/**
  * Reads the sign-in's challenge over its own no-store request; it is never part of the page.
  */
-export async function readChallenge(
-    attemptId: string,
-): Promise<SignInChallenge> {
+export async function readChallenge(attemptId: string): Promise<ChallengeRead> {
     const response = await fetch(challenge({ attempt: attemptId }).url, {
         method: 'POST',
         credentials: 'same-origin',
@@ -110,25 +117,41 @@ export async function readChallenge(
             'X-Requested-With': 'XMLHttpRequest',
             'X-XSRF-TOKEN': xsrfToken(),
         },
-    });
+    }).catch(() => null);
 
-    if (!response.ok) {
-        return { address: null, code: null };
+    if (response === null) {
+        return { status: 'failed' };
     }
 
-    return (await response.json()) as SignInChallenge;
+    if ([401, 403, 404, 419].includes(response.status)) {
+        return { status: 'denied' };
+    }
+
+    if (!response.ok) {
+        return { status: 'failed' };
+    }
+
+    return {
+        status: 'read',
+        challenge: (await response.json()) as SignInChallenge,
+    };
 }
 
 /**
- * What became of a sign-in start under its request key, for a new account of the driver; nothing when the read itself
- * failed, so the caller asks again.
+ * What a start's receipt is read for: a new account of a driver, or an account signed in again.
+ */
+export type ReceiptTarget = { driver: string } | { account: string };
+
+/**
+ * What became of a sign-in start under its request key; nothing when the read itself failed, so the caller asks
+ * again.
  */
 export async function readReceipt(
     key: string,
-    driver: string,
+    target: ReceiptTarget,
 ): Promise<SignInReceiptData | null> {
     const response = await fetch(
-        signInReceipt({ query: { key, driver } }).url,
+        signInReceipt({ query: { key, ...target } }).url,
         {
             credentials: 'same-origin',
             cache: 'no-store',
