@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Exceptions;
 
 use App\Agents\Contracts\StartRefusal;
+use App\Agents\Enums\CapacityResource;
 use App\Agents\Enums\StartRefusalType;
 use RuntimeException;
 
@@ -13,9 +14,22 @@ use RuntimeException;
  */
 final class CapacityUnavailable extends RuntimeException implements StartRefusal
 {
-    public static function because(string $reason): self
+    private function __construct(string $message, public readonly CapacityResource $resource)
     {
-        return new self("The host has no capacity left for this start: {$reason} Nothing was started.");
+        parent::__construct($message);
+    }
+
+    public static function because(CapacityResource $resource, string $reason): self
+    {
+        return new self("The host has no capacity left for this start: {$reason} Nothing was started.", $resource);
+    }
+
+    /**
+     * The public explanation, naming the resource the start did not fit in.
+     */
+    public function explanation(): string
+    {
+        return $this->resource->explanation();
     }
 
     public function reason(): StartRefusalType

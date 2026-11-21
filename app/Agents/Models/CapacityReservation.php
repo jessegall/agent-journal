@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Agents\Enums\CapacityResource;
 use App\Agents\Enums\ReservationState;
 use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Values\ExecutionBudgets;
@@ -102,16 +103,23 @@ final class CapacityReservation extends Model implements ReadableModel
 
         if ((int) $held->clone()->sum('cpu_cores') + $budgets->cpuCores > $capacity->cpuCores) {
             throw CapacityUnavailable::because(
+                CapacityResource::Cpu,
                 "{$budgets->cpuCores} more cores do not fit the host's {$capacity->cpuCores}.",
             );
         }
 
         if ((int) $held->clone()->sum('memory_bytes') + $budgets->memoryBytes > $capacity->memoryBytes) {
-            throw CapacityUnavailable::because('its memory does not fit what the host has left.');
+            throw CapacityUnavailable::because(
+                CapacityResource::Memory,
+                'its memory does not fit what the host has left.',
+            );
         }
 
         if ((int) $held->clone()->sum('disk_bytes') + $budgets->workspaceBytes > $capacity->diskBytes) {
-            throw CapacityUnavailable::because('its workspace does not fit the disk the host has left.');
+            throw CapacityUnavailable::because(
+                CapacityResource::Disk,
+                'its workspace does not fit the disk the host has left.',
+            );
         }
     }
 }
