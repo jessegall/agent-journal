@@ -80,15 +80,33 @@ func connect(arguments []string) error {
 	if err := host.StartRelay(program, *stateFolder, binding.BindingID); err != nil {
 		return err
 	}
+	dispatcher := filepath.Join(installation.Folder, "bin", "journal")
 	if !awaitReady(connection.state, binding.BindingID, setupGeneration, started, relayReadyWait) {
-		fmt.Println("Connected, setup pending: this folder's relay has not reported yet. Run the install line again to finish.")
-		return nil
+		fmt.Printf("Enrolled with %s. Waiting for first contact.\n  binding: %s\n  check it with: %q status\n",
+			binding.JournalURL, binding.BindingID, dispatcher)
+		return errFirstContactPending
 	}
 
-	fmt.Printf("Connected to %s · %s · %s\n", binding.JournalURL, filepath.Base(root), host.MachineLabel())
+	fmt.Printf("Ready: %s answered this folder's relay.\n  project: %s\n  binding: %s\n  machine: %s\n",
+		binding.JournalURL, binding.ProjectLabel, binding.BindingID, host.MachineLabel())
 
 	return nil
 }
+
+// errFirstContactPending is the end of a connect whose binding and setup are saved but whose relay the journal has
+// not acknowledged yet; it exits with code 2, so the installer can tell it from a failure.
+var errFirstContactPending = exitCodeError{
+	code:    2,
+	message: "the folder is enrolled, and the journal has not heard from its relay yet",
+}
+
+// exitCodeError ends a command with its own exit code rather than 1.
+type exitCodeError struct {
+	code    int
+	message string
+}
+
+func (failure exitCodeError) Error() string { return failure.message }
 
 // projectConnection redeems one folder's install line against one journal.
 type projectConnection struct {

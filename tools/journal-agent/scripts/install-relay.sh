@@ -127,16 +127,24 @@ program_sha256=$(grep -o "$program_line[0-9a-f]*" "$downloads/manifest.json" | s
     refuse "this release has no build for this computer ($target). It has builds for: ${builds:-none}. The install line was not used."
 
 if ! fetch "$origin/releases/$version/$target/bin/journal-agent" "$program"; then
-    refuse "journal-agent could not be downloaded from $origin."
+    refuse "the download step failed: journal-agent could not be downloaded from $origin."
 fi
-[ "$(digest_of "$program")" = "$program_sha256" ] || refuse "journal-agent was damaged on the way. Run the install line again."
+[ "$(digest_of "$program")" = "$program_sha256" ] ||
+    refuse "the verification step failed: journal-agent was damaged on the way. Run the install line again."
 chmod 700 "$program"
 
 "$program" install-release --origin "$origin" --manifest "$downloads/manifest.json" \
-    --signature "$downloads/manifest.json.sig" --into "$installation" || refuse "the release could not be installed."
+    --signature "$downloads/manifest.json.sig" --into "$installation" ||
+    refuse "the install-release step failed: the release could not be installed."
 
-(cd "$root" && printf '%s\n' "$ticket" | "$installation/bin/journal-agent" connect --ticket-stdin --origin "$origin") ||
-    exit 1
+# connect ends with 0 once the journal acknowledged this setup, 2 when the folder is enrolled and its relay has not
+# reached the journal yet, and anything else on a failure; the spent line is never used again here.
+(cd "$root" && printf '%s\n' "$ticket" | "$installation/bin/journal-agent" connect --ticket-stdin --origin "$origin")
+connected=$?
+case "$connected" in
+    0 | 2) ;;
+    *) refuse "the connect step failed (exit $connected). The output above says why." ;;
+esac
 
 # Each change made outside the project is recorded, so disconnecting the last project can undo it when unchanged.
 changes="$HOME/.journal-agent/machine-changes"
@@ -144,14 +152,19 @@ mkdir -p "$HOME/.journal-agent" && chmod 700 "$HOME/.journal-agent"
 
 if [ -n "$link_folder" ]; then
     [ -e "$link_folder/journal" ] || [ -L "$link_folder/journal" ] || printf 'link\t%s\n' "$link_folder/journal" >>"$changes"
-    mkdir -p "$link_folder"
-    ln -sf "$dispatcher" "$link_folder/journal"
+    mkdir -p "$link_folder" && ln -sf "$dispatcher" "$link_folder/journal" ||
+        refuse "the link step failed: the journal command could not be linked into $link_folder."
 fi
 
 if [ -n "$startup_file" ] && ! grep -qF '# journal: the journal command' "$startup_file" 2>/dev/null; then
-    printf '\n# journal: the journal command\nexport PATH="$HOME/.local/bin:$PATH"\n' >>"$startup_file"
+    printf '\n# journal: the journal command\nexport PATH="$HOME/.local/bin:$PATH"\n' >>"$startup_file" ||
+        refuse "the PATH step failed: $startup_file could not be changed."
     printf 'startup\t%s\n' "$startup_file" >>"$changes"
 fi
 
-echo "journal: connected. In this terminal run: \"$dispatcher\" status"
+if [ "$connected" = 0 ]; then
+    echo "journal: connected."
+fi
+echo "journal: in this terminal run: \"$dispatcher\" status"
 echo "journal: in a new terminal run: journal status"
+exit "$connected"
