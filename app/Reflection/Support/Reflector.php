@@ -112,6 +112,8 @@ final class Reflector
     /**
      * Whether any autoloader can load a class, interface, trait or enum of this name; nothing is kept for a name that
      * does not load.
+     *
+     * @phpstan-assert-if-true class-string $name
      */
     public static function exists(string $name): bool
     {

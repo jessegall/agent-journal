@@ -1,0 +1,1225 @@
+Note: Using configuration file /app/phpstan.neon.
+ ------ ---------------------------------------------------- 
+  Line   app/Actors/Values/PolicyDefinition.php              
+ ------ ---------------------------------------------------- 
+  75     Call to an undefined static method                  
+         App\Actors\Contracts\Policy::additionalAudience().  
+         🪪  staticMethod.notFound                           
+ ------ ---------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/AgentRequests/Support/CallDeclaration.php                          
+ ------ ----------------------------------------------------------------------- 
+  122    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  122    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  126    Cannot cast int|object|string to string.                               
+         🪪  cast.string                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/AgentRequests/Support/CallGroups.php                               
+ ------ ----------------------------------------------------------------------- 
+  112    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  112    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  119    Method App\AgentRequests\Support\CallGroups::callsIn() should return   
+         list<class-string> but returns list<non-falsy-string>.                 
+         🪪  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   app/AgentRequests/Support/CallRoutes.php                             
+ ------ --------------------------------------------------------------------- 
+  55     Method App\AgentRequests\Support\CallRoutes::callOf() should return  
+         class-string but returns string.                                     
+         🪪  return.type                                                      
+ ------ --------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/AgentRequests/Support/RefusalExceptions.php                        
+ ------ ----------------------------------------------------------------------- 
+  69     Method App\AgentRequests\Support\RefusalExceptions::classOf() should   
+         return class-string<App\AgentRequests\Exceptions\CallRefused> but ret  
+         urns class-string.                                                     
+         🪪  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   app/Autoload/Support/FolderClasses.php                               
+ ------ --------------------------------------------------------------------- 
+  30     Method App\Autoload\Support\FolderClasses::in() should return        
+         list<class-string<T of object>> but returns list<class-string>.      
+         🪪  return.type                                                      
+         💡  Type object is not always the same as T. It breaks the contract  
+         for some argument types, typically subtypes.                         
+  62     Method App\Autoload\Support\FolderClasses::read() should return      
+         list<class-string<T of object>> but returns list<class-string>.      
+         🪪  return.type                                                      
+         💡  Type object is not always the same as T. It breaks the contract  
+         for some argument types, typically subtypes.                         
+ ------ --------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   app/Autoload/Support/Psr4ClassNames.php                              
+ ------ --------------------------------------------------------------------- 
+  88     Method App\Autoload\Support\Psr4ClassNames::classOf() should return  
+         class-string but returns string.                                     
+         🪪  return.type                                                      
+ ------ --------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Bus/Pipes/ReadCommandHandlers.php                                  
+ ------ ----------------------------------------------------------------------- 
+  75     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  75     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  79     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  79     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  102    Parameter #1 $class of method                                          
+         App\Bus\Support\CommandGrammar::problemWithProperties() expects        
+         class-string, string given.                                            
+         🪪  argument.type                                                      
+  114    Method App\Bus\Pipes\ReadCommandHandlers::handlerOf() should return    
+         class-string but returns string.                                       
+         🪪  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Bus/Support/CommandGrammar.php                                     
+ ------ ----------------------------------------------------------------------- 
+  89     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  89     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  90     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  90     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  124    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  124    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  125    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  125    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  130    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  130    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  183    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  183    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  187    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  187    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  201    Parameter #1 $class of method                                          
+         App\Bus\Support\CommandGrammar::problemWithProperties() expects        
+         class-string, string given.                                            
+         🪪  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Bus/Support/PropertyRules.php                                      
+ ------ ----------------------------------------------------------------------- 
+  98     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  98     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  217    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  217    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  221    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  221    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Docking/Sources/DockDefinition.php                                 
+ ------ ----------------------------------------------------------------------- 
+  43     Call to method App\Reflection\Support\Reflector<App\Docking\Sources\C  
+         ontracts\Dockable>::isInstance() with App\Docking\Sources\Contracts\D  
+         ockable will always evaluate to true.                                  
+         🪪  method.alreadyNarrowedType                                         
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Domains/Pipes/CheckListenerPairs.php                               
+ ------ ----------------------------------------------------------------------- 
+  38     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  38     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  43     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  43     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  44     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  44     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  45     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  45     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  50     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  50     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  51     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  51     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  55     Parameter #1 $class of method                                          
+         App\Domains\Support\ListenerOwnership::listenerDomain() expects        
+         class-string, string given.                                            
+         🪪  argument.type                                                      
+  72     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  72     Parameter #1 $type of method App\Reflection\Support\Reflector<object>  
+         ::is() expects class-string, string given.                             
+         🪪  argument.type                                                      
+  72     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Domains/Pipes/GateListenersByDomain.php                            
+ ------ ----------------------------------------------------------------------- 
+  31     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  31     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  59     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  59     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  63     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  63     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Domains/Pipes/SeparateRequiredListeners.php                        
+ ------ ----------------------------------------------------------------------- 
+  67     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  67     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  71     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  71     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  113    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  113    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  117    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  117    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Domains/Support/DomainEntry.php                                    
+ ------ ----------------------------------------------------------------------- 
+  95     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  95     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  99     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  99     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  114    Parameter $domain of class App\Domains\Support\DomainEntry             
+         constructor expects App\Domains\Support\Domain, object given.          
+         🪪  argument.type                                                      
+  115    Call to an undefined method object::requires().                        
+         🪪  method.notFound                                                    
+  116    Call to an undefined method object::exports().                         
+         🪪  method.notFound                                                    
+  118    Call to an undefined method object::canDisable().                      
+         🪪  method.notFound                                                    
+  166    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  166    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Domains/Support/Exports.php                                        
+ ------ ----------------------------------------------------------------------- 
+  97     Method App\Domains\Support\Exports::event() should return              
+         class-string<App\Contracts\Event> but returns class-string<object>.    
+         🪪  return.type                                                        
+  142    Method App\Domains\Support\Exports::exception() should return          
+         class-string<Throwable> but returns class-string<object>.              
+         🪪  return.type                                                        
+  213    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  213    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Domains/Support/ListenerOwnership.php                              
+ ------ ----------------------------------------------------------------------- 
+  65     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  65     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  123    Parameter #1 $haystack of function str_starts_with expects string,     
+         PhpOption\Option<string> given.                                        
+         🪪  argument.type                                                      
+  194    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  194    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  202    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  202    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Hooks/Declarations/StateMethods.php                                
+ ------ ----------------------------------------------------------------------- 
+  69     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  69     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  90     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  90     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  96     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  96     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  117    Method App\Hooks\Declarations\StateMethods::eventFor() should return   
+         class-string<App\Contracts\Event>|null but returns class-string<objec  
+         t>.                                                                    
+         🪪  return.type                                                        
+  125    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  125    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  129    Parameter #1 $state of method                                          
+         App\Hooks\Declarations\StateMethods::discover() expects                
+         App\Reflection\Support\Reflector<App\Hooks\States\AgentState>, App\Re  
+         flection\Support\Reflector<object> given.                              
+         🪪  argument.type                                                      
+  129    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  129    Property App\Hooks\Declarations\StateMethods::$byClass                 
+         (array<class-string<App\Hooks\States\AgentState>, array{methods: arra  
+         y<string, App\Hooks\Declarations\StateMethod>, events: array<class-st  
+         ring<App\Contracts\Event>, App\Hooks\Declarations\StateMethod>}>) doe  
+         s not accept non-empty-array<string, array{methods: array<string, App  
+         \Hooks\Declarations\StateMethod>, events: array<class-string<App\Cont  
+         racts\Event>, App\Hooks\Declarations\StateMethod>}>.                   
+         🪪  assign.propertyType                                                
+  129    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  142    Parameter #1 $class of method                                          
+         App\Hooks\Declarations\StateMethods::checkClassMarkers() expects       
+         App\Reflection\Support\Reflector<object>, App\Reflection\Support\Refl  
+         ector<App\Hooks\States\AgentState> given.                              
+         🪪  argument.type                                                      
+         💡  Template type T on class App\Reflection\Support\Reflector is not   
+         covariant. Learn more: https://phpstan.org/blog/whats-up-with-templat  
+         e-covariant                                                            
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Http/Middleware/Agents/ReadRequestKey.php                          
+ ------ ----------------------------------------------------------------------- 
+  51     Parameter #1 $call of static method                                    
+         App\AgentRequests\Support\CallDeclaration::of() expects class-string,  
+         string given.                                                          
+         🪪  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Mcp/Support/McpCatalogue.php                                       
+ ------ ----------------------------------------------------------------------- 
+  65     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  65     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  69     Parameter #1 $className of method                                      
+         App\Mcp\Support\McpCatalogue::toolName() expects class-string<App\Mcp  
+         \Tools\JournalTool>, string given.                                     
+         🪪  argument.type                                                      
+  75     Parameter #1 $className of method                                      
+         App\Mcp\Support\McpCatalogue::definitionOf() expects class-string<App  
+         \Mcp\Resources\JournalResource|App\Mcp\Tools\JournalTool>, string giv  
+         en.                                                                    
+         🪪  argument.type                                                      
+  75     Unable to resolve the template type T in call to method                
+         App\Mcp\Support\McpCatalogue::definitionOf()                           
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  76     Call to an undefined method                                            
+         App\Mcp\Resources\JournalResource|App\Mcp\Tools\JournalTool::writeDec  
+         laration().                                                            
+         🪪  method.notFound                                                    
+  86     Property App\Mcp\Support\McpCatalogue::$tools (array<string,           
+         class-string<App\Mcp\Tools\JournalTool>>) does not accept array<strin  
+         g, string>.                                                            
+         🪪  assign.propertyType                                                
+  95     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  95     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  99     Call to an undefined method                                            
+         App\Mcp\Resources\JournalResource|App\Mcp\Tools\JournalTool::uri().    
+         🪪  method.notFound                                                    
+  99     Parameter #1 $className of method                                      
+         App\Mcp\Support\McpCatalogue::definitionOf() expects class-string<App  
+         \Mcp\Resources\JournalResource|App\Mcp\Tools\JournalTool>, string giv  
+         en.                                                                    
+         🪪  argument.type                                                      
+  99     Unable to resolve the template type T in call to method                
+         App\Mcp\Support\McpCatalogue::definitionOf()                           
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  105    Property App\Mcp\Support\McpCatalogue::$resources (array<string,       
+         class-string<App\Mcp\Resources\JournalResource>>) does not accept arr  
+         ay<string, string>.                                                    
+         🪪  assign.propertyType                                                
+  113    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  113    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  117    Property App\Mcp\Support\McpCatalogue::$overviewContributions          
+         (list<class-string<App\Mcp\Contracts\OverviewContribution>>) does not  
+          accept non-empty-list<string>.                                        
+         🪪  assign.propertyType                                                
+  122    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  122    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  126    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  126    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  127    Call to an undefined method object::recordType().                      
+         🪪  method.notFound                                                    
+  134    Property App\Mcp\Support\McpCatalogue::$searchContributions            
+         (array<string, class-string<App\Mcp\Contracts\SearchContribution>>) d  
+         oes not accept array<string>.                                          
+         🪪  assign.propertyType                                                
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Mcp/Support/McpToolDirectory.php                                   
+ ------ ----------------------------------------------------------------------- 
+  42     Method App\Mcp\Support\McpToolDirectory::classesIn() should return     
+         list<class-string<App\Mcp\Tools\JournalTool>> but returns list<class-  
+         string>.                                                               
+         🪪  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Profiles/Values/PolicyGrant.php                                    
+ ------ ----------------------------------------------------------------------- 
+  55     Parameter #1 $policy of class App\Profiles\Values\PolicyGrant          
+         constructor expects class-string<App\Actors\Contracts\Policy>, string  
+          given.                                                                
+         🪪  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Reflection/Support/Reflector.php                                   
+ ------ ----------------------------------------------------------------------- 
+  129    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<T of object>::of() expects class-str  
+         ing<object>|object, string given.                                      
+         🪪  argument.type                                                      
+  129    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<T of object>::of()                    
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  307    Parameter #1 $objectOrClass of class ReflectionEnum constructor        
+         expects class-string<T of UnitEnum>|T of UnitEnum, class-string<T of   
+         object> given.                                                         
+         🪪  argument.type                                                      
+  319    Method App\Reflection\Support\Reflector::cases() should return list<A  
+         pp\Reflection\Support\ReflectedEnumCase> but returns array<App\Reflec  
+         tion\Support\ReflectedEnumCase>.                                       
+         🪪  return.type                                                        
+         💡  array<App\Reflection\Support\ReflectedEnumCase> might not be a lis  
+         t.                                                                     
+  319    Property App\Reflection\Support\Reflector<T of object>::$cases (list<  
+         App\Reflection\Support\ReflectedEnumCase>) does not accept array<App\  
+         Reflection\Support\ReflectedEnumCase>.                                 
+         🪪  assign.propertyType                                                
+         💡  array<App\Reflection\Support\ReflectedEnumCase> might not be a lis  
+         t.                                                                     
+  322    Parameter #1 $objectOrClass of class ReflectionEnum constructor        
+         expects class-string<T of UnitEnum>|T of UnitEnum, class-string<T of   
+         object> given.                                                         
+         🪪  argument.type                                                      
+  465    Parameter #1 $array (list<App\Reflection\Support\Reflector<object>>)   
+         of array_values is already a list, call has no effect.                 
+         🪪  arrayValues.list                                                   
+         💡  Because the type is coming from a PHPDoc, you can turn off this    
+         check by setting treatPhpDocTypesAsCertain: false in your phpstan.neo  
+         n.                                                                     
+  478    Parameter #1 $array (list<App\Reflection\Support\Reflector<object>>)   
+         of array_values is already a list, call has no effect.                 
+         🪪  arrayValues.list                                                   
+         💡  Because the type is coming from a PHPDoc, you can turn off this    
+         check by setting treatPhpDocTypesAsCertain: false in your phpstan.neo  
+         n.                                                                     
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Settings/Declarations/EnumSetting.php                              
+ ------ ----------------------------------------------------------------------- 
+  63     Call to method App\Reflection\Support\Reflector<TCase of BackedEnum>:  
+         :isInstance() with TCase of BackedEnum will always evaluate to true.   
+         🪪  method.alreadyNarrowedType                                         
+         💡  Because the type is coming from a PHPDoc, you can turn off this    
+         check by setting treatPhpDocTypesAsCertain: false in your phpstan.neo  
+         n.                                                                     
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Settings/Support/RegisteredSettingCommands.php                     
+ ------ ----------------------------------------------------------------------- 
+  112    Call to method App\Reflection\Support\Reflector<TEnum of BackedEnum>:  
+         :isInstance() with TEnum of BackedEnum will always evaluate to true.   
+         🪪  method.alreadyNarrowedType                                         
+         💡  Because the type is coming from a PHPDoc, you can turn off this    
+         check by setting treatPhpDocTypesAsCertain: false in your phpstan.neo  
+         n.                                                                     
+  135    Call to method App\Reflection\Support\Reflector<TEnum of BackedEnum>:  
+         :isInstance() with TEnum of BackedEnum will always evaluate to true.   
+         🪪  method.alreadyNarrowedType                                         
+         💡  Because the type is coming from a PHPDoc, you can turn off this    
+         check by setting treatPhpDocTypesAsCertain: false in your phpstan.neo  
+         n.                                                                     
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Settings/Support/SettingCodec.php                                  
+ ------ ----------------------------------------------------------------------- 
+  94     Call to method App\Reflection\Support\Reflector<BackedEnum>::isInstan  
+         ce() with BackedEnum will always evaluate to true.                     
+         🪪  method.alreadyNarrowedType                                         
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Ui/Declarations/DomainUi.php                                       
+ ------ ----------------------------------------------------------------------- 
+  132    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  132    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  143    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  143    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Ui/Declarations/ResolverDataClass.php                              
+ ------ ----------------------------------------------------------------------- 
+  22     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  22     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  33     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  33     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  34     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  34     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  38     Method App\Ui\Declarations\ResolverDataClass::of() should return       
+         class-string<Spatie\LaravelData\Data>|null but returns string.         
+         🪪  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Ui/Declarations/ResolverDefinition.php                             
+ ------ ----------------------------------------------------------------------- 
+  66     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  66     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  72     Method App\Ui\Declarations\ResolverDefinition::requestOf() should      
+         return class-string<Illuminate\Foundation\Http\FormRequest>|null but   
+         returns string.                                                        
+         🪪  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   app/Web/Support/WindowResults.php                                      
+ ------ ----------------------------------------------------------------------- 
+  55     Call to method App\Reflection\Support\Reflector<Spatie\LaravelData\Da  
+         ta>::isInstance() with Spatie\LaravelData\Data will always evaluate t  
+         o true.                                                                
+         🪪  method.alreadyNarrowedType                                         
+         💡  Because the type is coming from a PHPDoc, you can turn off this    
+         check by setting treatPhpDocTypesAsCertain: false in your phpstan.neo  
+         n.                                                                     
+ ------ ----------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------- 
+  Line   domain/Chat/src/Http/Controllers/RequestOutcomeController.php  
+ ------ --------------------------------------------------------------- 
+  19     Call to an undefined method                                    
+         Symfony\Component\HttpFoundation\Response::header().           
+         🪪  method.notFound                                            
+ ------ --------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------- 
+  Line   domain/Documents/src/Support/RecordChanges.php      
+ ------ ---------------------------------------------------- 
+  47     Call to an undefined method                         
+         Illuminate\Database\Eloquent\Model::isCreatedBy().  
+         🪪  method.notFound                                 
+ ------ ---------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------ 
+  Line   tests/Architecture/CommandFolderTest.php                          
+ ------ ------------------------------------------------------------------ 
+  169    Method Tests\Architecture\CommandFolderTest::allClasses() should  
+         return list<class-string> but returns list<string>.               
+         🪪  return.type                                                   
+ ------ ------------------------------------------------------------------ 
+
+ ------ ---------------------------------------------------------------------- 
+  Line   tests/Architecture/DomainBootstrapperOrderTest.php                    
+ ------ ---------------------------------------------------------------------- 
+  69     Method                                                                
+         Tests\Architecture\DomainBootstrapperOrderTest::domainClasses()       
+         should return list<class-string> but returns list<non-falsy-string>.  
+         🪪  return.type                                                       
+ ------ ---------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/DomainTestCaseTest.php                              
+ ------ ----------------------------------------------------------------------- 
+  36     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  36     Parameter #1 $type of method App\Reflection\Support\Reflector<object>  
+         ::isSubclassOf() expects class-string, string given.                   
+         🪪  argument.type                                                      
+  36     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/McpToolRulesTest.php                                
+ ------ ----------------------------------------------------------------------- 
+  117    Parameter #1 $type of method                                           
+         Tests\Architecture\McpToolRulesTest::commandViolations() expects       
+         App\Reflection\Support\Reflector<object>, App\Reflection\Support\Refl  
+         ector<Tests\Fixtures\Mcp\DuplicateCommandTool> given.                  
+         🪪  argument.type                                                      
+         💡  Template type T on class App\Reflection\Support\Reflector is not   
+         covariant. Learn more: https://phpstan.org/blog/whats-up-with-templat  
+         e-covariant                                                            
+  277    Call to an undefined method object::schema().                          
+         🪪  method.notFound                                                    
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/PhpStan/AttributeRuns.php                           
+ ------ ----------------------------------------------------------------------- 
+  105    Access to an undefined property PhpParser\Node::$attrGroups.           
+         🪪  property.notFound                                                  
+         💡  Learn more: https://phpstan.org/blog/solving-phpstan-access-to-und  
+         efined-property                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------ 
+  Line   tests/Architecture/PipelineRulesTest.php                          
+ ------ ------------------------------------------------------------------ 
+  114    Parameter #1 $class of static method                              
+         Tests\Architecture\PipelineRulesTest::reachesPipelines() expects  
+         class-string, string given.                                       
+         🪪  argument.type                                                 
+ ------ ------------------------------------------------------------------ 
+
+ ------ --------------------------------------------------------- 
+  Line   tests/Architecture/ReadOrderTest.php                     
+ ------ --------------------------------------------------------- 
+  32     Call to an undefined method                              
+         Illuminate\Database\Eloquent\Model::defaultReadOrder().  
+         🪪  method.notFound                                      
+ ------ --------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/SignedCallRulesTest.php                             
+ ------ ----------------------------------------------------------------------- 
+  163    Method Tests\Architecture\SignedCallRulesTest::calls() should return   
+         list<class-string<App\AgentRequests\Contracts\JournalCall<Spatie\Lara  
+         velData\Data>>> but returns list<class-string>.                        
+         🪪  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/AgentReferences.php                         
+ ------ ----------------------------------------------------------------------- 
+  117    Parameter #1 $array (list<string>) of array_values is already a list,  
+          call has no effect.                                                   
+         🪪  arrayValues.list                                                   
+         💡  Because the type is coming from a PHPDoc, you can turn off this    
+         check by setting treatPhpDocTypesAsCertain: false in your phpstan.neo  
+         n.                                                                     
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/BindingRules.php                            
+ ------ ----------------------------------------------------------------------- 
+  99     Parameter #1 $type of method App\Reflection\Support\Reflector<object>  
+         ::is() expects class-string, string given.                             
+         🪪  argument.type                                                      
+  358    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  358    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/CommandReach.php                            
+ ------ ----------------------------------------------------------------------- 
+  61     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  61     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/DeclarationRules.php                        
+ ------ ----------------------------------------------------------------------- 
+  37     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  37     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/EventProducers.php                          
+ ------ ----------------------------------------------------------------------- 
+  147    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  147    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  241    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  241    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/ModelConventions.php                        
+ ------ ----------------------------------------------------------------------- 
+  172    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  172    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  180    Method Tests\Architecture\Support\ModelConventions::modelsIn() should  
+         return array<string, array<int, class-string<Illuminate\Database\Eloq  
+         uent\Model>>> but returns array<string, array<int, string>>.           
+         🪪  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/ModelTables.php                             
+ ------ ----------------------------------------------------------------------- 
+  26     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  26     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  35     Call to an undefined method object::getTable().                        
+         🪪  method.notFound                                                    
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/ModelWrites.php                             
+ ------ ----------------------------------------------------------------------- 
+  179    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  179    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  213    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  213    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  214    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  214    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/RaiseCallers.php                            
+ ------ ----------------------------------------------------------------------- 
+  117    Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  117    Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  119    Parameter #1 $type of method App\Reflection\Support\Reflector<object>  
+         ::hasAttribute() expects class-string, string given.                   
+         🪪  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/SignedCallRules.php                         
+ ------ ----------------------------------------------------------------------- 
+  40     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  40     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  46     Parameter #1 $call of static method                                    
+         App\AgentRequests\Support\CallDeclaration::of() expects class-string,  
+         string given.                                                          
+         🪪  argument.type                                                      
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/Support/StateEventParameter.php                     
+ ------ ----------------------------------------------------------------------- 
+  25     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  25     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  43     Parameter #1 $target of static method                                  
+         App\Reflection\Support\Reflector<object>::of() expects class-string<o  
+         bject>|object, string given.                                           
+         🪪  argument.type                                                      
+  43     Unable to resolve the template type U in call to static method         
+         App\Reflection\Support\Reflector<object>::of()                         
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   tests/Architecture/TableModelTest.php                                  
+ ------ ----------------------------------------------------------------------- 
+  110    Call to an undefined method object::getTable().                        
+         🪪  method.notFound                                                    
+  114    Method Tests\Architecture\TableModelTest::modelOfTable() should        
+         return array<string, class-string<Illuminate\Database\Eloquent\Model>  
+         > but returns array<string>.                                           
+         🪪  return.type                                                        
+ ------ ----------------------------------------------------------------------- 
+
+ [ERROR] Found 206 errors                                                       
+
