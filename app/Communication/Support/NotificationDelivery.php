@@ -6,14 +6,17 @@ namespace App\Communication\Support;
 
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Data\NotificationTarget;
+use App\Communication\Enums\NotificationMutationType;
 use App\Communication\Enums\NotificationSourceType;
+use App\Communication\Models\NotificationChange;
 use App\Communication\Models\NotificationOccurrence;
 use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
 
 /**
  * Records one occurrence and one receipt for each distinct recipient, inside the caller's transaction. A replay of
- * the same occurrence key changes nothing. Scopes are locked in one stable order, so two deliveries never deadlock.
+ * the same occurrence key changes nothing. Scopes are locked in one stable order, so two deliveries never deadlock,
+ * and each new receipt appends its change to the scope's log under the same lock.
  */
 final readonly class NotificationDelivery
 {
@@ -41,6 +44,7 @@ final readonly class NotificationDelivery
 
             if ($receipt->isNew()) {
                 $scope->addReceipt();
+                NotificationChange::create($scope, $receipt, NotificationMutationType::Create);
             }
         }
     }

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Communication\Support;
 
 use App\Actors\Support\ActorIdentity;
+use App\Communication\Enums\NotificationMutationType;
 use App\Communication\Exceptions\NotificationUnavailable;
+use App\Communication\Models\NotificationChange;
 use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
 use Carbon\CarbonImmutable;
@@ -71,6 +73,12 @@ final readonly class NotificationReceipts
             ! $wasCounted && $locked->isCounted() => $scope->addUnread(),
             default => $scope->recordChange(),
         };
+
+        NotificationChange::create(
+            $scope,
+            $locked,
+            $locked->isHidden() ? NotificationMutationType::Remove : NotificationMutationType::Update,
+        );
 
         return true;
     }

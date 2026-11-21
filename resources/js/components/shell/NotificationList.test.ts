@@ -11,6 +11,7 @@ function pageOf(unread: number, readAt: string | null): NotificationPage {
         version: '1',
         unread,
         nextCursor: null,
+        changesCursor: 'cursor',
         items: [
             {
                 id: 'receipt-1',
@@ -31,7 +32,14 @@ function listOf(state: NotificationLoadState, page: NotificationPage | null) {
 
 describe('NotificationList', () => {
     it('says there are no notifications yet for an empty history', () => {
-        const list = listOf('loaded', { through: null, version: '0', unread: 0, nextCursor: null, items: [] });
+        const list = listOf('loaded', {
+            through: null,
+            version: '0',
+            unread: 0,
+            nextCursor: null,
+            changesCursor: '',
+            items: [],
+        });
 
         expect(list.text()).toContain('No notifications yet');
     });

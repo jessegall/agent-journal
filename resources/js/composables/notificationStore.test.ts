@@ -9,6 +9,7 @@ function pageOf(version: number, unread: number, readAt: string | null = null): 
         version: String(version),
         unread,
         nextCursor: null,
+        changesCursor: 'cursor',
         items: [
             {
                 id: 'receipt-1',

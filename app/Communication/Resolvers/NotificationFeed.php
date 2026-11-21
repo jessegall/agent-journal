@@ -15,6 +15,9 @@ use App\Communication\Models\NotificationScope;
 use App\Communication\Support\NotificationCursor;
 use App\Communication\Support\NotificationScopes;
 use App\Communication\Support\NotificationTargetRegistry;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -35,7 +38,7 @@ final readonly class NotificationFeed
     {
         return NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
             ->map(fn (NotificationScope $scope) => $this->pageOf($scope, $cursor))
-            ->getOrCall(fn () => new NotificationPage(null, '0', 0, null, []));
+            ->getOrCall(fn () => new NotificationPage(null, '0', 0, null, '', []));
     }
 
     private function pageOf(NotificationScope $scope, string|null $cursor): NotificationPage
@@ -51,12 +54,43 @@ final readonly class NotificationFeed
             (string) $scope->mutation_version,
             $scope->unread_count,
             $hasOlder ? NotificationCursor::at($scope->id, $last->sequence)->text() : null,
+            NotificationChanges::cursorAt($scope),
             $this->itemsOf($receipts),
         );
     }
 
     /**
-     * The items the actor may see, in order; a receipt whose target may not even be named is left out.
+     * The receipt as the actor may see it now, reauthorized against its target: none when it is hidden or its
+     * target may not even be named, a generic unavailable item when the target is gone but may be.
+     *
+     * @return Option<NotificationItem>
+     */
+    public function itemOf(NotificationReceipt $receipt): Option
+    {
+        $occurrence = $receipt->occurrence;
+        $resolver = $this->targets->resolverFor($occurrence->target_key);
+        $link = $resolver->linkFor($occurrence->target_id);
+
+        if ($receipt->isHidden() || ($link->isEmpty() && ! $resolver->disclosesMissing())) {
+            return None::create();
+        }
+
+        return new Some(new NotificationItem(
+            $receipt->id,
+            $receipt->sequence,
+            $receipt->read_at?->toIso8601String(),
+            $link->map(fn (NotificationLink $found) => $found->title)
+                ->getOrElse(NotificationItem::UNAVAILABLE_TITLE),
+            $link->map(fn (NotificationLink $found) => new NotificationDestination(
+                $occurrence->target_key,
+                $occurrence->target_id,
+                $found->url,
+            ))->getOrElse(Optional::create()),
+        ));
+    }
+
+    /**
+     * The items the actor may see, in order.
      *
      * @param  list<NotificationReceipt>  $receipts
      * @return list<NotificationItem>
@@ -66,26 +100,9 @@ final readonly class NotificationFeed
         $items = [];
 
         foreach ($receipts as $receipt) {
-            $occurrence = $receipt->occurrence;
-            $resolver = $this->targets->resolverFor($occurrence->target_key);
-            $link = $resolver->linkFor($occurrence->target_id);
-
-            if ($link->isEmpty() && ! $resolver->disclosesMissing()) {
-                continue;
-            }
-
-            $items[] = new NotificationItem(
-                $receipt->id,
-                $receipt->sequence,
-                $receipt->read_at?->toIso8601String(),
-                $link->map(fn (NotificationLink $found) => $found->title)
-                    ->getOrElse(NotificationItem::UNAVAILABLE_TITLE),
-                $link->map(fn (NotificationLink $found) => new NotificationDestination(
-                    $occurrence->target_key,
-                    $occurrence->target_id,
-                    $found->url,
-                ))->getOrElse(Optional::create()),
-            );
+            $this->itemOf($receipt)->forAll(function (NotificationItem $item) use (&$items): void {
+                $items[] = $item;
+            });
         }
 
         return $items;

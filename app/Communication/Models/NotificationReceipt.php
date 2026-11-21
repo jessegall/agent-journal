@@ -100,8 +100,12 @@ final class NotificationReceipt extends Model implements ReadableModel
      * @param  Builder<*>  $targetIds
      * @return list<self>
      */
-    public static function visibleWithTargetIn(string $scopeId, string $targetKey, Builder $targetIds, int $limit): array
-    {
+    public static function visibleWithTargetIn(
+        string $scopeId,
+        string $targetKey,
+        Builder $targetIds,
+        int $limit,
+    ): array {
         return array_values(self::query()
             ->where('scope_id', $scopeId)
             ->whereNull('hidden_at')
@@ -112,6 +116,21 @@ final class NotificationReceipt extends Model implements ReadableModel
             ->readLimit($limit)
             ->get()
             ->all());
+    }
+
+    /**
+     * The receipts of these ids with their occurrences, by id.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, self>
+     */
+    public static function withOccurrences(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        return self::query()->whereKey($ids)->with('occurrence')->readExactly(count($ids))->get()->keyBy('id')->all();
     }
 
     /**
@@ -233,6 +252,11 @@ final class NotificationReceipt extends Model implements ReadableModel
     public function isNew(): bool
     {
         return $this->wasRecentlyCreated;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->hidden_at !== null;
     }
 
     /**

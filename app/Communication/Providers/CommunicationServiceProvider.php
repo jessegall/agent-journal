@@ -31,6 +31,7 @@ use App\Communication\Resolvers\QuestionNotificationTarget;
 use App\Communication\Support\InboxNotices;
 use App\Communication\Support\MessageAnswerActivation;
 use App\Communication\Support\MessageClaimProvider;
+use App\Communication\Support\NotificationChangePruning;
 use App\Communication\Support\NotificationTargetRegistry;
 use App\Communication\Support\PendingInboxWork;
 use App\Communication\Support\RecipientNotifications;
@@ -42,7 +43,9 @@ use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Records\Contracts\RecordProviderRegistration;
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -101,6 +104,13 @@ final class CommunicationServiceProvider extends ServiceProvider
         $links->register([Message::LINK_TYPE => Message::class]);
         $pendingWork->register(PendingInboxWork::class);
         $notificationTargets->register(QuestionNotificationTarget::KEY, QuestionNotificationTarget::class);
+
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule
+                ->call(fn (NotificationChangePruning $pruning) => $pruning->prune(CarbonImmutable::now()))
+                ->hourly(),
+        );
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/communication.php');
         $incoming->register(MessageAnswerActivation::class);
