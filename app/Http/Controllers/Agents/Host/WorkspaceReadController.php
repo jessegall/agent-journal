@@ -46,6 +46,7 @@ final readonly class WorkspaceReadController
             $request->boolean('dirty'),
             $request->boolean('clean'),
             $request->integer('generation'),
+            $request->commit(),
         ));
 
         return new Response(status: Response::HTTP_NO_CONTENT);

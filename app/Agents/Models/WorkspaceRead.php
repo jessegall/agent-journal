@@ -7,6 +7,7 @@ namespace App\Agents\Models;
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Values\WorkReference;
+use App\Agents\Values\CommitObservation;
 use App\Agents\Values\WorkspaceFacts;
 use App\Agents\Values\WorkspaceReadReference;
 use App\Contracts\Support\InsertsAbsentRows;
@@ -38,6 +39,11 @@ use PhpOption\Some;
  * @property bool|null $clean
  * @property int|null $generation
  * @property CarbonImmutable|null $sampled_at
+ * @property int $observation_version
+ * @property string $binding_id
+ * @property string $checkout_id
+ * @property string $head_oid
+ * @property string $unavailable_reason
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -133,6 +139,11 @@ final class WorkspaceRead extends Model implements ReadableModel
         $this->clean = $facts->isClean;
         $this->generation = $facts->generation;
         $this->sampled_at = $facts->sampledAt;
+        $this->observation_version = $facts->commit->version;
+        $this->binding_id = $facts->commit->bindingId;
+        $this->checkout_id = $facts->commit->checkoutId;
+        $this->head_oid = $facts->commit->headOid;
+        $this->unavailable_reason = $facts->commit->reason;
         $this->save();
     }
 
@@ -155,7 +166,21 @@ final class WorkspaceRead extends Model implements ReadableModel
             (bool) $this->clean,
             (int) $this->generation,
             $this->sampled_at,
+            $this->commitObservation(),
         ));
+    }
+
+    private function commitObservation(): CommitObservation
+    {
+        if ($this->observation_version !== 2) {
+            return CommitObservation::versionOne();
+        }
+
+        if ($this->head_oid === '') {
+            return CommitObservation::without($this->binding_id, $this->checkout_id, $this->unavailable_reason);
+        }
+
+        return CommitObservation::ofHead($this->binding_id, $this->checkout_id, $this->head_oid);
     }
 
     public function reference(): WorkspaceReadReference

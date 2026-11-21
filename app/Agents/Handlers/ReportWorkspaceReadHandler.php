@@ -29,6 +29,7 @@ final readonly class ReportWorkspaceReadHandler implements CommandHandler
             $command->isClean,
             $command->generation,
             $this->clock->now(),
+            $command->commit,
         ));
         $this->guidance->retain($read->actor(), self::ANSWERED, $read->read_reference);
     }

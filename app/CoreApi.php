@@ -557,8 +557,12 @@ use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
+use App\Agents\Values\CommitObservation;
 use App\Connections\Commands\ApproveDeviceGrant;
 use App\Connections\Commands\AssertBindingStart;
+use App\Connections\Commands\SubmitWorktreeDelivery;
+use App\Connections\Values\DeliveryReceipt;
+use App\Connections\Values\DeliverySubmission;
 use App\Connections\Commands\CancelProjectCommandRun;
 use App\Connections\Commands\PollDeviceGrant;
 use App\Connections\Commands\RevokeDeviceGrant;
@@ -2023,6 +2027,9 @@ final class CoreApi
                 Redemption::class,
                 BindingFolder::class,
                 PresenceReport::class,
+                CommitObservation::class,
+                DeliveryReceipt::class,
+                DeliverySubmission::class,
                 PresenceReceipt::class,
                 CommandFrame::class,
                 CommandRunStart::class,
@@ -2279,6 +2286,7 @@ final class CoreApi
                 CancelProjectCommandRun::class,
                 StartDeviceGrant::class,
                 AssertBindingStart::class,
+                SubmitWorktreeDelivery::class,
                 PollDeviceGrant::class,
                 ApproveDeviceGrant::class,
                 RevokeDeviceGrant::class,

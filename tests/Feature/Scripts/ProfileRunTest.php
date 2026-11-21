@@ -7,6 +7,7 @@ namespace Tests\Feature\Scripts;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\ReportWorkspaceRead;
 use App\Agents\Values\WorkReference;
+use App\Agents\Values\CommitObservation;
 use App\Agents\Values\WorkspaceReadReference;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileRevisionReference;
@@ -97,7 +98,7 @@ final class ProfileRunTest extends TestCase
 
     private function answer(bool $dirty): void
     {
-        $this->asSystem(new ReportWorkspaceRead('host-1', new WorkspaceReadReference('read-1'), true, $dirty, ! $dirty, 3));
+        $this->asSystem(new ReportWorkspaceRead('host-1', new WorkspaceReadReference('read-1'), true, $dirty, ! $dirty, 3, CommitObservation::versionOne()));
     }
 
     private function report(ProfileRun $run, string $step, StepStatus $status): void

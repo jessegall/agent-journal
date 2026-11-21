@@ -17,6 +17,7 @@ use App\Connections\Http\Controllers\RevokeProjectInvitationController;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Connections\Http\Controllers\BindingPresenceController;
 use App\Connections\Http\Controllers\BindingRuntimeController;
+use App\Connections\Http\Controllers\WorktreeDeliveryController;
 use Illuminate\Support\Facades\Route;
 
 // A connected project's relay speaks the remote-project protocol and needs no runtime to report it is present.
@@ -28,6 +29,10 @@ Route::post('/host/bindings/{binding}/runtimes', BindingRuntimeController::class
     ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
     ->whereUlid('binding')
     ->name('agents.host.bindings.runtimes');
+
+Route::post('/host/deliveries', WorktreeDeliveryController::class)
+    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->name('connections.deliveries.submit');
 
 Route::get('/install/{ticket}', InstallScriptController::class)->name('connections.install');
 
