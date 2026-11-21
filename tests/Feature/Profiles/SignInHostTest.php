@@ -9,7 +9,6 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Support\EnrolledHost;
-use App\Bus\Contracts\CommandBus;
 use App\Files\Contracts\Files;
 use App\Http\Data\Profiles\SignInAttemptData;
 use App\Profiles\Commands\BeginSignIn;
@@ -33,6 +32,7 @@ use Tests\Fixtures\Profiles\FinishingProtocol;
 use Tests\Fixtures\Profiles\LingeringProtocol;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -47,6 +47,7 @@ use Tests\TestCase;
 final class SignInHostTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use RunsTrustedCommands;
     use SendsHostCalls;
 
@@ -105,13 +106,14 @@ final class SignInHostTest extends TestCase
     public function test_a_start_names_only_its_program_and_an_unknown_program_starts_nothing(): void
     {
         $owner = $this->owner();
-        $start = ['driver' => 'claude-code', 'method' => 'oauth', 'request_key' => 'request-1'];
+        $start = ['driver' => 'claude-code', 'method' => 'oauth'];
 
-        $this->actingAs($owner)->post('/accounts/sign-ins', $start)->assertStatus(303);
-        $this->actingAs($owner)->post('/accounts/sign-ins', [...$start, 'request_key' => 'request-2'])
+        $this->actingAs($owner)->withHeader('Idempotency-Key', 'request-1')->post('/accounts/sign-ins', $start)
             ->assertStatus(303);
-        $unknown = ['driver' => 'gemini', 'method' => 'oauth', 'request_key' => 'request-3'];
-        $this->actingAs($owner)->post('/accounts/sign-ins', $unknown)
+        $this->actingAs($owner)->withHeader('Idempotency-Key', 'request-2')->post('/accounts/sign-ins', $start)
+            ->assertStatus(303);
+        $unknown = ['driver' => 'gemini', 'method' => 'oauth'];
+        $this->actingAs($owner)->withHeader('Idempotency-Key', 'request-3')->post('/accounts/sign-ins', $unknown)
             ->assertSessionHasErrors('driver');
 
         $this->assertSame(1, SignInAttempt::query()->withoutGlobalScopes()->count());
@@ -121,7 +123,8 @@ final class SignInHostTest extends TestCase
     {
         $owner = $this->owner();
         $start = fn (string $driver, string $method, string $key) => $this->actingAs($owner)
-            ->post('/accounts/sign-ins', ['driver' => $driver, 'method' => $method, 'request_key' => $key]);
+            ->withHeader('Idempotency-Key', $key)
+            ->post('/accounts/sign-ins', ['driver' => $driver, 'method' => $method]);
 
         $start('claude-code', 'api_key', 'request-1')->assertStatus(303);
         $start('codex', 'provider_token', 'request-2')->assertSessionHasErrors('method');
@@ -131,9 +134,7 @@ final class SignInHostTest extends TestCase
         $owner = ActorContext::forUser($this->owner()->id);
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(
-                new BeginSignIn('codex', SignInMethod::ProviderToken, 'request-4'),
-            ),
+            fn () => $this->runOnBus(new BeginSignIn('codex', SignInMethod::ProviderToken), 'request-4'),
             SignInMethodMissing::class,
         );
         $this->assertSame(1, SignInAttempt::query()->withoutGlobalScopes()->count());
@@ -170,10 +171,9 @@ final class SignInHostTest extends TestCase
     {
         $owner = $this->owner();
         $host = $this->enrollHost();
-        $this->actingAs($owner)->post('/accounts/sign-ins', [
+        $this->actingAs($owner)->withHeader('Idempotency-Key', 'request-1')->post('/accounts/sign-ins', [
             'driver' => 'claude-code',
             'method' => 'oauth',
-            'request_key' => 'request-1',
         ])->assertStatus(303);
         $attemptId = (string) $this->signed($host, '/host/sign-ins/claim')->json('attempt_id');
         $challenge = ['address' => 'https://claude.ai/oauth/authorize?secret-state', 'code' => null];
@@ -284,8 +284,8 @@ final class SignInHostTest extends TestCase
         $owner = ActorContext::forUser($this->owner()->id);
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
 
-        $begin = new BeginSignIn('claude-code', SignInMethod::OAuth, (string) Str::ulid());
-        $started = $this->app->make(CommandBus::class)->run($begin);
+        $begin = new BeginSignIn('claude-code', SignInMethod::OAuth);
+        $started = $this->runOnBus($begin, (string) Str::ulid());
 
         return $started->attemptId;
     }

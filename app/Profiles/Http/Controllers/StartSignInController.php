@@ -23,7 +23,6 @@ final readonly class StartSignInController
         $commands->run(new BeginSignIn(
             $request->driver(),
             $request->signInMethod(),
-            $request->requestKey(),
         ));
 
         return $redirect->back(303);

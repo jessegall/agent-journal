@@ -49,7 +49,6 @@ use Illuminate\Support\Str;
  * @property string $actor_id
  * @property string|null $fingerprint
  * @property SignInState $state
- * @property string $request_key
  * @property int $generation
  * @property string|null $directory
  * @property string|null $process_reference
@@ -80,7 +79,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * @var list<string>
      */
-    protected $hidden = ['directory', 'process_reference', 'login_reference', 'request_key'];
+    protected $hidden = ['directory', 'process_reference', 'login_reference'];
 
     // ----------[ Constructors ]----------
 
@@ -113,7 +112,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         Account|HookDriver $accountOrDriver,
         SignInMethod $method,
         string $directory,
-        string $requestKey,
         CarbonImmutable $expiresAt,
     ): self {
         $attempt = new self([
@@ -129,7 +127,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         }
 
         $attempt->directory = $directory;
-        $attempt->begin($requestKey, $expiresAt);
+        $attempt->begin($expiresAt);
 
         return $attempt;
     }
@@ -177,11 +175,11 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The attempt a repeated start with the same request key made, so a retried click rejoins it.
+     * The attempt, while the owner may read it; none once it is gone or another owner's.
      */
-    public static function withRequestKey(string $requestKey): self|null
+    public static function readableByOwner(string $attemptId): self|null
     {
-        return self::query()->where('request_key', $requestKey)->lockForUpdate()->first();
+        return self::query()->whereKey($attemptId)->first();
     }
 
     /**
@@ -561,10 +559,9 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         return $attempt;
     }
 
-    private function begin(string $requestKey, CarbonImmutable $expiresAt): void
+    private function begin(CarbonImmutable $expiresAt): void
     {
         $this->state = SignInState::Starting;
-        $this->request_key = $requestKey;
         $this->expires_at = $expiresAt;
         $this->assertSaved($this->save());
         $this->raise(new SignInAttemptStarted($this->driver, $this->id, $this->account_id));

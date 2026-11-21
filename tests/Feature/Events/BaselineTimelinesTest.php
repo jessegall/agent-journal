@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Bus;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
@@ -60,6 +61,7 @@ final class BaselineTimelinesTest extends TestCase
 {
     use ActsAsOwner;
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use StartsAgentRequests;
     use SwitchesDomainsOff;
     use WithActiveAccount;
@@ -429,8 +431,8 @@ final class BaselineTimelinesTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $begin = new BeginSignInAgain($account->id, "again-{$account->id}");
-        $attemptId = $this->app->make(CommandBus::class)->run($begin)->attemptId;
+        $begin = new BeginSignInAgain($account->id);
+        $attemptId = $this->runOnBus($begin, "again-{$account->id}")->attemptId;
 
         return SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
     }

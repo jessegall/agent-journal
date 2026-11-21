@@ -13,6 +13,7 @@ use App\Profiles\Http\Controllers\RetryAccountCleanupController;
 use App\Profiles\Http\Controllers\RetryAttemptCleanupController;
 use App\Profiles\Http\Controllers\SignInAgainController;
 use App\Profiles\Http\Controllers\SignInChallengeController;
+use App\Profiles\Http\Controllers\SignInReceiptController;
 use App\Profiles\Http\Controllers\StartSignInController;
 use App\Profiles\Http\Controllers\SubmitSignInCodeController;
 use App\Profiles\Resolvers\AccountNoticesSection;
@@ -46,6 +47,7 @@ final class ProfilesPages implements NavigationProvider, PageProvider, SectionPr
                     ActionRoute::post('{account}/activate', ActivateAccountController::class, 'activate'),
                     ActionRoute::patch('{account}', RenameAccountController::class, 'rename'),
                     ActionRoute::post('sign-ins', StartSignInController::class, 'start-sign-in'),
+                    ActionRoute::get('sign-ins/receipt', SignInReceiptController::class, 'sign-in-receipt'),
                     ActionRoute::post('{account}/sign-in-again', SignInAgainController::class, 'sign-in-again'),
                     ActionRoute::delete('{account}', RemoveAccountController::class, 'remove'),
                     ActionRoute::post('{account}/cleanup/retry', RetryAccountCleanupController::class, 'retry-cleanup'),

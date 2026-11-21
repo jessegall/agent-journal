@@ -119,7 +119,6 @@ final class AccountMaintenanceTest extends TestCase
             $this->account,
             SignInMethod::OAuth,
             '/journal/accounts/staging-request-1',
-            'request-1',
             CarbonImmutable::now()->addMinutes(10),
         );
         $this->account->writerFor($attempt);

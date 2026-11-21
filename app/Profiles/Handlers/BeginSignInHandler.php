@@ -32,12 +32,6 @@ final readonly class BeginSignInHandler implements CommandHandler
 
     public function handle(BeginSignIn $command): SignInStarted
     {
-        $repeated = SignInAttempt::withRequestKey($command->requestKey);
-
-        if ($repeated !== null) {
-            return new SignInStarted($repeated->id, true);
-        }
-
         $driver = HookDriver::from($command->driver);
 
         if (! $this->protocols->supports($driver->value, $command->method)) {
@@ -59,7 +53,6 @@ final readonly class BeginSignInHandler implements CommandHandler
             $driver,
             $command->method,
             $directory,
-            $command->requestKey,
             $expiresAt,
         );
 

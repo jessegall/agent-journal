@@ -149,7 +149,6 @@ final class SignInSecretTest extends TestCase
             HookDriver::ClaudeCode,
             SignInMethod::ApiKey,
             '/journal/accounts/'.$requestKey,
-            $requestKey,
             CarbonImmutable::now()->addMinutes(10),
         );
         $this->submit($attempt, $key);
@@ -170,7 +169,6 @@ final class SignInSecretTest extends TestCase
             $driver,
             $method,
             '/journal/accounts/'.$requestKey,
-            $requestKey,
             CarbonImmutable::now()->addMinutes(10),
         );
     }

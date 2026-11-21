@@ -81,7 +81,6 @@ final class AccountStorageTest extends TestCase
             $account,
             SignInMethod::OAuth,
             '/journal/accounts/staging-request-1',
-            'request-1',
             CarbonImmutable::now()->addMinutes(10),
         );
         $second = SignInAttempt::create(
@@ -89,7 +88,6 @@ final class AccountStorageTest extends TestCase
             $account,
             SignInMethod::OAuth,
             '/journal/accounts/staging-request-2',
-            'request-2',
             CarbonImmutable::now()->addMinutes(10),
         );
 
@@ -164,7 +162,6 @@ final class AccountStorageTest extends TestCase
             HookDriver::Codex,
             SignInMethod::OAuth,
             '/journal/accounts/new-home',
-            'request-1',
             CarbonImmutable::now()->addMinutes(10),
         );
 

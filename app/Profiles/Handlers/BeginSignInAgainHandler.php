@@ -32,12 +32,6 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
 
     public function handle(BeginSignInAgain $command): SignInStarted
     {
-        $repeated = SignInAttempt::withRequestKey($command->requestKey);
-
-        if ($repeated !== null) {
-            return new SignInStarted($repeated->id, true);
-        }
-
         $driver = Account::driverOf($command->accountId);
         ActiveAccount::lockedFor($driver);
         $account = Account::lockedForChange($command->accountId);
@@ -56,7 +50,6 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
             $account,
             $account->method,
             $directory,
-            $command->requestKey,
             $expiresAt,
         );
 

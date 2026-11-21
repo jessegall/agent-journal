@@ -8,13 +8,18 @@ use App\Bus\Enums\ReceiptState;
 
 /**
  * What the caller's receipt of one command under one request key says: its state, the value a completed command
- * answered, the code and message a refused one gave, and whether it no longer answers.
+ * answered (a scalar as text, an object as its plain fields), the code and message a refused one gave, and whether it
+ * no longer answers.
  */
 final readonly class ReceiptAnswer
 {
+    /**
+     * @param  array<string, mixed>  $fields
+     */
     public function __construct(
         public ReceiptState $state,
         public string $value,
+        public array $fields,
         public string $refusalCode,
         public string $refusalMessage,
         public bool $isExpired,

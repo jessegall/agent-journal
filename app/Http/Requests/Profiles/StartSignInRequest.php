@@ -14,8 +14,9 @@ use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Validator;
 
 /**
- * The owner starts signing in a new account of a program, which is named once it proves who it is; the request key
- * lets a repeated click rejoin the same attempt. A program the journal does not know is refused before any attempt.
+ * The owner starts signing in a new account of a program, which is named once it proves who it is; the page's
+ * Idempotency-Key header names the click, so a repeat answers the same attempt. A program the journal does not know is
+ * refused before any attempt.
  */
 final class StartSignInRequest extends FormRequest
 {
@@ -27,7 +28,6 @@ final class StartSignInRequest extends FormRequest
         return [
             'driver' => ['required', 'string', Rule::enum(HookDriver::class)],
             'method' => ['required', 'string', Rule::enum(SignInMethod::class)],
-            'request_key' => ['required', 'string', 'max:128'],
         ];
     }
 
@@ -55,10 +55,5 @@ final class StartSignInRequest extends FormRequest
     public function signInMethod(): SignInMethod
     {
         return SignInMethod::from($this->string('method')->toString());
-    }
-
-    public function requestKey(): string
-    {
-        return $this->string('request_key')->toString();
     }
 }

@@ -31,6 +31,7 @@ use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -45,6 +46,7 @@ use Tests\TestCase;
 final class SignInAttemptTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -151,8 +153,8 @@ final class SignInAttemptTest extends TestCase
     {
         $account = $this->chooseActiveAccounts()['codex'];
         $this->actAsOwner();
-        $again = $this->bus()->run(new BeginSignInAgain($account->id, 'request-again'));
-        $rejoined = $this->bus()->run(new BeginSignInAgain($account->id, 'request-other'));
+        $again = $this->runOnBus(new BeginSignInAgain($account->id), 'request-again');
+        $rejoined = $this->runOnBus(new BeginSignInAgain($account->id), 'request-other');
 
         $this->assertSame($again->attemptId, $rejoined->attemptId);
         $this->assertSame($again->attemptId, $account->refresh()->live_writer_attempt_id);
@@ -168,7 +170,7 @@ final class SignInAttemptTest extends TestCase
 
     private function begin(string $requestKey): SignInStarted
     {
-        return $this->bus()->run(new BeginSignIn('claude-code', SignInMethod::OAuth, $requestKey));
+        return $this->runOnBus(new BeginSignIn('claude-code', SignInMethod::OAuth), $requestKey);
     }
 
     /**

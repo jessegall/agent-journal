@@ -9,7 +9,6 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ProcessStartState;
-use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Bus\Support\EntryDispatchers;
@@ -60,6 +59,7 @@ use LogicException;
 use Tests\Fixtures\Profiles\FinishingProtocol;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -74,6 +74,7 @@ use Tests\TestCase;
 final class AccountRemovalTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -105,7 +106,7 @@ final class AccountRemovalTest extends TestCase
     public function test_removal_cancels_a_running_sign_in_and_leaves_no_replacement_chosen(): void
     {
         Account::create(HookDriver::Codex, AccountLabel::from('Home'), '/journal/accounts/home');
-        $this->asOwner(new BeginSignInAgain($this->account->id, 'again'));
+        $this->asOwner(new BeginSignInAgain($this->account->id));
         $generation = $this->account->refresh()->sign_in_generation;
 
         $this->asOwner(new RemoveAccount($this->account->id));
@@ -270,7 +271,7 @@ final class AccountRemovalTest extends TestCase
 
     public function test_an_unfinished_new_accounts_sign_in_is_cleaned_with_both_proofs(): void
     {
-        $started = $this->asOwner(new BeginSignIn('claude-code', SignInMethod::OAuth, 'new'));
+        $started = $this->asOwner(new BeginSignIn('claude-code', SignInMethod::OAuth));
         $this->asOwner(new CancelSignIn($started->attemptId));
 
         $claimed = $this->asHost(new ClaimCleanup('host'));
@@ -348,7 +349,7 @@ final class AccountRemovalTest extends TestCase
 
     public function test_a_folder_still_in_use_counts_no_try_and_says_so(): void
     {
-        $started = $this->asOwner(new BeginSignIn('claude-code', SignInMethod::OAuth, 'new'));
+        $started = $this->asOwner(new BeginSignIn('claude-code', SignInMethod::OAuth));
         $this->asOwner(new CancelSignIn($started->attemptId));
 
         foreach (range(1, CleanupProgress::MOST_TRIES + 1) as $try) {
@@ -362,7 +363,7 @@ final class AccountRemovalTest extends TestCase
 
     public function test_the_owner_retries_an_unfinished_sign_ins_cleanup_by_its_attempt(): void
     {
-        $started = $this->asOwner(new BeginSignIn('claude-code', SignInMethod::OAuth, 'new'));
+        $started = $this->asOwner(new BeginSignIn('claude-code', SignInMethod::OAuth));
         $this->asOwner(new CancelSignIn($started->attemptId));
 
         foreach (range(1, CleanupProgress::MOST_TRIES) as $try) {
@@ -404,7 +405,7 @@ final class AccountRemovalTest extends TestCase
             new OwnerAuthority('test'),
         );
 
-        return $this->app->make(CommandBus::class)->run($command);
+        return $this->runOnBus($command);
     }
 
     private function asHost(Command $command): mixed

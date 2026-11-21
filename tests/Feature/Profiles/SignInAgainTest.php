@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
@@ -51,6 +52,7 @@ use Tests\TestCase;
 final class SignInAgainTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -280,7 +282,7 @@ final class SignInAgainTest extends TestCase
     {
         $this->actAsOwner();
 
-        return $this->app->make(CommandBus::class)->run(new BeginSignInAgain($this->account->id, $requestKey))
+        return $this->runOnBus(new BeginSignInAgain($this->account->id), $requestKey)
             ->attemptId;
     }
 

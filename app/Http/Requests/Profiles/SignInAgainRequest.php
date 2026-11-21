@@ -7,7 +7,8 @@ namespace App\Http\Requests\Profiles;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The owner's confirmed start of signing a saved account in again, under a key the page made for this click.
+ * The owner's confirmed start of signing a saved account in again; the page's Idempotency-Key header names this
+ * click, so a repeat answers the same attempt.
  */
 final class SignInAgainRequest extends FormRequest
 {
@@ -16,16 +17,11 @@ final class SignInAgainRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['request_key' => ['required', 'string', 'max:128']];
+        return [];
     }
 
     public function accountId(): string
     {
         return (string) $this->route('account');
-    }
-
-    public function requestKey(): string
-    {
-        return $this->string('request_key')->toString();
     }
 }

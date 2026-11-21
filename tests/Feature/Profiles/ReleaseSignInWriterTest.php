@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Bus;
 use RuntimeException;
 use Tests\Fixtures\Profiles\FailsAfterRelease;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -44,6 +45,7 @@ use Tests\TestCase;
 final class ReleaseSignInWriterTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -97,8 +99,8 @@ final class ReleaseSignInWriterTest extends TestCase
     public function test_an_attempt_with_no_account_looks_no_account_up_when_it_expires(): void
     {
         $this->actAsOwner();
-        $begin = new BeginSignIn('codex', SignInMethod::OAuth, 'new');
-        $attemptId = $this->app->make(CommandBus::class)->run($begin)->attemptId;
+        $begin = new BeginSignIn('codex', SignInMethod::OAuth);
+        $attemptId = $this->runOnBus($begin, 'new')->attemptId;
         $attempts = SignInAttempt::query()->withoutGlobalScopes();
         $attempts->whereKey($attemptId)->update(['expires_at' => now()->subMinute()]);
         $accountReads = [];
@@ -135,7 +137,7 @@ final class ReleaseSignInWriterTest extends TestCase
     {
         $this->actAsOwner();
 
-        return $this->app->make(CommandBus::class)->run(new BeginSignInAgain($this->account->id, $requestKey))
+        return $this->runOnBus(new BeginSignInAgain($this->account->id), $requestKey)
             ->attemptId;
     }
 

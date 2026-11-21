@@ -60,7 +60,6 @@ return new class extends Migration
             $table->string('fingerprint', 64)->nullable();
             $table->ulid('account_id')->nullable();
             $table->string('state', 32);
-            $table->string('request_key', 128)->unique();
             $table->unsignedBigInteger('generation')->default(0);
             $table->string('directory')->nullable();
             $table->string('process_reference')->nullable();

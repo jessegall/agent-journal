@@ -79,25 +79,21 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     function begin(driver: string, method: SignInMethod): void {
         generation++;
         start
-            .transform(() => ({
-                driver,
-                method,
-                request_key: crypto.randomUUID(),
-            }))
+            .transform(() => ({ driver, method }))
             .submit(startSignIn(), {
                 ...KEEP_THE_WIZARD,
+                headers: { 'Idempotency-Key': crypto.randomUUID() },
                 ...formSendingHooks(),
             });
     }
 
     function beginAgain(accountId: string): void {
         generation++;
-        again
-            .transform(() => ({ request_key: crypto.randomUUID() }))
-            .submit(signInAgain({ account: accountId }), {
-                ...KEEP_THE_WIZARD,
-                ...formSendingHooks(),
-            });
+        again.submit(signInAgain({ account: accountId }), {
+            ...KEEP_THE_WIZARD,
+            headers: { 'Idempotency-Key': crypto.randomUUID() },
+            ...formSendingHooks(),
+        });
     }
 
     /**

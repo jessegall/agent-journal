@@ -17,7 +17,7 @@ final readonly class SignInAgainController
 {
     public function __invoke(SignInAgainRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new BeginSignInAgain($request->accountId(), $request->requestKey()));
+        $commands->run(new BeginSignInAgain($request->accountId()));
 
         return $redirect->back(303);
     }

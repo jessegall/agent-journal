@@ -24,9 +24,12 @@ final readonly class CallerReceiptRecords implements CallerReceipts
             return [];
         }
 
+        $answered = $receipt->result['value'] ?? '';
+
         return [new ReceiptAnswer(
             $receipt->state,
-            (string) ($receipt->result['value'] ?? ''),
+            is_array($answered) ? '' : (string) $answered,
+            is_array($answered) ? $answered : [],
             (string) $receipt->refusal_code,
             (string) $receipt->refusal_message,
             $receipt->isExpired(),
