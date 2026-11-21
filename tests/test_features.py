@@ -7860,3 +7860,16 @@ def test_a_wait_on_a_row_that_does_not_exist_is_open_and_broken_and_never_fails_
     with app.container.get(Scope).environment(1):
         failed = [e.data for e in app.container.get(Entries).scoped() if e.entry_type == GUARD_FAILED]
     assert failed == [], f"the Stop raised no guard failure: {failed}"
+
+
+def test_a_completed_worker_that_had_clocked_out_is_no_longer_waiting_to_be_checked(app: App):
+    from journal.models.worker import Worker
+    from journal.models.worker_state import WorkerState
+    from journal.repositories.workers import Workers
+    with app.container.get(Scope).environment(1):
+        workers = app.container.get(Workers)
+        worker = workers.save(Worker(environment_id=1, name="Mr. Babbage", brief="b", state=WorkerState.DELIVERED), Actor.system())
+        assert [w.id for w in workers.checkable_workers()] == [worker.id]
+        workers.save(worker.finished(10.0, "its work was acted on"), Actor.system())
+        assert workers.checkable_workers() == [], "a completed worker is not named on Stop"
+        assert workers.find(worker.id).state == WorkerState.RELEASED
