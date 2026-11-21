@@ -43,12 +43,13 @@ const billing = computed(
         `${driverName(props.account.driver)} ${props.account.signIn.billingLabel.toLowerCase()}`,
 );
 const state = computed(() => accountStateLook[props.account.state]);
-const stateColour: Record<string, string> = {
-    good: 'bg-tone-good',
-    warn: 'bg-tone-warn',
-    danger: 'bg-danger',
-    busy: 'bg-text-4',
-    quiet: 'bg-text-4',
+// The state reads in neutral text: weight marks the one that wants the user, muted red only an error.
+const stateText: Record<string, string> = {
+    good: 'text-text-2',
+    warn: 'font-medium text-text',
+    danger: 'text-danger',
+    busy: 'text-text-4',
+    quiet: 'text-text-4',
 };
 const usage = computed(() => usageLine(props.account.usage, props.now));
 const isOpen = ref(false);
@@ -83,20 +84,12 @@ function retryAccountCleanup(): void {
                 <template v-if="isChosen && !isLeaving">
                     <span class="text-text-4">·</span>
                     <span
-                        class="rounded-badge bg-chip px-1.5 text-[11px] leading-4 text-text-2"
+                        class="rounded-badge border border-line px-1.5 text-[11px] leading-4 text-text-2"
                         >Default</span
                     >
                 </template>
                 <span class="text-text-4">·</span>
-                <span
-                    class="inline-flex items-center gap-1.5 whitespace-nowrap"
-                    :class="{ 'text-tone-warn': state.tone === 'warn' }"
-                    ><span
-                        class="size-1.5 rounded-full"
-                        :class="stateColour[state.tone]"
-                    ></span
-                    >{{ state.label }}</span
-                >
+                <span class="whitespace-nowrap" :class="stateText[state.tone]">{{ state.label }}</span>
                 <template v-if="account.expiresAt !== null">
                     <span class="text-text-4">·</span>
                     <span class="whitespace-nowrap text-text-4">

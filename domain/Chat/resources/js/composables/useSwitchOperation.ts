@@ -1,3 +1,4 @@
+import type { FormDataConvertible } from '@inertiajs/core';
 import { onBeforeUnmount, ref } from 'vue';
 import type { AgentOptionData } from '@generated/types/chat';
 import { keyedPost } from '@kit/keyedPost';
@@ -23,7 +24,7 @@ export function useSwitchOperation(agent: () => AgentOptionData) {
     let following: { stop: () => void } | undefined;
     let followedSwitchId: string | null = null;
 
-    function begin(requestId: string, url: string, choice: Record<string, unknown>): void {
+    function begin(requestId: string, url: string, choice: Record<string, FormDataConvertible>): void {
         state.value = 'sending';
         refusal.value = null;
         progress.value = 'Switch requested';

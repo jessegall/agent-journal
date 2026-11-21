@@ -29,13 +29,13 @@ describe('Modal', () => {
         modal.unmount();
     });
 
-    it('keeps the same fixed header, body and footer sizes on every step', () => {
+    it('keeps the same header, body and footer sizes on every step, within a narrow screen', () => {
         const modal = openModal(1);
 
-        expect(modal.find('dialog').classes()).toContain('w-[480px]');
+        expect(modal.find('dialog').classes()).toContain('w-[min(480px,calc(100vw-32px))]');
         expect(modal.find('header').classes()).toContain('h-[52px]');
-        expect(modal.find('footer').classes()).toContain('h-[52px]');
-        expect(modal.find('header + div').classes()).toContain('h-[420px]');
+        expect(modal.find('footer').classes()).toContain('min-h-[52px]');
+        expect(modal.find('header + div').classes()).toContain('h-[min(420px,calc(100dvh-136px))]');
         modal.unmount();
     });
 

@@ -1,3 +1,4 @@
+import type { FormDataConvertible } from '@inertiajs/core';
 import { reactive, ref } from 'vue';
 import type { MessageView } from '@kit/CoreTypes';
 import { keyedPost } from '@kit/keyedPost';
@@ -19,7 +20,7 @@ export const UNKNOWN_OUTCOME_TEXT = "We couldn't confirm whether this was sent."
 export type ConversationIntent = {
     key: string;
     kind: 'send' | 'reply';
-    body: Record<string, unknown>;
+    body: Record<string, FormDataConvertible>;
     text: string;
     replyToId: string | null;
     status: IntentStatus;
@@ -67,7 +68,7 @@ function createOwner(draftKey: string) {
         drafts.purgeUser(userId);
     });
 
-    function begin(kind: 'send' | 'reply', text: string, replyToId: string | null, body: Record<string, unknown>) {
+    function begin(kind: 'send' | 'reply', text: string, replyToId: string | null, body: Record<string, FormDataConvertible>) {
         const key = newRequestId();
         drafts.recordRecovery({ intentKey: key, draftKey, text, replyToId });
         drafts.clearSent(draftKey, text);
