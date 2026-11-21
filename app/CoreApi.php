@@ -572,9 +572,11 @@ use App\Engine\Values\FrameSettlement;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
+use App\Files\Attributes\OutsideThePlaces;
 use App\Files\Contracts\Files;
 use App\Files\Enums\EntryType;
 use App\Files\Enums\Place;
+use App\Files\Enums\PlaceExemption;
 use App\Files\Exceptions\FileJsonInvalid;
 use App\Files\Exceptions\FileMissing;
 use App\Files\Exceptions\FileOutsidePlaces;
@@ -1432,6 +1434,8 @@ final class CoreApi
             )
             ->values(
                 FilePath::class,
+                OutsideThePlaces::class,
+                PlaceExemption::class,
                 Place::class,
                 Depth::class,
                 Fingerprint::class,

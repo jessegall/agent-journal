@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Responses\Sharing;
 
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Files\Exceptions\FileJsonInvalid;
+use App\Files\Values\FilePath;
+
 /**
  * The files of the public reader's own build, as its manifest lists them: the only files the share listener serves.
  */
@@ -12,6 +17,8 @@ final readonly class SharingAssets
     public const string FOLDER = 'build-sharing';
 
     private const string STYLESHEET = 'resources/css/sharing.css';
+
+    public function __construct(private Files $files) {}
 
     /**
      * Whether the file is one the sharing manifest lists.
@@ -56,20 +63,17 @@ final readonly class SharingAssets
     }
 
     /**
-     * @return array<string, mixed>
+     * The manifest the build wrote, decoded once while it is unchanged and read again after a new build; none before
+     * the reader was built.
      *
-     * @throws \JsonException when the manifest is not JSON
+     * @return array<array-key, mixed>
+     *
+     * @throws FileJsonInvalid when the manifest is not JSON
      */
     private function manifest(): array
     {
-        $file = $this->path('manifest.json');
+        $manifest = FilePath::in(Place::Project, 'public/'.self::FOLDER.'/manifest.json');
 
-        if (! is_file($file)) {
-            return [];
-        }
-
-        $manifest = json_decode((string) file_get_contents($file), true, 8, JSON_THROW_ON_ERROR);
-
-        return is_array($manifest) ? $manifest : [];
+        return $this->files->exists($manifest) ? $this->files->readJson($manifest) : [];
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\FileAccess;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use FilesystemIterator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\File;
@@ -60,5 +62,11 @@ final class DirectFileAccess
             file_get_contents('php://stdin'),
             FileRule::types(['pdf']),
         ];
+    }
+
+    #[OutsideThePlaces(PlaceExemption::UserNamedFile)]
+    public function exempt(string $path): string|false
+    {
+        return file_get_contents($path);
     }
 }

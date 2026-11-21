@@ -14,7 +14,7 @@ use Tests\Support\ScanCache\FileScan;
  * a name of Finder, Laravel's Filesystem or its File facade. Each finding names the Files method to use instead. A
  * method or static call that only shares a function's name, and a call on a php:// stream, are not file access.
  *
- * @implements FileScan<array{line: int, form: string, instead: string}>
+ * @implements FileScan<array{line: int, form: string, instead: string, exemption: string|null}>
  */
 final readonly class FileFunctionScan implements FileScan
 {
@@ -80,9 +80,14 @@ final readonly class FileFunctionScan implements FileScan
         'Illuminate\Support\Facades\File' => 'Files',
     ];
 
+    /**
+     * The attribute that marks a method whose file access the user settled as outside the places.
+     */
+    private const string EXEMPTION_MARK = 'App\Files\Attributes\OutsideThePlaces';
+
     public function key(): string
     {
-        return 'file-functions-1';
+        return 'file-functions-2';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -91,7 +96,7 @@ final readonly class FileFunctionScan implements FileScan
     }
 
     /**
-     * @return list<array{line: int, form: string, instead: string}>
+     * @return list<array{line: int, form: string, instead: string, exemption: string|null}>
      */
     public static function of(ParsedFile $file): array
     {
@@ -104,11 +109,7 @@ final readonly class FileFunctionScan implements FileScan
             }
 
             $function = $call->name->toLowerString();
-            $findings[] = [
-                'line' => $call->getStartLine(),
-                'form' => "{$function}()",
-                'instead' => self::FUNCTIONS[$function],
-            ];
+            $findings[] = self::finding($call, "{$function}()", self::FUNCTIONS[$function]);
         }
 
         foreach ($finder->findInstanceOf($file->statements, Expr\New_::class) as $new) {
@@ -117,24 +118,72 @@ final readonly class FileFunctionScan implements FileScan
             }
 
             $class = $new->class->toString();
-            $findings[] = [
-                'line' => $new->getStartLine(),
-                'form' => "new {$class}",
-                'instead' => self::ITERATORS[$class],
-            ];
+            $findings[] = self::finding($new, "new {$class}", self::ITERATORS[$class]);
         }
 
         foreach ($finder->findInstanceOf($file->statements, Node\Name::class) as $name) {
             $class = $name->toString();
 
             if (isset(self::CLASSES[$class]) && ! $name->getAttribute('parent') instanceof Node\UseItem) {
-                $findings[] = ['line' => $name->getStartLine(), 'form' => $class, 'instead' => self::CLASSES[$class]];
+                $findings[] = self::finding($name, $class, self::CLASSES[$class]);
             }
         }
 
         usort($findings, fn (array $one, array $other) => $one['line'] <=> $other['line']);
 
         return $findings;
+    }
+
+    /**
+     * @return array{line: int, form: string, instead: string, exemption: string|null}
+     */
+    private static function finding(Node $node, string $form, string $instead): array
+    {
+        return [
+            'line' => $node->getStartLine(),
+            'form' => $form,
+            'instead' => $instead,
+            'exemption' => self::exemptionOf($node),
+        ];
+    }
+
+    /**
+     * The PlaceExemption case the method around the node names with #[OutsideThePlaces], such as
+     * CommandFileSystem; none when the method has no such mark.
+     */
+    private static function exemptionOf(Node $node): string|null
+    {
+        $method = $node->getAttribute('parent');
+
+        while ($method instanceof Node && ! self::isNamedFunction($method)) {
+            $method = $method->getAttribute('parent');
+        }
+
+        if (! $method instanceof Node\Stmt\ClassMethod && ! $method instanceof Node\Stmt\Function_) {
+            return null;
+        }
+
+        foreach ($method->getAttrGroups() as $group) {
+            foreach ($group->attrs as $attribute) {
+                $reason = $attribute->args[0]->value ?? null;
+
+                if ($attribute->name->toString() === self::EXEMPTION_MARK
+                    && $reason instanceof Expr\ClassConstFetch
+                    && $reason->name instanceof Node\Identifier) {
+                    return $reason->name->toString();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether the node is a method or a named function; a closure inside one takes its mark from it.
+     */
+    private static function isNamedFunction(Node $node): bool
+    {
+        return $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_;
     }
 
     /**

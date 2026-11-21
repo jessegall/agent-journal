@@ -1,7 +1,9 @@
-# The direct file access sites still waiting to move to App\Files\Contracts\Files (plan 39): 37 files, 121 sites.
-# One line per file and form, without line numbers. A task that moves a site removes its own lines here, in the same task;
-# the list only shrinks. tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed
-# site the code no longer has. Regenerate with: php tools/refactoring/direct-file-sites.php --write
+# The direct file access sites outside app/Files (plan 39): 117 still waiting to move to App\Files\Contracts\Files,
+# and 2 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
+# lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
+# #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
+# tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed site the code no
+# longer has. Regenerate with: php tools/refactoring/direct-file-sites.php --write
 app/AgentRequests/Console/GenerateCallsCommand.php Illuminate\Filesystem\Filesystem
 app/AgentRequests/Console/GenerateCallsCommand.php file_get_contents()
 app/AgentRequests/Console/GenerateCallsCommand.php file_put_contents()
@@ -30,8 +32,6 @@ app/Hooks/Support/AccountConfigurationWrite.php fopen()
 app/Hooks/Support/AccountConfigurationWrite.php is_file()
 app/Hooks/Support/AccountConfigurationWrite.php rename()
 app/Hooks/Support/AccountConfigurationWrite.php unlink()
-app/Http/Responses/Sharing/SharingAssets.php file_get_contents()
-app/Http/Responses/Sharing/SharingAssets.php is_file()
 app/Mcp/Console/ContractSnapshotCommand.php Illuminate\Filesystem\Filesystem
 app/Processes/Console/CommandTypeImportCommand.php file_get_contents()
 app/Processes/Console/CommandTypeImportCommand.php is_file()
@@ -50,8 +50,6 @@ app/Processes/Support/ManifestCheck.php hash_file()
 app/Processes/Support/ManifestCheck.php is_file()
 app/Processes/Support/OutputDiskCapacity.php disk_free_space()
 app/Processes/Support/OutputDiskCapacity.php is_dir()
-app/Processes/Support/PackageScripts.php file_get_contents()
-app/Processes/Support/PackageScripts.php is_file()
 app/Processes/Support/SpoolRecorder.php fopen()
 app/Processes/Support/SpoolRecorder.php is_dir()
 app/Processes/Support/SpoolRecorder.php is_file()
@@ -123,3 +121,5 @@ app/Web/Support/UiManifest.php rename()
 domain/Documents/src/Console/Concerns/ReadsRecordBody.php file_get_contents()
 domain/Documents/src/Console/Concerns/ReadsRecordBody.php is_readable()
 domain/Documents/src/Console/Support/DraftTokens.php Illuminate\Filesystem\Filesystem
+exempt CommandFileSystem app/Processes/Support/PackageScripts.php file_get_contents()
+exempt CommandFileSystem app/Processes/Support/PackageScripts.php is_file()
