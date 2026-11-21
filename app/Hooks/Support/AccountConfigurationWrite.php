@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Support;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Hooks\Exceptions\AccountConfigurationUnwritten;
 use App\Hooks\Programs\CodexFolderTrust;
 
@@ -36,6 +38,7 @@ final readonly class AccountConfigurationWrite
      *
      * @throws AccountConfigurationUnwritten
      */
+    #[OutsideThePlaces(PlaceExemption::HostAccountFolder)]
     public function prepare(
         string $directory,
         array $settings,
@@ -133,6 +136,7 @@ final readonly class AccountConfigurationWrite
     /**
      * @throws AccountConfigurationUnwritten
      */
+    #[OutsideThePlaces(PlaceExemption::HostAccountFolder)]
     private function replace(string $path, string $contents): void
     {
         $temporary = $path.'.'.bin2hex(random_bytes(6)).'.new';
