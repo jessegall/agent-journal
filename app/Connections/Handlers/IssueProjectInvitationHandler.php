@@ -9,14 +9,16 @@ use App\Connections\Commands\IssueProjectInvitation;
 use App\Connections\Enums\ConnectionAuditType;
 use App\Connections\Exceptions\InstallLinesUnavailable;
 use App\Connections\Models\ConnectionAudit;
+use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectInvitation;
 use App\Connections\Values\IssuedInvitation;
 use App\Contracts\CommandHandler;
 
 /**
- * Refuses unless this server may issue install lines, revokes the line still pending under the same issuance key and
- * records the new one, in one transaction.
+ * Refuses unless this server may issue install lines, then, holding the install attempt's row: moves the attempt to
+ * its next version, revokes its line still pending and records the new one, in one transaction. A spent or cancelled
+ * attempt answers what came of it and issues nothing.
  */
 final readonly class IssueProjectInvitationHandler implements CommandHandler
 {
@@ -28,28 +30,39 @@ final readonly class IssueProjectInvitationHandler implements CommandHandler
             throw InstallLinesUnavailable::now();
         }
 
-        $issuer = $command->dispatchedBy()->actorId();
-        $replaced = ProjectInvitation::lockPendingUnder($command->issuanceKey);
+        $owner = $command->dispatchedBy()->actorId();
+        $attempt = $this->attemptOf($command, $owner);
+        $isFirstLine = $attempt->version === 0;
+        $attempt->replace($command->seenVersion);
 
-        foreach ($replaced as $pending) {
+        foreach (ProjectInvitation::lockPendingOf($attempt) as $pending) {
             $pending->revoke();
         }
 
-        $invitation = $this->issue($command, $issuer);
-        $type = $replaced === [] ? ConnectionAuditType::Issued : ConnectionAuditType::Replaced;
-        ConnectionAudit::ofInvitation($type, $issuer, $invitation);
+        $invitation = ProjectInvitation::issueFor($attempt, $command->ticketDigest);
+        $type = $isFirstLine ? ConnectionAuditType::Issued : ConnectionAuditType::Replaced;
+        ConnectionAudit::ofInvitation($type, $owner, $invitation);
 
-        return new IssuedInvitation($invitation->id, $invitation->expires_at->toIso8601String());
+        return new IssuedInvitation(
+            $invitation->id,
+            $invitation->expires_at->toIso8601String(),
+            $attempt->reference,
+            $attempt->version,
+        );
     }
 
-    private function issue(IssueProjectInvitation $command, string $issuer): ProjectInvitation
+    /**
+     * The attempt the line is for, locked: the one its reference names, or the owner's attempt under the issuance
+     * key, opened now for its target when there is none.
+     */
+    private function attemptOf(IssueProjectInvitation $command, string $owner): InstallAttempt
     {
-        if ($command->projectId === null) {
-            return ProjectInvitation::issueForNewProject($command->ticketDigest, $issuer, $command->issuanceKey);
+        if ($command->attemptReference !== null) {
+            return InstallAttempt::lockOfOwner($owner, $command->attemptReference);
         }
 
-        $project = Project::forId($command->projectId);
+        $projectId = $command->projectId === null ? null : Project::forId($command->projectId)->id;
 
-        return ProjectInvitation::issueToJoin($project, $command->ticketDigest, $issuer, $command->issuanceKey);
+        return InstallAttempt::openFor($owner, $command->issuanceKey, $projectId);
     }
 }

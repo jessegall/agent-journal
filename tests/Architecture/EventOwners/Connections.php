@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use App\Connections\Enums\BindingReadiness;
+use App\Connections\Events\InstallAttemptCancelled;
+use App\Connections\Events\InstallAttemptOpened;
+use App\Connections\Events\InstallAttemptReplaced;
+use App\Connections\Events\InstallAttemptSpent;
 use App\Connections\Events\ProjectBindingCreated;
 use App\Connections\Events\ProjectBindingReadinessChanged;
 use App\Connections\Events\ProjectBindingRevoked;
@@ -18,6 +22,34 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    InstallAttemptOpened::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'InstallAttempt::openFor',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new InstallAttemptOpened('attempt', 'IA-ABCDEFGH', new DateTimeImmutable('2026-01-01')),
+    ],
+    InstallAttemptReplaced::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'InstallAttempt::replace',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new InstallAttemptReplaced('attempt', 2, new DateTimeImmutable('2026-01-01')),
+    ],
+    InstallAttemptCancelled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'InstallAttempt::cancel',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new InstallAttemptCancelled('attempt', new DateTimeImmutable('2026-01-01')),
+    ],
+    InstallAttemptSpent::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'InstallAttempt::spendOn',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new InstallAttemptSpent('attempt', 'binding', new DateTimeImmutable('2026-01-01')),
+    ],
     ProjectBindingReadinessChanged::class => [
         'role' => EventRole::RowFact,
         'owner' => 'ProjectBinding::recordPresence',
@@ -34,7 +66,7 @@ return [
     ],
     ProjectInvitationIssued::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'ProjectInvitation::issue',
+        'owner' => 'ProjectInvitation::issueFor',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ProjectInvitationIssued('invitation', new DateTimeImmutable('2026-01-01'), new DateTimeImmutable('2026-01-01')),

@@ -20,7 +20,7 @@ final class ConnectProjectWindowTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'command_receipts', 'connection_audits', 'project_invitations', 'project_bindings', 'projects',
+        'command_receipts', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'projects',
         'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 

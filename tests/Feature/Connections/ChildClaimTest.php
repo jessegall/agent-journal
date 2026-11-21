@@ -26,7 +26,7 @@ final class ChildClaimTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'child_claims', 'connection_audits', 'project_invitations', 'project_bindings', 'projects',
+        'child_claims', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'projects',
         'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 

@@ -9,6 +9,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\Host;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Enums\InvitationMode;
+use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Models\ProjectInvitation;
@@ -26,13 +27,13 @@ final class ProjectRecordsTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['project_invitations', 'project_bindings', 'projects', 'agent_runtimes', 'agents', 'hosts'];
+    private const array TABLES = ['project_invitations', 'install_attempts', 'project_bindings', 'projects', 'agent_runtimes', 'agents', 'hosts'];
 
     public function test_the_migrations_make_the_three_tables(): void
     {
         $this->assertTrue(Schema::hasColumns('projects', ['id', 'key', 'label']));
-        $this->assertTrue(Schema::hasColumns('project_invitations', [
-            'ticket_digest', 'issuer_user_id', 'mode', 'project_id', 'issuance_key', 'expires_at', 'revoked_at',
+        $this->assertTrue(Schema::hasColumns('project_invitations', 'install_attempts', [
+            'ticket_digest', 'issuer_user_id', 'mode', 'project_id', 'install_attempt_id', 'expires_at', 'revoked_at',
             'spent_at', 'binding_id',
         ]));
         $this->assertTrue(Schema::hasColumns('project_bindings', [
@@ -45,10 +46,9 @@ final class ProjectRecordsTest extends TestCase
     public function test_an_install_line_keeps_only_its_ticket_digest_and_expires_after_its_lifetime(): void
     {
         CarbonImmutable::setTestNow('2026-11-21 12:00:00');
-        $invitation = ProjectInvitation::issueForNewProject(
+        $invitation = ProjectInvitation::issueFor(
+            InstallAttempt::openFor('user-1', 'issue-1', null),
             InstallTicket::digestOf('the-ticket'),
-            'user-1',
-            'issue-1',
         );
 
         $this->assertSame(InstallTicket::digestOf('the-ticket'), $invitation->ticket_digest);
@@ -64,8 +64,14 @@ final class ProjectRecordsTest extends TestCase
     public function test_a_revoked_or_spent_install_line_cannot_be_redeemed(): void
     {
         $project = Project::create('shop', 'Shop');
-        $revoked = ProjectInvitation::issueToJoin($project, InstallTicket::digestOf('ticket-a'), 'user-1', 'issue-a');
-        $spent = ProjectInvitation::issueToJoin($project, InstallTicket::digestOf('ticket-b'), 'user-1', 'issue-b');
+        $revoked = ProjectInvitation::issueFor(
+            InstallAttempt::openFor('user-1', 'issue-a', $project->id),
+            InstallTicket::digestOf('ticket-a'),
+        );
+        $spent = ProjectInvitation::issueFor(
+            InstallAttempt::openFor('user-1', 'issue-b', $project->id),
+            InstallTicket::digestOf('ticket-b'),
+        );
 
         $revoked->revoke();
         $spent->spendOn($this->binding($project));

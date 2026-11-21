@@ -29,7 +29,7 @@ final class WorktreeDeliveryTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'worktree_deliveries', 'child_claims', 'connection_audits', 'project_invitations', 'project_bindings',
+        'worktree_deliveries', 'child_claims', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
         'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 

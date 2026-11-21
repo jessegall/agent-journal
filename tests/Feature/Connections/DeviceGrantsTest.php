@@ -28,7 +28,7 @@ final class DeviceGrantsTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'command_receipts', 'device_grants', 'connection_audits', 'project_invitations', 'project_bindings',
+        'command_receipts', 'device_grants', 'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings',
         'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records', 'users',
     ];
 

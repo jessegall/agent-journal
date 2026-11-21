@@ -23,7 +23,7 @@ final class BindingStartTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'project_bindings', 'projects', 'agent_runtimes',
+        'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'projects', 'agent_runtimes',
         'agent_sessions', 'agents', 'hosts', 'settings_records', 'users',
     ];
 

@@ -26,7 +26,7 @@ final class RedemptionTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'project_bindings', 'projects', 'agent_runtimes', 'agents', 'hosts',
+        'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'projects', 'agent_runtimes', 'agents', 'hosts',
         'settings_records', 'users',
     ];
 

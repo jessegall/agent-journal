@@ -9,6 +9,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Connections\Http\Middleware\ResolveConnectedProject;
+use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Models\ProjectInvitation;
@@ -32,7 +33,7 @@ final class ConnectedProjectTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'project_bindings', 'projects', 'agent_runtimes', 'agents',
+        'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'projects', 'agent_runtimes', 'agents',
         'hosts', 'settings_records', 'users',
     ];
 
@@ -49,11 +50,9 @@ final class ConnectedProjectTest extends TestCase
     public function test_two_bindings_joined_to_one_project_read_the_same_project(): void
     {
         $first = $this->bindingOf('shop-ticket', 'nonce-aaaaaaaaaaaaaaaa');
-        ProjectInvitation::issueToJoin(
-            Project::query()->sole(),
+        ProjectInvitation::issueFor(
+            InstallAttempt::openFor($this->owner->id, 'join-action', Project::query()->sole()->id),
             InstallTicket::digestOf('join-ticket'),
-            $this->owner->id,
-            'join-action',
         );
         $second = ProjectBinding::query()->findOrFail(
             $this->redeemLine('join-ticket', 'nonce-cccccccccccccccc')->assertCreated()->json('bindingId'),

@@ -7,13 +7,15 @@ declare(strict_types=1);
  * listener or a model (ModelRaiseCallerTest).
  */
 return [
+    'InstallAttempt::cancel',
+    'InstallAttempt::openFor',
+    'InstallAttempt::replace',
+    'InstallAttempt::spendOn',
     'Project::create',
     'ProjectBinding::create',
     'ProjectBinding::recordPresence',
     'ProjectBinding::revoke',
-    'ProjectInvitation::issue',
-    'ProjectInvitation::issueForNewProject',
-    'ProjectInvitation::issueToJoin',
+    'ProjectInvitation::issueFor',
     'ProjectInvitation::revoke',
     'ProjectInvitation::spendOn',
 ];
