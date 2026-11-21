@@ -3,12 +3,15 @@
 package bootstrap
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
 	"time"
+
+	"journal-agent/executor"
 )
 
 // childFlag marks the init's own re-execution as one of its children, which drops to its user and execs its program.
@@ -23,7 +26,6 @@ const (
 // Layout is where the init finds the executor, the executor's socket, the workspace and the tools user's home.
 type Layout struct {
 	Executor   string
-	Socket     string
 	Workspace  string
 	ToolsHome  string
 	SocketWait time.Duration
@@ -31,7 +33,7 @@ type Layout struct {
 
 // ContainerLayout is the layout inside a protected-account container.
 var ContainerLayout = Layout{
-	Executor: "/opt/journal/bin/journal-exec", Socket: "/run/journal-exec/exec.sock", Workspace: "/workspace",
+	Executor: "/opt/journal/bin/journal-exec", Workspace: "/workspace",
 	ToolsHome: "/home/journal-tools", SocketWait: 10 * time.Second,
 }
 
@@ -51,19 +53,24 @@ func Main(layout Layout, arguments []string) int {
 	return refuse("init", err, code)
 }
 
-// supervise starts the executor, waits for its socket, starts the program, drops itself and reaps; it ends with the
-// program's code when the program exits, and with 1 when the executor does first.
+// supervise starts the executor, waits until it says it listens, starts the program, drops itself and reaps; it
+// ends with the program's code when the program exits, and with 1 when the executor does first.
 func supervise(layout Layout, program []string) (int, error) {
-	executor, err := startChild(executorRole, nil)
+	executorOutput, executorWriting, err := os.Pipe()
+	if err != nil {
+		return 1, fmt.Errorf("making the executor's output pipe failed: %w", err)
+	}
+
+	executor, err := startChild(executorRole, nil, executorWriting)
 	if err != nil {
 		return 1, err
 	}
 
-	if err := waitForSocket(layout); err != nil {
+	if err := waitForExecutor(layout, executorOutput); err != nil {
 		return 1, err
 	}
 
-	client, err := startChild(programRole, program)
+	client, err := startChild(programRole, program, nil)
 	if err != nil {
 		return 1, err
 	}
@@ -77,31 +84,57 @@ func supervise(layout Layout, program []string) (int, error) {
 	return reap(executor.Pid, client.Pid), nil
 }
 
-// startChild re-executes the init as a child of the role, with the standard streams and the environment it was given.
-func startChild(role string, program []string) (*os.Process, error) {
+// startChild re-executes the init as a child of the role, with the standard streams and the environment it was given;
+// a child given the writing end of a pipe prints its standard output there, and the init closes its own copy.
+func startChild(role string, program []string, output *os.File) (*os.Process, error) {
 	child := exec.Command("/proc/self/exe", append([]string{childFlag, role}, program...)...)
 	child.Stdin, child.Stdout, child.Stderr = os.Stdin, os.Stdout, os.Stderr
 	if role == executorRole {
 		child.Stdin = nil
 	}
+	if output != nil {
+		child.Stdout = output
+	}
 
-	if err := child.Start(); err != nil {
+	err := child.Start()
+	if output != nil {
+		output.Close()
+	}
+	if err != nil {
 		return nil, fmt.Errorf("starting the %s failed: %w", role, err)
 	}
 
 	return child.Process, nil
 }
 
-func waitForSocket(layout Layout) error {
-	deadline := time.Now().Add(layout.SocketWait)
-	for time.Now().Before(deadline) {
-		if _, err := os.Stat(layout.Socket); err == nil {
-			return nil
+// waitForExecutor waits until the executor prints that its socket listens, then passes on whatever else it prints.
+func waitForExecutor(layout Layout, output *os.File) error {
+	ready := make(chan bool, 1)
+	lines := bufio.NewScanner(output)
+	go func() {
+		listening := false
+		for lines.Scan() {
+			if !listening && lines.Text() == executor.ReadyLine {
+				listening = true
+				ready <- true
+				continue
+			}
+			fmt.Println(lines.Text())
 		}
-		time.Sleep(50 * time.Millisecond)
-	}
+		if !listening {
+			ready <- false
+		}
+	}()
 
-	return errors.New("the executor's socket did not appear in time")
+	select {
+	case listening := <-ready:
+		if !listening {
+			return errors.New("the executor ended before its socket listened")
+		}
+		return nil
+	case <-time.After(layout.SocketWait):
+		return errors.New("the executor's socket did not listen in time")
+	}
 }
 
 // reap waits on every child, the orphans the container's processes leave included, until the program or the

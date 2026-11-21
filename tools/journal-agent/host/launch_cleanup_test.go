@@ -2,6 +2,7 @@ package host
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"slices"
@@ -133,4 +134,41 @@ func writeFailingDocker(t *testing.T, listed string) string {
 		t.Fatal(err)
 	}
 	return path
+}
+
+// cleanupJournal plays the journal's cleanup routes: it lists its pending cleanups and keeps each report.
+type cleanupJournal struct {
+	pending []PendingCleanup
+	reports map[string]CleanupReport
+}
+
+func (journal *cleanupJournal) PendingCleanups(_ context.Context, answer any) error {
+	listed, err := json.Marshal(map[string]any{"pending": journal.pending})
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(listed, answer)
+}
+
+func (journal *cleanupJournal) ReportCleanup(_ context.Context, sessionID string, report any) error {
+	journal.reports[sessionID] = report.(CleanupReport)
+	return nil
+}
+
+func TestARoundRunsEveryPendingCleanupAndReportsIt(t *testing.T) {
+	containers, _ := fakeDocker(t, "", "")
+	cleanup := LaunchCleanup{Containers: containers, RuntimeFolders: t.TempDir(), StopSeconds: 10}
+	journal := &cleanupJournal{
+		pending: []PendingCleanup{{SessionID: "session-7", Remaining: []CleanupStep{CleanupContainer, CleanupNetwork, CleanupRuntime}}},
+		reports: map[string]CleanupReport{},
+	}
+
+	if err := cleanup.RunPending(context.Background(), journal); err != nil {
+		t.Fatal(err)
+	}
+
+	report, reported := journal.reports["session-7"]
+	if !reported || report.Failure != "" || len(report.Removed) != 3 {
+		t.Fatalf("the round reported %+v", journal.reports)
+	}
 }

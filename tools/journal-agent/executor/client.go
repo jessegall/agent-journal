@@ -11,6 +11,10 @@ import (
 // SocketPath is where the executor listens inside a protected-account container.
 const SocketPath = "/run/journal-exec/exec.sock"
 
+// ReadyLine is the one line the executor prints once its socket listens: the init waits for it, since the init, root
+// with no capability to pass a folder's permissions, cannot look into the executor's private socket folder.
+const ReadyLine = "journal-exec: listening"
+
 // ErrRefused is a request the executor refused before starting anything; the error names its reason.
 var ErrRefused = errors.New("the executor refused the command")
 

@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"journal-agent/executor"
 )
 
 // layoutVariable carries the test layout to the test binary when it runs as the init and as its children.
@@ -35,7 +37,7 @@ func TestMain(m *testing.M) {
 }
 
 // initFolder is a folder every user of the container may enter, holding a fake executor that records its status and
-// process id, makes the socket and waits.
+// process id, says it listens and waits.
 func initFolder(t *testing.T) (string, Layout) {
 	if os.Geteuid() != 0 {
 		t.Skip("the init drops users, which needs root with SETUID, SETGID and SETPCAP: run it in the golang image")
@@ -54,20 +56,19 @@ func initFolder(t *testing.T) (string, Layout) {
 		_ = os.RemoveAll(folder)
 	})
 
-	executor := filepath.Join(folder, "executor")
+	fakeExecutor := filepath.Join(folder, "executor")
 	script := "#!/bin/sh\n" + statusLines + " /proc/self/status > " + folder + "/executor-status\n" +
-		"echo $$ > " + folder + "/executor-pid\ntouch " + folder + "/exec.sock\nexec sleep 60 >/dev/null 2>&1\n"
+		"echo $$ > " + folder + "/executor-pid\necho '" + executor.ReadyLine + "'\nexec sleep 60 >/dev/null 2>&1\n"
 	for _, step := range []error{
 		os.Chmod(folder, 0o777),
-		os.WriteFile(executor, []byte(script), 0o755),
+		os.WriteFile(fakeExecutor, []byte(script), 0o755),
 	} {
 		if step != nil {
 			t.Fatal(step)
 		}
 	}
 
-	return folder, Layout{Executor: executor, Socket: filepath.Join(folder, "exec.sock"), Workspace: folder,
-		ToolsHome: folder, SocketWait: 10 * time.Second}
+	return folder, Layout{Executor: fakeExecutor, Workspace: folder, ToolsHome: folder, SocketWait: 10 * time.Second}
 }
 
 // runInit runs the test binary as the init of the program and answers its command, started.
