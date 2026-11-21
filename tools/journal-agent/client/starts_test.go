@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-const accountClaimAnswer = `{"start_key":"start-1","session_id":"session-1","directory":"/accounts/a","generation":2,` +
+const accountClaimAnswer = `{"start_key":"start-1","session_id":"session-1","directory":"/accounts/a","generation":2,"sign_in_method":"api_key",` +
 	`"recipe":{"environment":[{"name":"CLAUDE_CONFIG_DIR","value":"/accounts/a"}],"emptyFolderVariables":[],` +
 	`"removedVariables":["ANTHROPIC_API_KEY"],"startFlags":["--restricted"],"accountSettings":[],` +
 	`"driverVersion":"2.1.323","binaryDigest":"abc","arrangement":"direct","protectionSettings":"{}"}}`
@@ -26,7 +26,7 @@ func TestAClaimReadsTheWholeRecipe(t *testing.T) {
 	if *target != "/host/starts/claim" || string(*body) != `{"session_id":"session-1"}` {
 		t.Fatalf("claimed at %s with %s", *target, *body)
 	}
-	if claimed.Generation != 2 || claimed.Recipe.Environment[0].Name != "CLAUDE_CONFIG_DIR" ||
+	if claimed.Generation != 2 || claimed.SignInMethod != "api_key" || claimed.Recipe.Environment[0].Name != "CLAUDE_CONFIG_DIR" ||
 		claimed.Recipe.StartFlags[0] != "--restricted" || claimed.Recipe.Arrangement != "direct" {
 		t.Fatalf("claimed %+v", claimed)
 	}
@@ -113,4 +113,23 @@ func journalAnswering(t *testing.T, status int) *Client {
 	}))
 	t.Cleanup(server.Close)
 	return New(Enrollment{JournalURL: server.URL, HostID: "host", Secret: "secret"})
+}
+
+func TestAUsageReportIsPostedWithItsMeasurementAndNoMissingField(t *testing.T) {
+	journal, target, body := fakeJournal(t, ``)
+	percent := 42.0
+
+	report := UsageReport{StartKey: "start-1", Generation: 3, SourceID: "start-1:7", SourceOrder: 2,
+		ObservedAt:  "2026-11-21T10:00:00Z",
+		Measurement: UsageMeasurement{Type: UsageWindow, LimitID: "claude", Slot: WindowSevenDay, UsedPercent: &percent}}
+	if err := journal.ReportUsage(context.Background(), report); err != nil {
+		t.Fatal(err)
+	}
+
+	want := `{"start_key":"start-1","generation":3,"source_id":"start-1:7","source_order":2,` +
+		`"observed_at":"2026-11-21T10:00:00Z","measurement":{"type":"window","limit_id":"claude","slot":"seven_day",` +
+		`"used_percent":42}}`
+	if *target != "/host/reports/usage" || string(*body) != want {
+		t.Fatalf("posted %s to %s", *body, *target)
+	}
 }

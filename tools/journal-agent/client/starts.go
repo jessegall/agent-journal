@@ -30,14 +30,17 @@ type AccountRecipe struct {
 }
 
 // ClaimedStart is the pending account start of a session this host took: its key, the account folder on this host,
-// the sign-in generation it runs in and the checked recipe.
+// the sign-in generation it runs in, the method its account signed in by and the checked recipe.
 type ClaimedStart struct {
-	StartKey   string        `json:"start_key"`
-	SessionID  string        `json:"session_id"`
-	Directory  string        `json:"directory"`
-	AccountID  string        `json:"account_id"`
-	Generation int           `json:"generation"`
-	Recipe     AccountRecipe `json:"recipe"`
+	StartKey   string `json:"start_key"`
+	SessionID  string `json:"session_id"`
+	Directory  string `json:"directory"`
+	AccountID  string `json:"account_id"`
+	Generation int    `json:"generation"`
+	// SignInMethod is the saved account's method, such as oauth or api_key, which names the usage reader that applies;
+	// empty in an answer of an older journal.
+	SignInMethod string        `json:"sign_in_method"`
+	Recipe       AccountRecipe `json:"recipe"`
 	// ConversationTarget is the native conversation the journal chose for a resume, empty for a fresh one. The host
 	// resumes it only when its transcript is in this account's folder for the start's own workspace.
 	ConversationTarget string `json:"conversation_target"`

@@ -13,6 +13,7 @@ use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\AccountSignedIn;
 use App\Profiles\Events\AccountSignedOut;
 use App\Profiles\Events\AccountSwitched;
+use App\Profiles\Events\AccountUsageChanged;
 use App\Profiles\Events\ProfileRevisionRevoked;
 use App\Profiles\Events\SignInAttemptCleanupRetried;
 use App\Profiles\Events\SignInAttemptFinished;
@@ -62,6 +63,18 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new AccountNoticeRecorded('claude-code', 'notice'),
+    ],
+    AccountUsageChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => [
+            'AccountUsageCost::add',
+            'AccountUsageTokens::create',
+            'AccountUsageWindow::create',
+            'KeepsNewestReading::saveReading',
+        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new AccountUsageChanged('claude-code', 'account'),
     ],
     AccountNoticeResolved::class => [
         'role' => EventRole::RowFact,

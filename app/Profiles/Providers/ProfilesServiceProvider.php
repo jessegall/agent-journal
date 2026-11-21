@@ -29,6 +29,9 @@ use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountNotice;
+use App\Profiles\Models\AccountUsageCost;
+use App\Profiles\Models\AccountUsageTokens;
+use App\Profiles\Models\AccountUsageWindow;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\Profile;
 use App\Profiles\Models\SignInAttempt;
@@ -154,7 +157,17 @@ final class ProfilesServiceProvider extends ServiceProvider
             static fn () => Container::getInstance()->make(CurrentAuthorizer::class),
         );
 
-        foreach ([Account::class, ActiveAccount::class, SignInAttempt::class, AccountNotice::class] as $model) {
+        $models = [
+            Account::class,
+            ActiveAccount::class,
+            SignInAttempt::class,
+            AccountNotice::class,
+            AccountUsageWindow::class,
+            AccountUsageCost::class,
+            AccountUsageTokens::class,
+        ];
+
+        foreach ($models as $model) {
             $events->listen("eloquent.booted: {$model}", fn () => $model::addGlobalScope($scope));
         }
     }

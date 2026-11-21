@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"journal-agent/recording"
+	"journal-agent/shellwords"
+	"maps"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -175,6 +177,7 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 	if err := mergeProtection(settings, start.Account.Protection); err != nil {
 		return nil, err
 	}
+	addStatusLine(settings, start)
 	if err := requireSandbox(settings); err != nil {
 		return nil, err
 	}
@@ -193,6 +196,32 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 	}
 
 	return append(files, contracts.SettingsFile{Name: "mcp.json", Content: descriptor}), nil
+}
+
+// addStatusLine names the journal's status-line reader in a terminal start's settings when the host gave one. A status
+// line the settings already hold is run by the reader with the same input, so it still renders; one the reader cannot
+// run, such as one that is no command, is kept as it is and the reader is left out.
+func addStatusLine(settings map[string]any, start contracts.Start) {
+	reader := start.Account.StatusLine
+	if reader == "" || start.Mode == recording.ProcessMode {
+		return
+	}
+	existing, present := settings["statusLine"]
+	if !present {
+		settings["statusLine"] = map[string]any{"type": "command", "command": reader}
+		return
+	}
+	line, isObject := existing.(map[string]any)
+	if !isObject || line["type"] != "command" {
+		return
+	}
+	command, isText := line["command"].(string)
+	if !isText {
+		return
+	}
+	composed := maps.Clone(line)
+	composed["command"] = reader + " --then " + shellwords.Quoted(command)
+	settings["statusLine"] = composed
 }
 
 func startsJournalServer(start contracts.Start) bool {
