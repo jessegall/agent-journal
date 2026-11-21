@@ -9,9 +9,9 @@ from engine.helper_type.enums.journal_line_class import JournalLineClass
 @dataclass(frozen=True)
 class ReviewerCommands(CommandAllowList):
     """What the reviewer profile of a read-only helper may run: every journal line that only reads, the
-    review it records with its points, the report it files and its memories, so it can weigh or skip a memory mark."""
+    review it records with its points, the report it files, its answer to a steer of its job and its memories, so it can weigh or skip a memory mark."""
 
     categories: Sequence[CommandCategory] = tuple(CommandCategory)
     groups: Sequence[str] = ("review-point", "memory")
-    lines: Sequence[str] = ("review record", "report make", "task overview", "output read")
+    lines: Sequence[str] = ("helper answer-steer", "review record", "report make", "task overview", "output read")
     classes: Sequence[JournalLineClass] = (JournalLineClass.READS,)

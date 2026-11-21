@@ -3,103 +3,103 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "actor edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "actor list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "actor make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "actor show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "admission-receipt list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "admission-receipt show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "affected-test list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "affected-test show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent cards": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent control": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent controls": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent driver": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent end": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent environments": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent exited": {
   "helper": "allowed",
@@ -111,241 +111,241 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent launch": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent limits": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent main": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent main-sessions": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent menu-answer": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent mix": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent pause": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent people": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent profile-limits": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent programs": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent resume": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent retire": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent running": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent running-main-agents": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent sessions": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent start": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent start-program": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent status": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent stop": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent stop-program": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent terminal": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent tip": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent transcript": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent type": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-block list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-block show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-block skip": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-escalation list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-escalation show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-launch list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-launch show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line claim": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line deliver": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line drop": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line enter": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line list": {
   "helper": "allowed",
@@ -357,13 +357,13 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line release": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line show": {
   "helper": "allowed",
@@ -375,151 +375,151 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-line-history show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-message list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-message-record list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-message-record show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-session list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-session show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-skill delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-skill edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-skill list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-skill load": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-skill make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-skill reset": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-skill show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-skill unread": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-stack list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-stack show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-stack-move list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-stack-move show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-step-request list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-step-request show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-wake list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "agent-wake show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "alias add": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "alias edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "alias list": {
   "helper": "allowed",
@@ -531,181 +531,181 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "alias saved": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "alias show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "alias skip": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "approval accept": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "approval answer": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "approval list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "approval pending": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "approval recover": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "approval refuse": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "approval relay": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "approval show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "ask list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "ask show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "ask-stack approve": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "ask-stack list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "ask-stack show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "ask-step list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "ask-step show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign assign": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-decision list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-decision record": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-decision show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule apply": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule board": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule disable": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule enable": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule give-back": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule list": {
   "helper": "allowed",
@@ -717,337 +717,337 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule move": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule reassign": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule recent": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule try": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule why": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule-condition list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assign-rule-condition show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assignment delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assignment list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "assignment show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "attachment list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check conflict": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check end": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check escalate": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check leave": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check mark_updated": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check note_open_failure": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check note_ordered_failure": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check order": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check pause": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check remind": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check remind_clash": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "behind-check show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "chat-mark delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "chat-mark edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "chat-mark end": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "chat-mark list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "chat-mark main": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "chat-mark make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "chat-mark show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check create": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check run": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check runs": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check start": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "check stop": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-pass list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-pass show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-reach failed": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-reach list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-reach passed": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-reach show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-review list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-review show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-test list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "checkpoint-test show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "command-run-count list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "command-run-count show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "command-type delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "command-type edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "command-type list": {
   "helper": "allowed",
@@ -1065,121 +1065,121 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "context-compaction list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "context-compaction show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "context-compaction-notice list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "context-compaction-notice show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "countdown list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "countdown show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "demo seed": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "demo start": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "developer hook-requests": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "developer mark-motions": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "developer numbers": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "developer record-mark-motion": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "developer reset-numbers": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "developer system-logs": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc close": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc comment": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc comments": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc edit": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc inspect": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc list": {
   "helper": "allowed",
@@ -1191,31 +1191,31 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc open": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc revision": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc revisions": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc settle": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "doc show": {
   "helper": "allowed",
@@ -1227,451 +1227,451 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock keep": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock unkeep": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock-item delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock-item dock": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock-item edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock-item list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock-item main": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock-item make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock-item read": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock-item show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dock-item undock": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "document library": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver attention": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver choose": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver pop": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver restore": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver stack": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver table": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver-grant list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver-grant show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver-table list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver-table show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver-version list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "driver-version show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump board": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump failed": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump filed": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump items": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump name": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump note": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump-item board": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump-item list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "dump-item show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "environment cards": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "environment delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "environment edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "environment list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "environment make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "environment menu": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "environment show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "escalation answer": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "escalation list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "escalation show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "event keys": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "event list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "event prune": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "event show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "execution-class list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "execution-class show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "file-edit delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "file-edit file": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "file-edit list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "file-edit record-changes": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "file-edit show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "git-overview branches": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "git-overview commits": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "git-overview current": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "git-overview pulls": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hand-in drop": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hand-in retry": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper answer-steer": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper availability": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper cold-sessions": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper grant": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper lifetimes": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper run": {
   "helper": "refused",
@@ -1701,7 +1701,7 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper-grant show": {
   "helper": "allowed",
@@ -1713,55 +1713,55 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper-job show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper-profile-screen show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper-steer list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "helper-steer show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hidden-state list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hidden-state show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hook-call feed": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hook-call list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hook-call show": {
   "helper": "allowed",
@@ -1773,277 +1773,277 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hook-timeout-notice list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hook-timeout-notice show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "hooks give-back": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "instruction-import remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "journal-exception list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "journal-exception show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "journal-exception solve": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library browse": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library connect": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library copies": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library disconnect": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library get": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library inspect": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library leave": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library resolve": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library restore": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library share": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library status": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library sync": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library versions": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library-user add": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library-user list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library-user remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library-user revoke": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library-user role": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "library-user tokens": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "link list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "link receipts": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "link remove": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "managed-hook give-back": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "managed-hook list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "managed-hook remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "managed-hook scan": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "managed-hook set": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "map map": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "mcp add": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "mcp check": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "mcp install": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "mcp key": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "mcp list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "mcp remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "mcp suggested": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "memory agents": {
   "helper": "allowed",
@@ -2139,223 +2139,223 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "memory-delivery show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "memory-keyword delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "memory-keyword edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "memory-keyword list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "memory-keyword make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "memory-keyword show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "memory-mark list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "memory-mark show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "menu-answer list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "menu-answer show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merge-ask list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merge-ask show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merge-followup list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merge-followup show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merge-request list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merge-request show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger advise": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger answer": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger behind": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger defer-test": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger findings": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger leave": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger merge": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger next": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger pass": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger repair": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger scope": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger tell": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger update": {
   "helper": "refused",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger-line list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "merger-line show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message agent-reports": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message clear-work-source": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message comment": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message conversations": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message edit": {
   "helper": "refused",
@@ -2367,19 +2367,19 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message flowchart": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message react": {
   "helper": "allowed",
@@ -2403,7 +2403,7 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message send": {
   "helper": "allowed",
@@ -2415,13 +2415,13 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message tag": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message unread": {
   "helper": "allowed",
@@ -2433,49 +2433,49 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "message work-source": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output ask-reader": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output confirm": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output hook-page": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output page": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output peek": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output read": {
   "helper": "allowed",
@@ -2487,13 +2487,13 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output status": {
   "helper": "allowed",
@@ -2511,7 +2511,7 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output title": {
   "helper": "allowed",
@@ -2523,13 +2523,13 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output unwatch": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output watch": {
   "helper": "refused",
@@ -2541,37 +2541,37 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "output-title-request show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "overview overview": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "overview-read list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "overview-read show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "permission allow": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "permission ask": {
   "helper": "allowed",
@@ -2583,247 +2583,247 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "person-preset list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "person-preset remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "person-preset rename": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "person-preset save": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "person-preset show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase edit": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase make": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase move": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase place": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase-task delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase-task list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase-task show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase-test-deferral list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phase-test-deferral show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone pair": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone push-key": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone redeem": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone session": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone subscribe": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone unpair": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "phone-code spend": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "pin close": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "pin list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "pin make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "pin show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan approve": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan assign": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan block": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan board": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan cancel": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan check": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan close": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan comment": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan comments": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan context": {
   "helper": "allowed",
@@ -2835,13 +2835,13 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan edit": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan focus": {
   "helper": "refused",
@@ -2853,157 +2853,157 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan make": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan outline": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan place": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan places": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan progress": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan ready": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan review-tip": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan rework": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan rounds": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan start": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan timeline": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plan unblock": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin card": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin changes": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin checkout": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin config": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin configure": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin dashboard": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin dashboards": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin descriptions": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin disable": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin enable": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin events": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin file": {
   "helper": "allowed",
@@ -3015,133 +3015,133 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin latest": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin log": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin path": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin preview": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin propose": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin queue": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin queue-cancel": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin queue-read": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin queue-show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin record": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin run": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin service": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin service-log": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin services": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin settings": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin try": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "plugin upgrade": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "private-data-mark list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "private-data-mark show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process background": {
   "helper": "allowed",
@@ -3153,7 +3153,7 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process claim": {
   "helper": "allowed",
@@ -3165,13 +3165,13 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process end": {
   "helper": "allowed",
@@ -3183,7 +3183,7 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process holds": {
   "helper": "refused",
@@ -3195,25 +3195,25 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process journal_merge_finish": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process lift-hold": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process orphan": {
   "helper": "allowed",
@@ -3243,127 +3243,127 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process-part delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process-part list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "process-part show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "profile list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "profile remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "profile reset": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "profile save": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "profile show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "profile skills": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "program command": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "program manage": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "program trust": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "program-version list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "program-version show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "project-file find": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "project-file grep": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "project-file list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "project-file show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "project-worktree list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "project-worktree remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "proof check": {
   "helper": "refused",
@@ -3423,163 +3423,163 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "provider-outage edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "provider-outage end": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "provider-outage list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "provider-outage make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "provider-outage show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "question answer": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "question ask": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "question close": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "question delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "question edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "question list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "question show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue halt": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue inspect": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue resume": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class add": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class lanes": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class preset": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class presets": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class preview": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class reset": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class set": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "queue-class show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reader add": {
   "helper": "refused",
@@ -3591,7 +3591,7 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reader draft": {
   "helper": "refused",
@@ -3609,19 +3609,19 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reader remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reader show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reader unreadable": {
   "helper": "refused",
@@ -3633,37 +3633,37 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reader-request show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reader-request waive": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reading-decision list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reading-decision show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "refusal approve": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "refusal confirm": {
   "helper": "allowed",
@@ -3675,25 +3675,25 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "refusal list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "refusal restore": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "refusal show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "refusal skip": {
   "helper": "allowed",
@@ -3711,91 +3711,91 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "release show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "release-install list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "release-install show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reminder delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reminder list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reminder make": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reminder show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reminder-pass list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reminder-pass show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "report close": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "report comment": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "report comments": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "report edit": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "report inspect": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "report list": {
   "helper": "allowed",
@@ -3807,7 +3807,7 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "report show": {
   "helper": "allowed",
@@ -3819,79 +3819,79 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "request-run show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review abandon": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review approve": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review assign": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review board": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review leave_undecided": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review record": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review reject": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review request": {
   "helper": "refused",
@@ -3903,187 +3903,187 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review-point delete": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review-point edit": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review-point list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review-point make": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review-point show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review-step board": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review-step list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review-step show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reviewer add": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reviewer end": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reviewer finish": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reviewer list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reviewer retire": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reviewer show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "reviewer start": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "rule approve": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "rule delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "rule deny": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "rule edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "rule list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "rule make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "rule remove": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "rule show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "saved-approval delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "saved-approval list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "saved-approval show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "scheduled-job list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "scheduled-job running": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "scheduled-job show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "scheduled-job stop": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "search find": {
   "helper": "allowed",
@@ -4095,79 +4095,79 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret fill": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret propose": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret request": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret run": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret store": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret update": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret-setting delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "secret-setting edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "sequence abandon": {
   "helper": "allowed",
@@ -4179,19 +4179,19 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "sequence delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "sequence edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "sequence follow": {
   "helper": "allowed",
@@ -4203,13 +4203,13 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "sequence make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "sequence next": {
   "helper": "allowed",
@@ -4227,7 +4227,7 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "sequence-run list": {
   "helper": "allowed",
@@ -4239,25 +4239,25 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting request": {
   "helper": "refused",
@@ -4269,145 +4269,145 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting switch": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting tree": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting-request list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting-request show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting-screen apply": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting-screen index": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "setting-screen show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share accept": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share comment": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share comments": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share deny": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share opens": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share revoke": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share session": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share unlock": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share viewed": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share-comment list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "share-comment show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "skill list": {
   "helper": "allowed",
@@ -4437,7 +4437,7 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "skill show": {
   "helper": "allowed",
@@ -4455,79 +4455,79 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suggestion answer": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suggestion list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suggestion show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suite check": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suite choose": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suite current": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suite layout": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suite list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suite presets": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suite sections": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "suite show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task assign": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task block": {
   "helper": "refused",
@@ -4539,13 +4539,13 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task cancel": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task close": {
   "helper": "refused",
@@ -4557,7 +4557,7 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task comments": {
   "helper": "allowed",
@@ -4575,25 +4575,25 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task depend": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task edit": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task focus": {
   "helper": "refused",
@@ -4641,7 +4641,7 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task overview": {
   "helper": "allowed",
@@ -4659,19 +4659,19 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task remove-dependency": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task reopen": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task retest": {
   "helper": "refused",
@@ -4719,145 +4719,145 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task waits-on-nothing": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-block-renewal list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-block-renewal show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-dependency delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-dependency edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-dependency list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-dependency make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-dependency show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-log delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-log edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-log list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-log make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-log show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-tag list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-tag show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-wait list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "task-wait show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "template delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "template edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "template list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "template make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "template send": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "template show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "todo-item list": {
   "helper": "allowed",
@@ -4875,379 +4875,379 @@
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tool list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tool off": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tool on": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tool refresh": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tool tick": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "transcription delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "transcription edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "transcription fetch": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "transcription link": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "transcription list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "transcription make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "transcription show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "transcription sources": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "trigger edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "trigger enable": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "trigger list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "trigger make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "trigger pause": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "trigger schedule": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "trigger show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "trigger strike": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "trigger try": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tunler domains": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tunler install": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tunler login": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tunler logout": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tunler release": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tunler status": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tunler update": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tunler version": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "tunnel status": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "unassign unassign": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "unreadable-mark list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "unreadable-mark show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "update check": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "update install": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "update notes": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "update step": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage agent": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage agents": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage bars": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage fitness": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage inspector": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage own-messages": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage tool": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage-limit delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage-limit edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage-limit list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage-limit set": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "usage-limit show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "viewer-layout current": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "viewer-layout delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "viewer-layout list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "viewer-layout save": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "viewer-layout show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "voice address": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "voice choose": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "voice list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "voice show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait end": {
   "helper": "refused",
@@ -5259,25 +5259,25 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait on": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait resume": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait stuck": {
   "helper": "allowed",
@@ -5289,139 +5289,139 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait-target delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait-target list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "wait-target show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "watch delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "watch edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "watch end": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "watch list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "watch make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "watch show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window allow": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window permissions": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window save-setting": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window search": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window setting": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window trust": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window-permission delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window-permission list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window-permission make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "window-permission show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "work-settings apply": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "work-settings preset": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "work-settings show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker ask": {
   "helper": "refused",
@@ -5553,7 +5553,7 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-operation run": {
   "helper": "refused",
@@ -5565,96 +5565,96 @@
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-refusal-count delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-refusal-count edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-refusal-count list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-refusal-count make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-refusal-count show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-route delete": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-route edit": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-route list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-route make": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-route move": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-route show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-worktree list": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-worktree points": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worker-worktree show": {
   "helper": "allowed",
   "merger": "allowed",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "worktree prepare": {
   "helper": "refused",
   "merger": "refused",
   "supervisor": "allowed",
-  "worker": "refused"
+  "worker": "allowed"
  }
 }
