@@ -3,7 +3,7 @@ import { router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import Button from '@kit/Button';
 import FormErrors from '@kit/FormErrors';
-import { useHostProp } from '@kit/hostProp';
+import { useHostProp } from '@/framework/hostProp';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { start as startRoute } from '@generated/routes/plans';
 import type { StartPlanData } from '@generated/types/plans';

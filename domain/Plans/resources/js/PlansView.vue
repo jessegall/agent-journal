@@ -3,7 +3,7 @@ import { router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
-import { useHostProp } from '@kit/hostProp';
+import { useHostProp } from '@/framework/hostProp';
 import ListReaderLayout from '@kit/ListReaderLayout';
 import PageHeader from '@kit/PageHeader';
 import type { PlanFiltersData, PlanListData } from '@generated/types/plans';
