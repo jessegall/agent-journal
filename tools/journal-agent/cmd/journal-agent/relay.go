@@ -19,6 +19,7 @@ import (
 	"journal-agent/client"
 	"journal-agent/diagnostics"
 	"journal-agent/host"
+	"journal-agent/project"
 )
 
 const (
@@ -109,6 +110,7 @@ func (binder bindingRelay) run(ctx context.Context) error {
 			BootID: bootID, Sequence: sequence, Release: binder.release,
 			Protocol: client.RemoteProjectProtocolVersion, Combinations: []client.HostCombination{},
 			Provisioning: "succeeded", Takeover: sequence == 1,
+			SetupGeneration: project.Folder{Root: binder.binding.CanonicalRoot}.SetupGeneration(),
 		})
 		if err == nil {
 			leases.authority.Store(int64(receipt.AuthorityGeneration))
@@ -184,7 +186,9 @@ func (binder bindingRelay) nextReport(receipt client.PresenceReceipt, failure er
 		return relayRetry
 	}
 	report := host.RelayReport{
-		BootID: bootID, Generation: receipt.Generation, ReportedAt: time.Now(), ExpiresAt: receipt.ExpiresAt,
+		BindingID: receipt.BindingID, BootID: bootID, Generation: receipt.Generation,
+		SetupGeneration: receipt.SetupGeneration, ReportedAt: time.Now(), AcknowledgedAt: receipt.ServerTime,
+		ExpiresAt: receipt.ExpiresAt,
 	}
 	if err := binder.state.SaveRelayReport(report); err != nil {
 		log.Printf("the presence report of binding %s was not kept: %v", binder.binding.BindingID, err)
@@ -203,11 +207,13 @@ func (binder bindingRelay) wait(ctx context.Context, duration time.Duration) boo
 	}
 }
 
-// awaitReady waits, at most the given time, for an acknowledged report whose presence has not expired.
-func awaitReady(state host.ConnectionState, within time.Duration) bool {
+// awaitReady waits, at most the given time, for the journal's acknowledgement of this binding's setup generation,
+// reported after this run began; a report saved before it, as after a restart, does not count.
+func awaitReady(state host.ConnectionState, bindingID string, setupGeneration int, since time.Time, within time.Duration) bool {
 	deadline := time.Now().Add(within)
 	for time.Now().Before(deadline) {
-		if report, err := state.RelayReport(); err == nil && report.ExpiresAt.After(time.Now()) {
+		report, err := state.RelayReport()
+		if err == nil && report.AcknowledgesSetup(bindingID, setupGeneration, since, time.Now()) {
 			return true
 		}
 		time.Sleep(250 * time.Millisecond)

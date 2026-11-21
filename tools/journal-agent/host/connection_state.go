@@ -50,13 +50,24 @@ type Binding struct {
 	CanonicalRoot string `json:"canonical_root"`
 }
 
-// RelayReport is what the binding's relay last had acknowledged: its boot, the generation the journal holds for it
-// and when that presence expires. connect waits for the first one.
+// RelayReport is what the binding's relay last had acknowledged: the binding, its boot, the generation the journal
+// holds for it, the folder's setup generation the journal acknowledged, when it was reported and acknowledged and
+// when that presence expires. connect waits for one of its own setup generation.
 type RelayReport struct {
-	BootID     string    `json:"boot_id"`
-	Generation int       `json:"generation"`
-	ReportedAt time.Time `json:"reported_at"`
-	ExpiresAt  time.Time `json:"expires_at"`
+	BindingID       string    `json:"binding_id"`
+	BootID          string    `json:"boot_id"`
+	Generation      int       `json:"generation"`
+	SetupGeneration int       `json:"setup_generation"`
+	ReportedAt      time.Time `json:"reported_at"`
+	AcknowledgedAt  time.Time `json:"acknowledged_at"`
+	ExpiresAt       time.Time `json:"expires_at"`
+}
+
+// AcknowledgesSetup is whether the report is the journal's acknowledgement of this binding's setup generation,
+// reported after the given time and still unexpired now; an older report only tells when the folder was last seen.
+func (report RelayReport) AcknowledgesSetup(bindingID string, setupGeneration int, since time.Time, now time.Time) bool {
+	return report.BindingID == bindingID && report.SetupGeneration == setupGeneration &&
+		report.ReportedAt.After(since) && report.ExpiresAt.After(now)
 }
 
 // ConnectionState is the private state of one project folder's connection, inside the host's state folder and

@@ -43,6 +43,22 @@ final class BindingPresenceTest extends TestCase
         $this->assertSame(0, AgentRuntime::query()->count());
     }
 
+    public function test_a_report_of_an_older_setup_after_a_new_one_changes_nothing(): void
+    {
+        $binding = $this->connected(self::NONCE);
+        $this->report(self::NONCE, $binding, 'boot-1', 1, setupGeneration: 2)->assertOk();
+        $before = ProjectBinding::query()->findOrFail($binding);
+
+        $this->travel(10)->seconds();
+        $stale = $this->report(self::NONCE, $binding, 'boot-1', 2, setupGeneration: 1)->assertOk();
+
+        $after = ProjectBinding::query()->findOrFail($binding);
+        $this->assertSame(2, $stale->json('setupGeneration'));
+        $this->assertSame($binding, $stale->json('bindingId'));
+        $this->assertSame(1, $after->report_sequence);
+        $this->assertEquals($before->presence_expires_at, $after->presence_expires_at);
+    }
+
     public function test_a_replayed_older_sequence_changes_nothing(): void
     {
         $binding = $this->connected(self::NONCE);
@@ -103,6 +119,7 @@ final class BindingPresenceTest extends TestCase
         string $bootId,
         int $sequence,
         bool $takeover = false,
+        int $setupGeneration = 1,
     ): TestResponse {
         return $this->signedRelayCall(
             $this->relayCredential($nonce),
@@ -115,6 +132,7 @@ final class BindingPresenceTest extends TestCase
                 'combinations' => [],
                 'provisioning' => 'succeeded',
                 'takeover' => $takeover,
+                'setupGeneration' => $setupGeneration,
             ],
             HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),

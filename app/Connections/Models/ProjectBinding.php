@@ -53,6 +53,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $boot_id
  * @property int $report_sequence
  * @property int $boot_generation
+ * @property int $setup_generation
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Agent $mainAgent
@@ -89,6 +90,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             'presence_expires_at' => 'immutable_datetime',
             'report_sequence' => 'integer',
             'boot_generation' => 'integer',
+            'setup_generation' => 'integer',
         ];
     }
 
@@ -117,6 +119,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $binding->readiness = BindingReadiness::Pending;
         $binding->report_sequence = 0;
         $binding->boot_generation = 0;
+        $binding->setup_generation = 0;
         $binding->assertSaved($binding->save());
         $binding->raise(new ProjectBindingCreated($binding->id, $project->id, $host->id, CarbonImmutable::now()));
 
@@ -214,6 +217,11 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             return $this->receipt();
         }
 
+        // A relay of a setup older than the one acknowledged changes nothing, as a stale sequence does.
+        if ($report->setupGeneration < $this->setup_generation) {
+            return $this->receipt();
+        }
+
         if (! $isSameBoot && $this->hasLivePresenceAt($now) && ! $report->takesOver) {
             throw PresenceRefused::anotherBootIsLive($this->id);
         }
@@ -226,6 +234,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $readiness = $this->readinessOf($report);
         $changed = $readiness !== $this->readiness;
         $this->report_sequence = $report->sequence;
+        $this->setup_generation = $report->setupGeneration;
         $this->readiness = $readiness;
         $this->last_contact_at = $now;
         $this->presence_expires_at = $now->addSeconds(self::PRESENCE_SECONDS);
@@ -362,7 +371,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     private function receipt(): PresenceReceipt
     {
         return new PresenceReceipt(
+            $this->id,
             $this->boot_generation,
+            $this->setup_generation,
+            CarbonImmutable::now()->toIso8601String(),
             (string) $this->presence_expires_at?->toIso8601String(),
             $this->authority_generation,
         );

@@ -92,6 +92,8 @@ type setupProgress struct {
 	Done []string `json:"done"`
 	// IgnoreAddition is the exact text setup appended to .gitignore, so disconnecting can take it out unchanged.
 	IgnoreAddition string `json:"ignoreAddition,omitempty"`
+	// Generation rises on every setup or resume, so only a relay report of the current setup can make it ready.
+	Generation int `json:"generation"`
 }
 
 // SetUp writes the connection, the hook entry points of the verified installation and the ignore rule, each step
@@ -103,6 +105,10 @@ func (folder Folder) SetUp(connection Connection, installation host.Installation
 	}
 
 	progress := folder.progress()
+	progress.Generation++
+	if err := writeJSON(folder.path(setupName), progress); err != nil {
+		return err
+	}
 	steps := []struct {
 		name string
 		run  func() error
@@ -130,6 +136,11 @@ func (folder Folder) SetUp(connection Connection, installation host.Installation
 	}
 
 	return nil
+}
+
+// SetupGeneration is the generation of the folder's latest setup or resume; none before the first.
+func (folder Folder) SetupGeneration() int {
+	return folder.progress().Generation
 }
 
 // Connected is the folder's connection when the private state of this machine holds the same binding for this very

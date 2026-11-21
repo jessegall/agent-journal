@@ -60,9 +60,12 @@ func connect(arguments []string) error {
 	if err != nil {
 		return err
 	}
+	// Only a report of this run's setup, acknowledged after it began, makes the folder ready.
+	started := time.Now()
 	if err := connection.setUp(binding, installation); err != nil {
 		return err
 	}
+	setupGeneration := project.Folder{Root: root}.SetupGeneration()
 	program, err := os.Executable()
 	if err != nil {
 		return err
@@ -70,7 +73,7 @@ func connect(arguments []string) error {
 	if err := host.StartRelay(program, *stateFolder, binding.BindingID); err != nil {
 		return err
 	}
-	if !awaitReady(connection.state, relayReadyWait) {
+	if !awaitReady(connection.state, binding.BindingID, setupGeneration, started, relayReadyWait) {
 		fmt.Println("Connected, setup pending: this folder's relay has not reported yet. Run the install line again to finish.")
 		return nil
 	}

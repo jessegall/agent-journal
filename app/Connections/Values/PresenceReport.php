@@ -17,5 +17,6 @@ final readonly class PresenceReport
         public int $protocol,
         public bool $isProvisioned,
         public bool $takesOver,
+        public int $setupGeneration,
     ) {}
 }

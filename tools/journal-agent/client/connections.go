@@ -74,12 +74,18 @@ type PresenceReport struct {
 	Combinations []HostCombination `json:"combinations"`
 	Provisioning string            `json:"provisioning"`
 	Takeover     bool              `json:"takeover"`
+	// SetupGeneration is the folder's setup generation, which rises on every setup or resume of it.
+	SetupGeneration int `json:"setupGeneration"`
 }
 
-// PresenceReceipt is the journal's answer to a presence report: the boot generation it holds, when the presence
-// expires, by server time, and the binding's authority generation every lease renewal carries.
+// PresenceReceipt is the journal's answer to a presence report: the binding, the boot generation it holds, the setup
+// generation it acknowledged, the server's time, when the presence expires, and the binding's authority generation
+// every lease renewal carries.
 type PresenceReceipt struct {
+	BindingID           string    `json:"bindingId"`
 	Generation          int       `json:"generation"`
+	SetupGeneration     int       `json:"setupGeneration"`
+	ServerTime          time.Time `json:"serverTime"`
 	ExpiresAt           time.Time `json:"presenceExpiresAt"`
 	AuthorityGeneration int       `json:"authorityGeneration"`
 }
