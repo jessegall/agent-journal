@@ -73,7 +73,7 @@ describe('NotificationList', () => {
         expect(list.text()).toContain('<b>Which port?</b>');
         expect(list.find('b').exists()).toBe(false);
 
-        await list.find('button').trigger('click');
+        await list.findAll('button').find((button) => button.text() === 'Mark read')?.trigger('click');
 
         expect(list.emitted('read')).toEqual([['receipt-1']]);
     });
@@ -83,7 +83,8 @@ describe('NotificationList', () => {
 
         expect(list.text()).toContain('All caught up');
         expect(list.find('a[data-open="receipt-1"]').exists()).toBe(true);
-        expect(list.findAll('button')).toHaveLength(0);
+        expect(list.findAll('button').map((button) => button.text())).toEqual(['Mark all read']);
+        expect(list.find('button').attributes('disabled')).toBeDefined();
     });
 
     it('keeps the rows when a refresh failed', () => {
@@ -105,5 +106,13 @@ describe('NotificationList', () => {
         const arrived = listOf('loaded', pageOf(1, null), { hasNewItems: true });
         await arrived.findAll('button').find((button) => button.text() === 'New notifications')?.trigger('click');
         expect(arrived.emitted('revealNew')).toHaveLength(1);
+    });
+
+    it('sends Mark all from the list', async () => {
+        const list = listOf('loaded', pageOf(1, null));
+
+        await list.findAll('button').find((button) => button.text() === 'Mark all read')?.trigger('click');
+
+        expect(list.emitted('markAll')).toHaveLength(1);
     });
 });

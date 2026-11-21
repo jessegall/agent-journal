@@ -32,6 +32,8 @@ use PhpOption\Option;
  * @property int $mutation_version
  * @property int $unread_count
  * @property CarbonImmutable|null $fenced_at
+ * @property int|null $mark_all_through the watermark of a Mark all still under way
+ * @property int $mark_all_after the last sequence a Mark all under way has reached
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
@@ -54,6 +56,8 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
             'next_sequence' => 'integer',
             'mutation_version' => 'integer',
             'unread_count' => 'integer',
+            'mark_all_through' => 'integer',
+            'mark_all_after' => 'integer',
             'fenced_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
@@ -153,6 +157,36 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
         $this->mutation_version++;
         $this->assertSaved($this->save());
         $this->raise(new NotificationsChanged($this->id));
+    }
+
+    /**
+     * A Mark all up to the watermark starts, or resumes from where an interrupted one reached; a higher watermark
+     * widens it, and a lower one never narrows it.
+     */
+    public function beginMarkAll(int $through): void
+    {
+        if ($this->mark_all_through !== null && $this->mark_all_through >= $through) {
+            return;
+        }
+
+        $this->mark_all_through = $through;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * The Mark all under way reached this sequence; an interrupted run resumes after it.
+     */
+    public function advanceMarkAll(int $sequence): void
+    {
+        $this->mark_all_after = $sequence;
+        $this->assertSaved($this->save());
+    }
+
+    public function finishMarkAll(): void
+    {
+        $this->mark_all_through = null;
+        $this->mark_all_after = 0;
+        $this->assertSaved($this->save());
     }
 
     /**

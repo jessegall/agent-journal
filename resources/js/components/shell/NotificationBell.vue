@@ -127,6 +127,7 @@ function followed(receiptId: string): void {
                     @retry="notifications.refresh()"
                     @load-older="notifications.loadOlder()"
                     @reveal-new="notifications.revealNew()"
+                    @mark-all="notifications.markAll()"
                 />
                 <template v-if="isQuiet">
                     <button type="button" class="px-2 pt-1 text-small text-text-3 underline" @click="resumeForUser">
@@ -154,6 +155,7 @@ function followed(receiptId: string): void {
                     @retry="notifications.refresh()"
                     @load-older="notifications.loadOlder()"
                     @reveal-new="notifications.revealNew()"
+                    @mark-all="notifications.markAll()"
                 />
                 <template v-if="isQuiet">
                     <button type="button" class="text-small text-text-3 underline" @click="resumeForUser">

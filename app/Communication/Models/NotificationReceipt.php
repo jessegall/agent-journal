@@ -119,6 +119,26 @@ final class NotificationReceipt extends Model implements ReadableModel
     }
 
     /**
+     * The scope's unread visible receipts after one sequence up to the watermark, oldest first, at most the limit:
+     * a seek on the scope's unread index that never reads read or hidden history.
+     *
+     * @return list<self>
+     */
+    public static function unreadThrough(string $scopeId, int $afterSequence, int $through, int $limit): array
+    {
+        return array_values(self::query()
+            ->where('scope_id', $scopeId)
+            ->whereNull('read_at')
+            ->whereNull('hidden_at')
+            ->where('sequence', '>', $afterSequence)
+            ->where('sequence', '<=', $through)
+            ->orderBy('sequence')
+            ->readLimit($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
      * The receipts of these ids with their occurrences, by id.
      *
      * @param  list<string>  $ids

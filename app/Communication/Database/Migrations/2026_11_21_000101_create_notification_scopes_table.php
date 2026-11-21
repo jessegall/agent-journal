@@ -20,6 +20,8 @@ return new class extends Migration
             $table->unsignedBigInteger('mutation_version')->default(0);
             $table->unsignedInteger('unread_count')->default(0);
             $table->timestampTz('fenced_at')->nullable();
+            $table->unsignedBigInteger('mark_all_through')->nullable();
+            $table->unsignedBigInteger('mark_all_after')->default(0);
             $table->timestampsTz();
 
             $table->unique(['scope_key', 'recipient_type', 'recipient_id']);

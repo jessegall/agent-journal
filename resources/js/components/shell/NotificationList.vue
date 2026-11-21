@@ -4,6 +4,7 @@ import { nextTick, onMounted, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import EmptyState from '@/components/kit/EmptyState.vue';
 import SwitchCase from '@/components/kit/SwitchCase.vue';
+import { MARK_ALL } from '@/composables/notificationStore';
 import type { NotificationLoadState } from '@/composables/notificationStore';
 import NotificationRow from './NotificationRow.vue';
 
@@ -33,6 +34,7 @@ const emit = defineEmits<{
     retry: [];
     loadOlder: [];
     revealNew: [];
+    markAll: [];
 }>();
 
 const heading = ref<HTMLElement | null>(null);
@@ -111,9 +113,20 @@ defineExpose({ focusHeading });
                     <EmptyState icon="bell" title="No notifications yet" />
                 </template>
                 <template v-else>
-                    <template v-if="page.unread === 0">
-                        <p class="px-2 text-small text-text-3">All caught up</p>
-                    </template>
+                    <div class="flex items-center justify-between gap-2 px-2">
+                        <template v-if="page.unread === 0">
+                            <p class="text-small text-text-3">All caught up</p>
+                        </template>
+                        <Button
+                            size="small"
+                            variant="bordered"
+                            :pending="pending.has(MARK_ALL)"
+                            :disabled="page.unread === 0 || !canChange"
+                            @click="emit('markAll')"
+                        >
+                            Mark all read
+                        </Button>
+                    </div>
                     <ul ref="list" class="flex max-h-[60vh] flex-col overflow-y-auto">
                         <template v-for="item in items" :key="item.id">
                             <NotificationRow

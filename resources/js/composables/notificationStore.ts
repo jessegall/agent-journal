@@ -14,6 +14,11 @@ export const LEASE_MILLISECONDS = 30_000;
 export const QUESTION_TARGET = 'chat.question';
 
 /**
+ * The pending key of a Mark all under way.
+ */
+export const MARK_ALL = 'all';
+
+/**
  * Why a notification request failed: the server refused it, or its answer never arrived, so only a later read can
  * tell whether it took effect.
  */
@@ -34,6 +39,7 @@ export type NotificationClient = {
     markQuestionRead(messageId: string): Promise<NotificationPage>;
     markTargetRead(targetKey: string, targetId: string): Promise<NotificationPage>;
     changes(cursor: string): Promise<NotificationChangePage>;
+    markAll(through: string): Promise<NotificationPage>;
 };
 
 /**
@@ -60,6 +66,8 @@ export type NotificationStore = {
     markRead(receiptId: string): Promise<void>;
     markQuestionRead(messageId: string): Promise<void>;
     markTargetRead(targetKey: string, targetId: string): Promise<void>;
+    // Marks every unread receipt up to the shown list's watermark read; later arrivals stay unread.
+    markAll(): Promise<void>;
     // Reads the changes since the held cursor and answers the new, still visible, unread arrivals among them.
     catchUp(): Promise<NotificationItem[]>;
     checkLease(): void;
@@ -348,6 +356,15 @@ export function notificationStore(
         },
         markQuestionRead: (messageId) =>
             mark(messageId, () => client.markQuestionRead(messageId), () => !isTargetRead(QUESTION_TARGET, messageId)),
+        markAll: async () => {
+            const through = snapshot.value?.through;
+
+            if (through === undefined || through === null) {
+                return;
+            }
+
+            await mark(MARK_ALL, () => client.markAll(through), () => (snapshot.value?.unread ?? 0) > 0);
+        },
         markTargetRead: (targetKey, targetId) =>
             mark(
                 `${targetKey}:${targetId}`,

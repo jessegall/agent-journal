@@ -1,7 +1,7 @@
 import type { NotificationChangePage, NotificationItem, NotificationPage } from '@/generated/types/core';
 import { xsrfToken } from '@/echo';
 import { notifications } from '@/routes/communication';
-import { changes, read, readQuestion, readTarget } from '@/routes/communication/notifications';
+import { changes, read, readAll, readQuestion, readTarget } from '@/routes/communication/notifications';
 import { onBeforeUnmount, onMounted } from 'vue';
 import {
     LEASE_MILLISECONDS,
@@ -63,6 +63,8 @@ const client: NotificationClient = {
         requestPage(readQuestion.url(), { method: 'POST', body: JSON.stringify({ messageId }) }),
     markTargetRead: (targetKey, targetId) =>
         requestPage(readTarget.url(), { method: 'POST', body: JSON.stringify({ targetKey, targetId }) }),
+    markAll: (through) =>
+        requestPage(readAll.url(), { method: 'POST', body: JSON.stringify({ through: Number(through) }) }),
     changes: async (cursor) =>
         (await requestJson(changes.url({ query: { since: cursor } }), { method: 'GET' })) as NotificationChangePage,
 };
