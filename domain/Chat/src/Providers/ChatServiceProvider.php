@@ -9,6 +9,8 @@ use App\Actors\Values\ReadEntitlement;
 use App\Agents\Exceptions\SessionOutdated;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Autoload\Support\FolderClasses;
+use App\Bus\Support\RefusalReason;
+use App\Contracts\CommandRefusal;
 use App\Docking\Sources\Contracts\DockedSources;
 use App\Docking\Sources\Contracts\DockOffers;
 use Domain\Chat\Support\AgentDockOffers;
@@ -16,6 +18,8 @@ use Domain\Chat\Support\PlacedSources;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\ServiceProvider;
 
@@ -37,18 +41,35 @@ final class ChatServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
 
-        // A session that can no longer take a message is a form error on the composer, not a failure.
+        // A session that can no longer take a message is a form error on the composer, not a failure, with the
+        // refusal's stable code flashed beside it; a JSON caller is answered by the shared refusal rendering.
         if ($exceptions instanceof Handler) {
             $exceptions->renderable(
-                fn (StackTargetRefused $refused) => $this->app->make(Redirector::class)->back(303)->withErrors(
-                    ['session' => 'This agent session cannot take a message now.'],
+                fn (StackTargetRefused $refused, Request $request) => $this->composerError(
+                    $refused,
+                    $request,
+                    'This agent session cannot take a message now.',
                 ),
             );
             $exceptions->renderable(
-                fn (SessionOutdated $outdated) => $this->app->make(Redirector::class)->back(303)->withErrors(
-                    ['session' => 'The agent now runs another session. Send the message again to reach it.'],
+                fn (SessionOutdated $outdated, Request $request) => $this->composerError(
+                    $outdated,
+                    $request,
+                    'The agent now runs another session. Send the message again to reach it.',
                 ),
             );
         }
+    }
+
+    private function composerError(CommandRefusal $refusal, Request $request, string $error): RedirectResponse|null
+    {
+        if ($request->expectsJson()) {
+            return null;
+        }
+
+        return $this->app->make(Redirector::class)
+            ->back(303)
+            ->withErrors(['session' => $error])
+            ->with(CommandRefusal::CODE_FLASH_KEY, RefusalReason::of($refusal)->code);
     }
 }

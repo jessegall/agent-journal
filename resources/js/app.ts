@@ -25,7 +25,9 @@ void createInertiaApp({
     },
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => (pagesWithoutShell.has(name) ? null : AppSidebarLayout),
+    // The thin progress bar shows at once on every navigation, so a pressed link answers within a frame.
     progress: {
         color: '#5e64c9',
+        delay: 0,
     },
 });

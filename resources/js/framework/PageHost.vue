@@ -2,7 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import type { Component } from 'vue';
 import type { WindowResult } from '@/generated/types/page-props';
-import { useLiveReload } from '@/composables/usePageChanges';
+import { pageReadStatus, retryPageRead, useLiveReload } from '@/composables/usePageChanges';
 import DockOfferPicker from './DockOfferPicker.vue';
 import ResultView from './ResultView.vue';
 
@@ -16,6 +16,12 @@ useLiveReload();
 </script>
 
 <template>
+    <template v-if="pageReadStatus === 'failed'">
+        <p role="status" class="text-small text-text-3">
+            This page could not be refreshed.
+            <button type="button" class="underline" @click="retryPageRead()">Retry</button>
+        </p>
+    </template>
     <template v-if="page.state === 'ready' && page.dockOffer !== undefined">
         <DockOfferPicker :offer="page.dockOffer" />
     </template>

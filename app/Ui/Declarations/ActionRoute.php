@@ -23,6 +23,16 @@ final readonly class ActionRoute
     ) {}
 
     /**
+     * A read an action needs beside its page, such as what became of a request.
+     *
+     * @param  class-string  $controller
+     */
+    public static function get(string $path, string $controller, string $name): self
+    {
+        return new self(ActionMethod::Get, $path, $controller, $name);
+    }
+
+    /**
      * @param  class-string  $controller
      */
     public static function post(string $path, string $controller, string $name): self

@@ -3,7 +3,8 @@ import type {
     BundleRowData,
     RequestListData,
 } from '@generated/types/processes';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import PageHeader from '@kit/PageHeader';
 import RowsTable from '@kit/RowsTable';
 
@@ -12,6 +13,9 @@ import RowsTable from '@kit/RowsTable';
  * bundles waiting for activation at their exact digest.
  */
 defineProps<{ data: RequestListData }>();
+
+const page = usePage<{ errors: Record<string, string> }>();
+const refusal = computed(() => page.props.errors.review ?? '');
 
 function approveBundle(bundle: BundleRowData): void {
     router.post(
@@ -32,6 +36,9 @@ function approveBundle(bundle: BundleRowData): void {
 <template>
     <div class="flex flex-col gap-4">
         <PageHeader title="Command review" />
+        <template v-if="refusal !== ''">
+            <p role="alert">{{ refusal }}</p>
+        </template>
         <p>Sorting a command into kinds does not allow it to run.</p>
         <section aria-label="Command requests">
             <h2>Requests</h2>

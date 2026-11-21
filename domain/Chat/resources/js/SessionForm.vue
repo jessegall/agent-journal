@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import Button from '@kit/Button';
 import FormField from '@kit/FormField';
 import Modal from '@kit/Modal';
-import { getJson, postJson } from '@kit/jsonRequests';
+import { getJson } from '@kit/jsonRequests';
+import { followPage } from '@kit/followPage';
+import { keyedPost } from '@kit/keyedPost';
 import { newRequestId } from '@kit/requestId';
+import { useSwitchOperation } from './composables/useSwitchOperation';
 import type { AgentOptionData } from '@generated/types/chat';
 import type { DriverVariant, HookDriver } from '@kit/CoreTypes';
 import {
@@ -13,7 +16,6 @@ import {
     eligibleAccounts,
     startMain,
     switchMethod,
-    switchStage,
     type EligibleAccountData,
     type EligibleAccountsData,
 } from '@kit/sessionStarts';
@@ -42,7 +44,6 @@ type SessionChoice = {
     accountRevision: number | undefined;
     conversationId: string | null;
 };
-type SwitchAnswer = { switchId: string; stage: string; stageLabel: string; isFinal: boolean; failureReason: string | null };
 
 const drivers: { value: HookDriver; label: string }[] = [
     { value: 'claude-code', label: 'Claude Code' },
@@ -56,6 +57,7 @@ const variants: { value: DriverVariant | ''; label: string }[] = [
 const titles = { start: 'Start session', resume: 'Resume a conversation', switch: 'Switch session' };
 
 const requestId = newRequestId();
+const switching = useSwitchOperation(() => props.agent);
 const driver = ref<HookDriver>(props.agent.conversations[0]?.driver ?? 'claude-code');
 const variant = ref<DriverVariant | ''>('');
 const saveVariant = ref(false);
@@ -65,7 +67,8 @@ const conversationId = ref<string | null>(props.mode === 'resume' ? (props.agent
 const refusal = ref<string | null>(null);
 const progress = ref<string | null>(null);
 const sending = ref(false);
-let polling: ReturnType<typeof setInterval> | undefined;
+let startedSessionId: string | null = null;
+let following: { stop: () => void } | undefined;
 
 const account = computed(() => accounts.value.find((choice) => choice.id === accountId.value));
 const review = computed(() => {
@@ -74,7 +77,13 @@ const review = computed(() => {
 
     return `${driverLabel} as ${variantLabel}, on ${account.value?.label ?? 'no account'}`;
 });
-const canSubmit = computed(() => account.value !== undefined && account.value.unavailableReason === null && !sending.value);
+const isSwitchOpen = computed(() => ['sending', 'following', 'uncertain'].includes(switching.state.value));
+const canSubmit = computed(
+    () => account.value !== undefined && account.value.unavailableReason === null && !sending.value && !isSwitchOpen.value,
+);
+// A switch shows its own stage and refusal; a start or resume shows the form's.
+const shownProgress = computed(() => (props.mode === 'switch' ? switching.progress.value : progress.value));
+const shownRefusal = computed(() => (props.mode === 'switch' ? switching.refusal.value : null) ?? refusal.value);
 
 async function readAccounts(chosen: HookDriver): Promise<void> {
     const reply = await getJson<EligibleAccountsData>(eligibleAccounts.url(chosen));
@@ -101,74 +110,82 @@ function sessionChoice(): SessionChoice {
     };
 }
 
-async function start(): Promise<void> {
-    const reply = await postJson(startMain.url(props.agent.profileKey), sessionChoice());
-
-    if (!reply.ok) {
-        refusal.value = reply.message;
-
-        return;
-    }
-
-    progress.value = 'Starting';
-    polling = setInterval(() => router.reload(), 2000);
+/**
+ * Starts or resumes once under the form's request id, through Inertia. Starting or Resuming shows at once and stays
+ * until the page shows the session the start answered with running; a session another request started is shown as
+ * it is, and does not confirm this one.
+ */
+function start(): void {
+    progress.value = props.mode === 'resume' ? 'Resuming' : 'Starting';
+    refusal.value = null;
+    sending.value = true;
+    keyedPost(startMain.url(props.agent.profileKey), sessionChoice(), requestId, {
+        onAccepted: (flash) => {
+            startedSessionId = typeof flash.startedSessionId === 'string' ? flash.startedSessionId : null;
+            followStart();
+        },
+        onRefused: (reason) => {
+            refusal.value = reason;
+            progress.value = null;
+        },
+        onUncertain: () => followStart(),
+        onFinish: () => (sending.value = false),
+    });
 }
 
-async function switchSession(): Promise<void> {
-    const reply = await postJson<SwitchAnswer>(switchMethod.url(props.agent.profileKey), {
+/**
+ * Shows the start as the page has it now, and answers whether this request's session runs.
+ */
+function showStart(): boolean {
+    const shown = props.agent;
+
+    if (startedSessionId !== null && shown.sessionId === startedSessionId && shown.presence === 'working') {
+        progress.value = 'Ready';
+
+        return true;
+    }
+
+    if (shown.presence === 'working' && shown.sessionId !== startedSessionId) {
+        progress.value = 'Another session is running; this start is not confirmed yet';
+    }
+
+    return false;
+}
+
+function followStart(): void {
+    if (!showStart()) {
+        following = followPage(showStart);
+    }
+}
+
+/**
+ * Sends the switch once under the form's request id, through Inertia; the dialog then follows its stage from the
+ * page until it is over.
+ */
+function switchSession(): void {
+    switching.begin(requestId, switchMethod.url(props.agent.profileKey), {
         ...sessionChoice(),
         variant: variant.value === '' ? 'terminal' : variant.value,
         expectedSessionId: props.agent.sessionId,
         expectedGeneration: props.agent.sessionGeneration,
     });
-
-    if (!reply.ok) {
-        refusal.value = reply.message;
-
-        return;
-    }
-
-    follow(reply.value);
-    polling = setInterval(async () => {
-        const stage = await getJson<SwitchAnswer>(switchStage.url(requestId));
-
-        if (stage.ok) {
-            follow(stage.value);
-        }
-    }, 2000);
 }
 
-function follow(answer: SwitchAnswer): void {
-    progress.value = answer.stageLabel;
-    refusal.value = answer.failureReason;
-
-    if (answer.isFinal) {
-        clearInterval(polling);
-        router.reload();
-    }
-}
-
-async function submit(): Promise<void> {
+function submit(): void {
     if (!canSubmit.value) {
         return;
     }
 
-    sending.value = true;
-    await (props.mode === 'switch' ? switchSession() : start());
-    sending.value = false;
+    if (props.mode === 'switch') {
+        switchSession();
+
+        return;
+    }
+
+    start();
 }
 
-watch(
-    () => props.agent.presence,
-    (presence) => {
-        if (progress.value === 'Starting' && presence === 'working') {
-            clearInterval(polling);
-            progress.value = 'Ready';
-        }
-    },
-);
-
-onBeforeUnmount(() => clearInterval(polling));
+onBeforeUnmount(() => following?.stop());
 </script>
 
 <template>
@@ -238,11 +255,11 @@ onBeforeUnmount(() => clearInterval(polling));
                 </template>
             </FormField>
             <p class="text-small text-text-2">Starts {{ review }}.</p>
-            <template v-if="progress">
-                <p class="text-small text-text" aria-live="polite">{{ progress }}</p>
+            <template v-if="shownProgress">
+                <p class="text-small text-text" aria-live="polite">{{ shownProgress }}</p>
             </template>
-            <template v-if="refusal">
-                <p class="text-small text-danger" role="alert">{{ refusal }}</p>
+            <template v-if="shownRefusal">
+                <p class="text-small text-danger" role="alert">{{ shownRefusal }}</p>
             </template>
         </form>
         <template #footer>

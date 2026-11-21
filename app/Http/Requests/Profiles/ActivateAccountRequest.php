@@ -16,7 +16,15 @@ final class ActivateAccountRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [];
+        return ['expectedChangeNumber' => ['nullable', 'integer', 'min:0']];
+    }
+
+    /**
+     * The selection's change number the page showed, when the page sent one.
+     */
+    public function expectedChangeNumber(): int|null
+    {
+        return $this->filled('expectedChangeNumber') ? $this->integer('expectedChangeNumber') : null;
     }
 
     public function accountId(): string

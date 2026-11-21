@@ -26,9 +26,10 @@ const props = withDefaults(
     defineProps<{
         account: AccountRowData;
         isChosen: boolean;
+        selectionChangeNumber?: number;
         now?: Date;
     }>(),
-    { now: () => new Date() },
+    { now: () => new Date(), selectionChangeNumber: 0 },
 );
 const emit = defineEmits<{ signInAgain: [] }>();
 
@@ -50,6 +51,8 @@ const stateColour: Record<string, string> = {
 };
 const usage = computed(() => usageLine(props.account.usage, props.now));
 const isOpen = ref(false);
+// Why removing this account was refused, kept on the row after its dialog closed.
+const removalRefusal = ref<string | null>(null);
 const retrying = useForm({});
 
 function retryAccountCleanup(): void {
@@ -118,6 +121,9 @@ function retryAccountCleanup(): void {
                     </template>
                 </div>
             </template>
+            <template v-if="removalRefusal !== null">
+                <p class="mt-1 text-small text-danger" role="alert">{{ removalRefusal }}</p>
+            </template>
         </div>
         <div class="flex shrink-0 items-center gap-1.5">
             <template v-if="!isLeaving">
@@ -135,10 +141,12 @@ function retryAccountCleanup(): void {
         <AccountSettingsDialog
             :account="account"
             :is-chosen="isChosen"
+            :selection-change-number="selectionChangeNumber"
             :is-open="isOpen"
             :now="now"
             @close="isOpen = false"
             @sign-in-again="emit('signInAgain')"
+            @removal-refused="(reason) => (removalRefusal = reason)"
         />
     </li>
 </template>

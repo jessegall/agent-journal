@@ -1,5 +1,5 @@
 // The shared kit a domain's components import as @kit/jsonRequests: JSON requests to the journal outside an Inertia visit.
-export type { JsonReply, PollReply } from '@/framework/jsonRequests';
+export type { JsonReply, JsonRoute, PollReply, SubmitResult } from '@/framework/jsonRequests';
 export {
     deleteJson,
     deleteLeaving,
@@ -7,4 +7,6 @@ export {
     pollJson,
     postJson,
     putJson,
+    submitJson,
+    UncertainOutcome,
 } from '@/framework/jsonRequests';

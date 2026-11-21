@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Models;
 
+use App\Bus\Contracts\TargetedCommand;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\RefusalReplayed;
@@ -40,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property string $request_key
  * @property string $command
  * @property string $fingerprint
+ * @property string|null $target
  * @property ReceiptState $state
  * @property array{value: mixed, php: string}|null $result
  * @property string|null $refusal_code
@@ -59,6 +61,7 @@ use Illuminate\Support\Carbon;
         'request_key',
         'command',
         'fingerprint',
+        'target',
         'state',
         'result',
         'refusal_code',
@@ -125,6 +128,36 @@ final class CommandReceipt extends Model implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * The request keys of those receipts the current caller may read back, keyed by receipt id; another caller's
+     * receipts are left out.
+     *
+     * @param  list<string>  $receiptIds
+     * @return array<string, string>
+     */
+    public static function readableKeysOf(array $receiptIds): array
+    {
+        if ($receiptIds === []) {
+            return [];
+        }
+
+        return self::query()->whereIn('id', $receiptIds)->pluck('request_key', 'id')->all();
+    }
+
+    /**
+     * The caller's receipt of the command under the key, read without a lock, if it has one.
+     */
+    public static function readFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
+    {
+        $query = self::query()->withoutGlobalScope('caller');
+        $caller->limit($query);
+
+        return $query->where('command', $command)
+            ->where('contract_major', self::CONTRACT_MAJOR)
+            ->where('request_key', $requestKey)
+            ->first();
+    }
+
+    /**
      * The caller's receipt of the command under the key, locked for this transaction, if it has one.
      *
      * @param  class-string  $command
@@ -186,6 +219,11 @@ final class CommandReceipt extends Model implements ReadableModel
     /**
      * Whether the receipt no longer answers a repeat: expired, or past its retention before the prune expired it.
      */
+    public function isForTarget(string $target): bool
+    {
+        return $this->target !== null && hash_equals($this->target, $target);
+    }
+
     public function isExpired(): bool
     {
         return $this->state === ReceiptState::Expired || $this->answers_until->isPast();
@@ -246,6 +284,7 @@ final class CommandReceipt extends Model implements ReadableModel
             'request_key' => $requestKey,
             'command' => $command::class,
             'fingerprint' => PlainValue::fingerprintOf($command),
+            'target' => $command instanceof TargetedCommand ? $command->receiptTarget() : null,
             'answers_until' => $retention->answersUntil($now),
             'refuses_until' => $retention->refusesUntil($now),
         ];

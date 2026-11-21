@@ -2,7 +2,7 @@
 import type { RunWindowData } from '@generated/types/processes';
 import { router, usePage } from '@inertiajs/vue3';
 import PageHeader from '@kit/PageHeader';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import PartCard from './PartCard.vue';
 
 /**
@@ -16,6 +16,11 @@ const refusal = computed(() => page.props.errors.review ?? '');
 const running = computed(
     () => !['ended', 'stopped', 'lost'].includes(props.data.snapshot.lifecycle),
 );
+
+/**
+ * A stop asked for and taken by the server reads Stopping until the run reports it stopped; a refused stop clears it.
+ */
+const isStopAsked = ref(false);
 
 const storedBytes = computed(() =>
     props.data.snapshot.parts.reduce(
@@ -51,6 +56,8 @@ function stop(): void {
         {
             headers: { 'Idempotency-Key': crypto.randomUUID() },
             preserveScroll: true,
+            onStart: () => (isStopAsked.value = true),
+            onError: () => (isStopAsked.value = false),
         },
     );
 }
@@ -73,7 +80,9 @@ function stop(): void {
             <p role="alert">{{ refusal }}</p>
         </template>
         <template v-if="running">
-            <button type="button" @click="stop">Stop this run</button>
+            <button type="button" :disabled="isStopAsked" @click="stop">
+                {{ isStopAsked ? 'Stopping…' : 'Stop this run' }}
+            </button>
         </template>
         <template v-else>
             <button type="button" @click="clean">

@@ -1,6 +1,7 @@
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import type { AuthorizerCallback } from 'pusher-js';
+import { traceLive } from '@/composables/liveTrace';
 
 /**
  * The one websocket connection of the browser tab, to Reverb, for one signed-in user at a time. It is opened by the
@@ -12,15 +13,21 @@ export type UserConnection = {
 };
 
 /**
- * Opens the connection for a user and listens on their private channel; onChange hears each page change and
- * onReconnect hears that the connection came back after it was lost, when changes may have been missed.
+ * What the connection tells its owner: a page change, a protected view to clear, the private channel signed in to
+ * (first and after every reconnect, when changes may have been missed), the transport lost, and a refused sign-in.
  */
-export function connectUser(
-    userId: string,
-    onChange: () => void,
-    onReconnect: () => void,
-    onProtectedViewInvalidated: () => void,
-): UserConnection {
+export type LiveHandlers = {
+    onChange: () => void;
+    onProtectedViewInvalidated: () => void;
+    onSubscribed: () => void;
+    onLost: () => void;
+    onRefused: () => void;
+};
+
+/**
+ * Opens the connection for a user and listens on their private channel.
+ */
+export function connectUser(userId: string, handlers: LiveHandlers): UserConnection {
     const echo = new Echo({
         broadcaster: 'reverb',
         Pusher,
@@ -40,24 +47,36 @@ export function connectUser(
         }),
     });
     const channelName = `journal.user.${userId}`;
-    let wasLost = false;
+    let isConnected = false;
 
     echo.private(channelName)
-        .listen('.page.changed', onChange)
-        .listen('.view.protected-invalidated', onProtectedViewInvalidated);
+        .subscribed(() => {
+            traceLive('subscription authorized');
+            handlers.onSubscribed();
+        })
+        .error(() => {
+            traceLive('subscription refused');
+            handlers.onRefused();
+        })
+        .listen('.page.changed', () => {
+            traceLive('signal received');
+            handlers.onChange();
+        })
+        .listen('.view.protected-invalidated', handlers.onProtectedViewInvalidated);
     echo.connector.pusher.connection.bind(
         'state_change',
         (states: { current: string }) => {
-            if (
-                states.current === 'unavailable' ||
-                states.current === 'disconnected'
-            ) {
-                wasLost = true;
+            if (states.current === 'connected') {
+                isConnected = true;
+                traceLive('transport connected');
+
+                return;
             }
 
-            if (states.current === 'connected' && wasLost) {
-                wasLost = false;
-                onReconnect();
+            if (isConnected) {
+                isConnected = false;
+                traceLive('transport lost');
+                handlers.onLost();
             }
         },
     );

@@ -24,6 +24,8 @@ function agent(id: string, name: string, retired = false): AgentOptionData {
         hasTerminal: false,
         switchId: null,
         switchStage: null,
+        switchStageLabel: null,
+        isSwitchOver: true,
         actions: retired ? [] : ['start'],
         conversations: [],
     };

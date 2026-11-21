@@ -6,17 +6,27 @@ namespace App\Http\Controllers\Agents;
 
 use App\Agents\Commands\RecheckDriverSwitch;
 use App\Bus\Contracts\CommandBus;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\Redirector;
 
 /**
  * Rechecks a switch whose stop or start the host has not confirmed yet.
  */
 final readonly class RecheckDriverSwitchController
 {
-    public function __invoke(string $switch, CommandBus $commands): Response
-    {
+    /**
+     * A page's form returns to that page, which shows the switch again; another caller gets an empty answer.
+     */
+    public function __invoke(
+        string $switch,
+        Request $request,
+        CommandBus $commands,
+        Redirector $redirect,
+    ): Response|RedirectResponse {
         $commands->run(new RecheckDriverSwitch(strtolower($switch)));
 
-        return new Response(status: Response::HTTP_NO_CONTENT);
+        return $request->expectsJson() ? new Response(status: Response::HTTP_NO_CONTENT) : $redirect->back(303);
     }
 }

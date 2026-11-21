@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useConversationIntents } from './composables/useConversationIntents';
 import { draftKey } from './composables/useMessageDrafts';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import type { MessageView } from '@kit/CoreTypes';
+import { isRevealed } from '@kit/protectedView';
 import SlotSections from '@kit/SlotSections';
 import { read as readRoute } from '@generated/routes/chat';
 import AgentPicker from './AgentPicker.vue';
@@ -22,6 +24,7 @@ const props = defineProps<{
     offersChoice: boolean;
     agentUrl: (agent: AgentOptionData) => string;
     loadMore: (token: string) => void;
+    protectedProp: string;
 }>();
 
 const page = usePage();
@@ -35,6 +38,25 @@ const key = computed(() => {
         : draftKey(user.id, conversation.value.agentId);
 });
 const replyingTo = ref<MessageView | null>(null);
+
+/**
+ * The owner of the user's sends in this conversation, the same one Home and Chat's page share.
+ */
+const owner = computed(() => (key.value === undefined ? undefined : useConversationIntents(key.value)));
+const shownRows = computed(() => owner.value?.rows(conversation.value?.messages ?? []) ?? []);
+const pending = computed(() => shownRows.value.flatMap((row) => (row.kind === 'intent' ? [row.intent] : [])));
+const refused = computed(() =>
+    (owner.value?.recoveryEntries() ?? []).map((entry) => ({
+        entry,
+        reason: owner.value?.refusalOf(entry.intentKey) ?? '',
+    })),
+);
+
+// A read that returned the user's own sends settles them.
+watch(
+    () => conversation.value?.messages,
+    (messages) => owner.value?.settle(messages ?? []),
+);
 const unreadShown = computed(() =>
     (conversation.value?.messages ?? [])
         .filter(
@@ -67,14 +89,37 @@ function readShown(): void {
     );
 }
 
-onMounted(readShown);
+/**
+ * Whether an authorized read that included this chat's prop answered; until then the conversation stays hidden.
+ */
+const isShown = computed(() => isRevealed(props.protectedProp));
+
+let openedConversationId: string | undefined;
+
+/**
+ * Reads what the conversation shows once each time the user opens a conversation, when it is first shown; showing
+ * the same conversation again after a catch-up reads nothing.
+ */
+function readOnOpen(): void {
+    const id = conversation.value?.id;
+
+    if (!isShown.value || id === undefined || id === openedConversationId) {
+        return;
+    }
+
+    openedConversationId = id;
+    readShown();
+}
+
+onMounted(readOnOpen);
 watch(
     () => conversation.value?.id,
     () => {
         replyingTo.value = null;
-        readShown();
+        readOnOpen();
     },
 );
+watch(isShown, readOnOpen);
 </script>
 
 <template>
@@ -99,37 +144,49 @@ watch(
             <template v-if="offersChoice">
                 <AgentSessionActions :agent="selected" />
             </template>
-            <MessageList
-                :messages="conversation.messages"
-                :own-inbox-id="conversation.sourceInboxId"
-                @reply="(message) => (replyingTo = message)"
-            />
-            <template v-if="unreadShown.length > 0">
-                <p class="flex items-center gap-2 text-small text-text-3">
-                    <button type="button" class="underline" @click="readShown">
-                        Read shown messages
-                    </button>
-                    <span>Reading is shared with everyone at this inbox.</span>
-                </p>
+            <template v-if="isShown">
+                <MessageList
+                    :messages="conversation.messages"
+                    :pending="pending"
+                    :refused="refused"
+                    :own-inbox-id="conversation.sourceInboxId"
+                    @reply="(message) => (replyingTo = message)"
+                    @check-again="(intent) => owner?.checkAgain(intent)"
+                    @restore="(intentKey) => owner?.restore(intentKey)"
+                    @discard="(intentKey) => owner?.discardRecovery(intentKey)"
+                />
+                <p role="status" aria-live="polite" class="sr-only">{{ owner?.announcement.value }}</p>
+                <template v-if="unreadShown.length > 0">
+                    <p class="flex items-center gap-2 text-small text-text-3">
+                        <button type="button" class="underline" @click="readShown">
+                            Read shown messages
+                        </button>
+                        <span>Reading is shared with everyone at this inbox.</span>
+                    </p>
+                </template>
+                <SlotSections :sections="chat.dockSections" />
+                <DockStack
+                    :key="conversation.id"
+                    :dock="conversation.dock"
+                    :agent-id="conversation.agentId"
+                    :load-more="loadMore"
+                />
+                <Composer
+                    :draft-key="key"
+                    :agent="conversation.agentId"
+                    :agent-name="selected.name"
+                    :session-id="conversation.sessionId"
+                    :session-generation="conversation.sessionGeneration"
+                    :source-inbox-id="conversation.sourceInboxId"
+                    :destination-inbox-id="conversation.destinationInboxId"
+                    :replying-to="replyingTo"
+                    :conversation-prop="protectedProp"
+                    @replied="replyingTo = null"
+                />
             </template>
-            <SlotSections :sections="chat.dockSections" />
-            <DockStack
-                :key="conversation.id"
-                :dock="conversation.dock"
-                :agent-id="conversation.agentId"
-                :load-more="loadMore"
-            />
-            <Composer
-                :draft-key="key"
-                :agent="conversation.agentId"
-                :agent-name="selected.name"
-                :session-id="conversation.sessionId"
-                :session-generation="conversation.sessionGeneration"
-                :source-inbox-id="conversation.sourceInboxId"
-                :destination-inbox-id="conversation.destinationInboxId"
-                :replying-to="replyingTo"
-                @replied="replyingTo = null"
-            />
+            <template v-else>
+                <p class="m-auto text-empty text-text-3" role="status">Loading the conversation…</p>
+            </template>
         </template>
         <template v-else>
             <p class="m-auto text-empty text-text-3">

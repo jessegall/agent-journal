@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { AccountRowData } from '@generated/types/accounts';
+import type { AccountListData, AccountRowData } from '@generated/types/accounts';
+import type { WindowResult } from '@generated/types/page-props';
 import { accountStart, activate, remove } from '@generated/routes/accounts';
 import { Link, useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
@@ -9,6 +10,7 @@ import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, nextTick, ref, watch } from 'vue';
 import AccountFactList from './AccountFactList.vue';
 import AccountUsageDetails from './AccountUsageDetails.vue';
+import { chosenIn } from './accountSelections';
 import { useAccountNaming } from './accountNaming';
 import {
     accountStateLook,
@@ -24,10 +26,11 @@ import {
 const props = defineProps<{
     account: AccountRowData;
     isChosen: boolean;
+    selectionChangeNumber: number;
     isOpen: boolean;
     now: Date;
 }>();
-const emit = defineEmits<{ close: []; signInAgain: [] }>();
+const emit = defineEmits<{ close: []; signInAgain: []; removalRefused: [reason: string] }>();
 
 const isAskingToRemove = ref(false);
 const back = ref<InstanceType<typeof Button> | null>(null);
@@ -94,11 +97,29 @@ function opened(dialog: HTMLDialogElement): void {
     startFrom(dialog.querySelector<HTMLInputElement>(`#${fieldId.value}`));
 }
 
+/**
+ * Makes the account the default at once on both rows: the old default loses its mark and this one gains it, until
+ * the server answers. A choice made meanwhile by someone else refuses this one, and both rows show theirs.
+ */
 function makeDefault(): void {
-    choosing.submit(activate({ account: props.account.id }), {
-        preserveScroll: true,
-        ...formSendingHooks(),
-    });
+    const { driver, id } = props.account;
+    const changeNumber = props.selectionChangeNumber;
+
+    choosing
+        .transform(() => ({ expectedChangeNumber: changeNumber }))
+        .optimistic<{ page: WindowResult<AccountListData> }>((shown) => {
+            if (shown.page.state !== 'ready') {
+                return {};
+            }
+
+            const selections = chosenIn(shown.page.data.selections, driver, id, changeNumber);
+
+            return { page: { ...shown.page, data: { ...shown.page.data, selections } } };
+        })
+        .submit(activate({ account: id }), {
+            preserveScroll: true,
+            ...formSendingHooks(),
+        });
 }
 
 async function askToRemove(): Promise<void> {
@@ -107,12 +128,31 @@ async function askToRemove(): Promise<void> {
     (back.value?.$el as HTMLElement | undefined)?.focus();
 }
 
+/**
+ * Removes the account once confirmed: its row reads Removing at once, until the page shows it gone or waiting for
+ * its last session; a refusal is handed to the row, so it stays visible after the dialog closes.
+ */
 function confirmRemove(): void {
-    removing.submit(remove({ account: props.account.id }), {
-        preserveScroll: true,
-        onSuccess: () => emit('close'),
-        ...formSendingHooks(),
-    });
+    const id = props.account.id;
+
+    removing
+        .optimistic<{ page: WindowResult<AccountListData> }>((shown) => {
+            if (shown.page.state !== 'ready') {
+                return {};
+            }
+
+            const rows = shown.page.data.rows.map((row) =>
+                row.id === id ? { ...row, state: 'removing' as const } : row,
+            );
+
+            return { page: { ...shown.page, data: { ...shown.page.data, rows } } };
+        })
+        .submit(remove({ account: id }), {
+            preserveScroll: true,
+            onSuccess: () => emit('close'),
+            onError: (errors) => emit('removalRefused', Object.values(errors)[0] ?? 'The account was not removed.'),
+            ...formSendingHooks(),
+        });
 }
 
 function signInAgain(): void {

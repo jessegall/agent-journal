@@ -7,6 +7,7 @@ namespace App\Web\Providers;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyDefinition;
 use App\Assignments\Contracts\AutoAssignmentAccess;
+use App\Bus\Support\RefusalReason;
 use App\Contracts\CommandRefusal;
 use App\CorePages;
 use App\Domains\Support\DomainRegistry;
@@ -35,11 +36,14 @@ use App\Web\Support\OwnerSettingsAccess;
 use App\Web\Support\ReaderRequests;
 use App\Web\Support\UiComponentFinder;
 use App\Web\Support\UiOwnerAvailability;
+use App\Web\Support\PageChangeBroadcastLog;
 use App\Web\Support\UserChannel;
 use App\Web\Support\WindowResults;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\JsonResponse;
@@ -122,11 +126,13 @@ final class WebServiceProvider extends ServiceProvider
         // The channel sign-in runs behind the same session, sign-in and user checks as every page.
         $broadcast->routes(['middleware' => ['web', 'auth', 'journal.user']]);
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
+        $events->listen(JobProcessing::class, [PageChangeBroadcastLog::class, 'record']);
     }
 
     /**
-     * A refused command is a form error on a web page and a 403 with its message on an agent route; refused input is
-     * left to Laravel, which answers each field. The text names no class and holds no trace.
+     * A refused command is a form error on a web page, with its stable code flashed beside it, and on a browser's JSON
+     * request its code, message and fields with its status. Refused input and an expired sign-in answer a JSON caller
+     * the same way. The text names no class and holds no trace.
      */
     private function renderRefusals(ExceptionHandler $exceptions): void
     {
@@ -139,9 +145,38 @@ final class WebServiceProvider extends ServiceProvider
                 return null;
             }
 
+            $reason = RefusalReason::of($failure);
+
             return $request->expectsJson()
-                ? new JsonResponse(['message' => $failure->getMessage()], 403)
-                : $this->app->make(Redirector::class)->back(303)->withErrors(['command' => $failure->getMessage()]);
+                ? $this->refusalAnswer($reason->code, $failure->getMessage(), [], $reason->status)
+                : $this->app->make(Redirector::class)
+                    ->back(303)
+                    ->withErrors(['command' => $failure->getMessage()])
+                    ->with(CommandRefusal::CODE_FLASH_KEY, $reason->code);
         });
+        $exceptions->renderable(function (ValidationException $refused, Request $request): JsonResponse|null {
+            if (! $request->expectsJson() || ! $request->hasSession()) {
+                return null;
+            }
+
+            $fields = array_map(fn (array $messages) => (string) reset($messages), $refused->errors());
+
+            return $this->refusalAnswer('invalid-input', $refused->getMessage(), $fields, 422);
+        });
+        $exceptions->renderable(function (AuthenticationException $expired, Request $request): JsonResponse|null {
+            if (! $request->expectsJson() || ! $request->hasSession()) {
+                return null;
+            }
+
+            return $this->refusalAnswer('signed-out', $expired->getMessage(), [], 401);
+        });
+    }
+
+    /**
+     * @param  array<string, string>  $fields
+     */
+    private function refusalAnswer(string $code, string $message, array $fields, int $status): JsonResponse
+    {
+        return new JsonResponse(['code' => $code, 'message' => $message, 'fields' => (object) $fields], $status);
     }
 }

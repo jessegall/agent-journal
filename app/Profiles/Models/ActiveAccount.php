@@ -14,6 +14,7 @@ use App\Profiles\Events\AccountSwitched;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Profiles\Exceptions\AccountSelectionChanged;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -179,6 +180,16 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * @throws AccountSelectionChanged when the choice changed since the change number the caller saw
+     */
+    public function assertAtChange(int $changeNumber): void
+    {
+        if ($this->change_number !== $changeNumber) {
+            throw AccountSelectionChanged::forDriver($this->driver);
+        }
+    }
 
     /**
      * Chooses the account when the program never had one chosen, as for its first signed-in account.

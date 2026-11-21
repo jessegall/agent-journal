@@ -34,18 +34,28 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     const challenge = ref<SignInChallenge>({ address: null, code: null });
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    async function pollChallenge(attemptId: string): Promise<void> {
-        challenge.value = await readChallenge(attemptId);
+    /**
+     * Counts every begin, cancel and leave; a challenge read is shown only while its count and its attempt are still
+     * the current ones, so a late answer for a cancelled or replaced attempt never shows.
+     */
+    let generation = 0;
 
-        if (
-            challenge.value.address === null &&
-            followed.value?.id === attemptId
-        ) {
-            timer = setTimeout(() => void pollChallenge(attemptId), 2000);
+    async function pollChallenge(attemptId: string, asked = generation): Promise<void> {
+        const read = await readChallenge(attemptId);
+
+        if (asked !== generation || followed.value?.id !== attemptId) {
+            return;
+        }
+
+        challenge.value = read;
+
+        if (read.address === null) {
+            timer = setTimeout(() => void pollChallenge(attemptId, asked), 2000);
         }
     }
 
     function forget(): void {
+        generation++;
         clearTimeout(timer);
         challenge.value = { address: null, code: null };
         answer.reset();
@@ -67,6 +77,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     onBeforeUnmount(forget);
 
     function begin(driver: string, method: SignInMethod): void {
+        generation++;
         start
             .transform(() => ({
                 driver,
@@ -80,6 +91,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     }
 
     function beginAgain(accountId: string): void {
+        generation++;
         again
             .transform(() => ({ request_key: crypto.randomUUID() }))
             .submit(signInAgain({ account: accountId }), {
@@ -94,10 +106,12 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     function send(attemptId: string): void {
         const sending = formSendingHooks();
 
+        // A sent code or secret is never kept: it clears on success and on a refusal alike, so it is never sent again.
         answer.submit(submitCode({ attempt: attemptId }), {
             ...KEEP_THE_WIZARD,
             ...sending,
             onSuccess: () => answer.reset(),
+            onError: () => answer.reset('code'),
             onFinish: sending.onFinish,
         });
     }

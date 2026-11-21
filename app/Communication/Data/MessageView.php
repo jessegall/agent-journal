@@ -39,5 +39,7 @@ final class MessageView extends Data
         public readonly MessageReader|Optional $firstReader,
         public readonly MessageClaimHolder|Optional $claimHolder,
         public readonly string $sentAt,
+        // The key the viewer sent this message under; only its own sender sees it, every other viewer reads null.
+        public readonly string|null $requestKey,
     ) {}
 }

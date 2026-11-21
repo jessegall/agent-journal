@@ -21,6 +21,12 @@ vi.mock('@inertiajs/vue3', () => ({
             clearErrors() {
                 form.errors = {};
             },
+            transform() {
+                return form;
+            },
+            optimistic() {
+                return form;
+            },
         });
         forms.push(form as unknown as SentForm);
 
@@ -269,6 +275,20 @@ describe('the settings dialog', () => {
         expect(forms.some((form) => form.submit.mock.calls.length === 1)).toBe(
             true,
         );
+    });
+
+    it('keeps a refused removal on the row after its dialog closed', async () => {
+        const shown = row({ account: account({}) });
+        await openSettings(shown);
+        await button(shown, 'Remove account...')!.trigger('click');
+        await flushPromises();
+        await button(shown, 'Remove')!.trigger('click');
+        const sent = forms.find((form) => form.submit.mock.calls.length === 1)!;
+
+        sent.submit.mock.calls[0][1].onError({ command: 'The account is still signing in.' });
+        await flushPromises();
+
+        expect(shown.find('[role="alert"]').text()).toBe('The account is still signing in.');
     });
 
     it('offers the way back first for an account that must sign in again', async () => {
