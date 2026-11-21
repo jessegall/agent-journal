@@ -14,6 +14,8 @@ use App\Bus\Contracts\RefusalMapper as RefusalMapperContract;
 use App\Bus\Contracts\RequestKey as RequestKeyContract;
 use App\Bus\Resolvers\CallerOperations;
 use App\Bus\Support\AcceptedReceipt;
+use App\Bus\Support\ActiveEventUnits;
+use App\Bus\Support\Publication;
 use App\Bus\Support\CommandOriginChecks;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandStops;
@@ -49,6 +51,8 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->app->bind(OperationResolver::class, CallerOperations::class);
         $this->app->bind(RefusalMapperContract::class, RefusalMapper::class);
         $this->app->scoped(AcceptedReceipt::class);
+        $this->app->scoped(ActiveEventUnits::class);
+        $this->app->scoped(Publication::class);
         $this->app->scoped(CommandTransaction::class, RunningCommandTransaction::class);
         $this->app->alias(CommandStops::class, CommandStopsContract::class);
         $this->app->scoped(

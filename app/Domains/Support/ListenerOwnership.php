@@ -126,7 +126,7 @@ final readonly class ListenerOwnership
      *
      * @throws InvalidListener
      */
-    private function eventDomain(string $event, string $listener): DomainEntry|null
+    public function eventDomain(string $event, string $listener): DomainEntry|null
     {
         $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->ownsName($event));
 

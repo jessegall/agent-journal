@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * An event-recording model whose quiet writes on its own row the capture cannot see, read by the scan alone.
+ *
+ * @property string $name
  */
 final class RecordingWriter extends Model implements EventSource
 {

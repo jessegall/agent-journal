@@ -31,6 +31,7 @@ final readonly class MiddlewareRunner
         private CommandNesting $nesting,
         private CommandSubjects $subjects,
         private CommandAdmission $admission,
+        private Publication $publication,
     ) {}
 
     /**
@@ -78,6 +79,10 @@ final readonly class MiddlewareRunner
             );
         } finally {
             $this->nesting->leave();
+
+            if ($this->nesting->isEmpty()) {
+                $this->publication->release();
+            }
         }
     }
 

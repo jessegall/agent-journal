@@ -11,6 +11,7 @@ use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\FailureLoggingListener;
 use App\Domains\Support\ListenerOwnership;
 use App\Domains\Support\ListenerPolicy;
+use App\Domains\Support\RequiredListenerRegistry;
 use App\Domains\Support\StateListenerDeclarations;
 use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Declarations\StateMethods;
@@ -28,6 +29,13 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 final class DomainEventServiceProvider extends EventServiceProvider
 {
     private const string STATE_EVENTS = '@state-events';
+
+    /**
+     * The mark of a cache built with the required lane, so a cache from before it fails loudly.
+     */
+    private const string LANES = '@listener-lanes';
+
+    private const string LANES_VERSION = 'required-and-public-1';
 
     /**
      * The listeners this process already discovered, by the folders they were discovered in: the files cannot change
@@ -54,7 +62,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
      */
     public function discoverEvents(): array
     {
-        $events = $this->discoverOrdinaryEvents();
+        $events = [...$this->discoverOrdinaryEvents(), self::LANES => [self::LANES_VERSION]];
 
         if (! $this->app->isBooted()) {
             return $events;
@@ -79,16 +87,18 @@ final class DomainEventServiceProvider extends EventServiceProvider
      */
     public function getEvents(): array
     {
-        if (! $this->app->eventsAreCached()) {
+        if ($this->app->eventsAreCached()) {
+            $events = $this->cachedEvents();
+            unset($events[self::STATE_EVENTS], $events[self::LANES]);
+            $gated = $this->policy()->registerCached($events);
+        } else {
             $events = array_merge_recursive($this->discoverOrdinaryEvents(), $this->listens());
-
-            return $this->policy()->registerDiscovered($events);
+            $gated = $this->policy()->registerDiscovered($events);
         }
 
-        $events = $this->cachedEvents();
-        unset($events[self::STATE_EVENTS]);
+        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry($gated->required));
 
-        return $this->policy()->registerCached($events);
+        return $gated->events;
     }
 
     private function registerStateBridges(): void
@@ -138,6 +148,10 @@ final class DomainEventServiceProvider extends EventServiceProvider
 
         if (! isset($cache[self::class])) {
             throw InvalidListener::cacheMissing(self::class);
+        }
+
+        if (($cache[self::class][self::LANES] ?? []) !== [self::LANES_VERSION]) {
+            throw InvalidListener::cacheBeforeLanes();
         }
 
         return $cache[self::class];

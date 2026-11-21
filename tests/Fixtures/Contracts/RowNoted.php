@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Fixtures\Contracts;
+
+use App\Contracts\Event;
+
+/**
+ * The fact a RaisingRow raises when a required listener notes it.
+ */
+final readonly class RowNoted implements Event
+{
+    public function __construct(public int $rowId) {}
+}

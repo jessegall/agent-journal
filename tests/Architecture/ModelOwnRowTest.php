@@ -83,9 +83,9 @@ final class ModelOwnRowTest extends TestCase
         }
 
         $this->assertSame([
-            '27 renameQuietly writes quietly, where the capture cannot see it',
-            '32 countVisit writes quietly, where the capture cannot see it',
-            '37 insertOnce inserts rows by query',
+            '29 renameQuietly writes quietly, where the capture cannot see it',
+            '34 countVisit writes quietly, where the capture cannot see it',
+            '39 insertOnce inserts rows by query',
         ], $writes);
     }
 

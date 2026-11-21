@@ -7,53 +7,57 @@ namespace App\Domains\Support;
 use App\Domains\Pipes\CheckListenerPairs;
 use App\Domains\Pipes\ExpandUiUpdaterListeners;
 use App\Domains\Pipes\GateListenersByDomain;
+use App\Domains\Pipes\SeparateRequiredListeners;
 use App\Domains\Values\GatedListeners;
 use App\Domains\Values\ListenerDeclarations;
 use App\Pipelines\Contracts\PipelineRunner;
 
 /**
- * Runs the steps for discovering, checking and registering ordinary event listeners.
+ * Runs the steps for discovering, checking and registering event listeners: the dispatcher's ordinary ones and the
+ * required ones the command's transaction runs, from the same source on discovery and on a cached map.
  */
 final readonly class ListenerPolicy
 {
     public function __construct(private PipelineRunner $runner, private ListenerOwnership $ownership) {}
 
     /**
+     * The checked pairs for the event cache, required ones included, so both lanes are built from it again.
+     *
      * @param  array<string, list<string>>  $events
      * @return array<string, list<string>>
      */
     public function discover(array $events): array
     {
-        return $this->runner->runSteps(
-            [ExpandUiUpdaterListeners::class, CheckListenerPairs::class],
+        $declarations = $this->runner->runSteps(
+            [ExpandUiUpdaterListeners::class, CheckListenerPairs::class, SeparateRequiredListeners::class],
             new ListenerDeclarations($events, $this->ownership),
             ListenerDeclarations::class,
-        )->events;
+        );
+
+        return array_merge_recursive($declarations->events, $declarations->required);
     }
 
     /**
      * @param  array<string, list<string>>  $events
-     * @return array<string, list<string|AvailableListener|FailureLoggingListener>>
      */
-    public function registerCached(array $events): array
+    public function registerCached(array $events): GatedListeners
     {
         return $this->runner->runSteps(
-            [CheckListenerPairs::class, GateListenersByDomain::class],
+            [CheckListenerPairs::class, SeparateRequiredListeners::class, GateListenersByDomain::class],
             new ListenerDeclarations($events, $this->ownership),
             GatedListeners::class,
-        )->events;
+        );
     }
 
     /**
      * @param  array<string, list<string>>  $events
-     * @return array<string, list<string|AvailableListener|FailureLoggingListener>>
      */
-    public function registerDiscovered(array $events): array
+    public function registerDiscovered(array $events): GatedListeners
     {
         return $this->runner->runSteps(
-            [GateListenersByDomain::class],
+            [SeparateRequiredListeners::class, GateListenersByDomain::class],
             new ListenerDeclarations($events, $this->ownership),
             GatedListeners::class,
-        )->events;
+        );
     }
 }

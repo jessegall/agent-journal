@@ -19,8 +19,6 @@ parameters:
         - domain/*/tests/*
         # The attribute rules' own fixtures break the rules on purpose; their tests analyse them alone.
         - tests/Fixtures/PhpStan/*
-        # Names App\Contracts\EventSource and RaisesEvents, which plan 40 task 1578 adds; the scan reads it unloaded.
-        - tests/Fixtures/ModelWrites/Recording/*
 
     level: 7
 
