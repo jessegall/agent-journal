@@ -227,9 +227,9 @@ services:
         environment:
             DOCKER_HOST: unix:///run/agent-docker/docker.sock
         # Naming dockerd skips the image's default listeners, so the daemon listens on its socket alone, never on TCP.
-        # Group 0 inside the rootless daemon's user namespace is the rootless user's group 1000 outside it, the group
-        # the socket's clients join.
-        command: ['dockerd', '--host=unix:///run/agent-docker/docker.sock', '--group=0']
+        # The socket's group is group 1000 outside, the one its clients join: group 0 inside the rootless daemon's user
+        # namespace is that group, while a rootful daemon under sysbox-runc (ID-mapped volumes) names 1000 itself.
+        command: ['dockerd', '--host=unix:///run/agent-docker/docker.sock', '--group=${AGENT_DAEMON_SOCKET_GROUP:-0}']
         volumes:
             # The daemon's own data: the rootless image keeps it under its user's home, a rootful one in /var/lib/docker.
             - agent-docker-data:${AGENT_DAEMON_DATA:-/home/rootless/.local/share/docker}
