@@ -26,8 +26,14 @@ services:
             AGENTS_INSTALLATION_NAME: ${AGENTS_INSTALLATION_NAME:-journal}
             # Where the agent host holds the profiles a contained manifest names (.docker/helper/seccomp-agent.json).
             AGENTS_SECURITY_PROFILES: /etc/journal/security
-        ports:
-            - '127.0.0.1:${APP_PORT:-54700}:8000'
+        # Healthy once the journal itself answers, not only its web server: an install switches to a new app container
+        # only then.
+        healthcheck:
+            test: ['CMD', 'curl', '-fsS', '-o', '/dev/null', 'http://127.0.0.1:8000/up']
+            interval: 3s
+            timeout: 5s
+            retries: 3
+            start_period: 60s
         networks:
             - default
             - journal-api
@@ -36,6 +42,18 @@ services:
                 condition: service_healthy
             redis:
                 condition: service_healthy
+
+    # The journal's front door (.docker/web/Caddyfile): it holds the published port and passes requests to the app
+    # containers, so an install can start the new app beside the old one and stop the old one with no request lost.
+    web:
+        restart: unless-stopped
+        image: caddy:2.10-alpine
+        volumes:
+            - ./.docker/web/Caddyfile:/etc/caddy/Caddyfile:ro
+        ports:
+            - '127.0.0.1:${APP_PORT:-54700}:8000'
+        depends_on:
+            - app
 
     # The websocket server; the app and the queue worker publish to it at reverb:8080 (REVERB_HOST, REVERB_PORT).
     reverb:

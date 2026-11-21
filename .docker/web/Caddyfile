@@ -1,0 +1,18 @@
+# The journal's front door: it publishes the app's port and passes each request to whichever app container runs. Docker
+# names every container of the app service app, so during an install the new one and the old one both answer, and a
+# request the stopping one cannot take is tried again on the other.
+{
+	admin off
+	auto_https off
+}
+
+:8000 {
+	reverse_proxy {
+		dynamic a app 8000 {
+			refresh 1s
+		}
+		lb_try_duration 30s
+		lb_try_interval 250ms
+		fail_duration 10s
+	}
+}

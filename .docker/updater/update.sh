@@ -50,13 +50,37 @@ profiles=""
 [ "$arrangement" = contained ] && profiles="--profile contained"
 
 # Each step must pass for the commit to count as installed: set -e does not hold inside an if, so they are chained.
+# Migrations run on the new image before the switch, so they must leave the old code working.
 install() {
     docker compose --progress=quiet build app share &&
         { [ "$arrangement" != contained ] || pin_runner; } &&
+        { [ "$migrations_changed" = no ] || docker compose run --rm -T app php artisan migrate --force; } &&
+        roll_app &&
         docker compose $profiles up -d --wait --wait-timeout 240 &&
-        { [ "$migrations_changed" = no ] || docker compose exec -T app php artisan migrate --force; } &&
         docker compose exec -T app php artisan cache:forget installed-version &&
         docker image prune -f >/dev/null
+}
+
+# A rolling update of the app: the new container starts beside the old one, and the old one stops only once the new
+# one is healthy. The web service in front passes requests to both meanwhile, so the journal keeps answering.
+roll_app() {
+    old=$(docker compose ps -q app)
+    [ -n "$old" ] || return 0
+    docker compose up -d --no-deps --no-recreate --scale app=2 app &&
+        new=$(docker compose ps -q app | grep -v "$old") &&
+        wait_healthy "$new" &&
+        docker stop "$old" >/dev/null &&
+        docker rm "$old" >/dev/null &&
+        docker compose up -d --no-deps --no-recreate --scale app=1 app
+}
+
+wait_healthy() {
+    tries=0
+    until [ "$(docker inspect -f '{{.State.Health.Status}}' "$1")" = healthy ]; do
+        tries=$((tries + 1))
+        [ "$tries" -lt 120 ] || { echo "the new app container did not become healthy"; docker rm -f "$1" >/dev/null; return 1; }
+        sleep 2
+    done
 }
 
 pin_runner() {
