@@ -96,11 +96,18 @@ export function endedMessage(attempt: SignInAttemptData): string | null {
 }
 
 /**
+ * What a challenge read came to: the challenge, a refusal because the reader may no longer see the sign-in, or a
+ * failure to reach the journal at all.
+ */
+export type ChallengeRead =
+    | { status: 'read'; challenge: SignInChallenge }
+    | { status: 'denied' }
+    | { status: 'failed' };
+
+/**
  * Reads the sign-in's challenge over its own no-store request; it is never part of the page.
  */
-export async function readChallenge(
-    attemptId: string,
-): Promise<SignInChallenge> {
+export async function readChallenge(attemptId: string): Promise<ChallengeRead> {
     const response = await fetch(challenge({ attempt: attemptId }).url, {
         method: 'POST',
         credentials: 'same-origin',
@@ -110,13 +117,24 @@ export async function readChallenge(
             'X-Requested-With': 'XMLHttpRequest',
             'X-XSRF-TOKEN': xsrfToken(),
         },
-    });
+    }).catch(() => null);
 
-    if (!response.ok) {
-        return { address: null, code: null };
+    if (response === null) {
+        return { status: 'failed' };
     }
 
-    return (await response.json()) as SignInChallenge;
+    if ([401, 403, 404, 419].includes(response.status)) {
+        return { status: 'denied' };
+    }
+
+    if (!response.ok) {
+        return { status: 'failed' };
+    }
+
+    return {
+        status: 'read',
+        challenge: (await response.json()) as SignInChallenge,
+    };
 }
 
 /**

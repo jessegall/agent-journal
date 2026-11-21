@@ -46,6 +46,14 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     const isAnswerLost = ref(false);
 
     /**
+     * How the last challenge read went: still reading, read, failed to reach the journal (Retry), or denied because
+     * the reader may no longer see the sign-in, which clears every private field and challenge at once.
+     */
+    const challengeRead = ref<'reading' | 'read' | 'failed' | 'denied'>(
+        'reading',
+    );
+
+    /**
      * A new account's start whose reply was lost: its request key is read back until the receipt says what became of
      * it. Only a receipt that knows of no start lets the same start be sent again, under the same key.
      */
@@ -112,13 +120,38 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
             return;
         }
 
-        challenge.value = read;
+        if (read.status === 'denied') {
+            forget();
+            challengeRead.value = 'denied';
 
-        if (read.address === null) {
+            return;
+        }
+
+        if (read.status === 'failed') {
+            challengeRead.value = 'failed';
+
+            return;
+        }
+
+        challengeRead.value = 'read';
+        challenge.value = read.challenge;
+
+        if (read.challenge.address === null) {
             timer = setTimeout(
                 () => void pollChallenge(attemptId, asked),
                 2000,
             );
+        }
+    }
+
+    /**
+     * Reads the followed attempt's challenge again after a read that could not reach the journal; the attempt itself
+     * is left as it was.
+     */
+    function retryChallenge(): void {
+        if (followed.value !== undefined) {
+            challengeRead.value = 'reading';
+            void pollChallenge(followed.value.id);
         }
     }
 
@@ -127,6 +160,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         clearTimeout(timer);
         challenge.value = { address: null, code: null };
         isAnswerLost.value = false;
+        challengeRead.value = 'reading';
         answer.reset();
         answer.clearErrors();
     }
@@ -276,6 +310,8 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         isReconnecting,
         reconnected,
         isAnswerLost,
+        challengeRead,
+        retryChallenge,
         begin,
         beginAgain,
         send,

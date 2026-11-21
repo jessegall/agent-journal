@@ -508,6 +508,59 @@ describe('AddAccountWizard', () => {
         view.unmount();
     });
 
+    it('offers Retry when the sign-in page cannot be read, and closes on a denial with nothing kept', async () => {
+        const statuses = [0, 200, 403];
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () => {
+                const status = statuses.shift();
+
+                if (status === 0) {
+                    throw new Error('offline');
+                }
+
+                return {
+                    ok: status === 200,
+                    status,
+                    json: async () => ({ address: null, code: null }),
+                };
+            }),
+        );
+        const view = openWizard();
+        await flushPromises();
+
+        await view
+            .findAll('[role="radio"]')
+            .find((card) => card.text().includes('Sign in with Claude'))!
+            .trigger('click');
+        await button(view, 'Continue').trigger('click');
+        await view.setProps({
+            attempts: [attempt('waiting', { method: 'oauth' })],
+        });
+        await flushPromises();
+
+        expect(view.text()).toContain(
+            'Could not reach the journal for this sign-in.',
+        );
+
+        await button(view, 'Retry').trigger('click');
+        await flushPromises();
+        expect(view.text()).toContain('Starting the sign-in…');
+        expect(view.emitted('close')).toBeUndefined();
+
+        await view.setProps({
+            attempts: [
+                attempt('waiting', { method: 'oauth', id: 'attempt-2' }),
+            ],
+        });
+        await view.setProps({
+            request: { kind: 'resume', attemptId: 'attempt-2' },
+        });
+        await flushPromises();
+        expect(view.emitted('close')).toEqual([['waiting']]);
+        view.unmount();
+    });
+
     it('walks a key sign-in from the choice to the account added', async () => {
         const view = openWizard();
         await flushPromises();

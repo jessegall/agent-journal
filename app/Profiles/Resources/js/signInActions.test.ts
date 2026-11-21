@@ -3,12 +3,11 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, reactive, ref } from 'vue';
 import type { SignInAttemptData } from '@generated/types/accounts';
+import type { ChallengeRead } from './signIn';
 
 type Options = { onError?: () => void; onSuccess?: () => void };
 
-const challengeAnswers: Array<
-    (challenge: { address: string | null; code: string | null }) => void
-> = [];
+const challengeAnswers: Array<(read: ChallengeRead) => void> = [];
 const sent: Options[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
@@ -74,11 +73,17 @@ describe('signInActions', () => {
 
         followed.value = { id: 'attempt-2' } as SignInAttemptData;
         await flushPromises();
-        challengeAnswers[0]({ address: 'https://old.example', code: 'OLD' });
+        challengeAnswers[0]({
+            status: 'read',
+            challenge: { address: 'https://old.example', code: 'OLD' },
+        });
         await flushPromises();
         expect(actions.challenge.value.address).toBeNull();
 
-        challengeAnswers[1]({ address: 'https://new.example', code: 'NEW' });
+        challengeAnswers[1]({
+            status: 'read',
+            challenge: { address: 'https://new.example', code: 'NEW' },
+        });
         await flushPromises();
         expect(actions.challenge.value.address).toBe('https://new.example');
     });
