@@ -13,6 +13,7 @@ use App\Files\Exceptions\FolderClosed;
 use App\Files\Exceptions\FolderMissing;
 use App\Files\Exceptions\LinkLeavesPlace;
 use App\Files\Exceptions\LinkLoop;
+use App\Skills\Contracts\MarkdownParts as MarkdownPartsContract;
 use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillOwner;
@@ -28,7 +29,7 @@ use Illuminate\Support\Str;
  * Reads Markdown parts and assets from an owner's resources/skills folder, and nowhere else: no absolute path, no
  * parent step, no URL and no symlink that leaves the folder. A part is taken as written; it includes nothing itself.
  */
-final readonly class MarkdownParts
+final readonly class MarkdownParts implements MarkdownPartsContract
 {
     public function __construct(private Files $files) {}
 
@@ -146,10 +147,10 @@ final readonly class MarkdownParts
     {
         try {
             return $this->files->read($this->files->filePathOf($owner->skillsFolder())->child($file));
-        } catch (FilePathInvalid|FileOutsidePlaces|FolderClosed|LinkLeavesPlace) {
-            throw SkillSourceInvalid::outsideFolder($file);
-        } catch (FileMissing|FolderMissing|LinkLoop) {
-            throw SkillSourceInvalid::missingFile($file);
+        } catch (FilePathInvalid|FileOutsidePlaces|FolderClosed|LinkLeavesPlace $refusal) {
+            throw SkillSourceInvalid::outsideFolder($file, $refusal);
+        } catch (FileMissing|FolderMissing|LinkLoop $refusal) {
+            throw SkillSourceInvalid::missingFile($file, $refusal);
         } catch (FileUnreadable $refusal) {
             throw SkillSourceInvalid::unreadable($file, $refusal);
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Files\Contracts;
 
+use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
@@ -71,6 +72,27 @@ interface Files
      * A file of the project's code, read once per process and kept with no stat afterwards.
      */
     public function codeFile(FilePath $file): string;
+
+    /**
+     * Replaces the whole file atomically, making missing folders with the place's mode; a reader sees the old file
+     * or the new, and a read after the write sees the new.
+     */
+    public function write(FilePath $file, string $bytes, Permissions $permissions = Permissions::Shared): void;
+
+    /**
+     * Creates the file only when none is there; FileExists otherwise, and the old file stays untouched.
+     */
+    public function create(FilePath $file, string $bytes, Permissions $permissions = Permissions::Shared): void;
+
+    /**
+     * Adds a line at the end of the file under an exclusive lock; a new file is its owner's in a private place.
+     */
+    public function append(FilePath $file, string $line): void;
+
+    /**
+     * Makes the folder and the missing folders above it with the place's mode.
+     */
+    public function makeFolder(FilePath $folder): void;
 
     /**
      * The bytes free on the disk that holds the place's root.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Skills\Values;
 
+use App\Skills\Contracts\MarkdownParts;
 use App\Skills\Exceptions\SkillSourceInvalid;
-use App\Skills\Support\MarkdownParts;
 
 /**
  * The sections of a skill: either listed by hand, or read from the headings of one file in the owner's skills folder.

@@ -114,10 +114,10 @@ final readonly class DomainUi
 
         try {
             return $code->realPathOf($code->projectPathOf($this->scriptFolder)->child($component));
-        } catch (FilePathInvalid|FileOutsidePlaces|FolderClosed|LinkLeavesPlace) {
-            throw UiComponentMissing::outsideOwner($declaration, $component);
-        } catch (FileMissing|LinkLoop) {
-            throw UiComponentMissing::at($declaration, "{$this->scriptFolder}/{$component}");
+        } catch (FilePathInvalid|FileOutsidePlaces|FolderClosed|LinkLeavesPlace $refusal) {
+            throw UiComponentMissing::outsideOwner($declaration, $component, $refusal);
+        } catch (FileMissing|LinkLoop $refusal) {
+            throw UiComponentMissing::at($declaration, "{$this->scriptFolder}/{$component}", $refusal);
         }
     }
 

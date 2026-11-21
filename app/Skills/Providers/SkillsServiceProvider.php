@@ -11,6 +11,7 @@ use App\Hooks\Contracts\FileAccessPolicy;
 use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
+use App\Skills\Contracts\MarkdownParts as MarkdownPartsContract;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Models\Skill;
@@ -25,6 +26,7 @@ use App\Skills\Support\ConditionTree;
 use App\Skills\Support\DeliveredSkillsAccess;
 use App\Skills\Support\EvaluationGuard;
 use App\Skills\Support\HostSkillPublisher;
+use App\Skills\Support\MarkdownParts;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Support\SkillTables;
 use App\Skills\Support\SkillTargets;
@@ -44,6 +46,7 @@ final class SkillsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(MarkdownPartsContract::class, MarkdownParts::class);
         $this->app->scoped(EvaluationGuard::class);
         $this->app->scoped(SkillContextResolver::class);
         $this->app->scoped(SkillStatusResolver::class);

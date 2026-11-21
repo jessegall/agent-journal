@@ -18,6 +18,7 @@ use App\Files\Exceptions\DepthTooDeep;
 use App\Files\Support\ClosedFolders;
 use App\Files\Support\CodeFiles;
 use App\Files\Support\FileContents;
+use App\Files\Support\FileWriter;
 use App\Files\Support\FolderWalker;
 use App\Files\Support\LocalFiles;
 use App\Files\Support\PathConfinement;
@@ -59,7 +60,7 @@ $closed = new ClosedFolders($roots);
 $confinement = new PathConfinement($roots, $closed);
 $contents = new FileContents(CACHED_BYTES, LARGEST_CACHED_FILE);
 $walker = new FolderWalker($roots, $closed, $confinement);
-$files = new LocalFiles($roots, $confinement, $contents, $walker, CodeFiles::over($folder));
+$files = new LocalFiles($roots, $confinement, $contents, $walker, CodeFiles::over($folder), new FileWriter());
 
 $unchanged = FilePath::in(Place::Project, 'unchanged.json');
 

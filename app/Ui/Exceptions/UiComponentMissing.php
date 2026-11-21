@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Ui\Exceptions;
 
+use Throwable;
+
 /**
  * A declared Vue component that is not a file in its own domain's script folder (resources/js).
  */
 final class UiComponentMissing extends UiDeclarationError
 {
-    public static function outsideOwner(string $declaration, string $component): self
+    public static function outsideOwner(string $declaration, string $component, Throwable|null $cause = null): self
     {
         return new self(
             sprintf(
@@ -17,11 +19,12 @@ final class UiComponentMissing extends UiDeclarationError
                 $declaration,
                 $component,
             ),
+            previous: $cause,
         );
     }
 
-    public static function at(string $declaration, string $path): self
+    public static function at(string $declaration, string $path, Throwable|null $cause = null): self
     {
-        return new self("{$declaration} names the component {$path}, which does not exist.");
+        return new self("{$declaration} names the component {$path}, which does not exist.", previous: $cause);
     }
 }

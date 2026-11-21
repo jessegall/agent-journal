@@ -575,13 +575,16 @@ use App\Exports\Support\Exports;
 use App\Files\Attributes\OutsideThePlaces;
 use App\Files\Contracts\Files;
 use App\Files\Enums\EntryType;
+use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Files\Enums\PlaceExemption;
+use App\Files\Exceptions\FileExists;
 use App\Files\Exceptions\FileJsonInvalid;
 use App\Files\Exceptions\FileMissing;
 use App\Files\Exceptions\FileOutsidePlaces;
 use App\Files\Exceptions\FilePathInvalid;
 use App\Files\Exceptions\FileUnreadable;
+use App\Files\Exceptions\FileUnwritable;
 use App\Files\Exceptions\FolderClosed;
 use App\Files\Exceptions\FolderMissing;
 use App\Files\Exceptions\LinkLeavesPlace;
@@ -1070,6 +1073,7 @@ use App\Skills\Conditions\ProfileBases;
 use App\Skills\Conditions\Profiles;
 use App\Skills\Conditions\Programs;
 use App\Skills\Conditions\Providers;
+use App\Skills\Contracts\MarkdownParts;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Contracts\SkillConditionEvaluator;
@@ -1088,7 +1092,6 @@ use App\Skills\Exceptions\SkillRequestReused;
 use App\Skills\Exceptions\SkillRetired;
 use App\Skills\Exceptions\SkillRevisionConflict;
 use App\Skills\Exceptions\SkillSourceInvalid;
-use App\Skills\Support\MarkdownParts;
 use App\Skills\Values\ConditionResult;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\RenderedSkill;
@@ -1227,6 +1230,7 @@ final class CoreApi
             )
             ->contracts(
                 Files::class,
+                MarkdownParts::class,
                 ReadEntitlements::class,
                 JobPermissionReader::class,
                 TextFields::class,
@@ -1436,6 +1440,7 @@ final class CoreApi
                 FilePath::class,
                 OutsideThePlaces::class,
                 PlaceExemption::class,
+                Permissions::class,
                 Place::class,
                 Depth::class,
                 Fingerprint::class,
@@ -1938,7 +1943,6 @@ final class CoreApi
                 ProgramKey::class,
                 SkillOwner::class,
                 SkillOrigin::class,
-                MarkdownParts::class,
                 Grants::class,
                 Profiles::class,
                 ProfileBases::class,
@@ -2109,6 +2113,8 @@ final class CoreApi
                 LinkLeavesPlace::class,
                 LinkLoop::class,
                 PlaceUnavailable::class,
+                FileExists::class,
+                FileUnwritable::class,
                 GrantShapeInvalid::class,
                 EndpointDeclarationInvalid::class,
                 CommandStopped::class,

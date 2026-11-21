@@ -558,12 +558,18 @@ case	PartJoin::Sequence
 case	PartResultType::EvidenceOnly
 case	PartResultType::Receipted
 case	PartResultType::Unavailable
+case	Permissions::OwnerOnly
+case	Permissions::Shared
 case	Place::Accounts
 case	Place::HostSkills
 case	Place::Project
 case	Place::SharingSecrets
 case	Place::SharingTunnels
 case	Place::Temporary
+case	PlaceExemption::CommandFileSystem
+case	PlaceExemption::GatewayBinary
+case	PlaceExemption::HostSecretFile
+case	PlaceExemption::UserNamedFile
 case	PlanEndType::Cancel
 case	PlanEndType::Finish
 case	PlanState::Cancelled
@@ -2337,6 +2343,7 @@ class	FileChanges
 class	FileContents
 class	FileDeclaresNoClass
 class	FileEditRequested
+class	FileExists
 class	FileFunctionScan
 class	FileJsonInvalid
 class	FileMissing
@@ -2348,6 +2355,8 @@ class	FilePathInvalid
 class	FileReadReentered
 class	FileRules
 class	FileUnreadable
+class	FileUnwritable
+class	FileWriter
 class	FilesServiceProvider
 class	FindNextSubstitution
 class	FindReplay
@@ -3099,6 +3108,7 @@ class	OutputSummary
 class	OutputTail
 class	OutputValidation
 class	OutputVerdict
+class	OutsideThePlaces
 class	OverviewReadTool
 class	OverviewResolver
 class	OverviewResource
@@ -5552,6 +5562,7 @@ constant	FailedWindow::MESSAGE
 constant	FileChange::DECLARATION_REVISION
 constant	FileChange::SURFACE
 constant	FileFunctionScan::CLASSES
+constant	FileFunctionScan::EXEMPTION_MARK
 constant	FileFunctionScan::FUNCTIONS
 constant	FileFunctionScan::ITERATORS
 constant	FlowGraphData::MERMAID_ESCAPES
@@ -6192,7 +6203,9 @@ enum	ParseOutcome
 enum	PartEndType
 enum	PartJoin
 enum	PartResultType
+enum	Permissions
 enum	Place
+enum	PlaceExemption
 enum	PlanEndType
 enum	PlanState
 enum	PlanStateGroup
@@ -6467,6 +6480,7 @@ interface	MainDesk
 interface	MainSeatTakeover
 interface	MaintenanceAdmission
 interface	MaintenanceAssignmentWriter
+interface	MarkdownParts
 interface	McpCall
 interface	McpRegistration
 interface	McpToolProvider
@@ -8839,6 +8853,7 @@ method	CodeFiles::ofProcess()
 method	CodeFiles::over()
 method	CodeFiles::projectPathOf()
 method	CodeFiles::readCount()
+method	CodeFiles::realPathOf()
 method	CodeReadOutsideProject::for()
 method	CodeReview::casts()
 method	CodeReview::decision()
@@ -9935,7 +9950,9 @@ method	DirectDestinations::assignee()
 method	DirectDestinations::inbox()
 method	DirectFileAccess::__construct()
 method	DirectFileAccess::across()
+method	DirectFileAccess::lineOf()
 method	DirectFileAccess::listText()
+method	DirectFileAccess::listedSites()
 method	DirectFileAccess::outside()
 method	DirectFileAccess::report()
 method	DirectFileAccess::sites()
@@ -10889,10 +10906,14 @@ method	FileEditRequested::leavesAgentIdle()
 method	FileEditRequested::methodName()
 method	FileEditRequested::recordTurn()
 method	FileEditRequested::recordVisit()
+method	FileExists::at()
+method	FileFunctionScan::exemptionOf()
+method	FileFunctionScan::finding()
 method	FileFunctionScan::findingOf()
 method	FileFunctionScan::findingsIn()
 method	FileFunctionScan::isBannedFunction()
 method	FileFunctionScan::isDirectAccess()
+method	FileFunctionScan::isNamedFunction()
 method	FileFunctionScan::key()
 method	FileFunctionScan::of()
 method	FileJsonInvalid::at()
@@ -10917,8 +10938,17 @@ method	FileRules::flags()
 method	FileRules::paths()
 method	FileRules::rule()
 method	FileUnreadable::at()
+method	FileUnwritable::at()
+method	FileWriter::append()
+method	FileWriter::create()
+method	FileWriter::makeFolder()
+method	FileWriter::opened()
+method	FileWriter::replace()
+method	FileWriter::writeNew()
+method	Files::append()
 method	Files::codeFile()
 method	Files::codeFolder()
+method	Files::create()
 method	Files::digest()
 method	Files::exists()
 method	Files::filePathOf()
@@ -10926,11 +10956,13 @@ method	Files::fingerprint()
 method	Files::freeSpace()
 method	Files::isFolder()
 method	Files::list()
+method	Files::makeFolder()
 method	Files::matching()
 method	Files::read()
 method	Files::readAtMost()
 method	Files::readCount()
 method	Files::readJson()
+method	Files::write()
 method	FilesServiceProvider::register()
 method	FindNextSubstitution::__construct()
 method	FindNextSubstitution::handle()
@@ -12109,8 +12141,10 @@ method	LiveShareStatus::isPubliclyShared()
 method	LoadMigrations::__construct()
 method	LoadMigrations::__invoke()
 method	LocalFiles::__construct()
+method	LocalFiles::append()
 method	LocalFiles::codeFile()
 method	LocalFiles::codeFolder()
+method	LocalFiles::create()
 method	LocalFiles::decoded()
 method	LocalFiles::digest()
 method	LocalFiles::exists()
@@ -12121,12 +12155,15 @@ method	LocalFiles::hashed()
 method	LocalFiles::isFolder()
 method	LocalFiles::list()
 method	LocalFiles::loaded()
+method	LocalFiles::makeFolder()
 method	LocalFiles::matching()
 method	LocalFiles::read()
 method	LocalFiles::readAtMost()
 method	LocalFiles::readCount()
 method	LocalFiles::readJson()
 method	LocalFiles::whileReading()
+method	LocalFiles::writablePath()
+method	LocalFiles::write()
 method	LocateCommentCall::__construct()
 method	LocateCommentController::__invoke()
 method	LockStack::handle()
@@ -12220,12 +12257,14 @@ method	MarkdownPart::body()
 method	MarkdownPart::heading()
 method	MarkdownPart::isWholeBody()
 method	MarkdownPart::selector()
+method	MarkdownParts::__construct()
 method	MarkdownParts::assetPath()
 method	MarkdownParts::bodyUnderHeading()
 method	MarkdownParts::markdownOf()
 method	MarkdownParts::pathOf()
 method	MarkdownParts::read()
 method	MarkdownParts::sectionsOf()
+method	MarkdownParts::sourceOf()
 method	MarkdownParts::titleOf()
 method	MarkdownParts::withoutFrontMatter()
 method	MarkdownText::__construct()
@@ -13158,6 +13197,7 @@ method	OutputValidation::isValid()
 method	OutputVerdict::__construct()
 method	OutputVerdict::isAllowed()
 method	OutputVerdict::reasons()
+method	OutsideThePlaces::__construct()
 method	OverviewContribution::read()
 method	OverviewContribution::section()
 method	OverviewReadTool::__construct()
@@ -13410,6 +13450,8 @@ method	PendingWorkSources::register()
 method	PermissionRevocation::casts()
 method	PermissionRevocation::create()
 method	PermissionRevocation::narrow()
+method	Permissions::mode()
+method	Permissions::of()
 method	PermitLimits::__construct()
 method	PermitLimits::forSample()
 method	PermittedLine::__construct()
@@ -13515,6 +13557,7 @@ method	Place::folderMode()
 method	Place::isPrivate()
 method	Place::notPrivate()
 method	Place::rootSetting()
+method	PlaceExemption::description()
 method	PlaceRoots::__construct()
 method	PlaceRoots::available()
 method	PlaceRoots::existingRoot()
@@ -17385,6 +17428,7 @@ method	SharesPublishedRecords::quoteIn()
 method	SharesPublishedRecords::readRelated()
 method	SharesPublishedRecords::readTargets()
 method	SharingAssetController::__invoke()
+method	SharingAssets::__construct()
 method	SharingAssets::files()
 method	SharingAssets::lists()
 method	SharingAssets::manifest()
@@ -20626,6 +20670,7 @@ parameter	$execution
 parameter	$executionId
 parameter	$executionMode
 parameter	$executions
+parameter	$exemption
 parameter	$existing
 parameter	$exists
 parameter	$exit
@@ -20695,6 +20740,7 @@ parameter	$filter
 parameter	$filterValue
 parameter	$filters
 parameter	$filtersOf
+parameter	$finding
 parameter	$findings
 parameter	$fingerprint
 parameter	$finishNote
@@ -21067,6 +21113,7 @@ parameter	$match
 parameter	$matches
 parameter	$matchingRevision
 parameter	$material
+parameter	$matrix
 parameter	$matrixPath
 parameter	$max
 parameter	$maxRecordBytes
@@ -21242,6 +21289,7 @@ parameter	$one
 parameter	$oneLine
 parameter	$open
 parameter	$openFiles
+parameter	$openMode
 parameter	$openProposals
 parameter	$opening
 parameter	$opensIn
@@ -24106,6 +24154,8 @@ property	DockerImageData::$name
 property	DockerImageData::$reference
 property	DockerImageRecordData::$images
 property	DockerImageRecordData::$note
+property	DockerImageVerifier::$files
+property	DockerImageVerifier::$record
 property	DockerImageVerifier::$recordPath
 property	Document::$attributes
 property	DocumentBody::$uploads
@@ -25316,6 +25366,7 @@ property	LocalFiles::$contents
 property	LocalFiles::$reading
 property	LocalFiles::$roots
 property	LocalFiles::$walker
+property	LocalFiles::$writer
 property	LocateCommentCall::$comment
 property	LocateCommentCall::$firstLine
 property	LocateCommentCall::$lastLine
@@ -25402,6 +25453,7 @@ property	MarkSilentSessionsHandler::$heartbeats
 property	MarkSilentSessionsOnTick::$commands
 property	MarkdownPart::$file
 property	MarkdownPart::$headingPath
+property	MarkdownParts::$files
 property	MarkdownText::$sections
 property	MarkdownText::$text
 property	McpCatalogue::$commands
@@ -25941,6 +25993,7 @@ property	OutputTail::$text
 property	OutputValidation::$outcome
 property	OutputValidation::$problems
 property	OutputVerdict::$hidden
+property	OutsideThePlaces::$exemption
 property	OverviewReadTool::$meta
 property	OverviewReadTool::$overview
 property	OverviewResolver::$agent
@@ -27214,6 +27267,8 @@ property	RecordedAnswer::$stderr
 property	RecordedAnswer::$stdout
 property	RecordedAnswer::$type
 property	RecordedAnswer::$version
+property	RecordedHostCapabilities::$files
+property	RecordedHostCapabilities::$matrix
 property	RecordedHostCapabilities::$matrixPath
 property	RecordedRunEvents::$parts
 property	RecordedRunEvents::$recorder
@@ -28803,6 +28858,7 @@ property	SharedPageItem::$title
 property	SharedPageItem::$type
 property	SharedPageResponses::$assets
 property	SharedPageResponses::$views
+property	SharingAssets::$files
 property	SharingCalls::$sender
 property	SharingHealthCommand::$description
 property	SharingHealthCommand::$signature
@@ -30667,6 +30723,7 @@ variable	$except
 variable	$excerpt
 variable	$excluded
 variable	$execution
+variable	$exempt
 variable	$existing
 variable	$exitCode
 variable	$exits
@@ -30877,6 +30934,7 @@ variable	$isInside
 variable	$isInsideFilter
 variable	$isLive
 variable	$isNestedApplicationCall
+variable	$isNew
 variable	$isOwnInbox
 variable	$isOwnOutputRead
 variable	$isPlain

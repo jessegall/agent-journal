@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Files\Enums;
+
+/**
+ * Who may read a file the funnel writes: everyone, or its owner alone, as a secret must be.
+ */
+enum Permissions: string
+{
+    case Shared = 'shared';
+    case OwnerOnly = 'owner-only';
+
+    /**
+     * The permissions a new file of a place gets when the caller names none: a private place's files are its owner's.
+     */
+    public static function of(Place $place): self
+    {
+        return $place->isPrivate() ? self::OwnerOnly : self::Shared;
+    }
+
+    public function mode(): int
+    {
+        return match ($this) {
+            self::Shared => 0o644,
+            self::OwnerOnly => 0o600,
+        };
+    }
+}

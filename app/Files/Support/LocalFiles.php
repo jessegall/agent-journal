@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Files\Support;
 
 use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Files\Exceptions\FileJsonInvalid;
 use App\Files\Exceptions\FileReadReentered;
@@ -34,6 +35,7 @@ final class LocalFiles implements Files
         private readonly FileContents $contents,
         private readonly FolderWalker $walker,
         private readonly CodeFiles $code,
+        private readonly FileWriter $writer,
     ) {}
 
     public function filePathOf(string $absolutePath): FilePath
@@ -126,6 +128,33 @@ final class LocalFiles implements Files
         return $this->code->file($file);
     }
 
+    public function write(FilePath $file, string $bytes, Permissions $permissions = Permissions::Shared): void
+    {
+        $real = $this->writablePath($file);
+        $this->writer->replace($real, $bytes, $permissions->mode(), $file->label());
+        $this->contents->drop($real);
+    }
+
+    public function create(FilePath $file, string $bytes, Permissions $permissions = Permissions::Shared): void
+    {
+        $real = $this->writablePath($file);
+        $this->writer->create($real, $bytes, $permissions->mode(), $file->label());
+        $this->contents->drop($real);
+    }
+
+    public function append(FilePath $file, string $line): void
+    {
+        $real = $this->writablePath($file);
+        $this->writer->append($real, $line, Permissions::of($file->place)->mode(), $file->label());
+        $this->contents->drop($real);
+    }
+
+    public function makeFolder(FilePath $folder): void
+    {
+        $real = $this->confinement->resolvedForWrite($folder);
+        $this->writer->makeFolder($real, $folder->place->folderMode(), $folder->label());
+    }
+
     public function freeSpace(Place $place): int
     {
         $free = disk_free_space($this->roots->root($place));
@@ -140,6 +169,17 @@ final class LocalFiles implements Files
     public function readCount(FilePath $file): int
     {
         return $this->contents->openCount($this->confinement->resolved($file));
+    }
+
+    /**
+     * The real path a file is written at, inside its place and no closed folder, with its missing folders made.
+     */
+    private function writablePath(FilePath $file): string
+    {
+        $real = $this->confinement->resolvedForWrite($file);
+        $this->writer->makeFolder(dirname($real), $file->place->folderMode(), $file->label());
+
+        return $real;
     }
 
     /**
