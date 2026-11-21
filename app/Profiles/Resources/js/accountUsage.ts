@@ -5,6 +5,7 @@ import type {
     AccountUsageWindowData,
     UsageWindowSlot,
 } from '@generated/types/accounts';
+import { count, dateTimeWithZone, dollars, monthInUtc, weekday } from '@kit/format';
 
 /**
  * What an account's usage shows: the one line of its row and the details of its settings, chosen from the readings
@@ -120,33 +121,15 @@ export function windowLine(window: MeasuredWindow): string {
         return `Last observed: ${used}`;
     }
 
-    const day = new Date(window.resetsAt).toLocaleDateString(undefined, {
-        weekday: 'short',
-    });
-
-    return `${used}, resets ${day}`;
-}
-
-/**
- * The estimated dollars as the page writes them: two decimals, less than a cent for a positive amount below one,
- * and a real zero as $0.00.
- */
-export function dollars(cost: AccountMonthCostData): string {
-    const amount = Number(cost.usd);
-
-    if (amount > 0 && amount < 0.01) {
-        return '< $0.01';
-    }
-
-    return `$${amount.toFixed(2)}`;
+    return `${used}, resets ${weekday(window.resetsAt)}`;
 }
 
 export function costLine(cost: AccountMonthCostData): string {
-    return `Est. ${dollars(cost)} this month`;
+    return `Est. ${dollars(Number(cost.usd))} this month`;
 }
 
-function tokens(count: number): string {
-    return `${count.toLocaleString('en-US')} tokens`;
+function tokens(total: number): string {
+    return `${count(total)} tokens`;
 }
 
 export function threadLine(thread: AccountThreadTokensData): string {
@@ -187,17 +170,6 @@ export interface UsageFact {
     value: string;
 }
 
-function fullDate(moment: string): string {
-    return new Date(moment).toLocaleString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZoneName: 'short',
-    });
-}
-
 /**
  * Each window with its name and value together, its reset or the reset it passed, and when it was observed.
  */
@@ -209,33 +181,27 @@ export function windowFacts(usage: AccountUsageData, now: Date): UsageFact[] {
 }
 
 function windowValue(window: MeasuredWindow, now: Date): string {
-    const observed = `observed ${fullDate(window.observedAt)}`;
+    const observed = `observed ${dateTimeWithZone(window.observedAt)}`;
 
     if (window.resetsAt === null) {
         return `${percentOf(window)} used, ${observed}`;
     }
 
     if (!isCurrent(window, now)) {
-        return `${percentOf(window)} used before it reset ${fullDate(window.resetsAt)}, ${observed}`;
+        return `${percentOf(window)} used before it reset ${dateTimeWithZone(window.resetsAt)}, ${observed}`;
     }
 
-    return `${percentOf(window)} used, resets ${fullDate(window.resetsAt)}, ${observed}`;
+    return `${percentOf(window)} used, resets ${dateTimeWithZone(window.resetsAt)}, ${observed}`;
 }
 
 /**
  * The month's estimate: the amount, the UTC month it covers and its last observation.
  */
 export function costFacts(cost: AccountMonthCostData): UsageFact[] {
-    const month = new Date(cost.monthStart).toLocaleDateString(undefined, {
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'UTC',
-    });
-
     return [
-        { term: 'Estimated cost', value: dollars(cost) },
-        { term: 'Month', value: `${month}, UTC` },
-        { term: 'Last observed', value: fullDate(cost.lastObservedAt) },
+        { term: 'Estimated cost', value: dollars(Number(cost.usd)) },
+        { term: 'Month', value: `${monthInUtc(cost.monthStart)}, UTC` },
+        { term: 'Last observed', value: dateTimeWithZone(cost.lastObservedAt) },
     ];
 }
 
@@ -257,6 +223,6 @@ export function threadFacts(thread: AccountThreadTokensData): UsageFact[] {
     return [
         { term: 'Latest thread', value: tokens(thread.total) },
         ...reported,
-        { term: 'Observed', value: fullDate(thread.observedAt) },
+        { term: 'Observed', value: dateTimeWithZone(thread.observedAt) },
     ];
 }

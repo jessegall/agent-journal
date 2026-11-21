@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dateTime } from '@kit/format';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import Button from '@kit/Button';
@@ -235,7 +236,7 @@ onBeforeUnmount(() => following?.stop());
                         <label class="flex items-center gap-2 text-small text-text">
                             <input v-model="conversationId" type="radio" :value="conversation.id" />
                             {{ drivers.find((choice) => choice.value === conversation.driver)?.label }},
-                            {{ new Date(conversation.startedAt).toLocaleString() }}
+                            {{ dateTime(conversation.startedAt) }}
                         </label>
                     </template>
                     <label class="flex items-center gap-2 text-small text-text">

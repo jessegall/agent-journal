@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { timeOfDay } from '@kit/format';
 import { Link } from '@inertiajs/vue3';
 import type { ChatExcerptNode } from '@kit/dockCards';
 
@@ -14,7 +15,7 @@ defineProps<{ node: ChatExcerptNode }>();
             <template v-for="message in node.messages" :key="`${message.sentAt}-${message.speaker}`">
                 <li class="text-small text-text-2">
                     <span class="font-medium">{{ message.speaker }}</span>
-                    <span class="text-text-4"> · {{ new Date(message.sentAt).toLocaleTimeString() }}</span>
+                    <span class="text-text-4"> · {{ timeOfDay(message.sentAt) }}</span>
                     <p class="truncate">{{ message.preview }}</p>
                 </li>
             </template>

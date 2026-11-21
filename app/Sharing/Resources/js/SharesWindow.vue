@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dateTime } from '@kit/format';
 import type { ShareFiltersData, ShareListData } from '@generated/types/sharing';
 import { Link, router } from '@inertiajs/vue3';
 import PageHeader from '@kit/PageHeader';
@@ -92,7 +93,7 @@ function nextPage(): void {
                 <td>{{ row.state }}</td>
                 <td>{{ row.rootType }}</td>
                 <td>{{ row.gatewayKey ?? '' }}</td>
-                <td>{{ row.expiresAt }}</td>
+                <td>{{ dateTime(row.expiresAt) }}</td>
             </template>
         </RowsTable>
         <template v-if="data.nextAfter">
