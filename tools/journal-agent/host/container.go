@@ -210,7 +210,7 @@ func (manifest ContainerManifest) DockerCreateArguments(name string, labels Laun
 	}
 
 	if manifest.Attachable {
-		arguments = append(arguments, "--interactive", "--tty")
+		arguments = append(arguments, "--interactive", "--tty", "--restart", "unless-stopped")
 	}
 
 	arguments = append(arguments, manifest.SecurityOptions.arguments()...)
@@ -397,6 +397,18 @@ func (containers Containers) AssertImagePinned(ctx context.Context, reference st
 type ContainerProcess struct {
 	Command     []string
 	Environment []string
+	// Restart is the command the container runs instead when it comes back after a restart of the agent daemon or the
+	// server: the program resuming its conversation. It runs once the conversation's transcript is in Transcript.
+	Restart []string
+	// Transcript is where the conversation's transcript is found.
+	Transcript ConversationTranscript
+}
+
+// ConversationTranscript is the folder holding a conversation's transcripts and the conversation's id: Claude Code
+// and Codex both name the transcript file with the id and .jsonl at its end.
+type ConversationTranscript struct {
+	Folder         string
+	ConversationID string
 }
 
 // arguments puts the process into `docker create` arguments that end with the image: its environment before the
@@ -408,7 +420,22 @@ func (process ContainerProcess) arguments(create []string) []string {
 		arguments = append(arguments, "--env", entry)
 	}
 
-	return append(append(arguments, image), process.Command...)
+	return append(append(arguments, image), process.command()...)
+}
+
+// command is the process's own command, or, with a restart command, a shell that runs the restart command once the
+// conversation's transcript exists and the first command otherwise, so a container brought back by its restart
+// policy resumes the conversation instead of starting it a second time.
+func (process ContainerProcess) command() []string {
+	if len(process.Restart) == 0 {
+		return process.Command
+	}
+
+	script := `if find "$1" -name "*$2.jsonl" -print -quit 2>/dev/null | grep -q .; then exec ` +
+		shellWords(process.Restart) + `; fi; exec ` + shellWords(process.Command)
+
+	return []string{"/bin/sh", "-c", script, "journal-session", process.Transcript.Folder,
+		process.Transcript.ConversationID}
 }
 
 // Create creates the container from the manifest, running the process, and answers its id; a daemon that would

@@ -343,3 +343,33 @@ exit 0`)
 		t.Fatalf("a resume with its history gave %v", err)
 	}
 }
+
+func TestATerminalContainerRestartsByItselfAndResumesOnceItsTranscriptExists(t *testing.T) {
+	manifest := containedManifest()
+	manifest.Attachable = true
+	arguments, err := manifest.DockerCreateArguments("journal-session-7", accountLabels("7"), containedRules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(arguments, "unless-stopped") {
+		t.Fatalf("a terminal container has no restart policy: %v", arguments)
+	}
+
+	process := ContainerProcess{
+		Command:    []string{"claude", "--session-id", "conversation-1", "it's"},
+		Restart:    []string{"claude", "--resume", "conversation-1"},
+		Transcript: ConversationTranscript{Folder: "/home/journal/.account", ConversationID: "conversation-1"},
+	}
+	command := process.command()
+
+	if command[0] != "/bin/sh" || command[4] != "/home/journal/.account" || command[5] != "conversation-1" {
+		t.Fatalf("the restart wrapper does not test the transcript: %v", command)
+	}
+	want := `then exec 'claude' '--resume' 'conversation-1'; fi; exec 'claude' '--session-id' 'conversation-1' 'it'\''s'`
+	if !strings.Contains(command[2], want) {
+		t.Fatalf("the wrapper does not resume once the transcript exists and start otherwise: %s", command[2])
+	}
+	if got := (ContainerProcess{Command: []string{"codex"}}).command(); !slices.Equal(got, []string{"codex"}) {
+		t.Fatalf("a process without a restart command is wrapped: %v", got)
+	}
+}

@@ -60,6 +60,15 @@ func (opener runtimeOpener) containedTerminalRuntime(
 		return nil, err
 	}
 
+	start.Resume = true
+	resumed, err := containedProcessOf(profile, opener.journalURL, prepared, runtimeID, start,
+		prepared.Grant.Runtime.ProcessGeneration, os.Environ())
+	if err != nil {
+		return nil, err
+	}
+
+	process.Restart = resumed.Command
+	process.Transcript = host.ConversationTranscript{Folder: containerAccount, ConversationID: conversationID}
 	container := opener.sessionContainer(runtimeID, prepared, manifest)
 	ctx := context.Background()
 	attach, err := container.Open(ctx, manifest, process)
