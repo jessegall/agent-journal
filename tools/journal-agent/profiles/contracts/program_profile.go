@@ -65,6 +65,12 @@ type SettingsFile struct {
 	Content []byte
 }
 
+// ProtectedAccountFiles is a profile whose protected start needs files in the account's folder that no argument can
+// carry, such as Codex's environments.toml; the host writes them for the program's user before the container starts.
+type ProtectedAccountFiles interface {
+	ProtectedAccountFiles() []SettingsFile
+}
+
 // ProgramProfile is how the host starts one pinned build of one agent program with its native subagents off
 // (rule 36). Both programs implement it; nothing above it checks which program it has.
 type ProgramProfile interface {

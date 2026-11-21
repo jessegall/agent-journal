@@ -71,6 +71,10 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	process.Transcript = host.ConversationTranscript{Folder: containerAccount, ConversationID: conversationID}
 	container := opener.sessionContainer(runtimeID, prepared, manifest)
 	ctx := context.Background()
+	if err := opener.writeProtectedAccountFiles(ctx, profile, manifest); err != nil {
+		return nil, err
+	}
+
 	attach, err := container.Open(ctx, manifest, process)
 	if err != nil {
 		return nil, err
@@ -108,6 +112,10 @@ func (opener runtimeOpener) containedHeadlessRuntime(
 		return nil, err
 	}
 
+	if err := opener.writeProtectedAccountFiles(context.Background(), profile, manifest); err != nil {
+		return nil, err
+	}
+
 	container := opener.sessionContainer(runtimeID, prepared, manifest)
 	grant := prepared.Grant
 	driver := drivers.NewHeadlessDriver(drivers.HeadlessRuntime{
@@ -121,6 +129,27 @@ func (opener runtimeOpener) containedHeadlessRuntime(
 	}, grant.Runtime.ProcessGeneration)
 
 	return &containedRuntime{Runtime: driver, container: container, manifest: manifest}, nil
+}
+
+// writeProtectedAccountFiles writes, for a protected start of a profile that needs them, the files its account's
+// folder must hold that no argument can carry; any other start writes nothing.
+func (opener runtimeOpener) writeProtectedAccountFiles(
+	ctx context.Context,
+	profile contracts.ProgramProfile,
+	manifest host.ContainerManifest,
+) error {
+	needs, needsFiles := profile.(contracts.ProtectedAccountFiles)
+	if !needsFiles || !manifest.IsProtected() {
+		return nil
+	}
+
+	for _, file := range needs.ProtectedAccountFiles() {
+		if err := opener.containers.WriteAccountFile(ctx, manifest.AccountFolder(), file.Name, file.Content); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // sessionContainer is the one container of the start's session, named for the installation and the session and

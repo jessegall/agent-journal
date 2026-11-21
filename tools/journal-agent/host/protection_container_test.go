@@ -195,7 +195,7 @@ func TestTheProtectedReportNamesTheExecutorAndTheManagedPolicyAndNeedsEvidence(t
 	}
 
 	codex, err := InspectProtection(ProtectedPlatform(daemon), "codex", "0.165.0", NativeEvidence{Folder: folder})
-	if err != nil || codex.Available || !strings.Contains(codex.Items[0].Reason, "executor") {
+	if err != nil || codex.Available || !strings.Contains(codex.Items[0].Reason, "task 1768") {
 		t.Fatalf("Codex's protected report does not say why it is unavailable: %+v, %v", codex, err)
 	}
 }

@@ -40,6 +40,62 @@
             "claude_code": "2.1.323",
             "codex": "0.165.0",
             "built_at": "2026-11-21T13:15:53+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/amd64",
+            "reference": "sha256:e89a68054f3f69fd25c8342e83af4ca48ea69698b3c919896dc16c554c772c4c",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-21T14:46:03+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:7afe2bbbc97e05f224bc4d33508ff5129650592ebcfe3550f3a1bf44cb65703b",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-21T15:00:05+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:7d1fde69aab1bd6e6a2f70c7bce5cefd16c76c22bc33b55926a6698244b71a43",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-21T15:04:22+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:8a42929c547737992fd5f1dd466752b3ba1f98a69a1bfc9c22b62230086d9d20",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-21T16:59:10+00:00"
+        },
+        {
+            "name": "runner",
+            "architecture": "linux/arm64",
+            "reference": "sha256:71d5099e1f46f2cd9ec6a45a7b76c6384aa778ad90dc75cbf16122dfb064f651",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-21T17:12:00+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:8a42929c547737992fd5f1dd466752b3ba1f98a69a1bfc9c22b62230086d9d20",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-21T17:13:11+00:00"
+        },
+        {
+            "name": "agent",
+            "architecture": "linux/arm64",
+            "reference": "sha256:15d4ab5c1830f7b2cdaf6845b9c00647e1efb79132b8f4b0f0c8218e9f8fdd73",
+            "claude_code": "2.1.323",
+            "codex": "0.165.0",
+            "built_at": "2026-11-21T17:51:18+00:00"
         }
     ]
 }

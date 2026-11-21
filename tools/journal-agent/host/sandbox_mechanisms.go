@@ -55,11 +55,11 @@ func claudeProtected() DriverMechanisms {
 	}
 }
 
-// codexWithoutProtectedStart is every item unavailable until Codex dispatches its tools to the executor.
+// codexWithoutProtectedStart is every item unavailable until Codex's approvals, features and resume are closed.
 func codexWithoutProtectedStart() DriverMechanisms {
 	missing := DriverMechanisms{}
 	for _, item := range BoundaryItems {
-		missing[item] = unavailable("Codex does not yet hand its commands to the executor (plan 45, tasks 1766 and 1768)")
+		missing[item] = unavailable("Codex's approvals, features and resume are not yet closed for a protected start (plan 45, task 1768)")
 	}
 
 	return missing

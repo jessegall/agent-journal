@@ -45,3 +45,40 @@ func TestTheAccountHooksComeWithOneTrustTableEach(t *testing.T) {
 		}
 	}
 }
+
+func TestAProtectedCodexStartRunsEveryToolThroughTheExecutorAndNothingInProcess(t *testing.T) {
+	protected := contracts.Start{Mode: recording.ProcessMode, Protected: true, Account: &contracts.AccountStart{Folder: "/account"}}
+	plain := contracts.Start{Mode: recording.ProcessMode, Account: &contracts.AccountStart{Folder: "/account"}}
+
+	protectedArguments, err := Codex{}.Arguments(protected)
+	if err != nil {
+		t.Fatal(err)
+	}
+	plainArguments, err := Codex{}.Arguments(plain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	files := Codex{}.ProtectedAccountFiles()
+
+	for _, feature := range []string{"view_image", "code_mode", "code_mode_only", "code_mode_host"} {
+		if !slices.Contains(protectedArguments, "features."+feature+"=false") {
+			t.Fatalf("a protected start keeps %s on: %v", feature, protectedArguments)
+		}
+		if slices.Contains(plainArguments, "features."+feature+"=false") {
+			t.Fatalf("a start that is not protected turned %s off", feature)
+		}
+	}
+	if !slices.Contains(protectedArguments, "danger-full-access") || !slices.Contains(plainArguments, "workspace-write") {
+		t.Fatalf("sandboxes: protected %v, plain %v", protectedArguments, plainArguments)
+	}
+	if len(files) != 1 || files[0].Name != "environments.toml" {
+		t.Fatalf("protected account files %v", files)
+	}
+	environments := string(files[0].Content)
+	for _, want := range []string{`default = "executor"`, "include_local = false", `program = "/opt/journal/shell/bash"`,
+		`args = ["-c", "exec codex exec-server --listen stdio"]`} {
+		if !strings.Contains(environments, want) {
+			t.Fatalf("environments.toml lacks %q:\n%s", want, environments)
+		}
+	}
+}

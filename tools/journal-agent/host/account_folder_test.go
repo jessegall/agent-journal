@@ -2,6 +2,7 @@ package host
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"os"
 	"os/exec"
@@ -160,6 +161,46 @@ func TestTheHostMakesAnAccountFolderAsRootForTheProgramAndKeepsTheRootRoots(t *t
 		`mkdir -m 0700 "$folder/projects"`} {
 		if !strings.Contains(made, want) {
 			t.Fatalf("the folder was made without %q: %s", want, made)
+		}
+	}
+}
+
+func TestTheHostWritesAnAccountFileForTheProgramAndRefusesAPathForAName(t *testing.T) {
+	folder := t.TempDir()
+	log := filepath.Join(folder, "calls.log")
+	docker := filepath.Join(folder, "docker")
+	if err := os.WriteFile(docker, []byte("#!/bin/sh\necho \"$*\" >> "+log+"\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	containers := Containers{Docker: docker, Rules: ContainerRules{AgentImage: "sha256:image"}}
+	content := []byte("include_local = false\n")
+
+	if err := containers.WriteAccountFile(context.Background(), "a1", "environments.toml", content); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"../config.toml", "sub/file", ""} {
+		if err := containers.WriteAccountFile(context.Background(), "a1", name, content); !errors.Is(err, ErrAccountFolderUnsafe) {
+			t.Fatalf("the name %q was answered %v", name, err)
+		}
+	}
+	if err := containers.WriteAccountFile(context.Background(), "../a1", "environments.toml", content); !errors.Is(err, ErrAccountFolderUnsafe) {
+		t.Fatalf("a path for an id was answered %v", err)
+	}
+
+	calls, err := os.ReadFile(log)
+	if err != nil {
+		t.Fatal(err)
+	}
+	written := string(calls)
+	if strings.Count(written, "run --rm") != 1 {
+		t.Fatalf("a refused file still ran a container: %s", written)
+	}
+	for _, want := range []string{"--user 0:0", "--cap-drop ALL", "source=/srv/journal/accounts,target=/accounts",
+		base64.StdEncoding.EncodeToString(content), `[ -L "/accounts/a1/environments.toml" ]`,
+		`chown 10001:10001 "/accounts/a1/environments.toml.new"`, `chmod 0600 "/accounts/a1/environments.toml.new"`,
+		`mv -f "/accounts/a1/environments.toml.new" "/accounts/a1/environments.toml"`} {
+		if !strings.Contains(written, want) {
+			t.Fatalf("the file was written without %q: %s", want, written)
 		}
 	}
 }

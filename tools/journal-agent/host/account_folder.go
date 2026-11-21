@@ -2,8 +2,10 @@ package host
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -122,6 +124,38 @@ func (containers Containers) MakeAccountFolder(ctx context.Context, accountID st
 	}, "\n")
 	if output, err := containers.runAsRoot(ctx, script); err != nil {
 		return fmt.Errorf("making the account folder failed: %w: %s", err, output)
+	}
+
+	return nil
+}
+
+// accountFileName is a file name in an account's folder the host may write: one plain name, no folder.
+var accountFileName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+
+// WriteAccountFile writes one file into the account's folder for the program's user, owned by it with mode 0600,
+// replacing a file of that name and refusing a link in its place, so a protected start finds a setting that no
+// argument can carry.
+func (containers Containers) WriteAccountFile(ctx context.Context, accountID, name string, content []byte) error {
+	if !plainAccountID.MatchString(accountID) {
+		return fmt.Errorf("%w: %q is not a plain account id", ErrAccountFolderUnsafe, accountID)
+	}
+
+	if !accountFileName.MatchString(name) {
+		return fmt.Errorf("%w: %q is not a plain file name", ErrAccountFolderUnsafe, name)
+	}
+
+	user := strconv.Itoa(agentUID)
+	file := "/accounts/" + accountID + "/" + name
+	script := strings.Join([]string{
+		"set -e",
+		`[ -L "` + file + `" ] && { echo "the account file is a link"; exit 1; }`,
+		"printf %s " + shellwords.Quoted(base64.StdEncoding.EncodeToString(content)) + ` | base64 -d > "` + file + `.new"`,
+		`chown ` + user + ":" + user + ` "` + file + `.new"`,
+		`chmod 0600 "` + file + `.new"`,
+		`mv -f "` + file + `.new" "` + file + `"`,
+	}, "\n")
+	if output, err := containers.runAsRoot(ctx, script); err != nil {
+		return fmt.Errorf("writing the account file %s failed: %w: %s", name, err, output)
 	}
 
 	return nil

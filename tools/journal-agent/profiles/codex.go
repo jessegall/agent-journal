@@ -24,6 +24,39 @@ var _ contracts.ProgramProfile = Codex{}
 // codexAgentFeatures are the features of 0.165.0 that start or coordinate another agent; all of them stay off.
 var codexAgentFeatures = []string{"multi_agent", "multi_agent_mode", "multi_agent_v2", "multi_agent_v2_dynamic_tools", "agent_message_board", "runtime_agent_instances"}
 
+// codexInProcessFeatures are the features of 0.165.0 that read files or run code in Codex's own process rather than
+// through its environment, so a protected start, whose environment is the executor, turns them off (report 299).
+var codexInProcessFeatures = []string{"view_image", "code_mode", "code_mode_only", "code_mode_host"}
+
+// codexExecutorEnvironment is the CODEX_HOME/environments.toml of a protected start: one default environment whose
+// program is the executor's shell, running the pinned Codex's own exec-server as the tools user, and no local
+// environment, so every command, terminal, patch and file read of the model runs as the tools user (report 300).
+const codexExecutorEnvironment = `default = "executor"
+include_local = false
+
+[[environments]]
+id = "executor"
+program = "/opt/journal/shell/bash"
+args = ["-c", "exec codex exec-server --listen stdio"]
+initialize_timeout_sec = 30
+`
+
+// codexSandboxOf is the sandbox Codex itself applies: workspace-write, except in a protected start, where its bwrap
+// cannot make namespaces inside the container and every tool already runs as the executor's user in the container,
+// so Codex's own sandbox is off (task 1766's probe in the agent image).
+func codexSandboxOf(start contracts.Start) string {
+	if start.Protected {
+		return "danger-full-access"
+	}
+
+	return "workspace-write"
+}
+
+// ProtectedAccountFiles is the environments.toml a protected start needs in its account's folder, CODEX_HOME.
+func (Codex) ProtectedAccountFiles() []contracts.SettingsFile {
+	return []contracts.SettingsFile{{Name: "environments.toml", Content: []byte(codexExecutorEnvironment)}}
+}
+
 // CodexAgentFeaturesOff are the config.toml lines that keep every agent-spawning feature of 0.165.0 off.
 func CodexAgentFeaturesOff() []string {
 	lines := make([]string, 0, len(codexAgentFeatures))
@@ -71,7 +104,7 @@ func (Codex) Arguments(start contracts.Start) ([]string, error) {
 		arguments = append(arguments, "resume", start.SessionID)
 	}
 
-	arguments = append(arguments, "--sandbox", "workspace-write")
+	arguments = append(arguments, "--sandbox", codexSandboxOf(start))
 	if start.Model != "" {
 		arguments = append(arguments, "-m", start.Model)
 	}
@@ -83,6 +116,11 @@ func (Codex) Arguments(start contracts.Start) ([]string, error) {
 	}
 	for _, feature := range codexAgentFeatures {
 		arguments = append(arguments, "-c", "features."+feature+"=false")
+	}
+	if start.Protected {
+		for _, feature := range codexInProcessFeatures {
+			arguments = append(arguments, "-c", "features."+feature+"=false")
+		}
 	}
 	if foreignSkills := foreignSkillsSwitchedOff(start.WorkFolder); foreignSkills != "" {
 		arguments = append(arguments, "-c", foreignSkills)
