@@ -1,9 +1,7 @@
 from engine.errors.refusal import Refusal
-from engine.query.queries import Queries
 from core.modules.plans.models.enums.checkpoint_state import CheckpointState
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.modules.workers.models.enums.merge_ask_state import MergeAskState
-from suites.coding.modules.workers.models.merge_ask import MergeAsk
+from suites.coding.modules.workers.support.merged_asks import MergedAsks
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.work_unit import WorkUnit
@@ -18,11 +16,11 @@ NOTE_HINT = 'journal worker ask-merge "<what it holds, what you changed from the
 class MergeAskScope:
     """Checks that a worker may ask for the merge of its unit, whole or up to one task or commit: a unit of more
     tasks, no run of the asked work open or failed, no clash waiting, something committed and no ask waiting
-    already; a whole ask also needs nothing started. An ask is never refused for coming early in a plan."""
+    whose work is not on the base branch yet; a whole ask also needs nothing started. An ask is never refused for coming early in a plan."""
 
-    def __init__(self, units: WorkUnits, worktrees: WorktreeQuery, tasks: TaskQuery, runs: WorktreeRuns, queries: Queries,
+    def __init__(self, units: WorkUnits, worktrees: WorktreeQuery, tasks: TaskQuery, runs: WorktreeRuns, merged_asks: MergedAsks,
                  merge_range: WorkerMergeRange) -> None:
-        self.units, self.worktrees, self.tasks, self.runs, self.queries = units, worktrees, tasks, runs, queries
+        self.units, self.worktrees, self.tasks, self.runs, self.merged_asks = units, worktrees, tasks, runs, merged_asks
         self.range = merge_range
 
     def checked(self, worker_id: int, note: str, last_task: str) -> MergeAskPart:
@@ -39,7 +37,7 @@ class MergeAskScope:
         part = self.part(worktree, unit, last_task)
         self.check_base(worktree, part)
         self.check_runs(worktree, part.task_ids)
-        waiting = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
+        waiting = self.merged_asks.waiting(worktree)
         if waiting is not None:
             raise Refusal(f"your ask {waiting.id} waits for the merge", "wait; you are informed when it is merged")
         if not note.strip():

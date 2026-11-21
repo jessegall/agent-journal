@@ -53,23 +53,12 @@ class SampleRuns:
         return self.blocking
 
 
-class SampleQuery:
-    def __init__(self, waiting):
-        self.waiting = waiting
-
-    def filter(self, **values):
-        return self
-
-    def first(self):
-        return self.waiting
-
-
-class SampleQueries:
+class SampleMergedAsks:
     def __init__(self, waiting=None):
-        self.waiting = waiting
+        self.ask = waiting
 
-    def query(self, model):
-        return SampleQuery(self.waiting)
+    def waiting(self, worktree):
+        return self.ask
 
 
 class SampleRange(WorkerMergeRange):
@@ -98,7 +87,7 @@ class SampleRange(WorkerMergeRange):
 
 
 def scope(unit=LIST_UNIT, worktree=WORKTREE, started=(), blocking=None, conflict=None, waiting=None) -> MergeAskScope:
-    return MergeAskScope(SampleUnits(unit), SampleWorktrees(worktree), SampleTasks(*started), SampleRuns(blocking), SampleQueries(waiting), SampleRange(conflict))
+    return MergeAskScope(SampleUnits(unit), SampleWorktrees(worktree), SampleTasks(*started), SampleRuns(blocking), SampleMergedAsks(waiting), SampleRange(conflict))
 
 
 def run(state: CheckpointState) -> tuple[WorktreeReach, CheckpointReach]:

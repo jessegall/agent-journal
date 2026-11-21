@@ -14,6 +14,7 @@ from suites.coding.modules.workers.models.enums.merge_ask_state import MergeAskS
 from suites.coding.modules.workers.models.lifecycles.merge_ask_lifecycle import MergeAskLifecycle
 from suites.coding.modules.workers.models.merge_ask import MergeAsk
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.merged_asks import MergedAsks
 
 
 class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
@@ -23,22 +24,25 @@ class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
 
     command = MergeNextWorker
 
-    def __init__(self, agents: AgentRows, bus: Bus, visits: MergerVisits, queries: Queries, repository: Repository, worktrees: WorktreeQuery) -> None:
+    def __init__(self, agents: AgentRows, bus: Bus, visits: MergerVisits, queries: Queries, repository: Repository, worktrees: WorktreeQuery, merged_asks: MergedAsks) -> None:
         self.agents, self.bus, self.visits = agents, bus, visits
-        self.queries, self.repository, self.worktrees = queries, repository, worktrees
+        self.queries, self.repository, self.worktrees, self.merged_asks = queries, repository, worktrees, merged_asks
 
     def handle(self, command: MergeNextWorker, context: Context) -> MergeOutcome:
         require_merger(self.agents, context)
         self.visits.close_newest(context)
-        part_request = self.part_ask(command.worker_id)
+        part_request = self.part_ask(command.worker_id, context)
         if part_request is None:
             return self.bus.dispatch(MergeWorker(command.worker_id, command.read_important), context)
         outcome = self.bus.dispatch(MergeFinishedTasks(command.worker_id, str(part_request.tasks()[-1])), context)
-        self.repository.save_change(part_request, part_request.moved(MergeAskLifecycle.merge), context)
+        still_waiting = self.queries.query(MergeAsk).filter(id=part_request.id, state=MergeAskState.WAITING).first()
+        if still_waiting is not None:
+            self.repository.save_change(still_waiting, still_waiting.moved(MergeAskLifecycle.merge), context)
         return outcome
 
-    def part_ask(self, worker_id: int) -> MergeAsk | None:
+    def part_ask(self, worker_id: int, context: Context) -> MergeAsk | None:
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
             return None
+        self.merged_asks.close(worktree, context)
         return self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING, is_full=False).first()

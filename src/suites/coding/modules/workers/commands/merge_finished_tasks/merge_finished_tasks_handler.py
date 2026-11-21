@@ -17,6 +17,7 @@ from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from core.modules.agents.support.agent_label import AgentLabel
 from suites.coding.modules.workers.support.worker_merge_range import WorkerMergeRange
+from suites.coding.modules.workers.support.merged_asks import MergedAsks
 
 MERGED_PROOFS_REASON = "a merge checks every proof of the tasks it takes in"
 
@@ -33,8 +34,8 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, checks: MergeChecks, environments: EnvironmentRows, queries: Queries, proofs: ProofQuery, repository: Repository, wait_text: CheckpointWaitText,
-                 merge_range: WorkerMergeRange) -> None:
-        self.wait_text, self.range = wait_text, merge_range
+                 merge_range: WorkerMergeRange, merged_asks: MergedAsks) -> None:
+        self.wait_text, self.range, self.merged_asks = wait_text, merge_range, merged_asks
         self.worktrees, self.git, self.checks, self.environments = worktrees, git, checks, environments
         self.queries, self.proofs, self.repository = queries, proofs, repository
 
@@ -53,6 +54,7 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
                           f"{AgentLabel.labelled_row(worktree.session_agent_id, "worker").text} changes them too: commit or stash them, then merge again")
         numbers = ", ".join(str(task.id) for task in tasks)
         self.git.merge_revision(environment.folder, commit, f"tasks {numbers}, from {AgentLabel.labelled_row(worktree.session_agent_id, "worker").text}")
+        self.merged_asks.close(worktree, context)
         reasons = self.wait_text.merged_reasons(worktree, [task.id for task in tasks])
         for task in tasks:
             if task.state is TaskState.TESTING:
