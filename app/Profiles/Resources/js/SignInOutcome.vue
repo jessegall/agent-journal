@@ -28,7 +28,7 @@ defineProps<{
     >
         <template v-if="attempt.state === 'checking'">
             <Spinner large class="text-brand" />
-            <h4 class="mt-1 font-semibold text-card">
+            <h4 class="mt-1 font-semibold text-card text-text">
                 Checking the sign-in with {{ programName(program) }}…
             </h4>
             <p class="max-w-[340px] text-field leading-relaxed text-text-2">
@@ -42,7 +42,7 @@ defineProps<{
                 data-mark="done"
                 >✓</span
             >
-            <h4 class="mt-1 font-semibold text-card">Account added</h4>
+            <h4 class="mt-1 font-semibold text-card text-text">Account added</h4>
             <p class="max-w-[340px] text-field leading-relaxed text-text-2">
                 <b class="font-medium [overflow-wrap:anywhere] text-text">{{
                     accountName ?? programName(program)
@@ -56,7 +56,7 @@ defineProps<{
                 data-mark="grey"
                 >=</span
             >
-            <h4 class="mt-1 font-semibold text-card">
+            <h4 class="mt-1 font-semibold text-card text-text">
                 {{ endedMessage(attempt) }}
             </h4>
             <p class="max-w-[340px] text-field leading-relaxed text-text-2">
@@ -76,12 +76,15 @@ defineProps<{
                 data-mark="grey"
                 >!</span
             >
-            <h4 class="mt-1 font-semibold text-card">
+            <h4 class="mt-1 font-semibold text-card text-text">
                 {{ endedMessage(attempt) }}
             </h4>
             <p class="max-w-[340px] text-field leading-relaxed text-text-2">
-                Nothing was saved. Start again for a new sign-in page, or choose
-                another way to sign in.
+                {{
+                    method.isSecret
+                        ? `Nothing was saved. Start again with another ${method.title.toLowerCase()}, or choose another way to sign in.`
+                        : 'Nothing was saved. Start again for a new sign-in page, or choose another way to sign in.'
+                }}
             </p>
         </template>
     </div>

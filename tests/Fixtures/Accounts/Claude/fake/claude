@@ -36,7 +36,9 @@ case "$1" in
         fi
         ;;
     -p)
-        # One model call: it answers when the folder's token or key starts with valid, and fails otherwise.
+        # One model call: like the real program it first reads its standard input to the end, then answers when the
+        # folder's token or key starts with valid, and fails otherwise.
+        cat >/dev/null
         value=""
         if [ -n "$CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR" ]; then value=$(cat <&3); fi
         if [ -f "$CLAUDE_CONFIG_DIR/api-key" ]; then value=$(cat "$CLAUDE_CONFIG_DIR/api-key"); fi

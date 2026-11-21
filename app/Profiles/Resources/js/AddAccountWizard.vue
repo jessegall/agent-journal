@@ -203,7 +203,7 @@ function cancelAndClose(): void {
                     class="flex size-10 items-center justify-center rounded-full bg-chip text-lg font-semibold text-text-3"
                     >?</span
                 >
-                <h4 class="mt-1 font-semibold text-card">
+                <h4 class="mt-1 font-semibold text-card text-text">
                     Keep the sign-in waiting?
                 </h4>
                 <p class="max-w-[340px] text-field leading-relaxed text-text-2">
