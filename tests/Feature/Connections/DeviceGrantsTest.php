@@ -4,7 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\HostProtocolVersion;
+use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Support\AssigneeIdentity;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\RequestKey;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\ProjectBinding;
@@ -12,6 +19,7 @@ use App\Connections\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
@@ -30,9 +38,9 @@ final class DeviceGrantsTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'command_receipts', 'device_grants', 'connection_audits', 'project_invitations', 'install_attempts',
-        'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts', 'settings_records',
-        'users',
+        'assignment_records', 'tasks', 'command_receipts', 'device_grants', 'connection_audits', 'project_invitations',
+        'install_attempts', 'project_bindings', 'project_environments', 'projects', 'agent_runtimes', 'agents', 'hosts',
+        'settings_records', 'users',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
@@ -133,6 +141,48 @@ final class DeviceGrantsTest extends TestCase
             ->where('page.data.bindings.0.signIns.1.state', 'revoked'));
         $this->deviceCommand($first, $binding)->assertUnauthorized();
         $this->deviceCommand($second, $binding)->assertForbidden();
+    }
+
+    public function test_overview_in_a_terminal_shows_the_users_tasks_of_its_environment_only(): void
+    {
+        $binding = $this->connected();
+        $grant = $this->approvedGrant($binding);
+        $environment = (string) ProjectBinding::query()->findOrFail($binding)->environment_id;
+        $here = Task::factory()->create(['title' => 'Review the release', 'environment_id' => $environment]);
+        $elsewhere = Task::factory()->create(['title' => 'Ship the release', 'environment_id' => 'production-environment']);
+        $this->assignToOwner($here);
+        $this->assignToOwner($elsewhere);
+
+        $overview = $this->overview($grant, $binding, ['overview'])->assertOk();
+
+        $this->assertSame(1, $overview->json('count'));
+        $this->assertSame([['number' => $here->number, 'title' => 'Review the release']], $overview->json('tasks'));
+        $this->assertSame('Main', $overview->json('environment'));
+        $this->overview($grant, $binding, ['overview', 'extra'])->assertForbidden();
+    }
+
+    private function assignToOwner(Task $task): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
+        $holder = AssigneeIdentity::of(ActorContext::forUser($this->owner->id));
+        $this->app->make(CommandBus::class)->run(new AssignRecord($task->assignmentIdentity(), $holder));
+    }
+
+    /**
+     * @param  list<string>  $argv
+     */
+    private function overview(string $grant, string $binding, array $argv): TestResponse
+    {
+        $this->app['auth']->forgetGuards();
+        $this->app->forgetScopedInstances();
+
+        return $this->postJson('https://localhost/api/project-commands/device', [
+            'request_key' => 'request-'.count($argv),
+            'binding' => $binding,
+            'argv' => $argv,
+            'stdin' => '',
+        ], ['Authorization' => "Bearer {$grant}"]);
     }
 
     private function approvedGrant(string $binding): string

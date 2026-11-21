@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strings"
 	"syscall"
 	"time"
 
@@ -437,7 +438,14 @@ func (commands dispatcher) asShellUser(
 		return 0, err
 	}
 
-	code, err := client.RunDeviceCommand(context.Background(), commands.transport, binding.JournalURL, signIn.Grant, command, write)
+	run := func(grant string) (int, error) {
+		if isOverview(command) {
+			return showOverview(context.Background(), commands.transport, binding.JournalURL, grant, command, write)
+		}
+
+		return client.RunDeviceCommand(context.Background(), commands.transport, binding.JournalURL, grant, command, write)
+	}
+	code, err := run(signIn.Grant)
 	if errors.Is(err, client.ErrUnauthenticated) {
 		if err := state.ClearSignIn(commands.terminal, signIn.Generation); err != nil {
 			return 0, err
@@ -447,13 +455,44 @@ func (commands dispatcher) asShellUser(
 			return 0, err
 		}
 
-		return client.RunDeviceCommand(context.Background(), commands.transport, binding.JournalURL, signIn.Grant, command, write)
+		return run(signIn.Grant)
 	}
 	if errors.Is(err, client.ErrUncertain) {
 		fmt.Fprintf(stderr, "journal: the journal could not be reached, so this terminal's access could not be checked; its sign-in %s is kept.\n", signIn.Reference)
 	}
 
 	return code, err
+}
+
+// isOverview is whether the command is the one-word journal overview, with nothing piped in.
+func isOverview(command client.ProjectCommand) bool {
+	return len(command.Argv) == 1 && command.Argv[0] == "overview" && command.Stdin == ""
+}
+
+// showOverview prints this terminal's overview: its project and environment, how many tasks of it the approving
+// user holds, and each by number and title.
+func showOverview(
+	ctx context.Context,
+	transport *http.Client,
+	journalURL string,
+	grant string,
+	command client.ProjectCommand,
+	write func(client.CommandFrame) error,
+) (int, error) {
+	overview, err := client.RunDeviceOverview(ctx, transport, journalURL, grant, command)
+	if err != nil {
+		return 0, err
+	}
+	noun := "tasks"
+	if overview.Count == 1 {
+		noun = "task"
+	}
+	lines := []string{overview.Project + " / " + overview.Environment, fmt.Sprintf("%d %s assigned to you", overview.Count, noun)}
+	for _, task := range overview.Tasks {
+		lines = append(lines, fmt.Sprintf("#%d %s", task.Number, task.Title))
+	}
+
+	return 0, write(client.CommandFrame{Sequence: 1, Stream: "stdout", Text: strings.Join(lines, "\n") + "\n"})
 }
 
 // signedIn is this terminal's kept sign-in with its bearer, approved now when it has none yet.

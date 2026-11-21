@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Tasks\Support;
+
+use App\Actors\Contracts\CurrentActor;
+use App\Assignments\Contracts\AssignmentResolver;
+use App\Assignments\Support\AssigneeIdentity;
+use App\Connections\Contracts\EnvironmentTasks;
+use App\Connections\Values\EnvironmentTask;
+use App\Connections\Values\EnvironmentTaskList;
+use Domain\Tasks\Models\Task;
+
+/**
+ * The tasks the acting user holds that were made through a binding of one environment, counted and the first by
+ * number; a task of another environment, or made here, is never among them.
+ */
+final readonly class EnvironmentAssignedTasks implements EnvironmentTasks
+{
+    public function __construct(private CurrentActor $actors, private AssignmentResolver $assignments) {}
+
+    public function assignedToActor(string $environmentId, int $most): EnvironmentTaskList
+    {
+        $held = $this->assignments->allRecordIdsFor(Task::LINK_TYPE, AssigneeIdentity::of($this->actors->actor()));
+        $matching = Task::query()->amongIds($held)->inEnvironments([$environmentId]);
+        $tasks = $matching->clone()->orderBy('number')->limit($most)->get();
+
+        return new EnvironmentTaskList(
+            $matching->count(),
+            array_values($tasks->map(fn (Task $task) => new EnvironmentTask($task->number, $task->title))->all()),
+        );
+    }
+}

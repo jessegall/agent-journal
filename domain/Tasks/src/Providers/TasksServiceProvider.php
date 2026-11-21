@@ -6,6 +6,7 @@ namespace Domain\Tasks\Providers;
 
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Values\ReadEntitlement;
+use App\Connections\Contracts\EnvironmentTasks;
 use App\Docking\Sources\Contracts\DockRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use Domain\Tasks\Console\AssignedTasksCommand;
@@ -25,6 +26,7 @@ use Domain\Tasks\Resolvers\TaskCounts;
 use Domain\Tasks\Resolvers\TaskDetailRecords;
 use Domain\Tasks\Resolvers\VisibleTasks;
 use Domain\Tasks\Support\DockedTask;
+use Domain\Tasks\Support\EnvironmentAssignedTasks;
 use Domain\Tasks\Support\TaskDocking;
 use Illuminate\Support\ServiceProvider;
 
@@ -40,6 +42,7 @@ final class TasksServiceProvider extends ServiceProvider
         $this->app->bind(TaskResolver::class, VisibleTasks::class);
         $this->app->scoped(TaskAssignmentResolver::class, TaskAssignmentRecords::class);
         $this->app->scoped(AssignedTaskResolver::class, AssignedTasks::class);
+        $this->app->scoped(EnvironmentTasks::class, EnvironmentAssignedTasks::class);
         $this->app->scoped(TaskListResolver::class, ListedTasks::class);
         $this->app->scoped(TaskDetailsResolver::class, TaskDetailRecords::class);
     }

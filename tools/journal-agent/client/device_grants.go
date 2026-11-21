@@ -79,6 +79,48 @@ func (client *Client) PollDeviceGrant(ctx context.Context, deviceCode string) (D
 	return DevicePoll{Outcome: answer.Outcome, Grant: answer.Grant, Reference: answer.Reference}, nil
 }
 
+// DeviceOverview is what journal overview answers a terminal sign-in: the project and environment its folder works in,
+// how many of that environment's tasks the approving user holds, and the first of them.
+type DeviceOverview struct {
+	Project     string `json:"project"`
+	Environment string `json:"environment"`
+	Count       int    `json:"count"`
+	Tasks       []struct {
+		Number int    `json:"number"`
+		Title  string `json:"title"`
+	} `json:"tasks"`
+}
+
+// RunDeviceOverview asks for this terminal's overview under its device grant.
+func RunDeviceOverview(
+	ctx context.Context,
+	transport *http.Client,
+	journalURL string,
+	grant string,
+	command ProjectCommand,
+) (DeviceOverview, error) {
+	content, err := json.Marshal(command)
+	if err != nil {
+		return DeviceOverview{}, err
+	}
+	request, err := newJSONRequest(ctx, journalURL+"/api/project-commands/device", content)
+	if err != nil {
+		return DeviceOverview{}, err
+	}
+	request.Header.Set("Authorization", "Bearer "+grant)
+	response, err := transport.Do(request)
+	if err != nil {
+		return DeviceOverview{}, errors.Join(ErrUncertain, err)
+	}
+	defer response.Body.Close()
+	if err := refusalOf(response, request.URL.Path); err != nil {
+		return DeviceOverview{}, err
+	}
+	overview := DeviceOverview{}
+
+	return overview, json.NewDecoder(response.Body).Decode(&overview)
+}
+
 // RunDeviceCommand runs the verb under a shell user's device grant and hands each frame to write in sequence.
 func RunDeviceCommand(
 	ctx context.Context,
