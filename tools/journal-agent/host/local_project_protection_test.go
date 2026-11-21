@@ -3,6 +3,7 @@ package host
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 )
@@ -34,6 +35,8 @@ func TestTheLocalProjectConfinementKeepsAChildInsideItsOwnCheckout(t *testing.T)
 		"read the project's canonical checkout": "refused",
 		"write the relay's state":               "refused",
 		"connect to a socket of the relay":      "refused",
+		"connect to its own Git broker":         "allowed",
+		"connect to a sibling's Git broker":     "refused",
 	}
 	for _, check := range report.Checks {
 		if want[check.Action] != check.Observed || !check.Held {
@@ -51,7 +54,8 @@ func TestAPlatformWithNoConfinementRefusesTheChildStartByName(t *testing.T) {
 		t.Skip("this platform has a confinement")
 	}
 	folder := t.TempDir()
-	folders := LocalProjectFolders{Checkout: folder, Project: folder, Common: folder, State: folder, Runtime: folder}
+	folders := LocalProjectFolders{Checkout: folder, Project: folder, Common: folder, State: folder, Runtime: folder,
+		Broker: filepath.Join(folder, BrokerSocketName)}
 
 	if _, err := ConfineChild(folders); !errors.Is(err, ErrLocalProjectUnprotected) {
 		t.Fatalf("the child start was not refused by name: %v", err)

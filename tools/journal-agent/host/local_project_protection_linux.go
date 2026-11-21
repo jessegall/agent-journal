@@ -5,12 +5,14 @@ package host
 import (
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
 // localProjectConfinement is a bubblewrap namespace around the program over the machine's own folders. Mounts apply
 // in order: the project and the relay's state are covered by empty folders, which also hide every socket in the state,
-// and the child's own checkout and runtime folder are bound back writable over them. Git's common directory, when it
+// and every Git broker socket, and the child's own checkout, runtime folder and broker socket's folder are bound back
+// writable over them. Git's common directory, when it
 // lies outside the project, is bound read-only. Claude Code's own sandbox on Linux also needs socat.
 func localProjectConfinement(folders LocalProjectFolders, _ string) (ChildConfinement, error) {
 	for _, tool := range []string{"bwrap", "socat"} {
@@ -25,8 +27,9 @@ func localProjectConfinement(folders LocalProjectFolders, _ string) (ChildConfin
 	}
 
 	arguments := []string{bwrap, "--die-with-parent", "--bind", "/", "/", "--dev", "/dev", "--proc", "/proc",
-		"--tmpfs", folders.Project, "--tmpfs", folders.State,
-		"--bind", folders.Checkout, folders.Checkout, "--bind", folders.Runtime, folders.Runtime}
+		"--tmpfs", folders.Project, "--tmpfs", folders.State, "--tmpfs", folders.brokerRoot(),
+		"--bind", folders.Checkout, folders.Checkout, "--bind", folders.Runtime, folders.Runtime,
+		"--bind", filepath.Dir(folders.Broker), filepath.Dir(folders.Broker)}
 	if !strings.HasPrefix(folders.Common+"/", folders.Project+"/") {
 		arguments = append(arguments, "--ro-bind", folders.Common, folders.Common)
 	}

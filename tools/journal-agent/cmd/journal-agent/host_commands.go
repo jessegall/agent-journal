@@ -294,8 +294,9 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 }
 
 // inChildWorktree prepares the linked worktree of a connected project's child before its process exists, keeps the
-// runtime and its start on the claim's receipt, confines the child to it, serves the Git broker in it, and answers
-// the start with the worktree as the runtime's folder. A machine that cannot confine the child refuses its start.
+// runtime and its start on the claim's receipt, serves the Git broker for it at a short private socket, confines the
+// child to the worktree and that socket, and answers the start with the worktree as the runtime's folder and the
+// socket as its broker's. A machine that cannot confine the child refuses its start.
 func (opener runtimeOpener) inChildWorktree(
 	runtimeID string,
 	prepared host.PreparedStart,
@@ -316,24 +317,28 @@ func (opener runtimeOpener) inChildWorktree(
 	if err != nil {
 		return host.PreparedStart{}, host.ChildConfinement{}, err
 	}
+	// The child changes Git only through the broker of fixed operations; its socket listens before the confinement
+	// names it, as the confinement matches the socket's real path.
+	socket := host.BrokerSocketPath(runtimeID)
+	listener, err := host.ListenBroker(socket)
+	if err != nil {
+		return host.PreparedStart{}, host.ChildConfinement{}, fmt.Errorf("runtime %s: its Git broker was not served: %w",
+			runtimeID, err)
+	}
 	folders := host.LocalProjectFolders{Checkout: receipt.Path, Project: opener.worktrees.Root, Common: common,
-		State: opener.relayState, Runtime: filepath.Join(opener.stateFolder, "runtimes", runtimeID)}
+		State: opener.relayState, Runtime: filepath.Join(opener.stateFolder, "runtimes", runtimeID), Broker: socket}
 	if account := accountOf(prepared, opener.installationFolder, runtimeID); account != nil {
 		folders.Account = account.Folder
 	}
 	confinement, err := host.ConfineChild(folders)
 	if err != nil {
-		return host.PreparedStart{}, host.ChildConfinement{}, fmt.Errorf("runtime %s: a connected child starts only confined: %w",
-			runtimeID, err)
-	}
-	// The child changes Git only through the broker of fixed operations, served in its worktree's private folder.
-	listener, err := host.ListenBroker(receipt.Path)
-	if err != nil {
-		return host.PreparedStart{}, host.ChildConfinement{}, fmt.Errorf("runtime %s: its Git broker was not served: %w",
-			runtimeID, err)
+		listener.Close()
+		return host.PreparedStart{}, host.ChildConfinement{}, fmt.Errorf(
+			"runtime %s: a connected child starts only confined: %w", runtimeID, err)
 	}
 	go host.ServeBroker(listener, host.GitBroker{Checkout: receipt.Path, Writes: checkout.Writes, Git: "git"})
 	prepared.Grant.Runtime.Folder = receipt.Path
+	prepared.BrokerSocket = socket
 
 	return prepared, confinement, nil
 }

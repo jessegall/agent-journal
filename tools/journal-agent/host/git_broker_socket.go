@@ -2,18 +2,33 @@ package host
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
+	"syscall"
 	"time"
 )
 
-// BrokerSocketName is the Git broker's socket in a child's worktree, under its private .journal folder, which Git
-// excludes there.
+// BrokerSocketName is the Git broker's socket in its runtime's own folder under the broker root.
 const BrokerSocketName = "git.sock"
+
+// BrokerSocketVariable tells a connected child's program where its Git broker listens.
+const BrokerSocketVariable = "JOURNAL_GIT_BROKER"
+
+// unixSocketPathMost is the longest Unix socket path every platform binds: macOS keeps 104 bytes, the last a NUL.
+const unixSocketPathMost = 103
+
+// ErrBrokerSocketTooLong refuses a broker socket whose path no Unix socket can bind.
+var ErrBrokerSocketTooLong = errors.New("the Git broker's socket path is longer than a Unix socket takes")
+
+// ErrBrokerRootNotOwn refuses a broker root another user made, or one open to them.
+var ErrBrokerRootNotOwn = errors.New("the Git brokers' root is not this user's own private folder")
 
 // brokerTimeout bounds one broker call, so a stuck Git never holds the socket.
 const brokerTimeout = 2 * time.Minute
@@ -36,13 +51,36 @@ type BrokerAnswer struct {
 // ErrUnknownBrokerOperation refuses an operation outside the broker's fixed set.
 var ErrUnknownBrokerOperation = errors.New("the Git broker carries out only status, diff, stage, commit and verified")
 
-// ListenBroker opens the broker's socket in the worktree's private .journal folder, private to this user.
-func ListenBroker(worktree string) (net.Listener, error) {
-	folder := filepath.Join(worktree, ".journal")
-	if err := os.MkdirAll(folder, 0o700); err != nil {
+// BrokerRoot is the short folder every Git broker socket of this user lives under, whatever depth its project has:
+// /tmp, not the platform's temporary folder, which is long on macOS.
+func BrokerRoot() string {
+	return filepath.Join("/tmp", "journal-"+strconv.Itoa(os.Getuid()))
+}
+
+// BrokerSocketPath is the broker socket of one runtime, in a folder of its own under the broker root, named by a
+// digest of the runtime id so its length never depends on the id.
+func BrokerSocketPath(runtimeID string) string {
+	digest := sha256.Sum256([]byte(runtimeID))
+
+	return filepath.Join(BrokerRoot(), hex.EncodeToString(digest[:6]), BrokerSocketName)
+}
+
+// ListenBroker opens the broker's socket at its path, in an owner-only folder under an owner-only broker root; a
+// root another user holds or a path too long to bind is refused by name.
+func ListenBroker(path string) (net.Listener, error) {
+	if len(path) > unixSocketPathMost {
+		return nil, fmt.Errorf("%w: %s", ErrBrokerSocketTooLong, path)
+	}
+	root := filepath.Dir(filepath.Dir(path))
+	if err := os.Mkdir(root, 0o700); err != nil && !errors.Is(err, os.ErrExist) {
 		return nil, err
 	}
-	path := filepath.Join(folder, BrokerSocketName)
+	if err := assertOwnFolder(root); err != nil {
+		return nil, err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return nil, err
+	}
 	_ = os.Remove(path)
 	listener, err := net.Listen("unix", path)
 	if err != nil {
@@ -50,6 +88,20 @@ func ListenBroker(worktree string) (net.Listener, error) {
 	}
 
 	return listener, os.Chmod(path, 0o600)
+}
+
+// assertOwnFolder refuses a folder that is a link, is not this user's or is open to anyone else.
+func assertOwnFolder(folder string) error {
+	info, err := os.Lstat(folder)
+	if err != nil {
+		return err
+	}
+	owner, known := info.Sys().(*syscall.Stat_t)
+	if !info.IsDir() || !known || int(owner.Uid) != os.Getuid() || info.Mode().Perm()&0o077 != 0 {
+		return fmt.Errorf("%w: %s", ErrBrokerRootNotOwn, folder)
+	}
+
+	return nil
 }
 
 // ServeBroker answers each call on the listener through the broker until the listener closes.
