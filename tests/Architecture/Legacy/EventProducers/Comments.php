@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Comments\Events\CommentPosted;
+use App\Records\Support\RecordIdentity;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -14,9 +15,8 @@ return [
     CommentPosted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Comment::create',
-        'migrated' => false,
-        'producers' => [
-            'app/Comments/Support/CommentEvents.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new CommentPosted('comment', new RecordIdentity('documents.document', '01jd8x0g9m3qz6v4k2pr0p0se1')),
     ],
 ];

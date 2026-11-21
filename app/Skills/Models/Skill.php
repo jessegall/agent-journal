@@ -6,16 +6,17 @@ namespace App\Skills\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use App\Skills\Contracts\SkillCondition;
+use App\Skills\Events\SkillsChanged;
 use App\Skills\Exceptions\SkillOwnerRequired;
 use App\Skills\Exceptions\SkillRetired;
 use App\Skills\Exceptions\SkillRevisionConflict;
-use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -42,12 +43,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['key', 'owner_type', 'owner_id', 'environment', 'current_revision_id', 'retired_at'])]
-final class Skill extends Model implements Numbered, ReadableModel
+final class Skill extends Model implements EventSource, Numbered, ReadableModel
 {
     use BoundedReads;
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.skill';
 
@@ -121,20 +123,13 @@ final class Skill extends Model implements Numbered, ReadableModel
     // ----------[ Mutations ]----------
 
     /**
-     * Appends the draft as the skill's next revision, with its checked condition, and makes it current.
+     * Makes the revision just written the skill's current one, and announces the change.
      */
-    public function appendRevision(
-        SkillDraft $draft,
-        SkillCondition $condition,
-        ActorIdentity $author,
-        string|null $sourceKey = null,
-        string|null $sourceDigest = null,
-    ): SkillRevision {
-        $revision = SkillRevision::create($this, $draft, $condition, $author, $sourceKey, $sourceDigest);
+    public function makeCurrent(SkillRevision $revision): void
+    {
         $this->current_revision_id = $revision->id;
-        $this->save();
-
-        return $revision;
+        $this->assertSaved($this->save());
+        $this->raise(new SkillsChanged($this->id, $revision->revision));
     }
 
     /**
@@ -150,26 +145,14 @@ final class Skill extends Model implements Numbered, ReadableModel
         }
 
         $this->retired_at = CarbonImmutable::now();
-        $this->save();
+        $this->assertSaved($this->save());
+        $current = SkillRevision::currentOf($this);
+        $this->raise(new SkillsChanged($this->id, $current->revision));
 
-        return SkillRevision::currentOf($this);
+        return $current;
     }
 
     // ----------[ Answers ]----------
-
-    /**
-     * Appends an earlier revision's content as the next revision, with its condition checked again today.
-     */
-    public function restoreFrom(SkillRevision $earlier, SkillCondition $condition, ActorIdentity $author): SkillRevision
-    {
-        return $this->appendRevision(
-            $earlier->draft(),
-            $condition,
-            $author,
-            $earlier->source_key,
-            $earlier->source_digest,
-        );
-    }
 
     /**
      * Refuses a write to a retired skill, or one made against a revision that is no longer current.

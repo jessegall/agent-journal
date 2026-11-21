@@ -9,7 +9,7 @@ use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Models\AssignmentRecord;
-use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -45,7 +45,7 @@ final class DeskWorkTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $desk = DeskRecord::openNamed('team', 'Team', 2, false);
+        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 2, false);
         $first = Agent::create('First', 'read-only-helper');
         $second = Agent::create('Second', 'read-only-helper');
         $outsider = Agent::create('Outsider', 'read-only-helper');

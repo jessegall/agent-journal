@@ -9,14 +9,14 @@ use App\Agents\Commands\ReleaseAgentHold;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Support\DriverRequests;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class ReleaseAgentHoldHandler implements CommandHandler
 {
     public function __construct(
         private DriverRequests $requests,
-        private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     public function handle(ReleaseAgentHold $command): void
@@ -38,6 +38,8 @@ final readonly class ReleaseAgentHoldHandler implements CommandHandler
 
         $runtime->releaseHold();
         $actor = ActorIdentity::of($command->dispatchedBy());
-        $this->events->dispatch(new AgentHoldReleased($runtime->id, $command->expectedHold, $actor, $command->reason));
+        $this->facts->publishAfterCommit(
+            new AgentHoldReleased($runtime->id, $command->expectedHold, $actor, $command->reason),
+        );
     }
 }

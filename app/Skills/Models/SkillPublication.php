@@ -87,72 +87,27 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
-     * Records each intent, reading the open and delivered publications of all their targets in two queries; an open
-     * intent for one of those targets is superseded, so each target has one open intent.
-     *
-     * @param  list<PublicationIntent>  $intents
-     * @return list<self>
+     * A pending intent to deliver the generation's selection to the session's target, the target's one open intent.
      */
-    public static function intendMany(SkillGeneration $generation, array $intents): array
-    {
-        $openKeys = array_map(
-            fn (PublicationIntent $intent) => self::openKeyOf($intent->sessionId, $intent->target),
-            $intents,
-        );
-        $limit = max(1, count($intents));
-        $open = self::query()
-            ->whereIn('open_key', $openKeys)
-            ->lockForUpdate()
-            ->readExactly($limit)
-            ->get()
-            ->keyBy('open_key');
-        $delivered = self::query()
-            ->whereIn('session_id', array_map(fn (PublicationIntent $intent) => $intent->sessionId, $intents))
-            ->inState(PublicationState::Delivered)
-            ->orderByDesc('created_at')
-            ->readExactly($limit)
-            ->get()
-            ->unique(fn (self $publication) => self::openKeyOf($publication->session_id, $publication->target))
-            ->keyBy(fn (self $publication) => self::openKeyOf($publication->session_id, $publication->target));
-
-        return array_map(function (PublicationIntent $intent) use ($generation, $open, $delivered): self {
-            $openKey = self::openKeyOf($intent->sessionId, $intent->target);
-            $open->get($openKey)?->supersede();
-
-            return self::query()->create([
-                'session_id' => $intent->sessionId,
-                'program' => $intent->program,
-                'target' => $intent->target,
-                'generation_id' => $generation->id,
-                'selection_digest' => $intent->selectionDigest,
-                'skill_keys' => $intent->skillKeys,
-                'expected_previous_generation_id' => $delivered->get($openKey)?->generation_id,
-                'state' => PublicationState::Pending,
-                'open_key' => $openKey,
-            ]);
-        }, $intents);
+    public static function create(
+        SkillGeneration $generation,
+        PublicationIntent $intent,
+        string|null $expectedPreviousGenerationId,
+    ): self {
+        return self::query()->create([
+            'session_id' => $intent->sessionId,
+            'program' => $intent->program,
+            'target' => $intent->target,
+            'generation_id' => $generation->id,
+            'selection_digest' => $intent->selectionDigest,
+            'skill_keys' => $intent->skillKeys,
+            'expected_previous_generation_id' => $expectedPreviousGenerationId,
+            'state' => PublicationState::Pending,
+            'open_key' => self::openKeyOf($intent->sessionId, $intent->target),
+        ]);
     }
 
     // ----------[ Queries ]----------
-
-    /**
-     * Records the intent to deliver this selection to the session's target; an open intent for the same target is
-     * superseded, so one target has one open intent.
-     *
-     * @param  list<string>  $keys  the keys of the selected skills, in the generation's order
-     */
-    public static function intend(
-        string $sessionId,
-        string $program,
-        string $target,
-        SkillGeneration $generation,
-        string $selectionDigest,
-        array $keys,
-    ): self {
-        return self::intendMany($generation, [
-            new PublicationIntent($sessionId, $program, $target, $selectionDigest, $keys),
-        ])[0];
-    }
 
     /**
      * The selection digest of each session's newest open or delivered publication, by session id, in one query.
@@ -350,13 +305,6 @@ final class SkillPublication extends Model implements ReadableModel
         $this->lease_holder = null;
         $this->lease_until = null;
         $this->save();
-        self::query()
-            ->forTarget($this->session_id, $this->target)
-            ->inState(PublicationState::Delivered)
-            ->whereKeyNot($this->id)
-            ->readAll('a target keeps a handful of delivered publications')
-            ->get()
-            ->each(fn (self $older) => $older->supersede());
     }
 
     public function fail(string $reason): void
@@ -470,6 +418,19 @@ final class SkillPublication extends Model implements ReadableModel
         );
     }
 
+    public static function openKeyOf(string $sessionId, string $target): string
+    {
+        return $sessionId.'|'.$target;
+    }
+
+    /**
+     * The open key of this publication's session target.
+     */
+    public function targetKey(): string
+    {
+        return self::openKeyOf($this->session_id, $this->target);
+    }
+
     // ----------[ Internals ]----------
 
     /**
@@ -492,11 +453,6 @@ final class SkillPublication extends Model implements ReadableModel
         if (! $this->isHeldBy($fence)) {
             throw SkillPublicationStale::for($fence, $this->fencing_version);
         }
-    }
-
-    private static function openKeyOf(string $sessionId, string $target): string
-    {
-        return $sessionId.'|'.$target;
     }
 
     // ----------[ Scopes ]----------

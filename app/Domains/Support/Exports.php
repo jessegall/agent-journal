@@ -37,6 +37,7 @@ final class Exports
         'App\Queries\Support\TextSearch',
         'App\Numbers\Support\HasNumber',
         'App\Contracts\Support\RaisesEvents',
+        'App\Contracts\Support\InsertsAbsentRows',
         'App\Reads\Support\CountsLoads',
         'App\Reads\Support\CountsPivotLoads',
         'App\Reads\Support\BoundedReads',

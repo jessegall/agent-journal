@@ -13,6 +13,7 @@ use App\Web\Events\PageChanged;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\FinishTask;
@@ -60,7 +61,7 @@ final class PageChangeTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'List the plans']);
         $plan = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
-        $plan->addPhase('Read')->addTasks([$task->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Read'), [$task->id]);
         $progress = [];
         Event::listen(PlanProgressChanged::class, function (PlanProgressChanged $changed) use (&$progress): void {
             $progress[] = $changed->planId;
@@ -94,9 +95,9 @@ final class PageChangeTest extends TestCase
     public function test_a_rolled_back_change_sends_nothing(): void
     {
         $task = Task::factory()->create(['title' => 'List the plans']);
-        Plan::factory()->create(
+        $this->planStructure()->addTasks($this->planStructure()->addPhase(Plan::factory()->create(
             ['title' => 'Build the release page', 'type' => PlanType::Build],
-        )->addPhase('Read')->addTasks([$task->id]);
+        ), 'Read'), [$task->id]);
 
         $this->assertThrows(
             fn () => $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {
@@ -108,5 +109,10 @@ final class PageChangeTest extends TestCase
         );
 
         Event::assertNotDispatched(PageChanged::class);
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

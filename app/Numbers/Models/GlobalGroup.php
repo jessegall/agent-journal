@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Numbers\Models;
 
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Numbers\Exceptions\GlobalGroupMissing;
 use App\Reads\Contracts\ReadableModel;
@@ -26,6 +27,7 @@ final class GlobalGroup extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     public const string JOURNAL = 'journal';
@@ -47,6 +49,10 @@ final class GlobalGroup extends Model implements ReadableModel
      */
     public static function installJournal(): self
     {
-        return self::query()->firstOrCreate(['name' => self::JOURNAL]);
+        $group = new self(['name' => self::JOURNAL]);
+        $group->setAttribute($group->getKeyName(), $group->newUniqueId());
+        $group->insertIfAbsent();
+
+        return self::query()->where('name', self::JOURNAL)->sole();
     }
 }

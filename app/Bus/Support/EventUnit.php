@@ -121,7 +121,7 @@ final class EventUnit
      * @param  callable(): TResult  $work
      * @return TResult
      */
-    public function deeper(callable $work): mixed
+    public function runNested(callable $work): mixed
     {
         $this->levels[] = true;
 
@@ -206,7 +206,7 @@ final class EventUnit
      *
      * @param  callable(): void  $work
      */
-    public function pump(callable $work): void
+    public function runUnlessDraining(callable $work): void
     {
         if ($this->draining) {
             return;

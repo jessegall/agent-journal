@@ -23,6 +23,7 @@ use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Exceptions\PlanHasUnfinishedTasks;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
@@ -132,7 +133,8 @@ final class PlanFinishCancelTest extends TestCase
     {
         $plan = Plan::factory()->create();
         $plan->startOnce(ActorContext::forUser($this->owner->id));
-        $plan->addPhase('Work')->addTasks(
+        $this->planStructure()->addTasks(
+            $this->planStructure()->addPhase($plan, 'Work'),
             array_map(fn (TaskState $state): string => $this->taskIn($state)->id, $states),
         );
 
@@ -157,5 +159,10 @@ final class PlanFinishCancelTest extends TestCase
     private function bus(): CommandBus
     {
         return $this->app->make(CommandBus::class);
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

@@ -8,6 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\AgentSession;
 use App\Agents\Values\StackTarget;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Exceptions\StackMissing;
@@ -50,6 +51,7 @@ final class AgentStackRow extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     protected $table = 'agent_stacks';
@@ -76,19 +78,17 @@ final class AgentStackRow extends Model implements ReadableModel
      */
     public static function insertIfMissing(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): void
     {
-        $now = CarbonImmutable::now();
-
-        self::query()->withoutGlobalScope(AgentSessionScope::class)->insertOrIgnore([
-            'id' => new self()->newUniqueId(),
+        $row = new self();
+        $row->setRawAttributes([
+            'id' => $row->newUniqueId(),
             'agent_id' => $target->agentId,
             'session_id' => $target->sessionId,
             'version' => 1,
             'frames' => StoredFrames::fromFrameRecords($frames)->toJson(),
             'status' => StackStatus::Active->value,
             'has_ticking_frames' => $frames->holdTicking($ticking),
-            'created_at' => $now,
-            'updated_at' => $now,
         ]);
+        $row->insertIfAbsent();
     }
 
     // ----------[ Queries ]----------

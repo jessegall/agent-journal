@@ -13,6 +13,7 @@ use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Bus\Exceptions\CommandInputInvalid;
+use App\Bus\Support\RequiredListenerRegistry;
 use App\Domains\Support\AvailableListener;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Api\DraftTarget;
@@ -36,7 +37,6 @@ use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
@@ -244,7 +244,7 @@ final class SettleAndRecoverTest extends TestCase
     {
         $listeners = array_map(
             fn ($listener) => $listener instanceof AvailableListener ? $listener->listener : '',
-            $this->app->make(Dispatcher::class)->getRawListeners()[SessionClosed::class] ?? [],
+            $this->app->make(RequiredListenerRegistry::class)->listenersOf(SessionClosed::class),
         );
 
         $this->assertContains(CloseEndedSessionDraft::class.'@handle', $listeners);

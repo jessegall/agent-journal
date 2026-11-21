@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Models;
 
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -27,6 +28,7 @@ final class SkillContextEpoch extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -41,24 +43,19 @@ final class SkillContextEpoch extends Model implements ReadableModel
         ];
     }
 
-    /**
-     * Starts the session's next context after a clear or compaction.
-     */
-    public static function advance(string $sessionId): void
-    {
-        $current = self::query()->where('session_id', $sessionId)->lockForUpdate()->first();
-
-        if ($current === null) {
-            self::query()->create(['session_id' => $sessionId, 'epoch' => 1]);
-
-            return;
-        }
-
-        $current->epoch++;
-        $current->save();
-    }
-
     // ----------[ Queries ]----------
+
+    /**
+     * The session's epoch row, made at epoch 0 the first time and locked for the transaction.
+     */
+    public static function lockedFor(string $sessionId): self
+    {
+        $epoch = new self(['session_id' => $sessionId, 'epoch' => 0]);
+        $epoch->setAttribute($epoch->getKeyName(), $epoch->newUniqueId());
+        $epoch->insertIfAbsent();
+
+        return self::query()->where('session_id', $sessionId)->lockForUpdate()->firstOrFail();
+    }
 
     /**
      * The session's current context epoch; 0 until its first clear or compaction.
@@ -66,5 +63,16 @@ final class SkillContextEpoch extends Model implements ReadableModel
     public static function currentOf(string $sessionId): int
     {
         return self::query()->where('session_id', $sessionId)->first()->epoch ?? 0;
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Starts the session's next context after a clear or compaction.
+     */
+    public function advance(): void
+    {
+        $this->epoch++;
+        $this->save();
     }
 }

@@ -14,7 +14,7 @@ use Tests\Architecture\Support\EventRole;
 return [
     SessionSkillsIntended::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'SkillPublication::intendMany',
+        'owner' => 'SkillPublication::create',
         'migrated' => false,
         'producers' => [
             'app/Skills/Listeners/AdmitStartSkills.php',
@@ -23,10 +23,9 @@ return [
     ],
     SkillsChanged::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Skill::appendRevision',
-        'migrated' => false,
-        'producers' => [
-            'app/Skills/Support/StoredSkillWrites.php',
-        ],
+        'owner' => ['Skill::makeCurrent', 'Skill::retireBy'],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SkillsChanged('skill', 2),
     ],
 ];

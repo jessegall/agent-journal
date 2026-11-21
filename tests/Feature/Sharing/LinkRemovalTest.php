@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Agents\Models\Agent;
+use App\Bus\Contracts\UnitOwner;
 use App\Links\Models\Link;
+use App\Records\Support\LinkRemoval;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
@@ -18,7 +20,8 @@ use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
+use Closure;
+use Illuminate\Database\ConnectionInterface;
 use RuntimeException;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
@@ -46,7 +49,7 @@ final class LinkRemovalTest extends TestCase
 
         $this->source = Agent::create('Source', 'read-only-helper');
         $this->target = Agent::create('Target', 'read-only-helper');
-        $this->source->linkTo($this->target);
+        Link::connect($this->source, $this->target);
         $link = Link::query()->between($this->source, $this->target)->sole();
         $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
@@ -70,8 +73,8 @@ final class LinkRemovalTest extends TestCase
 
     public function test_removing_the_link_ends_its_approval_in_the_same_transaction(): void
     {
-        DB::transaction(function (): void {
-            $this->source->unlinkFrom($this->target);
+        $this->inCommandUnit(function (): void {
+            $this->app->make(LinkRemoval::class)->removeBetween($this->source, $this->target);
 
             $this->assertNotNull($this->member->fresh()?->invalidated_at);
         });
@@ -81,8 +84,8 @@ final class LinkRemovalTest extends TestCase
 
     public function test_a_rolled_back_removal_leaves_the_approval(): void
     {
-        $this->assertThrows(fn () => DB::transaction(function (): void {
-            $this->source->unlinkFrom($this->target);
+        $this->assertThrows(fn () => $this->inCommandUnit(function (): void {
+            $this->app->make(LinkRemoval::class)->removeBetween($this->source, $this->target);
 
             throw SimulatedFailure::of('rolled back');
         }), RuntimeException::class);
@@ -92,8 +95,10 @@ final class LinkRemovalTest extends TestCase
 
     public function test_linking_again_does_not_restore_the_approval(): void
     {
-        $this->source->unlinkFrom($this->target);
-        $this->source->linkTo($this->target);
+        $this->inCommandUnit(
+            fn () => $this->app->make(LinkRemoval::class)->removeBetween($this->source, $this->target),
+        );
+        Link::connect($this->source, $this->target);
         $share = Share::query()->findOrFail($this->member->share_id);
 
         $this->assertNotNull($this->member->fresh()?->invalidated_at);
@@ -124,5 +129,25 @@ final class LinkRemovalTest extends TestCase
     private function identityOf(Agent $agent): RecordIdentity
     {
         return new RecordIdentity($agent->getMorphClass(), $agent->id);
+    }
+
+    /**
+     * Runs the work in a transaction of its own that owns an event unit, as a command's transaction does: it commits
+     * when the work returns and rolls back when it throws.
+     *
+     * @param  Closure(): mixed  $work
+     */
+    private function inCommandUnit(Closure $work): mixed
+    {
+        $connection = $this->app->make(ConnectionInterface::class);
+        $connection->beginTransaction();
+
+        return $this->app->make(UnitOwner::class)->own(
+            $connection,
+            'the test',
+            $work,
+            fn () => $connection->commit(),
+            fn () => $connection->rollBack(),
+        );
     }
 }

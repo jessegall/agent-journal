@@ -16,7 +16,7 @@ use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
-use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Domain\Access\Models\User;
@@ -78,7 +78,7 @@ final class DispatchReplyInboxTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $main = DeskRecord::openNamed('main', 'Main inbox', 1, true);
+        $main = $this->app->make(DeskOpening::class)->openNamed('main', 'Main inbox', 1, true);
         $first = $this->started('First');
         $second = $this->started('Second');
         $task = Task::factory()->create();
@@ -113,7 +113,7 @@ final class DispatchReplyInboxTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $main = DeskRecord::openNamed('main', 'Main inbox', 1, true);
+        $main = $this->app->make(DeskOpening::class)->openNamed('main', 'Main inbox', 1, true);
         $first = $this->started('First');
         $second = $this->started('Second');
         $helper = Agent::create('Researcher', 'read-only-helper');

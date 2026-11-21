@@ -103,7 +103,7 @@ final class AgentInboxTest extends TestCase
         $first = $this->askInboxOf($actor, 'The launch source.');
         $second = $this->askInboxOf($actor, 'An unrelated next request.');
         $parent->startRequest($this->app);
-        AgentSession::selectMessage($parent->session->id, $first->id);
+        $this->selectMessage($parent->session->id, $first->id);
         $source = $this->app->make(RequestSource::class)->selectedSource();
         $child = Agent::create('Child', 'writing-helper');
         $started = $this->app->make(StartSessions::class)->start(
@@ -113,7 +113,7 @@ final class AgentInboxTest extends TestCase
             $parent->session,
             authorizedSource: $source,
         );
-        AgentSession::selectMessage($parent->session->id, $second->id);
+        $this->selectMessage($parent->session->id, $second->id);
 
         $this->assertSame($first->id, AgentSession::jobSourceMessage($started->session->id));
 
@@ -122,5 +122,10 @@ final class AgentInboxTest extends TestCase
         $this->assertTrue($reader->message($first->id, ReadView::Summary)->message->isJobSource);
         $this->assertFalse($reader->message($first->id, ReadView::Summary)->message->isSelected);
         $this->assertThrows(fn () => Message::visibleById($second->id), MessageMissing::class);
+    }
+
+    private function selectMessage(string $sessionId, string $messageId): void
+    {
+        AgentSession::query()->whereKey($sessionId)->update(['selected_message_id' => $messageId]);
     }
 }

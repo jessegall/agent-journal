@@ -11,7 +11,6 @@ use App\Agents\Casts\NavigationScreenCast;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Enums\NavigationReason;
 use App\Agents\Enums\NavigationState;
-use App\Agents\Enums\RequestProgress;
 use App\Agents\Exceptions\NavigationTransitionRefused;
 use App\Agents\Values\NavigationScreen;
 use App\Agents\Values\NavigationUncertainty;
@@ -189,21 +188,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
             ->exists();
     }
 
-    /**
-     * Cancels the open navigation request of a driver request that was cancelled or ended with its runtime, in the
-     * same transaction; a driver request with none is left as it is.
-     */
-    public static function cancelOpenFor(DriverRequest $request): void
-    {
-        $open = self::query()
-            ->acrossActors()
-            ->open()
-            ->where('driver_request_id', $request->id)
-            ->lockForUpdate()
-            ->first();
-        $open?->cancel();
-    }
-
     // ----------[ Answers ]----------
 
     /**
@@ -301,7 +285,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     {
         $this->abandon_reason = $reason;
         $this->moveTo(NavigationState::Abandoned);
-        $this->cancelQueuedRounds();
     }
 
     /**
@@ -310,7 +293,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function interrupt(): void
     {
         $this->moveTo(NavigationState::Interrupted);
-        $this->cancelQueuedRounds();
     }
 
     /**
@@ -319,7 +301,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function cancel(): void
     {
         $this->moveTo(NavigationState::Cancelled);
-        $this->cancelQueuedRounds();
     }
 
     /**
@@ -328,7 +309,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function expire(): void
     {
         $this->moveTo(NavigationState::Expired);
-        $this->cancelQueuedRounds();
     }
 
     // ----------[ Relations ]----------
@@ -350,23 +330,6 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     }
 
     // ----------[ Internals ]----------
-
-    /**
-     * Cancels the main agent's rounds that have not reached the host yet: the request they answer has ended.
-     */
-    private function cancelQueuedRounds(): void
-    {
-        $queued = DriverRequest::query()
-            ->where('navigation_request_id', $this->id)
-            ->whereIn('progress', [RequestProgress::Accepted, RequestProgress::Staged])
-            ->lockForUpdate()
-            ->limit(20)
-            ->get();
-
-        foreach ($queued as $round) {
-            $round->cancel();
-        }
-    }
 
     private function moveTo(NavigationState $next): void
     {

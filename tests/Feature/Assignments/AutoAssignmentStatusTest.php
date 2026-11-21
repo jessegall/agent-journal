@@ -20,6 +20,7 @@ use App\Assignments\Support\PoolReference;
 use App\Contracts\DomainAvailability;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
@@ -93,7 +94,10 @@ final class AutoAssignmentStatusTest extends TestCase
         $this->assertSame(AutoAssignmentState::PoolUnavailable, $this->currentStatus()->state);
 
         $large = Plan::factory()->create(['state' => PlanState::Started]);
-        $large->addPhase('Build')->addTasks(array_map(fn () => strtolower((string) Str::ulid()), range(1, 1001)));
+        $this->planStructure()->addTasks(
+            $this->planStructure()->addPhase($large, 'Build'),
+            array_map(fn () => strtolower((string) Str::ulid()), range(1, 1001)),
+        );
         $this->write(fn (DatabaseAutoAssignments $writer) => $writer->configure(
             new AutoAssignmentInput($this->key, new PoolReference('plans.tasks', $large->assignmentIdentity(), []), 2),
             1,
@@ -172,5 +176,10 @@ final class AutoAssignmentStatusTest extends TestCase
     private static function open(): PoolReference
     {
         return new PoolReference('tasks.open', null, []);
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

@@ -10,6 +10,7 @@ use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Schema;
@@ -101,7 +102,7 @@ final class PlanAuthoringTest extends TestCase
 
     public function test_adding_one_invisible_task_among_three_adds_none(): void
     {
-        $phase = Plan::factory()->create()->addPhase('Build');
+        $phase = $this->planStructure()->addPhase(Plan::factory()->create(), 'Build');
         $tasks = [Task::factory()->create()->id, TestIds::of(999999), Task::factory()->create()->id];
 
         $this->signed(
@@ -121,7 +122,7 @@ final class PlanAuthoringTest extends TestCase
 
     public function test_a_stale_phase_revision_adds_nothing(): void
     {
-        $phase = Plan::factory()->create()->addPhase('Build');
+        $phase = $this->planStructure()->addPhase(Plan::factory()->create(), 'Build');
         $this->signed(
             $this->start,
             '/agent/plans/phases/add-tasks',
@@ -180,5 +181,10 @@ final class PlanAuthoringTest extends TestCase
             [$plan->fresh()?->title, $plan->fresh()?->brief, $plan->fresh()?->type, $plan->fresh()?->revision],
         );
         $this->assertSame($assignments, AssignmentRecord::query()->withoutGlobalScopes()->count());
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

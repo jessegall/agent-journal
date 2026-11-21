@@ -49,7 +49,7 @@ final class UserHeartbeatTest extends TestCase
     {
         $window = $this->app->make(PresenceWindow::class);
         $now = $this->app->make(DatabaseClock::class)->now()->startOfSecond();
-        UserPresence::recordFor($this->owner->id, $now);
+        $this->beat($this->owner->id, $now);
 
         $this->assertSame(
             1,
@@ -67,5 +67,10 @@ final class UserHeartbeatTest extends TestCase
 
         $this->assertContains(['user_id'], $indexes);
         $this->assertContains(['last_heartbeat_at'], $indexes);
+    }
+
+    private function beat(string $userId, CarbonImmutable $time): void
+    {
+        UserPresence::lockedFor($userId, $time)->beatAt($time);
     }
 }

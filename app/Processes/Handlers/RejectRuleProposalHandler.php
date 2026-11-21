@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\RejectRuleProposal;
 use App\Processes\Events\RuleRejected;
@@ -11,12 +12,11 @@ use App\Processes\Exceptions\RequestTransitionRefused;
 use App\Processes\Exceptions\RuleProposalRefused;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Support\ProjectKey;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class RejectRuleProposalHandler implements CommandHandler
 {
     public function __construct(
-        private Dispatcher $events,
+        private CommandFacts $facts,
         private ProjectKey $projects,
     ) {}
 
@@ -39,7 +39,7 @@ final readonly class RejectRuleProposalHandler implements CommandHandler
         }
 
         $rejected = RuleRejected::forProposal($proposal, $command->reason);
-        $this->events->dispatch($rejected);
+        $this->facts->publishAfterCommit($rejected);
 
         return $proposal->id;
     }

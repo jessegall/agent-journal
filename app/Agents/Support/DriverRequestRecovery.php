@@ -10,7 +10,7 @@ use App\Agents\Enums\RecoveryAction;
 use App\Agents\Events\DriverRequestRecovered;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Models\DriverRequest;
-use Illuminate\Contracts\Events\Dispatcher;
+use App\Bus\Contracts\CommandFacts;
 
 /**
  * What the three recovery commands share: the request locked at the row version its caller read, and the audit
@@ -18,7 +18,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class DriverRequestRecovery
 {
-    public function __construct(private CurrentActor $actors, private Dispatcher $events) {}
+    public function __construct(private CurrentActor $actors, private CommandFacts $facts) {}
 
     /**
      * @throws DriverRequestRefused
@@ -37,7 +37,7 @@ final readonly class DriverRequestRecovery
     public function record(DriverRequest $request, RecoveryAction $action, string $reason): int
     {
         $actor = ActorIdentity::of($this->actors->actor());
-        $this->events->dispatch(new DriverRequestRecovered($request->id, $action, $actor, $reason));
+        $this->facts->publishAfterCommit(new DriverRequestRecovered($request->id, $action, $actor, $reason));
 
         return $request->row_version;
     }

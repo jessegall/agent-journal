@@ -7,6 +7,7 @@ namespace Tests\Feature\Links;
 use App\Links\Exceptions\LinkTypeRepeated;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
+use App\Records\Support\LinkRemoval;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
@@ -44,7 +45,7 @@ final class LinkableTest extends TestCase
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
 
-        $note->linkTo($label);
+        Link::connect($note, $label);
 
         $this->assertTrue($note->isLinkedTo($label));
         $this->assertTrue($label->isLinkedTo($note));
@@ -57,9 +58,9 @@ final class LinkableTest extends TestCase
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
 
-        $note->linkTo($label);
-        $note->linkTo($label);
-        $label->linkTo($note);
+        Link::connect($note, $label);
+        Link::connect($note, $label);
+        Link::connect($label, $note);
 
         $this->assertSame(1, Link::query()->count());
         $this->assertSame(
@@ -72,7 +73,7 @@ final class LinkableTest extends TestCase
     {
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
-        $note->linkTo($label);
+        Link::connect($note, $label);
 
         $this->expectException(QueryException::class);
 
@@ -83,9 +84,9 @@ final class LinkableTest extends TestCase
     {
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
-        $label->linkTo($note);
+        Link::connect($label, $note);
 
-        $note->unlinkFrom($label);
+        $this->app->make(LinkRemoval::class)->removeBetween($note, $label);
 
         $this->assertFalse($label->isLinkedTo($note));
         $this->assertSame(0, Link::query()->count());
@@ -96,7 +97,7 @@ final class LinkableTest extends TestCase
         $visible = Note::ownedBy('visible');
         $hidden = Note::ownedBy('someone else');
         $label = Label::named('urgent');
-        $label->linkTo($visible);
+        Link::connect($label, $visible);
         $this->insertRawLink($hidden, $label);
 
         $this->assertSame([$visible->id], $label->links()->among(Note::query())->pluck('id')->all());
@@ -108,8 +109,8 @@ final class LinkableTest extends TestCase
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
         $otherLabel = Label::named('later');
-        $note->linkTo($label);
-        $otherLabel->linkTo($label);
+        Link::connect($note, $label);
+        Link::connect($otherLabel, $label);
 
         $this->assertSame([$otherLabel->id], $label->links()->among(Label::query())->pluck('id')->all());
     }
@@ -118,10 +119,10 @@ final class LinkableTest extends TestCase
     {
         $note = Note::ownedBy('visible');
         $label = Label::named('urgent');
-        $note->linkTo($label);
+        Link::connect($note, $label);
         $link = Link::query()->sole();
 
-        $link->linkTo($note);
+        Link::connect($link, $note);
 
         $this->assertTrue($link->isLinkedTo($note));
         $this->assertSame([$note->id], $link->links()->among(Note::query())->pluck('id')->all());

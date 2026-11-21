@@ -7,6 +7,7 @@ namespace App\Agents\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -41,6 +42,7 @@ final class WorkReservation extends Model implements ReadableModel
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -60,10 +62,15 @@ final class WorkReservation extends Model implements ReadableModel
      */
     public static function retain(CertifiedWork $work, ActorIdentity $actor, int $generation): self
     {
-        return self::query()->firstOrCreate(
-            ['certificate' => $work->certificate],
-            [...$actor->asColumns('actor'), 'generation' => $generation],
-        );
+        $reservation = new self([
+            'certificate' => $work->certificate,
+            ...$actor->asColumns('actor'),
+            'generation' => $generation,
+        ]);
+        $reservation->setAttribute($reservation->getKeyName(), $reservation->newUniqueId());
+        $reservation->insertIfAbsent();
+
+        return self::query()->where('certificate', $work->certificate)->sole();
     }
 
     /**

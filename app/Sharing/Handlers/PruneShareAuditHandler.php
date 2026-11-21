@@ -46,9 +46,19 @@ final readonly class PruneShareAuditHandler implements CommandHandler
             Share::lockForChange($shareId)->countPruned($allowed, $denied, count($types) - $allowed - $denied, $now);
         }
 
-        ShareAudit::removeAll(array_map(fn (ShareAudit $audit) => $audit->id, $batch));
+        $this->removeAll(array_map(fn (ShareAudit $audit) => $audit->id, $batch));
         ShareAudit::create(null, ShareAuditType::AuditPruned, ActorIdentity::system(), (string) count($batch));
 
         return new AuditPruning(count($batch), count($due) > self::MOST_PER_RUN);
+    }
+
+    /**
+     * Removes these rows for good.
+     *
+     * @param  list<string>  $ids
+     */
+    private function removeAll(array $ids): void
+    {
+        ShareAudit::query()->whereKey($ids)->delete();
     }
 }

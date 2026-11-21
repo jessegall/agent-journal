@@ -6,6 +6,7 @@ namespace App\Supervision\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -51,6 +52,7 @@ final class RepairRequest extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids;
     use HasWorkColumns;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -74,7 +76,8 @@ final class RepairRequest extends Model implements ReadableModel
         string $findings,
         string|null $targetCommit,
     ): self {
-        return self::query()->firstOrCreate(['source' => $source], [
+        $repair = new self([
+            'source' => $source,
             'certificate' => $review->certificate,
             'work_type' => $review->work_type,
             'work_id' => $review->work_id,
@@ -84,6 +87,10 @@ final class RepairRequest extends Model implements ReadableModel
             'target_commit' => $targetCommit,
             'state' => RepairRequestState::Pending,
         ]);
+        $repair->setAttribute($repair->getKeyName(), $repair->newUniqueId());
+        $repair->insertIfAbsent();
+
+        return self::query()->where('source', $source)->sole();
     }
 
     // ----------[ Mutations ]----------

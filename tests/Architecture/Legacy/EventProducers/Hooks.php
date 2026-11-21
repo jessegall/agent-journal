@@ -23,16 +23,14 @@ return [
         ],
     ],
     HelperCompletionCertified::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'CertifiedWork::record',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Hooks/Support/StopCertification.php',
         ],
     ],
     HelperStopHeld::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'StopAttempt::settle',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Hooks/Support/StopAttemptGate.php',

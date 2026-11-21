@@ -6,6 +6,7 @@ namespace App\Hooks\Listeners;
 
 use App\Agents\Events\SessionOpened;
 use App\Agents\Values\StackTarget;
+use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
 use App\Hooks\Actions\StartStacks;
 
@@ -13,6 +14,7 @@ use App\Hooks\Actions\StartStacks;
  * Opens the started agent's stack with the one ready bottom state, in the start transaction. A start with no
  * parser to read its shell commands is refused before the program starts.
  */
+#[InCommandTransaction]
 final readonly class OpenStartStack implements Listener
 {
     public function __construct(private StartStacks $stacks) {}

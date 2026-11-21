@@ -7,9 +7,7 @@ namespace App\Desks\Models;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
-use App\Communication\Models\InboxRecord;
 use App\Desks\Contracts\Desk;
-use App\Desks\Exceptions\DeskSeatCountInvalid;
 use App\Desks\Exceptions\DeskUnavailable;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -20,7 +18,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 use PhpOption\Option;
 
 /**
@@ -65,51 +62,31 @@ final class DeskRecord extends Model implements Desk, ReadableModel
         ];
     }
 
+    /**
+     * The desk's own row, with the inbox made for it and its seat count already checked.
+     */
+    public static function create(
+        string $id,
+        string|null $name,
+        string $label,
+        string $inboxId,
+        int $seatCount,
+        bool $forwardsOccupants,
+    ): self {
+        $desk = new self();
+        $desk->id = $id;
+        $desk->name = $name;
+        $desk->label = $label;
+        $desk->inbox_id = $inboxId;
+        $desk->seat_count = $seatCount;
+        $desk->forwards_occupants = $forwardsOccupants;
+        $desk->seating_revision = 0;
+        $desk->save();
+
+        return $desk;
+    }
+
     // ----------[ Queries ]----------
-
-    /**
-     * A named desk with its seats, from one to a hundred.
-     *
-     * @throws DeskSeatCountInvalid
-     */
-    public static function openNamed(string $name, string $label, int $seatCount, bool $forwardsOccupants): self
-    {
-        $desk = self::openRow($name, $label, self::checkedSeatCount($seatCount), $forwardsOccupants);
-        $desk->openSeats();
-
-        return $desk;
-    }
-
-    /**
-     * The named desk, opened with its seats the first time and found by its name after that.
-     *
-     * @throws DeskSeatCountInvalid
-     */
-    public static function installNamed(string $name, string $label, int $seatCount, bool $forwardsOccupants): self
-    {
-        return self::query()->named($name)->first() ?? self::openNamed($name, $label, $seatCount, $forwardsOccupants);
-    }
-
-    /**
-     * The named source desk, opened the first time and found by its name after that.
-     */
-    public static function installSourceDesk(string $name, string $label): self
-    {
-        return self::query()->named($name)->first() ?? self::openSourceDesk($name, $label);
-    }
-
-    /**
-     * An unnamed desk shared by up to a hundred seated actors.
-     *
-     * @throws DeskSeatCountInvalid
-     */
-    public static function openShared(string $label, int $seatCount, bool $forwardsOccupants): self
-    {
-        $desk = self::openRow(null, $label, self::checkedSeatCount($seatCount), $forwardsOccupants);
-        $desk->openSeats();
-
-        return $desk;
-    }
 
     /**
      * The desk under an exclusive lock, so its seating cannot change under a seat change.
@@ -121,25 +98,6 @@ final class DeskRecord extends Model implements Desk, ReadableModel
         return self::query()->whereKey($deskId)->lockForUpdate()->firstOr(
             fn () => throw DeskUnavailable::forId($deskId),
         );
-    }
-
-    /**
-     * An actor's own unnamed desk with one seat.
-     */
-    public static function openPersonal(string $label): self
-    {
-        $desk = self::openRow(null, $label, 1, false);
-        $desk->openSeats();
-
-        return $desk;
-    }
-
-    /**
-     * A named desk with no seats, which only sends: a trusted source such as the journal itself.
-     */
-    public static function openSourceDesk(string $name, string $label): self
-    {
-        return self::openRow($name, $label, 0, false);
     }
 
     /**
@@ -202,45 +160,6 @@ final class DeskRecord extends Model implements Desk, ReadableModel
     public function assigneeIdentity(): AssigneeIdentity
     {
         return new AssigneeIdentity(self::ASSIGNEE_TYPE, $this->id);
-    }
-
-    // ----------[ Internals ]----------
-
-    /**
-     * The desk row with its inbox, under an id chosen first so the inbox can name it.
-     */
-    private static function openRow(string|null $name, string $label, int $seatCount, bool $forwardsOccupants): self
-    {
-        $desk = new self();
-        $desk->id = (string) Str::ulid();
-        $desk->name = $name;
-        $desk->label = $label;
-        $desk->inbox_id = InboxRecord::create(self::INBOX_PROVIDER, $desk->id)->id;
-        $desk->seat_count = $seatCount;
-        $desk->forwards_occupants = $forwardsOccupants;
-        $desk->seating_revision = 0;
-        $desk->save();
-
-        return $desk;
-    }
-
-    private function openSeats(): void
-    {
-        foreach (range(1, $this->seat_count) as $number) {
-            DeskSeat::create($this, $number);
-        }
-    }
-
-    /**
-     * @throws DeskSeatCountInvalid
-     */
-    private static function checkedSeatCount(int $count): int
-    {
-        if ($count < 1 || $count > self::LARGEST_SEAT_COUNT) {
-            throw DeskSeatCountInvalid::for($count);
-        }
-
-        return $count;
     }
 
     // ----------[ Scopes ]----------

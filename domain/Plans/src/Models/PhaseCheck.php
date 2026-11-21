@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Models;
 
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Processes\Values\PublishedResult;
 use App\Reads\Contracts\ReadableModel;
@@ -34,6 +35,7 @@ final class PhaseCheck extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     public const string CREATED_AT = 'recorded_at';
@@ -57,12 +59,18 @@ final class PhaseCheck extends Model implements ReadableModel
      */
     public static function record(Phase $phase, PublishedResult $receipt, ActorIdentity $recorder): self
     {
-        return self::query()->firstOrCreate(['phase_id' => $phase->id, 'receipt_id' => $receipt->receiptId], [
+        $check = new self([
+            'phase_id' => $phase->id,
+            'receipt_id' => $receipt->receiptId,
             'operation' => $receipt->operation,
             'outcome' => $receipt->outcome->value,
             'actor_type' => $recorder->type->value,
             'actor_id' => $recorder->id,
         ]);
+        $check->setAttribute($check->getKeyName(), $check->newUniqueId());
+        $check->insertIfAbsent();
+
+        return self::query()->where('phase_id', $phase->id)->where('receipt_id', $receipt->receiptId)->sole();
     }
 
     // ----------[ Scopes ]----------

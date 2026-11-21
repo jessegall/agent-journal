@@ -96,25 +96,6 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     }
 
     /**
-     * Releases every operation another run holds without an outcome, so the run that took the gateways over claims it
-     * again at once.
-     */
-    public static function releaseAllButRun(string $runId): void
-    {
-        self::query()->unfinished()->claimedByOtherThan($runId)->update(['lease_ends_at' => CarbonImmutable::now()]);
-    }
-
-    /**
-     * Ends every unfinished request to open the configuration's endpoint as failed: the gateway was disabled.
-     */
-    public static function cancelOpensOf(ShareGatewayConfiguration $configuration): void
-    {
-        self::query()->unfinished()->ofConfiguration($configuration->id)->ofType(GatewayOperationType::Open)->update(
-            ['outcome_code' => GatewayOutcome::Failed->value],
-        );
-    }
-
-    /**
      * Whether an open of the configuration's endpoint waits or runs without an outcome yet.
      */
     public static function hasUnfinishedOpenFor(ShareGatewayConfiguration $configuration): bool

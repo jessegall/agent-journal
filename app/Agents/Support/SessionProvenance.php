@@ -13,6 +13,7 @@ use App\Agents\Values\Operation;
 use App\Agents\Values\OperationGrant;
 use App\Links\Models\Link;
 use App\Records\Contracts\IdentityLinks;
+use App\Records\Support\LinkRemoval;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
         private CurrentSession $session,
         private IdentityLinks $links,
         private SessionPolicyReader $policies,
+        private LinkRemoval $removal,
     ) {}
 
     public function record(Model $record): void
@@ -43,7 +45,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
 
     public function forget(Model $record): void
     {
-        Link::forgetModels([$record]);
+        $this->removal->forgetModels([$record]);
     }
 
     public function isFromCurrentSession(Model $record): bool

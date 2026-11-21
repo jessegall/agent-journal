@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
@@ -18,7 +19,6 @@ use App\Processes\Models\PartRun;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\OutputPosition;
 use App\Processes\Values\PartEnd;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Keeps every byte a part writes on the private process-output disk (doc 21 revision 6, section 54): each piece is
@@ -29,7 +29,7 @@ final readonly class SpoolRecorder implements OutputRecorder
 {
     public const string DISK = 'process-output';
 
-    public function __construct(private Files $files, private Dispatcher $events, private ManifestCheck $manifest) {}
+    public function __construct(private Files $files, private CommandFacts $facts, private ManifestCheck $manifest) {}
 
     public function append(CapturedChunk $chunk): OutputPosition
     {
@@ -44,7 +44,7 @@ final readonly class SpoolRecorder implements OutputRecorder
         $this->write(FilePath::in(Place::ProcessOutput, $relative), $chunk->bytes);
         $stored = OutputChunk::create($chunk, $offset, $relative);
         $chunk->part->captureUpTo($stored);
-        $this->events->dispatch(new OutputChunkCommitted($chunk->part->id, $stream, $offset, $stored->length));
+        $this->facts->publishAfterCommit(new OutputChunkCommitted($chunk->part->id, $stream, $offset, $stored->length));
 
         return new OutputPosition($chunk->stream, $offset + $stored->length);
     }

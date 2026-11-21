@@ -7,12 +7,15 @@ namespace App\Agents\Actions;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\PresenceWindow;
 use App\Agents\Contracts\StartHeartbeats as StartHeartbeatsContract;
+use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
+use App\Agents\Support\DriverRequestEndings;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\StartTransaction;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Follows a start by its heartbeats. A session whose beats stop for a presence window is marked silent, which only
@@ -23,9 +26,10 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     public function __construct(
         private StartTransaction $transaction,
         private StartTokens $credentials,
-        private Dispatcher $events,
         private PresenceWindow $window,
         private ServerClock $clock,
+        private CommandFacts $facts,
+        private DriverRequestEndings $endings,
     ) {}
 
     /**
@@ -35,7 +39,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     {
         $now = $this->clock->now();
 
-        AgentSession::markSilentIfNoHeartbeatSince($now->subSeconds($this->window->presenceSeconds), $now);
+        $this->markSilentIfNoHeartbeatSince($now->subSeconds($this->window->presenceSeconds), $now);
     }
 
     /**
@@ -51,9 +55,23 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
                 ->lockForUpdate()
                 ->limit(1)
                 ->get()
-                ->each(fn (AgentRuntime $runtime) => $runtime->closeAfterExit());
+                ->each(fn (AgentRuntime $runtime) => $this->endings->closeAfterExit($runtime));
 
-            $this->events->dispatch(new SessionClosed($session->agent_id, $session->id));
+            $this->facts->publishAfterCommit(new SessionClosed($session->agent_id, $session->id));
+            $this->facts->applyRequired();
         });
+    }
+
+    /**
+     * Marks every running session that has shown no life since the cutoff as silent, in one update.
+     */
+    private function markSilentIfNoHeartbeatSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
+    {
+        AgentSession::query()->where('status', SessionStatus::Active->value)
+            ->where(fn (Builder $silent) => $silent->where('last_heartbeat_at', '<=', $cutoff)
+                ->orWhere(fn (Builder $neverBeat) => $neverBeat
+                    ->whereNull('last_heartbeat_at')
+                    ->where('created_at', '<=', $cutoff)))
+            ->update(['status' => SessionStatus::Silent->value, 'silent_since' => $now]);
     }
 }

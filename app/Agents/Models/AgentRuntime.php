@@ -188,15 +188,6 @@ final class AgentRuntime extends Model implements ReadableModel
     {
         $this->activity = RuntimeActivity::Stopped;
         $this->save();
-
-        $open = $this->requests()
-            ->whereIn('progress', RequestProgress::open())
-            ->readAll('every open request of a runtime that exited gets its final outcome')
-            ->get();
-
-        foreach ($open as $request) {
-            $request->settleAfterExit();
-        }
     }
 
     /**

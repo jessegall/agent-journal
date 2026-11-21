@@ -238,16 +238,6 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
-     * Adds a phase after the last one, inside the caller's transaction.
-     */
-    public function addPhase(string $title): Phase
-    {
-        self::lockStructure($this->id);
-
-        return $this->phases()->create(['title' => $title]);
-    }
-
-    /**
      * Every task of the plan, phase by phase, in order.
      *
      * @return list<string>

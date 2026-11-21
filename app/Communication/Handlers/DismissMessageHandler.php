@@ -10,7 +10,6 @@ use App\Actors\Support\ActorIdentity;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\DismissalType;
-use App\Communication\Events\MessageDismissed;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Message;
@@ -20,7 +19,6 @@ use App\Communication\Support\MessageClaims;
 use App\Contracts\CommandHandler;
 use App\Operations\Enums\AccessType;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class DismissMessageHandler implements CommandHandler
 {
@@ -28,7 +26,6 @@ final readonly class DismissMessageHandler implements CommandHandler
         private CurrentAuthorizer $authorizer,
         private InboxResolver $inboxes,
         private MessageClaims $claims,
-        private Dispatcher $events,
     ) {}
 
     /**
@@ -45,7 +42,6 @@ final readonly class DismissMessageHandler implements CommandHandler
         $dismissedBy = ActorIdentity::of($actor);
         $message->dismissBy($dismissedBy, $type, $command->reason, CarbonImmutable::now());
         $this->claims->releaseAny($message);
-        $this->events->dispatch(new MessageDismissed($message->id, $dismissedBy, $type));
     }
 
     /**

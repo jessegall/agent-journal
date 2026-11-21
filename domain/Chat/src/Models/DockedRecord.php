@@ -64,14 +64,6 @@ final class DockedRecord extends Model implements ReadableModel
         ConversationPair $conversation,
         RecordIdentity $record,
     ): self {
-        $existing = self::placed($owner, $conversation, $record);
-
-        if ($existing !== null) {
-            $existing->restore();
-
-            return $existing;
-        }
-
         $placement = new self([
             'source_inbox_id' => $conversation->sourceInboxId,
             'destination_inbox_id' => $conversation->destinationInboxId,

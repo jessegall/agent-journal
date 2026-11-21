@@ -13,6 +13,7 @@ use Domain\Plans\Api\AssignedPlanFilters;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
@@ -84,7 +85,7 @@ final class AssignedListsTest extends TestCase
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $other = Plan::factory()->create(['title' => 'Research', 'type' => PlanType::Research]);
         $task = Task::factory()->create(['title' => 'In the research plan']);
-        $other->addPhase('One')->addTasks([$task->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($other, 'One'), [$task->id]);
         $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->main));
         $writer->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->main));
 
@@ -141,5 +142,10 @@ final class AssignedListsTest extends TestCase
         $this->assertSame(0, $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters())->total);
         $this->assertThrows(fn () => new NumberedPage(0, 20), InvalidAssignmentPage::class);
         $this->assertThrows(fn () => new NumberedPage(1, 101), InvalidAssignmentPage::class);
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

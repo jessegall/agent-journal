@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\StartTokens;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Enums\ProcessStartState;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Lifecycle\AgentLifecycle;
@@ -24,10 +25,11 @@ use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentResult;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Operations\Enums\AccessType;
+use App\Records\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Retires an agent for good: it ends its sessions and releases its assignments, under the agent's exclusive
@@ -43,7 +45,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         private AssignmentStorage $store,
         private AssignmentFactPublisher $facts,
         private DriverRequests $requests,
-        private Dispatcher $events,
+        private CommandFacts $commandFacts,
     ) {}
 
     public function handle(RetireAgent $command): AssignmentResult
@@ -60,8 +62,8 @@ final readonly class RetireAgentHandler implements CommandHandler
         $target->retireAt(CarbonImmutable::now());
         $this->endSessionsOf($target);
 
-        foreach (ProcessStart::cancelPendingOfAgent($target->id) as $account) {
-            $this->events->dispatch(new AccountUseChanged($account));
+        foreach ($this->cancelPendingOfAgent($target->id) as $account) {
+            $this->commandFacts->publishAfterCommit(new AccountUseChanged($account));
         }
 
         $released = $this->store->releaseAll(AssigneeIdentity::of($target));
@@ -107,5 +109,30 @@ final readonly class RetireAgentHandler implements CommandHandler
                 $this->credentials->revoke($session);
             }
         }
+    }
+
+    /**
+     * Cancels the agent's starts no host has claimed yet, as its retirement does; a claimed start stays until its host
+     * proves the process gone, since retiring the agent proves no exit.
+     *
+     * @return list<RecordIdentity>
+     */
+    private function cancelPendingOfAgent(string $agentId): array
+    {
+        $starts = ProcessStart::supervised()
+            ->where('agent_id', $agentId)
+            ->where('state', ProcessStartState::Pending->value)
+            ->lockForUpdate()
+            ->readAll('a retiring agent has few starts')
+            ->get();
+        $accounts = [];
+
+        foreach ($starts as $start) {
+            $start->cancelPending();
+            $account = $start->accountIdentity();
+            $accounts["{$account->type} {$account->id}"] = $account;
+        }
+
+        return array_values($accounts);
     }
 }

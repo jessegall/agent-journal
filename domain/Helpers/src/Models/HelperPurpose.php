@@ -6,8 +6,7 @@ namespace Domain\Helpers\Models;
 
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
-use App\Contracts\EventSource;
-use App\Contracts\Support\RaisesEvents;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -33,13 +32,13 @@ use Illuminate\Support\Str;
  */
 #[Table('helper_purposes')]
 #[Fillable(['profile_key', 'purpose_type', 'subject_type', 'subject_id', 'label'])]
-final class HelperPurpose extends Model implements EventSource, ReadableModel
+final class HelperPurpose extends Model implements ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
-    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 

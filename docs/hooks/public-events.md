@@ -15,31 +15,47 @@ public function exports(): Exports
 
 Every other event stays private to its owner. Another domain hears a public event through a checked typed listener or a checked state method, and only when it requires the owner. Core's public events need no requirement. Core's two extension requests are public events too: they ask listeners to contribute, at once, inside the work that raised them. Whether an event is public and when it is raised are separate choices: a public event may be raised at once or after the commit.
 
-## Facts, raised after the outermost commit
+## Facts, released after the real commit
 
-Each fact implements `ShouldDispatchAfterCommit`, so a listener hears it only once the transaction that made the change has committed, the outermost one when transactions nest. A rolled-back change raises nothing. Each carries plain values: ids, and Core values such as `StackTarget` or `ActorContext`.
+A fact is captured where its change is made: a row fact is raised by the model method that saves the change, after
+that save succeeded, and a command-level fact is staged by the command's own code through
+`App\Bus\Contracts\CommandFacts::publishAfterCommit`. Both join the event unit of the transaction in save order.
+The fact's required listeners run inside that transaction, before it commits; its public listeners hear it through
+Laravel's dispatcher only after the real commit, once no command of the request still runs. A rolled-back change
+releases nothing. Each fact carries plain values: ids, and Core values such as `StackTarget` or `ActorContext`.
 
 | Fact | Owner | Raised when | Payload |
 |---|---|---|---|
-| `PlanStarted` | Plans | a plan starts; starting it again raises nothing | plan id, the actor who started it |
-| `PlanProgressChanged` | Plans | a task in one of the plan's phases started, finished, was blocked or cancelled | plan id |
-| `MessageSent` | Chat | the user sent a message to a running agent session | message id, stack target |
-| `MessageAnswered`, `MessageDismissed` | Chat | a message was answered or dismissed | message id |
-| `RuleApproved`, `RuleDenied`, `RuleRemoved` | Rules | the user reviewed a proposed rule, or a rule was removed | rule id |
-| `TaskFinished`, `TaskBlocked`, `TaskCancelled` | Tasks | a task changed state through `ChangeTaskState` | task id |
-| `AssignmentsChanged` | Core | an assignment command or a retirement changed at least one record; a command that changed nothing raises nothing | operation id, the acting actor, the reason (assigned, reassigned, unassigned, retired), every actual change with its record and before and after assignment, the time |
+| `PlanStarted` | `Plan::startOnce` | a plan starts; starting it again raises nothing | plan id, the actor who started it |
+| `PlanFinished`, `PlanCancelled` | `Plan::finish`, `Plan::cancel` | a plan ends | plan id, the actor who ended it |
+| `PlanProgressChanged` | projection: `RaisePlanProgressChanged`, `SamplePlanOfStartedTask` | a task in one of the plan's phases started, finished, was blocked or cancelled | plan id |
+| `MessageSent` | `Message::create` | an actor sent a message | message id, author, source and destination inbox |
+| `MessageAnswered`, `MessageDismissed` | `Message::answerWith`, `Message::dismissBy` | a message was answered or dismissed | message id, the actor, the reply or the dismissal type |
+| `RuleApproved`, `RuleDenied`, `RuleRemoved` | `Rule::approveBy`, `Rule::deny`, `Rule::remove` | the user reviewed a proposed rule, or a rule was removed | rule id |
+| `TaskFinished`, `TaskBlocked`, `TaskCancelled` | `Task::finish`, `Task::block`, `Task::cancel` | a task's run ended | task id |
+| `AssignmentsChanged` | command-level: `AssignmentFacts` | an assignment command or a retirement changed at least one record; a command that changed nothing raises nothing | operation id, the acting actor, the reason (assigned, reassigned, unassigned, retired), every actual change with its record and before and after assignment, the time |
 
-`AssignmentsChanged` is raised once per command, never per record, and only from the attempt that committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises one fact for all its changes.
+`tests/Architecture/Legacy/EventProducers` lists every event with its owner, and `EventProducerTest` fails on a fact
+sent anywhere else. `AssignmentsChanged` is staged once per command, never per record, and only from the attempt that
+committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises
+one fact for all its changes.
 
-A fact that changes what users see also implements `App\Ui\Contracts\UserInterfaceUpdater` (Chat's three, Plans' two and Rules' three today). Web's `BroadcastPageChange` listens for that marker, and the checked provider turns it into one listener for each exported event that implements it, so a new domain's or module's exported fact refreshes the open pages without any change to Web, while a fact nobody exports refreshes nothing; Core owns the marker and names no domain.
+A fact that changes what users see also implements `App\Ui\Contracts\UserInterfaceUpdater`. Web's `BroadcastPageChange`
+listens for that marker, and the checked provider turns it into one listener for each exported event that implements
+it, so a new domain's or module's exported fact refreshes the open pages without any change to Web, while a fact
+nobody exports refreshes nothing; Core owns the marker and names no domain.
 
-`TaskStarted` is exported and raised at once, not after the commit: its listeners push stack states inside the same transaction. Plans hears it through its approved requirement of Tasks. `SequenceStarted` and `MessageNeedsAnswer` are internal: their owners do not export them, so only their own listeners hear them.
+`TaskStarted` is exported and raised by `Task::start` with the actor that started the task. Its required listener
+`PushTaskState` pushes the task on the stack inside the start's transaction, before the commit, and Plans'
+`SamplePlanOfStartedTask` reads the plan holding the task there too; its public listeners hear it after the commit.
+Plans hears it through its approved requirement of Tasks. `SequenceStarted` and `MessageNeedsAnswer` are internal:
+their owners do not export them, so only their own listeners hear them.
 
 ## How a private event is refused
 
 One provider, `App\Domains\Providers\DomainEventServiceProvider`, registers every listener: it discovers the `Listeners` folders of Core (`CoreApi::listenerFolders()`) and of each domain, and `App\Domains\Support\ListenerPolicy` checks each event and listener pair. A listener on an event its owner does not export, on an event of a domain its own domain does not require, or on something that is not a concrete event stops the application with `InvalidListener`, naming the listener, the event and its owner. The same check runs when `php artisan event:cache` writes the cache and when a cached boot reads it, so a cache cannot let a private pair through. A cache written before a declaration change is refused with the instruction to run `php artisan event:cache` again; restart long-lived workers (`php artisan octane:reload`, `php artisan queue:restart`) after a declaration change. A listener registered by hand (`Event::listen` on a project event, a wildcard, a subscriber or a `listen` property) is refused by the architecture suite; the one exception is each domain's state types answering `StateTypesRequested` through the `RegisterStates` bootstrapper.
 
-A listener whose writes the command's transaction requires carries `#[App\Contracts\Attributes\InCommandTransaction]`. The policy takes it out of the dispatcher's map into `App\Domains\Support\RequiredListenerRegistry`, built from the same discovered or cached map, each event's listeners in the order of their full names; availability still gates a domain's listener, and no failure logging wraps it, so its failure reaches the command. Boot is refused, naming the event and the listener, when a required listener is queued, broadcasts or handles events after the commit, is registered twice, or belongs to a domain other than the event's owner while the event does not name it with `#[App\Contracts\Attributes\RequiresListener]`; ordinary subscription rights never grant that. The cache carries the lanes' version, so a cache written before them is refused: run `php artisan event:cache` again and restart long-lived workers after this change.
+A listener whose writes the command's transaction requires carries `#[App\Contracts\Attributes\InCommandTransaction]`. The policy takes it out of the dispatcher's map into `App\Domains\Support\RequiredListenerRegistry`, built from the same discovered or cached map, each event's listeners in the order of their full names; availability still gates a domain's listener, and no failure logging wraps it, so its failure rolls the command back. Boot is refused, naming the event and the listener, when a required listener is queued, broadcasts or handles events after the commit, is registered twice, or belongs to a domain other than the event's owner while the event does not name it with `#[App\Contracts\Attributes\RequiresListener]`; ordinary subscription rights never grant that. The cache carries the lanes' version, so a cache written before them is refused: run `php artisan event:cache` again and restart long-lived workers after this change.
 
 ## Requests, answered inside the work
 
@@ -50,9 +66,17 @@ A listener whose writes the command's transaction requires carries `#[App\Contra
 
 ## What a listener can count on, and what it cannot
 
-- **One connection, one commit.** Domain writes and stack changes share the default connection, so the change and the stack push commit together or not at all. A listener of a fact runs after that commit, outside it.
-- **Errors after the commit.** Listeners run synchronously in the order Laravel registered them. If one throws, the exception reaches the caller and Laravel's exception reporting records it with the event and the listener in its stack trace; the change itself has already committed and is not rolled back. Later listeners of that fact do not run, and a listener returning `false` also stops the ones after it.
-- **No replay, no queue promise.** Nothing stores facts or retries them. A caller that lost the answer to an assignment command reads the record again (`journal assignment show`) instead of expecting the fact or a history; there is no assignment history, outbox or inheritance. A missed or failed reaction is not delivered again, and a repeated start of a running plan raises nothing. Web's `PageChanged` is the one queued broadcast; it is pushed only after the commit (`after_commit` on the Redis queue).
+- **One connection, one commit.** Domain writes and stack changes share the default connection, so the change, its
+  required listeners' writes and the stack push commit together or not at all. A public listener of a fact runs after
+  that commit, outside it.
+- **Errors after the commit.** Public listeners run in the order Laravel registered them. A failure is logged with the
+  fact and the listener and delivery goes on with the next fact; the change itself has already committed and is not
+  rolled back.
+- **Two accepted limits.** A crash between the commit and the release loses that delivery: nothing stores facts or
+  retries them. A queued listener's delivery is at least once, so a consumer tolerates a repeat. A caller that lost the
+  answer to an assignment command reads the record again (`journal assignment show`) instead of expecting the fact or
+  a history, and a repeated start of a running plan raises nothing. Web's `PageChanged` is the one queued broadcast;
+  it is pushed only after the commit (`after_commit` on the Redis queue).
 
 ## Application events on live stack states
 
@@ -112,8 +136,8 @@ occurrence with the effective marker. An ineligible origin loses its remaining c
 origins can continue and the context already retained stays available. A closed or unavailable stack stops effects
 for that target.
 
-A synchronous dispatch runs in its caller's work. A fact marked `ShouldDispatchAfterCommit` retains its captured audience
-until the outermost commit. A rollback discards the deferred delivery. Failure reports identify collection, retention
+A synchronous dispatch runs in its caller's work. A fact retains its captured audience until its release
+after the real commit. A rollback discards the deferred delivery. Failure reports identify collection, retention
 or effects. After commit the original write and any committed effects remain. Events opting into
 `ListenerFailureLog` log failures without failing the caller. There is no automatic replay or exactly-once delivery.
 The active target, frame and event key detects cycles, same-stack evaluation refuses reentry, and nesting is capped
@@ -123,9 +147,10 @@ at ten deliveries. Distinct sequential dispatches can run independently.
 
 - Keep `PushTaskState`, `PushSequenceState`, `RegisterAnsweringState` and start-stack listeners at their
   creation boundaries. Their pushes or registration must work before any matching frame exists.
-- Keep global updates in their ordinary listeners. Examples include `RaisePlanProgressChanged`, `BroadcastPageChange`,
-  `CloseEndedSessionDraft`, link invalidation, process activity and skill settings and receipts. Their work cannot
-  depend on a live frame or an admitted stack target.
+- Keep global updates in their own listeners. `RaisePlanProgressChanged` and `BroadcastPageChange` are public
+  projections after the commit; `CloseEndedSessionDraft`, link invalidation (`InvalidateRemovedLinkMembers`) and
+  process activity (`ReadOutputLive`, `RefreshRunActivity`) are required listeners inside the transaction. Their work
+  cannot depend on a live frame or an admitted stack target.
 - Keep `SupplyMemories`, `SupplyHookContext` and `RemindRequiredSkills` as context-boundary contributors. They
   cover the session's boundary and add directly to that reply. A reminder meant only for the live frame responsible
   for particular work is a candidate for a state method on a later fact, with its text delivered at the next hook.

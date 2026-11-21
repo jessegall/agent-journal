@@ -15,7 +15,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Desks\Contracts\RunClaims;
 use App\Desks\Exceptions\RunClaimRefused;
-use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Domain\Tasks\Commands\ResumeTaskRun;
@@ -60,7 +60,7 @@ final class ResumeTaskRunTest extends TestCase
 
     public function test_a_new_occupant_resumes_the_run_and_the_former_one_is_refused(): void
     {
-        $desk = DeskRecord::openNamed('team', 'Team', 1, false);
+        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 1, false);
         $leaving = $this->started('First');
         $arriving = $this->started('Second');
         $task = Task::factory()->create();

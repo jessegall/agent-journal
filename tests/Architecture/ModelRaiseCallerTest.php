@@ -21,6 +21,11 @@ use Tests\TestCase;
 final class ModelRaiseCallerTest extends TestCase
 {
     /**
+     * The guideline a failure points to.
+     */
+    private const string GUIDELINE = '.ai/guidelines/models-raise-their-events.md';
+
+    /**
      * The attribute that marks a listener required in the command's transaction (plan 40 task 1579).
      */
     private const string REQUIRED_LISTENER = 'App\Contracts\Attributes\InCommandTransaction';
@@ -41,7 +46,8 @@ final class ModelRaiseCallerTest extends TestCase
         $this->assertSame(
             [],
             $violations,
-            "Call a raising transition only inside a unit:\n".implode("\n", $violations),
+            'Call a raising transition only inside a unit ('.self::GUIDELINE."):\n"
+                .implode("\n", $violations),
         );
     }
 

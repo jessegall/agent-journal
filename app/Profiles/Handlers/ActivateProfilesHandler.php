@@ -149,7 +149,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         CompiledScript $script,
         array $coverage,
     ): ActivatedProfile {
-        $revision = Profile::activate($definition, $author, $diff->after, $script)->revision;
+        $revision = $this->activateDefinition($definition, $author, $diff->after, $script)->revision;
 
         $publishedChange = $change === ProfileChangeType::Unchanged && $diff->before != $diff->after
             ? ProfileChangeType::Changed
@@ -176,5 +176,28 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         if ($start->execution->mode === ExecutionModeType::RequiredContainer && $start->program !== null) {
             $this->containers->assertSupported($start->program);
         }
+    }
+
+    /**
+     * Appends the definition as the next revision of the profile with its key, making that profile first when the key
+     * is new; a retired profile of that key is current again under the same identity.
+     */
+    private function activateDefinition(
+        ProfileDefinition $definition,
+        ActorIdentity $author,
+        ScriptSource $source = new ScriptSource(''),
+        CompiledScript|null $compiled = null,
+    ): ProfileRevision {
+        $profile = Profile::query()->withKey($definition->key)->lockForUpdate()->first()
+            ?? new Profile(['key' => $definition->key->key]);
+        $profile->label = $definition->label;
+        $profile->retired_at = null;
+        $profile->save();
+
+        $revision = ProfileRevision::create($profile, $definition, $author, $source, $compiled);
+        $profile->current_revision_id = $revision->id;
+        $profile->save();
+
+        return $revision;
     }
 }

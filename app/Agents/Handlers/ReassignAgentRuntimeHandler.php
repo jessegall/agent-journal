@@ -11,15 +11,15 @@ use App\Agents\Events\AgentRuntimeReassigned;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\DriverRequests;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class ReassignAgentRuntimeHandler implements CommandHandler
 {
     public function __construct(
         private DriverRequests $requests,
         private StartTokens $credentials,
-        private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     public function handle(ReassignAgentRuntime $command): int
@@ -42,7 +42,7 @@ final readonly class ReassignAgentRuntimeHandler implements CommandHandler
         $fromHostId = $runtime->host_id;
         $token = $this->credentials->rotate(AgentSession::query()->findOrFail($target->sessionId));
         $runtime->reassignTo($command->hostId ?? $fromHostId, $token);
-        $this->events->dispatch(new AgentRuntimeReassigned(
+        $this->facts->publishAfterCommit(new AgentRuntimeReassigned(
             $runtime->id,
             $fromHostId,
             $runtime->host_id,

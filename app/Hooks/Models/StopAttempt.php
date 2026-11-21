@@ -7,6 +7,7 @@ namespace App\Hooks\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\AgentSession;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\Support\AgentSessionScope;
@@ -19,7 +20,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 /**
  * One request of a session to stop, by its stop callback: the policy and workspace generation it was asked under and
@@ -44,6 +44,7 @@ final class StopAttempt extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     /**
@@ -90,10 +91,9 @@ final class StopAttempt extends Model implements ReadableModel
         int $workspaceGeneration,
         array $conditionHashes,
     ): self {
-        $now = Carbon::now();
-        $query = self::query()->withoutGlobalScope(AgentSessionScope::class);
-        $query->insertOrIgnore([
-            'id' => (string) Str::ulid(),
+        $attempt = new self();
+        $attempt->setRawAttributes([
+            'id' => $attempt->newUniqueId(),
             'agent_id' => $stop->agentId,
             'session_id' => $stop->sessionId,
             'stop_id' => $stop->hookId,
@@ -101,9 +101,8 @@ final class StopAttempt extends Model implements ReadableModel
             'workspace_generation' => $workspaceGeneration,
             'condition_hashes' => json_encode($conditionHashes, JSON_THROW_ON_ERROR),
             'state' => StopAttemptState::Pending->value,
-            'created_at' => $now,
-            'updated_at' => $now,
         ]);
+        $attempt->insertIfAbsent();
 
         return self::query()
             ->withoutGlobalScope(AgentSessionScope::class)

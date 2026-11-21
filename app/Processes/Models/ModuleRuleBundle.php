@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Models;
 
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Processes\Values\RuleBundle;
 use App\Reads\Contracts\ReadableModel;
@@ -34,6 +35,7 @@ final class ModuleRuleBundle extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     public const string CREATED_AT = 'approved_at';
@@ -61,10 +63,11 @@ final class ModuleRuleBundle extends Model implements ReadableModel
             'digest' => $bundle->digest(),
         ];
 
-        return self::query()->firstOrCreate($identity, [
-            'approver_type' => $approver->type->value,
-            'approver_id' => $approver->id,
-        ]);
+        $approval = new self([...$identity, 'approver_type' => $approver->type->value, 'approver_id' => $approver->id]);
+        $approval->setAttribute($approval->getKeyName(), $approval->newUniqueId());
+        $approval->insertIfAbsent();
+
+        return self::query()->where($identity)->sole();
     }
 
     // ----------[ Answers ]----------

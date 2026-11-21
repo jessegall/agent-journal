@@ -10,12 +10,12 @@ use App\Assignments\Models\Support\SignedInScope;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Reads\Support\CountsPivotLoads;
 use App\Records\Support\RecordIdentity;
-use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -44,6 +44,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     use BoundedReads;
     use CountsPivotLoads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     /**
@@ -69,17 +70,14 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      */
     public static function insertUnlessHeld(RecordIdentity $record, AssigneeIdentity $holder): void
     {
-        $now = CarbonImmutable::now();
-
-        self::query()->insertOrIgnore([
-            'id' => new self()->newUniqueId(),
+        $row = new self([
             'record_type' => $record->type,
             'record_id' => $record->id,
             'holder_type' => $holder->type,
             'holder_id' => $holder->id,
-            'created_at' => $now,
-            'updated_at' => $now,
         ]);
+        $row->setAttribute($row->getKeyName(), $row->newUniqueId());
+        $row->insertIfAbsent();
     }
 
     public static function create(RecordIdentity $record, AssigneeIdentity $holder): self
@@ -105,14 +103,15 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
-     * Removes, in one statement, every claim that stands on this exact seat or work assignment.
+     * The claims a lost assignment proved, whoever holds them, for their release.
+     *
+     * @return Builder<self>
      */
-    public static function releaseClaimsFor(AssignmentReference $source): int
+    public static function claimsProvedBy(AssignmentReference $source): Builder
     {
         return self::query()
             ->withoutGlobalScope(SignedInScope::class)
-            ->whereIn('id', ClaimAuthorization::claimIdsFor($source))
-            ->delete();
+            ->whereIn('id', ClaimAuthorization::claimIdsFor($source));
     }
 
     /**

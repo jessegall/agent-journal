@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Values\WorkReference;
 use App\Agents\Values\WorkspaceFacts;
 use App\Agents\Values\WorkspaceReadReference;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -57,6 +58,7 @@ final class WorkspaceRead extends Model implements ReadableModel
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -82,10 +84,11 @@ final class WorkspaceRead extends Model implements ReadableModel
      */
     public static function retain(WorkspaceReadReference $reference, ActorIdentity $actor, WorkReference $work): self
     {
-        return self::query()->firstOrCreate(
-            ['read_reference' => $reference->key],
-            [...$actor->asColumns('actor'), 'work' => $work->key],
-        );
+        $read = new self(['read_reference' => $reference->key, ...$actor->asColumns('actor'), 'work' => $work->key]);
+        $read->setAttribute($read->getKeyName(), $read->newUniqueId());
+        $read->insertIfAbsent();
+
+        return self::query()->where('read_reference', $reference->key)->sole();
     }
 
     /**

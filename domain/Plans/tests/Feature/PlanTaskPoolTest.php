@@ -17,6 +17,7 @@ use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\PlanPoolRefused;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Models\Task;
@@ -50,19 +51,19 @@ final class PlanTaskPoolTest extends TestCase
     public function test_a_started_plan_opens_to_its_tasks_phase_by_phase(): void
     {
         $plan = Plan::factory()->create(['state' => PlanState::Started]);
-        $build = $plan->addPhase('Build');
-        $review = $plan->addPhase('Review');
+        $build = $this->planStructure()->addPhase($plan, 'Build');
+        $review = $this->planStructure()->addPhase($plan, 'Review');
         [$first, $second, $third, $fourth] = array_map(fn () => Task::factory()->create()->id, range(1, 4));
-        $review->addTasks([$fourth]);
-        $build->addTasks([$second]);
-        $review->addTasks([$third]);
-        $build->addTasks([$first]);
+        $this->planStructure()->addTasks($review, [$fourth]);
+        $this->planStructure()->addTasks($build, [$second]);
+        $this->planStructure()->addTasks($review, [$third]);
+        $this->planStructure()->addTasks($build, [$first]);
         $factory = $this->app->make(PlanTaskPoolFactory::class);
 
         $this->assertSame([$second, $first, $fourth, $third], $this->open($factory, $plan)->ids->ids);
 
         $later = Task::factory()->create()->id;
-        $build->addTasks([$later]);
+        $this->planStructure()->addTasks($build, [$later]);
 
         $this->assertSame([$second, $first, $later, $fourth, $third], $this->open($factory, $plan)->ids->ids);
     }
@@ -84,7 +85,10 @@ final class PlanTaskPoolTest extends TestCase
     {
         $factory = $this->app->make(PlanTaskPoolFactory::class);
         $plan = Plan::factory()->create(['state' => $state]);
-        $plan->addPhase('Build')->addTasks([Task::factory()->create()->id]);
+        $this->planStructure()->addTasks(
+            $this->planStructure()->addPhase($plan, 'Build'),
+            [Task::factory()->create()->id],
+        );
         $factory->validate(self::reference($plan), $this->builder);
 
         $this->assertThrows(
@@ -97,7 +101,10 @@ final class PlanTaskPoolTest extends TestCase
     public function test_a_plan_of_more_than_a_thousand_tasks_gives_none(): void
     {
         $plan = Plan::factory()->create(['state' => PlanState::Started]);
-        $plan->addPhase('Build')->addTasks(array_map(fn () => (string) Str::ulid(), range(1, 1001)));
+        $this->planStructure()->addTasks(
+            $this->planStructure()->addPhase($plan, 'Build'),
+            array_map(fn () => (string) Str::ulid(), range(1, 1001)),
+        );
 
         $this->expectException(AssignmentPoolTooLarge::class);
         $this->expectExceptionMessage('more than 1000 records');
@@ -159,5 +166,10 @@ final class PlanTaskPoolTest extends TestCase
     private static function reference(Plan $plan): PoolReference
     {
         return new PoolReference('plans.tasks', $plan->assignmentIdentity(), []);
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

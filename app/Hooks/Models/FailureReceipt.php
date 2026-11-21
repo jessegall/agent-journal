@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Models;
 
 use App\Agents\Enums\ProgramFailure;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Models\Support\AgentSessionScope;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 /**
  * One failure a session's program reported, kept once per native event so a retried notification is recorded once.
@@ -33,6 +32,7 @@ final class FailureReceipt extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -54,16 +54,15 @@ final class FailureReceipt extends Model implements ReadableModel
      */
     public static function receive(HookIdentity $hook, ProgramFailure $failure): bool
     {
-        $now = Carbon::now();
-
-        return self::query()->withoutGlobalScope(AgentSessionScope::class)->insertOrIgnore([
-            'id' => (string) Str::ulid(),
+        $receipt = new self();
+        $receipt->setRawAttributes([
+            'id' => $receipt->newUniqueId(),
             'agent_id' => $hook->agentId,
             'session_id' => $hook->sessionId,
             'event_id' => $hook->hookId,
             'failure' => $failure->value,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]) === 1;
+        ]);
+
+        return $receipt->insertIfAbsent();
     }
 }

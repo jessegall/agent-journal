@@ -6,10 +6,10 @@ namespace App\Hooks\Actions;
 
 use App\Agents\Events\ProgramFailed;
 use App\Agents\Models\ProcessStart;
+use App\Bus\Contracts\CommandFacts;
 use App\Hooks\Inputs\FailureDetails;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\FailureReceipt;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Receives a program's failure notification once per native event and publishes it as a safe fact; a retry of the
@@ -17,7 +17,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class RecordProgramFailure
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private CommandFacts $facts) {}
 
     public function record(HookIdentity $hook, FailureDetails $details): void
     {
@@ -34,6 +34,6 @@ final readonly class RecordProgramFailure
             $start?->accountIdentity(),
             $start?->account_generation,
         );
-        $this->events->dispatch($failed);
+        $this->facts->publishAfterCommit($failed);
     }
 }

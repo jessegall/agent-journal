@@ -20,6 +20,11 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 30, reason: 'It parses every model file of app and the domains.')]
 final class ModelOwnRowTest extends TestCase
 {
+    /**
+     * The guideline a failure points to.
+     */
+    private const string GUIDELINE = '.ai/guidelines/models-raise-their-events.md';
+
     use JudgesFixtureFiles;
 
     private const string FIXTURES = 'tests/Fixtures/ModelWrites';
@@ -67,7 +72,8 @@ final class ModelOwnRowTest extends TestCase
         $this->assertSame(
             $found->frozenMethods(),
             $found->methods(),
-            "A model method writes only its own row; raise a fact for the rest:\n".$found->report(),
+            'A model method writes only its own row; raise a fact for the rest ('.self::GUIDELINE."):\n"
+                .$found->report(),
         );
     }
 

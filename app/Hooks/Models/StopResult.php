@@ -91,15 +91,6 @@ final class StopResult extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    /**
-     * Forgets the raw output of every result recorded before the moment, and answers how many there were; their
-     * summaries stay.
-     */
-    public static function forgetOutputBefore(CarbonImmutable $before): int
-    {
-        return self::query()->whereNotNull('output')->where('created_at', '<', $before)->update(['output' => null]);
-    }
-
     // ----------[ Answers ]----------
 
     /**

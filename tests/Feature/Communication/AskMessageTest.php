@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\AnswerImpossible;
 use App\Communication\Models\Message;
-use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use Tests\Support\MessagingTestCase;
 
 /**
@@ -25,7 +25,7 @@ final class AskMessageTest extends MessagingTestCase
 
     public function test_asking_an_inbox_nobody_is_seated_at_is_refused(): void
     {
-        $nobody = DeskRecord::openSourceDesk('nobody', 'Nobody');
+        $nobody = $this->app->make(DeskOpening::class)->openSourceDesk('nobody', 'Nobody');
 
         $this->assertThrows(fn () => $this->ownerAsks($nobody->inboxId(), 'Anyone?'), AnswerImpossible::class);
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());

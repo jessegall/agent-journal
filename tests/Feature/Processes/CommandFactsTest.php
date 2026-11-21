@@ -31,7 +31,7 @@ final class CommandFactsTest extends TestCase
     {
         parent::setUp();
 
-        CommandAlias::record(
+        $this->recordAlias(
             new ExecutionContext(ShellDialect::Bash, base_path(), base_path())->projectKey(),
             'tests',
             'php artisan test',
@@ -158,5 +158,16 @@ final class CommandFactsTest extends TestCase
         );
 
         return $admission->isAllowed() ? AnswerType::Allow : AnswerType::Deny;
+    }
+
+    /**
+     * @param  list<string>  $arguments
+     */
+    private function recordAlias(string $projectKey, string $name, string $line, array $arguments = []): CommandAlias
+    {
+        $alias = CommandAlias::forName($projectKey, $name);
+        $alias->recordLine($line, $arguments);
+
+        return $alias;
     }
 }

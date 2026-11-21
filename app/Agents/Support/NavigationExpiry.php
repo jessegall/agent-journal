@@ -17,6 +17,8 @@ use Carbon\CarbonImmutable;
  */
 final readonly class NavigationExpiry implements NavigationExpiryContract
 {
+    public function __construct(private DriverRequestEndings $endings) {}
+
     /**
      * The most requests one sweep expires; the rest wait for the next pass.
      */
@@ -34,7 +36,7 @@ final readonly class NavigationExpiry implements NavigationExpiryContract
             ->get();
 
         foreach ($due as $navigation) {
-            $navigation->expire();
+            $this->endings->expire($navigation);
             $navigation->driverRequest->fail(RequestOutcome::EntryUnavailable);
             $navigation->runtime->holdFor(HoldReason::None);
         }

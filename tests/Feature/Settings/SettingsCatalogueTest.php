@@ -206,7 +206,7 @@ final class SettingsCatalogueTest extends TestCase
      */
     private function storeDirectly(string $owner, Closure $change): void
     {
-        SettingsRecord::insertIfAbsent($owner);
+        SettingsRecord::makeEmptyFor($owner);
         $record = SettingsRecord::sharedRuntimeForOwner($owner)->get();
         $record->revise($change($record->document));
     }

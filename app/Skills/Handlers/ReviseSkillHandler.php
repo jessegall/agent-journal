@@ -27,7 +27,8 @@ final readonly class ReviseSkillHandler implements CommandHandler
             $skill->assertWritableAt($command->expectedRevision);
             $draft = $command->draft;
 
-            return $skill->appendRevision(
+            return $this->writes->appendRevision(
+                $skill,
                 $draft,
                 $this->writes->checkedCondition($skill->key, $draft),
                 $this->writes->author(),

@@ -31,7 +31,7 @@ final class Publication
     /**
      * Takes a unit whose batch is ready, and releases it at once when no command runs.
      */
-    public function committed(EventUnit $unit): void
+    public function takeCommitted(EventUnit $unit): void
     {
         $this->committed[] = $unit;
 

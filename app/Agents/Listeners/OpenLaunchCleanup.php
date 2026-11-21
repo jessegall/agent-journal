@@ -9,6 +9,8 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\CleanupOperation;
+use App\Agents\Support\CapacityRelease;
+use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
 
 /**
@@ -16,8 +18,11 @@ use App\Contracts\Listener;
  * until that cleanup is done. A launch that never opened a runtime left nothing on a host, so its capacity is
  * released at once.
  */
+#[InCommandTransaction]
 final readonly class OpenLaunchCleanup implements Listener
 {
+    public function __construct(private CapacityRelease $capacity) {}
+
     public function handle(SessionClosed $event): void
     {
         $session = AgentSession::byId($event->sessionId);
@@ -29,7 +34,7 @@ final readonly class OpenLaunchCleanup implements Listener
         $host = AgentRuntime::hostOfSession($session->id);
 
         if ($host->isEmpty()) {
-            CapacityReservation::releaseFor($session->start_request_id);
+            $this->capacity->releaseFor($session->start_request_id);
 
             return;
         }

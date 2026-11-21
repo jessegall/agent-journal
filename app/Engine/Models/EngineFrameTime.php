@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Engine\Models;
 
-use App\Engine\Values\FrameSettlement;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -13,7 +12,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 /**
  * One frame's timing checkpoint: the server time its last settled tick started. It is timing state, not a receipt;
@@ -62,25 +60,5 @@ final class EngineFrameTime extends Model implements ReadableModel
         return self::query()->whereIn('frame_id', $ids)->readExactly(count($ids))->get()
             ->mapWithKeys(fn (self $time) => [$time->frame_id => $time->settled_at])
             ->all();
-    }
-
-    /**
-     * Writes every settlement in one statement, moving a frame's existing checkpoint to its new time. The time is bound
-     * as its microsecond text, since an upsert skips the casts and a bound date keeps only whole seconds.
-     *
-     * @param  list<FrameSettlement>  $settlements
-     */
-    public static function recordMany(array $settlements): void
-    {
-        self::query()->upsert(
-            array_map(fn (FrameSettlement $settlement) => [
-                'id' => (string) Str::ulid(),
-                'frame_id' => $settlement->frameId,
-                'stack_id' => $settlement->stackId,
-                'settled_at' => $settlement->settledAt,
-            ], $settlements),
-            ['frame_id'],
-            ['stack_id', 'settled_at'],
-        );
     }
 }

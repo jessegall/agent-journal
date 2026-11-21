@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Supervision\Models;
 
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +18,7 @@ final class AskRequester extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     public const string LINK_TYPE = 'core.ask-requester';
@@ -29,10 +30,12 @@ final class AskRequester extends Model implements ReadableModel
      */
     public static function lockSubmissions(ActorIdentity $actor): void
     {
-        self::query()->upsert(
-            [...$actor->asColumns('actor'), 'updated_at' => CarbonImmutable::now()],
-            ['actor_type', 'actor_id'],
-            ['updated_at'],
-        );
+        $requester = new self();
+        $requester->setRawAttributes([
+            $requester->getKeyName() => $requester->newUniqueId(),
+            ...$actor->asColumns('actor'),
+        ]);
+        $requester->insertIfAbsent();
+        self::query()->where($actor->asColumns('actor'))->lockForUpdate()->sole();
     }
 }

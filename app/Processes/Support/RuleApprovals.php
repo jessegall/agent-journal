@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Actors\Support\ActorIdentity;
+use App\Bus\Contracts\CommandFacts;
 use App\Processes\Events\RuleActivated;
 use App\Processes\Exceptions\ApprovalRefused;
 use App\Processes\Exceptions\ClassificationRuleRefused;
@@ -22,7 +23,6 @@ use App\Processes\Values\ExitBranch;
 use App\Processes\Values\OwnerApproval;
 use App\Processes\Values\ProvenBranch;
 use App\Processes\Values\ReaderApproval;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * An owner's approval of a proposal's current revision, all in the bus's one transaction (doc 21 revision 6, sections
@@ -35,7 +35,7 @@ final readonly class RuleApprovals
     public function __construct(
         private CommandRuleRegistry $rules,
         private ProjectRules $projectRules,
-        private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     /**
@@ -65,7 +65,7 @@ final readonly class RuleApprovals
             $request->approveOrdinary();
         }
 
-        $this->events->dispatch(RuleActivated::forRevision($approved, $approval->reason));
+        $this->facts->publishAfterCommit(RuleActivated::forRevision($approved, $approval->reason));
 
         return ApprovalReceipt::of($approved);
     }

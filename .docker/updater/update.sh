@@ -90,12 +90,10 @@ pin_runner() {
         sed -i "s|^RUNNER_IMAGE=.*|RUNNER_IMAGE=$runner|" .env
 }
 
-# The updater rebuilds itself when its own image changed, as the last step: the new container takes over from this one.
+# The updater rebuilds itself, as the last step, when the loop it runs is not the installed commit's: the new container
+# takes over from this one. Comparing the files, not the commits, also catches a change an earlier install missed.
 updater_changed=no
-if [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/dev/null &&
-    git -C "$mirror" diff --name-only "$installed" "$newest" | grep -qE '^\.docker/updater/(Dockerfile|loop\.sh)$'; then
-    updater_changed=yes
-fi
+cmp -s /usr/local/bin/journal-updater "$root/.docker/updater/loop.sh" || updater_changed=yes
 
 if install; then
     echo "$newest" > .installed-commit

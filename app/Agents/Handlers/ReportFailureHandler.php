@@ -9,12 +9,12 @@ use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\ProgramFailed;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class ReportFailureHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private CommandFacts $facts) {}
 
     public function handle(ReportFailure $command): void
     {
@@ -26,7 +26,7 @@ final readonly class ReportFailureHandler implements CommandHandler
 
         $session = AgentSession::query()->findOrFail($start->session_id);
         $program = $session->selection()->program->value;
-        $this->events->dispatch(new ProgramFailed(
+        $this->facts->publishAfterCommit(new ProgramFailed(
             $start->agent_id,
             $start->session_id,
             $program,
@@ -34,6 +34,6 @@ final readonly class ReportFailureHandler implements CommandHandler
             $start->accountIdentity(),
             $start->account_generation,
         ));
-        $this->events->dispatch(new AccountUseChanged($start->accountIdentity()));
+        $this->facts->publishAfterCommit(new AccountUseChanged($start->accountIdentity()));
     }
 }

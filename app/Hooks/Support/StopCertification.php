@@ -9,9 +9,9 @@ use App\Agents\Models\CertifiedWork;
 use App\Agents\Models\StartRecord;
 use App\Agents\Models\WorkReservation;
 use App\Agents\Values\StartPolicy;
+use App\Bus\Contracts\CommandFacts;
 use App\Hooks\Events\HelperCompletionCertified;
 use App\Hooks\Models\StopAttempt;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Certifies the work of a session complete by a stop attempt whose final checks passed, once: the certificate is
@@ -20,7 +20,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class StopCertification
 {
-    public function __construct(private SessionPolicyReader $policies, private Dispatcher $events) {}
+    public function __construct(private SessionPolicyReader $policies, private CommandFacts $facts) {}
 
     public function certify(StopAttempt $attempt): void
     {
@@ -44,6 +44,6 @@ final readonly class StopCertification
             WorkReservation::retain($work, StopAttempt::agentOf($attempt->reference()), $attempt->workspace_generation);
         }
 
-        $this->events->dispatch(new HelperCompletionCertified($start->ownerWork(), $attempt->reference()));
+        $this->facts->publishAfterCommit(new HelperCompletionCertified($start->ownerWork(), $attempt->reference()));
     }
 }

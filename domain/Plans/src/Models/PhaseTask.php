@@ -55,6 +55,14 @@ final class PhaseTask extends Pivot implements ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * The task placed in the phase at this position.
+     */
+    public static function create(Phase $phase, string $taskId, int $position): self
+    {
+        return self::query()->create(['phase_id' => $phase->id, 'task_id' => $taskId, 'position' => $position]);
+    }
+
+    /**
      * The task ids of each of the phases, each phase's in its order, read in one query and keyed by phase id.
      *
      * @param  list<string>  $phaseIds

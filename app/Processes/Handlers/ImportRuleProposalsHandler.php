@@ -10,9 +10,9 @@ use App\Processes\Commands\ImportRuleProposals;
 use App\Processes\Declarations\RuleDeclarations;
 use App\Processes\Exceptions\DeclarationInvalid;
 use App\Processes\Exceptions\RuleProposalRefused;
-use App\Processes\Models\RuleProposal;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Support\ProposalChecks;
+use App\Processes\Support\RuleProposals;
 use App\Processes\Values\DeclaredProposal;
 use App\Processes\Values\ImportedProposals;
 use App\Processes\Values\ProposalReceipt;
@@ -27,6 +27,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
         private RuleDeclarations $declarations,
         private ProposalChecks $checks,
         private ProjectKey $projects,
+        private RuleProposals $proposals,
     ) {}
 
     /**
@@ -44,7 +45,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
         }
 
         $open = fn (DeclaredProposal $declaration) => ProposalReceipt::of(
-            RuleProposal::open($projectKey, $actor, $declaration->requestId, $declaration->proposed, null),
+            $this->proposals->open($projectKey, $actor, $declaration->requestId, $declaration->proposed, null),
             $declaration->proposed,
         );
 

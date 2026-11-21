@@ -16,6 +16,7 @@ use App\Profiles\Values\ProfileScript;
 use App\Scripts\Contracts\ScriptChecks;
 use App\Scripts\Enums\ProfileRunState;
 use App\Scripts\Models\ProfileRun;
+use App\Scripts\Models\ProfileStepResult;
 use App\Scripts\Values\Instruction;
 use App\Scripts\Values\RunContext;
 use App\Scripts\Values\ScriptContext;
@@ -149,7 +150,10 @@ final readonly class ScriptStopPreparation implements StopPreparer
                 return $this->suspend($run, $instruction->source->line, $outcome);
             }
 
-            $run->completeStep($step, $outcome);
+            if ($run->recordedResult($step) === null) {
+                ProfileStepResult::create($run, $step, $outcome);
+            }
+
             $evidence = (string) $outcome->evidence;
             $next = $instruction->successors[(string) $outcome->port];
         }

@@ -82,18 +82,4 @@ final class MessagePin extends Model implements ReadableModel
 
     // ----------[ Queries ]----------
 
-    /**
-     * Removes the owner's pin of the message in the conversation, when there is one.
-     */
-    public static function unpinFor(
-        ActorIdentity $owner,
-        ConversationPair $conversation,
-        string $messageId,
-    ): void {
-        self::query()
-            ->ownedBy($owner)
-            ->inConversation($conversation)
-            ->where('message_id', $messageId)
-            ->delete();
-    }
 }

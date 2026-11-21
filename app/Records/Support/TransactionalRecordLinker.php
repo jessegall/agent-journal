@@ -12,7 +12,11 @@ use Illuminate\Database\Eloquent\Model;
 
 final readonly class TransactionalRecordLinker implements RecordLinker
 {
-    public function __construct(private RecordResolver $records, private CommandTransaction $transaction) {}
+    public function __construct(
+        private RecordResolver $records,
+        private CommandTransaction $transaction,
+        private LinkRemoval $removal,
+    ) {}
 
     public function linkFrom(Model $source, array $targets): void
     {
@@ -32,7 +36,7 @@ final readonly class TransactionalRecordLinker implements RecordLinker
     public function unlink(RecordIdentity $source, RecordIdentity $target): void
     {
         [$from, $to] = $this->lockedPair($source, $target);
-        Link::removeBetween($from, $to);
+        $this->removal->removeBetween($from, $to);
     }
 
     /**

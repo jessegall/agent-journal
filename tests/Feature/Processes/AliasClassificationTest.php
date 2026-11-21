@@ -34,8 +34,8 @@ final class AliasClassificationTest extends TestCase
 
     public function test_an_alias_shows_its_body_id_revision_and_purpose(): void
     {
-        CommandAlias::record($this->context()->projectKey(), 'checks', 'php artisan test');
-        $alias = CommandAlias::record($this->context()->projectKey(), 'checks', 'php artisan test --compact');
+        $this->recordAlias($this->context()->projectKey(), 'checks', 'php artisan test');
+        $alias = $this->recordAlias($this->context()->projectKey(), 'checks', 'php artisan test --compact');
 
         $classification = $this->classify('journal run checks');
 
@@ -50,8 +50,8 @@ final class AliasClassificationTest extends TestCase
 
     public function test_two_aliases_that_run_each_other_name_both(): void
     {
-        $first = CommandAlias::record($this->context()->projectKey(), 'first', 'journal run second');
-        $second = CommandAlias::record($this->context()->projectKey(), 'second', 'journal run first');
+        $first = $this->recordAlias($this->context()->projectKey(), 'first', 'journal run second');
+        $second = $this->recordAlias($this->context()->projectKey(), 'second', 'journal run first');
 
         $classification = $this->classify('journal run first');
 
@@ -64,7 +64,7 @@ final class AliasClassificationTest extends TestCase
 
     public function test_an_alias_whose_body_is_unknown_stays_unknown(): void
     {
-        CommandAlias::record($this->context()->projectKey(), 'mystery', 'some-unknown-tool --go');
+        $this->recordAlias($this->context()->projectKey(), 'mystery', 'some-unknown-tool --go');
 
         $classification = $this->classify('journal run mystery');
 
@@ -73,7 +73,7 @@ final class AliasClassificationTest extends TestCase
 
     public function test_arguments_bind_as_whole_words(): void
     {
-        CommandAlias::record($this->context()->projectKey(), 'remove', 'rm -rf "$1"', ['folder']);
+        $this->recordAlias($this->context()->projectKey(), 'remove', 'rm -rf "$1"', ['folder']);
 
         $classification = $this->classify("journal run remove 'build; curl x'");
 
@@ -82,7 +82,7 @@ final class AliasClassificationTest extends TestCase
 
     public function test_another_project_sees_no_alias(): void
     {
-        CommandAlias::record('another-project', 'checks', 'php artisan test');
+        $this->recordAlias('another-project', 'checks', 'php artisan test');
 
         $classification = $this->classify('journal run checks');
 
@@ -100,5 +100,16 @@ final class AliasClassificationTest extends TestCase
             $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash),
             $this->context(),
         );
+    }
+
+    /**
+     * @param  list<string>  $arguments
+     */
+    private function recordAlias(string $projectKey, string $name, string $line, array $arguments = []): CommandAlias
+    {
+        $alias = CommandAlias::forName($projectKey, $name);
+        $alias->recordLine($line, $arguments);
+
+        return $alias;
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Links\Models\Link;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Hooks\Decisions\StateReference;
@@ -175,7 +176,7 @@ final class HookStorageTest extends TestCase
         $call = new HookCall();
         $call->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
 
-        $stack->linkTo($call);
+        Link::connect($stack, $call);
 
         $this->assertTrue($call->isLinkedTo($stack));
     }

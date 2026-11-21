@@ -153,41 +153,19 @@ final class ProfileRun extends Model implements ReadableModel
     }
 
     /**
-     * Records the host's outcome of the step the run waits on, once, and resumes the same instruction; a step it
-     * does not wait on is refused, and the outcome of a step already recorded is kept as it was.
+     * The step the run waited for is reported: the run goes on.
      *
-     * @throws ProfileRunRefused
+     * @throws ProfileRunRefused when the run does not wait for this step
      */
-    public function recordStep(string $reference, StepOutcome $outcome): ProfileStepResult
+    public function resumeAfter(string $reference): void
     {
-        $recorded = $this->recordedResult($reference);
-
-        if ($recorded !== null) {
-            return $recorded;
-        }
-
         if ($this->state !== ProfileRunState::Suspended || $this->awaited_step !== $reference) {
             throw ProfileRunRefused::stepNotAwaited($this->id, $reference);
         }
 
-        $result = ProfileStepResult::create($this, $reference, $outcome);
         $this->state = ProfileRunState::Running;
         $this->awaited_step = null;
         $this->save();
-
-        return $result;
-    }
-
-    /**
-     * Records the outcome of a step the run took itself, once: a step replayed from its record is not recorded again.
-     */
-    public function completeStep(string $reference, StepOutcome $outcome): void
-    {
-        if ($this->recordedResult($reference) !== null) {
-            return;
-        }
-
-        ProfileStepResult::create($this, $reference, $outcome);
     }
 
     /**
@@ -233,6 +211,11 @@ final class ProfileRun extends Model implements ReadableModel
         return $result === null ? None::create() : new Some($result->outcome());
     }
 
+    public function recordedResult(string $reference): ProfileStepResult|null
+    {
+        return $this->results()->where('step_reference', $reference)->first();
+    }
+
     // ----------[ Relations ]----------
 
     /**
@@ -241,11 +224,5 @@ final class ProfileRun extends Model implements ReadableModel
     public function results(): HasMany
     {
         return $this->hasMany(ProfileStepResult::class);
-    }
-    // ----------[ Internals ]----------
-
-    private function recordedResult(string $reference): ProfileStepResult|null
-    {
-        return $this->results()->where('step_reference', $reference)->first();
     }
 }

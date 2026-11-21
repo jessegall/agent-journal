@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Support;
 
 use App\Actors\Contracts\ActorAttention;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\HookInput;
@@ -28,7 +29,7 @@ final readonly class AgentMessageDelivery
             return $answer;
         }
 
-        return $answer->withRemindersFirst(PendingAgentMessage::takeAllFor($target->actorIdentity()));
+        return $answer->withRemindersFirst($this->takeAllFor($target->actorIdentity()));
     }
 
     public function retainEvent(StackTarget $target, StateEventDispatch $dispatch, StateEventContext $context): void
@@ -61,5 +62,24 @@ final readonly class AgentMessageDelivery
         }
 
         $this->attention->request($agent, $origin);
+    }
+
+    /**
+     * The texts waiting for the agent, oldest first, removed as they are handed over.
+     *
+     * @return list<string>
+     */
+    public function takeAllFor(ActorIdentity $agent): array
+    {
+        $messages = PendingAgentMessage::query()
+            ->ownedBy($agent)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->limit(PendingAgentMessage::DELIVERY_LIMIT)
+            ->get();
+        PendingAgentMessage::query()->ownedBy($agent)->whereKey($messages->modelKeys())->delete();
+
+        return array_values($messages->flatMap(fn (PendingAgentMessage $message) => $message->lines)->all());
     }
 }

@@ -123,12 +123,11 @@ final class CommandReceipt extends Model implements ReadableModel
     }
 
     /**
-     * Stores the refusal a write got after its transaction rolled back; when the write ran inside a transaction it
-     * joined, nothing rolled back, so the key it took is marked refused instead.
+     * A new receipt of the refusal a write got after its transaction rolled back.
      *
      * @param  array<string, mixed>  $details
      */
-    public static function recordRefusal(
+    public static function createRefused(
         ReceiptCaller $caller,
         string $requestKey,
         object $command,
@@ -136,25 +135,11 @@ final class CommandReceipt extends Model implements ReadableModel
         RefusalCode $code,
         string $message,
         array $details = [],
-    ): void {
-        $refusal = [
-            'state' => ReceiptState::Refused,
-            'refusal_code' => $code->value,
-            'refusal_message' => $message,
-            'refusal_details' => $details,
-        ];
-        $taken = self::lockedFor($caller, $command::class, $requestKey);
-
-        if ($taken !== null) {
-            // A refusal now, such as revoked rights on a replay, never replaces the result the key already has.
-            if ($taken->state !== ReceiptState::Completed) {
-                $taken->fill($refusal)->save();
-            }
-
-            return;
-        }
-
-        self::query()->create([...self::keyColumns($caller, $requestKey, $command, $retention), ...$refusal]);
+    ): self {
+        return self::query()->create([
+            ...self::keyColumns($caller, $requestKey, $command, $retention),
+            ...self::refusalColumns($code, $message, $details),
+        ]);
     }
 
     // ----------[ Queries ]----------
@@ -175,22 +160,6 @@ final class CommandReceipt extends Model implements ReadableModel
         )->where('request_key', $requestKey)->lockForUpdate()->first();
     }
 
-    /**
-     * Expires every receipt of every caller past its retention: the answer is cleared, the key and fingerprint stay so
-     * the key is refused. Returns how many it expired.
-     */
-    public static function expirePastRetention(CarbonImmutable $now): int
-    {
-        return self::query()->pastRetention($now)->update(
-            [
-                'state' => ReceiptState::Expired->value,
-                'result' => null,
-                'refusal_code' => null,
-                'refusal_message' => null,
-            ],
-        );
-    }
-
     // ----------[ Mutations ]----------
 
     public function complete(mixed $reply): void
@@ -198,6 +167,21 @@ final class CommandReceipt extends Model implements ReadableModel
         $this->state = ReceiptState::Completed;
         $this->result = ['value' => PlainValue::of($reply), 'php' => base64_encode(serialize($reply))];
         $this->save();
+    }
+
+    /**
+     * The key this write took in a transaction it joined is marked refused, unless it already holds a completed
+     * result: a refusal now, such as revoked rights on a replay, never replaces that.
+     *
+     * @param  array<string, mixed>  $details
+     */
+    public function refuse(RefusalCode $code, string $message, array $details = []): void
+    {
+        if ($this->state === ReceiptState::Completed) {
+            return;
+        }
+
+        $this->fill(self::refusalColumns($code, $message, $details))->save();
     }
 
     // ----------[ Answers ]----------
@@ -260,6 +244,20 @@ final class CommandReceipt extends Model implements ReadableModel
     }
 
     // ----------[ Internals ]----------
+
+    /**
+     * @param  array<string, mixed>  $details
+     * @return array<string, mixed>
+     */
+    private static function refusalColumns(RefusalCode $code, string $message, array $details): array
+    {
+        return [
+            'state' => ReceiptState::Refused,
+            'refusal_code' => $code->value,
+            'refusal_message' => $message,
+            'refusal_details' => $details,
+        ];
+    }
 
     /**
      * @return array<string, mixed>

@@ -4,6 +4,11 @@
 {
 	admin off
 	auto_https off
+	# The server's own HTTPS proxy reaches this from a private address; its X-Forwarded-Proto and X-Forwarded-For are
+	# passed on, so the app knows a request came over HTTPS and links its assets that way.
+	servers {
+		trusted_proxies static private_ranges
+	}
 }
 
 :8000 {

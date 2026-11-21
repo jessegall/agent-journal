@@ -122,7 +122,8 @@ final class AccountMaintenanceTest extends TestCase
             'request-1',
             CarbonImmutable::now()->addMinutes(10),
         );
-        $attempt->writeFolderOf($this->account);
+        $this->account->writerFor($attempt);
+        $attempt->writeInGeneration($this->account->sign_in_generation);
 
         $progress = $this->maintenance()->advance($this->account->id);
 

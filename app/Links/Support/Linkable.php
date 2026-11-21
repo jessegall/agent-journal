@@ -15,16 +15,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait Linkable
 {
-    public function linkTo(Model $other): void
-    {
-        Link::connect($this, $other);
-    }
-
-    public function unlinkFrom(Model $other): void
-    {
-        Link::removeBetween($this, $other);
-    }
-
     public function isLinkedTo(Model $other): bool
     {
         return Link::query()->between($this, $other)->exists();

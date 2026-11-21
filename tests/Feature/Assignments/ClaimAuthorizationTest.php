@@ -65,7 +65,7 @@ final class ClaimAuthorizationTest extends TestCase
         ClaimAuthorization::forInbox($gone, $lost);
         ClaimAuthorization::forInbox($stays, $kept);
 
-        $this->assertSame(1, AssignmentRecord::releaseClaimsFor($lost));
+        $this->assertSame(1, AssignmentRecord::claimsProvedBy($lost)->delete());
 
         $this->assertFalse(AssignmentRecord::stillExists($gone->id));
         $this->assertTrue(AssignmentRecord::stillExists($stays->id));

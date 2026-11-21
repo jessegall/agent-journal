@@ -113,7 +113,7 @@ final readonly class ShareGrants
             throw ShareRefreshRefused::otherRoot($shareId);
         }
 
-        ShareMember::forgetAllOf($share);
+        $this->forgetAllOf($share);
         $share->advanceScope();
 
         $this->publish($owner, $share, $consumed, ShareAuditType::ScopeRefreshed);
@@ -157,5 +157,13 @@ final readonly class ShareGrants
         }
 
         ShareAudit::create($share, $type, ActorIdentity::of($owner), null);
+    }
+
+    /**
+     * Removes every member of the share, of every scope version, before a refreshed scope replaces them.
+     */
+    private function forgetAllOf(Share $share): void
+    {
+        ShareMember::query()->ofShare($share)->delete();
     }
 }

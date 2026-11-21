@@ -15,6 +15,7 @@ use App\Agents\Enums\DriverType;
 use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
+use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\WatchedRuntimes;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
@@ -67,7 +68,7 @@ final class TerminalViewCommandsTest extends TestCase
     {
         $runtime = $this->runtimeOn('host-1');
         $this->travelTo(CarbonImmutable::parse('2026-11-19 14:02:00'));
-        $runtime->closeAfterExit();
+        $this->app->make(DriverRequestEndings::class)->closeAfterExit($runtime);
 
         $this->assertRefused($this->open($runtime), 'This agent is not running; its terminal ended at 14:02.');
     }

@@ -6,6 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Skills\Conditions\Conditions;
 use App\Skills\Models\Skill;
+use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillKey;
@@ -39,7 +40,8 @@ final class StoredSkillCatalogueTest extends TestCase
 
         $author = TestActors::userIdentity(7);
         $skill = Skill::create(SkillKey::from('user-review-notes'), $author, null);
-        $skill->appendRevision(
+        $this->writes()->appendRevision(
+            $skill,
             new SkillDraft(
                 'Review notes',
                 'Read before reviewing.',
@@ -82,5 +84,10 @@ final class StoredSkillCatalogueTest extends TestCase
             'skill:preview',
             ['key' => 'user-review-notes'],
         )->expectsOutputToContain('everyone in the authorized installation scope')->assertSuccessful();
+    }
+
+    private function writes(): StoredSkillWrites
+    {
+        return $this->app->make(StoredSkillWrites::class);
     }
 }

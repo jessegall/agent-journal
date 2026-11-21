@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Agents\Values\BypassReport;
-use App\Agents\Values\LoggedBypass;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -41,23 +39,5 @@ final class StartBypass extends Model implements ReadableModel
     protected function casts(): array
     {
         return ['occurred_at' => 'immutable_datetime'];
-    }
-
-    /**
-     * Keeps every bypass of the report for the session in one insert.
-     */
-    public static function recordAll(string $sessionId, BypassReport $report): void
-    {
-        $now = CarbonImmutable::now();
-
-        self::query()->insert(array_map(fn (LoggedBypass $fact) => [
-            'id' => new self()->newUniqueId(),
-            'agent_session_id' => $sessionId,
-            'native_event' => $fact->nativeEvent,
-            'failure' => $fact->failure,
-            'occurred_at' => $fact->occurredAt,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ], $report->bypasses));
     }
 }

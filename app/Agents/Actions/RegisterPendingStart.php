@@ -9,9 +9,9 @@ use App\Agents\Events\AccountUseChanged;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Values\SelectedAccount;
+use App\Bus\Contracts\CommandFacts;
 use App\Records\Contracts\IdentityLinks;
 use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Inside the start's bus transaction, links the new session to the account it runs with, once and for good, and
@@ -21,8 +21,8 @@ final readonly class RegisterPendingStart
 {
     public function __construct(
         private IdentityLinks $links,
-        private Dispatcher $events,
         private Repository $config,
+        private CommandFacts $facts,
     ) {}
 
     public function register(AgentSession $session, SelectedAccount $account): ProcessStart
@@ -30,7 +30,7 @@ final readonly class RegisterPendingStart
         $this->links->link($session, $account->record);
         $transport = TransportProfileType::from($this->config->string('agents.transport_profile'));
         $start = ProcessStart::create($session, $account, $transport);
-        $this->events->dispatch(new AccountUseChanged($account->record));
+        $this->facts->publishAfterCommit(new AccountUseChanged($account->record));
 
         return $start;
     }

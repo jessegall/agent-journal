@@ -12,8 +12,8 @@ use App\Agents\Models\MergeAttempt;
 use App\Agents\Support\ProtectedMerge;
 use App\Agents\Values\MergeOutcome;
 use App\Agents\Values\ReviewDecisionReference;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Admits the merge, retains its one attempt, merges it if it never ran or inspects what an interrupted run left, and
@@ -24,7 +24,7 @@ final readonly class MergeReviewedWorkHandler implements CommandHandler
     public function __construct(
         private MergeAdmission $admission,
         private ProtectedMerge $merge,
-        private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     public function handle(MergeReviewedWork $command): MergeOutcome
@@ -46,7 +46,8 @@ final readonly class MergeReviewedWorkHandler implements CommandHandler
             $this->merge->inspect($attempt);
         }
 
-        $this->events->dispatch(new MergeOutcomeRecorded($attempt->id));
+        $this->facts->publishAfterCommit(new MergeOutcomeRecorded($attempt->id));
+        $this->facts->applyRequired();
 
         return $attempt->outcome();
     }

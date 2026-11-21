@@ -25,7 +25,7 @@ final readonly class SeparateRequiredListeners implements Pipe
     /**
      * The interfaces that move a listener's work out of the transaction.
      */
-    private const array DEFERRING = [
+    private const array DEFERRING_INTERFACES = [
         ShouldQueue::class,
         ShouldBroadcast::class,
         ShouldDispatchAfterCommit::class,
@@ -86,7 +86,7 @@ final readonly class SeparateRequiredListeners implements Pipe
         ReflectionClass $class,
         array $earlier,
     ): void {
-        foreach (self::DEFERRING as $interface) {
+        foreach (self::DEFERRING_INTERFACES as $interface) {
             if ($class->implementsInterface($interface)) {
                 throw InvalidListener::requiredButDeferred($listener, $event, $interface);
             }

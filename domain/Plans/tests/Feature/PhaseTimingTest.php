@@ -12,6 +12,7 @@ use App\Processes\Values\TimingVerdict;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PhaseTiming;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Support\AssignmentWriterInTransaction;
@@ -47,7 +48,10 @@ final class PhaseTimingTest extends TestCase
         $this->agent = Agent::create('Worker', 'writing-helper');
         $this->plan = Plan::factory()->create(['title' => 'Phase timing', 'state' => PlanState::Started]);
         $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
-        $this->plan->addPhase('Build')->addTasks(array_map(fn (Task $task): string => $task->id, $this->tasks));
+        $this->planStructure()->addTasks(
+            $this->planStructure()->addPhase($this->plan, 'Build'),
+            array_map(fn (Task $task): string => $task->id, $this->tasks),
+        );
         $this->startUserRequestAs(TestIds::of(7));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign($this->plan->assignmentIdentity(), AssigneeIdentity::of($this->agent));
@@ -85,12 +89,12 @@ final class PhaseTimingTest extends TestCase
         }
 
         for ($number = 2; $number <= 500; $number++) {
-            $this->plan->addPhase("Phase {$number}");
+            $this->planStructure()->addPhase($this->plan, "Phase {$number}");
         }
 
         $task = Task::factory()->create(['title' => 'Finish the plan']);
-        $phase = $this->plan->addPhase('Finish');
-        $phase->addTasks([$task->id]);
+        $phase = $this->planStructure()->addPhase($this->plan, 'Finish');
+        $this->planStructure()->addTasks($phase, [$task->id]);
 
         $verdict = $this->timingForAgent();
 
@@ -106,7 +110,7 @@ final class PhaseTimingTest extends TestCase
         }
 
         $later = Task::factory()->create(['title' => 'Wait for the build']);
-        $this->plan->addPhase('Later')->addTasks([$later->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($this->plan, 'Later'), [$later->id]);
 
         $this->assertTrue($this->timingForAgent()->isAllowed());
     }
@@ -125,5 +129,10 @@ final class PhaseTimingTest extends TestCase
         $this->startRequestAs($this->agent->id, TestIds::of(80));
 
         return $this->app->make(VerificationTiming::class)->forCaller();
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

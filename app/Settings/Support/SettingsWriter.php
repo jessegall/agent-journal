@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Exceptions\CommandTransactionMissing;
 use App\Settings\Contracts\Setting;
@@ -20,7 +21,6 @@ use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Storage\SettingsDocument;
 use App\Settings\Values\SettingsChange;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Changes one owner's stored settings inside the running bus command: it makes the owner's record when there is none,
@@ -36,7 +36,7 @@ final readonly class SettingsWriter
         private SettingRegistry $registry,
         private SettingCodec $codec,
         private DatabaseSettingsResolver $resolver,
-        private Dispatcher $events,
+        private CommandFacts $facts,
     ) {}
 
     /**
@@ -150,7 +150,7 @@ final readonly class SettingsWriter
     private function lockedRecord(string $owner, string $key, int $expectedRevision): SettingsRecord
     {
         $this->transaction->assertRunning(new SettingsRecord()->getConnection());
-        SettingsRecord::insertIfAbsent($owner);
+        SettingsRecord::makeEmptyFor($owner);
         $record = SettingsRecord::lockedForOwner($owner);
 
         if ($record->revision !== $expectedRevision) {
@@ -203,7 +203,7 @@ final readonly class SettingsWriter
     ): SettingsChange {
         $record->revise($document);
         $this->resolver->forget($record->owner);
-        $this->events->dispatch(new SettingsChanged($record->owner, $target, $key, $record->revision));
+        $this->facts->publishAfterCommit(new SettingsChanged($record->owner, $target, $key, $record->revision));
 
         return new SettingsChange($record->owner, $record->revision, SettingsOutcome::Changed);
     }

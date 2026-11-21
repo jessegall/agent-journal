@@ -41,7 +41,7 @@ trait ChangesReviewsSettings
 
     private function storeDirectly(Closure $change): void
     {
-        SettingsRecord::insertIfAbsent('Reviews');
+        SettingsRecord::makeEmptyFor('Reviews');
         $record = SettingsRecord::sharedRuntimeForOwner('Reviews')->get();
         $record->revise($change($record->document));
     }

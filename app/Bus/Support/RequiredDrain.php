@@ -28,7 +28,7 @@ final readonly class RequiredDrain
      */
     public function applyRequired(EventUnit $unit): void
     {
-        $unit->pump(function () use ($unit): void {
+        $unit->runUnlessDraining(function () use ($unit): void {
             $unit->seal();
 
             while ($unit->hasPending()) {
@@ -42,6 +42,14 @@ final readonly class RequiredDrain
                 $unit->drain($next, fn () => $this->runListenersOf($next->event));
             }
         });
+    }
+
+    /**
+     * Runs the fact's required listeners at once, for a fact sent where no unit holds a queue.
+     */
+    public function applyNow(Event $event): void
+    {
+        $this->runListenersOf($event);
     }
 
     private function runListenersOf(Event $event): void

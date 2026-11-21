@@ -19,6 +19,7 @@ use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleProposalRevision;
 use App\Processes\Models\RuleRevision;
+use App\Processes\Support\RuleProposals;
 use App\Processes\Values\ArgumentGrammar;
 use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandRule;
@@ -108,7 +109,12 @@ final class RuleRecordsTest extends TestCase
         $proposal->save();
 
         $this->assertThrows(
-            fn () => $proposal->revise(1, $this->complete($this->statusRule()), $this->agent()),
+            fn () => $this->app->make(RuleProposals::class)->revise(
+                $proposal,
+                1,
+                $this->complete($this->statusRule()),
+                $this->agent(),
+            ),
             RuleProposalRefused::class,
         );
     }
@@ -210,7 +216,7 @@ final class RuleRecordsTest extends TestCase
 
     private function open(string $requestId, ProposedRule $proposed): RuleProposal
     {
-        return RuleProposal::open(self::PROJECT, $this->agent(), $requestId, $proposed, null);
+        return $this->app->make(RuleProposals::class)->open(self::PROJECT, $this->agent(), $requestId, $proposed, null);
     }
 
     private function complete(CommandRule $rule): ProposedRule

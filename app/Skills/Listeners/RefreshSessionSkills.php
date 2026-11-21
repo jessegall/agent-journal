@@ -18,6 +18,7 @@ use App\Skills\Models\SkillPublication;
 use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\States\Support\AwaitingSkillsStateReference;
+use App\Skills\Support\SkillPublications;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StartProgram;
@@ -39,6 +40,7 @@ final readonly class RefreshSessionSkills implements Listener
         private SkillResolver $skills,
         private AgentStack $stacks,
         private Dispatcher $events,
+        private SkillPublications $publications,
     ) {}
 
     public function handle(ContextStarted $event): void
@@ -63,7 +65,7 @@ final readonly class RefreshSessionSkills implements Listener
         $publication = $latest;
 
         if ($latest === null || $latest->selection_digest !== $selected->digest) {
-            $publication = SkillPublication::intend(
+            $publication = $this->publications->intend(
                 $session->id,
                 $program->key,
                 $this->targets->targetFor($session->id, $program),

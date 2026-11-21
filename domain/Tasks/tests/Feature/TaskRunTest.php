@@ -14,7 +14,7 @@ use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Desks\Contracts\RunClaims;
-use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskOpening;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Domain\Tasks\Commands\BlockTask;
@@ -102,7 +102,7 @@ final class TaskRunTest extends TestCase
 
     public function test_an_actor_that_lost_its_desk_seat_cannot_finish_the_desk_run(): void
     {
-        $desk = DeskRecord::openNamed('team', 'Team', 1, false);
+        $desk = $this->app->make(DeskOpening::class)->openNamed('team', 'Team', 1, false);
         $leaving = $this->started('First');
         $arriving = $this->started('Second');
         $task = Task::factory()->create();

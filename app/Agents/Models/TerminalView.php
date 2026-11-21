@@ -6,7 +6,6 @@ namespace App\Agents\Models;
 
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\RuntimeActivity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -102,38 +101,6 @@ final class TerminalView extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
-
-    /**
-     * Ends every view whose lease ran out unrenewed, in one update.
-     */
-    public static function endLapsed(CarbonImmutable $now): void
-    {
-        self::query()->acrossActors()->lapsed($now)->update(['closed_at' => $now]);
-    }
-
-    /**
-     * Ends every live view of a runtime that stopped, in one update.
-     */
-    public static function endOfStoppedRuntimes(CarbonImmutable $now): void
-    {
-        self::query()->acrossActors()->live()->whereHas(
-            'runtime',
-            fn (Builder $runtime) => $runtime->where('activity', RuntimeActivity::Stopped),
-        )->update(['closed_at' => $now]);
-    }
-
-    /**
-     * Deletes the views that ended or lapsed before the cutoff, in one statement.
-     */
-    public static function pruneEndedBefore(CarbonImmutable $cutoff): void
-    {
-        self::query()
-            ->acrossActors()
-            ->where(fn (Builder $ended) => $ended
-                ->where('closed_at', '<', $cutoff)
-                ->orWhere('expires_at', '<', $cutoff))
-            ->delete();
-    }
 
     // ----------[ Mutations ]----------
 

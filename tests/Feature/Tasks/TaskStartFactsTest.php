@@ -14,6 +14,7 @@ use App\Hooks\Models\AgentStackRow;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Listeners\SamplePlanOfStartedTask;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Support\PlanStructure;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
@@ -89,7 +90,7 @@ final class TaskStartFactsTest extends TestCase
     {
         $plan = Plan::factory()->create();
         $task = Task::factory()->create();
-        $plan->addPhase('Work')->addTasks([$task->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
         $progress = $this->heard(PlanProgressChanged::class);
 
         $this->start($task);
@@ -110,7 +111,7 @@ final class TaskStartFactsTest extends TestCase
     {
         $plan = Plan::factory()->create();
         $task = Task::factory()->create();
-        $plan->addPhase('Work')->addTasks([$task->id]);
+        $this->planStructure()->addTasks($this->planStructure()->addPhase($plan, 'Work'), [$task->id]);
         $this->switchDomainOff('plans');
         $progress = $this->heard(PlanProgressChanged::class);
 
@@ -163,5 +164,10 @@ final class TaskStartFactsTest extends TestCase
         return function () use (&$heard): array {
             return $heard;
         };
+    }
+
+    private function planStructure(): PlanStructure
+    {
+        return $this->app->make(PlanStructure::class);
     }
 }

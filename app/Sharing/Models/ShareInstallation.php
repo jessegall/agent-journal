@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Models;
 
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -32,6 +33,7 @@ final class ShareInstallation extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     public const string LINK_TYPE = 'core.share-installation';
@@ -61,14 +63,9 @@ final class ShareInstallation extends Model implements ReadableModel
      */
     public static function create(): self
     {
-        $now = CarbonImmutable::now();
-
-        self::query()->insertOrIgnore([
-            'id' => new self()->newUniqueId(),
-            'name' => self::NAME,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
+        $installation = new self();
+        $installation->setRawAttributes(['id' => $installation->newUniqueId(), 'name' => self::NAME]);
+        $installation->insertIfAbsent();
 
         return self::query()->named(self::NAME)->lockForUpdate()->firstOrFail();
     }

@@ -8,12 +8,12 @@ use App\Agents\Commands\SettleAccountUses;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Exceptions\AccountInUse;
 use App\Agents\Models\ProcessStart;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class SettleAccountUsesHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private CommandFacts $facts) {}
 
     public function handle(SettleAccountUses $command): void
     {
@@ -23,6 +23,6 @@ final readonly class SettleAccountUsesHandler implements CommandHandler
             throw AccountInUse::forAccount($command->account, $running);
         }
 
-        $this->events->dispatch(new AccountUseChanged($command->account));
+        $this->facts->publishAfterCommit(new AccountUseChanged($command->account));
     }
 }

@@ -46,22 +46,40 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
                 return $next($call);
             } catch (Throwable $failure) {
                 if ($key !== null && $this->isFirstRefusal($failure)) {
-                    $code = self::codeOf($failure);
-                    $caller = $this->callers->forCommand($call->name(), $call->actor());
-                    CommandReceipt::recordRefusal(
-                        $caller,
-                        $key,
-                        $call->command(),
-                        $this->registry->retentionOf($call->name()),
-                        $code,
-                        $failure->getMessage(),
-                        $failure instanceof RefusalDetails ? $failure->refusalDetails() : [],
-                    );
+                    $this->recordRefusal($call, $key, $failure);
                 }
 
                 throw $failure;
             }
         });
+    }
+
+    /**
+     * Stores the refusal a write got after its transaction rolled back; when the write ran inside a transaction it
+     * joined, nothing rolled back, so the key it took is marked refused instead.
+     */
+    private function recordRefusal(CommandCall $call, string $key, Throwable $failure): void
+    {
+        $code = self::codeOf($failure);
+        $caller = $this->callers->forCommand($call->name(), $call->actor());
+        $details = $failure instanceof RefusalDetails ? $failure->refusalDetails() : [];
+        $taken = CommandReceipt::lockedFor($caller, $call->command()::class, $key);
+
+        if ($taken !== null) {
+            $taken->refuse($code, $failure->getMessage(), $details);
+
+            return;
+        }
+
+        CommandReceipt::createRefused(
+            $caller,
+            $key,
+            $call->command(),
+            $this->registry->retentionOf($call->name()),
+            $code,
+            $failure->getMessage(),
+            $details,
+        );
     }
 
     /**

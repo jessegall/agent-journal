@@ -7,12 +7,13 @@ namespace App\Agents\Handlers;
 use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Enums\RecoveryAction;
 use App\Agents\Exceptions\DriverRequestRefused;
+use App\Agents\Support\DriverRequestEndings;
 use App\Agents\Support\DriverRequestRecovery;
 use App\Contracts\CommandHandler;
 
 final readonly class CancelKeyScriptHandler implements CommandHandler
 {
-    public function __construct(private DriverRequestRecovery $recovery) {}
+    public function __construct(private DriverRequestRecovery $recovery, private DriverRequestEndings $endings) {}
 
     public function handle(CancelKeyScript $command): int
     {
@@ -22,7 +23,7 @@ final readonly class CancelKeyScriptHandler implements CommandHandler
             throw DriverRequestRefused::noStoppedScript($request->id);
         }
 
-        $request->cancel();
+        $this->endings->cancel($request);
 
         return $this->recovery->record($request, RecoveryAction::ScriptCancelled, $command->reason);
     }

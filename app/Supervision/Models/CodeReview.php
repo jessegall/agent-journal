@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\WorkReservation;
 use App\Agents\Values\HelperImportReceipt;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -67,6 +68,7 @@ final class CodeReview extends Model implements ReadableModel
     use BoundedReads;
     use HasUlids;
     use HasWorkColumns;
+    use InsertsAbsentRows;
     use Linkable;
 
     /**
@@ -94,7 +96,8 @@ final class CodeReview extends Model implements ReadableModel
         $work = $reservation->certifiedWork->work();
         $worker = $reservation->actor();
 
-        return self::query()->firstOrCreate(['certificate' => $reservation->certificate], [
+        $review = new self([
+            'certificate' => $reservation->certificate,
             'work_type' => $work->type,
             'work_id' => $work->id,
             'worker_type' => $worker->type->value,
@@ -102,6 +105,10 @@ final class CodeReview extends Model implements ReadableModel
             'state' => CodeReviewState::AwaitingImport,
             'import_attempts' => 0,
         ]);
+        $review->setAttribute($review->getKeyName(), $review->newUniqueId());
+        $review->insertIfAbsent();
+
+        return self::query()->where('certificate', $reservation->certificate)->sole();
     }
 
     /**
