@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\Contracts\FactStaging;
 use App\Bus\Exceptions\EventUnitRefused;
+use App\Contracts\Event;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Throwable;
@@ -21,6 +23,8 @@ final readonly class EventUnitLifecycle
         private ActiveEventUnits $units,
         private RequiredDrain $drain,
         private Publication $publication,
+        private ConnectionInterface $database,
+        private FactStaging $staging,
     ) {}
 
     /**
@@ -33,8 +37,13 @@ final readonly class EventUnitLifecycle
      * @param  Closure(): void  $rollBack
      * @return TResult
      */
-    public function own(ConnectionInterface $connection, string $owner, Closure $work, Closure $commit, Closure $rollBack): mixed
-    {
+    public function own(
+        ConnectionInterface $connection,
+        string $owner,
+        Closure $work,
+        Closure $commit,
+        Closure $rollBack,
+    ): mixed {
         $unit = $this->units->open($connection);
 
         try {
@@ -78,7 +87,7 @@ final readonly class EventUnitLifecycle
         $unit = $this->units->activeFor($connection);
 
         try {
-            $result = $work();
+            $result = $unit === null ? $work() : $unit->deeper($work);
 
             if ($unit !== null) {
                 $this->drain->applyRequired($unit);
@@ -90,5 +99,48 @@ final readonly class EventUnitLifecycle
 
             throw $failure;
         }
+    }
+
+    /**
+     * Sends a fact through the unit's owner-ordered stream, in its place among the facts the models raise, released
+     * after the commit; outside a unit it goes out at once. It takes the facts delivered after the commit: an event
+     * marked ShouldDispatchAfterCommit, a send in an afterCommit closure, a command-level fact and an occurrence a
+     * required listener stages. A plain dispatch whose listeners write in the transaction is not one of them, and an
+     * afterCommit job keeps Laravel's own after-commit dispatch.
+     */
+    public function publishAfterCommit(Event $event): void
+    {
+        $unit = $this->units->activeFor($this->database);
+
+        if ($unit === null) {
+            $this->staging->deliver($event, null);
+
+            return;
+        }
+
+        $unit->stage($event);
+    }
+
+    /**
+     * Runs an operation whose facts wait until it ends: what its own saves raise is drained only when it returns,
+     * after the work it does on the way, and dropped when it throws. Outside a unit the work runs as before.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function holdUntilReturn(Closure $work): mixed
+    {
+        $unit = $this->units->activeFor($this->database);
+
+        if ($unit === null) {
+            return $work();
+        }
+
+        $result = $unit->hold($work);
+        $this->drain->applyRequired($unit);
+
+        return $result;
     }
 }

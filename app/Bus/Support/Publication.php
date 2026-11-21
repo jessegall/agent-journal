@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\Contracts\FactStaging;
 use App\Contracts\Event;
 use Illuminate\Contracts\Container\Container;
-use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -49,16 +49,16 @@ final class Publication
         while ($this->committed !== []) {
             $unit = array_shift($this->committed);
 
-            foreach ($unit->batch() as $event) {
-                $this->deliver($event);
+            foreach ($unit->stagedBatch() as $occurrence) {
+                $this->deliver($occurrence['event'], $occurrence['staged']);
             }
         }
     }
 
-    private function deliver(Event $event): void
+    private function deliver(Event $event, object|null $staged): void
     {
         try {
-            $this->container->make(Dispatcher::class)->dispatch($event);
+            $this->container->make(FactStaging::class)->deliver($event, $staged);
         } catch (Throwable $failure) {
             $this->log->error('A listener of a committed fact failed.', [
                 'event' => $event::class,

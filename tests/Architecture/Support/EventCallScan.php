@@ -39,6 +39,7 @@ final readonly class EventCallScan implements FileScan
         'dispatch' => true,
         'until' => true,
         'raise' => true,
+        'publishAfterCommit' => true,
     ];
 
     /**
@@ -60,7 +61,7 @@ final readonly class EventCallScan implements FileScan
 
     public function key(): string
     {
-        return 'event-calls-4';
+        return 'event-calls-5';
     }
 
     public function findingsIn(ParsedFile $file): array

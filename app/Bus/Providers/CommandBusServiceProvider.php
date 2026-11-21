@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus\Providers;
 
 use App\Bus\Console\PruneReceiptsCommand;
+use App\Bus\Contracts\FactStaging;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandStops as CommandStopsContract;
 use App\Bus\Contracts\CommandTransaction;
@@ -15,6 +16,7 @@ use App\Bus\Contracts\RequestKey as RequestKeyContract;
 use App\Bus\Resolvers\CallerOperations;
 use App\Bus\Support\AcceptedReceipt;
 use App\Bus\Support\ActiveEventUnits;
+use App\Bus\Support\DispatcherFactStaging;
 use App\Bus\Support\Publication;
 use App\Bus\Support\CommandOriginChecks;
 use App\Bus\Support\CommandRegistry;
@@ -51,6 +53,7 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->app->bind(OperationResolver::class, CallerOperations::class);
         $this->app->bind(RefusalMapperContract::class, RefusalMapper::class);
         $this->app->scoped(AcceptedReceipt::class);
+        $this->app->bindIf(FactStaging::class, DispatcherFactStaging::class);
         $this->app->scoped(ActiveEventUnits::class);
         $this->app->scoped(Publication::class);
         $this->app->scoped(CommandTransaction::class, RunningCommandTransaction::class);

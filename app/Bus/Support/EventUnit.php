@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\Contracts\FactStaging;
 use App\Bus\Exceptions\EventUnitRefused;
 use App\Contracts\Event;
 use App\Contracts\EventSource;
@@ -19,12 +20,31 @@ final class EventUnit
     private EventSource|null $open = null;
 
     /**
-     * @var list<array{event: Event, chain: list<string>}>
+     * What stages each fact's delivery context as it is sealed, while its command's admission is open.
+     */
+    private FactStaging|null $staging;
+
+    /**
+     * The command depth the open slot was opened at, and the depth of the command running now.
+     */
+    private int $openDepth = 0;
+
+    private int $depth = 0;
+
+    /**
+     * The facts held back from the drain until their operation ends, by the command depth whose scope holds them.
+     *
+     * @var array<int, list<array{event: Event, chain: list<string>, staged: object|null}>>
+     */
+    private array $held = [];
+
+    /**
+     * @var list<array{event: Event, chain: list<string>, staged: object|null}>
      */
     private array $pending = [];
 
     /**
-     * @var list<Event>
+     * @var list<array{event: Event, staged: object|null}>
      */
     private array $batch = [];
 
@@ -41,6 +61,11 @@ final class EventUnit
 
     private bool $ready = false;
 
+    public function __construct(FactStaging|null $staging = null)
+    {
+        $this->staging = $staging;
+    }
+
     /**
      * Seals the slot before it and opens one for the row; facts the row held from before this unit are dropped.
      */
@@ -49,6 +74,7 @@ final class EventUnit
         $this->seal();
         $row->takeRaisedEvents();
         $this->open = $row;
+        $this->openDepth = $this->depth;
     }
 
     /**
@@ -61,16 +87,81 @@ final class EventUnit
         }
 
         foreach ($this->open->takeRaisedEvents() as $event) {
-            $this->pending[] = ['event' => $event, 'chain' => $this->cause];
+            $occurrence = ['event' => $event, 'chain' => $this->cause, 'staged' => $this->staging?->stage($event)];
+
+            if (isset($this->held[$this->openDepth])) {
+                $this->held[$this->openDepth][] = $occurrence;
+            } else {
+                $this->pending[] = $occurrence;
+            }
         }
 
         $this->open = null;
     }
 
     /**
+     * Puts a fact with no row to raise on in the queue at this point, after the facts the saves before it raised.
+     */
+    public function stage(Event $event): void
+    {
+        $this->seal();
+        $this->pending[] = ['event' => $event, 'chain' => $this->cause, 'staged' => $this->staging?->stage($event)];
+    }
+
+    /**
+     * Runs a command's work one level deeper, so its saves are not held by a scope of the level around it.
+     *
+     * @template TResult
+     *
+     * @param  callable(): TResult  $work
+     * @return TResult
+     */
+    public function deeper(callable $work): mixed
+    {
+        $this->depth++;
+
+        try {
+            return $work();
+        } finally {
+            $this->depth--;
+        }
+    }
+
+    /**
+     * Holds the facts this level's saves raise while the work runs: a drain inside it, a nested scope or a nested
+     * command never releases them. They join the end of the queue when the work returns and are dropped when it
+     * throws; a scope already holding this level adds nothing.
+     *
+     * @template TResult
+     *
+     * @param  callable(): TResult  $work
+     * @return TResult
+     */
+    public function hold(callable $work): mixed
+    {
+        if (isset($this->held[$this->depth])) {
+            return $work();
+        }
+
+        $level = $this->depth;
+        $this->held[$level] = [];
+
+        try {
+            $result = $work();
+            $this->seal();
+            array_push($this->pending, ...$this->held[$level]);
+
+            return $result;
+        } finally {
+            $this->seal();
+            unset($this->held[$level]);
+        }
+    }
+
+    /**
      * The oldest pending fact with its chain, taken off the queue, or none when nothing waits.
      *
-     * @return array{event: Event, chain: list<string>}|null
+     * @return array{event: Event, chain: list<string>, staged: object|null}|null
      */
     public function takePending(): array|null
     {
@@ -80,10 +171,11 @@ final class EventUnit
     /**
      * Runs the work with the fact's chain as the cause of what its listeners raise, and adds the fact to the batch.
      *
+     * @param  array{event: Event, chain: list<string>, staged: object|null}  $occurrence
      * @param  list<string>  $chain  the fact's chain, itself included
      * @param  callable(): void  $work
      */
-    public function drain(Event $event, array $chain, callable $work): void
+    public function drain(array $occurrence, array $chain, callable $work): void
     {
         $this->cause = $chain;
 
@@ -94,7 +186,7 @@ final class EventUnit
             $this->cause = [];
         }
 
-        $this->batch[] = $event;
+        $this->batch[] = ['event' => $occurrence['event'], 'staged' => $occurrence['staged']];
     }
 
     /**
@@ -127,6 +219,16 @@ final class EventUnit
      * @return list<Event>
      */
     public function batch(): array
+    {
+        return array_column($this->batch, 'event');
+    }
+
+    /**
+     * The drained facts in their order, each with the delivery context staged for it.
+     *
+     * @return list<array{event: Event, staged: object|null}>
+     */
+    public function stagedBatch(): array
     {
         return $this->batch;
     }
@@ -171,6 +273,7 @@ final class EventUnit
         $this->open?->takeRaisedEvents();
         $this->open = null;
         $this->pending = [];
+        $this->held = [];
         $this->batch = [];
     }
 }

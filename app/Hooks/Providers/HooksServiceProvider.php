@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Providers;
 
+use App\Bus\Contracts\FactStaging;
+use App\Hooks\StateEvents\StateBridgeFactStaging;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Enums\ActorType;
@@ -102,6 +104,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(StateTypes::class);
         $this->app->singleton(StateMethods::class);
         $this->app->bind(StartTransaction::class, StackTransaction::class);
+        $this->app->bind(FactStaging::class, StateBridgeFactStaging::class);
         $this->app->bind(WorkProgress::class, FrameProgress::class);
         $this->app->singleton(ProtectedAccounts::class, fn ($app) => new ProtectedAccounts([
             $app->make(Repository::class)->string('accounts.root'),

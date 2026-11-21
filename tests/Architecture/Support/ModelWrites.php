@@ -237,7 +237,9 @@ final readonly class ModelWrites
                 continue;
             }
 
-            if ($type['isTrait'] && ! in_array($type['type'], $traits, true)) {
+            $isCaptureSafe = $type['type'] === ModelWriteScan::RAISES_EVENTS;
+
+            if ($type['isTrait'] && (! in_array($type['type'], $traits, true) || $isCaptureSafe)) {
                 continue;
             }
 

@@ -40,7 +40,7 @@ final readonly class RequiredDrain
                     throw CausalDepthExceeded::along($chain, self::CAUSAL_DEPTH_LIMIT);
                 }
 
-                $unit->drain($next['event'], $chain, fn () => $this->runListenersOf($next['event']));
+                $unit->drain($next, $chain, fn () => $this->runListenersOf($next['event']));
             }
         });
     }

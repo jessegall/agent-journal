@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\Contracts\FactStaging;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 
@@ -18,6 +19,8 @@ final class ActiveEventUnits
      */
     private array $units = [];
 
+    public function __construct(private readonly FactStaging $staging) {}
+
     public function activeFor(ConnectionInterface $connection): EventUnit|null
     {
         return $this->units[self::nameOf($connection)] ?? null;
@@ -28,7 +31,7 @@ final class ActiveEventUnits
      */
     public function open(ConnectionInterface $connection): EventUnit
     {
-        return $this->units[self::nameOf($connection)] = new EventUnit();
+        return $this->units[self::nameOf($connection)] = new EventUnit($this->staging);
     }
 
     public function close(ConnectionInterface $connection): void
