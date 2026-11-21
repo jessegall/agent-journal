@@ -44,6 +44,7 @@ use Illuminate\Support\Str;
  * @property string $id
  * @property string $driver
  * @property string|null $account_id
+ * @property string|null $result_account_id
  * @property SignInMethod $method
  * @property ActorType $actor_type
  * @property string $actor_id
@@ -63,6 +64,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Account|null $account
+ * @property-read Account|null $resultAccount
  */
 #[Fillable(['driver', 'method', 'actor_type', 'actor_id'])]
 final class SignInAttempt extends Model implements EventSource, ReadableModel
@@ -179,7 +181,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function readableByOwner(string $attemptId): self|null
     {
-        return self::query()->whereKey($attemptId)->first();
+        return self::query()->whereKey($attemptId)->with('resultAccount')->first();
     }
 
     /**
@@ -255,6 +257,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
                 ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
                 ->orWhere('updated_at', '>=', $now->subMinutes(15)))
             ->orderByDesc('created_at')
+            ->with('resultAccount')
             ->limit(50)
             ->get();
 
@@ -359,10 +362,11 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * A completed reconnect hands the account its staging folder and keeps the folder it displaced, owing that
      * folder's cleanup, in the same transaction.
      */
-    public function displace(string $savedDirectory): void
+    public function displace(Account $account): void
     {
         $this->state = SignInState::Complete;
-        $this->directory = $savedDirectory;
+        $this->result_account_id = $account->id;
+        $this->directory = (string) $account->directory;
         $this->cleanup_pending = true;
         $this->save();
     }
@@ -515,6 +519,24 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
      * in again that may have changed is checked before starts use it again.
      */
+    /**
+     * A new account came of the attempt: it ends complete and names that account as its result.
+     */
+    public function completeWith(Account $account): void
+    {
+        $this->result_account_id = $account->id;
+        $this->end(SignInState::Complete);
+    }
+
+    /**
+     * The key or login is one an account already holds: the attempt ends already added and names that account.
+     */
+    public function finishMatching(Account $account): void
+    {
+        $this->result_account_id = $account->id;
+        $this->finish(SignInState::AlreadyAdded);
+    }
+
     public function finish(SignInState $state): void
     {
         $this->end($state);
@@ -543,6 +565,17 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * The account the attempt made, renewed or matched; read under the reader's own account scope, so a reader who may
+     * not read that account finds none.
+     *
+     * @return BelongsTo<Account, $this>
+     */
+    public function resultAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'result_account_id');
     }
 
     // ----------[ Internals ]----------

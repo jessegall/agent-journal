@@ -151,7 +151,7 @@ final class SignInHostTest extends TestCase
 
         $attempt = $this->attempt($attemptId);
         $this->assertSame(SignInState::Failed, $attempt->state);
-        $this->assertSame('Invalid API key · Fix external API key', SignInAttemptData::fromAttempt($attempt)->refusal);
+        $this->assertSame('Invalid API key · Fix external API key', SignInAttemptData::fromAttempt($attempt->load('resultAccount'))->refusal);
     }
 
     public function test_another_host_and_an_unsigned_call_reach_no_attempt(): void

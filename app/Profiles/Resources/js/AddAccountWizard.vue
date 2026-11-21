@@ -74,7 +74,7 @@ const step = computed<1 | 2 | 3>(() => {
 });
 
 const accountName = computed(() => {
-    const accountId = followed.value?.accountId ?? null;
+    const accountId = followed.value?.resultAccountId ?? null;
 
     return props.rows.find((row) => row.id === accountId)?.label ?? null;
 });
@@ -84,7 +84,7 @@ const accountName = computed(() => {
  */
 const namedAccountId = ref<string | null>(null);
 const accountToName = computed(() => {
-    const accountId = followed.value?.accountId ?? null;
+    const accountId = followed.value?.resultAccountId ?? null;
 
     if (
         followed.value?.state !== 'complete' ||
@@ -98,7 +98,7 @@ const accountToName = computed(() => {
 });
 
 function markNamed(): void {
-    namedAccountId.value = followed.value?.accountId ?? null;
+    namedAccountId.value = followed.value?.resultAccountId ?? null;
 }
 
 watch(

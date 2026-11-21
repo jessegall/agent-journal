@@ -7660,8 +7660,8 @@ method	Account::finishRemoval()
 method	Account::freeLabel()
 method	Account::hasLiveWriter()
 method	Account::holdForMaintenance()
+method	Account::holdingKeyOf()
 method	Account::holdingPrincipal()
-method	Account::holdsKeyOf()
 method	Account::isBeingRemoved()
 method	Account::isGeneration()
 method	Account::isHeldForCheck()
@@ -20177,6 +20177,7 @@ method	SignInAttempt::awaitsCleanupRetry()
 method	SignInAttempt::begin()
 method	SignInAttempt::casts()
 method	SignInAttempt::claimOn()
+method	SignInAttempt::completeWith()
 method	SignInAttempt::create()
 method	SignInAttempt::displace()
 method	SignInAttempt::driverForJournal()
@@ -20184,6 +20185,7 @@ method	SignInAttempt::end()
 method	SignInAttempt::expiredLiveIds()
 method	SignInAttempt::fail()
 method	SignInAttempt::finish()
+method	SignInAttempt::finishMatching()
 method	SignInAttempt::found()
 method	SignInAttempt::isExpiredAt()
 method	SignInAttempt::isLive()
@@ -20201,6 +20203,7 @@ method	SignInAttempt::pendingCleanups()
 method	SignInAttempt::readableByOwner()
 method	SignInAttempt::recentFor()
 method	SignInAttempt::releaseForHost()
+method	SignInAttempt::resultAccount()
 method	SignInAttempt::retryCleanup()
 method	SignInAttempt::runBy()
 method	SignInAttempt::startChecking()
@@ -24821,6 +24824,7 @@ parameter	$result	app/Profiles/Data/ClaudeAnswerData.php
 parameter	$result	app/Profiles/Data/CodexMessageData.php
 parameter	$result	app/Scripts/Data/ProfileStepData.php
 parameter	$result	app/Supervision/Commands/ResolveMergeAttempt.php
+parameter	$resultAccountId
 parameter	$resultNote
 parameter	$resultNumber
 parameter	$resultRevision
@@ -24917,7 +24921,6 @@ parameter	$samples
 parameter	$saveVariant
 parameter	$saved
 parameter	$savedAt
-parameter	$savedDirectory
 parameter	$savedPreview
 parameter	$savedRevision
 parameter	$savesVariant
@@ -33094,6 +33097,7 @@ property	SignInAttemptData::$expiresAt
 property	SignInAttemptData::$id
 property	SignInAttemptData::$method
 property	SignInAttemptData::$refusal
+property	SignInAttemptData::$resultAccountId
 property	SignInAttemptData::$state
 property	SignInAttemptData::$type
 property	SignInAttemptFinished::$accountId
@@ -33133,6 +33137,7 @@ property	SignInProtocols::$protocols
 property	SignInReceiptData::$attemptId
 property	SignInReceiptData::$method
 property	SignInReceiptData::$refusal
+property	SignInReceiptData::$resultAccountId
 property	SignInReceiptData::$state
 property	SignInReceiptData::$status
 property	SignInReceiptData::$type

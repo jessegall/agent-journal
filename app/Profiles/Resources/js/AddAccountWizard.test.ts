@@ -119,6 +119,7 @@ function attempt(
         method: 'api_key',
         type: 'new_account',
         accountId: null,
+        resultAccountId: null,
         state,
         expiresAt: '2026-11-21T12:00:00+00:00',
         refusal: null,
@@ -232,7 +233,7 @@ describe('AddAccountWizard', () => {
         );
 
         await view.setProps({
-            attempts: [attempt('complete', { accountId: 'account-1' })],
+            attempts: [attempt('complete', { resultAccountId: 'account-1' })],
             rows: [accountRow('account-1', 'Claude Code API key 2')],
         });
         await flushPromises();

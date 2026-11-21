@@ -10,6 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
+use App\Http\Data\Profiles\SignInAttemptData;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
@@ -123,6 +124,29 @@ final class SignInAttemptTest extends TestCase
         $this->assertSame($first->id, ActiveAccount::query()->sole()->account_id);
     }
 
+    public function test_an_attempt_names_the_account_it_made_renewed_or_matched_apart_from_its_target(): void
+    {
+        $added = $this->completeNew('request-1', new SignInIdentity('a@example.test', 'subject-1', null));
+        $account = Account::query()->sole();
+        $matched = $this->completeNew('request-2', new SignInIdentity('a@example.test', 'subject-1', null));
+        $again = $this->runOnBus(new BeginSignInAgain($account->id), 'request-3');
+        $renewal = SignInAttempt::query()->whereKey($again->attemptId)->sole();
+        $renewal->waitForUser();
+        $this->app->make(EntryDispatchers::class)->runAsJournal(
+            CommandEntry::HostControl,
+            'test host',
+            new CompleteSignIn($again->attemptId, $renewal->generation, new SignInIdentity('a@example.test', 'subject-1', null)),
+        );
+        $this->actAsOwner();
+
+        $this->assertSame([null, $account->id], $this->targetAndResultOf($added));
+        $this->assertSame([null, $account->id], $this->targetAndResultOf($matched));
+        $this->assertSame([$account->id, $account->id], $this->targetAndResultOf($again->attemptId));
+
+        $this->app->make(CurrentActorSetter::class)->clear();
+        $this->assertSame([null, null], $this->targetAndResultOf($added));
+    }
+
     public function test_a_starter_that_lost_its_grant_before_the_report_adds_no_account(): void
     {
         $started = $this->begin('request-1');
@@ -198,6 +222,20 @@ final class SignInAttemptTest extends TestCase
             new CompleteSignIn($attemptId, $generation, SignInIdentity::shown($display)),
         );
         $this->actAsOwner();
+    }
+
+    /**
+     * The attempt's target and result account as a reader sees them now.
+     *
+     * @return array{string|null, string|null}
+     */
+    private function targetAndResultOf(string $attemptId): array
+    {
+        $attempt = SignInAttemptData::fromAttempt(
+            SignInAttempt::query()->withoutGlobalScopes()->whereKey($attemptId)->with('resultAccount')->sole(),
+        );
+
+        return [$attempt->accountId, $attempt->resultAccountId];
     }
 
     private function actAsOwner(): void

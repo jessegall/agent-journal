@@ -50,6 +50,7 @@ final readonly class SignInReceipts
             SignInReceiptStatus::Started,
             $attempt->id,
             $attempt->type(),
+            $attempt->resultAccount?->id,
             $attempt->method,
             $attempt->state,
             null,

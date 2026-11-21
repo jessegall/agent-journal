@@ -57,23 +57,21 @@ final readonly class SignInCompletion
 
         $staging = (string) $attempt->directory;
 
-        if (Account::holdsKeyOf($attempt)) {
-            $this->endWithout($attempt, SignInState::AlreadyAdded);
+        $holder = Account::holdingKeyOf($attempt)
+            ?? ($attempt->account_id === null ? Account::holdingPrincipal($driver, $identity) : null);
+
+        if ($holder !== null) {
+            $attempt->finishMatching($holder);
+            $this->facts->applyRequired();
 
             return;
         }
 
         if ($attempt->account_id === null) {
-            if (Account::holdingPrincipal($driver, $identity) !== null) {
-                $this->endWithout($attempt, SignInState::AlreadyAdded);
-
-                return;
-            }
-
             $fallback = $attempt->method->accountNameFor($driver->displayName());
             $proposed = AccountLabel::proposedFrom($identity->display, $fallback);
             $account = Account::create($driver, Account::freeLabel($driver, $proposed), $staging);
-            $attempt->end(SignInState::Complete);
+            $attempt->completeWith($account);
         } else {
             $account = Account::lockedForJournal($attempt->account_id);
 
@@ -83,7 +81,7 @@ final readonly class SignInCompletion
                 return;
             }
 
-            $attempt->displace((string) $account->directory);
+            $attempt->displace($account);
         }
 
         $account->signedInAgain($attempt, $identity, $staging, $now);
@@ -113,7 +111,7 @@ final readonly class SignInCompletion
     }
 
     /**
-     * An attempt that publishes nothing, as a different account, a key already added or a starter without the grant:
+     * An attempt that publishes nothing, as a different account or a starter without the grant:
      * it ends in that state, its staging folder is cleaned, and a reconnected account keeps its saved folder and login.
      */
     private function endWithout(SignInAttempt $attempt, SignInState $state): void

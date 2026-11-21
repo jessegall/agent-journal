@@ -176,10 +176,10 @@ final class Account extends Model implements EventSource, ReadableModel
      * Whether another account of the attempt's program, not removed, already signs in by the key or token the attempt
      * was given; an attempt without a key holds none.
      */
-    public static function holdsKeyOf(SignInAttempt $attempt): bool
+    public static function holdingKeyOf(SignInAttempt $attempt): self|null
     {
         if ($attempt->fingerprint === null) {
-            return false;
+            return null;
         }
 
         return self::query()
@@ -188,7 +188,7 @@ final class Account extends Model implements EventSource, ReadableModel
             ->where('fingerprint', $attempt->fingerprint)
             ->where('state', '!=', AccountState::Removed->value)
             ->when($attempt->account_id !== null, fn ($accounts) => $accounts->whereKeyNot($attempt->account_id))
-            ->exists();
+            ->first();
     }
 
     /**
