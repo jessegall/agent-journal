@@ -20,7 +20,10 @@ export class ButtonHold {
         private readonly disabledHere: WeakSet<HTMLElement>,
         delayMs: number,
     ) {
-        this.timer = control !== null && delayMs > 0 ? setTimeout(() => this.hold(), delayMs) : undefined;
+        this.timer =
+            control !== null && delayMs > 0
+                ? setTimeout(() => this.hold(), delayMs)
+                : undefined;
 
         if (control !== null && delayMs === 0) {
             this.hold();
@@ -47,7 +50,10 @@ export class ButtonHold {
 
         delete this.control.dataset.busy;
 
-        if (this.disabledHere.delete(this.control) && this.control instanceof HTMLButtonElement) {
+        if (
+            this.disabledHere.delete(this.control) &&
+            this.control instanceof HTMLButtonElement
+        ) {
             this.control.disabled = false;
         }
     }
@@ -59,10 +65,16 @@ export class ButtonHold {
 
         this.held = true;
         // The first hold marks the button; a second request from the same click counts on top of it.
-        const holds = this.control.dataset.busy === undefined ? 1 : Number(this.control.dataset.busy) + 1;
+        const holds =
+            this.control.dataset.busy === undefined
+                ? 1
+                : Number(this.control.dataset.busy) + 1;
         this.control.dataset.busy = String(holds);
 
-        if (this.control instanceof HTMLButtonElement && !this.control.disabled) {
+        if (
+            this.control instanceof HTMLButtonElement &&
+            !this.control.disabled
+        ) {
             this.control.disabled = true;
             this.disabledHere.add(this.control);
         }
@@ -101,7 +113,9 @@ export class PressedButtons {
 
         router.on('before', (event) => {
             const visit = event.detail.visit;
-            const hold = this.hold(visit.method === 'get' ? SPINNER_AFTER_MS : 0);
+            const hold = this.hold(
+                visit.method === 'get' ? SPINNER_AFTER_MS : 0,
+            );
             const stopListening = router.on('finish', (finished) => {
                 if (finished.detail.visit !== visit) {
                     return;
@@ -122,7 +136,10 @@ export class PressedButtons {
     }
 
     private note(event: MouseEvent): void {
-        const control = event.target instanceof Element ? event.target.closest<HTMLElement>(PRESSABLE) : null;
+        const control =
+            event.target instanceof Element
+                ? event.target.closest<HTMLElement>(PRESSABLE)
+                : null;
 
         if (control === null) {
             return;

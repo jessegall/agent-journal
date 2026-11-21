@@ -570,8 +570,8 @@ use App\Connections\Commands\FinishProjectCommandRun;
 use App\Connections\Commands\IssueProjectInvitation;
 use App\Connections\Commands\PollDeviceGrant;
 use App\Connections\Commands\RecordBindingPresence;
-use App\Connections\Commands\RecordProjectCommandProcess;
 use App\Connections\Commands\RecordBindingStart;
+use App\Connections\Commands\RecordProjectCommandProcess;
 use App\Connections\Commands\RecoverProjectBinding;
 use App\Connections\Commands\RedeemProjectInvitation;
 use App\Connections\Commands\RenewRuntimeLease;
@@ -1306,6 +1306,7 @@ use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
 use App\Ui\Layout\LayoutFieldData;
+use App\Ui\Layout\LayoutFormData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
 use App\Web\Commands\RecordUserHeartbeat;
@@ -2032,6 +2033,7 @@ final class CoreApi
                 DeclaredLayoutData::class,
                 LayoutActionData::class,
                 LayoutFieldData::class,
+                LayoutFormData::class,
                 LayoutPartData::class,
                 LayoutRowData::class,
                 LayoutTag::class,

@@ -1,6 +1,9 @@
 // @vitest-environment happy-dom
 import { mount } from '@vue/test-utils';
-import { describe, expect, it } from 'vitest';
+import { router } from '@inertiajs/vue3';
+import { defineComponent, h } from 'vue';
+import { describe, expect, it, vi } from 'vitest';
+import { provideHostProp } from '@/framework/hostProp';
 import DeclaredLayout from '@/components/layout/DeclaredLayout.vue';
 import type { LayoutPartData } from '@/generated/types/core';
 
@@ -82,6 +85,7 @@ describe('a declared layout', () => {
                                 action: {
                                     query: {},
                                     reason: 'Only the owner approves',
+                                    submits: false,
                                 },
                             }),
                             part({
@@ -90,7 +94,10 @@ describe('a declared layout', () => {
                                 style: 'bordered',
                                 size: 'normal',
                                 text: 'Next page',
-                                action: { query: { cursor: 'abc' } },
+                                action: {
+                                    query: { cursor: 'abc' },
+                                    submits: false,
+                                },
                             }),
                             part({
                                 tag: 'text',
@@ -121,5 +128,73 @@ describe('a declared layout', () => {
         );
         expect(view.find('a').attributes('href')).toContain('cursor=abc');
         expect(view.text()).toContain('Open');
+    });
+
+    it('sends a form with its fixed values and typed field, asking only for its own window prop', async () => {
+        const visit = vi
+            .spyOn(router, 'visit')
+            .mockImplementation(() => undefined);
+        const view = mount(
+            defineComponent({
+                setup() {
+                    provideHostProp('window_documents_report');
+
+                    return () =>
+                        h(DeclaredLayout, {
+                            data: {
+                                root: part({
+                                    tag: 'form',
+                                    key: 'settle',
+                                    style: 'inline',
+                                    form: {
+                                        method: 'POST',
+                                        href: '/documents/reports/42/settle',
+                                        fixed: { revision: 1 },
+                                    },
+                                    children: [
+                                        part({
+                                            tag: 'field',
+                                            key: 'reason',
+                                            style: 'text',
+                                            size: 'normal',
+                                            text: 'Reason',
+                                            field: {
+                                                name: 'reason',
+                                                value: '',
+                                            },
+                                        }),
+                                        part({
+                                            tag: 'action',
+                                            key: 'save',
+                                            style: 'primary',
+                                            size: 'normal',
+                                            text: 'Settle',
+                                            action: {
+                                                query: {},
+                                                submits: true,
+                                            },
+                                        }),
+                                    ],
+                                }),
+                            },
+                        });
+                },
+            }),
+            { attachTo: document.body },
+        );
+
+        await view.find('input').setValue('Reviewed');
+        await view.find('form').trigger('submit');
+
+        const [href, options] = visit.mock.calls[0];
+        expect(String(href)).toContain('/documents/reports/42/settle');
+        expect(options).toMatchObject({
+            method: 'post',
+            data: { revision: 1, reason: 'Reviewed' },
+            only: ['window_documents_report'],
+            preserveState: true,
+        });
+        view.unmount();
+        visit.mockRestore();
     });
 });

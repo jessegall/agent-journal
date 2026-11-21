@@ -22,6 +22,7 @@ final class LayoutActionData extends Data
         public readonly array $query,
         public readonly string|Optional $href = new Optional(),
         public readonly string|Optional $reason = new Optional(),
+        public readonly bool $submits = false,
     ) {}
 
     public static function to(string $href): self
@@ -37,6 +38,14 @@ final class LayoutActionData extends Data
     public static function changing(array $query): self
     {
         return new self($query);
+    }
+
+    /**
+     * The action that sends the form it stands in.
+     */
+    public static function submitting(): self
+    {
+        return new self([], submits: true);
     }
 
     public static function unavailable(string $reason): self

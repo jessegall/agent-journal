@@ -1,7 +1,10 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-type Listener = (event: { detail: { visit: object }; defaultPrevented: boolean }) => void;
+type Listener = (event: {
+    detail: { visit: object };
+    defaultPrevented: boolean;
+}) => void;
 
 const listeners = vi.hoisted(() => new Map<string, Set<Listener>>());
 

@@ -42,6 +42,7 @@ final class LayoutPartData extends Data
         public readonly LayoutActionData|Optional $action = new Optional(),
         public readonly LayoutFieldData|Optional $field = new Optional(),
         public readonly string|Optional $tone = new Optional(),
+        public readonly LayoutFormData|Optional $form = new Optional(),
     ) {}
 
     public static function box(string $key, string $style, LayoutPartData ...$children): self
@@ -101,18 +102,31 @@ final class LayoutPartData extends Data
     }
 
     /**
+     * A form that sends its fields and fixed values to one registered action; a submitting action among its parts
+     * sends it.
+     */
+    public static function form(string $key, LayoutFormData $form, string $style, LayoutPartData ...$parts): self
+    {
+        return new self(LayoutTag::Form, $key, null, $style, null, null, [], array_values($parts), form: $form);
+    }
+
+    /**
      * Checks this part and everything below it against the catalogue and the limits, and answers how many parts
      * it holds, itself among them.
      *
      * @throws LayoutRefused
      */
-    public function assertWithinCatalogue(string $path = 'root', int $depth = 0): int
+    public function assertWithinCatalogue(string $path = 'root', int $depth = 0, bool $isInForm = false): int
     {
         if ($depth > LayoutLimits::DEPTH_LIMIT) {
             throw LayoutRefused::tooDeep($path, LayoutLimits::DEPTH_LIMIT);
         }
 
         $this->assertTagAccepts($path);
+
+        if ($this->action instanceof LayoutActionData && $this->action->submits && ! $isInForm) {
+            throw LayoutRefused::submitOutsideForm($path);
+        }
 
         $parts = 1;
         $keys = [];
@@ -127,7 +141,11 @@ final class LayoutPartData extends Data
             }
 
             $keys[$child->key] = true;
-            $parts += $child->assertWithinCatalogue("{$path}.{$child->key}", $depth + 1);
+            $parts += $child->assertWithinCatalogue(
+                "{$path}.{$child->key}",
+                $depth + 1,
+                $isInForm || $this->tag === LayoutTag::Form,
+            );
         }
 
         return $parts;
@@ -173,7 +191,13 @@ final class LayoutPartData extends Data
         $isAction = $this->tag === LayoutTag::Action;
         $isField = $this->tag === LayoutTag::Field;
 
-        if ($isAction === $this->action instanceof Optional || $isField === $this->field instanceof Optional) {
+        $isForm = $this->tag === LayoutTag::Form;
+
+        if (
+            $isAction === $this->action instanceof Optional
+            || $isField === $this->field instanceof Optional
+            || $isForm === $this->form instanceof Optional
+        ) {
             throw LayoutRefused::bindingMismatch($path, $this->tag);
         }
     }

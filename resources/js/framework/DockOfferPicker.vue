@@ -35,19 +35,29 @@ function confirm(): void {
 
     keyedPost(
         props.offer.url,
-        { [props.offer.destinationField]: chosen.value, type: props.offer.type, id: props.offer.id },
+        {
+            [props.offer.destinationField]: chosen.value,
+            type: props.offer.type,
+            id: props.offer.id,
+        },
         crypto.randomUUID(),
         {
             onAccepted: (flash) => {
-                const outcome = typeof flash.dockOutcome === 'string' ? flash.dockOutcome : 'unavailable';
+                const outcome =
+                    typeof flash.dockOutcome === 'string'
+                        ? flash.dockOutcome
+                        : 'unavailable';
                 answer.value = answers[outcome] ?? outcome;
 
                 if (outcome !== 'unavailable') {
                     choosing.value = false;
                 }
             },
-            onRefused: (reason) => (answer.value = reason ?? answers.unavailable),
-            onUncertain: () => (answer.value = 'The journal did not answer; add it again to be sure.'),
+            onRefused: (reason) =>
+                (answer.value = reason ?? answers.unavailable),
+            onUncertain: () =>
+                (answer.value =
+                    'The journal did not answer; add it again to be sure.'),
         },
     );
 }
@@ -55,21 +65,43 @@ function confirm(): void {
 
 <template>
     <div class="flex flex-wrap items-center gap-2 text-sm">
-        <button type="button" class="underline" :aria-expanded="choosing" @click="choosing = true">
+        <button
+            type="button"
+            class="underline"
+            :aria-expanded="choosing"
+            @click="choosing = true"
+        >
             {{ offer.label }}
         </button>
         <template v-if="choosing">
             <fieldset class="flex flex-wrap items-center gap-2">
                 <legend class="sr-only">Choose a chat</legend>
-                <template v-for="destination in offer.destinations" :key="destination.value">
+                <template
+                    v-for="destination in offer.destinations"
+                    :key="destination.value"
+                >
                     <label class="flex items-center gap-1">
-                        <input v-model="chosen" type="radio" name="dock-destination" :value="destination.value" />
+                        <input
+                            v-model="chosen"
+                            type="radio"
+                            name="dock-destination"
+                            :value="destination.value"
+                        />
                         {{ destination.label }}
                     </label>
                 </template>
             </fieldset>
-            <button type="button" class="underline" :disabled="chosen === null" @click="confirm">Add</button>
-            <button type="button" class="underline" @click="cancel">Cancel</button>
+            <button
+                type="button"
+                class="underline"
+                :disabled="chosen === null"
+                @click="confirm"
+            >
+                Add
+            </button>
+            <button type="button" class="underline" @click="cancel">
+                Cancel
+            </button>
         </template>
         <template v-if="answer !== null">
             <span role="status">{{ answer }}</span>

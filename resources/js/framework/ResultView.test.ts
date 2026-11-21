@@ -14,7 +14,11 @@ const content = defineComponent({
     },
 });
 
-function mountResult(result: WindowResult<unknown> | undefined, keptData?: unknown, isWindow = true) {
+function mountResult(
+    result: WindowResult<unknown> | undefined,
+    keptData?: unknown,
+    isWindow = true,
+) {
     return mount(ResultView, {
         props: { result, keptData, isWindow },
         slots: { content: () => h(content) },
@@ -25,31 +29,46 @@ describe('a window result', () => {
     it('shows a labelled skeleton while its first read runs', () => {
         const view = mountResult(undefined);
 
-        expect(view.get('[role="status"]').attributes('aria-label')).toBe('Loading');
+        expect(view.get('[role="status"]').attributes('aria-label')).toBe(
+            'Loading',
+        );
         expect(view.text()).toBe('');
     });
 
     it('offers Retry when its first read failed', async () => {
-        const view = mountResult({ state: 'failed', message: 'This window could not be loaded.' });
+        const view = mountResult({
+            state: 'failed',
+            message: 'This window could not be loaded.',
+        });
 
         await view.get('button').trigger('click');
 
-        expect(view.get('[role="alert"]').text()).toContain('This window could not be loaded.');
+        expect(view.get('[role="alert"]').text()).toContain(
+            'This window could not be loaded.',
+        );
         expect(view.emitted('retry')).toHaveLength(1);
     });
 
     it('keeps the last read read-only when a refresh failed', async () => {
-        const view = mountResult({ state: 'failed', message: 'This window could not be loaded.' }, { rows: [] });
+        const view = mountResult(
+            { state: 'failed', message: 'This window could not be loaded.' },
+            { rows: [] },
+        );
 
         await view.get('button').trigger('click');
 
-        expect(view.get('[role="alert"]').text()).toContain('It shows what it last loaded.');
+        expect(view.get('[role="alert"]').text()).toContain(
+            'It shows what it last loaded.',
+        );
         expect(view.get('p').text()).toBe('rows, read-only');
         expect(view.emitted('retry')).toHaveLength(1);
     });
 
     it('shows fresh content once a read succeeds', () => {
-        const view = mountResult({ state: 'ready', data: { rows: [] } }, { rows: [] });
+        const view = mountResult(
+            { state: 'ready', data: { rows: [] } },
+            { rows: [] },
+        );
 
         expect(view.find('[role="alert"]').exists()).toBe(false);
         expect(view.text()).toBe('rows');
@@ -69,6 +88,8 @@ describe('a window result', () => {
 
     it('shows nothing for a section that is loading or refused', () => {
         expect(mountResult(undefined, undefined, false).text()).toBe('');
-        expect(mountResult({ state: 'denied' }, undefined, false).text()).toBe('');
+        expect(mountResult({ state: 'denied' }, undefined, false).text()).toBe(
+            '',
+        );
     });
 });

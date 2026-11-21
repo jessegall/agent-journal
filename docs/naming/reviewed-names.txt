@@ -516,6 +516,7 @@ case	LayoutTag::Action
 case	LayoutTag::Box
 case	LayoutTag::Collection
 case	LayoutTag::Field
+case	LayoutTag::Form
 case	LayoutTag::Notice
 case	LayoutTag::Text
 case	LifecycleStage::Enter
@@ -3197,6 +3198,7 @@ class	Layout
 class	LayoutActionData
 class	LayoutData
 class	LayoutFieldData
+class	LayoutFormData
 class	LayoutLimits
 class	LayoutPartData
 class	LayoutRefused
@@ -14098,10 +14100,12 @@ method	Layout::create()
 method	Layout::saveNameAndShape()
 method	LayoutActionData::__construct()
 method	LayoutActionData::changing()
+method	LayoutActionData::submitting()
 method	LayoutActionData::to()
 method	LayoutActionData::unavailable()
 method	LayoutData::__construct()
 method	LayoutFieldData::__construct()
+method	LayoutFormData::__construct()
 method	LayoutPartData::__construct()
 method	LayoutPartData::action()
 method	LayoutPartData::assertBindings()
@@ -14111,12 +14115,14 @@ method	LayoutPartData::badge()
 method	LayoutPartData::box()
 method	LayoutPartData::collection()
 method	LayoutPartData::field()
+method	LayoutPartData::form()
 method	LayoutPartData::notice()
 method	LayoutPartData::text()
 method	LayoutRefused::bindingMismatch()
 method	LayoutRefused::childrenNotAllowed()
 method	LayoutRefused::emptyKey()
 method	LayoutRefused::siblingKeyRepeated()
+method	LayoutRefused::submitOutsideForm()
 method	LayoutRefused::toneNotAllowed()
 method	LayoutRefused::tooDeep()
 method	LayoutRefused::tooManyParts()
@@ -24054,6 +24060,7 @@ parameter	$firstReader
 parameter	$firstRequest
 parameter	$firstRequestId
 parameter	$firstRound
+parameter	$fixed
 parameter	$fixedFiles
 parameter	$flag
 parameter	$flags
@@ -24270,6 +24277,7 @@ parameter	$isGuarded
 parameter	$isHealthy
 parameter	$isHeld
 parameter	$isHeldForCheck
+parameter	$isInForm
 parameter	$isInsideFilter
 parameter	$isInspection
 parameter	$isInterface
@@ -25552,6 +25560,7 @@ parameter	$subjects
 parameter	$submission
 parameter	$submissionDigest
 parameter	$submissionKey
+parameter	$submits
 parameter	$substitution
 parameter	$substitutions
 parameter	$success
@@ -29433,15 +29442,20 @@ property	LaunchProfiles::$trialDrivers
 property	LayoutActionData::$href
 property	LayoutActionData::$query
 property	LayoutActionData::$reason
+property	LayoutActionData::$submits
 property	LayoutData::$id
 property	LayoutData::$name
 property	LayoutData::$shape
 property	LayoutFieldData::$name
 property	LayoutFieldData::$value
+property	LayoutFormData::$fixed
+property	LayoutFormData::$href
+property	LayoutFormData::$method
 property	LayoutPartData::$action
 property	LayoutPartData::$children
 property	LayoutPartData::$detail
 property	LayoutPartData::$field
+property	LayoutPartData::$form
 property	LayoutPartData::$key
 property	LayoutPartData::$rows
 property	LayoutPartData::$size
@@ -35902,6 +35916,7 @@ variable	$isFacade
 variable	$isField
 variable	$isFirstLine
 variable	$isForeignUndeclared
+variable	$isForm
 variable	$isFull
 variable	$isFunction
 variable	$isGenerated

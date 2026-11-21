@@ -15,7 +15,9 @@ export function componentNamed(name: string): Component {
         return known;
     }
 
-    const component = defineAsyncComponent(async () => (await components[name]()).default as Component);
+    const component = defineAsyncComponent(
+        async () => (await components[name]()).default as Component,
+    );
     loaded.set(name, component);
 
     return component;

@@ -1,7 +1,9 @@
 import { computed, inject, provide } from 'vue';
 import type { ComputedRef, InjectionKey } from 'vue';
 
-const isStaleKey: InjectionKey<ComputedRef<boolean>> = Symbol('the window shows its last read after a failed refresh');
+const isStaleKey: InjectionKey<ComputedRef<boolean>> = Symbol(
+    'the window shows its last read after a failed refresh',
+);
 
 /**
  * Tells a window's content whether what it shows is its last read, kept after a refresh failed.

@@ -14,7 +14,9 @@ export function provideWindowKey(key: string): void {
  * Builds a link that changes only this window's query: on Home its own window[<key>][...] part, keeping every other
  * window's, and on its own page the plain query. Empty values are left out.
  */
-export function useWindowQuery(): (query: Record<string, string | number | undefined>) => string {
+export function useWindowQuery(): (
+    query: Record<string, string | number | undefined>,
+) => string {
     const page = usePage();
     const key = inject<string | null>(WINDOW_KEY, null);
 
@@ -31,7 +33,10 @@ export function useWindowQuery(): (query: Record<string, string | number | undef
 
         for (const [name, value] of Object.entries(query)) {
             if (value !== undefined && value !== '') {
-                url.searchParams.set(prefix === null ? name : `${prefix}[${name}]`, String(value));
+                url.searchParams.set(
+                    prefix === null ? name : `${prefix}[${name}]`,
+                    String(value),
+                );
             }
         }
 

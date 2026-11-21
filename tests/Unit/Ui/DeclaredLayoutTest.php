@@ -7,6 +7,7 @@ namespace Tests\Unit\Ui;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
+use App\Ui\Enums\ActionMethod;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
 use App\Ui\Exceptions\InvalidPageDeclaration;
@@ -15,6 +16,7 @@ use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
 use App\Ui\Layout\LayoutFieldData;
+use App\Ui\Layout\LayoutFormData;
 use App\Ui\Layout\LayoutLimits;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
@@ -106,6 +108,33 @@ final class DeclaredLayoutTest extends TestCase
         $this->assertSame('Only the owner approves', $approve->action->reason);
         $this->assertSame(['q', 'oak'], [$filter->field->name, $filter->field->value]);
         $this->assertSame('good', $state->tone);
+    }
+
+    public function test_a_submitting_action_outside_a_form_is_refused(): void
+    {
+        $this->expectException(LayoutRefused::class);
+        $this->expectExceptionMessage('submits a form, but no form holds it');
+
+        DeclaredLayoutData::of(LayoutPartData::box(
+            'root',
+            'stack',
+            LayoutPartData::action('save', 'Save', LayoutActionData::submitting()),
+        ));
+    }
+
+    public function test_a_form_holds_its_fields_and_its_submitting_action(): void
+    {
+        $layout = DeclaredLayoutData::of(LayoutPartData::form(
+            'settle',
+            new LayoutFormData(ActionMethod::Post, '/documents/reports/42/settle', ['revision' => 1]),
+            'inline',
+            LayoutPartData::field('reason', 'Reason', new LayoutFieldData('reason', ''), 'text'),
+            LayoutPartData::action('save', 'Settle', LayoutActionData::submitting(), 'primary'),
+        ));
+
+        $this->assertInstanceOf(LayoutFormData::class, $layout->root->form);
+        $this->assertSame(['revision' => 1], $layout->root->form->fixed);
+        $this->assertSame(['reason', 'save'], array_map(fn (LayoutPartData $part) => $part->key, $layout->root->children));
     }
 
     public function test_a_tone_outside_the_badges_tones_is_refused(): void

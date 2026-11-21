@@ -18,7 +18,10 @@ describe('a declared page', () => {
             setup: () => onMounted(() => mounts++),
             render: () => h('p', 'content'),
         });
-        const result = ref<{ state: 'ready'; data: unknown } | undefined>({ state: 'ready', data: { id: 1 } });
+        const result = ref<{ state: 'ready'; data: unknown } | undefined>({
+            state: 'ready',
+            data: { id: 1 },
+        });
         const view = mount(
             defineComponent({
                 render: () =>

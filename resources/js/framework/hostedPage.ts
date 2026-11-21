@@ -21,7 +21,12 @@ export function hostedPage(component: Component): Component {
 
     const wrapper = defineComponent({
         inheritAttrs: false,
-        props: { page: { type: Object as PropType<WindowResult<unknown>>, required: true } },
+        props: {
+            page: {
+                type: Object as PropType<WindowResult<unknown>>,
+                required: true,
+            },
+        },
         setup: (props) => () => h(PageHost, { component, page: props.page }),
     });
     wrappers.set(component, wrapper);

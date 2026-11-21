@@ -6,7 +6,7 @@ namespace App\Ui\Enums;
 
 /**
  * The parts a declared layout may hold, as they cross the page wire, with what each accepts: its sizes and
- * styles, default first, and whether it holds children: box, text, collection, notice, action and field.
+ * styles, default first, and whether it holds children: box, text, collection, notice, action, field and form.
  */
 enum LayoutTag: string
 {
@@ -16,6 +16,7 @@ enum LayoutTag: string
     case Notice = 'notice';
     case Action = 'action';
     case Field = 'field';
+    case Form = 'form';
 
     /**
      * The sizes the part takes, the default first; none for a part that takes no size.
@@ -28,7 +29,7 @@ enum LayoutTag: string
             self::Box, self::Collection => ['normal', 'compact'],
             self::Text, self::Action => ['normal', 'small', 'large'],
             self::Field => ['normal'],
-            self::Notice => [],
+            self::Notice, self::Form => [],
         };
     }
 
@@ -46,14 +47,15 @@ enum LayoutTag: string
             self::Notice => ['info', 'success', 'warning', 'error', 'empty', 'refusal'],
             self::Action => ['bordered', 'ghost', 'primary', 'danger'],
             self::Field => ['search', 'text'],
+            self::Form => ['stack', 'inline'],
         };
     }
 
     /**
-     * Whether a part of this tag and style holds child parts: a box does, but a divider box does not.
+     * Whether a part of this tag and style holds child parts: a form and a box do, but a divider box does not.
      */
     public function holdsChildren(string $style): bool
     {
-        return $this === self::Box && $style !== 'divider';
+        return $this === self::Form || $this === self::Box && $style !== 'divider';
     }
 }

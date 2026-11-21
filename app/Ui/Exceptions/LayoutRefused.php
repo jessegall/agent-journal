@@ -40,6 +40,11 @@ final class LayoutRefused extends RuntimeException
         );
     }
 
+    public static function submitOutsideForm(string $path): self
+    {
+        return new self("Layout part {$path} submits a form, but no form holds it.");
+    }
+
     public static function siblingKeyRepeated(string $path, string $key): self
     {
         return new self("Layout part {$path} holds two children keyed {$key}; sibling keys must differ.");

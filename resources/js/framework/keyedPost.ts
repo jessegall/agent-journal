@@ -33,7 +33,8 @@ export function keyedPost(
         preserveScroll: true,
         headers: { 'Idempotency-Key': key },
         onSuccess: (page) => outcome.onAccepted(page.flash),
-        onError: (errors) => outcome.onRefused(Object.values(errors)[0] ?? null),
+        onError: (errors) =>
+            outcome.onRefused(Object.values(errors)[0] ?? null),
         onHttpException: () => {
             outcome.onUncertain();
 
