@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import IconAction from '@/components/kit/IconAction.vue';
 import Modal from '@/components/kit/Modal.vue';
+import { useBellPanel } from '@/composables/useBellPanel';
 import { useNotifications } from '@/composables/useNotifications';
+import { useToasts } from '@/composables/useToasts';
 import { PHONE_WIDTH } from '@/composables/useSidebar';
 import NotificationList from './NotificationList.vue';
 
@@ -14,11 +16,15 @@ import NotificationList from './NotificationList.vue';
 const notifications = useNotifications();
 const { state, shown, pending, canChange } = notifications;
 const panelId = 'notification-panel';
-const isOpen = ref(false);
+const { isOpen, registerFocus } = useBellPanel();
 const isCompact = ref(false);
 const lastOpenedId = ref<string | undefined>(undefined);
 const bell = ref<InstanceType<typeof IconAction> | null>(null);
 const list = ref<InstanceType<typeof NotificationList> | null>(null);
+
+registerFocus(() => bell.value?.focus());
+
+const { isQuiet, resumeForUser } = useToasts();
 
 const unread = computed(() => shown.value?.unread);
 const label = computed(() =>
@@ -33,10 +39,20 @@ const badge = computed(() => {
 });
 
 function open(): void {
-    isCompact.value = window.matchMedia(PHONE_WIDTH).matches;
     isOpen.value = true;
-    void notifications.refresh();
 }
+
+/**
+ * However the list opens, from the bell or from a toast summary, it lays itself out for the screen and reads again.
+ */
+watch(isOpen, (opened) => {
+    if (!opened) {
+        return;
+    }
+
+    isCompact.value = window.matchMedia(PHONE_WIDTH).matches;
+    void notifications.refresh();
+});
 
 async function close(): Promise<void> {
     isOpen.value = false;
@@ -106,6 +122,11 @@ function followed(receiptId: string): void {
                     @open="followed"
                     @retry="notifications.refresh()"
                 />
+                <template v-if="isQuiet">
+                    <button type="button" class="px-2 pt-1 text-small text-text-3 underline" @click="resumeForUser">
+                        Resume toasts
+                    </button>
+                </template>
             </div>
         </template>
         <template v-if="isCompact">
@@ -122,6 +143,11 @@ function followed(receiptId: string): void {
                     @open="followed"
                     @retry="notifications.refresh()"
                 />
+                <template v-if="isQuiet">
+                    <button type="button" class="text-small text-text-3 underline" @click="resumeForUser">
+                        Resume toasts
+                    </button>
+                </template>
             </Modal>
         </template>
     </div>
