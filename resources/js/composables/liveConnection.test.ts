@@ -18,6 +18,7 @@ vi.mock('@/echo', () => ({
 vi.mock('@inertiajs/vue3', () => ({ usePage: () => page, router: { on: vi.fn(), reload: vi.fn() } }));
 vi.mock('./usePageChanges', () => ({ markDirty: vi.fn(), pageChanged: vi.fn(), forgetPageChanges: vi.fn() }));
 vi.mock('./protectedView', () => ({ clearProtectedViews: vi.fn(), purge: vi.fn() }));
+vi.mock('./useNotifications', () => ({ followNotificationsSignal: vi.fn(), reconcileNotifications: vi.fn() }));
 
 const { liveStage, retryLiveConnection, useLiveConnection } = await import('./useLiveConnection');
 const { markDirty, pageChanged } = await import('./usePageChanges');

@@ -28,6 +28,7 @@ function clientOf(overrides: Partial<NotificationClient>): NotificationClient {
         markRead: vi.fn(async () => pageOf(2, 0, '2026-11-22T10:00:00+00:00')),
         markQuestionRead: vi.fn(async () => pageOf(2, 0, '2026-11-22T10:00:00+00:00')),
         markTargetRead: vi.fn(async () => pageOf(2, 0, '2026-11-22T10:00:00+00:00')),
+        changes: vi.fn(async () => ({ reset: true, version: '1', unread: 0, nextCursor: null, cursor: 'c', changes: [] })),
         ...overrides,
     };
 }
@@ -127,5 +128,61 @@ describe('notificationStore', () => {
 
         expect(markRead).toHaveBeenCalledTimes(2);
         expect(store.shown.value?.unread).toBe(0);
+    });
+
+    it('catches up through every page and answers only still visible unread arrivals', async () => {
+        const arrival = (id: string, readAt: string | null = null) => ({
+            id,
+            sequence: 1,
+            readAt,
+            title: `Run ${id}`,
+            target: { key: 'run', id, url: `/processes/runs/${id}/outcome` },
+        });
+        const created = Array.from({ length: 21 }, (_, index) => ({
+            version: String(index + 2),
+            type: 'create' as const,
+            receiptId: `r${index}`,
+            item: arrival(`r${index}`),
+        }));
+        const changes = vi
+            .fn()
+            .mockResolvedValueOnce({
+                reset: false, version: '22', unread: 21, nextCursor: 'next', cursor: 'next', changes: created.slice(0, 20),
+            })
+            .mockResolvedValueOnce({
+                reset: false,
+                version: '24',
+                unread: 19,
+                nextCursor: null,
+                cursor: 'done',
+                changes: [created[20], { version: '23', type: 'remove' as const, receiptId: 'r1' }],
+            });
+        const latest = {
+            through: '21', version: '24', unread: 19, nextCursor: null, changesCursor: 'done',
+            items: created.filter((change) => change.receiptId !== 'r1').map((change) =>
+                change.receiptId === 'r0' ? arrival('r0', '2026-11-22T10:00:00+00:00') : change.item),
+        };
+        const page = vi.fn().mockResolvedValueOnce(pageOf(1, 0)).mockResolvedValueOnce(latest);
+        const store = notificationStore(clientOf({ page, changes }));
+
+        await store.refresh();
+        const arrivals = await store.catchUp();
+
+        expect(changes).toHaveBeenCalledTimes(2);
+        expect(arrivals).toHaveLength(19);
+        expect(arrivals.map((item) => item.id)).not.toContain('r1');
+        expect(arrivals.map((item) => item.id)).not.toContain('r0');
+        expect(store.shown.value?.unread).toBe(19);
+    });
+
+    it('takes a fresh snapshot without arrivals when the cursor is too old', async () => {
+        const changes = vi.fn().mockResolvedValueOnce({
+            reset: true, version: '9', unread: 3, nextCursor: null, cursor: 'fresh', changes: [],
+        });
+        const store = notificationStore(clientOf({ changes }));
+
+        await store.refresh();
+
+        expect(await store.catchUp()).toEqual([]);
     });
 });

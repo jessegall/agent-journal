@@ -4,6 +4,7 @@ import type { LiveHandlers, UserConnection } from '@/echo';
 import { connectUser } from '@/echo';
 import { liveTrace } from './liveTrace';
 import { clearProtectedViews, purge } from './protectedView';
+import { followNotificationsSignal, reconcileNotifications } from './useNotifications';
 import { forgetPageChanges, markDirty, pageChanged } from './usePageChanges';
 
 /**
@@ -78,7 +79,11 @@ export function useLiveConnection(): void {
                 clearProtectedViews();
                 pageChanged();
             }),
-            onSubscribed: whileCurrent(() => state.subscribed()),
+            onNotificationsChanged: whileCurrent(followNotificationsSignal),
+            onSubscribed: whileCurrent(() => {
+                state.subscribed();
+                reconcileNotifications();
+            }),
             onLost: whileCurrent(() => state.lost()),
             onRefused: whileCurrent(() => state.refused()),
         };

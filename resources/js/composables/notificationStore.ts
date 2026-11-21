@@ -1,4 +1,4 @@
-import type { NotificationPage } from '@/generated/types/core';
+import type { NotificationChangePage, NotificationItem, NotificationPage } from '@/generated/types/core';
 import { computed, ref, shallowRef } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
 
@@ -33,6 +33,7 @@ export type NotificationClient = {
     markRead(receiptId: string): Promise<NotificationPage>;
     markQuestionRead(messageId: string): Promise<NotificationPage>;
     markTargetRead(targetKey: string, targetId: string): Promise<NotificationPage>;
+    changes(cursor: string): Promise<NotificationChangePage>;
 };
 
 /**
@@ -51,6 +52,8 @@ export type NotificationStore = {
     markRead(receiptId: string): Promise<void>;
     markQuestionRead(messageId: string): Promise<void>;
     markTargetRead(targetKey: string, targetId: string): Promise<void>;
+    // Reads the changes since the held cursor and answers the new, still visible, unread arrivals among them.
+    catchUp(): Promise<NotificationItem[]>;
     checkLease(): void;
     purge(): void;
 };
@@ -69,6 +72,7 @@ export function notificationStore(
     const pending = ref<ReadonlySet<string>>(new Set());
     let generation = 0;
     let authorizedAt = 0;
+    let changesCursor: string | null = null;
 
     const shown = computed(() =>
         state.value === 'loaded' || state.value === 'refreshFailed'
@@ -86,6 +90,7 @@ export function notificationStore(
 
         if (snapshot.value === null || BigInt(page.version) >= BigInt(snapshot.value.version)) {
             snapshot.value = page;
+            changesCursor = page.changesCursor === '' ? null : page.changesCursor;
         }
 
         state.value = 'loaded';
@@ -156,6 +161,64 @@ export function notificationStore(
         }
     }
 
+    /**
+     * Follows the change log page by page through the scan's pinned version, then takes the newest snapshot for the
+     * count and the rows; a reset takes the snapshot alone, so a reconnect never turns into a backlog.
+     */
+    async function catchUp(): Promise<NotificationItem[]> {
+        const startedIn = generation;
+
+        if (changesCursor === null) {
+            await refresh();
+
+            return [];
+        }
+
+        const created = new Map<string, NotificationItem>();
+        const removed = new Set<string>();
+        let cursor: string | null = changesCursor;
+
+        try {
+            while (cursor !== null) {
+                const page: NotificationChangePage = await client.changes(cursor);
+
+                if (startedIn !== generation) {
+                    return [];
+                }
+
+                if (page.reset) {
+                    await refresh();
+
+                    return [];
+                }
+
+                for (const change of page.changes) {
+                    if (change.type === 'remove') {
+                        removed.add(change.receiptId);
+                        created.delete(change.receiptId);
+                    } else if (change.type === 'create' && change.item !== undefined) {
+                        created.set(change.receiptId, change.item);
+                    }
+                }
+
+                changesCursor = page.cursor;
+                cursor = page.nextCursor;
+            }
+        } catch {
+            failed(startedIn);
+
+            return [];
+        }
+
+        await refresh();
+        const visible = new Map((snapshot.value?.items ?? []).map((item) => [item.id, item]));
+
+        return [...created.keys()]
+            .filter((id) => !removed.has(id))
+            .map((id) => visible.get(id))
+            .filter((item): item is NotificationItem => item !== undefined && item.readAt === null);
+    }
+
     function checkLease(): void {
         if (snapshot.value !== null && now() - authorizedAt >= LEASE_MILLISECONDS) {
             state.value = 'expired';
@@ -165,6 +228,7 @@ export function notificationStore(
     function purge(): void {
         generation++;
         snapshot.value = null;
+        changesCursor = null;
         pending.value = new Set();
         authorizedAt = 0;
         state.value = 'loading';
@@ -185,6 +249,7 @@ export function notificationStore(
                 () => client.markTargetRead(targetKey, targetId),
                 () => !isTargetRead(targetKey, targetId),
             ),
+        catchUp,
         checkLease,
         purge,
     };

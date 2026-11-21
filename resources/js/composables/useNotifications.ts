@@ -1,7 +1,7 @@
-import type { NotificationPage } from '@/generated/types/core';
+import type { NotificationChangePage, NotificationItem, NotificationPage } from '@/generated/types/core';
 import { xsrfToken } from '@/echo';
 import { notifications } from '@/routes/communication';
-import { read, readQuestion, readTarget } from '@/routes/communication/notifications';
+import { changes, read, readQuestion, readTarget } from '@/routes/communication/notifications';
 import { onBeforeUnmount, onMounted } from 'vue';
 import {
     LEASE_MILLISECONDS,
@@ -22,6 +22,10 @@ const REFRESH_MILLISECONDS = LEASE_MILLISECONDS;
 const LEASE_CHECK_MILLISECONDS = 1_000;
 
 async function requestPage(url: string, init: RequestInit): Promise<NotificationPage> {
+    return (await requestJson(url, init)) as NotificationPage;
+}
+
+async function requestJson(url: string, init: RequestInit): Promise<unknown> {
     let response: Response;
 
     try {
@@ -47,7 +51,7 @@ async function requestPage(url: string, init: RequestInit): Promise<Notification
         throw new NotificationRequestFailed('refused');
     }
 
-    return (await response.json()) as NotificationPage;
+    return await response.json();
 }
 
 const client: NotificationClient = {
@@ -59,6 +63,8 @@ const client: NotificationClient = {
         requestPage(readQuestion.url(), { method: 'POST', body: JSON.stringify({ messageId }) }),
     markTargetRead: (targetKey, targetId) =>
         requestPage(readTarget.url(), { method: 'POST', body: JSON.stringify({ targetKey, targetId }) }),
+    changes: async (cursor) =>
+        (await requestJson(changes.url({ query: { since: cursor } }), { method: 'GET' })) as NotificationChangePage,
 };
 
 /**
@@ -66,6 +72,30 @@ const client: NotificationClient = {
  */
 const store = notificationStore(client);
 onPurge(store.purge);
+
+/**
+ * Hands the new arrivals of a live change to whoever presents them; the shell's toasts register here.
+ */
+let presentArrivals: (arrivals: NotificationItem[]) => void = () => undefined;
+
+export function onNotificationArrivals(present: (arrivals: NotificationItem[]) => void): void {
+    presentArrivals = present;
+}
+
+/**
+ * A live signal said the notifications changed: every tab catches up, and the new arrivals go to the presenter,
+ * which decides whether this tab speaks.
+ */
+export function followNotificationsSignal(): void {
+    void store.catchUp().then((arrivals) => presentArrivals(arrivals));
+}
+
+/**
+ * After a reconnect the tab takes a fresh snapshot silently: what it missed is counted, never presented.
+ */
+export function reconcileNotifications(): void {
+    void store.refresh();
+}
 
 let users = 0;
 let refreshTimer: ReturnType<typeof setInterval> | undefined;

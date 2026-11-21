@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { nextTick, ref } from 'vue';
 import Icon from '@/components/kit/Icon.vue';
+import { notificationToasts } from '@/composables/notificationToasts';
+import { holdsPresentation } from '@/composables/presentationLease';
 import { useBellPanel } from '@/composables/useBellPanel';
+import { onNotificationArrivals } from '@/composables/useNotifications';
 import { useToasts } from '@/composables/useToasts';
 
 /**
@@ -14,6 +17,20 @@ const toasts = useToasts();
 const bell = useBellPanel();
 const { toasts: shown, summary, announcement, isQuiet } = toasts;
 const region = ref<HTMLElement | null>(null);
+const page = usePage();
+
+/**
+ * Only the tab that holds the presentation claim shows new arrivals; every other tab only counts them.
+ */
+onNotificationArrivals((arrivals) => {
+    const userId = page.props.currentUser?.id;
+
+    if (userId === undefined || !holdsPresentation(userId)) {
+        return;
+    }
+
+    notificationToasts(arrivals, page.url).forEach((outcome) => toasts.show(outcome));
+});
 
 function holdsFocus(element: Element | null): boolean {
     return element !== null && region.value?.contains(element) === true;
