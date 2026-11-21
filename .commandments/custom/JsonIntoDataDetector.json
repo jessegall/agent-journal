@@ -1,0 +1,38 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "kind:Expr_FuncCall",
+        "where": [
+            {
+                "name": "json_decode"
+            }
+        ],
+        "reject": [
+            {
+                "file": "app/Files/**"
+            },
+            {
+                "file": "tests/**"
+            },
+            {
+                "of": "closest:call",
+                "all": [
+                    {
+                        "nameIn": ["from", "collect", "validateAndCreate"]
+                    },
+                    {
+                        "of": "child:class",
+                        "extendsAny": "Spatie\\LaravelData\\Data"
+                    }
+                ]
+            }
+        ]
+    },
+    "sin": {
+        "description": "Decoded JSON is read as a loose array instead of a Data class that writes its shape down.",
+        "name": "json-into-data",
+        "rule": "Hand json_decode's result straight to a Spatie Data class's from(), collect() or validateAndCreate() and read its typed properties, never $decoded['key'] ?? fallback.",
+        "skill": "php/spatie-data"
+    }
+}
