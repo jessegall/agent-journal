@@ -32,7 +32,9 @@ use App\Http\Controllers\Hooks\Host\StopResultsController;
 use App\Http\Middleware\Agents\LimitUsageReport;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(function (): void {
+// The work routes enrolled hosts speak with protocol 1 and a connected project's relay with protocol 2, scoped to its
+// live binding.
+Route::prefix('host')->middleware('journal.host:1,2')->name('agents.host.')->group(function (): void {
     Route::post('/claim', ClaimRequestsController::class)->name('claim');
     Route::post('/runtimes', OpenMainRuntimeController::class)->name('runtimes.open');
     Route::post('/runtimes/{runtime}/start', StartGrantController::class)->name('start');

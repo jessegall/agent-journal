@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Connections\Providers;
 
+use App\Agents\Contracts\LocalProjectHosts;
+use App\Connections\Support\BindingHosts;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyDefinition;
 use App\Bus\Support\EntryDispatchers;
@@ -21,6 +23,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(LocalProjectHosts::class, BindingHosts::class);
         $this->app->bind(ProjectCommands::class, fn () => new ProjectCommands(
             $this->app->make(JournalRoutes::class),
             $this->app->make(EntryDispatchers::class),

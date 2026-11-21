@@ -17,9 +17,11 @@ use Illuminate\Http\Request;
 interface HostCalls
 {
     /**
+     * The host and envelope of a call speaking one of these protocols, with the protocol it spoke.
+     *
      * @throws HostCredentialRejected
      * @throws CallSignatureInvalid
      * @throws HostProtocolMismatch
      */
-    public function verify(Request $request, HostProtocolVersion $protocol): HostContext;
+    public function verify(Request $request, HostProtocolVersion ...$spoken): HostContext;
 }
