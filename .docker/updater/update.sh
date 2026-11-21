@@ -66,10 +66,18 @@ pin_runner() {
         sed -i "s|^RUNNER_IMAGE=.*|RUNNER_IMAGE=$runner|" .env
 }
 
+# The updater rebuilds itself when its own image changed, as the last step: the new container takes over from this one.
+updater_changed=no
+if [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/dev/null &&
+    git -C "$mirror" diff --name-only "$installed" "$newest" | grep -qE '^\.docker/updater/(Dockerfile|loop\.sh)$'; then
+    updater_changed=yes
+fi
+
 if install; then
     echo "$newest" > .installed-commit
     rm -f .failed-commit
     echo "$(date -u +%FT%TZ) installed $newest"
+    [ "$updater_changed" = no ] || docker compose --profile updater up -d --build --no-deps updater
 else
     echo "$newest" > .failed-commit
     echo "$(date -u +%FT%TZ) $newest failed to install; the next commit is tried"
