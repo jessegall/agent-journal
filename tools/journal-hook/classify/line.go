@@ -25,6 +25,8 @@ func (classifier *Classifier) Line(line string) event.ShellLine {
 		return prepared
 	}
 	line = expanded
+	// a part's program reads an inner script's line, which fills these anew, so this line keeps its own
+	savedRuns, categorisedRuns := classifier.savedRuns, classifier.categorisedRuns
 	commands, redirects, err := shell.Split(line)
 	if err != nil {
 		prepared.ParseError = err.Error()
@@ -33,7 +35,7 @@ func (classifier *Classifier) Line(line string) event.ShellLine {
 	prepared.Redirects = redirects
 	prepared.RetryLoop = shell.IsRetryLoop(line)
 	for _, command := range commands {
-		prepared.Parts = append(prepared.Parts, classifier.part(command, classifier.Classify(command.Text)))
+		prepared.Parts = append(prepared.Parts, classifier.part(command, classifier.Classify(command.Text), savedRuns, categorisedRuns))
 	}
 	prepared.IsJournalOnly = isJournalOnly(commands)
 	return prepared
@@ -48,7 +50,7 @@ func lineOfRunner(line string) string {
 	return tokens[len(tokens)-1]
 }
 
-func (classifier *Classifier) part(command shell.Command, classification Classification) event.Part {
+func (classifier *Classifier) part(command shell.Command, classification Classification, savedRuns []savedRun, categorisedRuns []categorisedRun) event.Part {
 	program, subcommand, arguments := classifier.Program(command.Text)
 	prepared := event.Part{
 		Text:                  command.Text,
@@ -69,12 +71,12 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 	if commandType := classifier.commandType(command.Text); commandType != "" && prepared.Classification.Category == unknown {
 		prepared.Classification.Category = commandType
 	}
-	for _, run := range classifier.categorisedRuns {
+	for _, run := range categorisedRuns {
 		if run.line == strings.TrimSpace(command.Text) && prepared.Classification.Category == unknown {
 			prepared.Classification.Category = run.category
 		}
 	}
-	for _, run := range classifier.savedRuns {
+	for _, run := range savedRuns {
 		if strings.TrimSpace(run.line) != strings.TrimSpace(command.Text) {
 			continue
 		}
