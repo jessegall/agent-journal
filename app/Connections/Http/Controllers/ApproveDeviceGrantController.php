@@ -14,9 +14,9 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class ApproveDeviceGrantController
 {
-    public function __invoke(string $userCode, CommandBus $commands, Redirector $redirect): RedirectResponse
+    public function __invoke(string $code, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new ApproveDeviceGrant($userCode));
+        $commands->run(new ApproveDeviceGrant($code));
 
         return $redirect->back(303);
     }

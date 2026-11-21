@@ -38,7 +38,7 @@ final class ConnectionsPages implements NavigationProvider, PageProvider
                 DeviceApprovalWindowResolver::class,
                 'DeviceApprovalWindow.vue',
             )
-                ->at('devices/{userCode}')
+                ->at('devices/{code}')
                 ->visibleWhen(ConnectionsOwnerCheck::class),
         ];
     }

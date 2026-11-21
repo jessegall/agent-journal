@@ -76,7 +76,7 @@ Route::middleware(['web', 'auth', 'journal.user', 'throttle:20,1'])
         Route::delete('/invitations/{invitation}', RevokeProjectInvitationController::class)
             ->whereUlid('invitation')
             ->name('invitations.revoke');
-        Route::post('/devices/{userCode}/approve', ApproveDeviceGrantController::class)
+        Route::post('/devices/{code}/approve', ApproveDeviceGrantController::class)
             ->where('userCode', '[A-Za-z0-9-]+')
             ->name('devices.approve');
         Route::delete('/devices/{grant}', RevokeDeviceGrantController::class)->whereUlid('grant')->name('devices.revoke');

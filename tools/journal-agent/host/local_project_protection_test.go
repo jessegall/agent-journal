@@ -10,16 +10,6 @@ import (
 // probeVariable makes the test binary act as the protection probe program instead of running the tests.
 const probeVariable = "JOURNAL_AGENT_PROTECTION_PROBE"
 
-func TestMain(m *testing.M) {
-	if os.Getenv(probeVariable) == "1" {
-		if err := RunProtectionProbe(os.Args[len(os.Args)-2], os.Args[len(os.Args)-1]); err != nil {
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-	os.Exit(m.Run())
-}
-
 func TestTheLocalProjectConfinementKeepsAStartInsideItsAssignedFolder(t *testing.T) {
 	program, err := os.Executable()
 	if err != nil {

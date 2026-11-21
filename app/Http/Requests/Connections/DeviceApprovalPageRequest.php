@@ -21,6 +21,6 @@ final class DeviceApprovalPageRequest extends FormRequest
 
     public function userCode(): string
     {
-        return (string) $this->route('userCode');
+        return (string) $this->route('code');
     }
 }

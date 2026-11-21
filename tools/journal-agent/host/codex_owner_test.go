@@ -14,14 +14,6 @@ import (
 )
 
 // TestMain lets the test binary stand in for the Codex app-server when a test starts it as one.
-func TestMain(m *testing.M) {
-	if os.Getenv("FAKE_CODEX_APP_SERVER") != "" {
-		serveFakeAppServer()
-		os.Exit(0)
-	}
-	os.Exit(m.Run())
-}
-
 // serveFakeAppServer answers the owner's requests as Codex 0.165.0's app-server would, notes each method it heard in
 // FAKE_REQUESTS, and after each turn/start sends the FAKE_AFTER_TURN notifications with {thread} as the thread.
 func serveFakeAppServer() {

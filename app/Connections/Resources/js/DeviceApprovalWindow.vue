@@ -16,7 +16,7 @@ const approved = ref(false);
 
 function approveCode(): void {
     router.post(
-        approve({ userCode: props.data.userCode }).url,
+        approve({ code: props.data.userCode }).url,
         {},
         {
             only: ['page'],
