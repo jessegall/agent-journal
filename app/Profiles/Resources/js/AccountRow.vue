@@ -7,7 +7,7 @@ import IconAction from '@kit/IconAction';
 import DriverIcon from '@kit/DriverIcon';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, ref } from 'vue';
-import { useIsStale } from '@/framework/windowFreshness';
+import { useIsStale } from '@kit/windowFreshness';
 import AccountSettingsDialog from './AccountSettingsDialog.vue';
 import { usageLine } from './accountUsage';
 import {

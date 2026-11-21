@@ -72,11 +72,18 @@ const running = computed(() => {
 });
 
 const recentStartsTerm = 'Recent starts';
-const useFacts = computed(() => [
-    { term: 'Default', value: '' },
-    { term: 'Running now', value: running.value },
-    ...(props.account.recentStarts.length > 0 ? [{ term: recentStartsTerm, value: '' }] : []),
-]);
+const useFacts = computed(() => {
+    const facts = [
+        { term: 'Default', value: '' },
+        { term: 'Running now', value: running.value },
+    ];
+
+    if (props.account.recentStarts.length > 0) {
+        facts.push({ term: recentStartsTerm, value: '' });
+    }
+
+    return facts;
+});
 
 const signInFacts = computed(() => [
     { term: 'State', value: accountStateLook[props.account.state].label },
