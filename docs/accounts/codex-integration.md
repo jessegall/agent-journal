@@ -101,6 +101,33 @@ A signed-out `exec` wrote into `CODEX_HOME` only: `installation_id`, `sessions/<
 `shell_snapshots/`, `skills/.system/` and plugin caches. `HOME` stayed empty. The other-session rule of doc 15 covers
 `sessions/`, the SQLite stores and `shell_snapshots/`, not only the rollouts.
 
+## Protected inventory
+
+Codex 0.165.0 (tag rust-v0.165.0) dispatches every model tool call through one path:
+`ToolRouter::build_tool_call` and `ToolRegistry::dispatch_any_with_state`, over the tools
+`spec_plan.rs` `build_tool_router` registers. Tui, `exec`, `resume` and escalated calls share
+it. Escalation and the retry after a sandbox denial only drop the sandbox wrapper
+(`SandboxType::None`); they run through the same runtime.
+
+| Route | Runs | Protected start |
+|---|---|---|
+| `exec_command` (pipe, one-shot, PTY with `tty: true`), `write_stdin` | `[shell, -lc, text]` via `UnifiedExecRuntime::run` | the remote environment: `process/start` to the journal's exec-server bridge, then journal-shell, then the executor |
+| `apply_patch` tool and shell text `apply_patch …` | in-process through the environment's filesystem | the remote environment: `fs/*` to the executor |
+| `view_image` | in-process read through the environment's filesystem | `features.view_image=false`, and remote anyway |
+| `read_file`, `list_dir`, `grep_files` | not in 0.165.0 | none |
+| MCP tools and resources | local stdio servers, unsandboxed | no `mcp_servers` in the isolated CODEX_HOME |
+| code mode | JavaScript host child | `code_mode`, `code_mode_only` and `code_mode_host` off |
+| collaboration tools | child agents | agent features off and the hook policy refuses them |
+| `!cmd` user shell | local login shell, no sandbox, no approval | `include_local = false`: no local environment, so it fails closed |
+
+The protected start writes `CODEX_HOME/environments.toml` with one `[[environments]]` entry whose
+`program` is the journal's exec-server bridge, `default` set to it, and `include_local = false`. The
+command text reaches journal-shell unparsed, as the last argv element. If a run shows that a local
+environment survives, or that a tool bypasses the selected environment, the integration becomes a
+patch of `UnifiedExecRuntime::run`, `ExecCommandHandler::handle_call` (`intercept_apply_patch`),
+`ApplyPatchRuntime::run` and `run_user_shell_command`. That patched build is qualified on its own;
+until then Codex stays refused for protected starts.
+
 ## Checked and unchecked
 
 | Claim | State |
