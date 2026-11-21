@@ -30,3 +30,20 @@ Whoever writes a name judges it before the commit, and the main agent judges eve
 merge (rule 44). `TypeNameTest` and the `type-name-is-noun` commandment fail on a type that opens with a verb.
 Rename a type with `php tools/refactoring/move.php <Old> <New>` and a member with
 `php tools/refactoring/rename-member.php`, so every reference follows.
+
+## The text review
+
+`reviewed-texts.txt` holds every text a user reads on screen that has been read and judged: a template's static text
+and its label-like attributes (`title`, `label`, `placeholder`, `aria-label` and the like) in `.vue` files, a string a
+script gives to a label-like key, and the strings a PHP method named for a screen text returns (`label()`,
+`description()`, `title()`, a form request's `messages()`). Each line is the text alone.
+
+```sh
+php tools/refactoring/list-texts.php --check docs/naming/reviewed-texts.txt resources/js app
+php tools/refactoring/list-texts.php --accept docs/naming/reviewed-texts.txt resources/js app
+```
+
+It runs wherever the name review runs: before each commit, before each worker merge, and at the end of each phase and
+plan. Read each listed text aloud, as a person reading the screen would. A label is the short word a dashboard shows
+(`Expired`, `Signed in`, `Make default`); an explanation is a plain sentence under it. Rewrite any text nobody would
+say (`Its login expired` is `Expired`), then `--accept`.

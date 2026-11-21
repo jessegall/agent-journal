@@ -130,8 +130,8 @@ function saveName(): void {
             </template>
             <template v-if="account.expiresAt !== null">
                 <p class="text-small text-text-3">
-                    Its login expires
-                    {{ new Date(account.expiresAt).toLocaleDateString() }}.
+                    Expires
+                    {{ new Date(account.expiresAt).toLocaleDateString() }}
                 </p>
             </template>
             <template v-if="account.cleanupProblem !== null">

@@ -40,7 +40,7 @@ const exitText = computed(() => {
         <h3>{{ part.operation }}</h3>
         <p>Lifecycle: {{ part.lifecycle }}, end: {{ part.end }}</p>
         <template v-if="part.capture === 'removed'">
-            <p>Its output was removed.</p>
+            <p>Output removed</p>
         </template>
         <p>Capture: {{ part.capture }}; {{ part.elapsedSeconds }} seconds; {{ JSON.stringify(part.bytes) }} bytes</p>
         <p>Reading: {{ part.reading }}</p>

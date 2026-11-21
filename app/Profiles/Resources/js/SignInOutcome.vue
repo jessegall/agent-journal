@@ -67,7 +67,7 @@ defineProps<{
                     }}</b>
                     in the list.
                 </template>
-                To renew its login, use Sign in again on its row.
+                To renew it, choose Sign in again on the account.
             </p>
         </template>
         <template v-else>

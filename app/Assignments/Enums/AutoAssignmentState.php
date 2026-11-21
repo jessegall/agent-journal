@@ -24,14 +24,14 @@ enum AutoAssignmentState: string
     {
         return match ($this) {
             self::Off => 'Off',
-            self::Inactive => 'Waiting for the actor to be active',
-            self::DomainUnavailable => 'Its domain is switched off',
-            self::PoolUnavailable => 'Its pool gives out nothing now',
-            self::TooLarge => 'Its pool is too large',
+            self::Inactive => 'Waiting',
+            self::DomainUnavailable => 'Domain off',
+            self::PoolUnavailable => 'Pool empty',
+            self::TooLarge => 'Pool too large',
             self::Full => 'Full',
-            self::OverCapacity => 'Holds more than its size',
+            self::OverCapacity => 'Over capacity',
             self::Ready => 'Ready',
-            self::Invalid => 'Its configuration cannot be read',
+            self::Invalid => 'Invalid settings',
         };
     }
 }
