@@ -1,4 +1,4 @@
-# The direct file access sites still waiting to move to App\Files\Contracts\Files (plan 39): 39 files, 124 sites.
+# The direct file access sites still waiting to move to App\Files\Contracts\Files (plan 39): 37 files, 121 sites.
 # One line per file and form, without line numbers. A task that moves a site removes its own lines here, in the same task;
 # the list only shrinks. tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed
 # site the code no longer has. Regenerate with: php tools/refactoring/direct-file-sites.php --write
@@ -9,9 +9,6 @@ app/AgentRequests/Console/GenerateCallsCommand.php glob()
 app/AgentRequests/Console/GenerateCallsCommand.php is_file()
 app/AgentRequests/Console/GenerateCallsCommand.php tempnam()
 app/AgentRequests/Console/GenerateCallsCommand.php unlink()
-app/Agents/Resolvers/RecordedHostCapabilities.php file_get_contents()
-app/Agents/Support/DockerImageVerifier.php file_get_contents()
-app/Agents/Support/DockerImageVerifier.php is_file()
 app/Hooks/Programs/CodexFolderTrust.php is_dir()
 app/Hooks/Programs/CodexFolderTrust.php is_link()
 app/Hooks/Programs/CodexFolderTrust.php scandir()

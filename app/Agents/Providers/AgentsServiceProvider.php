@@ -113,6 +113,9 @@ use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Autoload\Support\FolderClasses;
 use App\Contracts\StartTransaction;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
 use Illuminate\Console\Command;
@@ -180,7 +183,10 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(ProgramConversationResolver::class, ProgramConversationRecords::class);
         $this->app->bind(
             DockerImageVerifierContract::class,
-            fn () => new DockerImageVerifier(base_path('docs/accounts/docker-images.json')),
+            fn () => new DockerImageVerifier(
+                $this->app->make(Files::class),
+                FilePath::in(Place::Project, 'docs/accounts/docker-images.json'),
+            ),
         );
         $this->app->bind(SessionPolicyReader::class, FrozenSessionPolicies::class);
         $this->app->bind(SessionProvenanceContract::class, SessionProvenance::class);
@@ -214,7 +220,10 @@ final class AgentsServiceProvider extends ServiceProvider
         );
         $this->app->bind(
             HostCapabilities::class,
-            fn () => new RecordedHostCapabilities(base_path('docs/accounts/container-capabilities.json')),
+            fn () => new RecordedHostCapabilities(
+                $this->app->make(Files::class),
+                FilePath::in(Place::Project, 'docs/accounts/container-capabilities.json'),
+            ),
         );
         $this->app->bindIf(StartTransaction::class, DatabaseStartTransaction::class);
         $this->app->bind(StartEnvironment::class, StartEnvironment::ofThisProcess(...));
