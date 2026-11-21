@@ -374,16 +374,16 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
      * here as well.
      *
      * @param  Builder<self>  $query
-     * @param  list<string>  $environmentIds
+     * @param  list<string>  $ids
      */
     #[Scope]
-    protected function inEnvironments(Builder $query, array $environmentIds): void
+    protected function inEnvironments(Builder $query, array $ids): void
     {
-        if ($environmentIds === []) {
+        if ($ids === []) {
             return;
         }
 
-        $query->whereIn('environment_id', $environmentIds);
+        $query->whereIn('environment_id', $ids);
     }
 
     /**

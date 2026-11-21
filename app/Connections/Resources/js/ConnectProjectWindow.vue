@@ -5,10 +5,11 @@ import {
     revokeChosen as revokeChosenBindings,
 } from '@generated/routes/connections/bindings';
 import Button from '@kit/Button';
+import EmptyState from '@kit/EmptyState';
 import PageHeader from '@kit/PageHeader';
 import { router } from '@inertiajs/vue3';
 import { keyedPost } from '@kit/keyedPost';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import BindingRow from './BindingRow.vue';
 import InstallAttemptList from './InstallAttemptList.vue';
 import InstallLinePanel from './InstallLinePanel.vue';
@@ -25,6 +26,8 @@ const refusal = ref<string | null>(null);
 // Whether the page was read again recently enough to trust a shown line is still the attempt's current one.
 const fresh = ref(true);
 let refreshing: ReturnType<typeof setInterval> | undefined;
+// The one reread due when a shown folder's presence expires, so a row turns Offline at its deadline.
+let deadline: ReturnType<typeof setTimeout> | undefined;
 
 /**
  * Reads the page again, as the attempts change by other tabs and devices; a read that fails marks the line stale.
@@ -42,14 +45,29 @@ function refresh(): void {
     });
 }
 
+watch(
+    () => props.data.bindings.refreshAt,
+    (refreshAt) => {
+        clearTimeout(deadline);
+
+        if (refreshAt !== null) {
+            deadline = setTimeout(refresh, Math.max(Date.parse(refreshAt) - Date.parse(props.data.bindings.serverTime), 0) + 500);
+        }
+    },
+    { immediate: true },
+);
+
 onMounted(() => {
     refreshing = setInterval(refresh, 5_000);
     window.addEventListener('focus', refresh);
+    window.addEventListener('online', refresh);
 });
 
 onBeforeUnmount(() => {
     clearInterval(refreshing);
+    clearTimeout(deadline);
     window.removeEventListener('focus', refresh);
+    window.removeEventListener('online', refresh);
 });
 // The folders chosen to revoke together, and what came of each the last time.
 const chosen = ref<Set<string>>(new Set());
@@ -161,7 +179,19 @@ function revokeBinding(bindingId: string): void {
             </template>
         </section>
         <InstallAttemptList :attempts="data.attempts" :fresh="fresh" />
-        <template v-if="data.bindings.rows.length > 0">
+        <template v-if="!fresh">
+            <p class="px-4 text-small text-tone-warn sm:px-0" role="status">
+                This list could not be read again, so what it shows may be out of date.
+            </p>
+        </template>
+        <template v-if="data.bindings.rows.length === 0">
+            <EmptyState
+                icon="connections"
+                title="No connected projects"
+                text="Generate an install line above to connect a project from another machine."
+            />
+        </template>
+        <template v-else>
             <div class="flex flex-wrap items-center gap-2 px-4 sm:px-0">
                 <template v-for="machine in machines" :key="machine">
                     <Button
@@ -182,10 +212,12 @@ function revokeBinding(bindingId: string): void {
             </div>
             <ul
                 class="border-t border-line sm:overflow-hidden sm:rounded-card sm:border sm:bg-bg"
+                aria-label="Connected projects"
             >
                 <template v-for="binding in data.bindings.rows" :key="binding.id">
                     <BindingRow
                         :binding="binding"
+                        :server-time="data.bindings.serverTime"
                         :is-chosen="chosen.has(binding.id)"
                         :outcome="outcomes[binding.id]"
                         @choose="choose(binding.id, $event)"

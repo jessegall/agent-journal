@@ -77,7 +77,7 @@ final class ProjectCommandsTest extends TestCase
         [$otherStart, $other] = $this->connectedStart();
         $stream = ProjectCommandRun::create('request-1', $start->agent->id, $binding, ['comment', 'list']);
         $otherStream = ProjectCommandRun::create('request-2', $otherStart->agent->id, $other, ['comment', 'list']);
-        $grant = DeviceGrant::create($binding, InstallTicket::digestOf('device-code'), 'ABCD-EFGH');
+        $grant = DeviceGrant::create($binding, InstallTicket::digestOf('device-code'), 'ABCD-EFGH', 'start-1');
         $grant->issue(InstallTicket::digestOf('device-grant'));
 
         $owner = User::factory()->create();
