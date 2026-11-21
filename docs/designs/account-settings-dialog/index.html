@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Account settings dialog: before and after</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* Version 6 tokens, copied from resources/css/app.css (:root and .dark). */
+:root{
+  --font-sans:'Geist',-apple-system,'Segoe UI',system-ui,sans-serif;
+  --font-mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --side:#f5f5f7;--bg:#fff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;
+  --border-2:#d9dbe0;--border-3:#c9ccd3;--line:#e8e9ec;
+  --text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;
+  --brand:#5e64c9;--brand-text:#4a50b5;--brand-dim:#e5e6fa;
+  --good:#2e8a4e;--warn:#a4731a;--danger:#bf4f3d;
+  --t-title:16px;--t-card:13.5px;--t-body:13px;--t-field:12.5px;--t-small:12px;
+  --r-control:6px;--r-button:7px;--r-field:8px;--r-card:12px;--r-badge:4px;
+}
+.dark{
+  --side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;
+  --border-2:#2f3136;--border-3:#3a3d44;--line:#22252b;
+  --text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;
+  --brand-text:#a3a8f0;--brand-dim:#2a2d5a;
+  --good:#63b37c;--warn:#d8a94a;--danger:#df8b7e;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font-sans);font-size:var(--t-body);color:var(--text);background:var(--side);-webkit-font-smoothing:antialiased;line-height:1.45}
+.doc{max-width:1120px;margin:0 auto;padding:32px 24px 80px}
+h1{font-size:22px;margin:0 0 6px} h2{font-size:16px;margin:44px 0 6px}
+.lead{color:var(--text-2);max-width:780px;margin:0}
+.note{color:var(--text-3);font-size:var(--t-small);max-width:780px;margin:0}
+.top{display:flex;gap:16px;align-items:flex-start}.top>div{flex:1}
+.toggle{font:inherit;font-size:12px;border:1px solid var(--border-2);background:var(--bg);color:var(--text);border-radius:var(--r-button);padding:5px 10px;cursor:pointer}
+.changes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:18px}
+.change{background:var(--bg);border:1px solid var(--line);border-radius:var(--r-card);padding:12px 14px}
+.change b{display:block;font-size:12.5px;margin-bottom:3px}.change span{color:var(--text-3);font-size:12px}
+.pair{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-top:14px}
+.label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-4);margin:0 0 8px;font-weight:600}
+.label.after{color:var(--brand-text)}
+.cap{font-size:12px;color:var(--text-3);margin:8px 0 0;max-width:480px}
+
+/* Modal.vue: 480 wide, 52 header, 420 body, 52 footer */
+.dlg{width:480px;max-width:100%;border:1px solid var(--border-2);border-radius:var(--r-card);background:var(--bg);overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.06)}
+.dlg header{height:52px;display:flex;align-items:center;gap:12px;padding:0 12px 0 20px;border-bottom:1px solid var(--line)}
+.dlg header h3{margin:0;flex:1;font-size:var(--t-title);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dlg .body{height:420px;padding:20px;display:flex;flex-direction:column;gap:16px;overflow:hidden;position:relative}
+.dlg .body.scroll{overflow-y:auto}
+.dlg footer{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px;border-top:1px solid var(--line);background:var(--bg-2)}
+.dlg.short .body{height:auto;min-height:0}
+.clip{position:absolute;left:0;right:0;bottom:0;height:34px;background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--danger) 18%,transparent) 0 6px,transparent 6px 12px);border-top:1px dashed var(--danger);font-size:11px;color:var(--danger);display:flex;align-items:center;justify-content:center}
+
+svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;font:inherit;font-size:var(--t-field);border-radius:var(--r-button);border:1px solid transparent;background:transparent;color:var(--text-2);white-space:nowrap;cursor:pointer}
+.btn:hover{background:var(--hover);color:var(--text)}
+.btn.sm{height:24px;padding:0 9px;font-size:var(--t-small)}
+.btn.bordered{border-color:var(--border-2)}
+.btn.primary{border-color:var(--brand);background:var(--brand-dim);color:var(--brand-text)}
+.btn.danger{border-color:color-mix(in srgb,var(--danger) 55%,var(--border-2));color:var(--danger)}
+.btn.danger-ghost{color:var(--danger)}
+.btn.danger-ghost:hover{background:color-mix(in srgb,var(--danger) 10%,transparent);color:var(--danger)}
+.btn.dangerfill{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn[disabled]{opacity:.45;cursor:default}
+.x{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:var(--text-3)}
+.spin{width:11px;height:11px;border:1.5px solid var(--border-3);border-top-color:var(--text-2);border-radius:50%;animation:s .9s linear infinite;flex:none}
+@keyframes s{to{transform:rotate(360deg)}}
+
+/* BEFORE pieces */
+.fl{display:flex;flex-direction:column;gap:6px}
+.fl label{font-size:var(--t-small);color:var(--text-2)}
+.in{height:28px;border:1px solid var(--border-2);border-radius:var(--r-control);padding:0 10px;font:inherit;font-size:var(--t-field);color:var(--text);background:transparent;width:100%}
+.in.focus{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.sel{background:color-mix(in srgb,var(--brand) 28%,transparent)}
+.b-dl{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin:0}
+.b-dl dt{color:var(--text-3)}.b-dl dd{margin:0}
+
+/* AFTER pieces */
+.namefield{position:relative;display:flex;align-items:center;height:32px;border:1px solid var(--border-2);border-radius:var(--r-field);background:var(--bg);transition:border-color 120ms}
+.namefield:hover{border-color:var(--border-3)}
+.namefield.focus{border-color:var(--brand)}
+.namefield.bad{border-color:var(--danger)}
+.namefield input{flex:1;min-width:0;height:100%;border:0;background:transparent;outline:none;padding:0 10px;font:inherit;font-size:var(--t-card);color:var(--text)}
+.namefield .tail{display:flex;align-items:center;gap:6px;padding-right:4px;flex:none}
+.namefield .save{height:24px;padding:0 9px;font:inherit;font-size:var(--t-small);border-radius:6px;border:1px solid var(--brand);background:var(--brand-dim);color:var(--brand-text);cursor:pointer}
+.namefield .save:hover{background:var(--brand);color:#fff}
+.namefield .state{font-size:var(--t-small);color:var(--text-3);display:flex;align-items:center;gap:5px;padding-right:6px}
+.namefield .state.good{color:var(--good)}
+.under{font-size:var(--t-small);color:var(--text-4);min-height:18px;margin-top:5px}
+.under.bad{color:var(--danger)}
+.fieldlabel{font-size:var(--t-small);color:var(--text-3);margin-bottom:6px;display:block}
+.callout{display:flex;align-items:center;gap:10px;border:1px solid color-mix(in srgb,var(--warn) 40%,var(--line));background:color-mix(in srgb,var(--warn) 8%,var(--bg));border-radius:var(--r-field);padding:8px 8px 8px 12px;color:var(--text)}
+.callout svg{color:var(--warn)}
+.callout span{flex:1}
+.group{border:1px solid var(--line);border-radius:var(--r-field);overflow:hidden}
+.group .gh{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-4);font-weight:600;padding:8px 12px 4px;background:var(--bg-2)}
+.row{display:flex;align-items:center;gap:12px;min-height:34px;padding:6px 12px;border-top:1px solid var(--line)}
+.group .gh+.row{border-top:0}
+.row .t{width:112px;flex:none;color:var(--text-3)}
+.row .v{flex:1;min-width:0;overflow-wrap:anywhere}
+.row .v.mono{font-family:var(--font-mono);font-size:12px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--good);margin-right:6px;vertical-align:1px}
+.dot.warn{background:var(--warn)}
+.defrow .v{display:flex;align-items:center;gap:8px}
+.chip{font-size:11px;line-height:18px;padding:0 6px;border-radius:var(--r-badge);background:var(--chip);color:var(--text-2);display:inline-flex;gap:4px;align-items:center}
+.quiet{color:var(--text-4)}
+a.start{color:var(--brand-text);text-decoration:none}
+a.start:hover{text-decoration:underline}
+.ask{display:flex;flex-direction:column;gap:12px}
+.ask .who{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-field)}
+.statesgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin-top:14px}
+.st{background:var(--bg);border:1px solid var(--line);border-radius:var(--r-card);padding:14px 16px}
+.st b{font-size:12.5px;display:block;margin-bottom:10px}
+.st p{margin:8px 0 0;color:var(--text-3);font-size:12px}
+.spec{width:100%;border-collapse:collapse;margin-top:12px;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;font-size:12.5px}
+.spec th,.spec td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.spec th{color:var(--text-3);font-weight:600;font-size:11.5px;background:var(--bg-2)}
+.spec td.rec{color:var(--brand-text);font-weight:600}
+code{font-family:var(--font-mono);font-size:11.5px}
+.tag{font-size:10.5px;font-weight:600;color:var(--brand-text);background:var(--brand-dim);border-radius:4px;padding:1px 6px;margin-left:6px}
+.try{font-size:11.5px;color:var(--text-3);margin-top:8px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="close" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
+  <symbol id="tick" viewBox="0 0 16 16"><path d="M3.8 8.3l2.6 2.6 5.8-6.1"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><path d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/></symbol>
+  <symbol id="star" viewBox="0 0 16 16"><path d="M8 2.3l1.75 3.6 3.95.55-2.87 2.77.7 3.93L8 11.3l-3.53 1.85.7-3.93L2.3 6.45l3.95-.55z"/></symbol>
+</defs></svg>
+
+<div class="doc">
+  <div class="top"><div>
+    <h1>The account settings dialog</h1>
+    <p class="lead">The dialog the settings button on an account row opens (AccountSettingsDialog.vue, task 1691), as it is today and redesigned. It keeps the Modal's fixed frame: 480 px wide, a 52 px header, a 420 px body and a 52 px footer. Asked for in user message 13507.</p>
+  </div><button class="toggle" onclick="document.documentElement.classList.toggle('dark')">Light / dark</button></div>
+
+  <div class="changes">
+    <div class="change"><b>1 · “Remove account”, plainly</b><span>No trailing dots. A quiet red text button bottom left; the question that follows is its own step.</span></div>
+    <div class="change"><b>2 · Nothing grabs the name on open</b><span>Focus lands on the dialog's close button, as the Modal does for any dialog; the name is not selected.</span></div>
+    <div class="change"><b>3 · Save lives inside the field</b><span>The name runs full width. Only a changed, non-empty name shows Save at the field's right end; Enter saves, Escape puts the name back.</span></div>
+    <div class="change"><b>4 · One tidy list</b><span>Default, the sign-in facts and the state read as two labelled groups with even rows; the body scrolls instead of clipping.</span></div>
+  </div>
+
+  <h2>Before and after</h2>
+  <p class="note">Before: drawn from the template as it is, with the name focused and selected the moment it opens (startFrom in accountNaming.ts). The facts and recent starts run past the 420 px body, which the dialog's <code>overflow-hidden</code> cuts off: the hatched band.</p>
+  <div class="pair">
+    <div>
+      <p class="label">Before</p>
+      <div class="dlg">
+        <header><h3>Work (Max)</h3><span class="x"><svg class="i"><use href="#close"/></svg></span></header>
+        <div class="body" style="gap:20px">
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <div class="fl" style="flex:1"><label>Name</label><div class="in focus" style="display:flex;align-items:center"><span class="sel">Work (Max)</span></div></div>
+            <button class="btn" disabled style="border-color:var(--border-2)">Save</button>
+          </div>
+          <div><button class="btn sm bordered">Make default</button></div>
+          <dl class="b-dl">
+            <dt>Driver</dt><dd>Claude Code</dd><dt>Sign-in</dt><dd>Claude subscription</dd><dt>Billing</dt><dd>Subscription</dd>
+            <dt>Signed in as</dt><dd>owner@example.com</dd><dt>Workspace</dt><dd>Not known</dd><dt>State</dt><dd>Signed in</dd>
+            <dt>Last checked</dt><dd>11/21/2026, 1:52:07 PM</dd><dt>Expires</dt><dd>12/18/2026, 9:00:00 AM</dd><dt>Running now</dt><dd>2</dd>
+          </dl>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="color:var(--text-3)">Recent starts</span>
+            <a class="start" style="text-decoration:underline">Running since 21 Nov, 13:40</a><a class="start" style="text-decoration:underline">Started 20 Nov, 09:12</a></div>
+          <div class="clip">cut off: the body does not scroll</div>
+        </div>
+        <footer><button class="btn danger">Remove account...</button><span style="flex:1"></span><button class="btn">Close</button></footer>
+      </div>
+    </div>
+    <div>
+      <p class="label after">After · try it</p>
+      <div class="dlg">
+        <header><h3 id="live-title">Work (Max)</h3><button class="x btn" style="padding:0;height:24px;width:24px" aria-label="Close" id="live-close"><svg class="i"><use href="#close"/></svg></button></header>
+        <div class="body scroll">
+          <div>
+            <label class="fieldlabel" for="live-name">Name</label>
+            <div class="namefield" id="live-field">
+              <input id="live-name" value="Work (Max)" maxlength="80" autocomplete="off">
+              <div class="tail" id="live-tail"></div>
+            </div>
+            <div class="under" id="live-under"></div>
+          </div>
+          <div class="group">
+            <div class="gh">Use</div>
+            <div class="row defrow"><span class="t">Default</span><span class="v"><span class="chip"><svg class="i" style="width:12px;height:12px"><use href="#star"/></svg>Default</span><span class="quiet">for new Claude Code starts</span></span></div>
+            <div class="row"><span class="t">Running now</span><span class="v">2 agents</span></div>
+            <div class="row"><span class="t">Recent starts</span><span class="v" style="display:flex;flex-direction:column;gap:2px"><a class="start" href="#"><span class="dot"></span>Running since 21 Nov, 13:40</a><a class="start" href="#" style="padding-left:12px">Started 20 Nov, 09:12</a></span></div>
+          </div>
+          <div class="group">
+            <div class="gh">Sign-in</div>
+            <div class="row"><span class="t">State</span><span class="v"><span class="dot"></span>Signed in</span></div>
+            <div class="row"><span class="t">Program</span><span class="v">Claude Code</span></div>
+            <div class="row"><span class="t">Method</span><span class="v">Claude subscription</span></div>
+            <div class="row"><span class="t">Billing</span><span class="v">Subscription</span></div>
+            <div class="row"><span class="t">Signed in as</span><span class="v">owner@example.com</span></div>
+            <div class="row"><span class="t">Workspace</span><span class="v quiet">Not known</span></div>
+            <div class="row"><span class="t">Last checked</span><span class="v">21 Nov 2026, 13:52</span></div>
+            <div class="row"><span class="t">Expires</span><span class="v">18 Dec 2026, 09:00</span></div>
+          </div>
+        </div>
+        <footer><button class="btn danger-ghost" id="live-remove">Remove account</button><span style="flex:1"></span><button class="btn">Close</button></footer>
+      </div>
+      <p class="try">Type in the name to see Save appear; Enter or Save saves, Escape puts it back. Type <code>Personal</code> to see a refusal (a name already in use).</p>
+    </div>
+  </div>
+
+  <h2>The name field, state by state</h2>
+  <p class="note">The field is always full width and 32 px tall. What sits at its right end tells the state; the line under it holds the one sentence the state needs, and is empty otherwise, so nothing below jumps.</p>
+  <div class="statesgrid" id="states"></div>
+
+  <h2>Saving: button, blur or debounce</h2>
+  <table class="spec">
+    <tr><th style="width:22%">Way</th><th>For it</th><th>Against it here</th></tr>
+    <tr><td class="rec">Save in the field, Enter saves <span class="tag">Recommended</span></td><td>The user decides when; a refusal shows where they are looking; nothing is sent while they type.</td><td>A changed name is lost if they close without saving, though Save sat right there in view.</td></tr>
+    <tr><td>Save on blur</td><td>No click needed.</td><td>Clicking Close or Remove account blurs the field and sends a rename on the way out; a refusal arrives after the dialog is gone or when the user is already doing something else.</td></tr>
+    <tr><td>Save after a pause (debounce)</td><td>No click at all.</td><td>Every save reloads the Accounts page (AccountsWindow.vue reloads on each change), which would reset the field mid-typing; half names like “Wor” get saved and refused names flash up while still typing.</td></tr>
+  </table>
+  <p class="note" style="margin-top:8px">Recommendation: the in-field Save with Enter. If a lost edit on Close turns out to bother people, add the blur save later, only for a non-empty changed name — the design leaves room for it.</p>
+
+  <h2>The rest of the dialog</h2>
+  <div class="statesgrid">
+    <div class="st"><b>Must sign in again</b>
+      <div class="callout"><svg class="i"><use href="#warn"/></svg><span>This account must sign in again.</span><button class="btn sm bordered">Sign in again</button></div>
+      <p>Top of the body, warn-toned, as before; a key account's button says Replace key. The Default row then says “Sign in first to make it the default”.</p></div>
+    <div class="st"><b>Not the default</b>
+      <div class="group"><div class="row defrow" style="border-top:0"><span class="t">Default</span><span class="v"><span class="quiet" style="flex:1">No</span><button class="btn sm bordered">Make default</button></span></div></div>
+      <p>The button sits in the row it changes, right-aligned; while it sends, it shows the spinner, then the row turns into the Default chip.</p></div>
+    <div class="st"><b>The default</b>
+      <div class="group"><div class="row defrow" style="border-top:0"><span class="t">Default</span><span class="v"><span class="chip"><svg class="i" style="width:12px;height:12px"><use href="#star"/></svg>Default</span><span class="quiet">for new Claude Code starts</span></span></div></div>
+      <p>The sentence the dialog shows today, as a chip and a grey line.</p></div>
+    <div class="st"><b>Removing or removed</b>
+      <div class="group"><div class="row" style="border-top:0"><span class="t">State</span><span class="v"><span class="spin" style="display:inline-block;vertical-align:-1px;margin-right:6px"></span>Removing</span></div></div>
+      <p>No Remove account in the footer and no Make default, as today; the name field is disabled.</p></div>
+  </div>
+
+  <h2>Removing: the question</h2>
+  <div class="pair">
+    <div>
+      <div class="dlg">
+        <header><h3>Remove this account?</h3><span class="x"><svg class="i"><use href="#close"/></svg></span></header>
+        <div class="body"><div class="ask">
+          <div class="who"><span style="color:#D97757">✳</span><div><div>Work (Max)</div><div class="quiet" style="font-size:12px">Claude Code subscription</div></div></div>
+          <p style="margin:0;color:var(--text-2)">This signs it out and deletes its files. 2 agents are still using it; it goes away when they finish.</p>
+        </div></div>
+        <footer><span style="flex:1"></span><button class="btn bordered" style="box-shadow:0 0 0 2px var(--brand)">Back</button><button class="btn dangerfill">Remove account</button></footer>
+      </div>
+      <p class="cap">The title asks the question; the account is named in a small card so it is clear which one goes. Back has the focus (drawn with its ring), so Enter never removes. The danger button repeats the plain label.</p>
+    </div>
+  </div>
+
+  <h2>What could go wrong</h2>
+  <table class="spec">
+    <tr><th style="width:30%">Case</th><th>What the design does</th></tr>
+    <tr><td>Empty name</td><td>No Save; the line under says “A name is needed.” Enter does nothing.</td></tr>
+    <tr><td>The name typed back to what it was</td><td>Counts as unchanged: Save goes away.</td></tr>
+    <tr><td>The host refuses (a name in use, too long)</td><td>Red edge, its message under the field, the typed name kept and Save still offered; typing again clears the red.</td></tr>
+    <tr><td>Escape in an edited field</td><td>Puts the name back and keeps the dialog open; a second Escape closes it.</td></tr>
+    <tr><td>Close with an unsaved name</td><td>The edit is dropped; next time the dialog opens it starts from the saved name.</td></tr>
+    <tr><td>The page reloads after Save</td><td>The field shows the new saved name and “Saved” with a tick for about two seconds, then the end of the field is empty again.</td></tr>
+    <tr><td>Long values (an email, a workspace)</td><td>Wrap anywhere inside the value column; the body scrolls.</td></tr>
+  </table>
+
+  <h2>For a worker</h2>
+  <table class="spec">
+    <tr><th style="width:34%">File</th><th>Change</th></tr>
+    <tr><td><code>app/Profiles/Resources/js/AccountSettingsDialog.vue</code></td><td>Drop the separate Save button and the <code>flex items-end</code> form; use the in-field name field. <code>opened()</code> stops calling <code>startFrom</code>'s focus. Default, Running now and Recent starts go in a “Use” group; State, Program (today “Driver”), Method (“Sign-in”), Billing, Signed in as, Workspace, Last checked and Expires in a “Sign-in” group. Dates as day, month, year and hours:minutes. Footer: “Remove account” as a quiet danger text button. Confirm step: title “Remove this account?”, the account card, and “Remove account” on the danger button.</td></tr>
+    <tr><td><code>app/Profiles/Resources/js/accountNaming.ts</code></td><td>Split <code>startFrom</code>: one part that resets the name and errors, and one that also focuses and selects, which only NameAccountStep.vue keeps. Add a short “saved” flag after a successful save, and a revert for Escape.</td></tr>
+    <tr><td><code>resources/js/components/kit/TextField.vue</code></td><td>Give it a slot at the right end inside the field (for Save, the spinner and Saved), or add a kit <code>InlineSaveField</code> on top of it.</td></tr>
+    <tr><td><code>resources/js/components/kit/Modal.vue</code> line 138</td><td>Let the body scroll (<code>overflow-y-auto</code>); today the dialog's <code>overflow-hidden</code> clips a long body.</td></tr>
+    <tr><td><code>docs/naming/reviewed-texts.txt</code></td><td>The new words: “Remove account” (no dots), “Remove this account?”, “A name is needed.”, “Saved”, “Use”, “Program”, “Method”, “Sign in first to make it the default”.</td></tr>
+    <tr><td><code>app/Profiles/Resources/js/AccountRow.test.ts</code></td><td>Tests that find “Remove account...” or the Save button by its text, or expect the name to have focus, need updating.</td></tr>
+  </table>
+</div>
+
+<script>
+/* Static field states */
+const STATES = [
+  ['Unchanged', 'Work (Max)', '', '', '', 'The default: nothing at the right end, nothing under.'],
+  ['Edited', 'Work laptop', '<button class="save">Save</button>', '', 'focus', 'Save appears only now; Enter does the same; Escape puts the old name back.'],
+  ['Saving', 'Work laptop', '<span class="state"><span class="spin"></span>Saving</span>', '', 'focus', 'The field is read-only while the rename is sent.'],
+  ['Saved', 'Work laptop', '<span class="state good"><svg class="i" style="width:14px;height:14px"><use href="#tick"/></svg>Saved</span>', '', '', 'Shows for about two seconds, then the end of the field is empty again.'],
+  ['Refused', 'Personal', '<button class="save">Save</button>', 'Another account already has this name.', 'bad', 'The host\'s words under the field; the typed name stays, Save stays.'],
+  ['Empty', '', '', 'A name is needed.', 'focus', 'No Save while the field is empty.'],
+];
+document.getElementById('states').innerHTML = STATES.map(([t,v,tail,under,cls,p]) =>
+ `<div class="st"><b>${t}</b><div class="namefield ${cls}"><input value="${v}" readonly tabindex="-1"><div class="tail">${tail}</div></div>
+  <div class="under ${cls==='bad'||t==='Empty'?'bad':''}">${under}</div><p>${p}</p></div>`).join('');
+
+/* The live field */
+let saved = 'Work (Max)', busy = false, timer;
+const input = document.getElementById('live-name'), field = document.getElementById('live-field'),
+      tail = document.getElementById('live-tail'), under = document.getElementById('live-under'),
+      title = document.getElementById('live-title');
+function draw(extra){
+  const name = input.value.trim();
+  field.classList.toggle('bad', extra === 'refused');
+  under.className = 'under' + (extra === 'refused' || (name === '' && document.activeElement === input) ? ' bad' : '');
+  under.textContent = extra === 'refused' ? 'Another account already has this name.' : (name === '' ? 'A name is needed.' : '');
+  if (busy) { tail.innerHTML = '<span class="state"><span class="spin"></span>Saving</span>'; return; }
+  if (extra === 'saved') { tail.innerHTML = '<span class="state good"><svg class="i" style="width:14px;height:14px"><use href="#tick"/></svg>Saved</span>'; return; }
+  tail.innerHTML = name !== '' && name !== saved ? '<button class="save" id="live-save">Save</button>' : '';
+  const b = document.getElementById('live-save'); if (b) b.onclick = save;
+}
+function save(){
+  const name = input.value.trim();
+  if (name === '' || name === saved || busy) return;
+  busy = true; input.readOnly = true; draw();
+  setTimeout(() => {
+    busy = false; input.readOnly = false;
+    if (name.toLowerCase() === 'personal') { draw('refused'); return; }
+    saved = name; input.value = name; title.textContent = name; draw('saved');
+    clearTimeout(timer); timer = setTimeout(() => draw(), 2000);
+  }, 700);
+}
+input.addEventListener('focus', () => field.classList.add('focus'));
+input.addEventListener('blur', () => { field.classList.remove('focus'); draw(); });
+input.addEventListener('input', () => draw());
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); save(); }
+  if (e.key === 'Escape' && input.value !== saved) { e.preventDefault(); input.value = saved; draw(); }
+});
+draw();
+</script>
+</body>
+</html>
