@@ -29,6 +29,7 @@ final readonly class RequestOutcomes
             $request->requestKey,
             $request->target(),
         );
+
         $notYetObservable = RequestOutcomeData::of(RequestOutcome::NotYetObservable);
         $expired = RequestOutcomeData::of(RequestOutcome::Expired);
 

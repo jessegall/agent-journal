@@ -6,6 +6,7 @@ namespace App\Hooks\Compatibility;
 
 use App\Drivers\Enums\HookDriver;
 use App\Hooks\Compatibility\Exceptions\DriverArrangementUnproven;
+use App\Hooks\Compatibility\Exceptions\DriverUnstartableInContainer;
 use App\Hooks\Enums\AuthenticationArrangement;
 use App\Hooks\Enums\DriverEvidence;
 
@@ -20,6 +21,8 @@ final readonly class DriverCompatibility
      * @param  list<string>  $startFlags  the checked flags every account start passes
      * @param  array<string, string>  $settings  the checked settings each account's own configuration holds
      * @param  string|null  $containedShortfall  what keeps a contained start back; null where starts are not contained
+     * @param  bool  $isContainedReportMissing  whether the shortfall is only that no contained host reported yet, which
+     *                                          a later report may lift, rather than a report this build fails
      */
     public function __construct(
         public HookDriver $driver,
@@ -31,6 +34,7 @@ final readonly class DriverCompatibility
         public DriverEvidence $arrangementEvidence,
         public string $evidenceOwner,
         public string|null $containedShortfall = null,
+        public bool $isContainedReportMissing = false,
     ) {}
 
     /**
@@ -73,6 +77,15 @@ final readonly class DriverCompatibility
     }
 
     /**
+     * The same compatibility held back in a container until a contained host reports its protection: a wait, not a
+     * refusal of the build.
+     */
+    public function withContainedReportMissing(string $shortfall): self
+    {
+        return clone ($this->withContainedShortfall($shortfall), ['isContainedReportMissing' => true]);
+    }
+
+    /**
      * The same compatibility held back in a container by what its protection report lacks there.
      */
     public function withContainedShortfall(string $shortfall): self
@@ -91,6 +104,10 @@ final readonly class DriverCompatibility
      */
     public function assertStartable(): void
     {
+        if ($this->containedShortfall !== null && ! $this->isContainedReportMissing) {
+            throw DriverUnstartableInContainer::for($this->driver->value, $this->version, $this->containedShortfall);
+        }
+
         if ($this->containedShortfall !== null) {
             throw DriverArrangementUnproven::inContainer(
                 $this->driver->value,

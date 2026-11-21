@@ -23,7 +23,9 @@ final readonly class BindingRuntimeController
         HostContext $host,
         CommandBus $commands,
     ): JsonResponse {
-        $commands->run(new AssertBindingStart($host->hostId, $binding, $request->rootId, $request->folder, $request->agentId));
+        $commands->run(
+            new AssertBindingStart($host->hostId, $binding, $request->rootId, $request->folder, $request->agentId),
+        );
 
         $opened = $commands->run(new OpenHostMainRuntime(
             $request->agentId,

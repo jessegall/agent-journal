@@ -34,6 +34,7 @@ final readonly class IssueProjectInvitationController
     ): JsonResponse|RedirectResponse {
         $ticket = InstallTicket::generate();
         $issued = $commands->run($request->commandFor($ticket));
+
         $answer = [
             'installLine' => $line->for($ticket),
             'expiresAt' => $issued->expiresAt,

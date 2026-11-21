@@ -35,6 +35,7 @@ final readonly class SaveDraftPageController
             $call->expectedRevision,
             $call->scriptSource(),
         ));
+
         $inertia->flash(self::SAVED_DRAFT, $drafts->checked($call->profile, $revision, $call->scriptSource()));
 
         return $redirect->back(303);

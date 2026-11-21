@@ -35,6 +35,7 @@ final readonly class DockController
         Redirector $redirect,
     ): DockAnswerData|RedirectResponse {
         $conversation = $requests->conversationWith($input->agent);
+
         $answer = DockAnswerData::fromDockResult(
             $commands->run(new DockSource($conversation->id, $input->type, $input->id, $input->presentation)),
         );

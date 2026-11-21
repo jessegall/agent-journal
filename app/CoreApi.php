@@ -575,6 +575,7 @@ use App\Connections\Commands\RedeemProjectInvitation;
 use App\Connections\Commands\RenewRuntimeLease;
 use App\Connections\Commands\RevokeDeviceGrant;
 use App\Connections\Commands\RevokeProjectBinding;
+use App\Connections\Commands\RevokeProjectBindings;
 use App\Connections\Commands\RevokeProjectInvitation;
 use App\Connections\Commands\StartDeviceGrant;
 use App\Connections\Commands\StartProjectCommandRun;
@@ -2300,6 +2301,7 @@ final class CoreApi
                 RedeemProjectInvitation::class,
                 RecoverProjectBinding::class,
                 RevokeProjectBinding::class,
+                RevokeProjectBindings::class,
                 RecordBindingPresence::class,
                 StartProjectCommandRun::class,
                 RecordProjectCommandProcess::class,

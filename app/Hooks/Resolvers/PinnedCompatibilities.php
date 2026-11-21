@@ -37,6 +37,10 @@ final readonly class PinnedCompatibilities implements DriverCompatibilities
             return $pinned->withEvidence(DriverEvidence::NativeShown, 'the agent image\'s protection report');
         }
 
+        if (! $report->isReported()) {
+            return $pinned->withContainedReportMissing($report->shortfall());
+        }
+
         return $pinned->withContainedShortfall($report->shortfall());
     }
 }

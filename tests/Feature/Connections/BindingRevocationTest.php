@@ -74,7 +74,8 @@ final class BindingRevocationTest extends TestCase
         $this->actingAs($this->owner)
             ->from('/connections')
             ->post('/settings/project-connections/bindings/revoke', ['bindings' => [$first, $second]])
-            ->assertRedirect('/connections');
+            ->assertRedirect('/connections')
+            ->assertSessionHas('inertia.flash_data', ['revokedBindings' => [$first => 'Revoked', $second => 'Revoked']]);
 
         $this->assertSame(
             [BindingReadiness::Revoked, BindingReadiness::Revoked],

@@ -81,6 +81,14 @@ final readonly class ProtectionReport
     }
 
     /**
+     * Whether a contained host reported this build's protection at all.
+     */
+    public function isReported(): bool
+    {
+        return $this->items !== [];
+    }
+
+    /**
      * Whether every item is kept from the tools in the agent container, each shown by a native run.
      */
     public function isEnforcedInContainer(): bool
