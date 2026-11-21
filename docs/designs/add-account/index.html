@@ -5,402 +5,423 @@
 <title>Add an account — Accounts window</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-/* Version 6 tokens (resources/css/app.css :root and .dark) */
+/* Version 6 tokens (resources/css/app.css :root and .dark). Blue (--brand) is the only accent. */
 :root{
   --font-sans:'Geist',-apple-system,'Segoe UI',system-ui,sans-serif;
   --font-mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;
-  --side:#f5f5f7;--bg:#fff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--code-bg:#f5f6f8;
+  --side:#f5f5f7;--bg:#fff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--chip:#ececf0;--code-bg:#f5f6f8;
   --border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--line:#e8e9ec;
   --text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;
-  --brand:#5e64c9;--brand-text:#4a50b5;--brand-dim:#e5e6fa;
-  --tone-good:#2e8a4e;--tone-warn:#a4731a;--danger:#bf4f3d;
-  --r-badge:4px;--r-control:6px;--r-button:7px;--r-field:8px;--r-card:12px;
+  --brand:#5e64c9;--brand-text:#4a50b5;--brand-dim:#e5e6fa;--danger:#bf4f3d;
+  --t-title:16px;--t-card:13.5px;--t-body:13px;--t-field:12.5px;--t-small:12px;--t-meta:11px;--t-group:10.5px;
+  --r-control:6px;--r-button:7px;--r-field:8px;--r-card:12px;
 }
 .dark{
   --side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--chip:#24262b;--code-bg:#121316;
-  --border-2:#2f3136;--border-3:#3a3d44;--line:#22252b;--border-inner:#1d1f24;
+  --border-inner:#1d1f24;--border-2:#2f3136;--border-3:#3a3d44;--line:#22252b;
   --text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;
-  --brand-text:#a3a8f0;--brand-dim:#2a2d5a;--tone-good:#63b37c;--tone-warn:#d8a94a;--danger:#df8b7e;
+  --brand-text:#a3a8f0;--brand-dim:#2a2d5a;--danger:#df8b7e;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:var(--font-sans);font-size:13px;color:var(--text);background:var(--side)}
-.doc{max-width:1180px;margin:0 auto;padding:32px 24px 80px}
-.doc>h1{font-size:20px;margin:0 0 6px}
-.doc>p.lead{color:var(--text-2);max-width:760px;line-height:1.55;margin:0 0 8px}
-.toggle{float:right;font:inherit;font-size:12px;border:1px solid var(--border-2);background:var(--bg);color:var(--text-2);border-radius:var(--r-button);height:26px;padding:0 10px;cursor:pointer}
-h2.sec{font-size:14px;margin:40px 0 4px;color:var(--text)}
-p.note{color:var(--text-3);font-size:12px;margin:0 0 14px;max-width:820px;line-height:1.5}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:22px}
-.frame{display:flex;flex-direction:column;gap:8px}
-.frame>.cap{font-size:12px;color:var(--text-2)}
-.frame>.cap b{color:var(--text);font-weight:600}
-.frame>.cap code{font-family:var(--font-mono);font-size:11px;color:var(--text-3)}
-/* backdrop that stands for the Accounts window behind the modal */
-.stage{background:color-mix(in srgb,var(--text) 22%,var(--side));border-radius:var(--r-card);padding:26px;display:flex;justify-content:center}
-.dark .stage{background:#060708}
+body{margin:0;font-family:var(--font-sans);font-size:var(--t-body);color:var(--text);background:var(--side);-webkit-font-smoothing:antialiased}
+p{margin:0}
 
-/* kit look-alikes */
-.btn{display:inline-flex;align-items:center;gap:6px;font:inherit;border:1px solid transparent;border-radius:var(--r-button);background:transparent;cursor:pointer;white-space:nowrap}
-.btn.small{height:24px;padding:0 9px;font-size:12px}
-.btn.normal{height:28px;padding:0 11px;font-size:12.5px}
-.btn.ghost{color:var(--text-2)}
-.btn.bordered{border-color:var(--border-2);color:var(--text-2)}
+/* ---------- page around the frames ---------- */
+.doc{max-width:1200px;margin:0 auto;padding:40px 32px 96px}
+.top{display:flex;align-items:flex-start;gap:24px;margin-bottom:8px}
+.top h1{font-size:22px;font-weight:600;margin:0 0 8px;letter-spacing:-.01em}
+.top .gap{flex:1}
+.lead{color:var(--text-2);max-width:780px;line-height:1.6;font-size:13px}
+.lead+.lead{margin-top:8px}
+.toggle{font:inherit;font-size:var(--t-small);border:1px solid var(--border-2);background:var(--bg);color:var(--text-2);border-radius:var(--r-button);height:28px;padding:0 12px;cursor:pointer}
+h2.sec{font-size:15px;font-weight:600;margin:56px 0 6px}
+p.note{color:var(--text-3);font-size:var(--t-small);margin:0 0 20px;max-width:820px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(540px,1fr));gap:32px 24px}
+.frame{display:flex;flex-direction:column;gap:10px}
+.cap{font-size:var(--t-small);color:var(--text-2);line-height:1.5}
+.cap b{color:var(--text);font-weight:600;margin-right:4px}
+code{font-family:var(--font-mono);font-size:11px}
+.stage{background:color-mix(in srgb,var(--text) 18%,var(--side));border-radius:var(--r-card);padding:32px 24px;display:flex;justify-content:center;align-items:flex-start;min-height:572px}
+.stage.win-stage{min-height:0}
+.dark .stage{background:#08090a}
+
+/* ---------- kit look-alikes ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;border:1px solid transparent;border-radius:var(--r-button);background:transparent;cursor:pointer;white-space:nowrap;color:var(--text-2)}
+.btn.small{height:24px;padding:0 9px;font-size:var(--t-small)}
+.btn.normal{height:28px;padding:0 11px;font-size:var(--t-field)}
+.btn.bordered{border-color:var(--border-2)}
 .btn.primary{border-color:var(--brand);background:var(--brand-dim);color:var(--brand-text)}
 .btn.primary:hover{background:var(--brand);color:#fff}
 .btn[disabled]{opacity:.45;cursor:default}
-.btn.icon{width:24px;height:24px;justify-content:center;padding:0;color:var(--text-3)}
-.field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:12px;color:var(--text-2)}
-.field input{height:28px;border-radius:var(--r-control);border:1px solid var(--border-2);background:transparent;padding:0 10px;font:inherit;font-size:12.5px;color:var(--text);width:100%}
+.btn.icon{width:24px;height:24px;padding:0;color:var(--text-3);font-size:13px}
+.btn .plus{font-size:14px;line-height:1;margin-top:-1px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:var(--t-small);color:var(--text-2)}
+.field input{height:28px;border-radius:var(--r-control);border:1px solid var(--border-2);background:transparent;padding:0 10px;font:inherit;font-size:var(--t-field);color:var(--text);width:100%}
 .field input.code{font-family:var(--font-mono);letter-spacing:.2em;text-transform:uppercase}
 .field input.focus{border-color:var(--brand)}
 .field input.bad{border-color:var(--danger)}
-.field .hint{font-size:11px;color:var(--text-3);line-height:1.45}
-.field .err{font-size:11px;color:var(--danger);line-height:1.45}
+.field .under{min-height:16px;font-size:var(--t-meta);line-height:16px;color:var(--text-3)}
+.field .under.err{color:var(--danger)}
 .spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-3);border-top-color:var(--brand);animation:sp .8s linear infinite;flex:none}
-.spin.big{width:28px;height:28px;border-width:3px}
+.spin.big{width:28px;height:28px;border-width:2.5px}
+.spin.tiny{width:11px;height:11px;border-width:1.5px}
 @keyframes sp{to{transform:rotate(360deg)}}
-.badge{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:var(--r-badge);font-size:11px;background:var(--chip);color:var(--text-2)}
-.badge.sub{background:color-mix(in srgb,var(--tone-good) 14%,transparent);color:var(--tone-good)}
-.badge.api{background:color-mix(in srgb,var(--tone-warn) 15%,transparent);color:var(--tone-warn)}
+.plain{font-size:var(--t-small);color:var(--text-3);white-space:nowrap}
 
-/* the modal: fixed width and fixed body height so steps never jump */
-.modal{width:480px;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--r-card);box-shadow:0 12px 40px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden}
-.m-head{display:flex;align-items:center;gap:10px;padding:12px 14px 10px 16px;border-bottom:1px solid var(--line)}
-.m-head h3{margin:0;font-size:14px;font-weight:600;flex:1}
-.steps{display:flex;gap:4px;align-items:center;font-size:11px;color:var(--text-4)}
-.steps i{width:18px;height:3px;border-radius:2px;background:var(--border-2);display:block}
+/* ---------- the modal: fixed width, fixed body height, fixed footer ---------- */
+.modal{width:480px;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--r-card);box-shadow:0 16px 48px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.06);display:flex;flex-direction:column;overflow:hidden}
+.m-head{height:52px;display:flex;align-items:center;gap:12px;padding:0 12px 0 20px;border-bottom:1px solid var(--line)}
+.m-head h3{margin:0;font-size:var(--t-title);font-weight:600;flex:1}
+.steps{display:flex;gap:4px;align-items:center}
+.steps i{width:20px;height:3px;border-radius:2px;background:var(--border-2);display:block}
 .steps i.on{background:var(--brand)}
-.m-body{height:404px;padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
-.m-foot{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);background:var(--bg-2)}
+.m-body{height:420px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.m-foot{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px 0 12px;border-top:1px solid var(--line);background:var(--bg-2)}
 .m-foot .gap{flex:1}
-.back{font-size:12px;color:var(--text-3)}
 .seg{display:flex;padding:2px;border-radius:var(--r-button);background:var(--chip);gap:2px}
-.seg span{flex:1;text-align:center;height:24px;line-height:24px;border-radius:5px;font-size:12px;color:var(--text-2);cursor:pointer}
-.seg span.on{background:var(--bg);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg span{flex:1;text-align:center;height:26px;line-height:26px;border-radius:5px;font-size:var(--t-field);color:var(--text-2);cursor:pointer}
+.seg span.on{background:var(--bg);color:var(--text);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .cards{display:flex;flex-direction:column;gap:8px}
-.card{border:1px solid var(--border-2);border-radius:var(--r-field);padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:3px 10px;cursor:pointer;background:var(--bg)}
+.card{border:1px solid var(--border-2);border-radius:var(--r-field);padding:12px 14px;display:flex;flex-direction:column;gap:4px;cursor:pointer;background:var(--bg)}
 .card:hover{background:var(--hover)}
-.card.on{border-color:var(--brand);background:color-mix(in srgb,var(--brand-dim) 45%,var(--bg))}
-.card .t{font-size:13px;font-weight:600}
-.card .d{grid-column:1/-1;font-size:12px;color:var(--text-2);line-height:1.45}
-.group{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin:4px 0 -2px}
-.small-cards .card{padding:8px 11px}
-.small-cards .card .d{font-size:11.5px}
-.muted{color:var(--text-3);font-size:12px;line-height:1.5}
-.lead2{font-size:12.5px;color:var(--text-2);line-height:1.55;margin:0}
-.ol{margin:0;padding-left:18px;color:var(--text-2);font-size:12.5px;line-height:1.7}
-.linkbox{display:flex;align-items:center;gap:8px;border:1px solid var(--border-2);border-radius:var(--r-field);padding:8px 10px;background:var(--raised)}
-.linkbox a{flex:1;color:var(--brand-text);font-size:12.5px;text-decoration:underline;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.devcode{font-family:var(--font-mono);font-size:26px;letter-spacing:.28em;text-align:center;padding:14px 0;border:1px dashed var(--border-3);border-radius:var(--r-field);background:var(--code-bg)}
-.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
-.center h4{margin:0;font-size:14px;font-weight:600}
-.center p{margin:0;max-width:340px;color:var(--text-2);font-size:12.5px;line-height:1.55}
-.mark{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700}
-.mark.ok{background:color-mix(in srgb,var(--tone-good) 15%,transparent);color:var(--tone-good)}
-.mark.bad{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
-.mark.warn{background:color-mix(in srgb,var(--tone-warn) 15%,transparent);color:var(--tone-warn)}
-.status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-2)}
-.chosen{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-3)}
-.chosen b{color:var(--text);font-weight:600}
-.where{border-left:2px solid var(--border-3);padding:2px 0 2px 10px;font-size:12px;color:var(--text-2);line-height:1.55}
-.where code,.lead2 code,.muted code{font-family:var(--font-mono);font-size:11.5px;background:var(--code-bg);padding:1px 4px;border-radius:4px}
+.card.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset}
+.card .row1{display:flex;align-items:baseline;gap:12px}
+.card .t{font-size:var(--t-card);font-weight:500;color:var(--text);flex:1}
+.card .d{font-size:var(--t-small);color:var(--text-2);line-height:1.5}
+.compact{gap:6px}
+.compact .card{padding:9px 12px;gap:2px}
+.compact .card .d{font-size:var(--t-meta)}
+.group{font-size:var(--t-group);text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);padding-top:4px}
+.group:first-child{padding-top:0}
+.chosen{display:flex;align-items:center;gap:8px;font-size:var(--t-small);color:var(--text-3);padding-bottom:16px;border-bottom:1px solid var(--line)}
+.chosen b{color:var(--text);font-weight:500}
+.chosen .plain{margin-left:auto}
+.ol{margin:0;padding-left:18px;color:var(--text-2);font-size:var(--t-field);line-height:1.75}
+.linkbox{display:flex;align-items:center;gap:8px;border:1px solid var(--border-2);border-radius:var(--r-field);padding:0 6px 0 12px;height:40px;background:var(--raised)}
+.linkbox .host{flex:1;font-size:var(--t-field);color:var(--text-2)}
+.linkbox .host span{color:var(--text-3)}
+.devcode{font-family:var(--font-mono);font-size:26px;letter-spacing:.28em;text-align:center;height:68px;line-height:68px;border:1px dashed var(--border-3);border-radius:var(--r-field);background:var(--code-bg);color:var(--text)}
+.where{font-size:var(--t-small);color:var(--text-2);line-height:1.6;background:var(--raised);border-radius:var(--r-field);padding:12px 14px}
+.where b{color:var(--text);font-weight:500}
+.where code{background:var(--chip);padding:1px 5px;border-radius:4px}
 .spacer{flex:1}
-/* the Accounts window */
-.win{width:520px;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--r-card);overflow:hidden}
-.ph{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
-.ph h3{margin:0;font-size:16px;font-weight:600}
-.ph .count{font-size:12px;color:var(--text-3)}
+.foot-note{font-size:var(--t-meta);color:var(--text-3);line-height:1.5}
+.status{display:flex;align-items:center;gap:8px;font-size:var(--t-small);color:var(--text-2)}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding-bottom:12px}
+.center h4{margin:4px 0 0;font-size:var(--t-card);font-weight:600}
+.center p{max-width:340px;color:var(--text-2);font-size:var(--t-field);line-height:1.6}
+.mark{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600}
+.mark.done{background:var(--brand-dim);color:var(--brand-text)}
+.mark.grey{background:var(--chip);color:var(--text-3)}
+
+/* ---------- the Accounts window: one list, both programs ---------- */
+.win{width:560px;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--r-card);overflow:hidden}
+.ph{display:flex;align-items:center;gap:12px;padding:14px 16px 12px}
+.ph h3{margin:0;font-size:var(--t-title);font-weight:600}
+.ph .count{font-size:var(--t-field);color:var(--text-3);font-variant-numeric:tabular-nums}
 .ph .gap{flex:1}
-.win h5{margin:0;padding:14px 16px 4px;font-size:12px;font-weight:400;color:var(--text-3)}
-.row{display:flex;align-items:center;gap:8px;padding:8px 16px;border-top:1px solid var(--border-inner)}
-.row .n{flex:1}
-.row .n small{display:block;color:var(--text-3);font-size:11px}
-.empty{padding:40px 24px;text-align:center}
-.empty h4{margin:0 0 6px;font-size:14px}
-.empty p{margin:0 0 14px;color:var(--text-3);font-size:12.5px}
-table.st{border-collapse:collapse;width:100%;font-size:12px;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--r-card)}
-table.st th,table.st td{text-align:left;padding:7px 10px;border-top:1px solid var(--line);vertical-align:top;line-height:1.45}
-table.st th{color:var(--text-3);font-weight:500;border-top:0}
-table.st td code{font-family:var(--font-mono);font-size:11px}
+.ph .acts{display:flex;gap:8px}
+.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.list li{display:flex;align-items:center;gap:16px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.list .who{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.list .who .name{font-size:var(--t-card);color:var(--text);overflow-wrap:anywhere}
+.list .who .sub{font-size:var(--t-small);color:var(--text-3)}
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 24px;text-align:center;border-top:1px solid var(--line)}
+.empty .t{font-size:var(--t-card);color:var(--text-2)}
+.empty .s{font-size:var(--t-small);color:var(--text-3);max-width:42ch}
+.empty .btn{margin-top:8px}
+
+table.st{border-collapse:separate;border-spacing:0;width:100%;font-size:var(--t-small);background:var(--bg);border:1px solid var(--border-2);border-radius:var(--r-card);overflow:hidden}
+table.st th,table.st td{text-align:left;padding:9px 14px;border-top:1px solid var(--line);vertical-align:top;line-height:1.5}
+table.st th{color:var(--text-3);font-weight:500;border-top:0;background:var(--bg-2)}
+table.st td:first-child{white-space:nowrap}
+ul.todo{color:var(--text-2);font-size:var(--t-small);line-height:1.7;max-width:820px;padding-left:18px;margin:0}
 </style>
 </head>
 <body>
 <div class="doc">
-<button class="toggle" onclick="document.documentElement.classList.toggle('dark')">Light / dark</button>
-<h1>Add an account</h1>
-<p class="lead">The Accounts window gets one <b>Add account</b> button. It opens a modal of fixed size that walks through three
-steps: choose how to sign in, do that method's one task, and wait for the check. The body is always 404&nbsp;px high and the
-footer always sits in the same place, so nothing jumps between steps. Signing in an existing account again stays on its row and
-can open the same modal at step two.</p>
-<p class="lead">Drawn in the version 6 kit's look: <code>Button</code> (primary, bordered, ghost, icon; small and normal),
-<code>TextField</code> (with <code>code</code> and <code>secret</code>), <code>Spinner</code>, <code>StateBadge</code> and the colour tokens from
-<code>resources/css/app.css</code>. The kit has no modal yet; see “What a worker needs” at the end.</p>
+<div class="top">
+  <div>
+    <h1>Add an account</h1>
+    <p class="lead">The Accounts window gets one <b>Add account</b> button. It opens a modal of fixed size with three steps:
+    choose how to sign in, do that method's one task, and wait for the check. The header, the 420&nbsp;px body and the footer have
+    the same size on every step, so nothing jumps.</p>
+    <p class="lead">Drawn in the version 6 kit: <code>Button</code>, <code>TextField</code> (<code>code</code>, <code>secret</code>), <code>Spinner</code>
+    and the tokens in <code>resources/css/app.css</code>. Blue is the only accent: the progress bars, the selected card, the spinner and the
+    done mark. Billing and status are plain grey text.</p>
+  </div>
+  <span class="gap"></span>
+  <button class="toggle" onclick="document.documentElement.classList.toggle('dark')">Light / dark</button>
+</div>
 
 <!-- ============ 1. ENTRY ============ -->
-<h2 class="sec">1 · The button on the Accounts window</h2>
-<p class="note">One button in the page header replaces the two sign-in forms that now sit at the top of each program's section
-(AccountsWindow.vue lines 65–72). The empty state gets the same button. A sign-in that is still running when the window opens shows as
-a chip that reopens the modal where it was (from <code>attemptToRejoin</code>).</p>
+<h2 class="sec">1 · The Accounts window</h2>
+<p class="note">One list holds every account, Claude Code and Codex mixed. Each row names its program in its subtext. Rows are
+divided by a line and padded evenly at 12&nbsp;px × 16&nbsp;px, with 4&nbsp;px between title and subtext, and full names and
+addresses wrap rather than being cut short. One header button replaces the two per-program sign-in forms (AccountsWindow.vue lines 65–72).</p>
 <div class="grid">
-  <div class="frame"><div class="cap"><b>1a</b> Accounts with saved rows</div>
-    <div class="stage"><div class="win">
-      <div class="ph"><h3>Accounts</h3><span class="count">3</span><span class="gap"></span><button class="btn primary small">＋ Add account</button></div>
-      <h5>Claude Code</h5>
-      <div class="row"><span class="n">jesse@… Max<small>Uses your subscription · chosen for new starts</small></span><span class="badge sub">Signed in</span></div>
-      <div class="row"><span class="n">Claude Code API key<small>Billed to your API account</small></span><span class="badge">Signed in</span></div>
-      <h5>Codex</h5>
-      <div class="row"><span class="n">ChatGPT Plus<small>Uses your subscription · chosen for new starts</small></span><span class="badge sub">Signed in</span></div>
+  <div class="frame"><div class="cap"><b>1a</b>Accounts with saved rows</div>
+    <div class="stage win-stage"><div class="win">
+      <div class="ph"><h3>Accounts</h3><span class="count">4</span><span class="gap"></span>
+        <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
+      <ul class="list">
+        <li><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Uses your subscription · Chosen for new starts</span></div><span class="plain">Signed in</span></li>
+        <li><div class="who"><span class="name">Claude Code API key</span><span class="sub">Claude Code · Billed to your API account</span></div><span class="plain">Signed in</span></li>
+        <li><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Codex · Uses your subscription · Chosen for new starts</span></div><span class="plain">Signed in</span></li>
+        <li><div class="who"><span class="name">Codex API key</span><span class="sub">Codex · Billed to your API account</span></div><span class="plain">Needs sign-in</span></li>
+      </ul>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>1b</b> No accounts yet</div>
-    <div class="stage"><div class="win">
-      <div class="ph"><h3>Accounts</h3><span class="count">0</span><span class="gap"></span><button class="btn primary small">＋ Add account</button></div>
-      <div class="empty"><h4>No saved accounts yet</h4><p>Add a Claude Code or Codex account to let agents start with it.</p><button class="btn primary normal">＋ Add account</button></div>
+  <div class="frame"><div class="cap"><b>1b</b>No accounts yet</div>
+    <div class="stage win-stage"><div class="win">
+      <div class="ph"><h3>Accounts</h3><span class="count">0</span><span class="gap"></span>
+        <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
+      <div class="empty"><span class="t">No saved accounts yet</span><span class="s">Add a Claude Code or Codex account to let agents start with it.</span>
+        <button class="btn primary normal"><span class="plus">+</span>Add account</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>1c</b> A sign-in still runs (the modal was closed or the page reloaded)</div>
-    <div class="stage"><div class="win">
-      <div class="ph"><h3>Accounts</h3><span class="count">3</span><span class="gap"></span>
-        <button class="btn bordered small"><span class="spin" style="width:11px;height:11px"></span> Sign-in waiting · Resume</button>
-        <button class="btn primary small" disabled>＋ Add account</button></div>
-      <h5>Claude Code</h5>
-      <div class="row"><span class="n">jesse@… Max<small>Uses your subscription · chosen for new starts</small></span><span class="badge sub">Signed in</span></div>
+  <div class="frame"><div class="cap"><b>1c</b>A sign-in still waits (the modal was closed or the page reloaded)</div>
+    <div class="stage win-stage"><div class="win">
+      <div class="ph"><h3>Accounts</h3><span class="count">1</span><span class="gap"></span>
+        <div class="acts"><button class="btn bordered small"><span class="spin tiny"></span>Sign-in waiting · Resume</button>
+        <button class="btn primary small" disabled><span class="plus">+</span>Add account</button></div></div>
+      <ul class="list">
+        <li><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Uses your subscription · Chosen for new starts</span></div><span class="plain">Signed in</span></li>
+      </ul>
     </div></div></div>
 </div>
 
 <!-- ============ 2. CHOOSE ============ -->
 <h2 class="sec">2 · Step one: choose how to sign in</h2>
-<p class="note"><b>Program choice — recommended: program first, as a switch at the top of step one.</b> The cards below it change with
-the switch (3 for Claude Code, 2 for Codex), so each list fits the fixed height without scrolling, and the billing badges compare like
-with like. The switch opens on the program the user has fewest accounts for, or Claude Code. The alternative, one combined list of
-five (2c), is drawn too: it works, but it is tighter and repeats the program name in every card. A click on a card selects it; a
-double click or <b>Continue</b> moves on. Each card says how it works for the user and, as a badge, what it bills.</p>
+<p class="note"><b>Program choice, recommended: program first.</b> A switch at the top of step one changes the cards below it (three for
+Claude Code, two for Codex), so each list fits without scrolling. The alternative, one combined list of five (2c), works too but is tighter.
+Clicking a card selects it, and a double click or <b>Continue</b> moves on. Each card says in one sentence how the method works for the
+user, and what it bills in grey text on the right.</p>
 <div class="grid">
-  <div class="frame"><div class="cap"><b>2a</b> Claude Code chosen, OAuth selected</div>
+  <div class="frame"><div class="cap"><b>2a</b>Claude Code, sign-in selected</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="seg"><span class="on">Claude Code</span><span>Codex</span></div>
         <div class="cards">
-          <div class="card on"><span class="t">Sign in with Claude</span><span class="badge sub">Subscription</span>
-            <span class="d">Opens Claude's sign-in page. You sign in there and paste back the code it shows you.</span></div>
-          <div class="card"><span class="t">Provider token</span><span class="badge sub">Subscription</span>
-            <span class="d">Paste a long-lived token you made with <code>claude setup-token</code>. Good for a server; lasts about a year.</span></div>
-          <div class="card"><span class="t">API key</span><span class="badge api">API usage</span>
+          <div class="card on"><div class="row1"><span class="t">Sign in with Claude</span><span class="plain">Subscription</span></div>
+            <span class="d">Opens Claude's sign-in page. You sign in there and paste back the code it shows.</span></div>
+          <div class="card"><div class="row1"><span class="t">Provider token</span><span class="plain">Subscription</span></div>
+            <span class="d">Paste a long-lived token made with <code>claude setup-token</code>. Suits a server.</span></div>
+          <div class="card"><div class="row1"><span class="t">API key</span><span class="plain">API usage</span></div>
             <span class="d">Paste a key from the Anthropic Console. Every request is billed to that API account.</span></div>
         </div>
       </div>
-      <div class="m-foot"><span class="gap"></span><button class="btn ghost normal">Cancel</button><button class="btn primary normal">Continue</button></div>
+      <div class="m-foot"><span class="gap"></span><button class="btn normal">Cancel</button><button class="btn primary normal">Continue</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>2b</b> Codex chosen, nothing selected yet</div>
+  <div class="frame"><div class="cap"><b>2b</b>Codex, nothing selected yet</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="seg"><span>Claude Code</span><span class="on">Codex</span></div>
         <div class="cards">
-          <div class="card"><span class="t">Sign in with ChatGPT</span><span class="badge sub">Subscription</span>
-            <span class="d">Shows a short code. You open OpenAI's page, enter the code there, and the account appears here by itself.</span></div>
-          <div class="card"><span class="t">API key</span><span class="badge api">API usage</span>
+          <div class="card"><div class="row1"><span class="t">Sign in with ChatGPT</span><span class="plain">Subscription</span></div>
+            <span class="d">Shows a short code. You enter it on OpenAI's page, and the account appears here by itself.</span></div>
+          <div class="card"><div class="row1"><span class="t">API key</span><span class="plain">API usage</span></div>
             <span class="d">Paste a key from the OpenAI platform. Every request is billed to that API account.</span></div>
         </div>
         <div class="spacer"></div>
-        <p class="muted">Choose a way to sign in to continue.</p>
+        <p class="foot-note">Choose a way to sign in to continue.</p>
       </div>
-      <div class="m-foot"><span class="gap"></span><button class="btn ghost normal">Cancel</button><button class="btn primary normal" disabled>Continue</button></div>
+      <div class="m-foot"><span class="gap"></span><button class="btn normal">Cancel</button><button class="btn primary normal" disabled>Continue</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>2c</b> Alternative: one combined list of five</div>
+  <div class="frame"><div class="cap"><b>2c</b>Alternative: one combined list of five</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i></i><i></i></span><button class="btn icon">✕</button></div>
-      <div class="m-body small-cards" style="gap:6px">
+      <div class="m-body compact">
         <div class="group">Claude Code</div>
-        <div class="card on"><span class="t">Sign in with Claude</span><span class="badge sub">Subscription</span><span class="d">Sign in on Claude's page and paste back its code.</span></div>
-        <div class="card"><span class="t">Provider token</span><span class="badge sub">Subscription</span><span class="d">Paste a token from <code>claude setup-token</code>.</span></div>
-        <div class="card"><span class="t">API key</span><span class="badge api">API usage</span><span class="d">Paste a key from the Anthropic Console.</span></div>
+        <div class="card on"><div class="row1"><span class="t">Sign in with Claude</span><span class="plain">Subscription</span></div><span class="d">Sign in on Claude's page and paste back its code.</span></div>
+        <div class="card"><div class="row1"><span class="t">Provider token</span><span class="plain">Subscription</span></div><span class="d">Paste a token made with <code>claude setup-token</code>.</span></div>
+        <div class="card"><div class="row1"><span class="t">API key</span><span class="plain">API usage</span></div><span class="d">Paste a key from the Anthropic Console.</span></div>
         <div class="group">Codex</div>
-        <div class="card"><span class="t">Sign in with ChatGPT</span><span class="badge sub">Subscription</span><span class="d">Enter a short code on OpenAI's page.</span></div>
-        <div class="card"><span class="t">API key</span><span class="badge api">API usage</span><span class="d">Paste a key from the OpenAI platform.</span></div>
+        <div class="card"><div class="row1"><span class="t">Sign in with ChatGPT</span><span class="plain">Subscription</span></div><span class="d">Enter a short code on OpenAI's page.</span></div>
+        <div class="card"><div class="row1"><span class="t">API key</span><span class="plain">API usage</span></div><span class="d">Paste a key from the OpenAI platform.</span></div>
       </div>
-      <div class="m-foot"><span class="gap"></span><button class="btn ghost normal">Cancel</button><button class="btn primary normal">Continue</button></div>
+      <div class="m-foot"><span class="gap"></span><button class="btn normal">Cancel</button><button class="btn primary normal">Continue</button></div>
     </div></div></div>
 </div>
 
 <!-- ============ 3. THE METHOD'S STEP ============ -->
 <h2 class="sec">3 · Step two: the method's own task</h2>
-<p class="note">Continue starts the sign-in on the host (<code>startSignIn</code>) at once, so the link or code is ready. While the host
-starts it the step shows “Starting the sign-in…” with a spinner (3a). A line under the header always says what was chosen, and
-<b>Back</b> cancels the started sign-in and returns to step one. Every field keeps its error line's room reserved, so a refusal does not
-move the buttons.</p>
+<p class="note">Continue starts the sign-in on the host at once (<code>startSignIn</code>), so the link or code is ready. A line at the top
+of the step repeats the chosen program, method and billing. <b>Back</b> sits at the left of the footer, cancels the started sign-in and
+returns to step one. The main action sits at the right. The space under every field is held for its hint or error, so a refusal never
+moves the button.</p>
 <div class="grid">
-  <div class="frame"><div class="cap"><b>3a</b> Starting (state <code>starting</code>, challenge not read yet)</div>
+  <div class="frame"><div class="cap"><b>3a</b>Starting (state <code>starting</code>, link not read yet)</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b> <span class="badge sub">Subscription</span></div>
+        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
         <div class="center"><span class="spin big"></span><p>Starting the sign-in…</p></div>
       </div>
-      <div class="m-foot"><button class="btn ghost normal back">← Back</button><span class="gap"></span><button class="btn primary normal" disabled>Send code</button></div>
+      <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal" disabled>Send code</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>3b</b> Claude Code OAuth: open the link, paste the code back</div>
+  <div class="frame"><div class="cap"><b>3b</b>Claude Code sign-in: open the page, paste the code back</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b> <span class="badge sub">Subscription</span></div>
-        <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code the page shows when you are done.</li><li>Paste it here and send it.</li></ol>
-        <div class="linkbox"><a href="#">claude.ai/oauth/authorize?code=true&amp;client_id=…</a><button class="btn bordered small">Open ↗</button><button class="btn ghost small">Copy</button></div>
-        <div class="field"><label>Code from the sign-in page</label><input class="code focus" value="QF7K…"><span class="hint">The code is one piece of text without spaces.</span></div>
+        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code the page shows when you are done.</li><li>Paste it below and send it.</li></ol>
+        <div class="linkbox"><span class="host">claude.ai <span>· sign-in page</span></span><button class="btn small">Copy link</button><button class="btn bordered small">Open ↗</button></div>
+        <div class="field"><label>Code from the sign-in page</label><input class="code focus" value="QF7KX2"><span class="under">One piece of text, without spaces.</span></div>
         <div class="spacer"></div>
-        <p class="muted">The sign-in waits for about 15 minutes. Closing this window loses nothing; reopen it from the Accounts header.</p>
+        <p class="foot-note">You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.</p>
       </div>
-      <div class="m-foot"><button class="btn ghost normal back">← Back</button><span class="gap"></span><button class="btn primary normal">Send code</button></div>
+      <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal">Send code</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>3c</b> Refused at once: the pasted text has spaces (task 1631; the sign-in keeps waiting)</div>
+  <div class="frame"><div class="cap"><b>3c</b>Refused at once: the pasted text has spaces (task 1631); the sign-in keeps waiting</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b> <span class="badge sub">Subscription</span></div>
-        <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code the page shows when you are done.</li><li>Paste it here and send it.</li></ol>
-        <div class="linkbox"><a href="#">claude.ai/oauth/authorize?code=true&amp;client_id=…</a><button class="btn bordered small">Open ↗</button><button class="btn ghost small">Copy</button></div>
-        <div class="field"><label>Code from the sign-in page</label><input class="bad" value="Unable to connect. Firefox can't establish…"><span class="err">This is not a sign-in code: it has spaces. Paste the sign-in code again.</span></div>
+        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code the page shows when you are done.</li><li>Paste it below and send it.</li></ol>
+        <div class="linkbox"><span class="host">claude.ai <span>· sign-in page</span></span><button class="btn small">Copy link</button><button class="btn bordered small">Open ↗</button></div>
+        <div class="field"><label>Code from the sign-in page</label><input class="code bad" value="UNABLE TO CONNECT"><span class="under err">This is not a sign-in code: it has spaces. Paste the sign-in code again.</span></div>
         <div class="spacer"></div>
-        <p class="muted">The sign-in waits for about 15 minutes. Closing this window loses nothing; reopen it from the Accounts header.</p>
+        <p class="foot-note">You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.</p>
       </div>
-      <div class="m-foot"><button class="btn ghost normal back">← Back</button><span class="gap"></span><button class="btn primary normal">Send code</button></div>
+      <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal">Send code</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>3d</b> Codex device sign-in: enter this code on OpenAI's page (nothing to paste back)</div>
+  <div class="frame"><div class="cap"><b>3d</b>Codex device sign-in: enter this code on OpenAI's page; nothing comes back here</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Codex · <b>Sign in with ChatGPT</b> <span class="badge sub">Subscription</span></div>
+        <div class="chosen">Codex · <b>Sign in with ChatGPT</b><span class="plain">Subscription</span></div>
         <ol class="ol"><li>Open OpenAI's page and sign in with ChatGPT.</li><li>Enter this code there when it asks.</li></ol>
         <div class="devcode">K7QD-3XMP</div>
-        <div class="linkbox"><a href="#">auth.openai.com/codex/device</a><button class="btn bordered small">Open ↗</button><button class="btn ghost small">Copy code</button></div>
+        <div class="linkbox"><span class="host">auth.openai.com <span>· device sign-in</span></span><button class="btn small">Copy code</button><button class="btn bordered small">Open ↗</button></div>
         <div class="spacer"></div>
         <div class="status"><span class="spin"></span>Waiting for you to finish on OpenAI's page…</div>
       </div>
-      <div class="m-foot"><button class="btn ghost normal back">← Back</button><span class="gap"></span><span class="muted">This step moves on by itself.</span></div>
+      <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><span class="plain" style="padding-right:8px">Moves on by itself</span></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>3e</b> Claude Code provider token: one secret field and where to get it</div>
+  <div class="frame"><div class="cap"><b>3e</b>Claude Code provider token: one secret field and where to get it</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Provider token</b> <span class="badge sub">Subscription</span></div>
-        <div class="where">Where to get it: on a computer where you are signed in to Claude Code, run <code>claude setup-token</code> in a terminal and copy the token it prints. It starts with <code>sk-ant-oat</code>.</div>
-        <div class="field"><label>Provider token</label><input type="password" class="focus" value="••••••••••••••••••••••"><span class="hint">Stored on the host only; it is never shown again.</span></div>
+        <div class="chosen">Claude Code · <b>Provider token</b><span class="plain">Subscription</span></div>
+        <div class="where"><b>Where to get it.</b> On a computer where you are signed in to Claude Code, run <code>claude setup-token</code> in a terminal and copy the token it prints.</div>
+        <div class="field"><label>Provider token</label><input type="password" class="focus" value="••••••••••••••••••••••••"><span class="under">Kept on the host only and never shown again.</span></div>
         <div class="spacer"></div>
-        <p class="muted">Uses your subscription, through a long-lived token provided by Anthropic.</p>
+        <p class="foot-note">Uses your subscription, through a long-lived token provided by Anthropic.</p>
       </div>
-      <div class="m-foot"><button class="btn ghost normal back">← Back</button><span class="gap"></span><button class="btn primary normal">Add account</button></div>
+      <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal">Add account</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>3f</b> API key (Claude Code shown; Codex the same with OpenAI's text)</div>
+  <div class="frame"><div class="cap"><b>3f</b>API key (Claude Code shown; Codex the same with OpenAI's text)</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>API key</b> <span class="badge api">API usage</span></div>
-        <div class="where">Where to get it: in the Anthropic Console, open <b>API keys</b> and create a key. Copy it right away; the Console shows it once. It starts with <code>sk-ant-api</code>.<br><span style="color:var(--text-3)">Codex: on the OpenAI platform, open <b>API keys</b> and create a secret key (starts with <code>sk-</code>).</span></div>
-        <div class="field"><label>API key</label><input type="password" value=""><span class="hint">Stored on the host only; it is never shown again.</span></div>
+        <div class="chosen">Claude Code · <b>API key</b><span class="plain">API usage</span></div>
+        <div class="where"><b>Where to get it.</b> In the Anthropic Console, open API keys and create a key. Copy it right away: the Console shows it only once.
+          <br><span style="color:var(--text-3)">Codex: on the OpenAI platform, open API keys and create a secret key.</span></div>
+        <div class="field"><label>API key</label><input type="password" value=""><span class="under">Kept on the host only and never shown again.</span></div>
         <div class="spacer"></div>
-        <p class="muted">Billed to your API account: every request an agent makes costs API usage.</p>
+        <p class="foot-note">Billed to your API account: every request an agent makes is paid as API usage.</p>
       </div>
-      <div class="m-foot"><button class="btn ghost normal back">← Back</button><span class="gap"></span><button class="btn primary normal" disabled>Add account</button></div>
+      <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal" disabled>Add account</button></div>
     </div></div></div>
 </div>
 
 <!-- ============ 4. CHECKING / DONE / FAILED ============ -->
 <h2 class="sec">4 · Step three: checking, done, or what went wrong</h2>
-<p class="note">Once the code or secret is sent (or OpenAI's page is finished), the step shows the spinner until the account appears
-(state <code>checking</code>, task 1632). Back and Close stay usable: closing never stops the check. The step ends on one of the states
-below. Every failure says what happened in one sentence from <code>endedMessages</code> (signIn.ts lines 59–67) and offers <b>Start again</b>
-(same program and method, back to step two) and <b>Choose another way</b> (step one).</p>
+<p class="note">After the code or secret is sent, or OpenAI's page is finished, the step shows the spinner until the account appears (state
+<code>checking</code>, task 1632). Closing never stops the check. Each failure says what happened in the one sentence from
+<code>endedMessages</code> (signIn.ts lines 59–67) and offers <b>Start again</b> (same method) and <b>Choose another way</b> (step one).
+The done mark is blue; the other marks are grey.</p>
 <div class="grid">
-  <div class="frame"><div class="cap"><b>4a</b> Checking (state <code>checking</code>)</div>
+  <div class="frame"><div class="cap"><b>4a</b>Checking (state <code>checking</code>)</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b> <span class="badge sub">Subscription</span></div>
-        <div class="center" role="status"><span class="spin big"></span><h4>Checking the sign-in with Claude Code…</h4><p>This usually takes a few seconds. You can close this window; the account appears in the list when it is ready.</p></div>
+        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="center" role="status"><span class="spin big"></span><h4>Checking the sign-in with Claude Code…</h4><p>This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.</p></div>
       </div>
-      <div class="m-foot"><span class="gap"></span><button class="btn ghost normal">Close</button></div>
+      <div class="m-foot"><span class="gap"></span><button class="btn normal">Close</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>4b</b> Done (state <code>complete</code>): the account appears</div>
+  <div class="frame"><div class="cap"><b>4b</b>Done (state <code>complete</code>): the account appears</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b> <span class="badge sub">Subscription</span></div>
-        <div class="center"><span class="mark ok">✓</span><h4>Account added</h4><p><b>jesse@… (Max)</b> is saved under Claude Code. It is the account new Claude Code starts use, since it is the only one.</p></div>
+        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="center"><span class="mark done">✓</span><h4>Account added</h4><p><b style="color:var(--text);font-weight:500;overflow-wrap:anywhere">jesse.gall@transport-planning.example.com</b> is saved as a Claude Code account. New Claude Code starts use it, since it is the only one.</p></div>
       </div>
-      <div class="m-foot"><button class="btn ghost normal">Add another</button><span class="gap"></span><button class="btn primary normal">Done</button></div>
+      <div class="m-foot"><button class="btn normal">Add another</button><span class="gap"></span><button class="btn primary normal">Done</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>4c</b> Failed (state <code>failed</code>), expired, interrupted: same layout, own sentence</div>
+  <div class="frame"><div class="cap"><b>4c</b>Failed (state <code>failed</code>); expired and interrupted use the same layout with their own sentence</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b> <span class="badge sub">Subscription</span></div>
-        <div class="center"><span class="mark bad">!</span><h4>The sign-in did not finish.</h4><p>Nothing was saved. Start again for a new link, or choose another way to sign in.</p></div>
+        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="center"><span class="mark grey">!</span><h4>The sign-in did not finish.</h4><p>Nothing was saved. Start again for a new sign-in page, or choose another way to sign in.</p></div>
       </div>
-      <div class="m-foot"><button class="btn ghost normal">Choose another way</button><span class="gap"></span><button class="btn ghost normal">Close</button><button class="btn primary normal">Start again</button></div>
+      <div class="m-foot"><button class="btn normal">Choose another way</button><span class="gap"></span><button class="btn primary normal">Start again</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>4d</b> Already added (state <code>already_added</code>)</div>
+  <div class="frame"><div class="cap"><b>4d</b>Already added (state <code>already_added</code>)</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Codex · <b>Sign in with ChatGPT</b> <span class="badge sub">Subscription</span></div>
-        <div class="center"><span class="mark warn">=</span><h4>This account is already added.</h4><p>It is <b>ChatGPT Plus</b> in the Codex list. To renew its login, use <b>Sign in again</b> on its row.</p></div>
+        <div class="chosen">Codex · <b>Sign in with ChatGPT</b><span class="plain">Subscription</span></div>
+        <div class="center"><span class="mark grey">=</span><h4>This account is already added.</h4><p>It is <b style="color:var(--text);font-weight:500;overflow-wrap:anywhere">jesse.gall@transport-planning.example.com</b> in the list. To renew its login, use Sign in again on its row.</p></div>
       </div>
-      <div class="m-foot"><button class="btn ghost normal">Choose another way</button><span class="gap"></span><button class="btn primary normal">Show the account</button></div>
+      <div class="m-foot"><button class="btn normal">Choose another way</button><span class="gap"></span><button class="btn primary normal">Show the account</button></div>
     </div></div></div>
 </div>
-<table class="st" style="margin-top:18px">
-  <tr><th>Attempt state</th><th>Step shows</th><th>Sentence (signIn.ts endedMessages)</th><th>Buttons</th></tr>
-  <tr><td><code>starting</code></td><td>3a spinner</td><td>Starting the sign-in…</td><td>Back</td></tr>
-  <tr><td><code>waiting</code></td><td>3b / 3d / 3e / 3f by method</td><td>—</td><td>Back, Send code / Add account</td></tr>
-  <tr><td>refused code</td><td>stays on 3b–3f, field error</td><td>This is not a sign-in code: it has spaces. Paste the sign-in code again. (SignInCodeInvalid)</td><td>same</td></tr>
-  <tr><td><code>checking</code></td><td>4a spinner</td><td>Checking the sign-in with Claude Code… / Codex…</td><td>Close</td></tr>
-  <tr><td><code>complete</code></td><td>4b</td><td>Account added</td><td>Add another, Done</td></tr>
-  <tr><td><code>failed</code></td><td>4c</td><td>The sign-in did not finish.</td><td>Choose another way, Close, Start again</td></tr>
+<table class="st" style="margin-top:24px">
+  <tr><th>Attempt state</th><th>Step shows</th><th>Sentence</th><th>Footer</th></tr>
+  <tr><td><code>starting</code></td><td>3a</td><td>Starting the sign-in…</td><td>Back · (Send code, inactive)</td></tr>
+  <tr><td><code>waiting</code></td><td>3b, 3d, 3e or 3f by method</td><td>—</td><td>Back · Send code / Add account</td></tr>
+  <tr><td>code refused</td><td>stays on its step, field error (3c)</td><td>This is not a sign-in code: it has spaces. Paste the sign-in code again.</td><td>unchanged</td></tr>
+  <tr><td><code>checking</code></td><td>4a</td><td>Checking the sign-in with Claude Code… / Codex…</td><td>Close</td></tr>
+  <tr><td><code>complete</code></td><td>4b</td><td>Account added</td><td>Add another · Done</td></tr>
+  <tr><td><code>failed</code></td><td>4c</td><td>The sign-in did not finish.</td><td>Choose another way · Start again</td></tr>
   <tr><td><code>expired</code></td><td>4c</td><td>The sign-in took too long and was stopped.</td><td>same</td></tr>
   <tr><td><code>interrupted</code></td><td>4c</td><td>The sign-in was interrupted.</td><td>same</td></tr>
-  <tr><td><code>cancelled</code></td><td>step one (the user's own Back) or 4c if cancelled elsewhere</td><td>The sign-in was cancelled.</td><td>same</td></tr>
-  <tr><td><code>already_added</code></td><td>4d</td><td>This account is already added.</td><td>Choose another way, Show the account</td></tr>
-  <tr><td><code>different_account</code></td><td>only for “Sign in again” on a row (not reachable from Add account)</td><td>That sign-in was for a different account…</td><td>Add it as a new account</td></tr>
+  <tr><td><code>cancelled</code></td><td>step one after the user's own Back; 4c if cancelled elsewhere</td><td>The sign-in was cancelled.</td><td>same</td></tr>
+  <tr><td><code>already_added</code></td><td>4d</td><td>This account is already added.</td><td>Choose another way · Show the account</td></tr>
+  <tr><td><code>different_account</code></td><td>only from a row's Sign in again, not from Add account</td><td>That sign-in was for a different account…</td><td>Add it as a new account</td></tr>
 </table>
 
 <!-- ============ 5. CLOSE WHILE RUNNING ============ -->
-<h2 class="sec">5 · Closing, Back and reopening</h2>
-<p class="note">The sign-in completes on the host, so closing the modal loses nothing (SignInForm.vue docblock). ✕ or Escape in step two
-asks once, inside the modal, so the user knows the sign-in goes on; in step three it closes without asking. Back in step two cancels the
-attempt (<code>cancelSignIn</code>). A typed code or secret is cleared on close, Back or send, as now.</p>
+<h2 class="sec">5 · Closing during step two</h2>
+<p class="note">The sign-in completes on the host, so closing loses nothing (SignInForm.vue docblock). Pressing ✕ or Escape in step two
+asks once, inside the same frame; in steps one and three the modal just closes. A typed code or secret is cleared on close, Back or send.</p>
 <div class="grid">
-  <div class="frame"><div class="cap"><b>5a</b> ✕ during step two</div>
+  <div class="frame"><div class="cap"><b>5a</b>✕ during step two</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b> <span class="badge sub">Subscription</span></div>
-        <div class="center"><span class="mark warn">?</span><h4>Keep the sign-in waiting?</h4><p>It waits on the host for about 15 minutes. Resume it from the Accounts header, or cancel it now.</p></div>
+        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="center"><span class="mark grey">?</span><h4>Keep the sign-in waiting?</h4><p>It waits on the host until it expires. Resume it from the Accounts header, or cancel it now.</p></div>
       </div>
-      <div class="m-foot"><button class="btn ghost normal">← Stay</button><span class="gap"></span><button class="btn bordered normal">Cancel sign-in</button><button class="btn primary normal">Keep waiting</button></div>
+      <div class="m-foot"><button class="btn normal">← Stay</button><span class="gap"></span><button class="btn bordered normal">Cancel sign-in</button><button class="btn primary normal">Keep waiting</button></div>
     </div></div></div>
 </div>
 
 <h2 class="sec">What could go wrong, and how the design answers</h2>
 <table class="st">
   <tr><th>Risk</th><th>Answer</th></tr>
-  <tr><td>Steps of different length make the modal jump</td><td>Fixed width 480&nbsp;px and fixed body height 404&nbsp;px; the footer never moves; error lines have reserved room; long links ellipsise.</td></tr>
-  <tr><td>The user pastes a browser error page or a sentence instead of the code</td><td>Refused before it reaches the program, the attempt stays live, the field says why (3c).</td></tr>
-  <tr><td>The challenge link is slow to arrive</td><td>3a spinner while <code>readChallenge</code> polls every 2&nbsp;s; Back stays usable.</td></tr>
-  <tr><td>The user closes the modal or reloads mid sign-in</td><td>Attempt keeps running; header chip “Sign-in waiting · Resume” (1c) reopens at the right step; Add account is disabled while one new-account attempt runs.</td></tr>
-  <tr><td>Two sign-ins at once</td><td>One running new-account attempt per program is what the code rejoins; while one runs, Add account becomes Resume.</td></tr>
-  <tr><td>The user does not know what will cost money</td><td>Every card carries a Subscription or API usage badge; the chosen method's badge repeats on every later step.</td></tr>
-  <tr><td>A secret shows on screen</td><td>Token and key use <code>TextField secret</code> (password input, <code>new-password</code> autocomplete); never shown again.</td></tr>
+  <tr><td>Steps of different length make the modal jump</td><td>Fixed 480&nbsp;px width; a 52&nbsp;px header, 420&nbsp;px body and 52&nbsp;px footer on every step; room under each field is held for its hint or error.</td></tr>
+  <tr><td>A browser error page or a sentence is pasted as the code</td><td>Refused before it reaches the program, the attempt stays live, and the field says why (3c).</td></tr>
+  <tr><td>The sign-in page is slow to arrive</td><td>3a spinner while <code>readChallenge</code> polls every 2&nbsp;s; Back stays usable.</td></tr>
+  <tr><td>The modal is closed or the page reloaded mid sign-in</td><td>The attempt keeps running; “Sign-in waiting · Resume” (1c) reopens it at the right step; Add account is inactive meanwhile.</td></tr>
+  <tr><td>The user does not see what costs money</td><td>Every card names its billing; the chosen line repeats it on every later step; the list's subtext keeps it.</td></tr>
+  <tr><td>A secret shows on screen</td><td>Token and key use <code>TextField secret</code> (password input, <code>new-password</code>) and are never shown again.</td></tr>
   <tr><td>The check never ends</td><td>The attempt's expiry turns it into <code>expired</code>, shown as 4c with Start again.</td></tr>
 </table>
 
-<h2 class="sec">What a worker needs (no code changed here)</h2>
-<ul class="note" style="line-height:1.7">
-  <li>A kit <code>Modal</code> (or <code>Dialog</code>) component: native <code>&lt;dialog&gt;</code>, fixed body height prop, header with step bars and ✕, footer slot, focus trap, Escape.</li>
-  <li>A kit <code>Segmented</code> switch and a selectable <code>OptionCard</code> (radio semantics: a <code>role="radiogroup"</code>, arrow keys move).</li>
-  <li>Per-method texts: the card title, the how-it-works sentence and where-to-get-it text — best on <code>SignInMethodData</code> next to <code>billingNote</code>, keyed by program and method, since Claude Code and Codex say different things (app/Http/Data/Profiles/SignInMethodData.php; SignInMethod::billingNote).</li>
-  <li>A billing kind (subscription / API usage) as an enum value for the badge, instead of parsing the note.</li>
-  <li>AccountsWindow.vue: one header button instead of the two new-account <code>SignInForm</code>s; SignInForm.vue split into the modal steps; the row's “Sign in again” may open the modal at step two.</li>
-  <li>The done state needs the new account's name: read it from the reloaded rows by the attempt's account id.</li>
+<h2 class="sec">What a worker needs (no project code changed)</h2>
+<ul class="todo">
+  <li>A kit <code>Modal</code>: native <code>&lt;dialog&gt;</code>, fixed body height, header with step bars and ✕, footer slot, focus trap, Escape.</li>
+  <li>A kit segmented switch and a selectable option card (<code>role="radiogroup"</code>, arrow keys move).</li>
+  <li>Per-program, per-method texts (card title, how it works, where to get it) and a short billing word (Subscription / API usage) on <code>SignInMethodData</code>, next to <code>billingNote</code>.</li>
+  <li>AccountsWindow.vue: one list of all rows, with the program in each row's subtext and one header button; SignInForm.vue split into the modal's steps; AccountRow's state shown as grey text.</li>
+  <li>The done state reads the new account's name from the reloaded rows by the attempt's account id.</li>
 </ul>
 </div>
 </body>
