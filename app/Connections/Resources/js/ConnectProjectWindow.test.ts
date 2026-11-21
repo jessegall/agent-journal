@@ -301,4 +301,24 @@ describe('ConnectProjectWindow', () => {
             true,
         );
     });
+
+    it('reads each folder as project and environment, device, status, then last contact, and names Revoke by its device', () => {
+        const wrapper = windowWith(true);
+        const row = wrapper.find('#binding-binding-1');
+        const text = row.text();
+
+        expect(text.indexOf('Shop / Main')).toBeLessThan(text.indexOf('Owner laptop'));
+        expect(text.indexOf('Owner laptop')).toBeLessThan(text.indexOf('Ready'));
+        expect(text.indexOf('Ready')).toBeLessThan(text.indexOf('Not in contact yet'));
+        expect(row.find('button[aria-label^="Revoke connection for Owner laptop"]').exists()).toBe(true);
+    });
+
+    it('says when no project is connected yet', () => {
+        const data = windowData(true);
+        const wrapper = mount(ConnectProjectWindow, {
+            props: { data: { ...data, bindings: { ...data.bindings, rows: [] } } },
+        });
+
+        expect(wrapper.text()).toContain('No connected projects');
+    });
 });

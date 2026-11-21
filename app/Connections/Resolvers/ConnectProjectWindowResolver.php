@@ -71,12 +71,14 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
     {
         $page = ProjectBinding::pageAfter($this->bindingsCursor());
         $bindings = array_values($page->items());
+
         $expiries = array_values(array_filter(array_map(
             fn (ProjectBinding $binding) => $binding->readinessAt($now) === BindingReadiness::Ready
                 ? $binding->presence_expires_at?->toIso8601String()
                 : null,
             $bindings,
         )));
+
         sort($expiries);
 
         return BindingListData::from([
@@ -105,14 +107,17 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
     private function bindingRows(array $bindings, CarbonImmutable $now): array
     {
         $grants = DeviceGrant::listedOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
+
         $approvers = array_values(array_filter(array_map(
             fn (DeviceGrant $grant) => $grant->approved_by_user_id,
             $grants,
         )));
+
         $labels = $this->labels->labelsFor(array_map(
             fn (string $userId) => ActorIdentity::of(ActorContext::forUser($userId)),
             array_values(array_unique($approvers)),
         ));
+
         $release = $this->releases->currentRelease()[0]->version ?? 'the current one';
 
         return array_map(fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding($binding, $now, array_map(

@@ -589,6 +589,7 @@ use App\Connections\Values\CommandRunStart;
 use App\Connections\Values\DeliveryReceipt;
 use App\Connections\Values\DeliverySubmission;
 use App\Connections\Values\DeviceGrantStart;
+use App\Connections\Values\DevicePollOutcome;
 use App\Connections\Values\EnvironmentTask;
 use App\Connections\Values\EnvironmentTaskList;
 use App\Connections\Values\IssuedInvitation;
@@ -2084,6 +2085,7 @@ final class CoreApi
                 CommandFrame::class,
                 CommandRunStart::class,
                 DeviceGrantStart::class,
+                DevicePollOutcome::class,
                 GatewaySettings::class,
                 GatewayOperation::class,
                 GatewayEndpoint::class,
