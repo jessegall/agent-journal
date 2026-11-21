@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App;
 
 use App\Agents\CommandMiddleware\AnnounceUnavailableStart;
+use App\Agents\CommandMiddleware\CommitHeldStartRefusals;
+use App\Agents\CommandMiddleware\KeepStartReceipt;
 use App\Agents\Commands\ContinueStart;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\StartAgent;
@@ -47,6 +49,8 @@ final class CoreCommands
     {
         return [
             MiddlewareDeclaration::around(RefuseWritesDuringEvaluation::class, CommandScope::all()),
+            MiddlewareDeclaration::around(CommitHeldStartRefusals::class, CommandScope::all()),
+            MiddlewareDeclaration::around(KeepStartReceipt::class, CommandScope::command(StartAgent::class)),
             ...self::startRefusalAnnouncements(),
             MiddlewareDeclaration::inside(GuardTickOrigin::class, CommandScope::all()),
         ];

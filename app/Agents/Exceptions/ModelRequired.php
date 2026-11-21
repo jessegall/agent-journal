@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\StartRefusalType;
-use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
 /**
  * A start that names no model, or only blank text.
  */
-final class ModelRequired extends InvalidArgumentException implements CommandRefusal
+final class ModelRequired extends InvalidArgumentException implements StartRefusal
 {
     public static function forStart(): self
     {

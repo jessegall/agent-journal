@@ -5,23 +5,45 @@ declare(strict_types=1);
 namespace App\Agents\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Exceptions\StartRecordMissing;
+use App\Agents\Models\Agent;
 use App\Agents\Models\StartRecord;
+use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\StartRecordDetails;
+use App\Operations\Enums\AccessType;
 
 /**
- * Reads start records for the actor of this request: an agent sees only the starts of itself.
+ * Reads start records for the actor of this request: an agent sees only the starts of itself, and a receipt is read
+ * by its requester or by an actor that administers agents.
  */
 final readonly class StartRecords implements StartRecordResolver
 {
-    public function __construct(private CurrentActor $actors) {}
+    public function __construct(
+        private CurrentActor $actors,
+        private CurrentAuthorizer $authorizer,
+    ) {}
 
     public function own(string $requestId): StartRecordDetails
     {
         $record = StartRecord::query()->forAgent($this->actors->actor()->id)->where('request_id', $requestId)->first();
 
         return $record !== null ? self::detailsOf($record) : throw StartRecordMissing::forRequest($requestId);
+    }
+
+    public function receipt(string $requestId): StartRecordDetails
+    {
+        $record = StartRecord::query()
+            ->where('request_id', $requestId)
+            ->firstOr(fn () => throw StartRecordMissing::forRequest($requestId));
+
+        if (! $record->wasRequestedBy(ActorIdentity::of($this->actors->actor())) && ! $this->maintainsAgents()) {
+            throw StartRecordMissing::forRequest($requestId);
+        }
+
+        return self::detailsOf($record);
     }
 
     public function forOwnerReference(string $reference): array
@@ -33,6 +55,11 @@ final readonly class StartRecords implements StartRecordResolver
         )->get()
             ->map(fn (StartRecord $record) => self::detailsOf($record))
             ->all());
+    }
+
+    private function maintainsAgents(): bool
+    {
+        return $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AccessType::Admin]) !== [];
     }
 
     private static function detailsOf(StartRecord $record): StartRecordDetails
@@ -50,6 +77,8 @@ final readonly class StartRecords implements StartRecordResolver
             $record->conversation_mode,
             $record->disposition,
             $record->session_id,
+            $record->refusal_reason,
+            $record->refused_at,
         );
     }
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\StartRefusalType;
-use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
  * A session that tried to enter a native conversation of another agent or another context; no visit is kept.
  */
-final class ConversationIncompatible extends RuntimeException implements CommandRefusal
+final class ConversationIncompatible extends RuntimeException implements StartRefusal
 {
     public static function forSession(string $sessionId): self
     {

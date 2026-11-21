@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\StartRefusalType;
-use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
  * A required container start on a host whose container runtime is not proven; it never falls back to the host.
  */
-final class ContainerUnavailable extends RuntimeException implements CommandRefusal
+final class ContainerUnavailable extends RuntimeException implements StartRefusal
 {
     public static function because(string $reason): self
     {

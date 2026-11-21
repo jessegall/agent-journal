@@ -1,0 +1,104 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\CommandMiddleware;
+
+use App\Actors\Contracts\ReplyInboxes;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Commands\StartAgent;
+use App\Agents\Contracts\StartRefusal;
+use App\Agents\Models\StartRecord;
+use App\Agents\Support\HeldStartRefusals;
+use App\Agents\Support\StartRequestLock;
+use App\Agents\Values\StartRequest;
+use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Support\CommandCall;
+use Closure;
+use Illuminate\Database\DatabaseManager;
+use PhpOption\Option;
+use Throwable;
+
+/**
+ * Around a start's transaction, one request id at a time: a start that opens its own transaction first commits its
+ * intent, and keeps a typed refusal on that record once the transaction has rolled back; a start inside another
+ * command's transaction keeps it there and holds it for after that transaction's rollback.
+ */
+final readonly class KeepStartReceipt implements CommandMiddleware
+{
+    public function __construct(
+        private DatabaseManager $databases,
+        private StartRequestLock $locks,
+        private ReplyInboxes $replyInboxes,
+        private HeldStartRefusals $heldRefusals,
+    ) {}
+
+    public function handle(CommandCall $call, Closure $next): mixed
+    {
+        $command = $call->command();
+
+        if (! $command instanceof StartAgent) {
+            return $next($call);
+        }
+
+        $request = $command->request;
+        $requester = ActorIdentity::of($command->dispatchedBy());
+        $replyInboxId = $this->replyInboxes->replyInboxIdFor($requester);
+        $start = fn () => $next($call);
+
+        return $this->locks->hold(
+            $request->requestId,
+            fn () => $this->databases->connection()->transactionLevel() === 0
+                ? $this->startInOwnTransaction($request, $requester, $replyInboxId, $start)
+                : $this->startInOpenTransaction($request, $requester, $replyInboxId, $start),
+        );
+    }
+
+    /**
+     * The intent commits before admission, so the refusal finds its record after the rollback; a failure that is no
+     * refusal leaves the key free again.
+     *
+     * @param  Option<string>  $replyInboxId
+     * @param  Closure(): mixed  $start
+     */
+    private function startInOwnTransaction(
+        StartRequest $request,
+        ActorIdentity $requester,
+        Option $replyInboxId,
+        Closure $start,
+    ): mixed {
+        $intent = StartRecord::accept($request, $requester, $replyInboxId);
+
+        try {
+            return $start();
+        } catch (StartRefusal $refusal) {
+            StartRecord::keepRefusal($request, $requester, $replyInboxId, $refusal);
+
+            throw $refusal;
+        } catch (Throwable $failure) {
+            $intent->forgetIntent();
+
+            throw $failure;
+        }
+    }
+
+    /**
+     * @param  Option<string>  $replyInboxId
+     * @param  Closure(): mixed  $start
+     */
+    private function startInOpenTransaction(
+        StartRequest $request,
+        ActorIdentity $requester,
+        Option $replyInboxId,
+        Closure $start,
+    ): mixed {
+        try {
+            return $start();
+        } catch (StartRefusal $refusal) {
+            StartRecord::keepRefusal($request, $requester, $replyInboxId, $refusal);
+            $this->heldRefusals->hold($request, $requester, $replyInboxId, $refusal);
+
+            throw $refusal;
+        }
+    }
+}

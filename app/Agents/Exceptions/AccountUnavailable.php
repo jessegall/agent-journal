@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
-use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
  * No account can start a start of the program; it names only the program and a safe reason.
  */
-final class AccountUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
+final class AccountUnavailable extends RuntimeException implements CodedRefusal, StartRefusal
 {
     use RendersRefusal;
 
@@ -29,6 +29,11 @@ final class AccountUnavailable extends RuntimeException implements CodedRefusal,
     public static function forStart(string $driver, StartUnavailableReason $reason): self
     {
         return new self("{$driver} cannot be started now: {$reason->sentence()}.", $driver, $reason);
+    }
+
+    public function reason(): StartUnavailableReason
+    {
+        return $this->reason;
     }
 
     protected function status(): int

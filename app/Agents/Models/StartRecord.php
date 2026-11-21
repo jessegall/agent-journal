@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverSourceType;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
+use App\Agents\Exceptions\StartRefusalReplayed;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Values\StartRequest;
 use App\Links\Support\Linkable;
@@ -52,6 +54,8 @@ use PhpOption\Option;
  * @property bool|null $conversation_resumed
  * @property string $payload_digest
  * @property StartDisposition $disposition
+ * @property string|null $refusal_reason
+ * @property Carbon|null $refused_at
  * @property string|null $session_id
  * @property string|null $reply_inbox_id
  * @property Carbon|null $created_at
@@ -107,23 +111,28 @@ final class StartRecord extends Model implements ReadableModel
             'account_chosen' => 'boolean',
             'saves_variant' => 'boolean',
             'disposition' => StartDisposition::class,
+            'refused_at' => 'datetime',
         ];
     }
 
     /**
      * The record of this request: the one already kept under its id when the contents match, else a new accepted one
-     * that answers to the requester's reply inbox, fixed from then on.
+     * that answers to the requester's reply inbox, fixed from then on. A request refused before is refused again.
      *
      * @param  Option<string>  $replyInboxId
      *
      * @throws StartRequestConflict
+     * @throws StartRefusalReplayed
      */
     public static function accept(StartRequest $request, ActorIdentity $requester, Option $replyInboxId): self
     {
         $existing = self::query()->where('request_id', $request->requestId)->lockForUpdate()->first();
 
         if ($existing !== null) {
-            return $existing->requireDigest($request);
+            $existing->assertDigest($request);
+            $existing->assertNotRefused();
+
+            return $existing;
         }
 
         $selection = $request->selection;
@@ -154,6 +163,26 @@ final class StartRecord extends Model implements ReadableModel
             'disposition' => StartDisposition::Accepted,
             'reply_inbox_id' => $replyInboxId->getOrElse(null),
         ]);
+    }
+
+    /**
+     * Keeps the refusal of this request as its receipt, on the record the start rolled back or on the one it kept.
+     *
+     * @param  Option<string>  $replyInboxId
+     *
+     * @throws StartRequestConflict
+     * @throws StartRefusalReplayed
+     */
+    public static function keepRefusal(
+        StartRequest $request,
+        ActorIdentity $requester,
+        Option $replyInboxId,
+        StartRefusal $refusal,
+    ): self {
+        $record = self::accept($request, $requester, $replyInboxId);
+        $record->refuse($refusal);
+
+        return $record;
     }
 
     // ----------[ Queries ]----------
@@ -222,6 +251,29 @@ final class StartRecord extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * The start was refused: the record keeps the reason and the time as its receipt, and names no session.
+     */
+    public function refuse(StartRefusal $refusal): void
+    {
+        $this->disposition = StartDisposition::Refused;
+        $this->refusal_reason = $refusal->reason()->value;
+        $this->refused_at = Carbon::now();
+        $this->save();
+    }
+
+    /**
+     * An intent whose start failed for a reason that is no refusal, and that started nothing, leaves its key free.
+     */
+    public function forgetIntent(): void
+    {
+        self::query()
+            ->whereKey($this->id)
+            ->where('disposition', StartDisposition::Accepted->value)
+            ->whereNull('session_id')
+            ->delete();
+    }
+
     // ----------[ Answers ]----------
 
     /**
@@ -244,18 +296,33 @@ final class StartRecord extends Model implements ReadableModel
         return new RecordIdentity($type, $id);
     }
 
+    public function wasRequestedBy(ActorIdentity $actor): bool
+    {
+        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
+    }
+
     // ----------[ Internals ]----------
 
     /**
      * @throws StartRequestConflict
      */
-    private function requireDigest(StartRequest $request): self
+    private function assertDigest(StartRequest $request): void
     {
         if (! hash_equals($this->payload_digest, $request->digest())) {
             throw StartRequestConflict::forRequest($request->requestId);
         }
+    }
 
-        return $this;
+    /**
+     * @throws StartRefusalReplayed
+     */
+    private function assertNotRefused(): void
+    {
+        if ($this->disposition !== StartDisposition::Refused) {
+            return;
+        }
+
+        throw StartRefusalReplayed::forRequest($this->request_id, (string) $this->refusal_reason);
     }
 
     // ----------[ Scopes ]----------
