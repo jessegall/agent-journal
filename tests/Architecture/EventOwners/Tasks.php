@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Actors\Support\ActorIdentity;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
+use Domain\Tasks\Api\Events\TaskCheckRecorded;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\Events\TaskLogged;
 use Domain\Tasks\Api\Events\TaskStartCommitted;
@@ -31,6 +32,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new TaskCancelled('task', TaskState::Open, 'entry'),
+    ],
+    TaskCheckRecorded::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'TaskCheck::bind',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskCheckRecorded('task', 'check'),
     ],
     TaskFinished::class => [
         'role' => EventRole::RowFact,

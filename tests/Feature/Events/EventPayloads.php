@@ -74,6 +74,7 @@ use Domain\Rules\Api\Events\RuleRemoved;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
+use Domain\Tasks\Api\Events\TaskCheckRecorded;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\Events\TaskLogged;
 use Domain\Tasks\Api\Events\TaskStartCommitted;
@@ -540,6 +541,13 @@ final class EventPayloads
                     'taskId' => 'string',
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
                     'historyEntryId' => 'string',
+                ],
+            ],
+            TaskCheckRecorded::class => [
+                'afterCommit' => true,
+                'fields' => [
+                    'taskId' => 'string',
+                    'checkId' => 'string',
                 ],
             ],
             TaskLogged::class => [
