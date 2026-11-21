@@ -44,10 +44,7 @@ final readonly class ModelWrites
     public static function in(string $projectRoot, array $folders): self
     {
         $types = self::typesIn(DomainFiles::in($folders));
-        $models = array_filter(
-            $types,
-            fn (array $type) => ! $type['isTrait'] && class_exists($type['type']) && is_subclass_of($type['type'], Model::class),
-        );
+        $models = array_filter($types, self::isModel(...));
         $types = self::withTraitsOf($models, $types);
         $writers = self::writersOf($models, $types);
         $writes = [];
@@ -56,7 +53,14 @@ final readonly class ModelWrites
             $relative = substr($path, strlen($projectRoot) + 1);
 
             if ($type['touchesOwnersAt'] !== null) {
-                $writes[] = new ModelWrite($relative, $type['touchesOwnersAt'], $type['name'], '$touches', 'saves its owners', '$touches');
+                $writes[] = new ModelWrite(
+                    $relative,
+                    $type['touchesOwnersAt'],
+                    $type['name'],
+                    '$touches',
+                    'saves its owners',
+                    '$touches',
+                );
             }
 
             foreach ($type['methods'] as $method) {
@@ -73,7 +77,7 @@ final readonly class ModelWrites
             }
         }
 
-        usort($writes, fn (ModelWrite $first, ModelWrite $second) => [$first->path, $first->line] <=> [$second->path, $second->line]);
+        usort($writes, fn (ModelWrite $first, ModelWrite $second) => $first->place() <=> $second->place());
 
         return new self($projectRoot, $writes);
     }
@@ -138,7 +142,8 @@ final readonly class ModelWrites
 
         foreach ($frozen as $area => $methods) {
             foreach (array_diff($methods, $found[$area] ?? []) as $gone) {
-                $lines[] = '  gone: '.self::FROZEN_LISTS."/{$area}.php lists {$gone}, which writes only its own row now; remove its line";
+                $list = self::FROZEN_LISTS."/{$area}.php";
+                $lines[] = "  gone: {$list} lists {$gone}, which writes only its own row now; remove its line";
             }
         }
 
@@ -162,6 +167,14 @@ final readonly class ModelWrites
         ksort($sorted);
 
         return $sorted;
+    }
+
+    /**
+     * @param  Type  $type
+     */
+    private static function isModel(array $type): bool
+    {
+        return ! $type['isTrait'] && class_exists($type['type']) && is_subclass_of($type['type'], Model::class);
     }
 
     /**
@@ -196,9 +209,9 @@ final readonly class ModelWrites
         foreach ($models as $model) {
             foreach ($model['traits'] as $trait) {
                 $file = trait_exists($trait) ? (string) new ReflectionClass($trait)->getFileName() : '';
-                $isProjectCode = str_contains($file, '/app/') || str_contains($file, '/domain/') || str_contains($file, '/tests/');
+                $isProjectCode = preg_match('#/(app|domain|tests)/#', $file) === 1 && ! str_contains($file, '/vendor/');
 
-                if (! in_array($trait, $known, true) && $isProjectCode && ! str_contains($file, '/vendor/')) {
+                if (! in_array($trait, $known, true) && $isProjectCode) {
                     $missing[] = $file;
                 }
             }
@@ -248,7 +261,10 @@ final readonly class ModelWrites
         $methods = [];
 
         foreach ($models as $model) {
-            $traitMethods = array_merge([], ...array_map(fn (string $trait) => $byType[$trait]['methods'] ?? [], $model['traits']));
+            $traitMethods = array_merge(
+                [],
+                ...array_map(fn (string $trait) => $byType[$trait]['methods'] ?? [], $model['traits']),
+            );
             $methods[$model['type']] = [...$model['methods'], ...$traitMethods];
         }
 
@@ -259,7 +275,9 @@ final readonly class ModelWrites
 
             foreach ($methods as $class => $classMethods) {
                 foreach ($classMethods as $method) {
-                    if (in_array($method['name'], $writers[$class], true) || ! self::isWriter($method, $class, $writers)) {
+                    $isKnown = in_array($method['name'], $writers[$class], true);
+
+                    if ($isKnown || ! self::isWriter($method, $class, $writers)) {
                         continue;
                     }
 
@@ -339,6 +357,8 @@ final readonly class ModelWrites
         $owners = array_keys(array_filter($writers, fn (array $names) => in_array($method, $names, true)));
         $shortOwners = array_map(ModelWriteScan::shortName(...), $owners);
 
-        return $owners === [] ? null : "calls {$method}, a writing method of ".implode(', ', $shortOwners).', on another object';
+        $ownerNames = implode(', ', $shortOwners);
+
+        return $owners === [] ? null : "calls {$method}, a writing method of {$ownerNames}, on another object";
     }
 }

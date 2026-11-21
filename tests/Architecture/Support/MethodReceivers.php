@@ -10,9 +10,9 @@ use PhpParser\Node\Stmt;
 use PhpParser\NodeFinder;
 
 /**
- * The receivers of one model method's calls: this object and its aliases, the new row a static constructor makes,
- * queries and rows of its own class, relations, and objects of other classes. A variable takes the origin of the
- * last value given it before the call, a typed parameter its class; anything else is unknown.
+ * The receivers of one method's calls, read as a model's: this object and its aliases, the new row its static
+ * constructor makes, queries and rows of its own class, relations, and objects of other classes. A variable takes the
+ * origin of the last value given it before the call, a typed parameter its class; anything else is unknown.
  */
 final readonly class MethodReceivers
 {
@@ -57,15 +57,14 @@ final readonly class MethodReceivers
     {
         $statements = $method->stmts ?? [];
         $finder = new NodeFinder();
-        $functions = $finder->find(
-            $statements,
-            fn (Node $node) => $node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction,
-        );
+        $functions = [
+            ...$finder->findInstanceOf($statements, Expr\Closure::class),
+            ...$finder->findInstanceOf($statements, Expr\ArrowFunction::class),
+        ];
         $parameterTypes = [];
         $assignments = [];
 
         foreach ([$method, ...$functions] as $function) {
-            /** @var Stmt\ClassMethod|Expr\Closure|Expr\ArrowFunction $function */
             foreach ($function->params as $parameter) {
                 $name = self::nameOf($parameter->var);
 
@@ -101,8 +100,9 @@ final readonly class MethodReceivers
     {
         foreach ($this->assignments as $assignment) {
             $value = $assignment['value'];
+            $isFunction = $value instanceof Expr\Closure || $value instanceof Expr\ArrowFunction;
 
-            if ($assignment['name'] === $name && ($value instanceof Expr\Closure || $value instanceof Expr\ArrowFunction)) {
+            if ($assignment['name'] === $name && $isFunction) {
                 return true;
             }
         }
@@ -125,6 +125,18 @@ final readonly class MethodReceivers
             && $this->isOwnClass($expression->class->toString())
             && $expression->name instanceof Node\Identifier
             && $expression->name->toString() === 'query';
+    }
+
+    /**
+     * The expression a variable was last given before it stands, followed back through every variable; any other
+     * expression is its own value.
+     */
+    public function valueOf(Expr $expression): Expr
+    {
+        $name = self::nameOf($expression);
+        $value = $name === null || $name === 'this' ? false : $this->lastValueOf($name, $expression->getStartFilePos());
+
+        return $value instanceof Expr ? $this->valueOf($value) : $expression;
     }
 
     public function receiverOf(Expr $expression): Receiver
@@ -208,7 +220,7 @@ final readonly class MethodReceivers
      * The value last given the variable before the position: false when it was never given one, null when a loop
      * gave it each element.
      */
-    private function lastValueOf(string $name, int $position): Expr|null|false
+    private function lastValueOf(string $name, int $position): Expr|false|null
     {
         $last = false;
         $lastPosition = -1;
@@ -233,12 +245,16 @@ final readonly class MethodReceivers
 
         $class = $made->class->toString();
 
-        return $this->isOwnClass($class) ? $this->ownAs(ReceiverOrigin::NewRow) : new Receiver(ReceiverOrigin::OtherClass, $class);
+        return $this->isOwnClass($class)
+            ? $this->ownAs(ReceiverOrigin::NewRow)
+            : new Receiver(ReceiverOrigin::OtherClass, $class);
     }
 
     private function property(Expr $owner): Receiver
     {
-        return $this->receiverOf($owner)->origin === ReceiverOrigin::Own ? new Receiver(ReceiverOrigin::Property) : Receiver::unknown();
+        $isOwnProperty = $this->receiverOf($owner)->origin === ReceiverOrigin::Own;
+
+        return $isOwnProperty ? new Receiver(ReceiverOrigin::Property) : Receiver::unknown();
     }
 
     private function chained(Expr\MethodCall|Expr\NullsafeMethodCall $call): Receiver
@@ -246,13 +262,15 @@ final readonly class MethodReceivers
         $receiver = $this->receiverOf($call->var);
         $origin = $receiver->origin;
         $method = $call->name instanceof Node\Identifier ? $call->name->toString() : '';
+        $answersRows = $origin->isQuery() && in_array($method, self::ROWS_ANSWERS, true);
+        $startsOwnQuery = $origin === ReceiverOrigin::Own && in_array($method, self::OWN_QUERIES, true);
 
         return match (true) {
             $origin->isOwnRow() && in_array($method, self::SAME_OBJECT, true) => $receiver,
-            $origin === ReceiverOrigin::Own && in_array($method, self::OWN_QUERIES, true) => $this->ownAs(ReceiverOrigin::OwnQuery),
+            $startsOwnQuery => $this->ownAs(ReceiverOrigin::OwnQuery),
             $origin->isOwnRow() => new Receiver(ReceiverOrigin::Relation),
             in_array($method, self::ROW_ANSWERS, true) => new Receiver($origin->rowOfQuery(), $receiver->class),
-            $origin->isQuery() && in_array($method, self::ROWS_ANSWERS, true) => new Receiver(ReceiverOrigin::Unknown, $receiver->class),
+            $answersRows => new Receiver(ReceiverOrigin::Unknown, $receiver->class),
             $origin === ReceiverOrigin::OwnQuery && $method === 'create' => $this->ownAs(ReceiverOrigin::NewRow),
             $origin->isQuery() => $receiver,
             default => new Receiver(ReceiverOrigin::Unknown, $receiver->class),

@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * The shape of the Profiles account: a locked read and a mutation that frees its writer.
+ *
+ * @property string|null $live_writer_attempt_id
  */
 final class Account extends Model
 {

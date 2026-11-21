@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * The shape of SignInAttempt::finish: it ends its own row, then frees the account's writer on the account's row.
+ *
+ * @property string $state
+ * @property string|null $account_id
  */
 final class SignInAttempt extends Model
 {

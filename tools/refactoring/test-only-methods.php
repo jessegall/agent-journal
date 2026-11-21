@@ -67,7 +67,8 @@ function names(string $text, string $method): bool
 $domains = glob("{$root}/domain/*") ?: [];
 $domainCode = array_map(fn (string $path) => substr($path, strlen($root) + 1).'/src', $domains);
 $domainTests = array_map(fn (string $path) => substr($path, strlen($root) + 1).'/tests', $domains);
-$application = corpusOf($root, [...APPLICATION, ...$domainCode]);
+$domainDatabase = array_map(fn (string $path) => substr($path, strlen($root) + 1).'/database', $domains);
+$application = corpusOf($root, [...APPLICATION, ...$domainCode, ...$domainDatabase]);
 $tests = corpusOf($root, [...TESTS, ...$domainTests]);
 $parser = new ParserFactory()->createForNewestSupportedVersion();
 $knownFile = "{$root}/docs/naming/test-only-model-methods.txt";

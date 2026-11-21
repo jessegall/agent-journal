@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * A model that writes only its own row, in every allowed form.
+ *
+ * @property string $name
  */
 final class OwnRowWriter extends Model
 {

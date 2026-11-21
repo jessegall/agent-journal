@@ -15,6 +15,8 @@ use Tests\Fixtures\ModelWrites\Models\Concerns\PrunesEveryRow;
 
 /**
  * A model that writes outside its own row in every form the check reports.
+ *
+ * @property string $name
  */
 final class ForeignWriter extends Model
 {

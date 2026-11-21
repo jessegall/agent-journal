@@ -10,6 +10,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\NodeFinder;
@@ -37,11 +38,29 @@ final readonly class EventCallScan implements FileScan
         'subscribe' => false,
         'dispatch' => true,
         'until' => true,
+        'raise' => true,
+    ];
+
+    /**
+     * The static calls a class sends itself with through Laravel's Dispatchable traits.
+     */
+    private const array DISPATCHABLE_METHODS = [
+        'dispatch', 'dispatchSync', 'dispatchIf', 'dispatchUnless', 'broadcast',
+    ];
+
+    /**
+     * The origins of a passed value whose class the code shows.
+     */
+    private const array SHOWN_CLASSES = [
+        ReceiverOrigin::NewRow,
+        ReceiverOrigin::OwnClass,
+        ReceiverOrigin::OtherClass,
+        ReceiverOrigin::OtherQuery,
     ];
 
     public function key(): string
     {
-        return 'event-calls-3';
+        return 'event-calls-4';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -66,6 +85,12 @@ final readonly class EventCallScan implements FileScan
         }
 
         foreach ($finder->findInstanceOf($file->statements, Expr\StaticCall::class) as $call) {
+            if (self::isDispatchableCall($call)) {
+                $calls[] = self::dispatchableCall($file, $call);
+
+                continue;
+            }
+
             if (! self::isEventFacadeCall($call) || ! $call->name instanceof Identifier) {
                 continue;
             }
@@ -157,6 +182,36 @@ final readonly class EventCallScan implements FileScan
         return $registrations;
     }
 
+    /**
+     * A class sending itself, such as TaskClosed::dispatch($id) on a class with Laravel's Dispatchable trait.
+     */
+    private static function isDispatchableCall(Expr\StaticCall $call): bool
+    {
+        return $call->class instanceof Name
+            && ! in_array($call->class->toString(), [...self::EVENT_FACADES, 'self', 'static', 'parent'], true)
+            && $call->name instanceof Identifier
+            && in_array($call->name->toString(), self::DISPATCHABLE_METHODS, true);
+    }
+
+    private static function dispatchableCall(ParsedFile $file, Expr\StaticCall $call): EventCall
+    {
+        $class = $call->class instanceof Name ? $call->class->toString() : '';
+        $method = $call->name instanceof Identifier ? $call->name->toString() : '';
+
+        return new EventCall(
+            $file->path,
+            $call->getStartLine(),
+            "{$class}::{$method}()",
+            true,
+            false,
+            EventArgument::Other,
+            $class,
+            $class,
+            null,
+            self::siteOf($call),
+        );
+    }
+
     private static function isEventFacadeCall(Expr\StaticCall $call): bool
     {
         return $call->class instanceof Name
@@ -175,6 +230,8 @@ final readonly class EventCallScan implements FileScan
         $first = $call->getArgs()[0] ?? null;
         $event = $first instanceof Arg ? $first->value : null;
 
+        [$eventClass, $eventMethod] = $event === null ? [null, null] : self::sentEventOf($event, $call);
+
         return new EventCall(
             $file->path,
             $call->getStartLine(),
@@ -183,7 +240,70 @@ final readonly class EventCallScan implements FileScan
             $takesOnlyEvents,
             self::argumentType($event, $call),
             self::eventText($event),
+            $eventClass,
+            $eventMethod,
+            self::siteOf($call),
         );
+    }
+
+    /**
+     * The class of the event passed where the code shows it, through a variable, a typed parameter, new or a static
+     * factory on the class, or else the method whose returned value is passed.
+     *
+     * @return array{string|null, string|null}
+     */
+    private static function sentEventOf(Expr $event, Node $call): array
+    {
+        [$type, $method] = self::enclosingOf($call);
+
+        if ($type === null || $method === null) {
+            $made = $event instanceof Expr\New_ && $event->class instanceof Name ? $event->class->toString() : null;
+
+            return [$made, null];
+        }
+
+        $receivers = MethodReceivers::of($type, false, $method);
+        $value = $receivers->valueOf($event);
+        $isReturned = ($value instanceof Expr\MethodCall || $value instanceof Expr\NullsafeMethodCall)
+            && $value->name instanceof Identifier;
+
+        if ($isReturned) {
+            return [null, $value->name->toString()];
+        }
+
+        $receiver = $receivers->receiverOf($value);
+
+        return [in_array($receiver->origin, self::SHOWN_CLASSES, true) ? $receiver->class : null, null];
+    }
+
+    /**
+     * The class and method the call stands in, Class::method, or the file's top level.
+     */
+    private static function siteOf(Node $call): string
+    {
+        [$type, $method] = self::enclosingOf($call);
+
+        $name = $method === null ? '' : $method->name->toString();
+
+        return $type === null ? '' : ModelWriteScan::shortName($type)."::{$name}";
+    }
+
+    /**
+     * @return array{string|null, ClassMethod|null}
+     */
+    private static function enclosingOf(Node $node): array
+    {
+        $method = null;
+        $parent = $node->getAttribute('parent');
+
+        while ($parent instanceof Node && ! $parent instanceof ClassLike) {
+            $method ??= $parent instanceof ClassMethod ? $parent : null;
+            $parent = $parent->getAttribute('parent');
+        }
+
+        $type = $parent instanceof ClassLike ? $parent->namespacedName?->toString() : null;
+
+        return [$type, $method];
     }
 
     private static function argumentType(Expr|null $event, Node $call): EventArgument

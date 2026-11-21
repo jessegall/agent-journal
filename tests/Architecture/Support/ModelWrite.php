@@ -34,6 +34,16 @@ final readonly class ModelWrite
         return explode('/', $this->path)[1] ?? $this->path;
     }
 
+    /**
+     * Its file and line, for sorting.
+     *
+     * @return array{string, int}
+     */
+    public function place(): array
+    {
+        return [$this->path, $this->line];
+    }
+
     public function line(): string
     {
         return "{$this->path}:{$this->line} {$this->key()} {$this->form}: {$this->evidence}";

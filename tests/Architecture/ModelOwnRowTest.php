@@ -32,26 +32,31 @@ final class ModelOwnRowTest extends TestCase
         yield 'own row, alias, constructor insert and own helpers' => ['Models/OwnRowWriter.php', []];
 
         yield 'every foreign form' => ['Models/ForeignWriter.php', [
-            '28 ForeignWriter::renameOldest writes another row of its class: $oldest->save()',
-            '33 ForeignWriter::closeChildren writes through a relation: $this->children()->update([\'closed\' => true])',
-            '41 ForeignWriter::tag writes through a relation: $this->tags()->attach($ids)',
-            '46 ForeignWriter::forgetClosed writes rows by query: self::query()->where(\'closed\', true)->delete()',
-            '51 ForeignWriter::logDirectly writes the database directly: \Illuminate\Support\Facades\DB::table(\'logs\')',
-            '56 ForeignWriter::addChild writes a row of OwnRowWriter: \Tests\Fixtures\ModelWrites\Models\OwnRowWriter::create(\'child\')',
-            '61 ForeignWriter::announce takes a writing service from the container: '
+            '29 ForeignWriter::renameOldest writes another row of its class: $oldest->save()',
+            '34 ForeignWriter::closeChildren writes through a relation: '
+                .'$this->children()->update([\'closed\' => true])',
+            '42 ForeignWriter::tag writes through a relation: $this->tags()->attach($ids)',
+            '47 ForeignWriter::forgetClosed writes rows by query: self::query()->where(\'closed\', true)->delete()',
+            '52 ForeignWriter::logDirectly writes the database directly: '
+                .'\Illuminate\Support\Facades\DB::table(\'logs\')',
+            '57 ForeignWriter::addChild writes a row of OwnRowWriter: '
+                .'\Tests\Fixtures\ModelWrites\Models\OwnRowWriter::create(\'child\')',
+            '62 ForeignWriter::announce takes a writing service from the container: '
                 .'\Illuminate\Container\Container::getInstance()->make(\Illuminate\Contracts\Events\Dispatcher::class)',
-            '66 ForeignWriter::announceByHelper dispatches: event(new \Tests\Fixtures\ModelWrites\Models\ForeignWriterChanged())',
-            '71 ForeignWriter::callByName calls a method by a dynamic name: $this->{$method}()',
-            '99 ForeignWriter::runExport starts a process: new \Symfony\Component\Process\Process([\'true\'])',
+            '67 ForeignWriter::announceByHelper dispatches: '
+                .'event(new \Tests\Fixtures\ModelWrites\Models\ForeignWriterChanged())',
+            '72 ForeignWriter::callByName calls a method by a dynamic name: $this->{$method}()',
+            '98 ForeignWriter::runExport starts a process: new \Symfony\Component\Process\Process([\'true\'])',
         ]];
 
         yield 'a trait body' => ['Models/Concerns/PrunesEveryRow.php', [
-            '16 PrunesEveryRow::pruneEveryRow writes rows by query: self::query()->delete()',
+            '14 PrunesEveryRow::pruneEveryRow writes rows by query: self::query()->delete()',
         ]];
 
         yield 'the shape of SignInAttempt::finish' => ['Models/Accounts/SignInAttempt.php', [
-            '20 SignInAttempt::finish calls Account::endSignInAgain, which writes: '
-                .'\Tests\Fixtures\ModelWrites\Models\Accounts\Account::lockedForJournal($this->account_id)->endSignInAgain($this)',
+            '23 SignInAttempt::finish calls Account::endSignInAgain, which writes: '
+                .'\Tests\Fixtures\ModelWrites\Models\Accounts\Account::lockedForJournal($this->account_id)'
+                .'->endSignInAgain($this)',
         ]];
     }
 
@@ -78,9 +83,9 @@ final class ModelOwnRowTest extends TestCase
         }
 
         $this->assertSame([
-            '28 renameQuietly writes quietly, where the capture cannot see it',
-            '33 countVisit writes quietly, where the capture cannot see it',
-            '38 insertOnce inserts rows by query',
+            '27 renameQuietly writes quietly, where the capture cannot see it',
+            '32 countVisit writes quietly, where the capture cannot see it',
+            '37 insertOnce inserts rows by query',
         ], $writes);
     }
 

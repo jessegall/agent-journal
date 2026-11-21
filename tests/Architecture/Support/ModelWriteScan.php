@@ -18,8 +18,13 @@ use Tests\Support\ScanCache\FileScan;
  *
  * @phpstan-type Write array{line: int, form: string, evidence: string}
  * @phpstan-type Call array{line: int, class: string|null, method: string, evidence: string}
- * @phpstan-type Method array{name: string, static: bool, writesOwnRow: bool, writes: list<Write>, calls: list<Call>, ownCalls: list<string>}
- * @phpstan-type Type array{type: string, name: string, isTrait: bool, records: bool, traits: list<string>, touchesOwnersAt: int|null, methods: list<Method>}
+ * @phpstan-type Method array{
+ *     name: string, static: bool, writesOwnRow: bool, writes: list<Write>, calls: list<Call>, ownCalls: list<string>
+ * }
+ * @phpstan-type Type array{
+ *     type: string, name: string, isTrait: bool, records: bool, traits: list<string>, touchesOwnersAt: int|null,
+ *     methods: list<Method>
+ * }
  *
  * @implements FileScan<Type>
  */
@@ -70,7 +75,9 @@ final readonly class ModelWriteScan implements FileScan
         'symlink', 'link', 'tempnam',
     ];
 
-    private const array PROCESS_FUNCTIONS = ['proc_open', 'exec', 'shell_exec', 'system', 'passthru', 'popen', 'pcntl_exec'];
+    private const array PROCESS_FUNCTIONS = [
+        'proc_open', 'exec', 'shell_exec', 'system', 'passthru', 'popen', 'pcntl_exec',
+    ];
 
     private const array DYNAMIC_FUNCTIONS = ['call_user_func', 'call_user_func_array'];
 
@@ -119,12 +126,20 @@ final readonly class ModelWriteScan implements FileScan
 
     public function key(): string
     {
-        return 'model-writes-3';
+        return 'model-writes-4';
     }
 
     public function findingsIn(ParsedFile $file): array
     {
         return self::of($file);
+    }
+
+    /**
+     * The short name of a class, without its namespace.
+     */
+    public static function shortName(string $class): string
+    {
+        return substr((string) strrchr('\\'.$class, '\\'), 1);
     }
 
     /**
@@ -147,6 +162,40 @@ final readonly class ModelWriteScan implements FileScan
     }
 
     /**
+     * The method name of a call on an object, when the code names it.
+     */
+    private static function methodNameOf(Node $call): string|null
+    {
+        $isMethodCall = $call instanceof Expr\MethodCall || $call instanceof Expr\NullsafeMethodCall;
+
+        return $isMethodCall && $call->name instanceof Node\Identifier ? $call->name->toString() : null;
+    }
+
+    /**
+     * The object a named method is called on, when the call is one.
+     */
+    private static function objectOf(Expr\CallLike $call): Expr|null
+    {
+        $isMethodCall = $call instanceof Expr\MethodCall || $call instanceof Expr\NullsafeMethodCall;
+
+        return $isMethodCall && $call->name instanceof Node\Identifier ? $call->var : null;
+    }
+
+    /**
+     * The class and method of a static call, when the code names both.
+     *
+     * @return array{string, string}|null
+     */
+    private static function staticCallOf(Node $call): array|null
+    {
+        $isNamed = $call instanceof Expr\StaticCall
+            && $call->class instanceof Node\Name
+            && $call->name instanceof Node\Identifier;
+
+        return $isNamed ? [$call->class->toString(), $call->name->toString()] : null;
+    }
+
+    /**
      * @return Type
      */
     private function typeOf(Stmt\Class_|Stmt\Trait_ $type): array
@@ -159,10 +208,16 @@ final readonly class ModelWriteScan implements FileScan
             }
         }
 
-        $implements = $type instanceof Stmt\Class_ ? array_map(fn (Node\Name $name) => $name->toString(), $type->implements) : [];
+        $implements = $type instanceof Stmt\Class_ ? $type->implements : [];
+        $contracts = array_map(fn (Node\Name $contract) => $contract->toString(), $implements);
         $name = (string) $type->namespacedName;
-        $records = in_array(self::EVENT_SOURCE, $implements, true) || in_array(self::RAISES_EVENTS, $traits, true);
+        $records = in_array(self::EVENT_SOURCE, $contracts, true) || in_array(self::RAISES_EVENTS, $traits, true);
         $rowMakers = $this->rowMakersOf($type, $name);
+        $methods = [];
+
+        foreach ($type->getMethods() as $method) {
+            $methods[] = $this->methodOf(MethodReceivers::of($name, $records, $method, $rowMakers), $method);
+        }
 
         return [
             'type' => $name,
@@ -171,10 +226,7 @@ final readonly class ModelWriteScan implements FileScan
             'records' => $records,
             'traits' => $traits,
             'touchesOwnersAt' => $this->touchesOwnersAt($type),
-            'methods' => array_map(
-                fn (Stmt\ClassMethod $method) => $this->methodOf(MethodReceivers::of($name, $records, $method, $rowMakers), $method),
-                $type->getMethods(),
-            ),
+            'methods' => $methods,
         ];
     }
 
@@ -192,7 +244,8 @@ final readonly class ModelWriteScan implements FileScan
             $returns = new NodeFinder()->findInstanceOf($method->stmts ?? [], Stmt\Return_::class);
             $answersNewRows = $returns !== [] && array_all(
                 $returns,
-                fn (Stmt\Return_ $return) => $return->expr !== null && $receivers->receiverOf($return->expr)->origin === ReceiverOrigin::NewRow,
+                fn (Stmt\Return_ $return) => $return->expr !== null
+                    && $receivers->receiverOf($return->expr)->origin === ReceiverOrigin::NewRow,
             );
 
             if ($method->isStatic() && $answersNewRows) {
@@ -233,7 +286,7 @@ final readonly class ModelWriteScan implements FileScan
         $ownCalls = [];
         $writesOwnRow = false;
 
-        foreach (new NodeFinder()->find($method->stmts ?? [], fn (Node $node) => $node instanceof Expr\CallLike) as $call) {
+        foreach (new NodeFinder()->findInstanceOf($method->stmts ?? [], Expr\CallLike::class) as $call) {
             $line = $call->getStartLine();
             $evidence = $this->evidenceOf($call);
 
@@ -241,17 +294,13 @@ final readonly class ModelWriteScan implements FileScan
                 $writes[] = ['line' => $line, 'form' => $form, 'evidence' => $evidence];
             }
 
-            if ($this->writesOwnRow($call, $context)) {
-                $writesOwnRow = true;
-            }
-
+            $writesOwnRow = $writesOwnRow || $this->writesOwnRow($call, $context);
             $own = $this->ownCallOf($call, $context);
+            $other = $this->otherCallOf($call, $context);
 
             if ($own !== null) {
                 $ownCalls[] = $own;
             }
-
-            $other = $this->otherCallOf($call, $context);
 
             if ($other !== null) {
                 $calls[] = ['line' => $line, ...$other, 'evidence' => $evidence];
@@ -273,10 +322,11 @@ final readonly class ModelWriteScan implements FileScan
      *
      * @return list<string>
      */
-    private function writesOf(Node $call, MethodReceivers $context): array
+    private function writesOf(Expr\CallLike $call, MethodReceivers $context): array
     {
         return match (true) {
-            $call instanceof Expr\MethodCall, $call instanceof Expr\NullsafeMethodCall => $this->methodWrites($call, $context),
+            $call instanceof Expr\MethodCall => $this->methodWrites($call, $context),
+            $call instanceof Expr\NullsafeMethodCall => $this->methodWrites($call, $context),
             $call instanceof Expr\StaticCall => $this->staticWrites($call, $context),
             $call instanceof Expr\FuncCall => $this->functionWrites($call, $context),
             $call instanceof Expr\New_ => $this->newWrites($call),
@@ -289,11 +339,11 @@ final readonly class ModelWriteScan implements FileScan
      */
     private function methodWrites(Expr\MethodCall|Expr\NullsafeMethodCall $call, MethodReceivers $context): array
     {
-        if (! $call->name instanceof Node\Identifier) {
+        $method = self::methodNameOf($call);
+
+        if ($method === null) {
             return ['calls a method by a dynamic name'];
         }
-
-        $method = $call->name->toString();
 
         if ($method === 'make' && $this->takesWritingService($call)) {
             return ['takes a writing service from the container'];
@@ -304,16 +354,19 @@ final readonly class ModelWriteScan implements FileScan
         }
 
         $receiver = $context->receiverOf($call->var);
+        $class = self::shortName((string) $receiver->class);
+        $isFacade = isset(self::FACADES[(string) $receiver->class]);
+        $anotherRow = ['writes another row of its class'];
 
         return match ($receiver->origin) {
             ReceiverOrigin::Own => $this->ownRowWrites($method, $context),
-            ReceiverOrigin::NewRow => $context->isStatic ? $this->ownRowWrites($method, $context) : ['writes another row of its class'],
+            ReceiverOrigin::NewRow => $context->isStatic ? $this->ownRowWrites($method, $context) : $anotherRow,
             ReceiverOrigin::OwnQuery => $this->queryWrites($method, $call, $context),
             ReceiverOrigin::Relation => ['writes through a relation'],
             ReceiverOrigin::Property => ['writes the row of a related model'],
-            ReceiverOrigin::OwnClass => ['writes another row of its class'],
-            ReceiverOrigin::OtherClass => ['writes a row of '.self::shortName((string) $receiver->class)],
-            ReceiverOrigin::OtherQuery => ['writes rows of '.self::shortName((string) $receiver->class).' by query'],
+            ReceiverOrigin::OwnClass => $anotherRow,
+            ReceiverOrigin::OtherClass => ["writes a row of {$class}"],
+            ReceiverOrigin::OtherQuery => $isFacade ? [] : ["writes rows of {$class} by query"],
             ReceiverOrigin::Unknown => ['writes another row'],
         };
     }
@@ -327,14 +380,19 @@ final readonly class ModelWriteScan implements FileScan
             return ['writes quietly, where the capture cannot see it'];
         }
 
-        return in_array($method, self::OWN_ROW_WRITES, true) || $method === 'create' ? [] : ['writes through a relation'];
+        $staysOnOwnRow = in_array($method, self::OWN_ROW_WRITES, true) || $method === 'create';
+
+        return $staysOnOwnRow ? [] : ['writes through a relation'];
     }
 
     /**
      * @return list<string>
      */
-    private function queryWrites(string $method, Expr\MethodCall|Expr\NullsafeMethodCall $call, MethodReceivers $context): array
-    {
+    private function queryWrites(
+        string $method,
+        Expr\MethodCall|Expr\NullsafeMethodCall $call,
+        MethodReceivers $context,
+    ): array {
         $isNewRow = $method === 'create' && $context->isStatic && $context->isPlainQuery($call->var);
 
         return match (true) {
@@ -350,26 +408,20 @@ final readonly class ModelWriteScan implements FileScan
      */
     private function staticWrites(Expr\StaticCall $call, MethodReceivers $context): array
     {
-        if (! $call->name instanceof Node\Identifier || ! $call->class instanceof Node\Name) {
+        $named = self::staticCallOf($call);
+
+        if ($named === null) {
             return ['calls a method by a dynamic name'];
         }
 
-        $class = $call->class->toString();
-        $method = $call->name->toString();
+        [$class, $method] = $named;
 
-        if (isset(self::FACADES[$class])) {
-            return [self::FACADES[$class]];
-        }
-
-        if ($context->isOwnClass($class)) {
-            return $this->ownStaticWrites($method, $call, $context);
-        }
-
-        if ($method === 'dispatch' || $method === 'dispatchSync') {
-            return ['dispatches'];
-        }
-
-        return [];
+        return match (true) {
+            isset(self::FACADES[$class]) => [self::FACADES[$class]],
+            $context->isOwnClass($class) => $this->ownStaticWrites($method, $call, $context),
+            $method === 'dispatch', $method === 'dispatchSync' => ['dispatches'],
+            default => [],
+        };
     }
 
     /**
@@ -395,9 +447,9 @@ final readonly class ModelWriteScan implements FileScan
      */
     private function functionWrites(Expr\FuncCall $call, MethodReceivers $context): array
     {
-        $isLocal = $call->name instanceof Expr\Variable && is_string($call->name->name) && $context->isLocalFunction($call->name->name);
+        $variable = $call->name instanceof Expr\Variable && is_string($call->name->name) ? $call->name->name : null;
 
-        if ($isLocal) {
+        if ($variable !== null && $context->isLocalFunction($variable)) {
             return [];
         }
 
@@ -406,15 +458,14 @@ final readonly class ModelWriteScan implements FileScan
         }
 
         $function = $call->name->toLowerString();
+        $takesService = in_array($function, ['app', 'resolve'], true) && $this->namesWritingService($call->args);
 
         return match (true) {
             in_array($function, self::DISPATCH_FUNCTIONS, true) => ['dispatches'],
             in_array($function, self::FILE_FUNCTIONS, true) => ['writes a file'],
             in_array($function, self::PROCESS_FUNCTIONS, true) => ['starts a process'],
             in_array($function, self::DYNAMIC_FUNCTIONS, true) => ['calls an unknown callable'],
-            in_array($function, ['app', 'resolve'], true) && $this->namesWritingService($call->args) => [
-                'takes a writing service from the container',
-            ],
+            $takesService => ['takes a writing service from the container'],
             default => [],
         };
     }
@@ -424,21 +475,22 @@ final readonly class ModelWriteScan implements FileScan
      */
     private function newWrites(Expr\New_ $call): array
     {
-        $isProcess = $call->class instanceof Node\Name && in_array($call->class->toString(), self::PROCESS_CLASSES, true);
+        $class = $call->class instanceof Node\Name ? $call->class->toString() : null;
 
-        return $isProcess ? ['starts a process'] : [];
+        return in_array($class, self::PROCESS_CLASSES, true) ? ['starts a process'] : [];
     }
 
     private function takesWritingService(Expr\MethodCall|Expr\NullsafeMethodCall $call): bool
     {
-        return $call->var instanceof Expr\StaticCall
-            && $call->var->class instanceof Node\Name
-            && $call->var->class->toString() === 'Illuminate\Container\Container'
+        $root = self::staticCallOf($call->var);
+
+        return $root !== null
+            && $root[0] === 'Illuminate\Container\Container'
             && $this->namesWritingService($call->args);
     }
 
     /**
-     * @param  array<Node\Arg|Node\VariadicPlaceholder>  $arguments
+     * @param  array<Node>  $arguments
      */
     private function namesWritingService(array $arguments): bool
     {
@@ -458,39 +510,35 @@ final readonly class ModelWriteScan implements FileScan
         return in_array($name, self::WRITING_SERVICES, true);
     }
 
-    private function writesOwnRow(Node $call, MethodReceivers $context): bool
+    private function writesOwnRow(Expr\CallLike $call, MethodReceivers $context): bool
     {
-        $isMethodWrite = ($call instanceof Expr\MethodCall || $call instanceof Expr\NullsafeMethodCall)
-            && $call->name instanceof Node\Identifier
-            && in_array($call->name->toString(), self::WRITES, true);
+        $method = self::methodNameOf($call);
+        $static = self::staticCallOf($call);
+        $object = self::objectOf($call);
 
-        if ($isMethodWrite) {
-            return $context->receiverOf($call->var)->origin->isOwnSide()
-                && $context->receiverOf($call->var)->origin !== ReceiverOrigin::Relation;
+        if ($object !== null && in_array($method, self::WRITES, true)) {
+            $origin = $context->receiverOf($object)->origin;
+
+            return $origin->isOwnSide() && $origin !== ReceiverOrigin::Relation;
         }
 
-        return $call instanceof Expr\StaticCall
-            && $call->name instanceof Node\Identifier
-            && $call->class instanceof Node\Name
-            && $context->isOwnClass($call->class->toString())
-            && in_array($call->name->toString(), self::WRITES, true);
+        return $static !== null && $context->isOwnClass($static[0]) && in_array($static[1], self::WRITES, true);
     }
 
     /**
      * The method of its own class or trait the call runs on this object or statically, if it is one.
      */
-    private function ownCallOf(Node $call, MethodReceivers $context): string|null
+    private function ownCallOf(Expr\CallLike $call, MethodReceivers $context): string|null
     {
-        if (($call instanceof Expr\MethodCall || $call instanceof Expr\NullsafeMethodCall) && $call->name instanceof Node\Identifier) {
-            return $context->receiverOf($call->var)->origin === ReceiverOrigin::Own ? $call->name->toString() : null;
+        $method = self::methodNameOf($call);
+        $static = self::staticCallOf($call);
+        $object = self::objectOf($call);
+
+        if ($object !== null) {
+            return $context->receiverOf($object)->origin === ReceiverOrigin::Own ? $method : null;
         }
 
-        $isOwnStatic = $call instanceof Expr\StaticCall
-            && $call->name instanceof Node\Identifier
-            && $call->class instanceof Node\Name
-            && $context->isOwnClass($call->class->toString());
-
-        return $isOwnStatic ? $call->name->toString() : null;
+        return $static !== null && $context->isOwnClass($static[0]) ? $static[1] : null;
     }
 
     /**
@@ -498,35 +546,27 @@ final readonly class ModelWriteScan implements FileScan
      *
      * @return array{class: string|null, method: string}|null
      */
-    private function otherCallOf(Node $call, MethodReceivers $context): array|null
+    private function otherCallOf(Expr\CallLike $call, MethodReceivers $context): array|null
     {
-        if ($call instanceof Expr\StaticCall && $call->name instanceof Node\Identifier && $call->class instanceof Node\Name) {
-            $class = $call->class->toString();
+        $method = self::methodNameOf($call);
+        $static = self::staticCallOf($call);
 
-            return $context->isOwnClass($class) ? null : ['class' => $class, 'method' => $call->name->toString()];
+        if ($static !== null) {
+            return $context->isOwnClass($static[0]) ? null : ['class' => $static[0], 'method' => $static[1]];
         }
 
-        if (! ($call instanceof Expr\MethodCall || $call instanceof Expr\NullsafeMethodCall) || ! $call->name instanceof Node\Identifier) {
+        $object = self::objectOf($call);
+
+        if ($object === null || $method === null || in_array($method, self::WRITES, true)) {
             return null;
         }
 
-        $method = $call->name->toString();
-
-        if (in_array($method, self::WRITES, true)) {
-            return null;
-        }
-
-        $receiver = $context->receiverOf($call->var);
+        $receiver = $context->receiverOf($object);
 
         return $receiver->origin->isOwnSide() ? null : ['class' => $receiver->class, 'method' => $method];
     }
 
-    public static function shortName(string $class): string
-    {
-        return substr((string) strrchr('\\'.$class, '\\'), 1);
-    }
-
-    private function evidenceOf(Node $call): string
+    private function evidenceOf(Expr\CallLike $call): string
     {
         $printed = preg_replace('/\s+/', ' ', new Standard()->prettyPrintExpr($call)) ?? '';
 
