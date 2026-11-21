@@ -30,7 +30,7 @@ final readonly class DeviceGrantController
     {
         $host = $this->calls->verify($request, HostProtocolVersion::RemoteProject);
         $deviceCode = InstallTicket::generate();
-        $userCode = Str::upper(Str::random(4)).'-'.Str::upper(Str::random(4));
+        $userCode = implode('-', str_split(Str::upper(Str::random(8)), 4));
         $binding = $request->string('binding')->toString();
         $start = new StartDeviceGrant($host->hostId, $binding, $deviceCode->digest(), $userCode);
         $started = $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $start);

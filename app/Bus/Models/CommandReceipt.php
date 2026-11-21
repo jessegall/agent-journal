@@ -131,16 +131,16 @@ final class CommandReceipt extends Model implements ReadableModel
      * The request keys of those receipts the current caller may read back, keyed by receipt id; another caller's
      * receipts are left out.
      *
-     * @param  list<string>  $receiptIds
+     * @param  list<string>  $ids
      * @return array<string, string>
      */
-    public static function readableKeysOf(array $receiptIds): array
+    public static function readableKeysOf(array $ids): array
     {
-        if ($receiptIds === []) {
+        if ($ids === []) {
             return [];
         }
 
-        return self::query()->whereIn('id', $receiptIds)->pluck('request_key', 'id')->all();
+        return self::query()->whereIn('id', $ids)->pluck('request_key', 'id')->all();
     }
 
     /**

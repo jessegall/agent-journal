@@ -184,9 +184,9 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     /**
      * @throws AccountSelectionChanged when the choice changed since the change number the caller saw
      */
-    public function assertAtChange(int $changeNumber): void
+    public function assertAtChange(int $number): void
     {
-        if ($this->change_number !== $changeNumber) {
+        if ($this->change_number !== $number) {
             throw AccountSelectionChanged::forDriver($this->driver);
         }
     }

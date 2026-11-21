@@ -22,7 +22,7 @@ final readonly class StartProjectCommandRunHandler implements CommandHandler
         }
 
         $binding = ProjectBinding::lockById($command->bindingId);
-        ProjectCommandRun::start($command->requestId, $command->agentId, $binding, $command->argv);
+        ProjectCommandRun::create($command->requestId, $command->agentId, $binding, $command->argv);
 
         return new CommandRunStart(true, true, []);
     }

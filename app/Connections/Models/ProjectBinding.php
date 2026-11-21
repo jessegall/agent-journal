@@ -244,6 +244,32 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         return BindingReadiness::Ready;
     }
 
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<Project, $this>
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return BelongsTo<Host, $this>
+     */
+    public function host(): BelongsTo
+    {
+        return $this->belongsTo(Host::class);
+    }
+
+    /**
+     * @return BelongsTo<Agent, $this>
+     */
+    public function mainAgent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class, 'main_agent_id');
+    }
+
     // ----------[ Internals ]----------
 
     private function hasLivePresenceAt(CarbonImmutable $serverTime): bool
@@ -270,31 +296,5 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     private function receipt(): PresenceReceipt
     {
         return new PresenceReceipt($this->boot_generation, (string) $this->presence_expires_at?->toIso8601String());
-    }
-
-    // ----------[ Relations ]----------
-
-    /**
-     * @return BelongsTo<Project, $this>
-     */
-    public function project(): BelongsTo
-    {
-        return $this->belongsTo(Project::class);
-    }
-
-    /**
-     * @return BelongsTo<Host, $this>
-     */
-    public function host(): BelongsTo
-    {
-        return $this->belongsTo(Host::class);
-    }
-
-    /**
-     * @return BelongsTo<Agent, $this>
-     */
-    public function mainAgent(): BelongsTo
-    {
-        return $this->belongsTo(Agent::class, 'main_agent_id');
     }
 }

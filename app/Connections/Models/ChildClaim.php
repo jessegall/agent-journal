@@ -63,11 +63,11 @@ final class ChildClaim extends Model implements ReadableModel
     public static function ofMain(
         ProjectBinding $binding,
         string $parentRuntimeId,
-        string $childAgentId,
+        string $agentId,
         ChildRole $role,
         WorkspaceFacts $read,
     ): self {
-        return self::issue($binding, $parentRuntimeId, $childAgentId, $role, $read, null, $parentRuntimeId);
+        return self::issue($binding, $parentRuntimeId, $agentId, $role, $read, null, $parentRuntimeId);
     }
 
     /**
@@ -75,11 +75,11 @@ final class ChildClaim extends Model implements ReadableModel
      *
      * @throws ChildClaimRefused
      */
-    public static function nestedUnder(self $parent, string $childAgentId, ChildRole $role, WorkspaceFacts $read): self
+    public static function nestedUnder(self $parent, string $agentId, ChildRole $role, WorkspaceFacts $read): self
     {
         $binding = ProjectBinding::query()->whereKey($parent->binding_id)->firstOrFail();
 
-        return self::issue($binding, $parent->id, $childAgentId, $role, $read, $parent->id, $parent->root_runtime_id);
+        return self::issue($binding, $parent->id, $agentId, $role, $read, $parent->id, $parent->root_runtime_id);
     }
 
     // ----------[ Answers ]----------
@@ -104,7 +104,7 @@ final class ChildClaim extends Model implements ReadableModel
     private static function issue(
         ProjectBinding $binding,
         string $parentRuntimeId,
-        string $childAgentId,
+        string $agentId,
         ChildRole $role,
         WorkspaceFacts $read,
         string|null $parentClaimId,
@@ -121,7 +121,7 @@ final class ChildClaim extends Model implements ReadableModel
         $claim = new self();
         $claim->parent_runtime_id = $parentRuntimeId;
         $claim->parent_generation = $read->generation;
-        $claim->child_agent_id = $childAgentId;
+        $claim->child_agent_id = $agentId;
         $claim->role = $role;
         $claim->binding_id = $binding->id;
         $claim->base_oid = $read->commit->headOid;

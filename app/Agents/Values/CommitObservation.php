@@ -28,9 +28,9 @@ final readonly class CommitObservation
         return new self(1, '', '', '', '');
     }
 
-    public static function ofHead(string $bindingId, string $checkoutId, string $headOid): self
+    public static function ofHead(string $bindingId, string $checkoutId, string $oid): self
     {
-        return new self(2, $bindingId, $checkoutId, $headOid, '');
+        return new self(2, $bindingId, $checkoutId, $oid, '');
     }
 
     public static function without(string $bindingId, string $checkoutId, string $reason): self

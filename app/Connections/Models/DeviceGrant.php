@@ -77,11 +77,11 @@ final class DeviceGrant extends Model implements ReadableModel
         ];
     }
 
-    public static function start(ProjectBinding $binding, string $deviceCodeDigest, string $userCode): self
+    public static function create(ProjectBinding $binding, string $codeDigest, string $userCode): self
     {
         $grant = new self();
         $grant->binding_id = $binding->id;
-        $grant->device_code_digest = $deviceCodeDigest;
+        $grant->device_code_digest = $codeDigest;
         $grant->user_code = $userCode;
         $grant->scopes = self::SCOPES;
         $grant->state = DeviceGrantState::Pending;
@@ -96,9 +96,9 @@ final class DeviceGrant extends Model implements ReadableModel
     /**
      * The grant of this user code, with its binding, for the owner to check.
      */
-    public static function ofUserCode(string $userCode): self
+    public static function ofUserCode(string $code): self
     {
-        return self::query()->with('binding')->where('user_code', $userCode)->firstOrFail();
+        return self::query()->with('binding')->where('user_code', $code)->firstOrFail();
     }
 
     /**
@@ -114,9 +114,9 @@ final class DeviceGrant extends Model implements ReadableModel
      *
      * @throws DeviceGrantRefused
      */
-    public static function lockPendingByUserCode(string $userCode): self
+    public static function lockPendingByUserCode(string $code): self
     {
-        return self::query()->where('user_code', $userCode)->where('state', DeviceGrantState::Pending)
+        return self::query()->where('user_code', $code)->where('state', DeviceGrantState::Pending)
             ->where('code_expires_at', '>', CarbonImmutable::now())->lockForUpdate()
             ->firstOr(fn () => throw DeviceGrantRefused::unknownCode());
     }
@@ -126,9 +126,9 @@ final class DeviceGrant extends Model implements ReadableModel
      *
      * @throws DeviceGrantRefused
      */
-    public static function lockByDeviceCode(string $deviceCodeDigest): self
+    public static function lockByDeviceCode(string $digest): self
     {
-        return self::query()->with('binding')->where('device_code_digest', $deviceCodeDigest)->lockForUpdate()
+        return self::query()->with('binding')->where('device_code_digest', $digest)->lockForUpdate()
             ->firstOr(fn () => throw DeviceGrantRefused::unknownCode());
     }
 
@@ -137,12 +137,24 @@ final class DeviceGrant extends Model implements ReadableModel
      *
      * @throws DeviceGrantRefused
      */
-    public static function usable(string $grantDigest): self
+    public static function usable(string $digest): self
     {
-        return self::query()->with('binding')->where('grant_digest', $grantDigest)
+        return self::query()->with('binding')->where('grant_digest', $digest)
             ->where('state', DeviceGrantState::Issued)->where('grant_expires_at', '>', CarbonImmutable::now())
             ->whereHas('binding', fn ($binding) => $binding->where('readiness', '!=', BindingReadiness::Revoked))
             ->firstOr(fn () => throw DeviceGrantRefused::notUsable());
+    }
+
+    /**
+     * The grants of the binding not revoked yet, locked until the transaction ends; a binding has a few shells.
+     *
+     * @return list<self>
+     */
+    public static function lockLiveOf(ProjectBinding $binding): array
+    {
+        return array_values(self::query()->where('binding_id', $binding->id)
+            ->where('state', '!=', DeviceGrantState::Revoked)->lockForUpdate()
+            ->readAll('a binding has a device grant per shell that asked')->get()->all());
     }
 
     // ----------[ Mutations ]----------
@@ -174,21 +186,12 @@ final class DeviceGrant extends Model implements ReadableModel
     /**
      * Hands the approved grant to the shell once, by the digest of the grant it receives.
      */
-    public function issue(string $grantDigest): void
+    public function issue(string $digest): void
     {
-        $this->grant_digest = $grantDigest;
+        $this->grant_digest = $digest;
         $this->grant_expires_at = CarbonImmutable::now()->addHours(self::GRANT_HOURS);
         $this->state = DeviceGrantState::Issued;
         $this->save();
-    }
-
-    /**
-     * Revokes every grant of a revoked binding at once; grants to other bindings keep their own scope.
-     */
-    public static function revokeEveryGrantOf(ProjectBinding $binding): void
-    {
-        self::query()->where('binding_id', $binding->id)->where('state', '!=', DeviceGrantState::Revoked)
-            ->update(['state' => DeviceGrantState::Revoked]);
     }
 
     public function revoke(): void

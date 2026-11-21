@@ -25,8 +25,14 @@ final readonly class RevokeProjectBindingHandler implements CommandHandler
         $binding = ProjectBinding::lockById($command->bindingId);
         $binding->revoke();
         $binding->host->revokeAt(CarbonImmutable::now());
-        DeviceGrant::revokeEveryGrantOf($binding);
-        ProjectCommandRun::cancelEveryRunOf($binding);
+
+        foreach (DeviceGrant::lockLiveOf($binding) as $grant) {
+            $grant->revoke();
+        }
+
+        foreach (ProjectCommandRun::lockRunningOf($binding) as $run) {
+            $run->cancel();
+        }
 
         ConnectionAudit::ofBinding(
             ConnectionAuditType::BindingRevoked,

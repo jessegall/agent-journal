@@ -56,7 +56,7 @@ final class ProjectCommandRun extends Model implements ReadableModel
     /**
      * @param  list<string>  $argv
      */
-    public static function start(string $requestId, string $agentId, ProjectBinding $binding, array $argv): self
+    public static function create(string $requestId, string $agentId, ProjectBinding $binding, array $argv): self
     {
         $run = new self();
         $run->request_id = $requestId;
@@ -82,6 +82,18 @@ final class ProjectCommandRun extends Model implements ReadableModel
         return array_values(self::query()->where('request_id', $requestId)->lockForUpdate()->limit(1)->get()->all());
     }
 
+    /**
+     * The binding's running command streams, locked until the transaction ends; a binding runs a few at once.
+     *
+     * @return list<self>
+     */
+    public static function lockRunningOf(ProjectBinding $binding): array
+    {
+        return array_values(self::query()->where('binding_id', $binding->id)
+            ->where('state', CommandRunState::Running)->lockForUpdate()
+            ->readAll('a binding runs a few journal verbs at once')->get()->all());
+    }
+
     // ----------[ Mutations ]----------
 
     public function recordProcess(int $pid): void
@@ -99,15 +111,6 @@ final class ProjectCommandRun extends Model implements ReadableModel
         $this->exit_code = $exitCode;
         $this->state = CommandRunState::Finished;
         $this->save();
-    }
-
-    /**
-     * Ends every running command stream of a revoked binding: a stream that is cancelled takes no more frames.
-     */
-    public static function cancelEveryRunOf(ProjectBinding $binding): void
-    {
-        self::query()->where('binding_id', $binding->id)->where('state', CommandRunState::Running)
-            ->update(['state' => CommandRunState::Cancelled]);
     }
 
     public function cancel(): void

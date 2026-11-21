@@ -41,7 +41,7 @@ final class ProjectCommandsTest extends TestCase
     public function test_a_repeated_request_id_answers_the_first_result_without_running_again(): void
     {
         [$start, $binding] = $this->connectedStart();
-        $run = ProjectCommandRun::start('request-1', $start->agent->id, $binding, ['comment', 'list']);
+        $run = ProjectCommandRun::create('request-1', $start->agent->id, $binding, ['comment', 'list']);
         $run->finish([CommandFrame::output(1, 'stdout', "Tasks\n"), CommandFrame::exit(2, 3)], 3);
 
         $reply = $this->command($start, 'request-1', $binding->id, ['comment', 'list'])->assertOk();
@@ -73,9 +73,9 @@ final class ProjectCommandsTest extends TestCase
     {
         [$start, $binding] = $this->connectedStart();
         [$otherStart, $other] = $this->connectedStart();
-        $stream = ProjectCommandRun::start('request-1', $start->agent->id, $binding, ['comment', 'list']);
-        $otherStream = ProjectCommandRun::start('request-2', $otherStart->agent->id, $other, ['comment', 'list']);
-        $grant = DeviceGrant::start($binding, InstallTicket::digestOf('device-code'), 'ABCD-EFGH');
+        $stream = ProjectCommandRun::create('request-1', $start->agent->id, $binding, ['comment', 'list']);
+        $otherStream = ProjectCommandRun::create('request-2', $otherStart->agent->id, $other, ['comment', 'list']);
+        $grant = DeviceGrant::create($binding, InstallTicket::digestOf('device-code'), 'ABCD-EFGH');
         $grant->issue(InstallTicket::digestOf('device-grant'));
 
         $owner = User::factory()->create();

@@ -11,7 +11,10 @@ use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\ReconcileStarts;
+use App\Agents\Contracts\AgentDirectory;
+use App\Agents\Enums\AgentPresence;
 use App\Agents\Enums\DriverVariant;
+use App\Agents\Enums\ProcessStartState;
 use App\Agents\Models\Agent;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\EnrolledHost;
@@ -34,7 +37,8 @@ use Tests\TestCase;
 /**
  * A launch keeps the account it was accepted on and is never started twice (task 420): switching the active account
  * while a helper runs moves only the next launch, a repeated claim after a lost acknowledgement starts no second
- * process, and a restarted host's claimed launch stays possibly running until its exit is proven.
+ * process, a restarted host's claimed launch stays possibly running until its exit is proven, and a program that
+ * cannot start here ends its start with the refusal the agent then shows (task 1904).
  */
 #[TimeLimit(seconds: 5, reason: 'It enrolls a host, opens runtimes and commits each start step, emptying many tables.')]
 final class ContainerAccountTest extends TestCase
@@ -120,6 +124,32 @@ final class ContainerAccountTest extends TestCase
         $this->asSystem(new ReconcileStarts($host->hostId, [$key]));
 
         $this->assertSame([], ProcessStart::unresolvedKeysOf($host->hostId));
+    }
+
+    public function test_a_claim_of_a_program_that_cannot_start_here_ends_the_start_with_its_refusal(): void
+    {
+        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
+        {
+            public function for(HookDriver $driver): DriverCompatibility
+            {
+                return DriverCompatibility::pinned($driver)->withContainedShortfall('its protection report is missing');
+            }
+        });
+        $host = $this->enrollHost();
+        $launch = $this->open($host);
+
+        $this->assertNull($this->asSystem(new ClaimStart($host->hostId, $launch->sessionId)));
+
+        $start = $this->startOf($launch);
+        $this->assertSame(ProcessStartState::Stopped, $start->state);
+        $this->assertStringContainsString(
+            'cannot start in a container: its protection report is missing',
+            (string) $start->refusal,
+        );
+        $this->assertNull($this->asSystem(new ClaimStart($host->hostId, $launch->sessionId)));
+        $agent = $this->app->make(AgentDirectory::class)->visibleAgent($start->agent_id);
+        $this->assertSame(AgentPresence::Failed, $agent->presence);
+        $this->assertSame($start->refusal, $agent->startRefusal);
     }
 
     private function startOf(OpenedRuntime $runtime): ProcessStart
