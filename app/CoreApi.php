@@ -658,6 +658,7 @@ use App\Docking\Cards\Stack;
 use App\Docking\Cards\StateLabel;
 use App\Docking\Cards\Subtitle;
 use App\Docking\Cards\Title;
+use App\Docking\Data\DockablePublicationData;
 use App\Docking\Data\DockDestinationOptionData;
 use App\Docking\Data\DockOfferData;
 use App\Docking\Data\SourceActionData;
@@ -1284,6 +1285,7 @@ use App\Text\Values\TextRange;
 use App\Text\Values\TextVersion;
 use App\Ui\Contracts\CountResolver;
 use App\Ui\Contracts\DeclaredPages;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageOption;
@@ -1321,6 +1323,7 @@ use App\Ui\Layout\LayoutNativeData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
 use App\Ui\Layout\LayoutTabData;
+use App\Ui\Layout\PresentsLayout;
 use App\Ui\Layout\PublicationPage;
 use App\Ui\Layout\PublicationTab;
 use App\Web\Commands\RecordUserHeartbeat;
@@ -1394,6 +1397,7 @@ final class CoreApi
                 DockedSources::class,
                 DockOffers::class,
                 DockableWindow::class,
+                PresentsLayout::class,
                 CardContext::class,
                 DeclaredPages::class,
                 CardEncoder::class,
@@ -1591,6 +1595,7 @@ final class CoreApi
                 NavigationProvider::class,
                 PageProvider::class,
                 SectionProvider::class,
+                NativePartProvider::class,
                 SectionResolver::class,
                 VisibilityCheck::class,
                 SettingsProvider::class,
@@ -1647,6 +1652,7 @@ final class CoreApi
                 DockCard::class,
                 DockDestination::class,
                 DockIdentity::class,
+                DockablePublicationData::class,
                 DockLink::class,
                 Duration::class,
                 EnvironmentTask::class,

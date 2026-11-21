@@ -18,7 +18,11 @@ import { formSendingHooks } from '@kit/usePageChanges';
 const props = defineProps<{ data: DocumentPageData }>();
 
 function open(): void {
-    router.post(`/documents/docs/${props.data.number}/open`, {}, { preserveScroll: true, ...formSendingHooks() });
+    router.post(
+        `/documents/docs/${props.data.number}/open`,
+        {},
+        { preserveScroll: true, ...formSendingHooks() },
+    );
 }
 </script>
 
@@ -26,17 +30,34 @@ function open(): void {
     <div class="flex flex-col gap-4">
         <RecordWindow :data="data.record" />
         <ShareButton :reference="data.record.label" />
-        <RecordStatus :data="data.record" :editing="data.editing.state === 'free' ? 'free' : `held by ${data.editing.holder ?? 'you'}`" :settle-action="`/documents/docs/${data.number}/settle`" />
+        <RecordStatus
+            :data="data.record"
+            :editing="
+                data.editing.state === 'free'
+                    ? 'free'
+                    : `held by ${data.editing.holder ?? 'you'}`
+            "
+            :settle-action="`/documents/docs/${data.number}/settle`"
+        />
         <SwitchCase :value="data.editing.state">
             <template #yours>
-                <DraftEditor :number="data.number" :draft="data.editing.draft!" />
+                <DraftEditor
+                    :number="data.number"
+                    :draft="data.editing.draft!"
+                />
             </template>
             <template #held>
                 <template v-if="data.editing.held">
-                    <RecoverForm :number="data.number" :holder="data.editing.holder ?? ''" :held="data.editing.held" />
+                    <RecoverForm
+                        :number="data.number"
+                        :holder="data.editing.holder ?? ''"
+                        :held="data.editing.held"
+                    />
                 </template>
                 <template v-else>
-                    <p class="text-text-3">{{ data.editing.holder }} is editing this document.</p>
+                    <p class="text-text-3">
+                        {{ data.editing.holder }} is editing this document.
+                    </p>
                 </template>
             </template>
             <template #free>
@@ -46,8 +67,13 @@ function open(): void {
         <section class="flex flex-col gap-1">
             <h2 class="text-heading">History</h2>
             <template v-for="revision in data.revisions" :key="revision.number">
-                <a class="flex gap-2" :href="`/documents/docs/${data.number}/revisions/${revision.number}`">
-                    <span class="font-mono tabular-nums">revision {{ revision.number }}</span>
+                <a
+                    class="flex gap-2"
+                    :href="`/documents/docs/${data.number}/revisions/${revision.number}`"
+                >
+                    <span class="font-mono tabular-nums"
+                        >revision {{ revision.number }}</span
+                    >
                     <span>{{ revision.title }}</span>
                     <span class="text-text-3">{{ revision.closedAt }}</span>
                 </a>
@@ -55,8 +81,16 @@ function open(): void {
         </section>
         <LinksPanel :source="data.record.label" :links="data.record.links" />
         <template v-if="data.record.publiclyShared">
-            <p class="text-text-3">This document is shared publicly: a comment you leave here will be public.</p>
+            <p class="text-text-3">
+                This document is shared publicly: a comment you leave here will
+                be public.
+            </p>
         </template>
-        <CommentsPanel :comments="data.record.comments" :target="data.record.label" :version="data.record.revision" :reads="data.record.reads" />
+        <CommentsPanel
+            :comments="data.record.comments"
+            :target="data.record.label"
+            :version="data.record.revision"
+            :reads="data.record.reads"
+        />
     </div>
 </template>

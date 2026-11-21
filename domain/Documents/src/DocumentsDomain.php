@@ -22,6 +22,7 @@ use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordDefinition;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
@@ -125,6 +126,7 @@ final class DocumentsDomain extends Domain implements
     CommandProvider,
     LinkRecordProvider,
     McpToolProvider,
+    NativePartProvider,
     NavigationProvider,
     NumberedModelProvider,
     PageProvider,
@@ -299,6 +301,16 @@ final class DocumentsDomain extends Domain implements
         return [DocumentSearch::class, ReportSearch::class];
     }
 
+    /**
+     * The native parts a record's layout mounts: its comments, its links and its share control.
+     *
+     * @return list<string>
+     */
+    public function nativeParts(): array
+    {
+        return ['RecordComments.vue', 'RecordLinks.vue', 'RecordShare.vue', 'ReportReceipt.vue'];
+    }
+
     public function pages(): array
     {
         return [
@@ -321,7 +333,7 @@ final class DocumentsDomain extends Domain implements
                 ->slots(Slot::record('inspector', 'document', 'doc')),
             Page::make('revision', 'Revision', Icon::Docs, RevisionWindowResolver::class, 'RevisionWindow.vue')
                 ->at('docs/{document}/revisions/{revision}'),
-            Page::make('report', 'Report', Icon::Docs, ReportWindowResolver::class, 'ReportWindow.vue')
+            Page::layout('report', 'Report', Icon::Docs, ReportWindowResolver::class)
                 ->at('reports/{report}')
                 ->actions(
                     ActionRoute::post('reports/{report}/settle', SettleReportPageController::class, 'settle-report'),

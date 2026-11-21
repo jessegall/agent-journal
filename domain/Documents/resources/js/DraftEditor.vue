@@ -31,7 +31,11 @@ function save(): void {
 }
 
 function close(): void {
-    router.post(`${base}/close`, { token: form.token, version: form.version }, { preserveScroll: true, ...formSendingHooks() });
+    router.post(
+        `${base}/close`,
+        { token: form.token, version: form.version },
+        { preserveScroll: true, ...formSendingHooks() },
+    );
 }
 
 function refresh(): void {
@@ -55,7 +59,10 @@ onMounted(() => {
     stopListening = router.on('before', (event) => {
         const leavesThePage = event.detail.visit.method === 'get';
 
-        return !(leavesThePage && form.isDirty) || window.confirm('Your draft has unsaved text. Leave and discard it?');
+        return (
+            !(leavesThePage && form.isDirty) ||
+            window.confirm('Your draft has unsaved text. Leave and discard it?')
+        );
     });
 });
 
@@ -68,14 +75,27 @@ onBeforeUnmount(() => {
 <template>
     <form class="flex flex-col gap-2" @submit.prevent="save">
         <p class="text-text-3">
-            Your draft, version {{ draft.version }}, from revision {{ draft.baseRevisionNumber }}.
+            Your draft, version {{ draft.version }}, from revision
+            {{ draft.baseRevisionNumber }}.
         </p>
         <input v-model="form.title" class="input" placeholder="Title" />
-        <input v-model="form.abstract" class="input" placeholder="One line saying what it is" />
+        <input
+            v-model="form.abstract"
+            class="input"
+            placeholder="One line saying what it is"
+        />
         <textarea v-model="form.body" class="input font-mono" rows="16" />
         <div class="flex gap-2">
-            <Button type="submit" variant="primary" :pending="form.processing" :disabled="form.processing">Save</Button>
-            <Button :disabled="form.processing || form.isDirty" @click="close">Close</Button>
+            <Button
+                type="submit"
+                variant="primary"
+                :pending="form.processing"
+                :disabled="form.processing"
+                >Save</Button
+            >
+            <Button :disabled="form.processing || form.isDirty" @click="close"
+                >Close</Button
+            >
         </div>
         <template v-if="form.hasErrors">
             <div class="flex gap-2">

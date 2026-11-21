@@ -13,7 +13,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * through of(), which refuses a tree that breaks the catalogue, so a partly valid layout is never sent.
  */
 #[TypeScript]
-final class DeclaredLayoutData extends Data
+final class DeclaredLayoutData extends Data implements PresentsLayout
 {
     private function __construct(public readonly LayoutPartData $root) {}
 
@@ -27,5 +27,10 @@ final class DeclaredLayoutData extends Data
         }
 
         return new self($root);
+    }
+
+    public function layout(): self
+    {
+        return $this;
     }
 }

@@ -152,4 +152,36 @@ final class ExternalOwnerDockTest extends TestCase
                 ->where('page.dockOffer.type', 'documents.report')
                 ->where('page.dockOffer.destinations.0.value', $this->agent->agent->id));
     }
+
+    public function test_a_report_page_is_a_publication_whose_details_settle_with_revision_one(): void
+    {
+        $this->agent->startRequest($this->app);
+        $report = $this->app->make(CommandBus::class)->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
+
+        $this->actingAs($this->owner)
+            ->get("/documents/reports/{$report->number}?tab=details")
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('layout/DeclaredLayout')
+                ->where('page.data.root.children.0.children.0.text', 'Evidence')
+                ->where('page.data.root.children.1.tabs.2.isChosen', true)
+                ->where('page.data.root.children.1.children.0.key', 'details')
+                ->where('page.data.root.children.1.children.0.children.1.form.href', "/documents/reports/{$report->number}/settle")
+                ->where('page.data.root.children.1.children.0.children.1.form.fixed', ['revision' => 1])
+                ->where('page.dockOffer.type', 'documents.report')
+                ->missing('page.data.sourceId'));
+    }
+
+    public function test_the_links_tab_of_a_report_reads_neither_its_text_nor_its_comments(): void
+    {
+        $this->agent->startRequest($this->app);
+        $report = $this->app->make(CommandBus::class)->run(new CreateReport('Evidence', 'First run.', 'Filed text.'));
+
+        $this->actingAs($this->owner)
+            ->get("/documents/reports/{$report->number}?tab=links")
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('page.data.root.children.1.children.0.key', 'links')
+                ->where('page.data.root.children.1.children.0.native.component', 'documents/RecordLinks')
+                ->missing('page.data.root.children.1.children.1'));
+    }
 }

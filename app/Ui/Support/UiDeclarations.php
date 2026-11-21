@@ -120,6 +120,27 @@ final readonly class UiDeclarations implements DeclaredPages, SlotSections
         return array_values($this->sections);
     }
 
+    /**
+     * Every native part a declared layout may mount, by the name a layout part gives it, with its component file.
+     *
+     * @return array<string, string>
+     */
+    public function nativeParts(): array
+    {
+        $parts = [];
+
+        foreach ($this->owners as $owner) {
+            foreach ($owner->nativeParts as $component) {
+                $parts[$owner->presentationName($component, false)] = $owner->componentFile(
+                    "{$owner->key} native part",
+                    $component,
+                );
+            }
+        }
+
+        return $parts;
+    }
+
     public function sectionsIn(string $page, string $slot): array
     {
         return array_values(array_map(

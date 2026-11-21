@@ -14,6 +14,7 @@ use App\Files\Exceptions\LinkLoop;
 use App\Files\Support\CodeFiles;
 use App\Files\Values\FilePath;
 use App\Reflection\Support\Reflector;
+use App\Ui\Contracts\NativePartProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
@@ -37,6 +38,7 @@ final readonly class DomainUi
      * @param  list<Page>  $pages
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
+     * @param  list<string>  $nativeParts
      */
     private function __construct(
         public string $name,
@@ -46,11 +48,12 @@ final readonly class DomainUi
         public array $pages,
         public array $navigation,
         public array $sections,
+        public array $nativeParts,
     ) {}
 
     /**
-     * Reads what a domain or module declares through PageProvider, NavigationProvider and SectionProvider, given its
-     * name, namespace and folder.
+     * Reads what a domain or module declares through PageProvider, NavigationProvider, SectionProvider and
+     * NativePartProvider, given its name, namespace and folder.
      */
     public static function of(object $domain, string $name, string $namespace, string $scriptFolder): self
     {
@@ -61,6 +64,7 @@ final readonly class DomainUi
             pages: $domain instanceof PageProvider ? $domain->pages() : [],
             navigation: $domain instanceof NavigationProvider ? $domain->navigation() : [],
             sections: $domain instanceof SectionProvider ? $domain->sections() : [],
+            nativeParts: $domain instanceof NativePartProvider ? $domain->nativeParts() : [],
         );
     }
 
@@ -68,6 +72,7 @@ final readonly class DomainUi
      * @param  list<Page>  $pages
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
+     * @param  list<string>  $nativeParts
      */
     public static function declaring(
         string $name,
@@ -76,6 +81,7 @@ final readonly class DomainUi
         array $pages = [],
         array $navigation = [],
         array $sections = [],
+        array $nativeParts = [],
     ): self {
         return new self(
             name: $name,
@@ -85,6 +91,7 @@ final readonly class DomainUi
             pages: $pages,
             navigation: $navigation,
             sections: $sections,
+            nativeParts: $nativeParts,
         );
     }
 
