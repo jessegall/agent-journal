@@ -143,8 +143,8 @@ func TestSettingChangesStayStagedWithoutARecordedLivePath(t *testing.T) {
 	}
 }
 
-func TestAKeyScriptToAProcessRuntimeNeedsATerminal(t *testing.T) {
-	driver := NewProcessDriver(ProcessRuntime{}, 1)
+func TestAKeyScriptToAHeadlessRuntimeNeedsATerminal(t *testing.T) {
+	driver := NewHeadlessDriver(HeadlessRuntime{}, 1)
 
 	script := contracts.KeyScriptRequest{Request: request("s"), Script: "ChangeModel"}
 	result, err := driver.RunKeyScript(context.Background(), script)

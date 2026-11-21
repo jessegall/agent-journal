@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers;
 
 use App\Agents\Values\Operation;
+use App\Drivers\Enums\HookDriver;
 use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Actions\RecordDriverFailure;
 use App\Hooks\Contracts\DriverAdapter;
@@ -17,12 +18,12 @@ use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Inputs\FailureDetails;
 use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\ProtectedFileRead;
@@ -37,17 +38,6 @@ use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Support\DriverCompatibility;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
-use App\Drivers\Enums\HookDriver;
-use App\Hooks\Drivers\DriverCapabilities;
-use App\Hooks\Drivers\DriverReplies;
-use App\Hooks\Drivers\DriverReply;
-use App\Hooks\Drivers\GuardedFiles;
-use App\Hooks\Drivers\HookPayload;
-use App\Hooks\Drivers\JournalToolCall;
-use App\Hooks\Drivers\JournalTools;
-use App\Hooks\Drivers\JudgedCall;
-use App\Hooks\Drivers\NotificationCall;
-use App\Hooks\Drivers\UnjudgedCall;
 
 /**
  * Reads Claude Code's hook payloads into the journal's inputs and renders its answers as Claude Code replies.

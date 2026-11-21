@@ -86,7 +86,7 @@ final readonly class HookRelay
         $pending->acknowledge($envelope);
 
         try {
-            $programReply = DriverReply::fromJournal($reply->body);
+            $driverReply = DriverReply::fromJournal($reply->body);
         } catch (JsonException|DriverReplyMalformed) {
             return $this->answerWithoutJournal(CallFailure::Refused, $json, $settings, $log);
         }
@@ -95,7 +95,7 @@ final readonly class HookRelay
             $preparation->prepare($envelope->id);
         }
 
-        return $programReply;
+        return $driverReply;
     }
 
     /**

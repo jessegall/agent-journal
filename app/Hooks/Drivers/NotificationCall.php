@@ -9,7 +9,6 @@ use App\Hooks\Contracts\DriverCall;
 use App\Hooks\Inputs\FailureDetails;
 use App\Hooks\Inputs\HookIdentity;
 use Closure;
-use App\Hooks\Drivers\DriverReply;
 
 /**
  * A native notification that a request failed: the journal records it for recovery and answers with the empty reply

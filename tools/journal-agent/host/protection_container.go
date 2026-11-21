@@ -26,7 +26,7 @@ func ContainedPlatform(ctx context.Context, containers Containers, seccomp strin
 	}
 }
 
-func claudeInContainer(ctx context.Context, containers Containers, seccomp string) ProgramMechanisms {
+func claudeInContainer(ctx context.Context, containers Containers, seccomp string) DriverMechanisms {
 	if output, err := containers.RunCheck(ctx, seccomp, "socat", "-V"); err != nil {
 		return claudeWithoutSandbox("Claude Code's sandbox needs socat, which does not run in the agent image: " +
 			failureLine(output, err))

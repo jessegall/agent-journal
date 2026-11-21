@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers;
 
 use Spatie\LaravelData\Data;
-use App\Hooks\Drivers\DriverReply;
 
 /**
  * The body the journal answers a hook call with: the program's standard output, standard error and exit code.

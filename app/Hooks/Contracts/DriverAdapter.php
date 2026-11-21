@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Hooks\Contracts;
 
-use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\DriverToolInput;
-use App\Hooks\Drivers\HookPayload;
 use App\Hooks\Drivers\DriverCapabilities;
 use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Drivers\HookPayload;
+use App\Hooks\Inputs\DriverToolInput;
+use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Support\DriverCompatibility;
 

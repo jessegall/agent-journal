@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers;
 
 use App\Agents\Support\AccountStartSettings;
-use App\Hooks\Drivers\ClaudeAccountProtection;
 
 /**
  * Claude Code on a saved account: the account folder as CLAUDE_CONFIG_DIR, an empty Anthropic folder, no other

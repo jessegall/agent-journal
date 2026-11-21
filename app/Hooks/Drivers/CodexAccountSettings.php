@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers;
 
 use App\Agents\Support\AccountStartSettings;
-use App\Hooks\Drivers\CodexAccountProtection;
 
 /**
  * Codex on a saved account: the account folder as CODEX_HOME with its sign-in kept in its own file, no other

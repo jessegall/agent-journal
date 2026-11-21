@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Hooks\Support;
 
+use App\Drivers\Enums\HookDriver;
 use App\Hooks\Enums\AuthenticationArrangement;
 use App\Hooks\Enums\DriverEvidence;
 use App\Hooks\Exceptions\DriverArrangementUnproven;
-use App\Drivers\Enums\HookDriver;
 
 /**
  * What start preparation may rely on for one pinned program: its version and binary digest, the flags and

@@ -11,7 +11,6 @@ use JsonException;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
-use App\Hooks\Drivers\DriverReplyData;
 
 /**
  * What the journal hands back to a program's hook: its standard output, standard error and exit code.

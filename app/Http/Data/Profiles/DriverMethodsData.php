@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Profiles;
 
-use App\Profiles\Enums\SignInMethod;
 use App\Drivers\Enums\HookDriver;
+use App\Profiles\Enums\SignInMethod;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

@@ -2,8 +2,8 @@ package host
 
 // linuxMechanisms is what the pinned clients can apply on Linux before their tools run, given what Claude Code's
 // sandbox has there. A mechanism listed here still needs native evidence before the item counts as enforced.
-func linuxMechanisms(claude ProgramMechanisms) map[string]ProgramMechanisms {
-	return map[string]ProgramMechanisms{
+func linuxMechanisms(claude DriverMechanisms) map[string]DriverMechanisms {
+	return map[string]DriverMechanisms{
 		"claude": claude,
 		"codex": {
 			AccountSecrets: unavailable("the workspace-write Landlock sandbox limits writes only, " +
@@ -21,8 +21,8 @@ func linuxMechanisms(claude ProgramMechanisms) map[string]ProgramMechanisms {
 }
 
 // claudeSandbox is how Claude Code's bubblewrap sandbox applies each item once bwrap and socat run.
-func claudeSandbox() ProgramMechanisms {
-	return ProgramMechanisms{
+func claudeSandbox() DriverMechanisms {
+	return DriverMechanisms{
 		AccountSecrets: native("sandbox.enabled with permissions.deny Read on the account's sign-in items: " +
 			"the bubblewrap mount namespace for Bash and its children, the permission check for file tools"),
 		ForeignHistory: unavailable("every session of an account keeps its history in one projects folder, " +
@@ -37,8 +37,8 @@ func claudeSandbox() ProgramMechanisms {
 }
 
 // claudeWithoutSandbox is every item unavailable for the one reason Claude Code's sandbox cannot run.
-func claudeWithoutSandbox(why string) ProgramMechanisms {
-	missing := ProgramMechanisms{}
+func claudeWithoutSandbox(why string) DriverMechanisms {
+	missing := DriverMechanisms{}
 	for _, item := range BoundaryItems {
 		missing[item] = unavailable(why)
 	}

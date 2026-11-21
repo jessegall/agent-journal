@@ -31,12 +31,12 @@ enum SignInMethod: string
      * The name a new account of this method takes when its sign-in shows no name of its own, such as 'Claude Code'
      * for an OAuth sign-in or 'Claude Code API key' for a key.
      */
-    public function accountNameFor(string $programName): string
+    public function accountNameFor(string $driverName): string
     {
         return match ($this) {
-            self::OAuth => $programName,
-            self::ApiKey => "{$programName} API key",
-            self::ProviderToken => "{$programName} setup token",
+            self::OAuth => $driverName,
+            self::ApiKey => "{$driverName} API key",
+            self::ProviderToken => "{$driverName} setup token",
         };
     }
 

@@ -5,20 +5,15 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers;
 
 use App\Hooks\Enums\AnswerType;
-use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\DriverPermission;
 use App\Hooks\Enums\DriverStopDecision;
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\InvalidObservationAnswer;
 use App\Hooks\Exceptions\InvalidShellAnswer;
 use App\Hooks\Exceptions\InvalidStopAnswer;
 use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\Drivers\BlockBody;
-use App\Hooks\Drivers\ContextBody;
-use App\Hooks\Drivers\PreToolBody;
-use App\Hooks\Drivers\PreToolOutput;
-use App\Hooks\Drivers\DriverReply;
 
 /**
  * The reply shapes Claude Code and Codex share for a pre-tool call and a stop. Shapes only: the walk already decided.

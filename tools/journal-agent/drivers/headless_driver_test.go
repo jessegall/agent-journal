@@ -8,7 +8,7 @@ import (
 )
 
 func TestAnInterruptWithNoRunningTurnIsAlreadyIdleAndKeepsTheHold(t *testing.T) {
-	driver := NewProcessDriver(ProcessRuntime{}, 1)
+	driver := NewHeadlessDriver(HeadlessRuntime{}, 1)
 
 	interrupt, err := driver.Interrupt(context.Background(), contracts.InterruptRequest{Request: request("late"), Turn: 1})
 
@@ -18,7 +18,7 @@ func TestAnInterruptWithNoRunningTurnIsAlreadyIdleAndKeepsTheHold(t *testing.T) 
 }
 
 func TestAStopWithNoRunningChildIsConfirmedAtOnce(t *testing.T) {
-	driver := NewProcessDriver(ProcessRuntime{}, 1)
+	driver := NewHeadlessDriver(HeadlessRuntime{}, 1)
 
 	stop, err := driver.Stop(context.Background(), contracts.StopRequest{Request: request("stop")})
 

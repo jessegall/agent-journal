@@ -85,10 +85,10 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	return runtime, nil
 }
 
-// containedProcessRuntime runs a runtime without a terminal whose session is contained, such as a helper's: one turn
+// containedHeadlessRuntime runs a runtime without a terminal whose session is contained, such as a helper's: one turn
 // at a time, each turn's program its session container's own process, created afresh for the turn on the session's
 // volumes. A stop is the container's proven stop; a turn's end is the end of that turn, not of the runtime.
-func (opener runtimeOpener) containedProcessRuntime(
+func (opener runtimeOpener) containedHeadlessRuntime(
 	runtimeID string,
 	prepared host.PreparedStart,
 	profile contracts.ProgramProfile,
@@ -101,7 +101,7 @@ func (opener runtimeOpener) containedProcessRuntime(
 
 	container := opener.sessionContainer(runtimeID, prepared, manifest)
 	grant := prepared.Grant
-	driver := drivers.NewProcessDriver(drivers.ProcessRuntime{
+	driver := drivers.NewHeadlessDriver(drivers.HeadlessRuntime{
 		ConversationID: conversationID,
 		Profile:        profile,
 		Container: containedTurns{

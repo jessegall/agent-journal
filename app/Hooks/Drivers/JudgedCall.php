@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace App\Hooks\Drivers;
 
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\DriverCall;
+use App\Hooks\Contracts\HookInput;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Stack\HookAnswer;
 use Closure;
-use App\Hooks\Drivers\DriverReplies;
-use App\Hooks\Drivers\DriverReply;
-use App\Hooks\Drivers\HookPayload;
 
 /**
  * A native call the journal answers: the input for the walk, and how the program's reply is rendered from the answer.

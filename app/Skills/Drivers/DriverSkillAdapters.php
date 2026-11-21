@@ -8,8 +8,6 @@ use App\Drivers\Enums\HookDriver;
 use App\Drivers\Values\DriverKey;
 use App\Skills\Contracts\DriverSkills;
 use App\Skills\Exceptions\DriverSkillsUnsupported;
-use App\Skills\Drivers\ClaudeCodeSkills;
-use App\Skills\Drivers\CodexSkills;
 
 /**
  * The skill adapter of each program the journal can hand skills to.

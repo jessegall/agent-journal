@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Drivers;
 
-use App\Hooks\Contracts\FileAccessPolicy;
 use App\Hooks\Contracts\DriverCall;
+use App\Hooks\Contracts\FileAccessPolicy;
 use App\Hooks\Enums\FileAccess;
 use App\Hooks\Inputs\HookIdentity;
 use App\Processes\Values\CommandPart;
@@ -13,8 +13,6 @@ use App\Processes\Values\ShellCommand;
 use Closure;
 use PhpOption\None;
 use PhpOption\Option;
-use App\Hooks\Drivers\DriverReplies;
-use App\Hooks\Drivers\UnjudgedCall;
 
 /**
  * Puts a tool's files before the file access policy: the first refused file denies the tool call without asking any

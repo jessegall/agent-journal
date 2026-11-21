@@ -6,7 +6,6 @@ namespace App\Hooks\Drivers;
 
 use App\Hooks\Contracts\JournalToolNames;
 use App\Hooks\Exceptions\UnsupportedHook;
-use App\Hooks\Drivers\HookPayload;
 
 /**
  * Recognizes a program's calls to the journal's own MCP server: a tool named mcp__journal__<name> for exactly a name

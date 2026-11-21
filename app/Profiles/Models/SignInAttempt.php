@@ -110,21 +110,21 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function create(
         ActorIdentity $starter,
-        Account|HookDriver $accountOrProgram,
+        Account|HookDriver $accountOrDriver,
         SignInMethod $method,
         string $directory,
         string $requestKey,
         CarbonImmutable $expiresAt,
     ): self {
         $attempt = new self([
-            'driver' => $accountOrProgram instanceof Account ? $accountOrProgram->driver : $accountOrProgram->value,
+            'driver' => $accountOrDriver instanceof Account ? $accountOrDriver->driver : $accountOrDriver->value,
             'method' => $method,
             ...$starter->asColumns('actor'),
         ]);
 
-        if ($accountOrProgram instanceof Account) {
-            $attempt->account_id = $accountOrProgram->id;
-            $attempt->generation = $accountOrProgram->sign_in_generation;
+        if ($accountOrDriver instanceof Account) {
+            $attempt->account_id = $accountOrDriver->id;
+            $attempt->generation = $accountOrDriver->sign_in_generation;
             $attempt->waits_for_uses = true;
         }
 

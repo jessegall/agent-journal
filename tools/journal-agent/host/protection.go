@@ -87,7 +87,7 @@ func (evidence NativeEvidence) shown(program, build, platform string, item Bound
 type ProtectionPlatform struct {
 	Name        string
 	EvidenceKey string
-	Mechanisms  map[string]ProgramMechanisms
+	Mechanisms  map[string]DriverMechanisms
 }
 
 // LocalPlatform is this host's own operating system, where a local host's tools run.
@@ -95,8 +95,8 @@ func LocalPlatform() ProtectionPlatform {
 	return ProtectionPlatform{Name: runtime.GOOS, EvidenceKey: runtime.GOOS, Mechanisms: platformMechanisms()}
 }
 
-// ProgramMechanisms is how one program's pinned client applies each boundary item on this platform.
-type ProgramMechanisms map[BoundaryItem]BoundaryMechanism
+// DriverMechanisms is how one driver's pinned client applies each boundary item on this platform.
+type DriverMechanisms map[BoundaryItem]BoundaryMechanism
 
 // InspectProtection reports which items of the program's protected arrangement this host can enforce now, on the
 // platform its tools run on.

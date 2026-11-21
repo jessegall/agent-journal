@@ -272,7 +272,7 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	}
 	switch grant.Runtime.Variant {
 	case drivers.HeadlessVariant:
-		return opener.processRuntime(runtimeID, prepared, profile, environment)
+		return opener.headlessRuntime(runtimeID, prepared, profile, environment)
 	case drivers.TerminalVariant:
 		return opener.terminalRuntime(runtimeID, prepared, profile, environment)
 	}
@@ -298,7 +298,7 @@ func (opener runtimeOpener) containedRuntime(
 	case drivers.TerminalVariant:
 		return opener.containedTerminalRuntime(runtimeID, prepared, profile, manifest)
 	case drivers.HeadlessVariant:
-		return opener.containedProcessRuntime(runtimeID, prepared, profile, manifest)
+		return opener.containedHeadlessRuntime(runtimeID, prepared, profile, manifest)
 	}
 
 	return nil, fmt.Errorf("runtime %s runs contained as %s, which this host runs in no container", runtimeID, variant)
@@ -350,9 +350,9 @@ func (opener runtimeOpener) codexRuntime(
 	return drivers.NewCodexDriver(owner, settings, runtime.ProcessGeneration), nil
 }
 
-// processRuntime opens a runtime run one child per turn from its launch grant, with a conversation of its own, the
+// headlessRuntime opens a headless runtime, one child per turn, from its launch grant, with a conversation of its own, the
 // pinned profile of its program and the model the journal asked for.
-func (opener runtimeOpener) processRuntime(
+func (opener runtimeOpener) headlessRuntime(
 	runtimeID string,
 	prepared host.PreparedStart,
 	profile contracts.ProgramProfile,
@@ -367,7 +367,7 @@ func (opener runtimeOpener) processRuntime(
 	if err != nil {
 		return nil, err
 	}
-	driver := drivers.NewProcessDriver(drivers.ProcessRuntime{
+	driver := drivers.NewHeadlessDriver(drivers.HeadlessRuntime{
 		JournalURL:          opener.journalURL,
 		Credential:          grant.Token,
 		ProfilePin:          grant.ProfileEnvironment(),

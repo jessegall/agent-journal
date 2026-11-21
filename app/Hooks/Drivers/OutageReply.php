@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers;
 
 use App\Hooks\Enums\CallFailure;
-use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\DriverStopDecision;
-use App\Hooks\Drivers\DriverReplies;
-use App\Hooks\Drivers\DriverReply;
-use App\Hooks\Drivers\BlockBody;
+use App\Hooks\Enums\HookEvent;
 
 /**
  * The reply the host gives a program when a hook call to the journal fails. During an outage a start granted the

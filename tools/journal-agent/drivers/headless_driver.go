@@ -1,4 +1,4 @@
-// Package drivers holds the agent drivers: the process driver runs one child per turn, the terminal driver keeps one
+// Package drivers holds the agent drivers: the headless driver runs one child per turn, the terminal driver keeps one
 // interactive program open.
 package drivers
 
@@ -31,8 +31,8 @@ var ErrConversationUnknown = errors.New("the runtime has no exact conversation r
 // ErrTurnRunning is returned when a turn is asked for while the previous child still runs.
 var ErrTurnRunning = errors.New("a turn is still running")
 
-// ProcessRuntime is what the process driver needs to know about its runtime.
-type ProcessRuntime struct {
+// HeadlessRuntime is what the headless driver needs to know about its runtime.
+type HeadlessRuntime struct {
 	JournalURL     string
 	Credential     string
 	ProfilePin     []string
@@ -65,10 +65,10 @@ type TurnContainer interface {
 	TurnCommand(start profilecontracts.Start, generation int) (*exec.Cmd, error)
 }
 
-// ProcessDriver runs one child of the program per turn, each with a new process generation. Settings asked for between
+// HeadlessDriver runs one child of the program per turn, each with a new process generation. Settings asked for between
 // turns are staged and passed to the next child; they count as applied only when that child's evidence shows them.
-type ProcessDriver struct {
-	runtime ProcessRuntime
+type HeadlessDriver struct {
+	runtime HeadlessRuntime
 	turnState
 	generation int
 	turns      int
@@ -79,28 +79,28 @@ type ProcessDriver struct {
 	signedIn bool
 }
 
-// NewProcessDriver returns a driver for one runtime, starting at the generation the journal last recorded.
-func NewProcessDriver(runtime ProcessRuntime, generation int) *ProcessDriver {
-	return &ProcessDriver{runtime: runtime, generation: generation}
+// NewHeadlessDriver returns a driver for one runtime, starting at the generation the journal last recorded.
+func NewHeadlessDriver(runtime HeadlessRuntime, generation int) *HeadlessDriver {
+	return &HeadlessDriver{runtime: runtime, generation: generation}
 }
 
 // Generation is the process generation of the latest child.
-func (driver *ProcessDriver) Generation() int {
+func (driver *HeadlessDriver) Generation() int {
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 	return driver.generation
 }
 
-func (driver *ProcessDriver) Deliver(_ context.Context, delivery contracts.Delivery) (contracts.OperationResult, error) {
+func (driver *HeadlessDriver) Deliver(_ context.Context, delivery contracts.Delivery) (contracts.OperationResult, error) {
 	return driver.startTurn(delivery.Request, delivery.Message)
 }
 
 // Wake starts one standard turn that checks the agent's pending work.
-func (driver *ProcessDriver) Wake(_ context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
+func (driver *HeadlessDriver) Wake(_ context.Context, wake contracts.WakeRequest) (contracts.OperationResult, error) {
 	return driver.startTurn(wake.Request, pendingWorkPrompt)
 }
 
-func (driver *ProcessDriver) ChangeModel(_ context.Context, change contracts.ModelChange) (contracts.OperationResult, error) {
+func (driver *HeadlessDriver) ChangeModel(_ context.Context, change contracts.ModelChange) (contracts.OperationResult, error) {
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 	driver.model = change.Model
@@ -109,7 +109,7 @@ func (driver *ProcessDriver) ChangeModel(_ context.Context, change contracts.Mod
 
 // Interrupt signals the process group of the child running the turn the interrupt is bound to; when that turn has
 // ended, nothing is signalled, the answer is AlreadyIdle and the runtime stays held.
-func (driver *ProcessDriver) Interrupt(_ context.Context, interrupt contracts.InterruptRequest) (contracts.OperationResult, error) {
+func (driver *HeadlessDriver) Interrupt(_ context.Context, interrupt contracts.InterruptRequest) (contracts.OperationResult, error) {
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 
@@ -125,7 +125,7 @@ func (driver *ProcessDriver) Interrupt(_ context.Context, interrupt contracts.In
 
 // Stop ends the current child's process group in bounded stages, gracefully and then by force, and answers applied
 // only when the exit is proven; with no child running there is nothing to end.
-func (driver *ProcessDriver) Stop(_ context.Context, stop contracts.StopRequest) (contracts.OperationResult, error) {
+func (driver *HeadlessDriver) Stop(_ context.Context, stop contracts.StopRequest) (contracts.OperationResult, error) {
 	driver.mutex.Lock()
 	group, running := driver.childGroup, driver.child != nil
 	driver.mutex.Unlock()
@@ -140,7 +140,7 @@ func (driver *ProcessDriver) Stop(_ context.Context, stop contracts.StopRequest)
 // pendingWorkPrompt is the one prompt a wake sends: it asks the agent to look at its own scoped work.
 const pendingWorkPrompt = "Check your pending journal work."
 
-func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt string) (contracts.OperationResult, error) {
+func (driver *HeadlessDriver) startTurn(request contracts.RequestIdentity, prompt string) (contracts.OperationResult, error) {
 	driver.mutex.Lock()
 	defer driver.mutex.Unlock()
 
@@ -196,7 +196,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 
 // turnCommand is the command of the turn at the driver's current generation: in the session's container when the
 // runtime has one, otherwise a child of the host with the journal's variables for its hook relay.
-func (driver *ProcessDriver) turnCommand(start profilecontracts.Start) (*exec.Cmd, error) {
+func (driver *HeadlessDriver) turnCommand(start profilecontracts.Start) (*exec.Cmd, error) {
 	if driver.runtime.Container != nil {
 		return driver.runtime.Container.TurnCommand(start, driver.generation)
 	}
@@ -218,7 +218,7 @@ func (driver *ProcessDriver) turnCommand(start profilecontracts.Start) (*exec.Cm
 	return command, nil
 }
 
-func (driver *ProcessDriver) command(start profilecontracts.Start) (*exec.Cmd, error) {
+func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, error) {
 	profile := driver.runtime.Profile
 	files, err := profile.SettingsFiles(start)
 	if err != nil {
@@ -264,13 +264,13 @@ func (driver *ProcessDriver) command(start profilecontracts.Start) (*exec.Cmd, e
 
 // claudeAccountStart is whether the runtime runs Claude Code on a saved account, whose sign-in and turn results the
 // driver checks itself.
-func (driver *ProcessDriver) claudeAccountStart() bool {
+func (driver *HeadlessDriver) claudeAccountStart() bool {
 	return driver.runtime.Account != nil && driver.runtime.Profile.Program() == "claude"
 }
 
 // checkSignIn refuses the first turn of a Claude account start whose account is not signed in to claude.ai in its
 // own folder.
-func (driver *ProcessDriver) checkSignIn(command *exec.Cmd) error {
+func (driver *HeadlessDriver) checkSignIn(command *exec.Cmd) error {
 	if !driver.claudeAccountStart() || driver.signedIn {
 		return nil
 	}
@@ -283,7 +283,7 @@ func (driver *ProcessDriver) checkSignIn(command *exec.Cmd) error {
 }
 
 // resultOf reads a Claude account turn's result from its output; other starts have none to read.
-func (driver *ProcessDriver) resultOf(command *exec.Cmd) (<-chan error, error) {
+func (driver *HeadlessDriver) resultOf(command *exec.Cmd) (<-chan error, error) {
 	if !driver.claudeAccountStart() {
 		return nil, nil
 	}
@@ -298,7 +298,7 @@ func (driver *ProcessDriver) resultOf(command *exec.Cmd) (<-chan error, error) {
 
 // wait ends the turn with the process exit, or with the turn's own failure when the process exited cleanly but its
 // result was an error.
-func (driver *ProcessDriver) wait(command *exec.Cmd, result <-chan error, finished chan<- error) {
+func (driver *HeadlessDriver) wait(command *exec.Cmd, result <-chan error, finished chan<- error) {
 	var turnFailure error
 	if result != nil {
 		turnFailure = <-result
@@ -352,9 +352,9 @@ func WithoutJournalVariables(environment []string) []string {
 	return kept
 }
 
-// RegisterProcessDriver makes the process driver available to the factory; runtimeOf supplies what the grant alone
+// RegisterHeadlessDriver makes the headless driver available to the factory; runtimeOf supplies what the grant alone
 // does not say: the runtime's folders, its conversation and the generation the journal last recorded.
-func RegisterProcessDriver(factory *host.RuntimeFactory, runtimeOf func(grant host.StartGrant) (ProcessRuntime, int, error)) {
+func RegisterHeadlessDriver(factory *host.RuntimeFactory, runtimeOf func(grant host.StartGrant) (HeadlessRuntime, int, error)) {
 	factory.Register(HeadlessVariant, func(grant host.StartGrant) (contracts.AgentDriver, error) {
 		runtime, generation, err := runtimeOf(grant)
 		if err != nil {
@@ -362,12 +362,12 @@ func RegisterProcessDriver(factory *host.RuntimeFactory, runtimeOf func(grant ho
 		}
 		runtime.Credential = grant.Credential
 		runtime.ProfilePin = grant.ProfilePin
-		return NewProcessDriver(runtime, generation), nil
+		return NewHeadlessDriver(runtime, generation), nil
 	})
 }
 
 // RunKeyScript is refused: a runtime run one child per turn has no terminal to type a script into.
-func (driver *ProcessDriver) RunKeyScript(
+func (driver *HeadlessDriver) RunKeyScript(
 	_ context.Context,
 	request contracts.KeyScriptRequest,
 ) (contracts.OperationResult, error) {

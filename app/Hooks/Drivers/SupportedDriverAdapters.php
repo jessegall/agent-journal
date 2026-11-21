@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Drivers;
 
+use App\Drivers\Enums\HookDriver;
 use App\Hooks\Contracts\DriverAdapter;
 use App\Hooks\Contracts\DriverAdapters;
-use App\Drivers\Enums\HookDriver;
-use App\Hooks\Drivers\ClaudeCodeAdapter;
-use App\Hooks\Drivers\CodexAdapter;
 
 /**
  * The adapter of each supported program.

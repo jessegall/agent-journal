@@ -62,7 +62,7 @@ final readonly class HelperDispatch
     public function __construct(
         private CurrentActor $actors,
         private ProfileSelections $profiles,
-        private CallingDriver $callingProgram,
+        private CallingDriver $callingDriver,
         private PurposeResolver $purposes,
         private HelperCandidates $candidates,
         private StartReservations $reservations,
@@ -209,7 +209,7 @@ final readonly class HelperDispatch
                 ProfileKey::from($profileKey),
                 ModelSelection::fromInput($model),
                 $driverKey,
-                $this->callingProgram->driverKey(),
+                $this->callingDriver->driverKey(),
             );
         } catch (ProfileMissing $missingProfile) {
             throw HelperProfilesUnavailable::forProfile($profileKey, $missingProfile);

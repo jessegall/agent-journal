@@ -6,7 +6,6 @@ namespace App\Hooks\Drivers;
 
 use App\Hooks\Contracts\DriverCall;
 use Closure;
-use App\Hooks\Drivers\DriverReply;
 
 /**
  * A native call for a tool that only reads, such as reading a file: the journal has no state that judges it, so the
