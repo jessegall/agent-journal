@@ -2,26 +2,31 @@
 import type {
     AccountListData,
     AccountRowData,
-    SignInMethodData,
 } from '@generated/types/accounts';
+import Button from '@kit/Button';
+import ConfirmAction from '@kit/ConfirmAction';
 import EmptyState from '@kit/EmptyState';
+import Icon from '@kit/Icon';
 import PageHeader from '@kit/PageHeader';
+import Spinner from '@kit/Spinner';
 import { computed, ref, watch } from 'vue';
 import AccountRecovery from './AccountRecovery.vue';
 import AccountRow from './AccountRow.vue';
-import SignInForm from './SignInForm.vue';
-import { attemptToRejoin, lastEndedAttempt } from './signIn';
+import AddAccountWizard from './AddAccountWizard.vue';
 import { isChosen, newestSelections } from './accountSelections';
-import { programName } from './accountLooks';
+import { attemptToRejoin, isLive } from './signIn';
+import type { WizardRequest } from './signIn';
 
 /**
- * The owner's saved Claude Code and Codex accounts, by program: which one new starts of each program use, and
- * choosing or renaming one. The page reloads on every change; a reload that answers an older choice never takes
- * back a newer one, by each program's change number.
+ * The owner's saved Claude Code and Codex accounts in one list: which one new starts of each program use, choosing
+ * or renaming one, and adding one through the add-account wizard. A sign-in still waiting on the host is resumed from
+ * the header. The page reloads on every change; a reload that answers an older choice never takes back a newer one,
+ * by each program's change number.
  */
 const props = defineProps<{ data: AccountListData }>();
 
 const selections = ref(props.data.selections);
+const request = ref<WizardRequest | null>(null);
 
 watch(
     () => props.data.selections,
@@ -29,83 +34,124 @@ watch(
         (selections.value = newestSelections(selections.value, arrived)),
 );
 
-function methodsOf(program: string): SignInMethodData[] {
-    return props.data.methods.find((entry) => entry.program === program)?.methods ?? [];
+/**
+ * The sign-in of a new account that still waits on the host, which the header offers to resume.
+ */
+const waitingSignIn = computed(() =>
+    props.data.attempts.find(
+        (attempt) => isLive(attempt) && attempt.accountId === null,
+    ),
+);
+
+function billingOf(row: AccountRowData): string {
+    const note =
+        props.data.methods
+            .find((entry) => entry.program === row.program)
+            ?.methods.find((option) => option.method === row.method)
+            ?.billingNote ?? '';
+
+    return note.replace(/\.$/, '');
 }
 
-const programs = computed(() => {
-    const byProgram = new Map<string, AccountRowData[]>([
-        ['claude-code', []],
-        ['codex', []],
-    ]);
+function againLabel(row: AccountRowData): string {
+    return row.method === 'api_key' ? 'Replace key' : 'Sign in again';
+}
 
-    for (const row of props.data.rows) {
-        byProgram.set(row.program, [
-            ...(byProgram.get(row.program) ?? []),
-            row,
-        ]);
-    }
+function resumeOrAgain(row: AccountRowData): void {
+    const running = attemptToRejoin(props.data.attempts, row.program, row.id);
 
-    return [...byProgram.entries()];
-});
+    request.value =
+        running === undefined
+            ? { kind: 'again', program: row.program, accountId: row.id }
+            : { kind: 'resume', attemptId: running.id };
+}
 </script>
 
 <template>
     <div class="flex flex-col">
-        <PageHeader title="Accounts" :count="data.rows.length" />
+        <PageHeader title="Accounts" :count="data.rows.length">
+            <template #actions>
+                <template v-if="waitingSignIn !== undefined">
+                    <Button
+                        variant="bordered"
+                        size="small"
+                        @click="
+                            request = {
+                                kind: 'resume',
+                                attemptId: waitingSignIn.id,
+                            }
+                        "
+                        ><Spinner />Sign-in waiting · Resume</Button
+                    >
+                </template>
+                <Button
+                    variant="primary"
+                    size="small"
+                    :disabled="waitingSignIn !== undefined"
+                    @click="request = { kind: 'new' }"
+                    ><Icon name="plus" />Add account</Button
+                >
+            </template>
+        </PageHeader>
         <template v-if="data.rows.length === 0">
-            <EmptyState
-                icon="accounts"
-                title="No saved accounts yet"
-                text="Sign in to a Claude Code or Codex account below to let agents start with it."
-            />
+            <div class="border-t border-line">
+                <EmptyState
+                    icon="accounts"
+                    title="No saved accounts yet"
+                    text="Add a Claude Code or Codex account to let agents start with it."
+                >
+                    <Button
+                        variant="primary"
+                        :disabled="waitingSignIn !== undefined"
+                        @click="request = { kind: 'new' }"
+                        ><Icon name="plus" />Add account</Button
+                    >
+                </EmptyState>
+            </div>
         </template>
-        <template v-for="[program, rows] in programs" :key="program">
-            <section :aria-label="programName(program)">
-                <h2 class="px-4 pt-4 pb-1 text-small text-text-3">
-                    {{ programName(program) }}
-                </h2>
-                <SignInForm
-                    :program="program"
-                    :account-id="null"
-                    :running="attemptToRejoin(data.attempts, program, null)"
-                    :ended="lastEndedAttempt(data.attempts, program, null)"
-                    :methods="methodsOf(program)"
-                    :account-method="null"
-                />
-                <ul>
-                    <template v-for="row in rows" :key="row.id">
-                        <AccountRow
-                            :account="row"
-                            :is-chosen="
-                                isChosen(selections, row.program, row.id)
+        <template v-else>
+            <ul class="border-t border-line">
+                <template v-for="row in data.rows" :key="row.id">
+                    <AccountRow
+                        :account="row"
+                        :billing="billingOf(row)"
+                        :is-chosen="isChosen(selections, row.program, row.id)"
+                    >
+                        <template
+                            v-if="
+                                attemptToRejoin(
+                                    data.attempts,
+                                    row.program,
+                                    row.id,
+                                ) !== undefined
                             "
                         >
-                            <SignInForm
-                                :program="program"
-                                :account-id="row.id"
-                                :running="
-                                    attemptToRejoin(
-                                        data.attempts,
-                                        program,
-                                        row.id,
-                                    )
-                                "
-                                :ended="
-                                    lastEndedAttempt(
-                                        data.attempts,
-                                        program,
-                                        row.id,
-                                    )
-                                "
-                                :methods="methodsOf(program)"
-                                :account-method="row.method"
+                            <Button
+                                variant="bordered"
+                                size="small"
+                                @click="resumeOrAgain(row)"
+                                ><Spinner />Sign-in waiting · Resume</Button
+                            >
+                        </template>
+                        <template v-else>
+                            <ConfirmAction
+                                :label="againLabel(row)"
+                                :question="`New starts wait and work running on this account must end first. ${againLabel(row)}?`"
+                                :confirm-label="againLabel(row)"
+                                @confirm="resumeOrAgain(row)"
                             />
-                        </AccountRow>
-                    </template>
-                </ul>
-            </section>
+                        </template>
+                    </AccountRow>
+                </template>
+            </ul>
         </template>
         <AccountRecovery :cleanups="data.pendingCleanups" />
+        <AddAccountWizard
+            :request="request"
+            :methods="data.methods"
+            :attempts="data.attempts"
+            :rows="data.rows"
+            @close="request = null"
+        />
     </div>
 </template>

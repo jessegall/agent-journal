@@ -45,7 +45,7 @@ final readonly class AccountsWindowResolver implements PageResolver
             'pendingCleanups' => SignInAttempt::pendingCleanups(),
             'methods' => array_map(
                 fn (HookProgram $program) => ProgramMethodsData::fromMethods(
-                    $program->value,
+                    $program,
                     $this->protocols->methodsOf($program->value),
                 ),
                 HookProgram::cases(),

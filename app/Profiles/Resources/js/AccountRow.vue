@@ -10,18 +10,38 @@ import { Link } from '@inertiajs/vue3';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import ConfirmAction from '@kit/ConfirmAction';
-import StateBadge from '@kit/StateBadge';
+import ProgramIcon from '@kit/ProgramIcon';
 import TextField from '@kit/TextField';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, ref } from 'vue';
 import ActivateAccount from './ActivateAccount.vue';
-import { accountStateLook, cleanupProblemText } from './accountLooks';
+import {
+    accountStateLook,
+    cleanupProblemText,
+    programIcon,
+    programName,
+} from './accountLooks';
 
 /**
- * One saved account: its name, state and identity, whether new starts use it and how many run on it, with choosing
- * it and renaming it. An account that must sign in again offers no choice; it is never switched to on its own.
+ * One saved account in the list: its program's icon, its full name, a grey line with its program, what it bills and
+ * whether new starts use it, its state in grey, and choosing, renaming and removing it. An account that must sign in
+ * again offers no choice; it is never switched to on its own.
  */
-const props = defineProps<{ account: AccountRowData; isChosen: boolean }>();
+const props = defineProps<{
+    account: AccountRowData;
+    billing: string;
+    isChosen: boolean;
+}>();
+
+const subtext = computed(() =>
+    [
+        programName(props.account.program),
+        props.billing,
+        props.isChosen ? 'Chosen for new starts' : '',
+    ]
+        .filter((part) => part !== '')
+        .join(' · '),
+);
 
 const naming = useForm({ label: props.account.label });
 const isRenaming = ref(false);
@@ -57,20 +77,22 @@ function saveName(): void {
 </script>
 
 <template>
-    <li class="flex flex-col gap-2 border-b border-border px-4 py-3">
-        <div class="flex items-center gap-3">
-            <span class="text-card text-text">{{ account.label }}</span>
-            <StateBadge
-                :label="accountStateLook[account.state].label"
-                :tone="accountStateLook[account.state].tone"
-            />
-            <template v-if="isChosen">
-                <span class="text-small text-brand-text"
-                    >Used for new starts</span
-                >
-            </template>
-            <div class="ml-auto flex items-start gap-2">
-                <span class="pt-1 text-small text-text-3 tabular-nums"
+    <li
+        class="flex items-start gap-3 border-b border-line px-4 py-3 last:border-b-0"
+    >
+        <ProgramIcon
+            :program="programIcon(account.program)"
+            :size="16"
+            class="mt-0.5"
+        />
+        <div class="flex min-w-0 flex-1 flex-col gap-1">
+            <span
+                class="leading-5 [overflow-wrap:anywhere] text-card text-text"
+                >{{ account.label }}</span
+            >
+            <span class="text-small text-text-3">{{ subtext }}</span>
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                <span class="text-small text-text-3 tabular-nums"
                     >{{ account.runningCount }} running</span
                 >
                 <template v-if="!isChosen && !isLeaving">
@@ -93,75 +115,86 @@ function saveName(): void {
                         :pending="removing.processing"
                         @confirm="removeAccount"
                     />
+                    <slot />
                 </template>
             </div>
-        </div>
-        <template v-if="account.identity">
-            <p class="text-small text-text-3">
-                {{ account.identity }}
-            </p>
-        </template>
-        <template v-if="account.expiresAt !== null">
-            <p class="text-small text-text-3">
-                Its login expires {{ new Date(account.expiresAt).toLocaleDateString() }}.
-            </p>
-        </template>
-        <template v-if="account.cleanupProblem !== null">
-            <div class="flex items-center gap-2">
-                <span class="text-small text-text-2">{{
-                    cleanupProblemText[account.cleanupProblem]
-                }}</span>
-                <template v-if="account.awaitsCleanupRetry">
-                    <Button
-                        size="small"
-                        :pending="retrying.processing"
-                        @click="retryAccountCleanup"
-                        >Retry cleanup</Button
-                    >
-                </template>
-            </div>
-        </template>
-        <template v-if="isRenaming">
-            <form class="flex items-end gap-2" @submit.prevent="saveName">
-                <TextField
-                    :id="`account-name-${account.id}`"
-                    v-model="naming.label"
-                    label="Name"
-                    :maxlength="80"
-                    :error="naming.errors.label"
-                />
-                <Button
-                    type="submit"
-                    variant="primary"
-                    size="small"
-                    :pending="naming.processing"
-                    >Save</Button
-                >
-                <Button size="small" @click="isRenaming = false">Cancel</Button>
-            </form>
-        </template>
-        <template v-if="account.recentStarts.length > 0">
-            <ul
-                class="flex flex-wrap gap-2 text-small"
-                aria-label="Recent starts"
-            >
-                <template
-                    v-for="start in account.recentStarts"
-                    :key="start.sessionId"
-                >
-                    <li>
-                        <Link
-                            :href="
-                                accountStart({ session: start.sessionId }).url
-                            "
-                            class="text-brand-text underline"
-                            >{{ start.isRunning ? 'Running since' : 'Started' }}
-                            {{ start.startedAt }}</Link
+            <template v-if="account.identity">
+                <p class="text-small text-text-3">
+                    {{ account.identity }}
+                </p>
+            </template>
+            <template v-if="account.expiresAt !== null">
+                <p class="text-small text-text-3">
+                    Its login expires
+                    {{ new Date(account.expiresAt).toLocaleDateString() }}.
+                </p>
+            </template>
+            <template v-if="account.cleanupProblem !== null">
+                <div class="flex items-center gap-2">
+                    <span class="text-small text-text-2">{{
+                        cleanupProblemText[account.cleanupProblem]
+                    }}</span>
+                    <template v-if="account.awaitsCleanupRetry">
+                        <Button
+                            size="small"
+                            :pending="retrying.processing"
+                            @click="retryAccountCleanup"
+                            >Retry cleanup</Button
                         >
-                    </li>
-                </template>
-            </ul>
-        </template>
-        <slot v-if="!isLeaving" />
+                    </template>
+                </div>
+            </template>
+            <template v-if="isRenaming">
+                <form class="flex items-end gap-2" @submit.prevent="saveName">
+                    <TextField
+                        :id="`account-name-${account.id}`"
+                        v-model="naming.label"
+                        label="Name"
+                        :maxlength="80"
+                        :error="naming.errors.label"
+                    />
+                    <Button
+                        type="submit"
+                        variant="primary"
+                        size="small"
+                        :pending="naming.processing"
+                        >Save</Button
+                    >
+                    <Button size="small" @click="isRenaming = false"
+                        >Cancel</Button
+                    >
+                </form>
+            </template>
+            <template v-if="account.recentStarts.length > 0">
+                <ul
+                    class="flex flex-wrap gap-2 text-small"
+                    aria-label="Recent starts"
+                >
+                    <template
+                        v-for="start in account.recentStarts"
+                        :key="start.sessionId"
+                    >
+                        <li>
+                            <Link
+                                :href="
+                                    accountStart({ session: start.sessionId })
+                                        .url
+                                "
+                                class="text-brand-text underline"
+                                >{{
+                                    start.isRunning
+                                        ? 'Running since'
+                                        : 'Started'
+                                }}
+                                {{ start.startedAt }}</Link
+                            >
+                        </li>
+                    </template>
+                </ul>
+            </template>
+        </div>
+        <span class="ml-1 text-small leading-5 whitespace-nowrap text-text-3">{{
+            accountStateLook[account.state].label
+        }}</span>
     </li>
 </template>
