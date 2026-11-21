@@ -63,7 +63,7 @@ $ docker run --rm --network none --memory 67108864b --memory-swap 67108864b ... 
 held 200 MB under a 64 MB limit
 ```
 
-Task 1633 makes agent-host refuse a daemon without a cgroup driver and gives the daemon a delegated cgroup.
+The host refuses to create an agent container on such a daemon (`ErrBudgetsUnenforced`, task 1633); task 1636 gives the daemon a delegated cgroup.
 
 ## relay-protection: unsupported
 

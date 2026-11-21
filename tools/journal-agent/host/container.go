@@ -116,7 +116,6 @@ var (
 	ErrManifestUnsafe = errors.New("the container manifest asks for more than a helper may have")
 )
 
-
 // RequireContainerTransport refuses a saved-account arrangement inside a required container before anything is
 // created.
 func RequireContainerTransport(arrangement string) error {
@@ -289,6 +288,27 @@ func (containers Containers) command(ctx context.Context, arguments ...string) *
 // about the images it holds (doc 61, story 64).
 var ErrAgentDaemonUnreachable = errors.New("the agent container runtime cannot be reached")
 
+// ErrBudgetsUnenforced is returned when the agent daemon has no cgroup driver, so the CPU, memory and process budgets
+// every agent container is created with would be accepted and discarded.
+var ErrBudgetsUnenforced = errors.New("the agent daemon cannot hold container budgets: it has no cgroup driver")
+
+// AssertBudgetsEnforced refuses an agent daemon whose cgroup driver is none; a daemon it cannot reach is named as that.
+func (containers Containers) AssertBudgetsEnforced(ctx context.Context) error {
+	info := containers.command(ctx, "info", "--format", "{{.CgroupDriver}}")
+	var refusal strings.Builder
+	info.Stderr = &refusal
+	output, err := info.Output()
+	if err != nil {
+		return fmt.Errorf("%w: %s", ErrAgentDaemonUnreachable, failureLine(refusal.String(), err))
+	}
+
+	if driver := strings.TrimSpace(string(output)); driver == "" || driver == "none" {
+		return ErrBudgetsUnenforced
+	}
+
+	return nil
+}
+
 // AssertImagePinned refuses an image the agent daemon lacks or holds under another digest than the reference names;
 // a reference matches the image's id or one of its repository digests. A daemon it cannot reach is named as that.
 func (containers Containers) AssertImagePinned(ctx context.Context, reference string) error {
@@ -315,7 +335,8 @@ func (containers Containers) AssertImagePinned(ctx context.Context, reference st
 		cmp.Or(wanted, reference), digests[0])
 }
 
-// Create creates the container from the manifest and answers its id.
+// Create creates the container from the manifest and answers its id; a daemon that would discard the manifest's
+// budgets is refused before anything is created.
 func (containers Containers) Create(
 	ctx context.Context,
 	manifest ContainerManifest,
@@ -324,6 +345,10 @@ func (containers Containers) Create(
 ) (string, error) {
 	arguments, err := manifest.DockerCreateArguments(name, labels, containers.Rules)
 	if err != nil {
+		return "", err
+	}
+
+	if err := containers.AssertBudgetsEnforced(ctx); err != nil {
 		return "", err
 	}
 

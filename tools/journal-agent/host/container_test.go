@@ -47,7 +47,9 @@ func TestAManifestAskingForMoreThanAHelperMayHaveIsRefused(t *testing.T) {
 		func(m *ContainerManifest) { m.Privileged = true },
 		func(m *ContainerManifest) { m.Capabilities = []string{"SYS_ADMIN"} },
 		func(m *ContainerManifest) { m.Image = "journal/helper:latest" },
-		func(m *ContainerManifest) { m.Mounts = append(m.Mounts, ContainerMount{Type: MountBind, Source: "/accounts"}) },
+		func(m *ContainerManifest) {
+			m.Mounts = append(m.Mounts, ContainerMount{Type: MountBind, Source: "/accounts"})
+		},
 		func(m *ContainerManifest) { m.PublishedPorts = []int{8080} },
 	}
 	for _, change := range unsafe {
@@ -186,6 +188,27 @@ func TestAnUnreachableAgentDaemonIsNamedAsThatNotAsAMissingImage(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "permission denied") {
 		t.Fatalf("the daemon's own words are missing from %v", err)
+	}
+}
+
+func TestAnAgentContainerIsNotCreatedOnADaemonThatDiscardsItsBudgets(t *testing.T) {
+	created := filepath.Join(t.TempDir(), "created")
+	unbounded := fakeImageDocker(t, "[ \"$3\" = info ] && { echo none; exit 0; }; touch "+created)
+	unbounded.Rules = containedRules
+
+	_, err := unbounded.Create(context.Background(), containedManifest(), "journal-session-7", labels())
+	if !errors.Is(err, ErrBudgetsUnenforced) {
+		t.Fatalf("a daemon with cgroup driver none gave %v", err)
+	}
+
+	if _, statErr := os.Stat(created); statErr == nil {
+		t.Fatal("a volume or container was created on a daemon that discards budgets")
+	}
+
+	bounded := fakeImageDocker(t, "[ \"$3\" = info ] && { echo cgroupfs; exit 0; }; echo c1")
+	bounded.Rules = containedRules
+	if id, err := bounded.Create(context.Background(), containedManifest(), "journal-session-7", labels()); err != nil || id != "c1" {
+		t.Fatalf("a daemon with a cgroup driver gave %q, %v", id, err)
 	}
 }
 
