@@ -6,10 +6,12 @@ namespace Domain\Plans\Tests\Feature\Http;
 
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
+use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -55,6 +57,21 @@ final class StartPlanTest extends TestCase
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
     }
 
+    public function test_a_replayed_start_after_an_unknown_outcome_lands_on_started_once(): void
+    {
+        Event::fake([PlanStarted::class]);
+
+        $this->actingAs($this->owner)->from('/plans')->post("/plans/{$this->plan->number}/start")
+            ->assertStatus(303)
+            ->assertSessionHasNoErrors();
+        $this->actingAs($this->owner)->from('/plans')->post("/plans/{$this->plan->number}/start")
+            ->assertStatus(303)
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
+        Event::assertDispatchedTimes(PlanStarted::class, 1);
+    }
+
     public function test_a_refused_start_shows_its_reason_and_changes_nothing(): void
     {
         Plan::query()->whereKey($this->plan->id)->update(['state' => PlanState::Paused->value]);
@@ -63,7 +80,9 @@ final class StartPlanTest extends TestCase
             ->post("/plans/{$this->plan->number}/start")
             ->assertStatus(303)
             ->assertRedirect('/plans')
-            ->assertSessionHasErrors(['start' => 'This plan is paused and cannot start; only a planned plan starts.']);
+            ->assertSessionHasErrors([
+                'start' => "Plan {$this->plan->number} is paused and cannot start; only a planned plan starts.",
+            ]);
 
         $this->assertSame(PlanState::Paused, $this->plan->fresh()?->state);
     }

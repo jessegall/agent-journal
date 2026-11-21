@@ -19,6 +19,7 @@ const props = defineProps<{
     card: PlanCardData;
     href: string;
     selected?: boolean;
+    refresh: string[];
 }>();
 
 const state = computed(() => stateLook[props.card.state]);
@@ -103,11 +104,24 @@ const linkName = computed(() =>
         </Link>
         <ActionsMenu :label="`Actions for ${name}`" class="shrink-0">
             <template v-if="card.start">
-                <StartPlanForm :key="card.start.planId" :start="card.start">
+                <StartPlanForm
+                    :key="card.start.planId"
+                    :start="card.start"
+                    :refresh="refresh"
+                >
                     <template #default="{ pending }">
                         <ActionsMenuItem type="submit" :pending="pending">
                             <Icon name="start" :size="12" />
                             <span>Start plan</span>
+                        </ActionsMenuItem>
+                    </template>
+                    <template #unknown="{ check }">
+                        <p class="px-2 py-1 text-small text-text-2">
+                            Outcome unknown
+                        </p>
+                        <ActionsMenuItem @click="check">
+                            <Icon name="search" :size="12" />
+                            <span>Check plan</span>
                         </ActionsMenuItem>
                     </template>
                 </StartPlanForm>

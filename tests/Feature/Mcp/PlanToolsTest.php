@@ -93,7 +93,7 @@ final class PlanToolsTest extends TestCase
             ->assertJsonPath('result.structuredContent.code', 'forbidden')
             ->assertJsonPath(
                 'result.structuredContent.message',
-                'This plan is cancelled and cannot start; only a planned plan starts.',
+                "Plan {$plan->number} is cancelled and cannot start; only a planned plan starts.",
             );
         $this->assertSame(PlanState::Cancelled, $plan->refresh()->state);
     }

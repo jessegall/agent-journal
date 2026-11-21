@@ -12,8 +12,8 @@ use RuntimeException;
  */
 final class StartDenied extends RuntimeException implements CommandRefusal
 {
-    public static function inState(string $state): self
+    public static function inState(int $number, string $state): self
     {
-        return new self("This plan is {$state} and cannot start; only a planned plan starts.");
+        return new self("Plan {$number} is {$state} and cannot start; only a planned plan starts.");
     }
 }

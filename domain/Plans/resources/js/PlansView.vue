@@ -10,11 +10,13 @@ import PlanReader from './PlanReader.vue';
 
 /**
  * The plans slice: a search, the card grid, paging and the reader. It takes the slice alone, so Home can reuse it; the
- * page that shows it says where a link to other filters goes, the plans page by default.
+ * page that shows it says where a link to other filters goes, the plans page by default, and which props a start
+ * reloads.
  */
 const props = defineProps<{
     plans: PlanListData;
     urlForFilters: (filters: PlanFiltersData) => string;
+    refresh: string[];
 }>();
 
 const search = ref(props.plans.filters.q);
@@ -80,6 +82,7 @@ function submitSearch(): void {
                             :card="card"
                             :href="urlFor({ plan: card.number })"
                             :selected="filters.plan === card.number"
+                            :refresh="refresh"
                         />
                     </template>
                 </div>
@@ -108,6 +111,7 @@ function submitSearch(): void {
             <PlanReader
                 :reader="plans.selected"
                 :selection-missing="plans.selectionMissing"
+                :refresh="refresh"
             />
         </template>
     </ListReaderLayout>

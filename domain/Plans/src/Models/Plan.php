@@ -205,7 +205,7 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
         }
 
         if (! $this->state->canStart()) {
-            throw StartDenied::inState($this->state->value);
+            throw StartDenied::inState($this->number, $this->state->value);
         }
 
         $this->state = PlanState::Started;

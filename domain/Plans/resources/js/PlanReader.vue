@@ -11,6 +11,7 @@ import StartPlanForm from './StartPlanForm.vue';
 defineProps<{
     reader?: PlanReaderData;
     selectionMissing: boolean;
+    refresh: string[];
 }>();
 </script>
 
@@ -33,6 +34,7 @@ defineProps<{
                     <StartPlanForm
                         :key="reader.card.start.planId"
                         :start="reader.card.start"
+                        :refresh="refresh"
                         class="items-end"
                     />
                 </template>
