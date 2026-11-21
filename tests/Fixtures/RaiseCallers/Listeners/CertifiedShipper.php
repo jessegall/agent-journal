@@ -16,8 +16,6 @@ final readonly class CertifiedShipper
      */
     public function handle(array $open): void
     {
-        foreach ($open as $shipment) {
-            $shipment->ship();
-        }
+        array_walk($open, fn (Shipment $shipment) => $shipment->ship());
     }
 }

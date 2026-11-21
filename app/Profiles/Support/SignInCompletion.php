@@ -6,6 +6,7 @@ namespace App\Profiles\Support;
 
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Exceptions\ActorUnavailable;
+use App\Bus\Contracts\CommandFacts;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Events\AccountsChanged;
@@ -30,6 +31,7 @@ final readonly class SignInCompletion
         private Dispatcher $events,
         private TargetAuthorizer $authorizer,
         private AccountNotices $notices,
+        private CommandFacts $facts,
     ) {}
 
     /**
@@ -121,6 +123,7 @@ final readonly class SignInCompletion
     private function endWithout(SignInAttempt $attempt, SignInState $state): void
     {
         $attempt->finish($state);
+        $this->facts->applyRequired();
         $this->events->dispatch(new AccountsChanged($attempt->program, $attempt->account_id ?? $attempt->id));
     }
 }

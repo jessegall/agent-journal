@@ -85,17 +85,23 @@ final readonly class RaiseCallers
     }
 
     /**
-     * The migrated transition the call runs: the receiver's class decides where the code shows it, else the name.
+     * The migrated transition the call runs, read from the receiver's class; a receiver whose class the code does not
+     * show runs none, since a method name alone is shared by many classes.
      *
      * @param  TransitionCall  $call
      */
     private function transitionOf(array $call): string|null
     {
+        if ($call['receiver'] === null) {
+            return null;
+        }
+
+        $receiver = ModelWriteScan::shortName($call['receiver']);
+
         foreach ($this->transitions as $transition) {
             [$class, $method] = explode('::', $transition) + [1 => ''];
-            $receiver = $call['receiver'] === null ? null : ModelWriteScan::shortName($call['receiver']);
 
-            if ($method === $call['method'] && ($receiver === null || $receiver === $class)) {
+            if ($method === $call['method'] && $receiver === $class) {
                 return $transition;
             }
         }

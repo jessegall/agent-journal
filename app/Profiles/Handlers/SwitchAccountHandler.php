@@ -8,8 +8,8 @@ use App\Contracts\CommandHandler;
 use App\Profiles\Commands\SwitchAccount;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\Account;
-use App\Profiles\Support\AccountNotices;
 use App\Profiles\Models\ActiveAccount;
+use App\Profiles\Support\AccountNotices;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 

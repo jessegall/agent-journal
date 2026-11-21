@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
+use App\Bus\Support\RequiredListenerRegistry;
 use App\Contracts\DomainAvailability;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Support\AvailableListener;
@@ -54,11 +55,14 @@ final class DomainListenerGateTest extends TestCase
         $discovered = $provider->discoverEvents();
         unset($discovered[DomainEventServiceProvider::LANES]);
         $gated = $provider->getEvents();
+        $required = $this->app->make(RequiredListenerRegistry::class);
+        $kept = [];
 
-        $this->assertSame(
-            array_map('count', $discovered),
-            array_map('count', array_intersect_key($gated, $discovered)),
-        );
+        foreach (array_keys($discovered) as $event) {
+            $kept[$event] = count($gated[$event] ?? []) + count($required->listenersOf($event));
+        }
+
+        $this->assertSame(array_map('count', $discovered), $kept);
 
         $owners = [];
         $coreListeners = [];

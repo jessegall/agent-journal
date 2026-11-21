@@ -9,8 +9,8 @@ use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Enums\AccountNoticeReason;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\Account;
-use App\Profiles\Support\AccountNotices;
 use App\Profiles\Models\ActiveAccount;
+use App\Profiles\Support\AccountNotices;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 

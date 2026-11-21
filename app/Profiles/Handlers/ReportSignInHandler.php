@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Handlers;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Enums\SignInOutcome;
@@ -19,7 +20,11 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class ReportSignInHandler implements CommandHandler
 {
-    public function __construct(private SignInCompletion $completion, private Dispatcher $events) {}
+    public function __construct(
+        private SignInCompletion $completion,
+        private Dispatcher $events,
+        private CommandFacts $facts,
+    ) {}
 
     public function handle(ReportSignIn $command): void
     {
@@ -43,6 +48,7 @@ final readonly class ReportSignInHandler implements CommandHandler
         }
 
         $attempt->finish(SignInState::Failed);
+        $this->facts->applyRequired();
         $this->events->dispatch(new AccountsChanged($attempt->program, $attempt->account_id ?? $attempt->id));
     }
 }

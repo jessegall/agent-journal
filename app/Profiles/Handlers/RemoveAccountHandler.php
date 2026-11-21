@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Handlers;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\RemoveAccount;
 use App\Profiles\Enums\SignInState;
@@ -20,7 +21,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class RemoveAccountHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private Dispatcher $events, private CommandFacts $facts) {}
 
     public function handle(RemoveAccount $command): void
     {
@@ -33,6 +34,7 @@ final readonly class RemoveAccountHandler implements CommandHandler
         }
 
         SignInAttempt::liveFor($program, $account)?->finish(SignInState::Cancelled);
+        $this->facts->applyRequired();
         $account->refresh()->beginRemoval();
         $selection->clearIfChosen($account);
         $this->events->dispatch(new AccountsChanged($program->value, $account->id));

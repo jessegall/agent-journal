@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Handlers;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ReconcileSignIns;
 use App\Profiles\Enums\SignInState;
@@ -18,7 +19,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class ReconcileSignInsHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private Dispatcher $events, private CommandFacts $facts) {}
 
     public function handle(ReconcileSignIns $command): int
     {
@@ -26,6 +27,7 @@ final readonly class ReconcileSignInsHandler implements CommandHandler
 
         foreach (SignInAttempt::lostBy($command->hostId, $command->runningAttemptIds) as $attempt) {
             $attempt->finish(SignInState::Interrupted);
+            $this->facts->applyRequired();
             $this->events->dispatch(new AccountsChanged($attempt->program, $attempt->account_id ?? $attempt->id));
             $ended++;
         }

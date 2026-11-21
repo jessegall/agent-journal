@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Handlers;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Enums\SignInState;
@@ -14,7 +15,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class ExpireSignInAttemptHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private Dispatcher $events, private CommandFacts $facts) {}
 
     public function handle(ExpireSignInAttempt $command): bool
     {
@@ -25,6 +26,7 @@ final readonly class ExpireSignInAttemptHandler implements CommandHandler
         }
 
         $attempt->finish(SignInState::Expired);
+        $this->facts->applyRequired();
         $this->events->dispatch(new AccountsChanged($attempt->program, $attempt->account_id ?? $attempt->id));
 
         return true;

@@ -7,11 +7,13 @@ namespace Tests\Feature\Domains;
 use App\Bus\Support\RequiredListenerRegistry;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
+use App\Domains\Registration\ListenerPolicy;
 use App\Domains\Support\AvailableListener;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerOwnership;
-use App\Domains\Registration\ListenerPolicy;
 use App\Pipelines\Contracts\PipelineRunner;
+use App\Profiles\Events\SignInAttemptFinished;
+use App\Profiles\Listeners\ReleaseSignInWriter;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -49,9 +51,13 @@ final class RequiredListenerLaneTest extends TestCase
         }
     }
 
-    public function test_the_application_requires_no_listener_yet(): void
+    public function test_the_application_requires_only_the_sign_in_writer_release(): void
     {
-        $this->assertSame([], $this->app->make(RequiredListenerRegistry::class)->events());
+        $registry = $this->app->make(RequiredListenerRegistry::class);
+
+        $this->assertSame([SignInAttemptFinished::class], $registry->events());
+        $this->assertSame([ReleaseSignInWriter::class.'@handle'], $registry->listenersOf(SignInAttemptFinished::class));
+        $this->assertFalse($this->app->make('events')->hasListeners(SignInAttemptFinished::class));
     }
 
     public function test_a_queued_required_listener_is_refused(): void
