@@ -53,7 +53,7 @@ func (opener runtimeOpener) containedTerminalRuntime(
 		return nil, err
 	}
 
-	start := contracts.Start{Mode: recording.TerminalMode, SessionID: conversationID}
+	start := contracts.Start{Mode: recording.TerminalMode, SessionID: conversationID, Protected: manifest.IsProtected()}
 	process, err := containedProcessOf(profile, opener.journalURL, prepared, runtimeID, start,
 		prepared.Grant.Runtime.ProcessGeneration, os.Environ())
 	if err != nil {
@@ -153,6 +153,7 @@ type containedTurns struct {
 }
 
 func (turns containedTurns) TurnCommand(start contracts.Start, generation int) (*exec.Cmd, error) {
+	start.Protected = turns.manifest.IsProtected()
 	process, err := containedProcessOf(turns.profile, turns.journalURL, turns.prepared, turns.runtimeID, start,
 		generation, os.Environ())
 	if err != nil {
