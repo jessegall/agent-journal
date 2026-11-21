@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace App\Sharing\Support;
 
+use Spatie\LaravelData\Data;
+
 /**
  * Where a page of one relation goes on, for one share at one scope version, along one path and relation, in one
  * order, after the provider's continuation. It travels signed, as ShareCursors writes it.
  */
-final readonly class ShareCursor
+final class ShareCursor extends Data
 {
     public const string ORDER_WRITTEN_THEN_ID = 'written,id';
 
     public function __construct(
-        public string $shareId,
-        public int $scopeVersion,
-        public string $path,
-        public string $relation,
-        public string $ordering,
-        public string $continuation,
+        public readonly string $shareId,
+        public readonly int $scopeVersion,
+        public readonly string $path,
+        public readonly string $relation,
+        public readonly string $ordering,
+        public readonly string $continuation,
     ) {}
 
     /**

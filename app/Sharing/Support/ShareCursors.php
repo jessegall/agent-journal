@@ -7,6 +7,8 @@ namespace App\Sharing\Support;
 use App\Sharing\Exceptions\ShareReadRefused;
 use Illuminate\Container\Attributes\Config;
 use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * Writes page cursors as signed text with the application key and reads them back only for the share, scope
@@ -21,19 +23,7 @@ final readonly class ShareCursors
 
     public function write(ShareCursor $cursor): string
     {
-        $encodedCursor = self::encode(
-            json_encode(
-                [
-                    $cursor->shareId,
-                    $cursor->scopeVersion,
-                    $cursor->path,
-                    $cursor->relation,
-                    $cursor->ordering,
-                    $cursor->continuation,
-                ],
-                JSON_THROW_ON_ERROR,
-            ),
-        );
+        $encodedCursor = self::encode(json_encode($cursor, JSON_THROW_ON_ERROR));
 
         return $encodedCursor.'.'.$this->signatureOf($encodedCursor);
     }
@@ -55,8 +45,8 @@ final readonly class ShareCursors
         }
 
         try {
-            $cursor = new ShareCursor(...json_decode(self::decode($encodedCursor), false, 3, JSON_THROW_ON_ERROR));
-        } catch (JsonException $cause) {
+            $cursor = ShareCursor::from(json_decode(self::decode($encodedCursor), true, 3, JSON_THROW_ON_ERROR));
+        } catch (JsonException|CannotCreateData|TypeError $cause) {
             throw ShareReadRefused::staleCursor(previous: $cause);
         }
 

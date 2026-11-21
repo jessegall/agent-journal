@@ -14,12 +14,21 @@ use Tests\TestCase;
 /**
  * Decoded JSON is read into a Data class, so its shape is written down and read through typed properties: every
  * json_decode in app/ and the domains is handed straight to a Data class's from(), collect() or validateAndCreate()
- * (user messages 10999, 11389). The Files area decodes for readJson and is left out.
+ * (user messages 10999, 11389). The Files area decodes for readJson and is left out, and only the methods listed
+ * in ANY_JSON_METHODS may decode JSON of no fixed shape under #[DecodesAnyJson].
  */
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of app/ and the domains.')]
 final class JsonIntoDataTest extends TestCase
 {
     private const array TAKERS = ['from', 'collect', 'validateAndCreate'];
+
+    /**
+     * The only methods allowed #[DecodesAnyJson]: their JSON is a value of any type, kept as it was stored.
+     */
+    private const array ANY_JSON_METHODS = [
+        'App\\Settings\\Storage\\EncodedValue::jsonSerialize',
+        'App\\Settings\\Casts\\SettingsDocumentCast::get',
+    ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void
     {
@@ -34,7 +43,9 @@ final class JsonIntoDataTest extends TestCase
             }
 
             foreach ($decodes as $decode) {
-                if (! self::goesIntoData($decode['class'], $decode['method'])) {
+                $isAllowedAnyJson = in_array($decode['marked'], self::ANY_JSON_METHODS, true);
+
+                if (! $isAllowedAnyJson && ! self::goesIntoData($decode['class'], $decode['method'])) {
                     $loose[] = "{$relative}:{$decode['line']}";
                 }
             }

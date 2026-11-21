@@ -10,6 +10,7 @@ use Error;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 
 /**
  * Reads the JSON settings column of a gateway configuration as GatewaySettings and writes them back.
@@ -26,8 +27,8 @@ final class GatewaySettingsCast implements CastsAttributes
     public function get(Model $model, string $key, mixed $value, array $attributes): GatewaySettings
     {
         try {
-            return new GatewaySettings(...json_decode((string) $value, true, 4, JSON_THROW_ON_ERROR));
-        } catch (JsonException|Error $failure) {
+            return GatewaySettings::from(json_decode((string) $value, true, 4, JSON_THROW_ON_ERROR));
+        } catch (JsonException|CannotCreateData|Error $failure) {
             throw StoredShareColumnInvalid::for($model->getTable(), $key, (string) $model->getKey(), $failure);
         }
     }
