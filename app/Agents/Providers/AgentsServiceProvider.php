@@ -96,15 +96,18 @@ use App\Agents\Support\GrantedSessionOutputs;
 use App\Agents\Support\HelperCommitImport;
 use App\Agents\Support\HostStartExecutor;
 use App\Agents\Support\HostStartPreflight;
+use App\Agents\Support\InstallLineAvailability;
 use App\Agents\Support\NavigationExpiry;
 use App\Agents\Support\NavigationRecords;
 use App\Agents\Support\NavigationRequestProvider;
 use App\Agents\Support\PendingNavigationWork;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\ProtectedMerge;
+use App\Agents\Support\PublishedReleases;
 use App\Agents\Support\ReadGrant;
 use App\Agents\Support\RequestSession;
 use App\Agents\Support\RetainedWorkspaceReads;
+use App\Agents\Support\ServerOrigin;
 use App\Agents\Support\SessionProvenance;
 use App\Agents\Support\SessionToolDiscovery;
 use App\Agents\Support\TerminalViews;
@@ -122,6 +125,8 @@ use App\Files\Enums\Place;
 use App\Files\Values\FilePath;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
+use App\Settings\Contracts\SettingsResolver;
+use App\Settings\Support\CoreSettings;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
@@ -209,6 +214,19 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->string('agents.installation_name'),
             $this->app->make('config')->string('agents.workspaces'),
         ));
+        $this->app->singleton(PublishedReleases::class, fn () => new PublishedReleases(
+            $this->app->make(Files::class),
+            $this->app->make('config')->string('agents.release'),
+        ));
+        $this->app->bind(InstallLineAvailability::class, fn () => new InstallLineAvailability(
+            $this->app->make(SettingsResolver::class),
+            $this->app->make(CoreSettings::class),
+            $this->app->make(PublishedReleases::class),
+            $this->app->make(ServerOrigin::class),
+        ));
+        $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
+            $this->app->make('config')->string('agents.server_origin'),
+        ));
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
             $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),
             $this->app->make('config')->integer('agents.host_capacity.memory_bytes'),
@@ -276,6 +294,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/releases.php');
         $this->commands([
             ...FolderClasses::in(dirname(__DIR__).'/Console', Command::class),
             GenerateCallsCommand::class,

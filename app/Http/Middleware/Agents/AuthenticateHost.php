@@ -48,7 +48,10 @@ final readonly class AuthenticateHost
         } catch (HostCredentialRejected|CallSignatureInvalid $rejection) {
             return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
         } catch (HostProtocolMismatch $mismatch) {
-            return new JsonResponse(['message' => $mismatch->getMessage()], Response::HTTP_UPGRADE_REQUIRED);
+            return new JsonResponse([
+                'message' => $mismatch->getMessage(),
+                'protocolVersions' => HostProtocolVersion::spoken(),
+            ], Response::HTTP_UPGRADE_REQUIRED);
         }
 
         $this->container->instance(HostContext::class, $context);

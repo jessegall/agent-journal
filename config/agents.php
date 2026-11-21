@@ -22,6 +22,18 @@ return [
     'security_profiles' => (string) env('AGENTS_SECURITY_PROFILES', ''),
 
     /*
+    | The version of the journal-agent release connected machines install, a folder of the releases place
+    | (files.places.releases) that journal-release wrote; empty while no release is published.
+    */
+    'release' => (string) env('JOURNAL_RELEASE', ''),
+
+    /*
+    | The canonical origin connected machines reach this journal at, such as https://journal.example.com; never taken
+    | from a request's Host header. Install lines are issued only for an https origin.
+    */
+    'server_origin' => (string) env('JOURNAL_SERVER_ORIGIN', ''),
+
+    /*
     | Contained only: where each environment's workspace comes from, as JSON keyed by environment name, either
     | {"git": <repository>, "revision": <ref>, "deploy_key_secret": <secret>} or {"folder": <name under
     | /srv/journal/workspaces>}. Read once, by WorkspaceSources.

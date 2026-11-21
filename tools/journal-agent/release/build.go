@@ -27,7 +27,7 @@ func Build(profile Profile, sources Sources, folder string, version string, key 
 
 	manifest := Manifest{
 		Version:             version,
-		HostProtocolVersion: client.HostProtocolVersion,
+		HostProtocolVersion: client.RemoteProjectProtocolVersion,
 		Profile:             profile.Name,
 		Providers:           profile.Providers,
 	}
