@@ -13,6 +13,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
 use Tests\TestCase;
@@ -178,6 +179,38 @@ final class DeviceGrantsTest extends TestCase
         $this->assertSame([1, 2], [$first->json('generation'), $second->json('generation')]);
         $this->assertSame($first->json('reference'), $again->json('reference'));
         $this->assertSame(2, DeviceGrant::query()->count());
+    }
+
+    public function test_the_approval_window_reads_the_committed_state_of_the_request(): void
+    {
+        $binding = $this->connected();
+        $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
+        $window = "/connections/devices/{$start->json('userCode')}";
+
+        $this->actingAs($this->owner)->get($window)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.state', 'pending')
+            ->where('page.data.journalOrigin', 'https://journal.example.com')
+            ->where('page.data.isBindingRevoked', false));
+        $this->actingAs($this->owner)->post("/settings/project-connections/devices/{$start->json('userCode')}/approve");
+
+        $this->actingAs($this->owner)->get($window)->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.state', 'approved'));
+        $this->actingAs($this->owner)
+            ->postJson("/settings/project-connections/devices/{$start->json('userCode')}/approve")
+            ->assertNotFound();
+    }
+
+    public function test_an_expired_code_reads_expired_in_the_approval_window(): void
+    {
+        $binding = $this->connected();
+        $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
+
+        $this->travel(DeviceGrant::CODE_MINUTES + 1)->minutes();
+
+        $this->actingAs($this->owner)
+            ->get("/connections/devices/{$start->json('userCode')}")
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('page.data.state', 'expired'));
     }
 
     private function connected(): string

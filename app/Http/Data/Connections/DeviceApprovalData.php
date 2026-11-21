@@ -8,8 +8,9 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A device code waiting for the owner: the code to compare with the shell's, the folder and machine it is for, the
- * scopes it grants and when it expires.
+ * A terminal's request as the owner checks it: the code to compare with the terminal's, the project and its
+ * environment, the machine, the journal it signs in to, the scopes it grants, when it expires, where it stands now
+ * (pending, approved, issued, expired, revoked) and whether the project's connection was revoked meanwhile.
  */
 #[TypeScript]
 final class DeviceApprovalData extends Data
@@ -23,5 +24,9 @@ final class DeviceApprovalData extends Data
         public readonly string $machineLabel,
         public readonly array $scopes,
         public readonly string $expiresAt,
+        public readonly string $journalOrigin,
+        public readonly string $environmentLabel,
+        public readonly string $state,
+        public readonly bool $isBindingRevoked,
     ) {}
 }

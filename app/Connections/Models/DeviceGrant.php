@@ -118,7 +118,7 @@ final class DeviceGrant extends Model implements ReadableModel
      */
     public static function ofUserCode(string $code): self
     {
-        return self::query()->with('binding')->where('user_code', $code)->firstOrFail();
+        return self::query()->with(['binding', 'environment'])->where('user_code', $code)->firstOrFail();
     }
 
     /**
@@ -268,6 +268,19 @@ final class DeviceGrant extends Model implements ReadableModel
     }
 
     /**
+     * Where the request stands for the owner at this server time: pending, approved and awaiting collection, issued,
+     * expired before approval, or revoked.
+     */
+    public function approvalStateAt(CarbonImmutable $now): string
+    {
+        if ($this->state === DeviceGrantState::Pending && ! $now->lessThan($this->code_expires_at)) {
+            return 'expired';
+        }
+
+        return $this->state->value;
+    }
+
+    /**
      * Answers what a poll of a grant past its approval gets: the bearer went out once, so a repeated poll learns its
      * reference to withdraw it, and a revoked grant says so.
      *
@@ -310,5 +323,13 @@ final class DeviceGrant extends Model implements ReadableModel
     public function binding(): BelongsTo
     {
         return $this->belongsTo(ProjectBinding::class);
+    }
+
+    /**
+     * @return BelongsTo<Environment, $this>
+     */
+    public function environment(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class);
     }
 }
