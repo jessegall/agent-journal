@@ -11,15 +11,8 @@ use App\Comments\Contracts\Commentable;
 use App\Comments\Support\HasComments;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
-use App\Docking\Cards\Button;
-use App\Docking\Cards\DestinationArgument;
 use App\Docking\Cards\DockCard;
-use App\Docking\Cards\DockDestination;
 use App\Docking\Cards\DockIdentity;
-use App\Docking\Cards\Stack;
-use App\Docking\Cards\Subtitle;
-use App\Docking\Cards\Title;
-use App\Docking\Enums\Emphasis;
 use App\Docking\Sources\Contracts\CardContext;
 use App\Docking\Sources\Contracts\Dockable;
 use App\Docking\Sources\DockDefinition;
@@ -37,6 +30,7 @@ use Domain\Documents\Api\DocumentType;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Api\Events\DocumentPublished;
 use Domain\Documents\Data\CloseCard;
+use Domain\Documents\Cards\DocumentDockCard;
 use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\PublicationCard;
@@ -190,15 +184,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
 
     public function card(): PublicationCard
     {
-        $revision = $this->currentRevisionOrFail();
-
-        return PublicationCard::from([
-            'id' => $this->id,
-            'number' => (string) $this->number,
-            'title' => $revision->title,
-            'abstract' => $revision->abstract,
-            'attention' => $this->attention,
-        ]);
+        return PublicationCard::fromDocument($this);
     }
 
     /**
@@ -243,20 +229,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
 
     public function view(): DocumentView
     {
-        $revision = $this->currentRevisionOrFail();
-
-        return new DocumentView(
-            $this->id,
-            (string) $this->number,
-            $revision->title,
-            $revision->abstract,
-            $revision->body,
-            (string) $revision->number,
-            $this->creator_type->value,
-            $this->creator_id,
-            $this->attention,
-            (string) $this->created_at?->toIso8601String(),
-        );
+        return DocumentView::fromDocument($this);
     }
 
     /**
@@ -317,21 +290,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
      */
     public function composeDockCard(CardContext $context): DockCard
     {
-        $revision = $this->currentRevisionOrFail();
-
-        $parts = [
-            new Title('title', $revision->title),
-            new Subtitle('revision', "revision {$revision->number}"),
-            $this->attention->stateLabel(),
-        ];
-
-        $open = new DockDestination('documents.document', new DestinationArgument('document', (string) $this->number));
-
-        foreach ($context->permittedDestination($open) as $permitted) {
-            $parts[] = new Button('open', 'Open', Emphasis::Primary, $permitted);
-        }
-
-        return DockCard::named($revision->title, Stack::of('root', ...$parts));
+        return new DocumentDockCard($this, $context)->card;
     }
 
     // ----------[ Relations ]----------

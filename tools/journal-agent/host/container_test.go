@@ -2,6 +2,7 @@ package host
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -261,7 +262,8 @@ func TestAnAgentContainerIsNotCreatedOnADaemonThatDiscardsItsBudgets(t *testing.
 }
 
 func TestAContainedStartIsProvenByItsContainer(t *testing.T) {
-	record := StartRecord{SessionID: "s1", Stage: ExecutionKnown, InContainer: true, Claim: &client.ClaimedStart{StartKey: "k1"}}
+	record := StartRecord{SessionID: "s1", Stage: ExecutionKnown, Claim: &client.ClaimedStart{StartKey: "k1"},
+		Grant: client.Grant{Container: json.RawMessage(`{"image":"sha256:image"}`)}}
 	running := ContainerSessions{"s1": {ID: "c1", Session: "s1", Running: true}}
 	stopped := ContainerSessions{"s1": {ID: "c1", Session: "s1"}}
 
@@ -275,6 +277,12 @@ func TestAContainedStartIsProvenByItsContainer(t *testing.T) {
 
 	if got := reconcileStart("k1", []StartRecord{record}, ContainerSessions{}); got != Exited {
 		t.Fatalf("a container gone from the daemon gave %s", got)
+	}
+
+	refused := record
+	refused.Stage = ClaimHeld
+	if got := reconcileStart("k1", []StartRecord{refused}, ContainerSessions{}); got != Exited {
+		t.Fatalf("a start refused before its container was made gave %s", got)
 	}
 }
 

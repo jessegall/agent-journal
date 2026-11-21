@@ -21,4 +21,18 @@ final class RuntimeSetting extends Data
         public readonly string|Optional $observed = new Optional(),
         public readonly int|Optional $observedAgeSeconds = new Optional(),
     ) {}
+
+    /**
+     * One setting in its three states; a state the runtime has no value for is left out.
+     */
+    public static function ofStates(
+        string|null $requested,
+        string|null $staged,
+        string|null $observed,
+        int|null $observedAgeSeconds,
+    ): self {
+        $known = compact('requested', 'staged', 'observed', 'observedAgeSeconds');
+
+        return self::from(array_filter($known, fn (string|int|null $setting) => $setting !== null));
+    }
 }

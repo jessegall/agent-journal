@@ -334,15 +334,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function details(Option $holder, TaskExecution|null $execution): TaskDetails
     {
-        return TaskDetails::from([
-            'id' => $this->id,
-            'number' => $this->number,
-            'title' => $this->title,
-            'state' => $this->state,
-            'revision' => $this->revision,
-            'holder' => $holder,
-            'execution' => $execution,
-        ]);
+        return TaskDetails::fromTask($this, $holder, $execution);
     }
 
     /**
@@ -354,12 +346,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     {
         return TaskDetails::from([
             ...$this->details($holder, $execution)->all(),
-            'text' => TaskText::from([
-                'brief' => $this->brief,
-                'resultNote' => $this->result_note,
-                'blockReason' => $this->block_reason,
-                'cancelReason' => $this->cancel_reason,
-            ]),
+            'text' => TaskText::fromTask($this),
         ]);
     }
 

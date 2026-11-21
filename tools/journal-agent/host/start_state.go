@@ -49,9 +49,12 @@ type StartRecord struct {
 	Claim             *client.ClaimedStart `json:"claim,omitempty"`
 	Execution         *ExecutionIdentity   `json:"execution,omitempty"`
 	ExitCode          *int                 `json:"exit_code,omitempty"`
-	// InContainer is a start that runs in a container of the agent daemon, labelled with its session, whose
-	// container, not a process group of this host, proves whether it still runs.
-	InContainer bool `json:"in_container,omitempty"`
+}
+
+// RunsInContainer is whether the start runs in a container of the agent daemon, labelled with its session, as its
+// grant names one: that container, not a process group of this host, proves whether it still runs.
+func (record StartRecord) RunsInContainer() bool {
+	return record.Grant.NamesContainer()
 }
 
 // Recovery is what a restarted host may do with a start it saved.

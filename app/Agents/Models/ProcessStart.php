@@ -150,19 +150,19 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Why the claim of each of these sessions' starts was refused, by session; a session none was refused for is
-     * not in it. Home reads the sessions it shows at once.
+     * Why each of these agents' latest start was refused, by agent; an agent whose latest start was not refused is not
+     * in it. Home reads the agents it shows at once.
      *
-     * @param  list<string>  $sessionIds
+     * @param  list<string>  $agentIds
      * @return array<string, string>
      */
-    public static function refusalsOf(array $sessionIds): array
+    public static function refusalsOf(array $agentIds): array
     {
-        $refused = self::supervised()->whereIn('session_id', $sessionIds)->whereNotNull('refusal')
-            ->orderByDesc('created_at')->limit(count($sessionIds))->get();
+        $latest = self::supervised()->whereIn('agent_id', $agentIds)->orderByDesc('created_at')
+            ->readLimit(count($agentIds) * 4)->get()->unique('agent_id');
 
-        return $refused->unique('session_id')->mapWithKeys(
-            fn (self $start) => [$start->session_id => (string) $start->refusal],
+        return $latest->filter(fn (self $start) => $start->refusal !== null)->mapWithKeys(
+            fn (self $start) => [$start->agent_id => (string) $start->refusal],
         )->all();
     }
 

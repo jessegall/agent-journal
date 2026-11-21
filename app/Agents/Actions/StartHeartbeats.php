@@ -12,6 +12,7 @@ use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\DriverSwitch;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\CapacityRelease;
 use App\Agents\Support\DriverRequestEndings;
@@ -52,6 +53,21 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
 
         $this->markSilentSince($cutoff, $now);
         $this->endUnclaimedSince($cutoff, $now);
+    }
+
+    /**
+     * A start whose process the host proved ended, or never made: the start stops, a switch stopping on it stops, and
+     * its session, while still open, ends as a reported exit ends it, so its runtime stops and the agent can start
+     * again.
+     */
+    public function endStart(ProcessStart $start, AgentSession $session, string $evidence): void
+    {
+        $start->stopWithProof();
+        DriverSwitch::stoppingOf($start->session_id)?->markStopped();
+
+        if ($session->isActive()) {
+            $this->markExited($session, $evidence);
+        }
     }
 
     /**

@@ -21,7 +21,6 @@ use App\Sharing\Contracts\Shareable;
 use App\Sharing\Support\ShareRelationSet;
 use App\Text\Enums\TextAnchorType;
 use App\Text\Exceptions\IncompleteTextAnchor;
-use App\Text\Support\MarkdownText;
 use App\Text\Values\TextAnchor;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -194,14 +193,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
      */
     public function details(): CommentDetails
     {
-        return new CommentDetails(
-            $this->id,
-            $this->author_type,
-            $this->author_id,
-            (string) $this->created_at?->toIso8601String(),
-            $this->body,
-            MarkdownText::safeHtmlOf($this->body),
-        );
+        return CommentDetails::fromComment($this);
     }
 
     // ----------[ Internals ]----------

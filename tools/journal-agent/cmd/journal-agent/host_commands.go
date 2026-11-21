@@ -144,13 +144,15 @@ func serve(arguments []string) error {
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket,
 		declared: combinationsOf(arrangement)}
+	prerequisites := localPrerequisites(*stateFolder, *installationFolder)
 	if arrangement.IsContained() {
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
 		opener.containers = host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
 		opener.installation = installation
 		opener.reportExit = journal.ReportExit
+		prerequisites = containedPrerequisites(*stateFolder, *seccomp, opener.containers)
 	}
-	preparation := startPreparation(journal, *stateFolder, *installationFolder)
+	preparation := startPreparation(journal, *stateFolder, prerequisites)
 	reports := &host.StartReports{Folder: *stateFolder}
 	// Usage reports keep their own file and worker, so a usage retry never waits in front of a start report.
 	opener.usage = host.NewUsageReports(*stateFolder)
@@ -589,22 +591,57 @@ func cleanEnvironmentOf(
 }
 
 // startPreparation prepares every runtime start of this host: the grant and account claim saved in its private state,
-// and the start refused unless it runs from the verified installation under a protected arrangement the host proved.
-func startPreparation(journal *client.Client, stateFolder, installationFolder string) host.StartPreparation {
+// and the start refused unless its prerequisites hold.
+func startPreparation(journal *client.Client, stateFolder string, prerequisites host.StartPrerequisites) host.StartPreparation {
 	return host.StartPreparation{
 		Journal:        journal,
 		States:         host.StartStates{Folder: filepath.Join(stateFolder, "starts")},
 		RuntimesFolder: filepath.Join(stateFolder, "runtimes"),
-		Prerequisites: func(grant client.Grant, claim client.ClaimedStart) error {
-			return protectedStartAllowed(stateFolder, installationFolder, grant, claim)
-		},
+		Prerequisites:  prerequisites,
 	}
 }
 
 // errNoInstallation refuses an account start on a host that serves without a protected installation.
 var errNoInstallation = errors.New("this host has no protected installation, so it starts no saved account")
 
-func protectedStartAllowed(stateFolder, installationFolder string, grant client.Grant, claim client.ClaimedStart) error {
+// errNoContainer refuses an account start a contained host was granted without a container to run it in.
+var errNoContainer = errors.New("this host runs agents in containers, and the start's grant names no container")
+
+// localPrerequisites allows a local host's account start only from its verified installation, on this machine's
+// platform where the host proved the program's protection.
+func localPrerequisites(stateFolder, installationFolder string) host.StartPrerequisites {
+	return func(grant client.Grant, claim client.ClaimedStart) error {
+		if installationFolder == "" {
+			return errNoInstallation
+		}
+		if _, err := (host.Installation{Folder: installationFolder}).Verify(); err != nil {
+			return err
+		}
+		return protectionProved(host.LocalPlatform(), stateFolder, grant, claim)
+	}
+}
+
+// containedPrerequisites allows a contained host's account start on the platform its container launches: the
+// protected profile's own platform for a protected-account container, the agent image's sandbox otherwise.
+func containedPrerequisites(stateFolder, seccomp string, containers host.Containers) host.StartPrerequisites {
+	return func(grant client.Grant, claim client.ClaimedStart) error {
+		manifest, named, err := (host.PreparedStart{Grant: grant, Claim: claim}).ContainerManifest()
+		if err != nil {
+			return err
+		}
+		if !named {
+			return errNoContainer
+		}
+		if manifest.IsProtected() {
+			return protectionProved(host.ProtectedPlatform(containers), stateFolder, grant, claim)
+		}
+		return protectionProved(host.ContainedPlatform(context.Background(), containers, seccomp), stateFolder, grant, claim)
+	}
+}
+
+// protectionProved refuses the start unless the program's pinned build has every item of its protection enforced on
+// the platform it runs on.
+func protectionProved(platform host.ProtectionPlatform, stateFolder string, grant client.Grant, claim client.ClaimedStart) error {
 	profile, known := profileFor[grant.Runtime.Driver]
 	if !known {
 		return fmt.Errorf("%q has no pinned profile", grant.Runtime.Driver)
@@ -613,13 +650,7 @@ func protectedStartAllowed(stateFolder, installationFolder string, grant client.
 		return fmt.Errorf("the account recipe is for %s %s, the runtime for %s", profile.Program(),
 			claim.Recipe.DriverVersion, grant.Runtime.DriverBuild)
 	}
-	if installationFolder == "" {
-		return errNoInstallation
-	}
-	if _, err := (host.Installation{Folder: installationFolder}).Verify(); err != nil {
-		return err
-	}
-	capability, err := host.InspectProtection(host.LocalPlatform(), profile.Program(), claim.Recipe.DriverVersion,
+	capability, err := host.InspectProtection(platform, profile.Program(), claim.Recipe.DriverVersion,
 		host.NativeEvidence{Folder: stateFolder})
 	if err != nil {
 		return err
@@ -657,7 +688,8 @@ func openMainRuntime(
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	prepared, err := startPreparation(journal, stateFolder, installationFolder).Prepare(ctx, opened.RuntimeID)
+	prepared, err := startPreparation(journal, stateFolder, localPrerequisites(stateFolder, installationFolder)).
+		Prepare(ctx, opened.RuntimeID)
 	if err != nil {
 		return host.AttachRequest{}, err
 	}

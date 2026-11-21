@@ -78,13 +78,7 @@ final class RecordSettlement extends Model implements ReadableModel
 
     public function card(): SettlementCard
     {
-        return SettlementCard::from([
-            'actorType' => $this->actor_type->value,
-            'actorId' => $this->actor_id,
-            'reason' => $this->reason,
-            'revision' => $this->revision_number === null ? null : (string) $this->revision_number,
-            'settledAt' => $this->settled_at->toIso8601String(),
-        ]);
+        return SettlementCard::fromRecordSettlement($this);
     }
 
     // ----------[ Scopes ]----------

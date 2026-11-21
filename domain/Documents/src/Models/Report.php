@@ -11,15 +11,8 @@ use App\Comments\Contracts\Commentable;
 use App\Comments\Support\HasComments;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
-use App\Docking\Cards\Button;
-use App\Docking\Cards\DestinationArgument;
 use App\Docking\Cards\DockCard;
-use App\Docking\Cards\DockDestination;
 use App\Docking\Cards\DockIdentity;
-use App\Docking\Cards\Stack;
-use App\Docking\Cards\Subtitle;
-use App\Docking\Cards\Title;
-use App\Docking\Enums\Emphasis;
 use App\Docking\Sources\Contracts\CardContext;
 use App\Docking\Sources\Contracts\Dockable;
 use App\Docking\Sources\DockDefinition;
@@ -35,6 +28,7 @@ use App\Text\Support\MarkdownText;
 use App\Text\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Api\Events\ReportFiled;
+use Domain\Documents\Cards\ReportDockCard;
 use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\ReportView;
@@ -82,11 +76,6 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
     use SharedWithComments;
 
     public const string LINK_TYPE = 'documents.report';
-
-    /**
-     * The most characters of a report's abstract its docked card shows.
-     */
-    private const int DOCK_ABSTRACT_CHARACTER_LIMIT = 120;
 
     protected $attributes = ['attention' => 'active'];
 
@@ -149,13 +138,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
 
     public function card(): PublicationCard
     {
-        return PublicationCard::from([
-            'id' => $this->id,
-            'number' => (string) $this->number,
-            'title' => $this->title,
-            'abstract' => $this->abstract,
-            'attention' => $this->attention,
-        ]);
+        return PublicationCard::fromReport($this);
     }
 
     /**
@@ -177,17 +160,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
 
     public function view(): ReportView
     {
-        return new ReportView(
-            $this->id,
-            (string) $this->number,
-            $this->title,
-            $this->abstract,
-            $this->body,
-            $this->creator_type->value,
-            $this->creator_id,
-            $this->attention,
-            $this->filed_at->toIso8601String(),
-        );
+        return ReportView::fromReport($this);
     }
 
     /**
@@ -216,19 +189,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
      */
     public function composeDockCard(CardContext $context): DockCard
     {
-        $parts = [
-            new Title('title', $this->title),
-            $this->attention->stateLabel(),
-            new Subtitle('abstract', mb_strimwidth($this->abstract, 0, self::DOCK_ABSTRACT_CHARACTER_LIMIT, '…')),
-        ];
-
-        $open = new DockDestination('documents.report', new DestinationArgument('report', (string) $this->number));
-
-        foreach ($context->permittedDestination($open) as $permitted) {
-            $parts[] = new Button('open', 'Open', Emphasis::Primary, $permitted);
-        }
-
-        return DockCard::named($this->title, Stack::of('root', ...$parts));
+        return new ReportDockCard($this, $context)->card;
     }
 
     // ----------[ Scopes ]----------

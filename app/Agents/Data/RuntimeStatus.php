@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Data;
 
 use App\Agents\Enums\DriverVariant;
+use App\Agents\Models\AgentRuntime;
+use Carbon\CarbonImmutable;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
 use Spatie\LaravelData\Data;
@@ -33,4 +35,39 @@ final class RuntimeStatus extends Data
         public readonly DriverVariant $variant,
         public readonly int $watchers,
     ) {}
+
+    /**
+     * A runtime as stored, read at the given time: its settings in their three states and how old its facts are.
+     */
+    public static function fromAgentRuntime(AgentRuntime $runtime, CarbonImmutable $now): self
+    {
+        $settingsAge = $runtime->settingsAge($now);
+
+        return self::from([
+            'runtimeId' => $runtime->id,
+            'agentId' => $runtime->session->agent_id,
+            'sessionId' => $runtime->agent_session_id,
+            'driver' => $runtime->driver,
+            'activity' => $runtime->activity,
+            'hold' => $runtime->hold_reason,
+            'model' => RuntimeSetting::ofStates(
+                $runtime->requested_model,
+                $runtime->staged_model,
+                $runtime->observed_model,
+                $settingsAge,
+            ),
+            'effort' => RuntimeSetting::ofStates(
+                $runtime->requested_effort,
+                $runtime->staged_effort,
+                $runtime->observed_effort,
+                $settingsAge,
+            ),
+            'observationAgeSeconds' => $runtime->observationAge($now),
+            'isStale' => $runtime->isStale($now),
+            'processGeneration' => $runtime->process_generation,
+            'canReleaseHold' => $runtime->canReleaseHold(),
+            'variant' => $runtime->variant,
+            'watchers' => $runtime->watcherCount(),
+        ]);
+    }
 }

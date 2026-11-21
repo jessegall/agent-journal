@@ -100,13 +100,7 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
 
     public function card(): RevisionCard
     {
-        return RevisionCard::from([
-            'number' => (string) $this->number,
-            'title' => $this->title,
-            'authorType' => $this->author_type->value,
-            'authorId' => $this->author_id,
-            'closedAt' => (string) $this->closed_at?->toIso8601String(),
-        ]);
+        return RevisionCard::fromDocumentRevision($this);
     }
 
     /**
@@ -114,17 +108,7 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
      */
     public function view(Document $document): RevisionView
     {
-        return RevisionView::from([
-            'documentNumber' => (string) $document->number,
-            'number' => (string) $this->number,
-            'title' => $this->title,
-            'abstract' => $this->abstract,
-            'body' => $this->body,
-            'authorType' => $this->author_type->value,
-            'authorId' => $this->author_id,
-            'closedAt' => (string) $this->closed_at?->toIso8601String(),
-            'historical' => $document->currentRevisionOrFail()->number !== $this->number,
-        ]);
+        return RevisionView::fromDocumentRevision($this, $document);
     }
 
     /**

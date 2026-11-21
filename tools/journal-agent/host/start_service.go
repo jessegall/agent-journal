@@ -53,13 +53,12 @@ func (prepared PreparedStart) AccountStart(server *contracts.JournalServer, refe
 // ContainerManifest is the manifest of the container the start's session runs in, which the journal compiled; a start
 // on the protected host has none.
 func (prepared PreparedStart) ContainerManifest() (ContainerManifest, bool, error) {
-	raw := prepared.Grant.Container
-	if len(raw) == 0 || string(raw) == "null" {
+	if !prepared.Grant.NamesContainer() {
 		return ContainerManifest{}, false, nil
 	}
 
 	var manifest ContainerManifest
-	if err := json.Unmarshal(raw, &manifest); err != nil {
+	if err := json.Unmarshal(prepared.Grant.Container, &manifest); err != nil {
 		return ContainerManifest{}, false, fmt.Errorf("the start grant's container manifest is unreadable: %w", err)
 	}
 

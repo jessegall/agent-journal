@@ -61,7 +61,7 @@ final readonly class AgentRecords implements AgentDirectory
         $switches = DriverSwitch::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
 
-        $refusals = ProcessStart::refusalsOf(array_values(array_map(strval(...), $sessions->pluck('id')->all())));
+        $refusals = ProcessStart::refusalsOf(array_values(array_map(strval(...), $ids)));
 
         $conversations = DriverConversation::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
@@ -72,7 +72,7 @@ final readonly class AgentRecords implements AgentDirectory
             $runtimes->get((string) $sessions->get($agent->id)?->id),
             $switches->get($agent->id),
             $conversations->get($agent->id, new Collection()),
-            $refusals[(string) $sessions->get($agent->id)?->id] ?? null,
+            $refusals[$agent->id] ?? null,
         ))->all());
     }
 

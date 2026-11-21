@@ -1,0 +1,72 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "role": "member"
+            },
+            {
+                "count": {
+                    "descendant": {
+                        "all": [
+                            {
+                                "is": "construction"
+                            },
+                            {
+                                "any": [
+                                    {
+                                        "constructs": "App\\*"
+                                    },
+                                    {
+                                        "constructs": "Domain\\*"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "atLeast": 3
+                }
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "return"
+                        },
+                        {
+                            "child": {
+                                "any": [
+                                    {
+                                        "is": "construction"
+                                    },
+                                    {
+                                        "kind": "Expr_StaticCall"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "implicit": true
+            },
+            {
+                "php": "inNamedConstructor"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "description": "A method builds a whole out of parts it constructs itself, three or more of the project's own objects put together in place.",
+        "name": "inline-composition",
+        "rule": "Give the whole a class of its own, constructed with what it needs (new DocumentDockCard($this, $context)), which composes its own parts; the method only hands over to it (user messages 13568 and 13571).",
+        "skill": "php/value-objects"
+    }
+}

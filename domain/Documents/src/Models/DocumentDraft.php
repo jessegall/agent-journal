@@ -131,16 +131,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
 
     public function view(Document $document): DraftView
     {
-        return DraftView::from([
-            'documentNumber' => (string) $document->number,
-            'token' => $this->token,
-            'version' => $this->version,
-            'baseRevisionNumber' => (string) $this->base_revision_number,
-            'title' => $this->title,
-            'abstract' => $this->abstract,
-            'body' => $this->body,
-            'savedAt' => (string) $this->updated_at?->toIso8601String(),
-        ]);
+        return DraftView::fromDocumentDraft($this, $document);
     }
 
     /**

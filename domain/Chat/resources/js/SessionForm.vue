@@ -140,7 +140,8 @@ function start(): void {
 function showStart(): boolean {
     const shown = props.agent;
 
-    if (startedSessionId !== null && shown.sessionId === startedSessionId && shown.startRefusal !== null) {
+    // A refused start ends its session, so the refusal shows on the agent once the page reads it again.
+    if (startedSessionId !== null && shown.sessionId !== startedSessionId && shown.startRefusal !== null) {
         progress.value = null;
         refusal.value = shown.startRefusal;
 

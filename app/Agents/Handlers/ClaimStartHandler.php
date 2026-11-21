@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
+use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Commands\ClaimStart;
 use App\Agents\Contracts\UnstartableProgram;
 use App\Agents\Enums\ProcessStartState;
@@ -21,12 +22,12 @@ use App\Contracts\CommandHandler;
 /**
  * Hands the host a pending start of a runtime assigned to it, with the recipe the program's adapter checked; another
  * host's start is refused. When the program's build or arrangement cannot start here, the start ends stopped with that
- * reason and the host gets none; when the adapter names no sign-in method for the account, the claim rolls back and
+ * reason, its session and runtime end, and the host gets none; when the adapter names no sign-in method for the account, the claim rolls back and
  * the start stays pending.
  */
 final readonly class ClaimStartHandler implements CommandHandler
 {
-    public function __construct(private StartExtensionRequests $extensions) {}
+    public function __construct(private StartExtensionRequests $extensions, private StartHeartbeats $heartbeats) {}
 
     /**
      * @throws StartClaimRefused
@@ -46,15 +47,18 @@ final readonly class ClaimStartHandler implements CommandHandler
             return null;
         }
 
-        $driver = AgentSession::query()->findOrFail($start->session_id)->selection()->driver->value;
+        $session = AgentSession::query()->findOrFail($start->session_id);
+        $driver = $session->selection()->driver->value;
         $settings = new AccountStartSettings();
         $requested = new AccountSettingsRequested($driver, $start->accountIdentity(), $start->directory, $settings);
 
         try {
             $this->extensions->accountSettings($requested);
         } catch (UnstartableProgram $refusal) {
-            // The program's build cannot start here at all, so the start ends with the reason instead of waiting.
+            // The program's build cannot start here at all: the start ends with the reason, and its session and
+            // runtime end as a reported exit ends them, so the agent can start again.
             $start->refuse($refusal->getMessage());
+            $this->heartbeats->markExited($session, $refusal->getMessage());
 
             return null;
         }

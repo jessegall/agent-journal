@@ -118,14 +118,6 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
 
     public function card(): CloseCard
     {
-        return CloseCard::from([
-            'cause' => $this->cause->value,
-            'closerId' => $this->closer_id,
-            'reason' => $this->reason,
-            'baseRevision' => (string) $this->base_revision_number,
-            'resultRevision' => (string) $this->result_revision_number,
-            'published' => $this->published,
-            'closedAt' => (string) $this->closed_at?->toIso8601String(),
-        ]);
+        return CloseCard::fromDocumentClose($this);
     }
 }

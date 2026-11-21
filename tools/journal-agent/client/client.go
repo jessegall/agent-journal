@@ -412,6 +412,11 @@ type Grant struct {
 	Container json.RawMessage `json:"container,omitempty"`
 }
 
+// NamesContainer is whether the grant holds a container manifest: the session runs in a container of the agent daemon.
+func (grant Grant) NamesContainer() bool {
+	return len(grant.Container) > 0 && string(grant.Container) != "null"
+}
+
 // RuntimeStart mirrors App\Agents\Support\RuntimeStart: what the host needs to start the runtime's program.
 type RuntimeStart struct {
 	Variant           string  `json:"variant"`

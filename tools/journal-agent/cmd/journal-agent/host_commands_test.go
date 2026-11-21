@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"net"
 	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -173,5 +176,37 @@ func TestATerminalStartCarriesTheGrantsCredentialAndGeneration(t *testing.T) {
 		if !slices.Contains(launch.Env, wanted) {
 			t.Fatalf("the launch's environment has no %s", wanted)
 		}
+	}
+}
+
+// A contained host checks an account start in a protected-account container against the protected platform's
+// native evidence, needs no local installation for it, and refuses a grant that names no container.
+func TestAContainedAccountStartIsCheckedAgainstItsContainersProtection(t *testing.T) {
+	state := t.TempDir()
+	containers := host.Containers{Rules: host.ContainerRules{AgentImage: "sha256:image"}}
+	grant := client.Grant{
+		Runtime:   client.RuntimeStart{Driver: "claude", DriverBuild: "2.1.323"},
+		Container: json.RawMessage(`{"launchProfile":"protected-account"}`),
+	}
+	claim := client.ClaimedStart{Recipe: client.AccountRecipe{DriverVersion: "2.1.323"}}
+	allowed := containedPrerequisites(state, "", containers)
+
+	if err := allowed(grant, claim); err == nil || errors.Is(err, errNoInstallation) {
+		t.Fatalf("a protected start without evidence was answered %v, want a refusal for the missing evidence", err)
+	}
+
+	evidence := `{"claude@2.1.323/linux-container-protected@sha256:image": {"account-secrets": "run 1",
+		"foreign-history": "run 1", "keychain": "run 1", "control-sockets": "run 1", "process-inspection": "run 1",
+		"install-writes": "run 1"}}`
+	if err := os.WriteFile(filepath.Join(state, "native-evidence.json"), []byte(evidence), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := allowed(grant, claim); err != nil {
+		t.Fatalf("a protected start with every item shown was refused: %v", err)
+	}
+
+	grant.Container = nil
+	if err := allowed(grant, claim); !errors.Is(err, errNoContainer) {
+		t.Fatalf("a start with no container was answered %v, want errNoContainer", err)
 	}
 }

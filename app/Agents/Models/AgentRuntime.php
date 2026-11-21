@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverVariant;
@@ -387,29 +386,15 @@ final class AgentRuntime extends Model implements ReadableModel
      */
     public function status(CarbonImmutable $now): RuntimeStatus
     {
-        $settingsAge = self::secondsSince($this->settings_observed_at, $now);
+        return RuntimeStatus::fromAgentRuntime($this, $now);
+    }
 
-        return RuntimeStatus::from([
-            'runtimeId' => $this->id,
-            'agentId' => $this->session->agent_id,
-            'sessionId' => $this->agent_session_id,
-            'driver' => $this->driver,
-            'activity' => $this->activity,
-            'hold' => $this->hold_reason,
-            'model' => self::setting($this->requested_model, $this->staged_model, $this->observed_model, $settingsAge),
-            'effort' => self::setting(
-                $this->requested_effort,
-                $this->staged_effort,
-                $this->observed_effort,
-                $settingsAge,
-            ),
-            'observationAgeSeconds' => $this->observationAge($now),
-            'isStale' => $this->isStale($now),
-            'processGeneration' => $this->process_generation,
-            'canReleaseHold' => $this->canReleaseHold(),
-            'variant' => $this->variant,
-            'watchers' => $this->watcherCount(),
-        ]);
+    /**
+     * How old the runtime's last seen settings are at this time, in whole seconds; none before they were first seen.
+     */
+    public function settingsAge(CarbonImmutable $now): int|null
+    {
+        return self::secondsSince($this->settings_observed_at, $now);
     }
 
     /**
@@ -512,20 +497,6 @@ final class AgentRuntime extends Model implements ReadableModel
     private static function liveViews(Builder $views): void
     {
         $views->acrossActors()->live();
-    }
-
-    /**
-     * One setting in its three states; a state the runtime has no value for is left out.
-     */
-    private static function setting(
-        string|null $requested,
-        string|null $staged,
-        string|null $observed,
-        int|null $observedAgeSeconds,
-    ): RuntimeSetting {
-        $known = compact('requested', 'staged', 'observed', 'observedAgeSeconds');
-
-        return RuntimeSetting::from(array_filter($known, fn (string|int|null $setting) => $setting !== null));
     }
 
     // ----------[ Scopes ]----------
