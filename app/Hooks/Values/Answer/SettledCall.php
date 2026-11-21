@@ -21,6 +21,11 @@ final readonly class SettledCall
     /**
      * The call with the reply the program adapter renders from its answer.
      */
+    public function withAnswer(HookAnswer $answer): self
+    {
+        return clone ($this, ['answer' => $answer]);
+    }
+
     public function rendered(): RenderedCall
     {
         return new RenderedCall($this->call, $this->row, $this->answer, ($this->call->render)($this->answer));

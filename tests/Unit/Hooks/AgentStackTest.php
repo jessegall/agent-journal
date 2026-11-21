@@ -165,7 +165,7 @@ final class AgentStackTest extends TestCase
         $this->assertSame(['guide delegate keep', 'ready deny keep'], $this->stepsOf($answer));
     }
 
-    public function test_hidden_message_and_sequence_guards_keep_their_observation_context(): void
+    public function test_hidden_message_and_sequence_guards_add_no_context_of_their_own_during_the_walk(): void
     {
         $top = $this->frame('guide', new ScriptedState(Decision::allow()));
         $work = new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running);
@@ -175,10 +175,9 @@ final class AgentStackTest extends TestCase
         $session = $stack->answer(HookInputs::all()['session start']);
         $compaction = $stack->answer(HookInputs::all()['compaction']);
 
-        $this->assertSame(['guide allow keep', 'message-95 delegate keep'], $this->stepsOf($session));
-        $this->assertStringContainsString('reply to it before other work', $session->context[0]);
-        $this->assertSame(['guide allow keep', 'sequence delegate keep'], $this->stepsOf($compaction));
-        $this->assertStringContainsString('Run the phase tests.', $compaction->context[0]);
+        $this->assertSame([], $session->context);
+        $this->assertSame([], $compaction->context);
+        $this->assertSame('Sequence run 8 is on step 3: Run the phase tests.', $sequence->instructionText());
     }
 
     public function test_no_state_below_the_answering_state_is_asked(): void

@@ -12,15 +12,25 @@ use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
+use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Resolvers\PlanRecords;
 use Domain\Plans\States\WorkingOnPlanState;
 use Domain\Plans\Support\PlanWork;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Builds the working-on-plan state from the plan as it is now, reading a batch of plans in one query.
  */
 final readonly class WorkingOnPlanStateFactory implements StateLoader
 {
+    /**
+     * The container hands out the plan records when an instruction is rendered: the state types live for the whole
+     * process, the records for one request, and a stack read needs no counts.
+     */
+    public function __construct(private Container $container) {}
+
     public function stateClass(): string
     {
         return WorkingOnPlanState::class;
@@ -40,7 +50,10 @@ final readonly class WorkingOnPlanStateFactory implements StateLoader
 
             $plan = $plans[$subject->id];
 
-            return new WorkingOnPlanState(new PlanWork($plan->id, $plan->number, $plan->state));
+            $progress = fn (): PlanProgress => $this->container->make(PlanRecords::class)
+                ->cardsOfPlans(new Collection([$plan]))[0]->progress;
+
+            return new WorkingOnPlanState(new PlanWork($plan->id, $plan->number, $plan->state), $progress);
         });
     }
 

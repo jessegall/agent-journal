@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipelines;
 
+use App\Hooks\Pipes\Answer\ComposeForeground;
 use App\Hooks\Pipes\Answer\DeliverMessages;
 use App\Hooks\Pipes\Answer\FindReplay;
 use App\Hooks\Pipes\Answer\LockStack;
@@ -32,6 +33,7 @@ final readonly class AnswerHookPipeline implements PipelineDefinition
             WalkStack::class,
             DeliverMessages::class,
             SettleLifecycle::class,
+            ComposeForeground::class,
             RenderReply::class,
             SaveCall::class,
         ];

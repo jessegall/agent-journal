@@ -7,7 +7,6 @@ namespace Domain\Sequences\Tests\Unit\States;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Denied;
 use App\Hooks\Enums\SimpleTransition;
-use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\StopDetails;
@@ -53,18 +52,14 @@ final class FollowingSequenceTest extends TestCase
         $this->assertSame(SimpleTransition::Keep, $decision->transition);
     }
 
-    public function test_a_compaction_repeats_the_current_instruction_without_advancing(): void
+    public function test_its_current_step_is_its_foreground_instruction_and_reading_it_advances_nothing(): void
     {
         $sequence = $this->running();
         $state = new FollowingSequenceState($sequence);
 
-        $first = $state->onCompaction($this->compaction());
-        $second = $state->onCompaction($this->compaction());
-
-        $this->assertTrue($first->isDelegating());
-        $this->assertSame(['Sequence run 8 is on step 3: Run the phase tests.'], $first->context);
-        $this->assertSame($first->context, $second->context);
-        $this->assertSame(SimpleTransition::Keep, $first->transition);
+        $this->assertSame('sequences.step', $state->instructionType());
+        $this->assertSame('Sequence run 8 is on step 3: Run the phase tests.', $state->instructionText());
+        $this->assertSame($state->instructionText(), $state->instructionText());
         $this->assertSame(3, $sequence->stepNumber);
     }
 
@@ -100,11 +95,6 @@ final class FollowingSequenceTest extends TestCase
     private function stop(): StopRequested
     {
         return new StopRequested($this->hook(), new StopDetails('turn-1', false));
-    }
-
-    private function compaction(): ContextCompacted
-    {
-        return new ContextCompacted($this->hook(), new CompactionDetails('compaction-1'));
     }
 
     private function hook(): HookIdentity

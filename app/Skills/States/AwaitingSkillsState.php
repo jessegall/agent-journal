@@ -6,6 +6,7 @@ namespace App\Skills\States;
 
 use App\Bus\Values\RecoveryCall;
 use App\Hooks\Attributes\StackWide;
+use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
@@ -17,7 +18,7 @@ use App\Skills\Enums\PublicationState;
  * A session whose new skill set is not delivered yet: it may read, including skill:status and skill:show, but changes
  * no file until the set is delivered. It ends by itself once the publication settles.
  */
-final class AwaitingSkillsState extends AgentState
+final class AwaitingSkillsState extends AgentState implements InstructsForeground
 {
     public function __construct(
         private readonly PublicationState $publication,
@@ -56,5 +57,15 @@ final class AwaitingSkillsState extends AgentState
             .'php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
             $this->publication->value,
         );
+    }
+
+    public function instructionType(): string
+    {
+        return 'skills.delivery';
+    }
+
+    public function instructionText(): string
+    {
+        return $this->reason();
     }
 }

@@ -1746,6 +1746,7 @@ class	CompleteList
 class	CompleteSignIn
 class	CompleteSignInHandler
 class	CompleteSubstitutions
+class	ComposeForeground
 class	ComposedCard
 class	CompoundCommandReader
 class	CompoundParts
@@ -4846,6 +4847,7 @@ constant	Comment::UPDATED_AT
 constant	CommentLinkRecords::EXCERPT_CHARACTERS
 constant	CommentPlace::FIELDS
 constant	CommentShareProvider::CAPABILITY
+constant	ComposeForeground::FRESH_INPUTS
 constant	ConditionTree::MOST_DEPTH
 constant	ConditionTree::MOST_NODES
 constant	ConditionTree::MOST_PARAMETER_BYTES
@@ -5771,6 +5773,7 @@ interface	IncomingWork
 interface	IncomingWorkProvider
 interface	IncomingWorkRegistration
 interface	InstalledVersion
+interface	InstructsForeground
 interface	InternalAssignableContributor
 interface	JobPermissionReader
 interface	JournalAdmission
@@ -6744,6 +6747,8 @@ method	AnswerType::fitsEveryHook()
 method	AnswerType::replaces()
 method	AnswerUnreadable::at()
 method	AnsweringAskState::__construct()
+method	AnsweringAskState::instructionText()
+method	AnsweringAskState::instructionType()
 method	AnsweringAskState::isFinished()
 method	AnsweringAskState::reference()
 method	AnsweringAskStates::schemaVersion()
@@ -6752,9 +6757,10 @@ method	AnsweringAskStates::stateClass()
 method	AnsweringAskStates::statesFor()
 method	AnsweringMessageState::__construct()
 method	AnsweringMessageState::instruction()
+method	AnsweringMessageState::instructionText()
+method	AnsweringMessageState::instructionType()
 method	AnsweringMessageState::isFinished()
 method	AnsweringMessageState::onFileEdit()
-method	AnsweringMessageState::onSessionStart()
 method	AnsweringMessageState::onShellCommand()
 method	AnsweringMessageState::onStop()
 method	AnsweringMessageState::workPermission()
@@ -6909,7 +6915,7 @@ method	AskEscalation::__construct()
 method	AskEscalation::advance()
 method	AskEscalation::closeUnanswered()
 method	AskEscalation::nextTarget()
-method	AskHop::activeIds()
+method	AskHop::activeVersions()
 method	AskHop::answer()
 method	AskHop::casts()
 method	AskHop::create()
@@ -7413,6 +7419,8 @@ method	AutoAssignmentWriter::claim()
 method	AvailableListener::__construct()
 method	AvailableListener::__invoke()
 method	AwaitingSkillsState::__construct()
+method	AwaitingSkillsState::instructionText()
+method	AwaitingSkillsState::instructionType()
 method	AwaitingSkillsState::isFinished()
 method	AwaitingSkillsState::onFileEdit()
 method	AwaitingSkillsState::onShellCommand()
@@ -8518,6 +8526,8 @@ method	CompleteSignIn::__construct()
 method	CompleteSignInHandler::__construct()
 method	CompleteSignInHandler::handle()
 method	CompleteSubstitutions::handle()
+method	ComposeForeground::foregroundLine()
+method	ComposeForeground::handle()
 method	ComposedCard::__construct()
 method	CompoundCommandReader::back()
 method	CompoundCommandReader::definition()
@@ -10337,6 +10347,7 @@ method	HookAnswer::isDenied()
 method	HookAnswer::isRewrite()
 method	HookAnswer::refusedOn()
 method	HookAnswer::replacedBy()
+method	HookAnswer::withContextAdded()
 method	HookAnswer::withFollowingWalk()
 method	HookAnswer::withRemindersFirst()
 method	HookAnswerer::onCompaction()
@@ -10660,6 +10671,8 @@ method	InstructionMarkers::replace()
 method	InstructionOriginRefused::missing()
 method	InstructionOriginRefused::notAllowed()
 method	InstructionOriginRefused::otherSubject()
+method	InstructsForeground::instructionText()
+method	InstructsForeground::instructionType()
 method	IntegerChoiceConstraintsData::__construct()
 method	IntegerChoiceOptionData::__construct()
 method	IntegerChoiceValueData::__construct()
@@ -15210,6 +15223,7 @@ method	SettleSampleHandler::handle()
 method	SettleSampleHandler::unsampledStatuses()
 method	SettledCall::__construct()
 method	SettledCall::rendered()
+method	SettledCall::withAnswer()
 method	Share::activate()
 method	Share::advanceScope()
 method	Share::anyLiveOn()
@@ -27864,6 +27878,7 @@ variable	$inspectors
 variable	$install
 variable	$installation
 variable	$installed
+variable	$instructing
 variable	$instruction
 variable	$instructions
 variable	$intent

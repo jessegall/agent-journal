@@ -691,6 +691,7 @@ use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\IncomingWork;
 use App\Hooks\Contracts\IncomingWorkRegistration;
+use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Contracts\RecipientStateLoader;
 use App\Hooks\Contracts\ReminderContribution;
@@ -1382,6 +1383,7 @@ final class CoreApi
                 UserStack::class,
                 StackTransactionRunner::class,
                 StateLoader::class,
+                InstructsForeground::class,
                 RecipientStateLoader::class,
                 Answer::class,
                 StackTransition::class,

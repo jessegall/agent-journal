@@ -22,12 +22,14 @@ final readonly class AnsweringAskStates implements StateLoader
 
     public function statesFor(StateReferences $references): StateSet
     {
-        $active = AskHop::activeIds($references->subjectIds());
+        $versions = AskHop::activeVersions($references->subjectIds());
 
-        return StateSet::build($references, static function (StateReference $reference) use ($active) {
+        return StateSet::build($references, static function (StateReference $reference) use ($versions) {
             $subject = $reference->subject;
+            $isCurrent = $subject instanceof SubjectReference
+                && ($versions[$subject->id] ?? null) === $subject->runNumber;
 
-            return new AnsweringAskState($subject instanceof SubjectReference && in_array($subject->id, $active, true));
+            return new AnsweringAskState($isCurrent);
         });
     }
 

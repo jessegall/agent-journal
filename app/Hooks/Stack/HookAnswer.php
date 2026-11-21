@@ -46,6 +46,14 @@ final readonly class HookAnswer
         return clone ($this, ['context' => [...$reminders, ...$this->context]]);
     }
 
+    /**
+     * The same answer with one more line at the end of its context.
+     */
+    public function withContextAdded(string $line): self
+    {
+        return clone ($this, ['context' => [...$this->context, $line]]);
+    }
+
     public function isRewrite(): bool
     {
         return $this->decision->answerType() === AnswerType::Rewrite;

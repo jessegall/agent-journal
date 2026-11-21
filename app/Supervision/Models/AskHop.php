@@ -83,17 +83,20 @@ final class AskHop extends Model implements ReadableModel
     }
 
     /**
+     * The version of each of the hops that is still current, keyed by hop id; a hop that is no longer current is left
+     * out.
+     *
      * @param  list<string>  $hops
-     * @return list<string>
+     * @return array<string, int>
      */
-    public static function activeIds(array $hops): array
+    public static function activeVersions(array $hops): array
     {
         if ($hops === []) {
             return [];
         }
 
-        return array_values(self::query()->currentHops()->whereIn('ask_hops.id', $hops)
-            ->readExactly(count($hops))->pluck('ask_hops.id')->map(strval(...))->all());
+        return self::query()->currentHops()->whereIn('ask_hops.id', $hops)->readExactly(count($hops))
+            ->pluck('ask_hops.version', 'ask_hops.id')->map(fn (mixed $version) => (int) $version)->all();
     }
 
     public static function nextFor(ActorIdentity $holder): self|null

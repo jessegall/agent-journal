@@ -24,6 +24,7 @@ use App\Processes\Enums\ShellDialect;
 use App\Processes\Values\CommandPart;
 use App\Processes\Values\ShellCommand;
 use Carbon\CarbonImmutable;
+use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\States\WorkingOnPlanState;
 use Domain\Plans\Support\PlanWork;
@@ -164,7 +165,7 @@ final class TransparentFramesTest extends TestCase
 
     private function plan(bool $cancelled = false): Frame
     {
-        $state = new WorkingOnPlanState(new PlanWork('plan-1', 1, $cancelled ? PlanState::Cancelled : PlanState::Started));
+        $state = new WorkingOnPlanState(new PlanWork('plan-1', 1, $cancelled ? PlanState::Cancelled : PlanState::Started), PlanProgress::none(...));
 
         return $this->frame('plan', 'plans.working', '12', $state);
     }

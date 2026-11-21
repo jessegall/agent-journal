@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Supervision\States;
 
+use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\States\AgentState;
 use App\Supervision\Models\AskHop;
 
-final class AnsweringAskState extends AgentState
+final class AnsweringAskState extends AgentState implements InstructsForeground
 {
     public const string TYPE = 'supervision.answering';
 
@@ -23,5 +24,15 @@ final class AnsweringAskState extends AgentState
     public function isFinished(): bool
     {
         return ! $this->isOpen;
+    }
+
+    public function instructionType(): string
+    {
+        return 'supervision.ask';
+    }
+
+    public function instructionText(): string
+    {
+        return 'An ask waits for your answer: answer it before other work.';
     }
 }
