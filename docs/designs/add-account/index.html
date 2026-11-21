@@ -12,7 +12,7 @@
   --side:#f5f5f7;--bg:#fff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--chip:#ececf0;--code-bg:#f5f6f8;
   --border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--line:#e8e9ec;
   --text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;
-  --brand:#5e64c9;--brand-text:#4a50b5;--brand-dim:#e5e6fa;--danger:#bf4f3d;
+  --brand:#5e64c9;--brand-text:#4a50b5;--brand-dim:#e5e6fa;--danger:#bf4f3d;--tip-bg:#ffffff;--tip-edge:#d9dbe0;
   --t-title:16px;--t-card:13.5px;--t-body:13px;--t-field:12.5px;--t-small:12px;--t-meta:11px;--t-group:10.5px;
   --r-control:6px;--r-button:7px;--r-field:8px;--r-card:12px;
 }
@@ -20,7 +20,7 @@
   --side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--chip:#24262b;--code-bg:#121316;
   --border-inner:#1d1f24;--border-2:#2f3136;--border-3:#3a3d44;--line:#22252b;
   --text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;
-  --brand-text:#a3a8f0;--brand-dim:#2a2d5a;--danger:#df8b7e;
+  --brand-text:#a3a8f0;--brand-dim:#2a2d5a;--danger:#df8b7e;--tip-bg:#212329;--tip-edge:#3a3d44;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:var(--font-sans);font-size:var(--t-body);color:var(--text);background:var(--side);-webkit-font-smoothing:antialiased}
@@ -157,10 +157,10 @@ code{font-family:var(--font-mono);font-size:11px}
 .list .name-line{display:flex;align-items:flex-start;gap:6px}
 /* Icon-only row buttons: flush at rest, a subtle fill on hover, a tooltip and an aria-label. Rows only; modal buttons stay text. */
 .ib{position:relative;flex:none;width:24px;height:24px;margin:-2px 0;border:0;border-radius:var(--r-control);background:transparent;color:var(--text-3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity .12s,background-color .12s,color .12s}
-.ib svg{width:14px;height:14px;display:block}
-/* one neutral grey for every row icon; hover only adds a slight background, never a colour */
-.ib:hover,.ib.hv{background:color-mix(in srgb,var(--border-3) 45%,transparent)}
-.ib[data-tip]::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:var(--t-meta);line-height:1;padding:5px 7px;border-radius:5px;background:var(--text);color:var(--bg);pointer-events:none;opacity:0;transition:opacity .12s .25s;z-index:2}
+.ib svg{width:16px;height:16px;display:block}
+/* Version 5's icon button (kit Button variant="icon"): one neutral grey, and on hover only its fill; no colour change, no red */
+.ib:hover,.ib.hv{background:color-mix(in srgb,var(--border-3) 70%,transparent)}
+.ib[data-tip]::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:var(--t-meta);line-height:1;padding:5px 7px;border-radius:6px;background:var(--tip-bg);border:1px solid var(--tip-edge);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.10);pointer-events:none;opacity:0;transition:opacity .12s .35s;z-index:2}
 .ib[data-tip]:hover::after,.ib[data-tip]:focus-visible::after,.ib.tipshow::after{opacity:1}
 .list .name-line .ib{margin-left:-2px}
 .pencil{opacity:0}
@@ -242,34 +242,58 @@ ul.todo{color:var(--text-2);font-size:var(--t-small);line-height:1.7;max-width:8
 <!-- ============ 1. ENTRY ============ -->
 <h2 class="sec">1 · The Accounts window</h2>
 <p class="note">One list holds every account, Claude Code and Codex mixed. Each row names its program in its subtext. Rows are
-divided by a line and padded evenly at 12&nbsp;px × 16&nbsp;px, with 4&nbsp;px between title and subtext, and full names and
-addresses wrap rather than being cut short. One header button replaces the two per-program sign-in forms (AccountsWindow.vue lines 65–72).</p>
+divided by a line and padded evenly at 12&nbsp;px × 16&nbsp;px, with 4&nbsp;px between title and subtext. The list fills the page's
+content area. A name and its subtext each stay on one line, cut with an ellipsis when there is no room; the full name shows on hover
+(<code>title</code>) and in the rename dialog. The state word and the icon buttons keep their own column on the right, so text never runs
+under them. One header button replaces the two per-program sign-in forms (AccountsWindow.vue lines 65–72). The side rail is a stand-in for
+the real app layout.</p>
 <div class="grid">
-  <div class="frame"><div class="cap"><b>1a</b>Accounts with saved rows</div>
-    <div class="stage win-stage"><div class="win">
+  <div class="frame full"><div class="cap"><b>1a</b>Full browser width: the list fills the content area (at rest; hover the rows)</div>
+    <div class="stage shell-stage"><div class="browser"><div class="chrome"><i></i><i></i><i></i></div><div class="shell">
+      <nav class="rail"><span>Chat</span><span>Tasks</span><span>Agents</span><span class="on">Accounts</span><span>Settings</span></nav>
+      <main class="content">
       <div class="ph"><h3>Accounts</h3><span class="count">4</span><span class="gap"></span>
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
-      <ul class="list">
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div><div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg><use href="#i-star-on"/></svg></button><span class="plain">Signed in</span></div></li>
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">Claude Code API key</span><span class="sub">Claude Code · Pay per use</span></div><span class="plain">Signed in</span></li>
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Codex · Subscription · Default</span></div><div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Codex account"><svg><use href="#i-star-on"/></svg></button><span class="plain">Signed in</span></div></li>
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name">Codex API key</span><span class="sub">Codex · Pay per use</span><span class="desc">This key stopped working on 18 Nov. Add a new key to keep using it.</span></div><span class="plain">Expired</span></li>
+      <ul class="list acting">
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Subscription · Default</span></div>
+          <div class="acts-row"><button class="ib" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg viewBox="0 0 16 16" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="Claude Code API key">Claude Code API key</span><button class="ib pencil" data-tip="Rename" aria-label="Rename Claude Code API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Pay per use</span></div>
+          <div class="acts-row"><button class="ib hide" data-tip="Make default" aria-pressed="false" aria-label="Make Claude Code API key the default"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove Claude Code API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Codex · Subscription · Default</span></div>
+          <div class="acts-row"><button class="ib" data-tip="Default" aria-pressed="true" aria-label="Default Codex account"><svg viewBox="0 0 16 16" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><div class="name-line"><span class="name" title="Codex API key">Codex API key</span><button class="ib pencil" data-tip="Rename" aria-label="Rename Codex API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Codex · Pay per use</span><span class="desc">This key stopped working on 18 Nov. Add a new key to keep using it.</span></div>
+          <div class="acts-row"><button class="ib hide" data-tip="Remove" aria-label="Remove Codex API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><button class="btn primary small">Replace key</button><span class="plain">Expired</span></div></li>
+      </ul>
+      </main>
+    </div></div></div></div>
+  <div class="frame"><div class="cap"><b>1b</b>Phone width (375&nbsp;px): names cut with an ellipsis; the icons are always shown, since touch has no hover</div>
+    <div class="stage phone-stage"><div class="phone">
+      <div class="ph"><h3>Accounts</h3><span class="count">3</span><span class="gap"></span>
+        <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add</button></div></div>
+      <ul class="list acting touch">
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Subscription · Default</span></div>
+          <div class="acts-row"><button class="ib" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg viewBox="0 0 16 16" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="Claude Code API key">Claude Code API key</span><button class="ib pencil" data-tip="Rename" aria-label="Rename Claude Code API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Pay per use</span></div>
+          <div class="acts-row"><button class="ib hide" data-tip="Make default" aria-pressed="false" aria-label="Make Claude Code API key the default"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove Claude Code API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Codex · Subscription</span><span class="desc">Expired on 18 Nov. Sign in again to keep using it.</span></div>
+          <div class="acts-row"><button class="ib hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><button class="btn primary small">Sign in again</button><span class="plain">Expired</span></div></li>
       </ul>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>1b</b>No accounts yet</div>
-    <div class="stage win-stage"><div class="win">
+  <div class="frame"><div class="cap"><b>1c</b>No accounts yet</div>
+    <div class="stage win-stage"><div class="win fluid">
       <div class="ph"><h3>Accounts</h3><span class="count">0</span><span class="gap"></span>
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
       <div class="empty"><span class="t">No accounts yet</span><span class="s">Add a Claude Code or Codex account so agents can use it.</span>
         <button class="btn primary normal"><span class="plus">+</span>Add account</button></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>1c</b>A sign-in still waits (the modal was closed or the page reloaded)</div>
-    <div class="stage win-stage"><div class="win">
+  <div class="frame"><div class="cap"><b>1d</b>A sign-in still waits (the modal was closed or the page reloaded)</div>
+    <div class="stage win-stage"><div class="win fluid">
       <div class="ph"><h3>Accounts</h3><span class="count">1</span><span class="gap"></span>
         <div class="acts"><button class="btn bordered small"><span class="spin tiny"></span>Finish signing in</button>
         <button class="btn primary small" disabled><span class="plus">+</span>Add account</button></div></div>
-      <ul class="list">
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div><div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg><use href="#i-star-on"/></svg></button><span class="plain">Signed in</span></div></li>
+      <ul class="list acting">
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Subscription · Default</span></div>
+          <div class="acts-row"><button class="ib" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg viewBox="0 0 16 16" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
       </ul>
     </div></div></div>
 </div>
@@ -541,51 +565,69 @@ asks once, inside the same frame; in steps one and three the modal just closes. 
 <h2 class="sec">6 · An account row: hover, focus and its actions</h2>
 <p class="note">The whole row takes the <code>--hover</code> background when the pointer is over it. Its actions sit on the right, level with
 the name, and fade in on hover or when keyboard focus is inside the row. Their room is always kept, so nothing shifts when they appear.
-Every row action is a 24&nbsp;px icon-only button with a 14&nbsp;px icon. It is flush at rest (no border, no fill), takes a subtle fill on
-hover, and shows a tooltip on hover or keyboard focus. Each has an aria-label that says the whole action.</p>
+Every row action is version 5's icon button, which is the current kit's <code>Button variant="icon"</code>: a 24&nbsp;px flush square holding a
+16&nbsp;px kit <code>Icon</code> (stroke 1.4). All of them are the same neutral grey (<code>text-3</code>). At rest they have no border and no fill;
+on hover they take only a slight fill (<code>border-3</code> at 70%), with no colour change and no red. A tooltip in the kit's tip style shows only
+on hover or keyboard focus, after a short delay. Each button has an aria-label that says the whole action.</p>
 <ul class="todo" style="margin:-8px 0 20px">
   <li><b>Star</b>, on the right: filled and always shown on the default account (tooltip “Default”, <code>aria-pressed="true"</code>). Outlined and
-    shown on hover for other signed-in accounts (tooltip “Make default”); a click makes that account the default. Expired and removing accounts have none.</li>
-  <li><b>Pencil</b>, right after the name: tooltip “Rename”. It opens the rename dialog.</li>
-  <li><b>Trash can</b>, on the right: tooltip “Remove”. It turns red on hover and opens the remove dialog.</li>
-  <li><b>Sign in again</b> stays a small text button on an expired row, always shown. A circular-arrow icon would read as “refresh”, and this is the
-    one thing the row needs, so it should not hide behind a tooltip.</li>
+    shown on hover for other signed-in accounts (tooltip “Make default”); a click makes that account the default. Expired and removing accounts have
+    none. The kit has no star yet; this one is drawn in the kit's stroke style.</li>
+  <li><b>Pencil</b>, right after the name: the kit's <code>pencil</code>, tooltip “Rename”. It opens the rename dialog.</li>
+  <li><b>Trash can</b>, on the right: the kit's <code>trash</code>, tooltip “Remove”. It opens the remove dialog.</li>
+  <li><b>Sign in again</b> (“Replace key” for a key) stays a small text button on an expired row, always shown. A circular-arrow icon would read as
+    “refresh”, and this is the one thing the row needs, so it should not hide behind a tooltip.</li>
 </ul>
-<p class="note">Status stays grey text at the far right. Buttons in the wizard and in the rename and remove dialogs stay text buttons. The rows here
-are live: hover them.</p>
+<p class="note">Status stays grey text at the far right. Buttons in the wizard and in the rename and remove dialogs stay text buttons. On touch,
+which has no hover, the icons are always shown. In the frames, a hovered button is shown by its fill only. Just one frame, 6d, holds its tooltip
+open, and its caption says so. Hover the live rows to see the others.</p>
 <div class="grid">
-  <div class="frame"><div class="cap"><b>6a</b>At rest (first row), hovered with the star's tooltip (second row), keyboard focus on the pencil (third row)</div>
-    <div class="stage win-stage"><div class="win">
+  <div class="frame full"><div class="cap"><b>6a</b>Full width. First row at rest. Second row hovered, with the pointer on the star (its fill shows it). Third row with keyboard focus on the pencil (focus ring).</div>
+    <div class="stage shell-stage"><div class="browser"><div class="chrome"><i></i><i></i><i></i></div><div class="shell">
+      <nav class="rail"><span>Chat</span><span>Tasks</span><span>Agents</span><span class="on">Accounts</span><span>Settings</span></nav>
+      <main class="content">
       <div class="ph"><h3>Accounts</h3><span class="count">3</span><span class="gap"></span>
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
       <ul class="list acting">
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>
-          <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg><use href="#i-pencil"/></svg></button></div>
-            <span class="sub">Claude Code · Subscription · Default</span></div>
-          <div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg><use href="#i-star-on"/></svg></button><button class="ib trash hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg><use href="#i-trash"/></svg></button><span class="plain">Signed in</span></div></li>
-        <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>
-          <div class="who"><div class="name-line"><span class="name">Claude Code API key</span><button class="ib pencil" data-tip="Rename" aria-label="Rename Claude Code API key"><svg><use href="#i-pencil"/></svg></button></div>
-            <span class="sub">Claude Code · Pay per use</span></div>
-          <div class="acts-row"><button class="ib star hide hv tipshow" data-tip="Make default" aria-pressed="false" aria-label="Make Claude Code API key the default"><svg><use href="#i-star"/></svg></button><button class="ib trash hide" data-tip="Remove" aria-label="Remove Claude Code API key"><svg><use href="#i-trash"/></svg></button><span class="plain">Signed in</span></div></li>
-        <li class="foc"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg>
-          <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="ib pencil ring tipshow" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg><use href="#i-pencil"/></svg></button></div>
-            <span class="sub">Codex · Subscription · Default</span></div>
-          <div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Codex account"><svg><use href="#i-star-on"/></svg></button><button class="ib trash hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg><use href="#i-trash"/></svg></button><span class="plain">Signed in</span></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Subscription · Default</span></div>
+          <div class="acts-row"><button class="ib" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg viewBox="0 0 16 16" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
+        <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="Claude Code API key">Claude Code API key</span><button class="ib pencil" data-tip="Rename" aria-label="Rename Claude Code API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Pay per use</span></div>
+          <div class="acts-row"><button class="ib hide hv" data-tip="Make default" aria-pressed="false" aria-label="Make Claude Code API key the default"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove Claude Code API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
+        <li class="foc"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil ring" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Codex · Subscription · Default</span></div>
+          <div class="acts-row"><button class="ib" data-tip="Default" aria-pressed="true" aria-label="Default Codex account"><svg viewBox="0 0 16 16" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
       </ul>
-    </div></div></div>
-  <div class="frame"><div class="cap"><b>6b</b>Expired (state <code>needs_sign_in</code>), and an account being removed (state <code>removing</code>)</div>
-    <div class="stage win-stage"><div class="win">
+      </main>
+    </div></div></div></div>
+  <div class="frame full"><div class="cap"><b>6b</b>Full width. An expired account (state <code>needs_sign_in</code>) hovered with the pointer on the trash can, and an account being removed (state <code>removing</code>).</div>
+    <div class="stage shell-stage"><div class="browser"><div class="chrome"><i></i><i></i><i></i></div><div class="shell" style="min-height:0">
+      <nav class="rail"><span>Chat</span><span>Tasks</span><span>Agents</span><span class="on">Accounts</span><span>Settings</span></nav>
+      <main class="content">
       <div class="ph"><h3>Accounts</h3><span class="count">2</span><span class="gap"></span>
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
       <ul class="list acting">
-        <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg>
-          <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg><use href="#i-pencil"/></svg></button></div>
-            <span class="sub">Codex · Subscription</span><span class="desc">Expired on 18 Nov. Sign in again to keep using it.</span></div>
-          <div class="acts-row"><button class="ib trash hide hv tipshow" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg><use href="#i-trash"/></svg></button><button class="btn primary small">Sign in again</button><span class="plain">Expired</span></div></li>
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>
-          <div class="who"><div class="name-line"><span class="name">Claude Code API key</span></div>
-            <span class="sub">Claude Code · Pay per use</span><span class="desc">2 agents are still using it. It goes away when they finish.</span></div>
+        <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Codex · Subscription</span><span class="desc">Expired on 18 Nov. Sign in again to keep using it.</span></div>
+          <div class="acts-row"><button class="ib hide hv" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><button class="btn primary small">Sign in again</button><span class="plain">Expired</span></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="Claude Code API key">Claude Code API key</span></div><span class="sub">Claude Code · Pay per use</span><span class="desc">2 agents are still using it. It goes away when they finish.</span></div>
           <div class="acts-row"><span class="spin tiny"></span><span class="plain">Removing</span></div></li>
+      </ul>
+      </main>
+    </div></div></div></div>
+  <div class="frame"><div class="cap"><b>6c</b>Phone width (375&nbsp;px): one line per name, icons always shown, state word on the right</div>
+    <div class="stage phone-stage"><div class="phone">
+      <div class="ph"><h3>Accounts</h3><span class="count">2</span><span class="gap"></span>
+        <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add</button></div></div>
+      <ul class="list acting touch">
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Codex · Subscription</span><span class="desc">Expired on 18 Nov. Sign in again to keep using it.</span></div>
+          <div class="acts-row"><button class="ib hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><button class="btn primary small">Sign in again</button><span class="plain">Expired</span></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="Claude Code API key">Claude Code API key</span></div><span class="sub">Claude Code · Pay per use</span><span class="desc">2 agents are still using it. It goes away when they finish.</span></div>
+          <div class="acts-row"><span class="spin tiny"></span><span class="plain">Removing</span></div></li>
+      </ul>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>6d</b>The one frame with a tooltip held open: the pointer rests on the outlined star, and after a short delay “Make default” shows above it. Elsewhere a tooltip shows only on real hover or keyboard focus.</div>
+    <div class="stage phone-stage" style="align-items:center"><div class="win fluid" style="padding-top:28px">
+      <ul class="list acting">
+        <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="Claude Code API key">Claude Code API key</span><button class="ib pencil" data-tip="Rename" aria-label="Rename Claude Code API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Pay per use</span></div>
+          <div class="acts-row"><button class="ib hide hv tipshow" data-tip="Make default" aria-pressed="false" aria-label="Make Claude Code API key the default"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2l1.75 3.6 3.95.55-2.85 2.8.68 3.95L8 11.25 4.47 13.1l.68-3.95-2.85-2.8 3.95-.55z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove Claude Code API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button><span class="plain">Signed in</span></div></li>
       </ul>
     </div></div></div>
 </div>
@@ -593,7 +635,7 @@ are live: hover them.</p>
   <tr><th>Account state</th><th>On hover or focus</th><th>Always shown</th></tr>
   <tr><td><code>signed_in</code>, default</td><td>pencil · trash</td><td>filled star · Signed in</td></tr>
   <tr><td><code>signed_in</code>, not default</td><td>pencil · outlined star · trash</td><td>Signed in</td></tr>
-  <tr><td><code>needs_sign_in</code></td><td>pencil · trash</td><td>Sign in again (small text button) · Expired, with “Expired on 18 Nov. Sign in again to keep using it.” under the subtext</td></tr>
+  <tr><td><code>needs_sign_in</code></td><td>pencil · trash</td><td>Sign in again, or Replace key for a key (small text button) · Expired, with “Expired on 18 Nov. Sign in again to keep using it.” under the subtext</td></tr>
   <tr><td><code>removing</code></td><td>nothing</td><td>spinner · Removing, and why it waits under the subtext</td></tr>
   <tr><td><code>removed</code></td><td>nothing</td><td>the row leaves the list on the next reload</td></tr>
 </table>
@@ -672,7 +714,7 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
   <tr><td>Steps of different length make the modal jump</td><td>Fixed 480&nbsp;px width; a 52&nbsp;px header, 420&nbsp;px body and 52&nbsp;px footer on every step; room under each field is held for its hint or error.</td></tr>
   <tr><td>A browser error page or a sentence is pasted as the code</td><td>Refused before it reaches the program, the attempt stays live, and the field says why (3c).</td></tr>
   <tr><td>The sign-in page is slow to arrive</td><td>3a spinner while <code>readChallenge</code> polls every 2&nbsp;s; Back stays usable.</td></tr>
-  <tr><td>The modal is closed or the page reloaded mid sign-in</td><td>The attempt keeps running; “Finish signing in” (1c) reopens it at the right step; Add account is inactive meanwhile.</td></tr>
+  <tr><td>The modal is closed or the page reloaded mid sign-in</td><td>The attempt keeps running; “Finish signing in” (1d) reopens it at the right step; Add account is inactive meanwhile.</td></tr>
   <tr><td>The user does not see what costs money</td><td>Every card names its billing; the chosen line repeats it on every later step; the list's subtext keeps it.</td></tr>
   <tr><td>A secret shows on screen</td><td>Token and key use <code>TextField secret</code> (password input, <code>new-password</code>) and are never shown again.</td></tr>
   <tr><td>The check never ends</td><td>The attempt's expiry turns it into <code>expired</code>, shown as 4c with Try again.</td></tr>
@@ -690,7 +732,7 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
   <li>Per-program, per-method texts (card title, how it works, where to get it) and a short billing word (Subscription / Pay per use) on <code>SignInMethodData</code>, next to <code>billingNote</code>.</li>
   <li>AccountsWindow.vue: one list of all rows, with the program in each row's subtext and one header button; SignInForm.vue split into the modal's steps; AccountRow's state shown as grey text.</li>
   <li>The done state reads the new account's name from the reloaded rows by the attempt's account id.</li>
-  <li>AccountRow.vue: whole-row hover background; actions moved to the right, level with the name, with opacity on <code>group-hover</code> and <code>focus-within</code> and always shown under <code>hover: none</code>; every row action becomes a flush icon button (24&nbsp;px, tooltip, aria-label): a pencil after the name replaces the Rename button and the inline rename form, a star replaces Make default (filled on the default), and a trash can replaces Remove. A kit <code>IconButton</code> with a <code>tip</code> prop would serve all three; Sign in again only for <code>needs_sign_in</code>, opening the wizard at step two.</li>
+  <li>AccountRow.vue: whole-row hover background; actions moved to the right, level with the name, with opacity on <code>group-hover</code> and <code>focus-within</code> and always shown under <code>hover: none</code>; every row action becomes a flush icon button (24&nbsp;px, tooltip, aria-label): a pencil after the name replaces the Rename button and the inline rename form, a star replaces Make default (filled on the default), and a trash can replaces Remove. They use the kit's <code>Button variant="icon"</code> with its <code>Icon</code> (<code>pencil</code>, <code>trash</code>, and a new <code>star</code> drawn in the same 16&nbsp;px, stroke-1.4 style, outlined and filled), all <code>text-3</code>, with hover only the fill and no colour change. A tooltip on hover or focus uses the kit's tip tokens. Name and subtext are one line with an ellipsis (<code>truncate</code>, <code>min-w-0</code>), and the full name goes in <code>title</code>; Sign in again only for <code>needs_sign_in</code>, opening the wizard at step two.</li>
   <li>Rename and remove dialogs built on the kit Modal, replacing the inline <code>ConfirmAction</code> for Remove.</li>
   <li>RenameAccountRequest allows 200 characters (<code>max:200</code>) while AccountLabelInvalid and the field allow 80; the two should agree. An empty name gets Laravel's “The label field is required.”, which should say name.</li>
 </ul>
