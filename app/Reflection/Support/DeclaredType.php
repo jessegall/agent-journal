@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reflection\Support;
 
-use App\Reflection\Enums\TypeKind;
+use App\Reflection\Enums\TypeShape;
 use App\Reflection\Exceptions\TypeNotNamed;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
@@ -17,7 +17,7 @@ use ReflectionUnionType;
  */
 final readonly class DeclaredType
 {
-    public TypeKind $kind;
+    public TypeShape $shape;
 
     /**
      * The type as PHP writes it, such as ?int, A&B or int|string.
@@ -41,10 +41,10 @@ final readonly class DeclaredType
     {
         $this->text = (string) $type;
         $this->allowsNull = $type->allowsNull();
-        $this->kind = match (true) {
-            $type instanceof ReflectionUnionType => TypeKind::Union,
-            $type instanceof ReflectionIntersectionType => TypeKind::Intersection,
-            default => TypeKind::Named,
+        $this->shape = match (true) {
+            $type instanceof ReflectionUnionType => TypeShape::Union,
+            $type instanceof ReflectionIntersectionType => TypeShape::Intersection,
+            default => TypeShape::Named,
         };
         $this->members = $type instanceof ReflectionUnionType || $type instanceof ReflectionIntersectionType
             ? array_values(array_map(fn (ReflectionType $member) => new self($member), $type->getTypes()))
@@ -55,7 +55,7 @@ final readonly class DeclaredType
 
     public function isNamed(): bool
     {
-        return $this->kind === TypeKind::Named;
+        return $this->shape === TypeShape::Named;
     }
 
     /**

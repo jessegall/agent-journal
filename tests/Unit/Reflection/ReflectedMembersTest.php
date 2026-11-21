@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
-use App\Reflection\Enums\TypeKind;
+use App\Reflection\Enums\TypeShape;
 use App\Reflection\Exceptions\MethodMissing;
 use App\Reflection\Exceptions\TypeNotNamed;
 use App\Reflection\Support\ReflectedProperty;
@@ -67,15 +67,15 @@ final class ReflectedMembersTest extends TestCase
         $label = self::propertyNamed($reflector->properties(), 'label')->type()->get();
 
         $this->assertSame('?int', $grams->text);
-        $this->assertSame(TypeKind::Named, $grams->kind);
+        $this->assertSame(TypeShape::Named, $grams->shape);
         $this->assertTrue($grams->allowsNull);
         $this->assertSame('int', $grams->name());
         $this->assertTrue($grams->isBuiltin());
         $this->assertTrue($parcel->isNamedAs(Parcel::class));
         $this->assertFalse($parcel->isBuiltin());
-        $this->assertSame(TypeKind::Union, $result->kind);
+        $this->assertSame(TypeShape::Union, $result->shape);
         $this->assertSame(Parcel::class.'|int', $result->text);
-        $this->assertSame(TypeKind::Intersection, $label->kind);
+        $this->assertSame(TypeShape::Intersection, $label->shape);
         $this->assertSame(Labelled::class.'&'.Stamps::class, $label->text);
         $this->assertCount(2, $label->members);
         $this->assertSame(2, $weight->requiredParameterCount());

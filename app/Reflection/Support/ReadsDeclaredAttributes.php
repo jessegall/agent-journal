@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Reflection\Concerns;
+namespace App\Reflection\Support;
 
 use App\Reflection\Exceptions\AttributeMissing;
-use App\Reflection\Support\Attributes;
-use App\Reflection\Support\DeclarationAttributes;
 
 /**
  * The attribute reads every reflected declaration answers, a class, a method, a property or a parameter, through the

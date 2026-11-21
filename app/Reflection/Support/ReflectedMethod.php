@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Reflection\Support;
 
-use App\Reflection\Concerns\ReadsDeclaredAttributes;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

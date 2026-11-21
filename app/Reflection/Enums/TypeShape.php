@@ -7,7 +7,7 @@ namespace App\Reflection\Enums;
 /**
  * The shape of a declared PHP type: one name (nullable or not), a union of types, or an intersection of classes.
  */
-enum TypeKind: string
+enum TypeShape: string
 {
     case Named = 'named';
     case Union = 'union';

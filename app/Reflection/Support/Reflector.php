@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Reflection\Support;
 
-use App\Reflection\Concerns\ReadsDeclaredAttributes;
 use App\Reflection\Exceptions\ClassMissing;
 use App\Reflection\Exceptions\MethodMissing;
 use PhpOption\None;
