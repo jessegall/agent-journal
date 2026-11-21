@@ -2,7 +2,12 @@
 import type { AccountUsageData } from '@generated/types/accounts';
 import { computed } from 'vue';
 import AccountFactList from './AccountFactList.vue';
-import { costFacts, threadFacts, windowFacts } from './accountUsage';
+import {
+    costFacts,
+    currentReadings,
+    threadFacts,
+    windowFacts,
+} from './accountUsage';
 
 /**
  * The usage an account's programs reported, in its settings: each window with its value, reset and observation, the
@@ -13,14 +18,15 @@ const props = defineProps<{
     now: Date;
 }>();
 
-const windows = computed(() => windowFacts(props.usage, props.now));
+const usage = computed(() => currentReadings(props.usage, props.now));
+const windows = computed(() => windowFacts(usage.value, props.now));
 const cost = computed(() =>
-    props.usage.monthCost === undefined ? [] : costFacts(props.usage.monthCost),
+    usage.value.monthCost === undefined ? [] : costFacts(usage.value.monthCost),
 );
 const thread = computed(() =>
-    props.usage.latestThread === undefined
+    usage.value.latestThread === undefined
         ? []
-        : threadFacts(props.usage.latestThread),
+        : threadFacts(usage.value.latestThread),
 );
 const facts = computed(() => [
     ...windows.value,
@@ -30,7 +36,11 @@ const facts = computed(() => [
 </script>
 
 <template>
-    <section class="flex flex-col gap-2" aria-label="Usage">
+    <section
+        v-if="facts.length > 0"
+        class="flex flex-col gap-2"
+        aria-label="Usage"
+    >
         <span class="text-text-3">Usage</span>
         <template v-if="usage.monthCost !== undefined">
             <p class="text-small text-text-2">

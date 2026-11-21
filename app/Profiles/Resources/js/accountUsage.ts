@@ -143,16 +143,41 @@ export function threadLine(thread: AccountThreadTokensData): string {
 }
 
 /**
- * The one usage line of a row: the month's estimate of an account that pays per use, else its current window, else
- * its latest thread; none for an account without a current reading.
+ * The readings that hold at this instant, which the row and its settings both read: a month's estimate only for
+ * the current UTC month, so the rollover hides last month's at once, even while a refresh fails.
+ */
+export function currentReadings(
+    usage: AccountUsageData,
+    now: Date,
+): AccountUsageData {
+    const monthStart = usage.monthCost?.monthStart;
+    const isThisMonth =
+        monthStart !== undefined &&
+        new Date(monthStart).getUTCFullYear() === now.getUTCFullYear() &&
+        new Date(monthStart).getUTCMonth() === now.getUTCMonth();
+
+    if (usage.monthCost === undefined || isThisMonth) {
+        return usage;
+    }
+
+    const { monthCost: _lastMonth, ...rest } = usage;
+
+    return rest;
+}
+
+/**
+ * The one usage line of a row: the current month's estimate, else its current measured window, else its latest
+ * thread; none for an account without a current reading.
  */
 export function usageLine(
-    usage: AccountUsageData | undefined,
+    reported: AccountUsageData | undefined,
     now: Date,
 ): string | null {
-    if (usage === undefined) {
+    if (reported === undefined) {
         return null;
     }
+
+    const usage = currentReadings(reported, now);
 
     if (usage.monthCost !== undefined) {
         return costLine(usage.monthCost);
@@ -177,13 +202,22 @@ export interface UsageFact {
 }
 
 /**
- * Each window with its name and value together, its reset or the reset it passed, and when it was observed.
+ * Each window with its name and value together, its reset or the reset it passed, and when it was observed; a window
+ * the program named only by its reset shows that date and when it was seen, with no share used.
  */
 export function windowFacts(usage: AccountUsageData, now: Date): UsageFact[] {
-    return usage.windows.filter(isMeasured).map((window) => ({
-        term: windowLabel(window),
-        value: windowValue(window, now),
-    }));
+    return usage.windows
+        .filter((window) => isMeasured(window) || window.resetsAt !== null)
+        .map((window) => ({
+            term: windowLabel(window),
+            value: isMeasured(window)
+                ? windowValue(window, now)
+                : resetOnlyValue(window),
+        }));
+}
+
+function resetOnlyValue(window: AccountUsageWindowData): string {
+    return `resets ${dateTimeWithZone(String(window.resetsAt))}, observed ${dateTimeWithZone(window.observedAt)}`;
 }
 
 function windowValue(window: MeasuredWindow, now: Date): string {
