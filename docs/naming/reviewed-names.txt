@@ -33,6 +33,7 @@ case	AccountState::Removed
 case	AccountState::Removing
 case	AccountState::SignedIn
 case	ActionMethod::Delete
+case	ActionMethod::Get
 case	ActionMethod::Patch
 case	ActionMethod::Post
 case	ActorType::Agent
@@ -815,8 +816,12 @@ case	RequestHoldReason::ReaderRequired
 case	RequestHoldReason::ReaderStale
 case	RequestHoldReason::UnknownCommand
 case	RequestOutcome::AlreadyIdle
+case	RequestOutcome::Confirmed
 case	RequestOutcome::EntryUnavailable
+case	RequestOutcome::Expired
+case	RequestOutcome::NoLongerVisible
 case	RequestOutcome::NoWork
+case	RequestOutcome::NotYetObservable
 case	RequestOutcome::Refused
 case	RequestOutcome::ScriptFailed
 case	RequestOutcome::StopUnconfirmed
@@ -891,6 +896,8 @@ case	ScreenReportRefusal::TooLarge
 case	ScriptEffect::RunEvidence
 case	SelectionReason::FirstMatch
 case	SelectionReason::StackWide
+case	SentOperation::Reply
+case	SentOperation::Send
 case	SequenceRunState::Cancelled
 case	SequenceRunState::Finished
 case	SequenceRunState::Running
@@ -1124,9 +1131,6 @@ case	TransitionType::PopSelf
 case	TransitionType::Push
 case	TransportProfileType::Cli
 case	TransportProfileType::Mcp
-case	TypeKind::Intersection
-case	TypeKind::Named
-case	TypeKind::Union
 case	TypeShape::Intersection
 case	TypeShape::Named
 case	TypeShape::Union
@@ -1259,6 +1263,7 @@ class	AccountPolicy
 class	AccountRemovalBegun
 class	AccountRenamed
 class	AccountRowData
+class	AccountSelectionChanged
 class	AccountSelectionData
 class	AccountSessions
 class	AccountSettingsRequested
@@ -1777,6 +1782,7 @@ class	CaptureJobMessageSource
 class	CapturedChunk
 class	CapturedPart
 class	CatalogueOnFirstRead
+class	CatalogueReflectorFactory
 class	CausalDepthExceeded
 class	CertifiedWork
 class	CertifyPassedStops
@@ -3491,6 +3497,7 @@ class	PackageFileData
 class	PackageRules
 class	PackageScripts
 class	Page
+class	PageChangeBroadcastLog
 class	PageChanged
 class	PageController
 class	PagePropTypes
@@ -3788,6 +3795,7 @@ class	PromptSubmitted
 class	ProofManifestData
 class	ProofSample
 class	ProofSampleData
+class	PropertyMissing
 class	PropertyRules
 class	ProposalChecks
 class	ProposalData
@@ -3886,6 +3894,7 @@ class	PushSequenceState
 class	PushTaskState
 class	PushTransition
 class	QueryInValueRead
+class	QuestionNotNegatable
 class	QuestionRecord
 class	QuestionType
 class	QueueWordSegments
@@ -4141,14 +4150,17 @@ class	Redirect
 class	RedirectFacts
 class	RedirectParts
 class	RedirectToParse
+class	ReflectedEnumCase
 class	ReflectedMethod
 class	ReflectedParameter
 class	ReflectedProperty
 class	ReflectionCatalogue
 class	ReflectionFinding
 class	ReflectionScan
+class	ReflectionServiceProvider
 class	ReflectionSources
 class	Reflector
+class	ReflectorNegation
 class	RefreshOnSkillsChanged
 class	RefreshPlanInstruction
 class	RefreshPlanInstructionHandler
@@ -4165,6 +4177,7 @@ class	Refusal
 class	RefusalAnswerData
 class	RefusalExceptions
 class	RefusalMapper
+class	RefusalReason
 class	RefusalReplayed
 class	RefuseArrayAssignment
 class	RefuseRunnerOfOtherArrangement
@@ -4362,6 +4375,10 @@ class	RequestKeyInvalid
 class	RequestKeyMissing
 class	RequestListData
 class	RequestListResolver
+class	RequestOutcomeController
+class	RequestOutcomeData
+class	RequestOutcomeInput
+class	RequestOutcomes
 class	RequestPageRequest
 class	RequestProgressReportData
 class	RequestRecoveryRequest
@@ -4720,6 +4737,7 @@ class	SectionDraft
 class	SectionMissing
 class	SecureShareResponse
 class	SecurityOptions
+class	SeenSession
 class	SelectMessage
 class	SelectMessageCall
 class	SelectMessageController
@@ -4746,6 +4764,7 @@ class	SendMessageCommand
 class	SendMessageController
 class	SendMessageHandler
 class	SendMessageRequest
+class	SentMessageAnswer
 class	SeparateRequiredListeners
 class	SequenceCommandHandler
 class	SequencePolicy
@@ -5156,6 +5175,7 @@ class	SlotContexts
 class	SlotSectionData
 class	SourceActionData
 class	SourceAddressRule
+class	SourceNodeAttributes
 class	SourceRange
 class	SpawnedProcess
 class	SpoolRecorder
@@ -5966,6 +5986,7 @@ constant	CommandOwner::CORE
 constant	CommandReaderResolver::READERS
 constant	CommandReceipt::CONTRACT_MAJOR
 constant	CommandReceipt::LINK_TYPE
+constant	CommandRefusal::CODE_FLASH_KEY
 constant	CommandRequest::EXCERPT_LENGTH
 constant	Comment::LINK_TYPE
 constant	Comment::UPDATED_AT
@@ -6560,6 +6581,7 @@ constant	StackWriteScan::SHARED_NAMES
 constant	StaleContinuation::CODE
 constant	StartAccountWindowResolver::MOST_USES
 constant	StartHeartbeats::UNCLAIMED_ENDED_PER_SWEEP
+constant	StartProfileMainController::STARTED_SESSION
 constant	StartReceipt::ACTUAL_MODEL_NOT_REPORTED
 constant	StartRecordResolver::MOST_PER_OWNER
 constant	StateBlocked::CODE
@@ -6869,6 +6891,7 @@ enum	ScreenBuffer
 enum	ScreenReportRefusal
 enum	ScriptEffect
 enum	SelectionReason
+enum	SentOperation
 enum	SequenceRunState
 enum	SessionEndReason
 enum	SessionStatus
@@ -6922,7 +6945,6 @@ enum	ToolOutcome
 enum	ToolType
 enum	TransitionType
 enum	TransportProfileType
-enum	TypeKind
 enum	TypeShape
 enum	UnansweredReason
 enum	UnresolvedType
@@ -7190,6 +7212,7 @@ interface	RecordProvider
 interface	RecordProviderRegistration
 interface	RecordResolver
 interface	RecordVisibility
+interface	ReflectorFactory
 interface	RefusalDetails
 interface	RefusalMapper
 interface	ReminderContribution
@@ -7267,6 +7290,7 @@ interface	StackStates
 interface	StackTransaction
 interface	StackTransactionRunner
 interface	StackTransition
+interface	StaleRefusal
 interface	StartExecutor
 interface	StartHeartbeats
 interface	StartPreflight
@@ -7292,6 +7316,7 @@ interface	SupervisorDefinitions
 interface	SupervisorDispatch
 interface	SystemEntryPolicies
 interface	TargetAuthorizer
+interface	TargetedCommand
 interface	TaskAssignmentResolver
 interface	TaskDetailsResolver
 interface	TaskListResolver
@@ -7492,6 +7517,8 @@ method	AccountRenamed::driver()
 method	AccountRenamed::subjectId()
 method	AccountRowData::__construct()
 method	AccountRowData::fromAccount()
+method	AccountSelectionChanged::forDriver()
+method	AccountSelectionChanged::staleCode()
 method	AccountSelectionData::__construct()
 method	AccountSelectionData::fromSelection()
 method	AccountSessions::__construct()
@@ -7573,10 +7600,12 @@ method	AccountsWindowResolver::__construct()
 method	AccountsWindowResolver::read()
 method	ActionRoute::__construct()
 method	ActionRoute::delete()
+method	ActionRoute::get()
 method	ActionRoute::patch()
 method	ActionRoute::post()
 method	ActivateAccountController::__invoke()
 method	ActivateAccountRequest::accountId()
+method	ActivateAccountRequest::expectedChangeNumber()
 method	ActivateAccountRequest::rules()
 method	ActivateProfiles::__construct()
 method	ActivateProfilesHandler::__construct()
@@ -7592,6 +7621,7 @@ method	ActivateSkillPublicationHandler::__construct()
 method	ActivateSkillPublicationHandler::handle()
 method	ActivatedProfile::__construct()
 method	ActivationDeclined::for()
+method	ActiveAccount::assertAtChange()
 method	ActiveAccount::casts()
 method	ActiveAccount::chooseFirst()
 method	ActiveAccount::clear()
@@ -8403,6 +8433,8 @@ method	AskInbox::__construct()
 method	AskInboxResolver::__construct()
 method	AskInboxResolver::read()
 method	AskMessage::__construct()
+method	AskMessage::receiptTarget()
+method	AskMessage::targetOf()
 method	AskMessageCall::__construct()
 method	AskMessageCommand::handle()
 method	AskMessageController::__invoke()
@@ -9273,6 +9305,9 @@ method	CatalogueOnFirstRead::__construct()
 method	CatalogueOnFirstRead::all()
 method	CatalogueOnFirstRead::catalogue()
 method	CatalogueOnFirstRead::find()
+method	CatalogueReflectorFactory::make()
+method	CatalogueReflectorFactory::makeForClass()
+method	CatalogueReflectorFactory::makeForInstance()
 method	CausalDepthExceeded::along()
 method	CertifiedWork::importRef()
 method	CertifiedWork::of()
@@ -9342,6 +9377,7 @@ method	ChatExcerpt::children()
 method	ChatExcerpt::key()
 method	ChatExcerpt::type()
 method	ChatServiceProvider::boot()
+method	ChatServiceProvider::composerError()
 method	ChatServiceProvider::register()
 method	ChatSkill::condition()
 method	ChatSkill::description()
@@ -9360,7 +9396,6 @@ method	CheckCommandHandlers::check()
 method	CheckCommandHandlers::checkAuthorization()
 method	CheckCommandHandlers::handle()
 method	CheckCommandHandlers::takesAt()
-method	CheckCommandHandlers::takesFirst()
 method	CheckCommandHandlers::takesOnly()
 method	CheckCommandHandlers::textOf()
 method	CheckCommandMiddleware::checkScope()
@@ -9955,10 +9990,13 @@ method	CommandReceipt::complete()
 method	CommandReceipt::create()
 method	CommandReceipt::isExpired()
 method	CommandReceipt::isFor()
+method	CommandReceipt::isForTarget()
 method	CommandReceipt::keyColumns()
 method	CommandReceipt::lockedFor()
 method	CommandReceipt::pastRetention()
 method	CommandReceipt::pastTombstone()
+method	CommandReceipt::readFor()
+method	CommandReceipt::readableKeysOf()
 method	CommandReceipt::refuse()
 method	CommandReceipt::replay()
 method	CommandReceipt::toOperation()
@@ -10244,6 +10282,7 @@ method	ComposedCard::__construct()
 method	ComposerAutoloadMissing::for()
 method	CompositionSite::files()
 method	CompositionSite::holding()
+method	CompositionSite::isSubclass()
 method	CompositionSite::mayName()
 method	CompoundCommandReader::back()
 method	CompoundCommandReader::definition()
@@ -10448,6 +10487,7 @@ method	ConversationRequest::dockToken()
 method	ConversationRequest::queryFor()
 method	ConversationRequest::rules()
 method	ConversationResolver::between()
+method	ConversationResolver::canSee()
 method	ConversationResolver::counts()
 method	ConversationResolver::detail()
 method	ConversationResolver::history()
@@ -10457,6 +10497,7 @@ method	ConversationResolver::sitsAt()
 method	ConversationResolver::wakeStatus()
 method	ConversationUnavailable::missing()
 method	ConversationUnavailable::none()
+method	ConversationUnavailable::sentMessageHidden()
 method	ConversationUnavailable::unnamed()
 method	ConversationUnavailable::withPeer()
 method	ConversationVisit::appendOnce()
@@ -10729,7 +10770,6 @@ method	DeclaredCommand::hasActorScopedReceipt()
 method	DeclaredCommand::isRequestKeyRequired()
 method	DeclaredCommand::needsRepeatableRead()
 method	DeclaredCommand::read()
-method	DeclaredCommand::reflection()
 method	DeclaredCommand::retention()
 method	DeclaredPageGate::__construct()
 method	DeclaredPageGate::contextFor()
@@ -10759,6 +10799,7 @@ method	DeclaredType::__construct()
 method	DeclaredType::isBuiltin()
 method	DeclaredType::isNamed()
 method	DeclaredType::isNamedAs()
+method	DeclaredType::isScalar()
 method	DeclaredType::name()
 method	DefaultUnavailable::forStart()
 method	DefaultUnavailable::reason()
@@ -12563,6 +12604,7 @@ method	HandOffCodeReviewsOnTick::maintenanceScope()
 method	HandStartSkillsToHost::__construct()
 method	HandStartSkillsToHost::handle()
 method	HandleInertiaRequests::__construct()
+method	HandleInertiaRequests::refusalCodeOf()
 method	HandleInertiaRequests::share()
 method	HandleInertiaRequests::version()
 method	HasActorColumns::actor()
@@ -14058,6 +14100,7 @@ method	MessageReading::recipientOf()
 method	MessageReading::takeUp()
 method	MessageRecords::__construct()
 method	MessageRecords::between()
+method	MessageRecords::canSee()
 method	MessageRecords::counts()
 method	MessageRecords::detail()
 method	MessageRecords::history()
@@ -14091,9 +14134,11 @@ method	MessageShowTool::read()
 method	MessageShowTool::readRequest()
 method	MessageShowTool::schema()
 method	MessageState::isClosed()
+method	MessageStateConflict::__construct()
 method	MessageStateConflict::closed()
 method	MessageStateConflict::notWaiting()
 method	MessageStateConflict::refusalCode()
+method	MessageStateConflict::staleCode()
 method	MessageStateConflict::staleVersion()
 method	MessageStateConflict::status()
 method	MessageTakeNextTool::command()
@@ -14845,6 +14890,8 @@ method	Page::onHome()
 method	Page::options()
 method	Page::slots()
 method	Page::visibleWhen()
+method	PageChangeBroadcastLog::__construct()
+method	PageChangeBroadcastLog::record()
 method	PageChanged::__construct()
 method	PageChanged::broadcastAs()
 method	PageChanged::broadcastOn()
@@ -15967,6 +16014,7 @@ method	ProofSample::end()
 method	ProofSample::provesABranch()
 method	ProofSampleData::__construct()
 method	ProofSampleData::sample()
+method	PropertyMissing::on()
 method	PropertyRules::__construct()
 method	PropertyRules::builtRule()
 method	PropertyRules::denormalized()
@@ -16212,6 +16260,7 @@ method	PushTransition::__construct()
 method	PushTransition::applyTo()
 method	PushTransition::type()
 method	QueryInValueRead::during()
+method	QuestionNotNegatable::for()
 method	QuestionRecord::__construct()
 method	QuestionRecord::identity()
 method	QuestionType::definition()
@@ -16893,47 +16942,68 @@ method	RedirectToParse::__construct()
 method	RedirectToParse::nothingToRead()
 method	RedirectToParse::substitutions()
 method	RedirectType::isDuplicate()
+method	ReflectedEnumCase::__construct()
+method	ReflectedEnumCase::declaredAttributes()
+method	ReflectedEnumCase::name()
+method	ReflectedEnumCase::value()
 method	ReflectedMethod::__construct()
 method	ReflectedMethod::declaredAttributes()
 method	ReflectedMethod::declaringClass()
 method	ReflectedMethod::docComment()
+method	ReflectedMethod::fileName()
+method	ReflectedMethod::invokeOn()
+method	ReflectedMethod::isAbstract()
+method	ReflectedMethod::isFinal()
 method	ReflectedMethod::isPublic()
 method	ReflectedMethod::isStatic()
 method	ReflectedMethod::name()
 method	ReflectedMethod::parameters()
 method	ReflectedMethod::requiredParameterCount()
 method	ReflectedMethod::returnType()
+method	ReflectedMethod::startLine()
 method	ReflectedParameter::__construct()
+method	ReflectedParameter::allowsNull()
 method	ReflectedParameter::declaredAttributes()
+method	ReflectedParameter::defaultConstantName()
+method	ReflectedParameter::defaultValue()
+method	ReflectedParameter::hasDefaultValue()
 method	ReflectedParameter::isOptional()
+method	ReflectedParameter::isPassedByReference()
+method	ReflectedParameter::isVariadic()
 method	ReflectedParameter::name()
 method	ReflectedParameter::position()
 method	ReflectedParameter::type()
 method	ReflectedProperty::__construct()
 method	ReflectedProperty::declaredAttributes()
 method	ReflectedProperty::declaringClass()
+method	ReflectedProperty::defaultValue()
 method	ReflectedProperty::docComment()
+method	ReflectedProperty::hasSetHook()
+method	ReflectedProperty::isPrivate()
 method	ReflectedProperty::isPromoted()
 method	ReflectedProperty::isPublic()
+method	ReflectedProperty::isReadOnly()
+method	ReflectedProperty::isStatic()
+method	ReflectedProperty::isVirtual()
 method	ReflectedProperty::name()
+method	ReflectedProperty::readFrom()
+method	ReflectedProperty::readStatic()
 method	ReflectedProperty::type()
 method	ReflectedProperty::typeOf()
+method	ReflectedProperty::writeStatic()
+method	ReflectedProperty::writeTo()
 method	ReflectionCatalogue::canonicalNameOf()
 method	ReflectionCatalogue::current()
 method	ReflectionCatalogue::loads()
 method	ReflectionCatalogue::reflector()
 method	ReflectionFinding::__construct()
-method	ReflectionFinding::key()
 method	ReflectionFinding::report()
 method	ReflectionFinding::sortsBefore()
 method	ReflectionScan::__construct()
-method	ReflectionScan::baselineLines()
 method	ReflectionScan::configurationFor()
-method	ReflectionScan::counts()
-method	ReflectionScan::countsOf()
 method	ReflectionScan::of()
-method	ReflectionScan::staleEntries()
-method	ReflectionScan::unlistedFindings()
+method	ReflectionScan::reports()
+method	ReflectionServiceProvider::register()
 method	ReflectionSources::entryPointsIn()
 method	ReflectionSources::filesUnder()
 method	ReflectionSources::in()
@@ -16941,19 +17011,53 @@ method	ReflectionSources::isOwnFolder()
 method	ReflectionSources::isPhpSource()
 method	ReflectionSources::opensAsPhp()
 method	Reflector::__construct()
+method	Reflector::asInstance()
+method	Reflector::backingType()
+method	Reflector::cases()
 method	Reflector::constructor()
 method	Reflector::declaredAttributes()
+method	Reflector::docComment()
+method	Reflector::exists()
 method	Reflector::fileName()
+method	Reflector::find()
 method	Reflector::hasMethod()
 method	Reflector::hasProperty()
+method	Reflector::implements()
+method	Reflector::interfaces()
+method	Reflector::is()
+method	Reflector::isAbstract()
+method	Reflector::isClass()
+method	Reflector::isEnum()
 method	Reflector::isFinal()
+method	Reflector::isInstance()
 method	Reflector::isInstantiable()
+method	Reflector::isInterface()
+method	Reflector::isNameOf()
+method	Reflector::isNameSubclassOf()
 method	Reflector::isReadOnly()
+method	Reflector::isSubclassOf()
+method	Reflector::isTrait()
+method	Reflector::lineage()
 method	Reflector::method()
+method	Reflector::methods()
 method	Reflector::name()
 method	Reflector::namespaceName()
+method	Reflector::newInstance()
+method	Reflector::newInstanceWithoutConstructor()
+method	Reflector::newLazyGhost()
+method	Reflector::not()
 method	Reflector::of()
+method	Reflector::parent()
 method	Reflector::properties()
+method	Reflector::property()
+method	Reflector::shortName()
+method	Reflector::startLine()
+method	Reflector::traits()
+method	Reflector::uses()
+method	ReflectorFactory::make()
+method	ReflectorNegation::__call()
+method	ReflectorNegation::__construct()
+method	ReflectorNegation::isQuestion()
 method	Reflects::reflect()
 method	RefreshOnSkillsChanged::__construct()
 method	RefreshOnSkillsChanged::handle()
@@ -16993,6 +17097,8 @@ method	RefusalMapper::__construct()
 method	RefusalMapper::ofStatus()
 method	RefusalMapper::refusal()
 method	RefusalMapper::unexpected()
+method	RefusalReason::__construct()
+method	RefusalReason::of()
 method	RefusalReplayed::__construct()
 method	RefusalReplayed::details()
 method	RefusalReplayed::of()
@@ -17289,6 +17395,8 @@ method	ReplyToAskHandler::__construct()
 method	ReplyToAskHandler::answerLate()
 method	ReplyToAskHandler::handle()
 method	ReplyToMessage::__construct()
+method	ReplyToMessage::receiptTarget()
+method	ReplyToMessage::targetOf()
 method	ReplyToMessageCall::__construct()
 method	ReplyToMessageCommand::handle()
 method	ReplyToMessageController::__invoke()
@@ -17461,6 +17569,15 @@ method	RequestKeyMissing::status()
 method	RequestListData::__construct()
 method	RequestListResolver::__construct()
 method	RequestListResolver::read()
+method	RequestOutcomeController::__invoke()
+method	RequestOutcomeData::__construct()
+method	RequestOutcomeData::of()
+method	RequestOutcomeInput::__construct()
+method	RequestOutcomeInput::answeredMessageId()
+method	RequestOutcomeInput::target()
+method	RequestOutcomes::__construct()
+method	RequestOutcomes::confirmed()
+method	RequestOutcomes::of()
 method	RequestPageRequest::requestId()
 method	RequestPageRequest::rules()
 method	RequestProgress::isFinal()
@@ -18389,6 +18506,7 @@ method	SecurityOptions::assertPlain()
 method	SecurityOptions::isInside()
 method	SecurityOptions::make()
 method	SecurityOptions::none()
+method	SeenSession::__construct()
 method	SelectMessage::__construct()
 method	SelectMessageCall::__construct()
 method	SelectMessageController::__invoke()
@@ -18439,6 +18557,9 @@ method	SendMessageHandler::__construct()
 method	SendMessageHandler::handle()
 method	SendMessageRequest::command()
 method	SendMessageRequest::rules()
+method	SentMessageAnswer::__construct()
+method	SentMessageAnswer::to()
+method	SentOperation::command()
 method	SeparateRequiredListeners::assertRequired()
 method	SeparateRequiredListeners::handle()
 method	SeparateRequiredListeners::isDeclaredBy()
@@ -18497,6 +18618,7 @@ method	SessionInspections::of()
 method	SessionOpened::__construct()
 method	SessionOption::__construct()
 method	SessionOutdated::forAgent()
+method	SessionOutdated::staleCode()
 method	SessionOutputAccess::grantedTo()
 method	SessionOutputAccess::mayRead()
 method	SessionOutputGrant::casts()
@@ -19554,6 +19676,7 @@ method	SignedCallRefusal::render()
 method	SignedCallRules::actorIdProperties()
 method	SignedCallRules::callsAnsweringOtherThanTheyImplement()
 method	SignedCallRules::controllersNotTakingTheirCall()
+method	SignedCallRules::namedTypeOf()
 method	SignedCallRules::writesOfReadCommands()
 method	SignedCallSender::__construct()
 method	SignedCallSender::answerOf()
@@ -19916,6 +20039,9 @@ method	SourceAddressRule::__construct()
 method	SourceAddressRule::forHeader()
 method	SourceAddressRule::none()
 method	SourceAddressRule::sourceOf()
+method	SourceNodeAttributes::__construct()
+method	SourceNodeAttributes::carries()
+method	SourceNodeAttributes::current()
 method	SourceRange::__construct()
 method	SourceRange::shiftedBy()
 method	SourceRange::slice()
@@ -20000,6 +20126,7 @@ method	StaleEntryController::__invoke()
 method	StaleProcessGeneration::of()
 method	StaleRead::refusalCode()
 method	StaleRead::revision()
+method	StaleRefusal::staleCode()
 method	StartAccepted::__construct()
 method	StartAccountData::__construct()
 method	StartAccountData::fromUse()
@@ -20350,6 +20477,7 @@ method	StateMethods::hasEventMethodName()
 method	StateMethods::hasRequiredArgument()
 method	StateMethods::isHookOverride()
 method	StateMethods::isPublicInstanceMethod()
+method	StateMethods::returnTextOf()
 method	StateProvider::states()
 method	StatePush::__construct()
 method	StatePush::prune()
@@ -20920,6 +21048,7 @@ method	TargetAuthorizer::filterActions()
 method	TargetHasNoText::for()
 method	TargetNotCommentable::for()
 method	TargetStates::of()
+method	TargetedCommand::receiptTarget()
 method	Task::assignmentIdentity()
 method	Task::block()
 method	Task::cancel()
@@ -21820,6 +21949,7 @@ method	WatchedRuntimes::versionOf()
 method	WebPages::declarations()
 method	WebPages::pages()
 method	WebServiceProvider::boot()
+method	WebServiceProvider::refusalAnswer()
 method	WebServiceProvider::register()
 method	WebServiceProvider::renderRefusals()
 method	WindowResults::__construct()
@@ -22212,7 +22342,6 @@ parameter	$baseOverrides
 parameter	$basePath
 parameter	$baseRevision
 parameter	$baseRevisionNumber
-parameter	$baseline
 parameter	$baselines
 parameter	$bases
 parameter	$basis
@@ -22227,6 +22356,7 @@ parameter	$billingLabel
 parameter	$billingNote
 parameter	$binary
 parameter	$binaryDigest
+parameter	$bind
 parameter	$binding
 parameter	$bindingDigest
 parameter	$bindings
@@ -22778,6 +22908,7 @@ parameter	$expansions
 parameter	$expectation
 parameter	$expected
 parameter	$expectedActiveRevision
+parameter	$expectedChangeNumber
 parameter	$expectedClaim
 parameter	$expectedForm
 parameter	$expectedGeneration
@@ -23018,6 +23149,7 @@ parameter	$inertia
 parameter	$inherited
 parameter	$initial
 parameter	$initialArguments
+parameter	$initializer
 parameter	$inner
 parameter	$inode
 parameter	$input
@@ -23098,6 +23230,7 @@ parameter	$isStateListenerUse
 parameter	$isStatic
 parameter	$isStillBound
 parameter	$isStoreRemoved
+parameter	$isSwitchOver
 parameter	$isTrusted
 parameter	$isUnread
 parameter	$isWholeText
@@ -23248,6 +23381,7 @@ parameter	$manager
 parameter	$manifest
 parameter	$manifestDigest
 parameter	$manifests
+parameter	$mapping
 parameter	$markdown
 parameter	$marker
 parameter	$markers
@@ -23650,6 +23784,7 @@ parameter	$processRun
 parameter	$processRunId
 parameter	$processed
 parameter	$processes
+parameter	$processing
 parameter	$producer
 parameter	$producers
 parameter	$profile
@@ -23783,6 +23918,7 @@ parameter	$reasonCode
 parameter	$reasoningOutput
 parameter	$receipt
 parameter	$receiptId
+parameter	$receiptIds
 parameter	$receipts
 parameter	$received
 parameter	$receivedAt
@@ -24077,6 +24213,7 @@ parameter	$sectionTakes
 parameter	$sections
 parameter	$securityOptions
 parameter	$seen
+parameter	$seenSession
 parameter	$segment
 parameter	$segments
 parameter	$selected
@@ -24203,6 +24340,7 @@ parameter	$staged
 parameter	$staging
 parameter	$stagingFolder
 parameter	$stale
+parameter	$staleCode
 parameter	$staleEntry
 parameter	$staleEntryId
 parameter	$staleReason
@@ -24307,6 +24445,7 @@ parameter	$swapBytes
 parameter	$switch
 parameter	$switchId
 parameter	$switchStage
+parameter	$switchStageLabel
 parameter	$switchable
 parameter	$switchedOn
 parameter	$switches
@@ -24447,6 +24586,7 @@ parameter	$urls
 parameter	$usage
 parameter	$usd
 parameter	$use
+parameter	$used
 parameter	$usedPercent
 parameter	$user
 parameter	$userCode
@@ -24484,6 +24624,9 @@ parameter	$value	app/Profiles/Casts/ProfileStartPolicyCast.php
 parameter	$value	app/Profiles/Casts/SupervisorRoutesCast.php
 parameter	$value	app/Profiles/Exceptions/ProfileProposalRefused.php
 parameter	$value	app/Reads/Support/BoundedReads.php
+parameter	$value	app/Reflection/Support/CatalogueReflectorFactory.php
+parameter	$value	app/Reflection/Support/ReflectedProperty.php
+parameter	$value	app/Reflection/Support/Reflector.php
 parameter	$value	app/Scripts/Values/ObjectRead.php
 parameter	$value	app/Settings/Casts/SettingsDocumentCast.php
 parameter	$value	app/Sharing/Casts/GatewaySettingsCast.php
@@ -24988,6 +25131,7 @@ property	AgentOptionData::$actions
 property	AgentOptionData::$conversations
 property	AgentOptionData::$hasTerminal
 property	AgentOptionData::$id
+property	AgentOptionData::$isSwitchOver
 property	AgentOptionData::$name
 property	AgentOptionData::$presence
 property	AgentOptionData::$presenceLabel
@@ -24997,6 +25141,7 @@ property	AgentOptionData::$sessionGeneration
 property	AgentOptionData::$sessionId
 property	AgentOptionData::$switchId
 property	AgentOptionData::$switchStage
+property	AgentOptionData::$switchStageLabel
 property	AgentRecords::$actors
 property	AgentRecords::$inspection
 property	AgentRequestClient::$http
@@ -25160,6 +25305,7 @@ property	AskInbox::$cards
 property	AskInboxResolver::$asks
 property	AskMessage::$body
 property	AskMessage::$destinationInboxId
+property	AskMessage::$seenSession
 property	AskMessage::$sourceInboxId
 property	AskMessageCall::$message
 property	AskMessageCall::$requestKey
@@ -25509,6 +25655,7 @@ property	BroadcastDockedSourceChange::$docked
 property	BroadcastDockedSourceChange::$events
 property	BroadcastDockedSourceChange::$recipients
 property	BroadcastPageChange::$events
+property	BroadcastPageChange::$log
 property	BroadcastPageChange::$recipients
 property	BroadcastProtectedViewInvalidation::$events
 property	BroadcastProtectedViewInvalidation::$recipients
@@ -26436,7 +26583,6 @@ property	DeclaredReads::$reads
 property	DeclaredRoutes::$declarations
 property	DeclaredType::$allowsNull
 property	DeclaredType::$builtin
-property	DeclaredType::$kind
 property	DeclaredType::$members
 property	DeclaredType::$name
 property	DeclaredType::$shape
@@ -28340,6 +28486,7 @@ property	MessageResource::$messages
 property	MessageResource::$reads
 property	MessageSearch::$messages
 property	MessageSending::$accepted
+property	MessageSending::$agents
 property	MessageSending::$attention
 property	MessageSending::$inboxes
 property	MessageSending::$session
@@ -28348,6 +28495,7 @@ property	MessageSent::$destinationInboxId
 property	MessageSent::$messageId
 property	MessageSent::$sourceInboxId
 property	MessageShowTool::$conversations
+property	MessageStateConflict::$staleCode
 property	MessageTakenUp::$claimant
 property	MessageTakenUp::$messageId
 property	MessageView::$answerId
@@ -28361,6 +28509,7 @@ property	MessageView::$destinationInboxLabel
 property	MessageView::$firstReader
 property	MessageView::$id
 property	MessageView::$replyToId
+property	MessageView::$requestKey
 property	MessageView::$sentAt
 property	MessageView::$sourceInboxId
 property	MessageView::$sourceInboxLabel
@@ -28828,6 +28977,7 @@ property	Page::$skeleton
 property	Page::$slots
 property	Page::$title
 property	Page::$visibility
+property	PageChangeBroadcastLog::$log
 property	PageChanged::$userIds
 property	PageController::$declarations
 property	PageController::$inertia
@@ -30124,6 +30274,8 @@ property	RedirectParts::$substitutions
 property	RedirectToParse::$context
 property	RedirectToParse::$depth
 property	RedirectToParse::$owner
+property	ReflectedEnumCase::$case
+property	ReflectedEnumCase::$declaredAttributes
 property	ReflectedMethod::$declaredAttributes
 property	ReflectedMethod::$label
 property	ReflectedMethod::$method
@@ -30146,11 +30298,17 @@ property	ReflectionFinding::$operation
 property	ReflectionScan::$analysedFiles
 property	ReflectionScan::$failures
 property	ReflectionScan::$findings
+property	Reflector::$allMethods
+property	Reflector::$backingType
+property	Reflector::$cases
 property	Reflector::$constructor
 property	Reflector::$declaredAttributes
+property	Reflector::$fileName
 property	Reflector::$methods
+property	Reflector::$parent
 property	Reflector::$properties
 property	Reflector::$type
+property	ReflectorNegation::$type
 property	RefreshOnSkillsChanged::$dispatchers
 property	RefreshPlanInstruction::$planId
 property	RefreshPlanInstructionHandler::$instructions
@@ -30190,6 +30348,8 @@ property	RefusalAnswerData::$code
 property	RefusalAnswerData::$details
 property	RefusalAnswerData::$message
 property	RefusalMapper::$exceptions
+property	RefusalReason::$code
+property	RefusalReason::$status
 property	RefusalReplayed::$storedCode
 property	RefusalReplayed::$storedDetails
 property	RefuseRunnerOfOtherArrangement::$setting
@@ -30409,6 +30569,7 @@ property	ReplyToAskHandler::$asks
 property	ReplyToAskHandler::$assignments
 property	ReplyToAskHandler::$attention
 property	ReplyToAskHandler::$owner
+property	ReplyToMessage::$agent
 property	ReplyToMessage::$body
 property	ReplyToMessage::$expectedStateVersion
 property	ReplyToMessage::$messageId
@@ -30573,6 +30734,17 @@ property	RequestListData::$rules
 property	RequestListResolver::$approved
 property	RequestListResolver::$projects
 property	RequestListResolver::$rules
+property	RequestOutcomeData::$code
+property	RequestOutcomeData::$message
+property	RequestOutcomeData::$messageId
+property	RequestOutcomeData::$outcome
+property	RequestOutcomeInput::$destinationInboxId
+property	RequestOutcomeInput::$messageId
+property	RequestOutcomeInput::$operation
+property	RequestOutcomeInput::$requestKey
+property	RequestOutcomeInput::$sourceInboxId
+property	RequestOutcomes::$callers
+property	RequestOutcomes::$conversations
 property	RequestProgressReportData::$actualBinding
 property	RequestProgressReportData::$attempt
 property	RequestProgressReportData::$navigation
@@ -31309,6 +31481,9 @@ property	SectionDraft::$key
 property	SectionDraft::$markdown
 property	SecurityOptions::$apparmor
 property	SecurityOptions::$seccomp
+property	SeenSession::$agentId
+property	SeenSession::$generation
+property	SeenSession::$sessionId
 property	SelectMessage::$messageId
 property	SelectMessageCall::$messageId
 property	SelectMessageCall::$requestKey
@@ -31362,6 +31537,9 @@ property	SendMessageCall::$requestKey
 property	SendMessageCommand::$description
 property	SendMessageCommand::$signature
 property	SendMessageHandler::$sending
+property	SentMessageAnswer::$conversations
+property	SentMessageAnswer::$key
+property	SentMessageAnswer::$redirect
 property	SequenceRun::$attributes
 property	SequenceStarted::$runId
 property	SequenceStarted::$target
@@ -31738,6 +31916,7 @@ property	SharedContent::$card
 property	SharedData::$canShare
 property	SharedData::$currentUser
 property	SharedData::$name
+property	SharedData::$refusalCode
 property	SharedData::$version
 property	SharedPage::$allowed
 property	SharedPage::$body
@@ -32043,6 +32222,8 @@ property	SlotSectionData::$propName
 property	SourceActionData::$label
 property	SourceActionData::$type
 property	SourceAddressRule::$header
+property	SourceNodeAttributes::$answers
+property	SourceNodeAttributes::$current
 property	SourceRange::$end
 property	SourceRange::$start
 property	SpawnedProcess::$endStatus
@@ -32694,6 +32875,7 @@ property	SupplyMemories::$memories
 property	SupportedDriverAdapters::$claudeCode
 property	SupportedDriverAdapters::$codex
 property	SwitchAccount::$accountId
+property	SwitchAccount::$expectedChangeNumber
 property	SwitchAccountHandler::$notices
 property	SwitchAgentDriver::$agentId
 property	SwitchAgentDriver::$expectedGeneration
@@ -33473,7 +33655,6 @@ variable	$attemptId
 variable	$attempts
 variable	$attentions
 variable	$attribute
-variable	$attributes
 variable	$audience
 variable	$audit
 variable	$auditEntries
@@ -33487,6 +33668,7 @@ variable	$authorizer
 variable	$authors
 variable	$availability
 variable	$available
+variable	$back
 variable	$background
 variable	$backing
 variable	$base
@@ -33534,7 +33716,6 @@ variable	$call
 variable	$callContractMatch
 variable	$callFields
 variable	$callId
-variable	$callParameterType
 variable	$callbacks
 variable	$called
 variable	$caller
@@ -33599,7 +33780,6 @@ variable	$claims
 variable	$claimsOrigin
 variable	$class
 variable	$classInput
-variable	$classMapping
 variable	$classMatch
 variable	$classMethods
 variable	$className
@@ -33660,6 +33840,7 @@ variable	$conflict
 variable	$conflictingAttributes
 variable	$conflicts
 variable	$connection
+variable	$constant
 variable	$constantParser
 variable	$construct
 variable	$constructor
@@ -33767,6 +33948,7 @@ variable	$docblockScan
 variable	$dockable
 variable	$docker
 variable	$document
+variable	$documented
 variable	$documents
 variable	$domain
 variable	$domainDeclarations
@@ -34005,6 +34187,7 @@ variable	$holderKey
 variable	$holders
 variable	$holding
 variable	$holds
+variable	$home
 variable	$hookInput
 variable	$hooks
 variable	$hop
@@ -34101,6 +34284,7 @@ variable	$isOwnOutputRead
 variable	$isOwnProperty
 variable	$isOwner
 variable	$isPlain
+variable	$isPlainBool
 variable	$isPositiveNumber
 variable	$isProjectCode
 variable	$isPublic
@@ -34206,6 +34390,7 @@ variable	$lock
 variable	$locks
 variable	$login
 variable	$logs
+variable	$logsFailures
 variable	$longest
 variable	$looksSecret
 variable	$loop
@@ -34221,12 +34406,12 @@ variable	$malformed
 variable	$manager
 variable	$manifest
 variable	$map
-variable	$mapped
 variable	$mapper
 variable	$markdown
 variable	$markdownIssue
 variable	$marker
 variable	$markers
+variable	$marks
 variable	$match
 variable	$matchOffset
 variable	$matches
@@ -34236,6 +34421,7 @@ variable	$maximum
 variable	$mayAdminister
 variable	$mayName
 variable	$mayReveal
+variable	$mayStillSee
 variable	$measuredOutput
 variable	$measurement
 variable	$meetsFolderRequirement
@@ -34255,7 +34441,6 @@ variable	$messages
 variable	$meta
 variable	$meter
 variable	$method
-variable	$methodReflection
 variable	$methods
 variable	$microseconds
 variable	$middleware
@@ -34333,6 +34518,7 @@ variable	$number
 variable	$numbered
 variable	$numbers
 variable	$object
+variable	$objects
 variable	$occurrence
 variable	$ofType
 variable	$offer
@@ -34421,6 +34607,7 @@ variable	$params
 variable	$parent
 variable	$parentRuntime
 variable	$parentSessionId
+variable	$parents
 variable	$parsed
 variable	$parser
 variable	$part
@@ -34545,7 +34732,9 @@ variable	$purposeConversations
 variable	$purposeEnd
 variable	$queries
 variable	$query
+variable	$question
 variable	$queued
+variable	$queuedAt
 variable	$queues
 variable	$quoted
 variable	$quotedAuthtoken
@@ -34592,8 +34781,6 @@ variable	$redirects
 variable	$ref
 variable	$reference
 variable	$references
-variable	$reflectedClass
-variable	$reflection
 variable	$reflector
 variable	$refresh
 variable	$refusal
@@ -34631,11 +34818,13 @@ variable	$replay
 variable	$replayed
 variable	$replies
 variable	$reply
+variable	$replyId
 variable	$report
 variable	$reports
 variable	$request
 variable	$requestId
 variable	$requestKey
+variable	$requestKeys
 variable	$requested
 variable	$requestedRevision
 variable	$requestedTaskIds
@@ -34748,7 +34937,6 @@ variable	$second
 variable	$secondCandidate
 variable	$secondFacts
 variable	$secondTitle
-variable	$secondType
 variable	$seconds
 variable	$secondsLeft
 variable	$secondsLimit
