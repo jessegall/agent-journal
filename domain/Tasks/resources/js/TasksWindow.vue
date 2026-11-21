@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
 import ListReaderLayout from '@kit/ListReaderLayout';
@@ -19,11 +19,14 @@ import { taskStateLook } from './taskLooks';
 /**
  * The tasks window, on Home and on its own page: a search, a state filter and a holder filter with Unassigned, the
  * count, the rows and paging. Its links change only its own part of the query; a read that gets no answer keeps the
- * rows, says so and offers Retry of that same read. It needs nothing from Plans.
+ * rows, says so and offers Retry of that same read. When a refresh drops the chosen task from the filter, it says so
+ * once and moves the focus to the next row left, else to the list. It needs nothing from Plans.
  */
 const props = defineProps<{ data: TaskListData }>();
 
 const windowUrl = useWindowQuery();
+const list = useTemplateRef<HTMLElement>('list');
+const announcement = ref('');
 const { read, retry, isStale } = useFilteredReads();
 
 const filters = computed(() => props.data.filters);
@@ -56,6 +59,34 @@ const emptyTitle = computed(() =>
 );
 const pageText = computed(
     () => `Page ${pagination.value.page} of ${pagination.value.lastPage}`,
+);
+
+watch(
+    () => props.data.rows,
+    async (rows, previous) => {
+        const chosen = props.data.filters.task;
+        const oldIndex = previous.findIndex((row) => row.number === chosen);
+
+        if (
+            chosen === undefined ||
+            oldIndex === -1 ||
+            rows.some((row) => row.number === chosen)
+        ) {
+            return;
+        }
+
+        announcement.value = `Task ${chosen} no longer matches this filter`;
+        await nextTick();
+        const next = rows[Math.min(oldIndex, rows.length - 1)];
+        const nextLink =
+            next === undefined
+                ? null
+                : list.value?.querySelector<HTMLElement>(
+                      `a[aria-label^="Task ${next.number}:"]`,
+                  );
+
+        (nextLink ?? list.value)?.focus();
+    },
 );
 
 function urlFor(changes: Partial<TaskFiltersData>): string {
@@ -150,7 +181,13 @@ function clearFilters(): void {
             </template>
         </template>
         <template #list>
-            <div class="flex flex-col gap-2 p-3">
+            <p role="status" class="sr-only">{{ announcement }}</p>
+            <div
+                ref="list"
+                tabindex="-1"
+                aria-label="Tasks"
+                class="flex flex-col gap-2 p-3 outline-none"
+            >
                 <template v-if="data.rows.length === 0">
                     <template v-if="isFiltered">
                         <EmptyState

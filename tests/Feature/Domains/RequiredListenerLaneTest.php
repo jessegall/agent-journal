@@ -31,6 +31,7 @@ use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Listeners\AnnounceTaskStart;
 use Domain\Tasks\Listeners\PushTaskState;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Tests\Fixtures\Boundary\Events\Chat\ChatDomain;
@@ -89,7 +90,12 @@ final class RequiredListenerLaneTest extends TestCase
             $registry->events(),
         );
         $this->assertSame(
-            [CountPhaseTaskStates::class, SamplePlanOfStartedTask::class, PushTaskState::class],
+            [
+                CountPhaseTaskStates::class,
+                SamplePlanOfStartedTask::class,
+                AnnounceTaskStart::class,
+                PushTaskState::class,
+            ],
             array_map(
                 fn (mixed $listener) => explode('@', $listener instanceof AvailableListener ? $listener->listener : '')[0],
                 $registry->listenersOf(TaskStarted::class),

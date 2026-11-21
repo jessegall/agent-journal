@@ -34,6 +34,7 @@ use App\Ui\Enums\Icon;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Api\Events\TaskStartCommitted;
 use Domain\Tasks\Api\TaskAssignmentCompletion;
 use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskDetails;
@@ -134,6 +135,7 @@ final class TasksDomain extends Domain implements
                 TaskFinished::class,
                 TaskBlocked::class,
                 TaskCancelled::class,
+                TaskStartCommitted::class,
             )
             ->contracts(
                 TaskProgressCounter::class,

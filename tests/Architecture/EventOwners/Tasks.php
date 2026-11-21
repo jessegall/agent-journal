@@ -6,6 +6,7 @@ use App\Actors\Support\ActorIdentity;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Api\Events\TaskStartCommitted;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use Tests\Architecture\Support\EventRole;
@@ -36,6 +37,13 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new TaskFinished('task', TaskState::Started),
+    ],
+    TaskStartCommitted::class => [
+        'role' => EventRole::Projection,
+        'migrated' => false,
+        'producers' => [
+            'domain/Tasks/src/Listeners/AnnounceTaskStart.php',
+        ],
     ],
     TaskStarted::class => [
         'role' => EventRole::RowFact,

@@ -7,6 +7,7 @@ namespace Domain\Tasks\Api\Events;
 use App\Contracts\Attributes\RequiresListener;
 use App\Contracts\Event;
 use App\Docking\Sources\Contracts\DockSourceChanged;
+use App\Ui\Contracts\UserInterfaceUpdater;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
@@ -16,7 +17,11 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  * tally of task states moves by one. Plans keeps its phase tallies in the same transaction.
  */
 #[RequiresListener('Domain\Plans\Listeners\CountPhaseTaskStates')]
-final readonly class TaskCancelled implements DockSourceChanged, Event, ShouldDispatchAfterCommit
+final readonly class TaskCancelled implements
+    DockSourceChanged,
+    Event,
+    ShouldDispatchAfterCommit,
+    UserInterfaceUpdater
 {
     public function __construct(
         public string $taskId,

@@ -75,6 +75,7 @@ use Domain\Sequences\Events\SequenceStarted;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Api\Events\TaskStartCommitted;
 use Domain\Tasks\Events\TaskStarted;
 
 /**
@@ -568,6 +569,7 @@ final class EventPayloads
             AccountsChanged::class => 'projection',
             PageChanged::class => 'projection',
             PlanProgressChanged::class => 'projection',
+            TaskStartCommitted::class => 'projection',
         ];
     }
 }

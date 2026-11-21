@@ -13,12 +13,14 @@ export type PhasePages = {
     status: 'shown' | 'loading' | 'failed';
     askedAfter: string;
     firstNewRow: number;
+    pageStarts: { after: string; count: number }[];
 };
 
 /**
  * The task pages of each phase a reader opened, each phase with its own cursor. A page is asked for through a reload
  * of the window's own prop; the answer for the cursor asked appends once and keeps the earlier rows, an answer for a
- * phase that changed revision starts that phase over, and a failed page keeps the rows and retries the same cursor.
+ * phase that changed revision starts that phase over, a refreshed page already shown replaces its own rows in place,
+ * and a failed page keeps the rows and retries the same cursor.
  * The phase's own number goes along when the page is a plan's outline; a phase page names its phase by its route.
  */
 export function usePhasePages(
@@ -39,6 +41,7 @@ export function usePhasePages(
                 status: 'loading',
                 askedAfter: after,
                 firstNewRow: 0,
+                pageStarts: [],
             });
         } else {
             pages.status = 'loading';
@@ -81,6 +84,7 @@ export function usePhasePages(
                 status: 'shown',
                 askedAfter: page.after,
                 firstNewRow: 0,
+                pageStarts: [{ after: page.after, count: page.rows.length }],
             });
 
             return;
@@ -89,15 +93,41 @@ export function usePhasePages(
         const isAsked = pages.status === 'loading' && pages.askedAfter === page.after;
 
         if (!page.isRevisionChanged && !isAsked) {
+            refreshShown(pages, page);
+
             return;
         }
 
         const isFresh = page.isRevisionChanged || page.after === '0';
         pages.firstNewRow = isFresh ? 0 : pages.rows.length;
         pages.rows = isFresh ? [...page.rows] : [...pages.rows, ...page.rows];
+        pages.pageStarts = [
+            ...(isFresh ? [] : pages.pageStarts),
+            { after: page.after, count: page.rows.length },
+        ];
         pages.nextAfter = page.nextAfter;
         pages.revision = page.revision;
         pages.status = 'shown';
+    }
+
+    function refreshShown(pages: PhasePages, page: PhaseTaskPageData): void {
+        const index = pages.pageStarts.findIndex((start) => start.after === page.after);
+
+        if (index === -1) {
+            return;
+        }
+
+        const offset = pages.pageStarts
+            .slice(0, index)
+            .reduce((rows, start) => rows + start.count, 0);
+        const rows = [...pages.rows];
+        rows.splice(offset, pages.pageStarts[index].count, ...page.rows);
+        pages.rows = rows;
+        pages.pageStarts[index].count = page.rows.length;
+
+        if (index === pages.pageStarts.length - 1) {
+            pages.nextAfter = page.nextAfter;
+        }
     }
 
     watch(incoming, (page) => page !== undefined && show(page), {
