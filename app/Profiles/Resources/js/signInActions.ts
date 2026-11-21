@@ -16,6 +16,11 @@ import { readChallenge } from './signIn';
 import type { SignInChallenge } from './signIn';
 
 /**
+ * How each wizard request reloads after it: only the page's own data, keeping the page and the open wizard as they are.
+ */
+const KEEP_THE_WIZARD = { only: ['page'], preserveScroll: true, preserveState: true };
+
+/**
  * What the add-account wizard does with a sign-in: start one for a new account or an account again, send the code
  * or the secret the attempt waits for, and cancel it. While the followed attempt runs, its challenge is read over its
  * own no-store request every 2 s until it is there. A typed code or secret lives only here and is cleared once sent,
@@ -69,8 +74,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
                 request_key: crypto.randomUUID(),
             }))
             .submit(startSignIn(), {
-                preserveScroll: true,
-                preserveState: true,
+                ...KEEP_THE_WIZARD,
                 ...formSendingHooks(),
             });
     }
@@ -79,8 +83,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         again
             .transform(() => ({ request_key: crypto.randomUUID() }))
             .submit(signInAgain({ account: accountId }), {
-                preserveScroll: true,
-                preserveState: true,
+                ...KEEP_THE_WIZARD,
                 ...formSendingHooks(),
             });
     }
@@ -92,8 +95,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         const sending = formSendingHooks();
 
         answer.submit(submitCode({ attempt: attemptId }), {
-            preserveScroll: true,
-            preserveState: true,
+            ...KEEP_THE_WIZARD,
             ...sending,
             onSuccess: () => answer.reset(),
             onFinish: sending.onFinish,
@@ -103,8 +105,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     function cancel(attemptId: string): void {
         forget();
         cancelling.submit(cancelSignIn({ attempt: attemptId }), {
-            preserveScroll: true,
-            preserveState: true,
+            ...KEEP_THE_WIZARD,
             ...formSendingHooks(),
         });
     }
