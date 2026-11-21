@@ -12,7 +12,7 @@ use RuntimeException;
 
 /**
  * A device grant step that does not go on: an unknown or expired code, a poll before the owner approved or sooner
- * than allowed, or a grant that is revoked or expired.
+ * than allowed, a grant that is revoked or expired, or one whose approving user the journal no longer admits.
  */
 final class DeviceGrantRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
@@ -50,6 +50,17 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
         $refusal = new self('This device grant is revoked or expired. Run the journal command again to approve a new one.');
         $refusal->status = 401;
         $refusal->refusalCode = RefusalCode::Unauthenticated;
+
+        return $refusal;
+    }
+
+    public static function approverWithdrawn(): self
+    {
+        $refusal = new self(
+            'The user who approved this terminal can no longer use the journal. Ask an owner to approve it again.',
+        );
+        $refusal->status = 403;
+        $refusal->refusalCode = RefusalCode::Forbidden;
 
         return $refusal;
     }

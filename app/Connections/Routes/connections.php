@@ -20,6 +20,7 @@ use App\Connections\Http\Controllers\RevokeProjectBindingsController;
 use App\Connections\Http\Controllers\RevokeProjectInvitationController;
 use App\Connections\Http\Controllers\RuntimeLeaseController;
 use App\Connections\Http\Controllers\WorktreeDeliveryController;
+use App\Connections\Http\Middleware\AuthenticateDeviceGrant;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
@@ -57,7 +58,7 @@ Route::middleware('journal.agent')->name('connections.commands.')->group(functio
 });
 
 Route::post('/api/project-commands/device', DeviceCommandController::class)
-    ->middleware('throttle:60,1')
+    ->middleware(['throttle:60,1', AuthenticateDeviceGrant::class])
     ->name('connections.commands.device');
 
 Route::middleware('throttle:30,1')->prefix('/api/device-grants')->name('connections.device-grants.')
