@@ -6,6 +6,8 @@ namespace Domain\Helpers\Models;
 
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -31,12 +33,13 @@ use Illuminate\Support\Str;
  */
 #[Table('helper_purposes')]
 #[Fillable(['profile_key', 'purpose_type', 'subject_type', 'subject_id', 'label'])]
-final class HelperPurpose extends Model implements ReadableModel
+final class HelperPurpose extends Model implements EventSource, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -65,18 +68,16 @@ final class HelperPurpose extends Model implements ReadableModel
      */
     public static function forSubjectOnce(ActorIdentity $parent, string $profileKey, RecordIdentity $subject): self
     {
-        self::query()->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'actor_type' => $parent->type->value,
-            'actor_id' => $parent->id,
+        $purpose = new self([
             'profile_key' => $profileKey,
-            'purpose_type' => PurposeType::Subject->value,
+            'purpose_type' => PurposeType::Subject,
             'subject_type' => $subject->type,
             'subject_id' => $subject->id,
             'label' => "{$subject->type}:{$subject->id}",
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
+        $purpose->id = strtolower((string) Str::ulid());
+        $purpose->belongTo($parent);
+        $purpose->insertIfAbsent();
 
         return self::query()->ownedBy($parent)
             ->where('profile_key', $profileKey)

@@ -9,11 +9,11 @@ use App\Bus\Exceptions\CommandRefused;
 use App\Bus\Exceptions\CommandTransactionMissing;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
+use App\Bus\Support\OutsideCommandAllowance;
 use App\Numbers\Exceptions\NumberChanged;
 use App\Numbers\Exceptions\NumberLimitReached;
 use App\Numbers\Models\GlobalGroup;
 use App\Numbers\Models\NumberGroup;
-use App\Numbers\Support\NumberingOutsideCommands;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -50,7 +50,7 @@ final class NumberAllocationTest extends TestCase
 
         $this->createLedgerTables();
         $this->bootModules(LedgerDomain::class);
-        $this->app->make(NumberingOutsideCommands::class)->forbid();
+        $this->app->make(OutsideCommandAllowance::class)->forbid();
         GlobalGroup::installJournal();
         $this->startTestUserRequest(1);
         $this->commands = $this->app->make(CommandBus::class);

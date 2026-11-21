@@ -82,7 +82,7 @@ final class DocumentsServiceProvider extends ServiceProvider
         RetainedDraft::addGlobalScope(RetainedDraft::DRAFT_SCOPE, $this->limitDrafts(...));
         $this->callAfterResolving(
             Schedule::class,
-            fn (Schedule $schedule) => $schedule->call(TextUpload::pruneExpired(...))->daily(),
+            fn (Schedule $schedule) => $schedule->call(fn (UploadStore $uploads) => $uploads->pruneExpired())->daily(),
         );
 
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');

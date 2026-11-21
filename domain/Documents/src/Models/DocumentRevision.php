@@ -11,6 +11,7 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use Carbon\CarbonImmutable;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Exceptions\RecordImmutable;
@@ -59,6 +60,32 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
         ];
+    }
+
+    /**
+     * The document's next closed revision, numbered within it.
+     */
+    public static function create(
+        Document $document,
+        string $title,
+        string $abstract,
+        string $body,
+        ActorType $authorType,
+        string $authorId,
+    ): self {
+        $revision = new self([
+            'document_id' => $document->id,
+            'title' => $title,
+            'abstract' => $abstract,
+            'body' => $body,
+            'author_type' => $authorType,
+            'author_id' => $authorId,
+            'closed_at' => CarbonImmutable::now(),
+        ]);
+        $revision->setRelation('document', $document);
+        $revision->save();
+
+        return $revision;
     }
 
     protected static function booted(): void

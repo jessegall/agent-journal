@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Actors\Support\ActorIdentity;
+use Domain\Tasks\Api\Events\TaskBlocked;
+use Domain\Tasks\Api\Events\TaskCancelled;
+use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Events\TaskStarted;
+use Tests\Architecture\Support\EventRole;
+
+/**
+ * The events of Tasks with their role, owning transition and the files that send them today (doc 70, table 1).
+ * Each migration slice sets migrated, names a sample, and leaves its owner the one producer; EventProducerTest fails
+ * on any producer not listed here.
+ */
+return [
+    TaskBlocked::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Task::block',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskBlocked('task'),
+    ],
+    TaskCancelled::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Task::cancel',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskCancelled('task'),
+    ],
+    TaskFinished::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Task::finish',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskFinished('task'),
+    ],
+    TaskStarted::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'Task::start',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new TaskStarted('task', ActorIdentity::system()),
+    ],
+];

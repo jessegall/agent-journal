@@ -7,13 +7,14 @@ namespace App\Bus\Support;
 use App\Actors\Support\ActorStore;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 
 /**
  * Gives each trusted entry its own dispatcher; Core's transports and jobs ask it for theirs by name, and no payload
  * or header can choose one.
  */
-final readonly class EntryDispatchers
+final readonly class EntryDispatchers implements JournalCommands
 {
     public function __construct(
         private CommandBus $bus,

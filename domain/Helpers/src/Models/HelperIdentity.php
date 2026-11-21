@@ -116,8 +116,12 @@ final class HelperIdentity extends Model implements ReadableModel
      */
     public function releaseDesignation(): void
     {
-        self::query()->acrossActors()->whereKey($this->id)->whereNotNull('designated_profile')
-            ->update(['designated_profile' => null]);
+        if ($this->designated_profile === null) {
+            return;
+        }
+
+        $this->designated_profile = null;
+        $this->save();
     }
 
     // ----------[ Answers ]----------

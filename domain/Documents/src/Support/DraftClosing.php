@@ -9,21 +9,20 @@ use App\Agents\Contracts\SessionProvenance;
 use App\Numbers\Support\RecordReference;
 use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\DraftTarget;
-use Domain\Documents\Api\Events\DocumentClosed;
-use Domain\Documents\Api\Events\DocumentPublished;
-use Domain\Documents\Api\Events\DraftKept;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftMarkdownInvalid;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
+use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
+use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\RetainedDraft;
 use Domain\Documents\Support\Concerns\RefusesOtherDrafts;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Closes a draft under its document's lock, the one way every close goes: a close already recorded for the token
- * answers with its outcome, otherwise the draft at the expected version closes into a revision when it changed.
+ * answers with its outcome, otherwise the draft at the expected version closes into a revision when it changed. The
+ * close record takes the final revision number from here, and each row raises its own fact.
  */
 final readonly class DraftClosing
 {
@@ -31,7 +30,6 @@ final readonly class DraftClosing
 
     public function __construct(
         private RequestEditor $editors,
-        private Dispatcher $events,
         private SessionProvenance $provenance,
     ) {}
 
@@ -68,10 +66,9 @@ final readonly class DraftClosing
         try {
             $this->closeLocked($document, $held, CloseCause::Lifecycle, null, null);
         } catch (DraftMarkdownInvalid $invalid) {
-            $kept = RetainedDraft::create($held, $invalid->getMessage());
+            $kept = RetainedDraft::create($held, $invalid->getMessage(), $this->provenance->parentOf($held));
             $this->provenance->inherit($kept, $held);
             $held->delete();
-            $this->events->dispatch(new DraftKept($kept->id, $document->id, $this->provenance->parentOf($kept)));
         }
     }
 
@@ -112,15 +109,27 @@ final readonly class DraftClosing
         string|null $reason,
     ): CloseResult {
         MarkdownCheck::publication($draft->body);
-        $close = $draft->closeInto($document, $document->currentRevisionOrFail(), $cause, $closer, $reason);
-        $this->events->dispatch(new DocumentClosed($document->id, $document->number, $close->result_revision_number));
+        $base = $document->currentRevisionOrFail();
 
-        if ($close->published) {
-            $this->provenance->inherit($document->currentRevisionOrFail(), $draft);
-            $this->events->dispatch(
-                new DocumentPublished($document->id, $document->number, $close->result_revision_number),
-            );
+        if (! $draft->hasChangesFrom($base)) {
+            $close = DocumentClose::create($document, $draft, $base->number, $cause, $closer, $reason, false);
+            $draft->delete();
+
+            return $close->result();
         }
+
+        $revision = DocumentRevision::create(
+            $document,
+            $draft->title,
+            $draft->abstract,
+            $draft->body,
+            $draft->author_type,
+            $draft->author_id,
+        );
+        $close = DocumentClose::create($document, $draft, $revision->number, $cause, $closer, $reason, true);
+        $document->publish($revision);
+        $this->provenance->inherit($revision, $draft);
+        $draft->delete();
 
         return $close->result();
     }

@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace App\Profiles\Handlers;
 
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Enums\SignInState;
-use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class CancelSignInHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events, private SignInChallenges $challenges) {}
+    public function __construct(
+        private SignInChallenges $challenges,
+        private CommandFacts $facts,
+    ) {}
 
     public function handle(CancelSignIn $command): void
     {
@@ -25,7 +27,7 @@ final readonly class CancelSignInHandler implements CommandHandler
         }
 
         $attempt->finish(SignInState::Cancelled);
+        $this->facts->applyRequired();
         $this->challenges->forget($attempt->id);
-        $this->events->dispatch(new AccountsChanged($attempt->program, $attempt->account_id ?? $attempt->id));
     }
 }

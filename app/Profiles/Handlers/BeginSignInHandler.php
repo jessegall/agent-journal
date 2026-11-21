@@ -7,7 +7,6 @@ namespace App\Profiles\Handlers;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\BeginSignIn;
-use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\ActiveAccount;
@@ -18,7 +17,6 @@ use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Bus\Dispatcher as JobDispatcher;
 use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Starts or rejoins a new account's sign-in under the program's selection lock: one attempt at a time writes a new
@@ -29,7 +27,6 @@ final readonly class BeginSignInHandler implements CommandHandler
     public function __construct(
         private SignInProtocols $protocols,
         private Repository $config,
-        private Dispatcher $events,
         private JobDispatcher $jobs,
     ) {}
 
@@ -65,7 +62,6 @@ final readonly class BeginSignInHandler implements CommandHandler
             $expiresAt,
         );
         $this->jobs->dispatch(new SignInDeadline($attempt->id)->afterCommit()->delay($attempt->expires_at));
-        $this->events->dispatch(new AccountsChanged($program->value, $attempt->id));
 
         return new SignInStarted($attempt->id, false);
     }

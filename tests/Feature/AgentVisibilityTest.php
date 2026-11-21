@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\CrossOwnerReadRefused;
+use App\Actors\Support\ActorIdentity;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Sequences\Models\SequenceRun;
@@ -34,7 +35,7 @@ final class AgentVisibilityTest extends TestCase
         $this->giveWorkTo(2, 20);
         new Memory(['text' => 'Kept by agent 1', 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
         new Memory(['text' => 'Kept by agent 2', 'weight' => 3])->saveFor(TestActors::agentIdentity(2));
-        Task::factory()->create(['title' => 'Write the walk'])->start();
+        Task::factory()->create(['title' => 'Write the walk'])->start(ActorIdentity::system());
         HoldingRules::create('No phase waits on the user.');
     }
 
@@ -146,7 +147,8 @@ final class AgentVisibilityTest extends TestCase
     private function giveWorkTo(int $agent, int $session): void
     {
         $target = TestActors::stack($agent, $session);
-        SequenceRun::create("Run of agent {$agent}", ['Read the brief.'])->startFor($target->actorIdentity());
+        $run = SequenceRun::create("Run of agent {$agent}", ['Read the brief.']);
+        $run->startFor($target->actorIdentity(), $target->sessionId);
     }
 
     /**

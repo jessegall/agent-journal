@@ -7,11 +7,20 @@ namespace App\Profiles\Models;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Values\SelectedAccount;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Enums\SignInMethod;
+use App\Profiles\Events\AccountCleaned;
+use App\Profiles\Events\AccountCleanupRetried;
+use App\Profiles\Events\AccountHeldForMaintenance;
+use App\Profiles\Events\AccountRemovalBegun;
+use App\Profiles\Events\AccountRenamed;
+use App\Profiles\Events\AccountSignedIn;
+use App\Profiles\Events\AccountSignedOut;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Models\Support\AccountOwnerScope;
@@ -65,12 +74,13 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['program', 'label'])]
-final class Account extends Model implements ReadableModel
+final class Account extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use KeepsCleanupTries;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.account';
 
@@ -346,8 +356,9 @@ final class Account extends Model implements ReadableModel
         $this->workspace = $identity->workspace;
         $this->expires_at = $identity->expiry();
         $this->checked_at = $checkedAt;
-        $this->save();
-        $this->releaseWriter($attempt);
+        $this->assertSaved($this->save());
+        $this->raise(new AccountSignedIn($this->program, $this->id));
+        $this->releaseWriter($attempt->id);
     }
 
     /**
@@ -355,9 +366,9 @@ final class Account extends Model implements ReadableModel
      * generation, as the attempt may have changed its folder; one that needed a sign-in is simply let go. An older
      * attempt's end changes nothing of a newer writer's hold.
      */
-    public function endSignInAgain(SignInAttempt $attempt): void
+    public function endSignInAgain(string $attemptId): void
     {
-        if ($this->live_writer_attempt_id !== $attempt->id) {
+        if ($this->live_writer_attempt_id !== $attemptId) {
             return;
         }
 
@@ -367,7 +378,7 @@ final class Account extends Model implements ReadableModel
             $this->maintenance = false;
         }
 
-        $this->releaseWriter($attempt);
+        $this->releaseWriter($attemptId);
     }
 
     /**
@@ -415,7 +426,11 @@ final class Account extends Model implements ReadableModel
             $this->state = AccountState::NeedsSignIn;
         }
 
-        $this->save();
+        $this->assertSaved($this->save());
+
+        if ($isSignedOut) {
+            $this->raise(new AccountSignedOut($this->program, $this->id));
+        }
 
         return $isSignedOut;
     }
@@ -439,7 +454,8 @@ final class Account extends Model implements ReadableModel
         }
 
         $this->name($label);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AccountRenamed($this->program, $this->id));
     }
 
     /**
@@ -462,9 +478,9 @@ final class Account extends Model implements ReadableModel
     /**
      * Lets the attempt's writer go when it holds the folder; another attempt's hold is left as it is.
      */
-    public function releaseWriter(SignInAttempt $attempt): void
+    public function releaseWriter(string $attemptId): void
     {
-        if ($this->live_writer_attempt_id !== $attempt->id) {
+        if ($this->live_writer_attempt_id !== $attemptId) {
             return;
         }
 
@@ -483,7 +499,8 @@ final class Account extends Model implements ReadableModel
         }
 
         $this->maintenance = true;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AccountHeldForMaintenance($this->program, $this->id));
     }
 
     /**
@@ -501,7 +518,8 @@ final class Account extends Model implements ReadableModel
         $this->check_requested_generation = null;
         $this->operation_id = strtolower((string) Str::ulid());
         $this->sign_in_generation++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AccountRemovalBegun($this->program, $this->id));
     }
 
     /**
@@ -515,6 +533,7 @@ final class Account extends Model implements ReadableModel
         }
 
         $this->resetCleanupTries();
+        $this->raise(new AccountCleanupRetried($this->program, $this->id));
     }
 
     /**
@@ -543,6 +562,7 @@ final class Account extends Model implements ReadableModel
         }
 
         $this->finishRemoval();
+        $this->raise(new AccountCleaned($this->program, $this->id));
 
         return true;
     }
@@ -558,7 +578,7 @@ final class Account extends Model implements ReadableModel
         $this->maintenance = false;
         $this->cleanup_pending = false;
         $this->live_writer_attempt_id = null;
-        $this->save();
+        $this->assertSaved($this->save());
     }
 
     // ----------[ Answers ]----------

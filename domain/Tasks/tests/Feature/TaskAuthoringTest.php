@@ -7,6 +7,7 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
@@ -77,11 +78,11 @@ final class TaskAuthoringTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $task->start();
+        $task->start(ActorIdentity::system());
         $this->assertSame([1, TaskState::Started], [$task->run_number, $task->state]);
 
         $task->block('Waits on the schema.');
-        $task->start();
+        $task->start(ActorIdentity::system());
         $task->finish('Built and tested.');
         $fresh = $task->fresh();
 

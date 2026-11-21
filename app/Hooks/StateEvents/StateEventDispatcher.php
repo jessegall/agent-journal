@@ -57,6 +57,22 @@ final class StateEventDispatcher extends Dispatcher
     }
 
     /**
+     * Dispatches a committed fact once under the dispatch staged for it while its command ran.
+     */
+    public function dispatchStaged(StateEventDispatch $dispatch): mixed
+    {
+        return parent::dispatch($dispatch->event, new StateEventPayload($this->payloadKey, $dispatch));
+    }
+
+    /**
+     * Whether a state observes the event through the bridge.
+     */
+    public function bridges(string $event): bool
+    {
+        return $this->hasBridge($event);
+    }
+
+    /**
      * @return array{string, array<array-key, mixed>}
      */
     protected function parseEventAndPayload($event, $eventArguments): array

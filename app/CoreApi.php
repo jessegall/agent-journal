@@ -33,6 +33,7 @@ use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Contracts\RecordPolicy;
 use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Contracts\SeatedActor;
+use App\Actors\Contracts\SystemEntryPolicies;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
 use App\Actors\Contracts\WorkStackProvider;
@@ -415,15 +416,18 @@ use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandFacts;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Contracts\CommandMiddlewareProvider;
 use App\Bus\Contracts\CommandProvider;
 use App\Bus\Contracts\CommandTransaction;
+use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OperationResolver;
 use App\Bus\Contracts\RecordCommand;
 use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Contracts\RequestKey;
 use App\Bus\Enums\CommandEffectType;
+use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\ReceiptState;
@@ -454,6 +458,7 @@ use App\Bus\Exceptions\MiddlewareSkippedCommand;
 use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
 use App\Bus\Exceptions\OperationUnavailable;
+use App\Bus\Exceptions\RaisedOutsideUnit;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\Command as BaseCommand;
 use App\Bus\Support\CommandCall;
@@ -538,12 +543,17 @@ use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
+use App\Contracts\Attributes\InCommandTransaction;
+use App\Contracts\Attributes\RequiresListener;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\DomainAvailability;
 use App\Contracts\Event;
+use App\Contracts\EventSource;
+use App\Contracts\Exceptions\RowWriteRefused;
 use App\Contracts\Listener;
 use App\Contracts\ListenerFailureLog;
+use App\Contracts\Support\RaisesEvents;
 use App\Desks\Commands\CreateDesk;
 use App\Desks\Commands\InstallDesks;
 use App\Desks\Commands\ProvisionActorDesk;
@@ -1380,6 +1390,10 @@ final class CoreApi
                 CommandMiddleware::class,
                 CommandRefusal::class,
                 Event::class,
+                EventSource::class,
+                CommandFacts::class,
+                JournalCommands::class,
+                SystemEntryPolicies::class,
                 Listener::class,
                 CommandHandler::class,
                 CommandProvider::class,
@@ -1792,11 +1806,14 @@ final class CoreApi
                 ElapsedTime::class,
                 FrameSettlement::class,
                 MiddlewareStage::class,
+                CommandEntry::class,
                 CommandScopeType::class,
                 CommandScope::class,
                 MiddlewareDeclaration::class,
                 Authorize::class,
                 Effect::class,
+                InCommandTransaction::class,
+                RequiresListener::class,
                 CommandEffectType::class,
                 CommandCall::class,
                 CurrentUser::class,
@@ -2105,6 +2122,8 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                RowWriteRefused::class,
+                RaisedOutsideUnit::class,
                 FileMissing::class,
                 FileUnreadable::class,
                 FileJsonInvalid::class,
@@ -2340,6 +2359,7 @@ final class CoreApi
                 SkillOwnerRequired::class,
             )
             ->support(
+                RaisesEvents::class,
                 BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,

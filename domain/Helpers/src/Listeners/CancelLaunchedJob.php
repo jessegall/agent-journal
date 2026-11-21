@@ -5,18 +5,31 @@ declare(strict_types=1);
 namespace Domain\Helpers\Listeners;
 
 use App\Agents\Events\LaunchCancelled;
+use App\Bus\Contracts\JournalCommands;
+use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
-use Domain\Helpers\Support\JobStopEvidence;
+use Domain\Helpers\Commands\CancelLaunchedHelperJob;
+use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Support\HelperLifecycleEntry;
 
 /**
- * Marks a helper job cancelled once its launch was cancelled; the helper's workspace stays.
+ * Cancels a helper job whose launch Core cancelled, through its own command, run by the journal after the
+ * cancellation committed.
  */
 final readonly class CancelLaunchedJob implements Listener
 {
+    public function __construct(private JournalCommands $journal) {}
+
     public function handle(LaunchCancelled $event): void
     {
-        foreach (JobStopEvidence::openJobs($event->work) as $job) {
-            $job->cancel();
+        if ($event->work->type !== HelperJob::LINK_TYPE) {
+            return;
         }
+
+        $this->journal->runAsJournal(
+            CommandEntry::Application,
+            HelperLifecycleEntry::NAME,
+            new CancelLaunchedHelperJob($event->work->id),
+        );
     }
 }

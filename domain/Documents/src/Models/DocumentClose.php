@@ -6,11 +6,14 @@ namespace Domain\Documents\Models;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Api\CloseResult;
+use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\RecordImmutable;
@@ -45,11 +48,12 @@ use Illuminate\Database\Eloquent\Model;
     'published',
     'closed_at',
 ])]
-final class DocumentClose extends Model implements ReadableModel
+final class DocumentClose extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'documents.close';
 
@@ -69,6 +73,7 @@ final class DocumentClose extends Model implements ReadableModel
     }
 
     public static function create(
+        Document $document,
         DocumentDraft $draft,
         int $resultNumber,
         CloseCause $cause,
@@ -76,7 +81,7 @@ final class DocumentClose extends Model implements ReadableModel
         string|null $reason,
         bool $published,
     ): self {
-        return self::query()->create([
+        $close = new self([
             'token' => $draft->token,
             'document_id' => $draft->document_id,
             'base_revision_number' => $draft->base_revision_number,
@@ -90,6 +95,10 @@ final class DocumentClose extends Model implements ReadableModel
             'published' => $published,
             'closed_at' => CarbonImmutable::now(),
         ]);
+        $close->assertSaved($close->save());
+        $close->raise(new DocumentClosed($document->id, $document->number, $resultNumber));
+
+        return $close;
     }
 
     protected static function booted(): void

@@ -16,6 +16,7 @@ use App\Agents\Values\StartPolicy;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Models\Message;
 use App\Desks\Models\DeskRecord;
+use App\Hooks\Support\StackTransaction;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\EditDocument;
@@ -71,8 +72,9 @@ final class DocumentDraftTest extends TestCase
 
         $closed = new SessionClosed($child->id, $session->id);
         $listener = $this->app->make(CloseEndedSessionDraft::class);
-        $listener->handle($closed);
-        $listener->handle($closed);
+        $stack = $this->app->make(StackTransaction::class);
+        $stack->run(fn () => $listener->handle($closed));
+        $stack->run(fn () => $listener->handle($closed));
         $kept = RetainedDraft::query()->sole();
         $this->assertSame(0, DocumentDraft::query()->count());
         $this->assertSame('1', $this->app->make(DocumentResolver::class)->show($created->number)->revision);

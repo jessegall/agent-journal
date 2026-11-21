@@ -6,12 +6,15 @@ namespace Domain\Plans\Models;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorContext;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Exceptions\AssignmentPoolTooLarge;
 use App\Assignments\Exceptions\AssignmentPoolUnavailable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssignmentHolder;
 use App\Assignments\Support\OrderedRecordIds;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -21,6 +24,9 @@ use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\Shareable;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRelationSet;
+use Domain\Plans\Api\Events\PlanCancelled;
+use Domain\Plans\Api\Events\PlanFinished;
+use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
@@ -61,7 +67,7 @@ use PhpOption\Option;
  */
 #[UseFactory(PlanFactory::class)]
 #[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'revision', 'type', 'finish_note', 'cancel_reason'])]
-final class Plan extends Model implements Assignable, Numbered, ReadableModel, Shareable
+final class Plan extends Model implements Assignable, EventSource, Numbered, ReadableModel, Shareable
 {
     use AssignableListing;
     use BoundedReads;
@@ -74,6 +80,7 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The stable name links and assignments use for a plan.
@@ -166,29 +173,32 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     /**
      * Ends the plan as done, with the note of what it achieved.
      */
-    public function finish(string $note): void
+    public function finish(string $note, ActorContext $actor): void
     {
         $this->state = PlanState::Done;
         $this->finish_note = $note;
         $this->revision++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PlanFinished($this->id, $actor));
     }
 
     /**
      * Ends the plan as cancelled with its reason; its tasks and their assignments stay as they are.
      */
-    public function cancel(string $reason): void
+    public function cancel(string $reason, ActorContext $actor): void
     {
         $this->state = PlanState::Cancelled;
         $this->cancel_reason = $reason;
         $this->revision++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PlanCancelled($this->id, $actor));
     }
 
     /**
-     * Starts the plan; true when it changed, false when it was already started. Any other state refuses.
+     * Starts the plan for the actor; true when it changed, false when it was already started, which announces nothing.
+     * Any other state refuses.
      */
-    public function startOnce(): bool
+    public function startOnce(ActorContext $actor): bool
     {
         if ($this->state === PlanState::Started) {
             return false;
@@ -199,7 +209,8 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
         }
 
         $this->state = PlanState::Started;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new PlanStarted($this->id, $actor));
 
         return true;
     }

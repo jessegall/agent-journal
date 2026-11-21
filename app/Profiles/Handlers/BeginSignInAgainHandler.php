@@ -8,7 +8,6 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\AccountUses;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\BeginSignInAgain;
-use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
@@ -17,7 +16,6 @@ use App\Profiles\Values\SignInStarted;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Bus\Dispatcher as JobDispatcher;
 use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Starts or rejoins a sign-in again under the program's selection lock, then the account's: the account is held so no
@@ -28,7 +26,6 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
 {
     public function __construct(
         private Repository $config,
-        private Dispatcher $events,
         private JobDispatcher $jobs,
         private AccountUses $uses,
     ) {}
@@ -68,7 +65,6 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
         }
 
         $this->jobs->dispatch(new SignInDeadline($attempt->id)->afterCommit()->delay($attempt->expires_at));
-        $this->events->dispatch(new AccountsChanged($program->value, $account->id));
 
         return new SignInStarted($attempt->id, false);
     }

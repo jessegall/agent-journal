@@ -6,19 +6,17 @@ namespace App\Profiles\Support;
 
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Exceptions\ActorUnavailable;
+use App\Bus\Contracts\CommandFacts;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Enums\SignInState;
-use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Models\Account;
-use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Policies\AccountPolicy;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\SignInIdentity;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Saves a verified sign-in once: under the program's selection lock, then the attempt's, it rechecks the attempt is
@@ -27,7 +25,11 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class SignInCompletion
 {
-    public function __construct(private Dispatcher $events, private TargetAuthorizer $authorizer) {}
+    public function __construct(
+        private TargetAuthorizer $authorizer,
+        private AccountNotices $notices,
+        private CommandFacts $facts,
+    ) {}
 
     /**
      * @throws SignInAttemptStale
@@ -86,8 +88,7 @@ final readonly class SignInCompletion
 
         $account->signedInAgain($attempt, $identity, $staging, $now);
         $selection->chooseFirst($account);
-        AccountNotice::resolveFor($program->value, $now);
-        $this->events->dispatch(new AccountsChanged($attempt->program, $account->id));
+        $this->notices->resolveOpen($program->value, $now);
     }
 
     /**
@@ -118,6 +119,6 @@ final readonly class SignInCompletion
     private function endWithout(SignInAttempt $attempt, SignInState $state): void
     {
         $attempt->finish($state);
-        $this->events->dispatch(new AccountsChanged($attempt->program, $attempt->account_id ?? $attempt->id));
+        $this->facts->applyRequired();
     }
 }

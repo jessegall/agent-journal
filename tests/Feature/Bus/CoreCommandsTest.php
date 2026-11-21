@@ -62,6 +62,7 @@ use App\Profiles\Commands\PublishSignInChallenge;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\ReconcileSignIns;
 use App\Profiles\Commands\RecordAccountFailure;
+use App\Profiles\Commands\RecordAccountNotice;
 use App\Profiles\Commands\ReleaseAccountRemoval;
 use App\Profiles\Commands\ReleaseSignInAgain;
 use App\Profiles\Commands\ReportSignIn;
@@ -143,6 +144,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             PublishSignInChallenge::class,
             TakeSignInCode::class,
             RecordAccountFailure::class,
+            RecordAccountNotice::class,
             ClaimAccountCheck::class,
             CheckAccount::class,
             ClaimSignIn::class,

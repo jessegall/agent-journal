@@ -9,15 +9,17 @@ use App\Bus\Exceptions\CommandRetryExhausted;
 use App\Bus\Exceptions\CommandTransactionMismatch;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
 use App\Bus\Exceptions\StackLockTimedOut;
+use App\Bus\Support\ActiveEventUnits;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandStops;
+use App\Bus\Support\EventUnitLifecycle;
 use App\Bus\Support\OperationDeadline;
+use App\Bus\Support\OuterTransactionOwner;
 use App\Bus\Support\RunningCommand;
 use App\Reads\Support\ScopedReadMeter;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
-use Throwable;
 
 /**
  * The one place a command transaction starts (doc 19, sections 6.5 and 6.6). With none open it begins one in the
@@ -41,6 +43,9 @@ final readonly class RunInTransaction implements CommandMiddleware
         private OperationDeadline $deadline,
         private RunningCommand $running,
         private CommandStops $stops,
+        private EventUnitLifecycle $lifecycle,
+        private ActiveEventUnits $units,
+        private OuterTransactionOwner $outerOwner,
     ) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
@@ -48,10 +53,20 @@ final readonly class RunInTransaction implements CommandMiddleware
         if ($this->database->transactionLevel() > 0) {
             $isolation = $this->requireJoinable($call);
 
+            if (! $this->running->isRunning() && $this->isUnownedOuterTransaction()) {
+                return $this->lifecycle->own(
+                    $this->database,
+                    $call->name(),
+                    fn () => $this->running->running($call, $isolation, fn () => $next($call)),
+                    fn () => null,
+                    fn () => null,
+                );
+            }
+
             // The first command inside a stack transaction is the running command; later ones join it.
-            return $this->running->isRunning()
+            return $this->lifecycle->within($this->database, fn () => $this->running->isRunning()
                 ? $this->running->joined($call, fn () => $next($call))
-                : $this->running->running($call, $isolation, fn () => $next($call));
+                : $this->running->running($call, $isolation, fn () => $next($call)));
         }
 
         for ($attempt = 1; ; $attempt++) {
@@ -92,25 +107,33 @@ final readonly class RunInTransaction implements CommandMiddleware
         $isolation = $call->needsRepeatableRead() ? self::REPEATABLE_READ : self::READ_COMMITTED;
         $this->database->beginTransaction();
 
-        try {
-            $this->database->statement('SET TRANSACTION ISOLATION LEVEL '.strtoupper($isolation));
-            $this->database->statement("SET LOCAL lock_timeout = '{$deadline->lockMilliseconds()}ms'");
-            $this->database->statement("SET LOCAL statement_timeout = '{$deadline->milliseconds}ms'");
-            $commandReply = $this->running->running($call, $isolation, fn () => $next($call));
-            $failed = $this->running->failedJoinedCommand();
+        return $this->lifecycle->own(
+            $this->database,
+            $call->name(),
+            function () use ($call, $next, $deadline, $isolation): mixed {
+                $this->database->statement('SET TRANSACTION ISOLATION LEVEL '.strtoupper($isolation));
+                $this->database->statement("SET LOCAL lock_timeout = '{$deadline->lockMilliseconds()}ms'");
+                $this->database->statement("SET LOCAL statement_timeout = '{$deadline->milliseconds}ms'");
+                $commandReply = $this->running->running($call, $isolation, fn () => $next($call));
+                $failed = $this->running->failedJoinedCommand();
 
-            if ($failed !== null) {
-                throw NestedCommandFailureIgnored::for($call->name(), $failed);
-            }
+                if ($failed !== null) {
+                    throw NestedCommandFailureIgnored::for($call->name(), $failed);
+                }
 
-            $this->database->commit();
+                return $commandReply;
+            },
+            fn () => $this->database->commit(),
+            fn () => $this->database->rollBack(),
+        );
+    }
 
-            return $commandReply;
-        } catch (Throwable $failure) {
-            $this->database->rollBack();
-
-            throw $failure;
-        }
+    /**
+     * Whether the open transaction is the registered outer owner's with no unit yet, so this command owns one.
+     */
+    private function isUnownedOuterTransaction(): bool
+    {
+        return $this->outerOwner->isRegistered() && $this->units->activeFor($this->database)->isEmpty();
     }
 
     /**

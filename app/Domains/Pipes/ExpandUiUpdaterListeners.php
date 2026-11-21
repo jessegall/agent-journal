@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Pipes;
 
-use App\Domains\Values\ListenerDeclarations;
+use App\Domains\Support\ListenerDeclarations;
 use App\Pipelines\Contracts\Pipe;
 use App\Ui\Contracts\UserInterfaceUpdater;
 

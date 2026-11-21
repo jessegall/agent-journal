@@ -97,9 +97,9 @@ final class AccountStorageTest extends TestCase
         $this->assertSame($first->id, $account->writerFor($second));
         $this->assertTrue($account->isGeneration(2));
 
-        $account->releaseWriter($second);
+        $account->releaseWriter($second->id);
         $this->assertSame($first->id, $account->live_writer_attempt_id);
-        $account->releaseWriter($first);
+        $account->releaseWriter($first->id);
 
         $this->assertSame($second->id, $account->writerFor($second));
         $this->assertTrue($account->isGeneration(3));

@@ -232,7 +232,7 @@ final class AskRecordsTest extends TestCase
         $start = TestStart::start('journal-code-reviewer');
         $start->startRequest($this->app);
         $task = Task::create('Review a task', 'Check the expected result.', $start->agent);
-        $task->start();
+        $task->start(ActorIdentity::of($start->agent));
         $now = CarbonImmutable::now();
         new AgentStackRow()->startFor(
             new StackTarget($start->agent->id, $start->session->id),

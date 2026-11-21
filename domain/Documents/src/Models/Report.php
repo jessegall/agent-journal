@@ -6,8 +6,11 @@ namespace Domain\Documents\Models;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorContext;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Support\HasComments;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -19,6 +22,7 @@ use App\Text\Contracts\TextContent;
 use App\Text\Support\MarkdownText;
 use App\Text\Values\TextVersion;
 use Carbon\CarbonImmutable;
+use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\ReportView;
@@ -51,7 +55,7 @@ use Illuminate\Support\Carbon;
  * @property AttentionState $attention
  */
 #[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'filed_at'])]
-final class Report extends Model implements Commentable, Numbered, ReadableModel, Shareable, TextContent
+final class Report extends Model implements Commentable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {
     use BoundedReads;
     use CreatedWithAttention;
@@ -60,6 +64,7 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     use HasUlids;
     use Linkable;
     use MeasuresBody;
+    use RaisesEvents;
     use SearchesText;
     use Settles;
     use SharedWithComments;
@@ -86,7 +91,7 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
      */
     public static function create(string $title, string $abstract, MarkdownText $body, Actor $author): self
     {
-        return self::query()->create([
+        $report = new self([
             'title' => trim($title),
             'abstract' => trim($abstract),
             'body' => $body->text,
@@ -94,6 +99,10 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
             'creator_id' => $author->actorId(),
             'filed_at' => CarbonImmutable::now(),
         ]);
+        $report->assertSaved($report->save());
+        $report->raise(new ReportFiled($report->id, $report->number, ActorContext::of($author)));
+
+        return $report;
     }
 
     protected static function booted(): void

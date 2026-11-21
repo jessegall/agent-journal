@@ -34,7 +34,13 @@ final class AccountSwitchingTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts'];
+    private const array TABLES = [
+        'accounts',
+        'active_accounts',
+        'sign_in_attempts',
+        'account_notices',
+        'command_receipts',
+    ];
 
     protected function setUp(): void
     {

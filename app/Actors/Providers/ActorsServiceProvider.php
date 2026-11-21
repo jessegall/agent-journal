@@ -17,6 +17,7 @@ use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Contracts\ServerClock;
+use App\Actors\Contracts\SystemEntryPolicies as SystemEntryPoliciesContract;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
 use App\Actors\Contracts\WorkStacks;
@@ -51,6 +52,7 @@ final class ActorsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SystemEntryPolicies::class);
+        $this->app->alias(SystemEntryPolicies::class, SystemEntryPoliciesContract::class);
         $this->app->bind(CurrentActor::class, ActorStore::class);
         $this->app->bind(CurrentActorSetter::class, ActorStore::class);
         $this->app->bind(ActorRunner::class, ActorStore::class);

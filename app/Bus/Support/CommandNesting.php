@@ -45,6 +45,14 @@ final class CommandNesting
         return end($this->commands) === $command;
     }
 
+    /**
+     * Whether no command runs in this request now: the outermost one, if any, has returned.
+     */
+    public function isEmpty(): bool
+    {
+        return $this->commands === [];
+    }
+
     public function leave(): void
     {
         array_pop($this->commands);

@@ -4,26 +4,33 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Listeners;
 
+use App\Bus\Contracts\JournalCommands;
+use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
 use App\Hooks\Events\HelperStopHeld;
-use Domain\Helpers\Models\HelperNotice;
+use Domain\Helpers\Commands\HoldHelperJob;
+use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Support\HelperLifecycleEntry;
 use Domain\Helpers\Support\JobStopEvidence;
 
 /**
- * Holds a helper job for repair once its helper failed its final checks the same way three times in a row, and
- * tells the parent once.
+ * Holds a helper job for repair once its helper failed its final checks the same way three times, through its own
+ * command, run by the journal after the hold committed.
  */
 final readonly class HoldFailingJob implements Listener
 {
+    public function __construct(private JournalCommands $journal) {}
+
     public function handle(HelperStopHeld $event): void
     {
-        foreach (JobStopEvidence::openJobs($event->work) as $job) {
-            $job->hold(JobStopEvidence::referenceOf($event->attempt));
-            HelperNotice::create($job, sprintf(
-                'Helper %s failed its final checks on job %s three times the same way; the job is held for repair.',
-                $job->helper_identity_id,
-                $job->id,
-            ));
+        if ($event->work->type !== HelperJob::LINK_TYPE) {
+            return;
         }
+
+        $this->journal->runAsJournal(
+            CommandEntry::Application,
+            HelperLifecycleEntry::NAME,
+            new HoldHelperJob($event->work->id, JobStopEvidence::referenceOf($event->attempt)),
+        );
     }
 }

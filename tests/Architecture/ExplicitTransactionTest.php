@@ -50,6 +50,37 @@ final class ExplicitTransactionTest extends TestCase
         'tests/Fixtures/Modules/Notes/src/Handlers/OpenTransactionNoteHandler.php',
     ];
 
+    /**
+     * Every place of app and the domains that opens, commits or rolls back a transaction (doc 70, table 5), with its
+     * decision: an owner of an event unit, one that joins a unit, or one that holds no unit.
+     */
+    public const array OPENERS = [
+        'app/Bus/CommandMiddleware/RunInTransaction.php' => 'owns a unit: the command attempt',
+        'app/Hooks/Support/StackTransaction.php' => 'owns a unit: the stack transaction',
+        'app/Assignments/Storage/DatabaseAssignmentTransaction.php' => 'joins the open unit inside a command',
+        'app/Agents/Support/DatabaseStartTransaction.php' => 'joins the open unit inside a command',
+        'app/Actors/Support/ActiveActorsResolver.php' => 'no unit: a read-only snapshot',
+        'app/Engine/Support/EnginePass.php' => 'no unit: rolls back what a pass left open',
+    ];
+
+    public function test_every_transaction_opener_of_the_application_is_named(): void
+    {
+        $folders = ['app', ...array_map(
+            fn (string $folder) => substr($folder, strlen(base_path()) + 1),
+            glob(base_path('domain/*/src'), GLOB_ONLYDIR) ?: [],
+        )];
+        $unnamed = array_filter(
+            $this->transactionsIn($folders),
+            fn (string $found) => ! array_key_exists(explode(':', explode(' ', $found)[0])[0], self::OPENERS),
+        );
+
+        $this->assertSame(
+            [],
+            array_values($unnamed),
+            'Name each transaction opener in OPENERS with its unit decision.',
+        );
+    }
+
     public function test_no_checked_owner_opens_a_transaction_itself(): void
     {
         $this->assertSame([], $this->transactionsIn(self::CHECKED));

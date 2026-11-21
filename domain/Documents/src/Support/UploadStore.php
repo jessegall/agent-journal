@@ -6,10 +6,12 @@ namespace Domain\Documents\Support;
 
 use App\Agents\Contracts\SessionProvenance;
 use App\Bus\Contracts\CommandTransaction;
+use Carbon\CarbonImmutable;
 use Domain\Documents\Contracts\SealedUploads;
 use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Exceptions\UploadLimitReached;
 use Domain\Documents\Models\TextUpload;
+use Domain\Documents\Models\TextUploadChunk;
 use Illuminate\Database\DatabaseManager;
 
 final readonly class UploadStore implements SealedUploads
@@ -36,7 +38,26 @@ final readonly class UploadStore implements SealedUploads
 
     public function append(string $uploadId, int $index, string $text, string $digest): void
     {
-        TextUpload::locked($uploadId)->appendChunk($index, $text, $digest);
+        $upload = TextUpload::locked($uploadId);
+
+        if ($upload->hasReceivedChunk($index, $text, $digest)) {
+            return;
+        }
+
+        TextUploadChunk::create($upload, $index, $text);
+        $upload->countChunk(strlen($text));
+    }
+
+    /**
+     * Deletes every upload whose time ran out, a hundred at a time, whoever began it.
+     */
+    public function pruneExpired(): void
+    {
+        TextUpload::query()->withoutGlobalScope(TextUpload::SESSION_SCOPE)
+            ->where('expires_at', '<=', CarbonImmutable::now())
+            ->readInChunks(100, function ($uploads): void {
+                $uploads->each(fn (TextUpload $upload) => $upload->delete());
+            });
     }
 
     public function seal(string $uploadId): void

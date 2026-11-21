@@ -14,6 +14,9 @@ final readonly class EventCall
 {
     /**
      * @param  string  $event  the written name, the resolved class, or the code passed as the event
+     * @param  string|null  $eventClass  the class of the event passed, where the code shows it
+     * @param  string|null  $eventMethod  the method whose returned value is passed, where it is one
+     * @param  string  $site  the class and method the call stands in, Class::method
      */
     public function __construct(
         public string $file,
@@ -23,6 +26,9 @@ final readonly class EventCall
         public bool $takesOnlyEvents,
         public EventArgument $argument,
         public string $event,
+        public string|null $eventClass = null,
+        public string|null $eventMethod = null,
+        public string $site = '',
     ) {}
 
     /**

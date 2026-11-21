@@ -6,6 +6,7 @@ namespace Tests\Fixtures\Boundary\Events\Tasks;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClaimed;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
 
 final class TasksDomain extends Domain
@@ -23,7 +24,7 @@ final class TasksDomain extends Domain
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(TaskClosed::class)
+            ->events(TaskClosed::class, TaskClaimed::class)
             ->build();
     }
 }

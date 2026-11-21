@@ -18,7 +18,7 @@ final readonly class NamesUsedAnywhere implements FileScan
 
     public function key(): string
     {
-        return 'names-used-anywhere-2-'.sha1(serialize($this->roots->namespaces));
+        return 'names-used-anywhere-3-'.sha1(serialize($this->roots->namespaces));
     }
 
     public function findingsIn(ParsedFile $file): array

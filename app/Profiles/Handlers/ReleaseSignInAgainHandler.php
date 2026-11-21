@@ -10,18 +10,15 @@ use App\Agents\Contracts\AccountUses;
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ReleaseSignInAgain;
-use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
 use App\Records\Support\RecordIdentity;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class ReleaseSignInAgainHandler implements CommandHandler
 {
     public function __construct(
         private CommandBus $commands,
         private AccountUses $uses,
-        private Dispatcher $events,
     ) {}
 
     public function handle(ReleaseSignInAgain $command): bool
@@ -41,7 +38,6 @@ final readonly class ReleaseSignInAgainHandler implements CommandHandler
         }
 
         $attempt->releaseForHost();
-        $this->events->dispatch(new AccountsChanged($attempt->program, $attempt->account_id));
 
         return true;
     }

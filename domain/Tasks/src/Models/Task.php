@@ -14,6 +14,8 @@ use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssignmentHolder;
 use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\PoolMembers;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Links\Support\Linkable;
@@ -23,6 +25,9 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
+use Domain\Tasks\Api\Events\TaskBlocked;
+use Domain\Tasks\Api\Events\TaskCancelled;
+use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
@@ -31,6 +36,7 @@ use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskTextLimit;
+use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
@@ -83,7 +89,7 @@ use PhpOption\Some;
     'block_reason',
     'cancel_reason',
 ])]
-final class Task extends Model implements Assignable, Numbered, ReadableModel
+final class Task extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {
     use AssignableListing;
     use BoundedReads;
@@ -96,6 +102,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The stable name links and assignments use for a task.
@@ -210,11 +217,12 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
-     * Starts a new run, or keeps the run a started task already has. An ended task is not started again.
+     * Starts a new run for the actor, or keeps the run a started task already has, and announces it either way. An
+     * ended task is not started again.
      *
      * @throws TaskRestartRefused
      */
-    public function start(): void
+    public function start(ActorIdentity $actor): void
     {
         if ($this->state->hasEnded()) {
             throw TaskRestartRefused::forTask($this->number, $this->state->value);
@@ -225,28 +233,32 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         }
 
         $this->state = TaskState::Started;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TaskStarted($this->id, $actor));
     }
 
     public function finish(string $note): void
     {
         $this->state = TaskState::Finished;
         $this->result_note = $note;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TaskFinished($this->id));
     }
 
     public function block(string $reason): void
     {
         $this->state = TaskState::Blocked;
         $this->block_reason = $reason;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TaskBlocked($this->id));
     }
 
     public function cancel(string $reason): void
     {
         $this->state = TaskState::Cancelled;
         $this->cancel_reason = $reason;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new TaskCancelled($this->id));
     }
 
     // ----------[ Answers ]----------

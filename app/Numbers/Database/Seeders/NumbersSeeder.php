@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Numbers\Database\Seeders;
 
-use App\Numbers\Support\NumberingOutsideCommands;
+use App\Bus\Support\OutsideCommandAllowance;
 use Illuminate\Database\Seeder;
 
 /**
@@ -12,7 +12,7 @@ use Illuminate\Database\Seeder;
  */
 final class NumbersSeeder extends Seeder
 {
-    public function run(NumberingOutsideCommands $outsideCommands): void
+    public function run(OutsideCommandAllowance $outsideCommands): void
     {
         $outsideCommands->allow();
     }

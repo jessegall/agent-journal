@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Domain\Documents\Models;
 
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorContext;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Text\Support\MarkdownText;
+use Domain\Documents\Api\Events\DraftKept;
 use Domain\Documents\Api\RetainedDraftView;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Support\DraftText;
@@ -29,11 +33,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $author_id
  */
 #[Fillable(['document_id', 'base_revision_number', 'title', 'abstract', 'body', 'reason', 'author_type', 'author_id'])]
-final class RetainedDraft extends Model implements ReadableModel
+final class RetainedDraft extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'documents.retained-draft';
 
@@ -51,9 +56,9 @@ final class RetainedDraft extends Model implements ReadableModel
         self::updating(fn () => throw RecordImmutable::for('retained draft'));
     }
 
-    public static function create(DocumentDraft $draft, string $reason): self
+    public static function create(DocumentDraft $draft, string $reason, ActorContext|null $parent): self
     {
-        return self::query()->create([
+        $kept = new self([
             'document_id' => $draft->document_id,
             'base_revision_number' => $draft->base_revision_number,
             'title' => $draft->title,
@@ -63,6 +68,10 @@ final class RetainedDraft extends Model implements ReadableModel
             'author_type' => $draft->author_type,
             'author_id' => $draft->author_id,
         ]);
+        $kept->assertSaved($kept->save());
+        $kept->raise(new DraftKept($kept->id, $kept->document_id, $parent));
+
+        return $kept;
     }
 
     // ----------[ Queries ]----------

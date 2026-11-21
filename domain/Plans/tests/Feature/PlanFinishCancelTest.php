@@ -7,6 +7,7 @@ namespace Domain\Plans\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
@@ -85,6 +86,10 @@ final class PlanFinishCancelTest extends TestCase
             [$plan->fresh()?->state, $plan->fresh()?->finish_note, $plan->fresh()?->revision],
         );
         Event::assertDispatchedTimes(PlanFinished::class, 1);
+        Event::assertDispatched(
+            PlanFinished::class,
+            fn (PlanFinished $finished) => $finished->finishedBy == ActorContext::forUser($this->owner->id),
+        );
     }
 
     public function test_cancelling_keeps_every_task_and_assignment(): void
@@ -126,7 +131,7 @@ final class PlanFinishCancelTest extends TestCase
     private function startedPlan(array $states): Plan
     {
         $plan = Plan::factory()->create();
-        $plan->startOnce();
+        $plan->startOnce(ActorContext::forUser($this->owner->id));
         $plan->addPhase('Work')->addTasks(
             array_map(fn (TaskState $state): string => $this->taskIn($state)->id, $states),
         );
@@ -139,7 +144,7 @@ final class PlanFinishCancelTest extends TestCase
         $task = Task::factory()->create();
 
         match ($state) {
-            TaskState::Started => $task->start(),
+            TaskState::Started => $task->start(ActorIdentity::system()),
             TaskState::Blocked => $task->block('Waits.'),
             TaskState::Finished => $task->finish('Done.'),
             TaskState::Cancelled => $task->cancel('Not needed.'),

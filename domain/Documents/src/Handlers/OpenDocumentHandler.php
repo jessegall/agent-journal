@@ -7,20 +7,17 @@ namespace Domain\Documents\Handlers;
 use App\Agents\Contracts\SessionProvenance;
 use App\Numbers\Support\RecordReference;
 use Domain\Documents\Api\DraftReference;
-use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Handlers\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\RequestEditor;
-use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class OpenDocumentHandler extends DocumentCommandHandler
 {
     public function __construct(
         private RequestEditor $editors,
-        private Dispatcher $events,
         private SessionProvenance $provenance,
     ) {}
 
@@ -56,7 +53,6 @@ final readonly class OpenDocumentHandler extends DocumentCommandHandler
 
         $draft = DocumentDraft::create($document, $baseRevision, $editor);
         $this->provenance->record($draft);
-        $this->events->dispatch(new DocumentOpened($document->id, $document->number));
 
         return $draft->reference($document);
     }

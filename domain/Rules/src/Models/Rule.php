@@ -7,12 +7,17 @@ namespace Domain\Rules\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Queries\Support\TextSearch;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use Domain\Rules\Api\Events\RuleApproved;
+use Domain\Rules\Api\Events\RuleDenied;
+use Domain\Rules\Api\Events\RuleRemoved;
 use Domain\Rules\Api\RuleDetails;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
@@ -42,12 +47,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['text', 'reason', 'replaces_rule_id', 'proposer_type', 'proposer_id'])]
-final class Rule extends Model implements Numbered, ReadableModel
+final class Rule extends Model implements EventSource, Numbered, ReadableModel
 {
     use BoundedReads;
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * The most characters a rule's text holds.
@@ -112,7 +118,8 @@ final class Rule extends Model implements Numbered, ReadableModel
     public function remove(): void
     {
         $this->state = RuleState::Removed;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new RuleRemoved($this->id));
     }
 
     // ----------[ Answers ]----------
@@ -134,11 +141,13 @@ final class Rule extends Model implements Numbered, ReadableModel
         }
 
         $this->closeProposal(RuleState::Active);
+        $this->raise(new RuleApproved($this->id));
     }
 
     public function deny(): void
     {
         $this->closeProposal(RuleState::Denied);
+        $this->raise(new RuleDenied($this->id));
     }
 
     public function canBeReviewed(): bool
@@ -172,7 +181,7 @@ final class Rule extends Model implements Numbered, ReadableModel
         }
 
         $this->state = $outcome;
-        $this->save();
+        $this->assertSaved($this->save());
     }
 
     // ----------[ Scopes ]----------

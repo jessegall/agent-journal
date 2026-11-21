@@ -6,6 +6,7 @@ namespace App\Hooks\Support;
 
 use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\StackAdmission;
+use App\Bus\Contracts\UnitOwner;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\StartTransaction;
@@ -32,6 +33,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
         private OperationDeadline $deadline,
         private StackAdmission $admission,
         private StateEventScope $eventScope,
+        private UnitOwner $lifecycle,
     ) {}
 
     /**
@@ -113,12 +115,20 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
         }
 
         try {
-            return $this->database->transaction(function () use ($deadline, $work): mixed {
-                $this->database->statement("SET LOCAL lock_timeout = '{$deadline->lockMilliseconds()}ms'");
-                $this->database->statement("SET LOCAL statement_timeout = '{$deadline->milliseconds}ms'");
+            $this->database->beginTransaction();
 
-                return $work();
-            });
+            return $this->lifecycle->own(
+                $this->database,
+                'the stack transaction',
+                function () use ($deadline, $work): mixed {
+                    $this->database->statement("SET LOCAL lock_timeout = '{$deadline->lockMilliseconds()}ms'");
+                    $this->database->statement("SET LOCAL statement_timeout = '{$deadline->milliseconds}ms'");
+
+                    return $work();
+                },
+                fn () => $this->database->commit(),
+                fn () => $this->database->rollBack(),
+            );
         } catch (QueryException $failure) {
             if (in_array($failure->getCode(), [self::LOCK_NOT_AVAILABLE, self::QUERY_CANCELED], true)) {
                 throw StackLockTimedOut::after($deadline->milliseconds, $failure);

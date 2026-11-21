@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Actors\Support;
 
 use App\Actors\Contracts\Policy;
+use App\Actors\Contracts\SystemEntryPolicies as SystemEntryPoliciesContract;
 
 /**
  * The policies the system may act on through each trusted entry: every entry starts with none, and the area whose
  * commands run under an entry adds the policies those commands need.
  */
-final class SystemEntryPolicies
+final class SystemEntryPolicies implements SystemEntryPoliciesContract
 {
     /**
      * @var array<string, list<class-string<Policy>>>

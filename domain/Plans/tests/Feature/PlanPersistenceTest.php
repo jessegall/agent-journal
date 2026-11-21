@@ -6,6 +6,7 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use Database\Seeders\DatabaseSeeder;
 use Domain\Plans\Enums\PlanState;
@@ -64,7 +65,7 @@ final class PlanPersistenceTest extends TestCase
         $done = $this->task('Done');
         $done->finish('Done.');
         $started = $this->task('Started');
-        $started->start();
+        $started->start(ActorIdentity::system());
         $open = $this->task('Open');
         $counts = $this->app->make(TaskProgressCounter::class);
         $this->assertInstanceOf(TaskCounts::class, $counts);
