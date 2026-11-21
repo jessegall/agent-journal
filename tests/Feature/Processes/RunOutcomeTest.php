@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Communication\Models\NotificationReceipt;
+use App\Communication\Models\NotificationScope;
 use App\Processes\Enums\RunEventType;
 use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Enums\RunRequestIntent;
 use App\Processes\Enums\RunResultSource;
 use App\Processes\Enums\StepType;
+use App\Processes\Events\RunOutcomeRecorded;
 use App\Processes\Execution\RecordedRunEvents;
+use App\Processes\Listeners\NotifyRunOutcome;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\RunOutcome;
 use App\Processes\Models\RunResultConflict;
@@ -101,6 +105,41 @@ final class RunOutcomeTest extends TestCase
         $this->assertSame(RunLogicalResult::Succeeded, $outcome->result);
         $this->assertSame(RunResultSource::Signed, $outcome->source);
         $this->assertSame(1, $outcome->version);
+    }
+
+    public function test_a_failed_requested_run_gives_its_owner_one_receipt_and_a_correction_none_more(): void
+    {
+        $run = $this->run();
+        $notify = $this->app->make(NotifyRunOutcome::class);
+
+        $notify->handle(new RunOutcomeRecorded($run->id, $run->attempt_id, RunLogicalResult::Unknown, false));
+        $notify->handle(new RunOutcomeRecorded($run->id, $run->attempt_id, RunLogicalResult::Failed, true));
+        $notify->handle(new RunOutcomeRecorded($run->id, $run->attempt_id, RunLogicalResult::Failed, true));
+
+        $this->assertSame(1, NotificationReceipt::query()->count());
+        $this->assertSame(1, NotificationScope::query()->sole()->unread_count);
+    }
+
+    public function test_a_scheduled_success_and_a_stop_stay_quiet(): void
+    {
+        $scheduled = ProcessRun::create(
+            TestActors::agentIdentity(3),
+            TestRunAdmissions::of(intent: RunRequestIntent::ScheduledCheck),
+        );
+        $notify = $this->app->make(NotifyRunOutcome::class);
+
+        $notify->handle(new RunOutcomeRecorded(
+            $scheduled->id,
+            $scheduled->attempt_id,
+            RunLogicalResult::Succeeded,
+            false,
+        ));
+        $requested = $this->run();
+        $notify->handle(
+            new RunOutcomeRecorded($requested->id, $requested->attempt_id, RunLogicalResult::Stopped, false),
+        );
+
+        $this->assertSame(0, NotificationReceipt::query()->count());
     }
 
     private function run(): ProcessRun

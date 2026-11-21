@@ -32,7 +32,7 @@ enum RunLogicalResult: string
     public function summaryFor(ExecutionPlan $plan): string
     {
         return match ($this) {
-            self::Succeeded => $plan->startsOnlyInBackground() ? 'Requested shell plan finished' : 'Run succeeded',
+            self::Succeeded => $plan->startsOnlyInBackground() ? 'Requested shell plan finished' : 'Run finished',
             self::Failed => 'Run failed',
             self::Unknown => 'Run outcome unknown',
             self::Stopped => 'Run stopped',

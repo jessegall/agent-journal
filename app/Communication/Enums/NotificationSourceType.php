@@ -12,4 +12,5 @@ enum NotificationSourceType: string
     case Question = 'question';
     case Report = 'report';
     case MergeAsk = 'merge_ask';
+    case RunOutcome = 'run_outcome';
 }

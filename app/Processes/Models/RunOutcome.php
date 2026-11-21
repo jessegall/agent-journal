@@ -84,6 +84,16 @@ final class RunOutcome extends Model implements EventSource, ReadableModel
     // ----------[ Queries ]----------
 
     /**
+     * The result of the run's current attempt, when one was recorded.
+     *
+     * @return Option<self>
+     */
+    public static function ofRun(ProcessRun $run): Option
+    {
+        return Option::fromValue(self::query()->where('attempt_id', $run->attempt_id)->first());
+    }
+
+    /**
      * The attempt's result under its row lock, when one was recorded.
      *
      * @return Option<self>

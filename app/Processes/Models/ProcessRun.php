@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
 use App\Docking\Cards\DockCard;
@@ -21,6 +22,7 @@ use App\Links\Support\Linkable;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\PartEndType;
+use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Enums\RunMode;
 use App\Processes\Enums\RunRequestIntent;
 use App\Processes\Enums\ShellDialect;
@@ -287,6 +289,33 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
         }
 
         $this->markStale('stopped: the run was lost and a user stopped what survived');
+    }
+
+    /**
+     * Who hears of the attempt's result: the responsible actor and the user a request on its behalf entitled. A
+     * success reaches them only for a run someone asked for, a failure or an unknown result always, a stop never.
+     *
+     * @return list<ActorIdentity>
+     */
+    public function outcomeRecipients(RunLogicalResult $result): array
+    {
+        $isTold = match ($result) {
+            RunLogicalResult::Succeeded => $this->request_intent->isRequested(),
+            RunLogicalResult::Failed, RunLogicalResult::Unknown => true,
+            RunLogicalResult::Stopped => false,
+        };
+
+        if (! $isTold || $this->responsible_type === null || $this->responsible_id === null) {
+            return [];
+        }
+
+        $recipients = [new ActorIdentity(ActorType::from($this->responsible_type), $this->responsible_id)];
+
+        if ($this->outcome_user_id !== null) {
+            $recipients[] = new ActorIdentity(ActorType::User, $this->outcome_user_id);
+        }
+
+        return $recipients;
     }
 
     public function isStopped(): bool
