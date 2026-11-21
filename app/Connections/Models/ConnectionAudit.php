@@ -101,14 +101,19 @@ final class ConnectionAudit extends Model implements ReadableModel
     /**
      * The newest steps on these bindings, newest first, at most SUPPORT_RECORD_LIMIT for each one shown.
      *
-     * @param  list<string>  $bindingIds
+     * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function newestOfBindings(array $bindingIds): array
+    public static function newestOfBindings(array $ids): array
     {
-        return array_values(self::query()->whereIn('binding_id', $bindingIds)
+        $ranked = self::query()->select('*')
+            ->selectRaw('row_number() over (partition by binding_id order by created_at desc, id desc) as step_rank')
+            ->whereIn('binding_id', $ids);
+
+        return array_values(self::query()->fromSub($ranked, 'connection_audits')
+            ->where('step_rank', '<=', self::SUPPORT_RECORD_LIMIT)
             ->orderByDesc('created_at')->orderByDesc('id')
-            ->limit(count($bindingIds) * self::SUPPORT_RECORD_LIMIT)->get()->all());
+            ->readExactly(count($ids) * self::SUPPORT_RECORD_LIMIT)->get()->all());
     }
 
     // ----------[ Internals ]----------

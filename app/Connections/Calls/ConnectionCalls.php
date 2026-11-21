@@ -23,6 +23,16 @@ final readonly class ConnectionCalls
         ]));
     }
 
+    public function readProjectCommandStatus(
+        string $bindingId,
+        string $requestKey,
+    ): ProjectCommandStatus {
+        return $this->sender->send(ReadProjectCommandStatusCall::from([
+            'bindingId' => $bindingId,
+            'requestKey' => $requestKey,
+        ]));
+    }
+
     /**
      * @param  list<string>  $argv
      */

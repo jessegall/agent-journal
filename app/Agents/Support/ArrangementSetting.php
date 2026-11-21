@@ -86,7 +86,7 @@ final readonly class ArrangementSetting
      */
     public function assertFits(Host $host): void
     {
-        if ($host->arrangement === $this->arrangement) {
+        if ($host->arrangement === $this->arrangement || $host->isConnectedFolderRelay()) {
             return;
         }
 

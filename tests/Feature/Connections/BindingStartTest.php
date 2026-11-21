@@ -6,11 +6,15 @@ namespace Tests\Feature\Connections;
 
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Models\AgentRuntime;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use App\Connections\Models\ProjectBinding;
+use App\Desks\Commands\InstallDesks;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -21,14 +25,24 @@ final class BindingStartTest extends TestCase
 {
     use CommitsHookRows;
     use ConnectsProjects;
+    use WithActiveAccount;
 
     private const array TABLES = [
         'connection_audits', 'project_invitations', 'install_attempts', 'binding_starts', 'project_bindings',
         'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records',
-        'users',
+        'users', 'accounts', 'active_accounts', 'desks', 'desk_seats', 'inboxes',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chooseActiveAccounts();
+        $this->app->make(EntryDispatchers::class)
+            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
+    }
 
     public function test_another_folder_root_id_or_agent_is_refused_before_any_runtime(): void
     {
@@ -69,6 +83,7 @@ final class BindingStartTest extends TestCase
     {
         $binding = $this->connected('the-ticket', self::NONCE);
         $silent = $this->redeemed('other-ticket', 'nonce-bbbbbbbbbbbbbbbb');
+        $this->reportPresence('nonce-bbbbbbbbbbbbbbbb', $silent->id, []);
 
         $codex = $this->start($binding, ['driver' => 'codex'])->assertForbidden();
         $unreported = $this->signedStart('nonce-bbbbbbbbbbbbbbbb', $silent, [])->assertForbidden();
@@ -154,7 +169,7 @@ final class BindingStartTest extends TestCase
                 'driver' => 'claude-code',
                 'driverBuild' => '2.1.323',
                 'profile' => 'main-agent',
-                'model' => 'default',
+                'model' => 'opus',
                 ...$changes,
             ],
             HostProtocolVersion::RemoteProject,

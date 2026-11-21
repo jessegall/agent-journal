@@ -131,6 +131,19 @@ trait ConnectsProjects
      */
     private function reportClaudeCode(string $nonce, string $bindingId): void
     {
+        $this->reportPresence($nonce, $bindingId, [[
+            'driver' => 'claude-code', 'build' => '2.1.323', 'arrangement' => 'local',
+            'placement' => 'protected_host', 'variant' => 'terminal',
+        ]]);
+    }
+
+    /**
+     * Reports the binding's relay present on a set-up folder and reconciled, able to run the given combinations.
+     *
+     * @param  list<array<string, string>>  $combinations
+     */
+    private function reportPresence(string $nonce, string $bindingId, array $combinations): void
+    {
         $this->signedRelayCall(
             $this->relayCredential($nonce),
             "/host/bindings/{$bindingId}/presence",
@@ -139,10 +152,7 @@ trait ConnectsProjects
                 'sequence' => 1,
                 'release' => '1.0.0',
                 'protocol' => HostProtocolVersion::RemoteProject->value,
-                'combinations' => [[
-                    'driver' => 'claude-code', 'build' => '2.1.323', 'arrangement' => 'local',
-                    'placement' => 'protected_host', 'variant' => 'terminal',
-                ]],
+                'combinations' => $combinations,
                 'provisioning' => 'succeeded',
                 'takeover' => false,
                 'setupGeneration' => 1,

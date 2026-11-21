@@ -585,6 +585,7 @@ use App\Connections\Commands\StartDeviceGrant;
 use App\Connections\Commands\StartProjectCommandRun;
 use App\Connections\Commands\SubmitWorktreeDelivery;
 use App\Connections\Contracts\EnvironmentTasks;
+use App\Connections\Enums\CommandRunState;
 use App\Connections\Values\BindingFolder;
 use App\Connections\Values\BindingOutcome;
 use App\Connections\Values\CommandFrame;
@@ -2090,6 +2091,7 @@ final class CoreApi
                 PresenceReceipt::class,
                 CommandFrame::class,
                 CommandRunStart::class,
+                CommandRunState::class,
                 DeviceGrantStart::class,
                 DevicePollOutcome::class,
                 GatewaySettings::class,

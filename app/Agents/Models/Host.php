@@ -201,6 +201,15 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
+     * Whether the host is the relay of a project folder connected from a user's own machine, which runs its agents
+     * there whatever this journal's own arrangement is.
+     */
+    public function isConnectedFolderRelay(): bool
+    {
+        return $this->protocol_version === HostProtocolVersion::RemoteProject->value;
+    }
+
+    /**
      * Whether the host reported it can run the proposed driver build, in its own arrangement, placement and variant.
      */
     public function declares(StartProposal $proposal): bool

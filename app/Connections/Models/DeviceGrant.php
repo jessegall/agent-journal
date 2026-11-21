@@ -158,7 +158,7 @@ final class DeviceGrant extends Model implements ReadableModel
      */
     public static function lockById(string $id): self
     {
-        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+        return self::query()->with('binding')->whereKey($id)->lockForUpdate()->firstOrFail();
     }
 
     /**
@@ -168,7 +168,7 @@ final class DeviceGrant extends Model implements ReadableModel
      */
     public static function lockPendingByUserCode(string $code): self
     {
-        return self::query()->where('user_code', $code)->where('state', DeviceGrantState::Pending)
+        return self::query()->with('binding')->where('user_code', $code)->where('state', DeviceGrantState::Pending)
             ->where('code_expires_at', '>', CarbonImmutable::now())->lockForUpdate()
             ->firstOr(fn () => throw DeviceGrantRefused::unknownCode());
     }

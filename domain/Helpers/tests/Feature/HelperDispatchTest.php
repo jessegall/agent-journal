@@ -181,6 +181,7 @@ final class HelperDispatchTest extends TestCase
                 return new HostCapability($query, $status, 'docs/x.md', 'Not proved on this host.');
             }
         });
+
         $agents = Agent::query()->count();
 
         $this->assertThrows(
