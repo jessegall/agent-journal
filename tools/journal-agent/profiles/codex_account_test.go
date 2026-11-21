@@ -82,3 +82,16 @@ func TestAProtectedCodexStartRunsEveryToolThroughTheExecutorAndNothingInProcess(
 		}
 	}
 }
+
+func TestCodexRefusesEveryArgumentThatWouldMoveAToolOffTheExecutorRoute(t *testing.T) {
+	for _, argument := range []string{"--sandbox", "-s", "--ask-for-approval", "-a", "approval_policy=on-request",
+		"sandbox_mode=read-only", "include_local=true", "features.code_mode=true", "features.view_image=true",
+		"mcp_servers.local.command=sh", "--add-dir", "environments=local"} {
+		if err := (Codex{}).RejectContrary([]string{"-c", argument}); err == nil {
+			t.Fatalf("the argument %s was let through", argument)
+		}
+	}
+	if err := (Codex{}).RejectContrary([]string{"-m", "gpt-6.1-sol"}); err != nil {
+		t.Fatalf("a model choice was refused: %v", err)
+	}
+}

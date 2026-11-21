@@ -195,7 +195,19 @@ func TestTheProtectedReportNamesTheExecutorAndTheManagedPolicyAndNeedsEvidence(t
 	}
 
 	codex, err := InspectProtection(ProtectedPlatform(daemon), "codex", "0.165.0", NativeEvidence{Folder: folder})
-	if err != nil || codex.Available || !strings.Contains(codex.Items[0].Reason, "task 1768") {
-		t.Fatalf("Codex's protected report does not say why it is unavailable: %+v, %v", codex, err)
+	if err != nil || codex.Available || !strings.Contains(codex.Items[0].Mechanism.Native, "environments.toml") {
+		t.Fatalf("Codex's protected report counts Claude's evidence or does not name its route: %+v, %v", codex, err)
+	}
+
+	codexKey := "codex@0.165.0/" + ProtectedContainerPlatform + "@" + containerImage
+	records[codexKey] = map[BoundaryItem]string{}
+	for _, item := range BoundaryItems {
+		records[codexKey][item] = "run-protected-codex-1"
+	}
+	writeEvidence(t, folder, records)
+
+	codex, err = InspectProtection(ProtectedPlatform(daemon), "codex", "0.165.0", NativeEvidence{Folder: folder})
+	if err != nil || !codex.Available {
+		t.Fatalf("Codex's protected report with this image's evidence is not available: %+v, %v", codex, err)
 	}
 }

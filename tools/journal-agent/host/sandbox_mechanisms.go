@@ -55,14 +55,24 @@ func claudeProtected() DriverMechanisms {
 	}
 }
 
-// codexWithoutProtectedStart is every item unavailable until Codex's approvals, features and resume are closed.
-func codexWithoutProtectedStart() DriverMechanisms {
-	missing := DriverMechanisms{}
-	for _, item := range BoundaryItems {
-		missing[item] = unavailable("Codex's approvals, features and resume are not yet closed for a protected start (plan 45, task 1768)")
+// codexProtected is how a protected-account start keeps each item from Codex's tools: its one environment runs Codex's
+// own exec-server through the executor's shell, so every command, PTY and patch is a process of uid 10002, and the
+// tools that would read in Codex's own process are off (docs/accounts/codex-integration.md, Protected inventory).
+func codexProtected() DriverMechanisms {
+	return DriverMechanisms{
+		AccountSecrets: native("every command, PTY and patch runs in the uid 10002 executor through environments.toml " +
+			"with include_local = false, which cannot read the account folder of uid 10001; view_image and code mode are off"),
+		ForeignHistory: native("the threads under CODEX_HOME belong to uid 10001, and the commands and patches of " +
+			"uid 10002 cannot read them"),
+		Keychain: native("the agent image runs no session D-Bus or secret service, and the executor's uid 10002 " +
+			"reaches nothing of uid 10001"),
+		ControlSockets: native("the executor socket admits only uid 10001, and the commands of uid 10002 reach no " +
+			"socket of the program"),
+		ProcessInspection: native("Codex runs as another uid: /proc environ, fd, root and mem of uid 10001 are " +
+			"refused to uid 10002"),
+		InstallWrites: native("uid 10002 writes only the workspace (group journal-work) and /tmp, patches included; " +
+			"/opt and /etc are root-owned"),
 	}
-
-	return missing
 }
 
 // claudeWithoutSandbox is every item unavailable for the one reason Claude Code's sandbox cannot run.

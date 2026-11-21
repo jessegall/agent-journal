@@ -41,6 +41,14 @@ args = ["-c", "exec codex exec-server --listen stdio"]
 initialize_timeout_sec = 30
 `
 
+// codexRouteSettings are the flags and settings that would change where a tool runs or what it may do: the sandbox,
+// the approval policy, the shell, the environments and the in-process tools. The profile alone sets them.
+var codexRouteSettings = []string{
+	"--sandbox", "-s", "sandbox_mode", "sandbox_workspace_write", "--ask-for-approval", "-a", "approval_policy",
+	"--add-dir", "shell_environment_policy", "experimental_exec_server", "environments", "include_local",
+	"features.view_image", "features.code_mode", "mcp_servers", "--cd", "-C",
+}
+
 // codexSandboxOf is the sandbox Codex itself applies: workspace-write, except in a protected start, where its bwrap
 // cannot make namespaces inside the container and every tool already runs as the executor's user in the container,
 // so Codex's own sandbox is off (task 1766's probe in the agent image).
@@ -220,6 +228,12 @@ func (Codex) RejectContrary(extraArguments []string) error {
 		for _, feature := range codexAgentFeatures {
 			if strings.Contains(argument, feature) {
 				return fmt.Errorf("the argument %s touches the agent feature %s", argument, feature)
+			}
+		}
+		for _, setting := range codexRouteSettings {
+			if argument == setting || strings.HasPrefix(argument, setting+"=") || strings.Contains(argument, setting+"=") ||
+				strings.HasPrefix(argument, setting+".") {
+				return fmt.Errorf("the argument %s changes %s, which keeps every tool on the executor's route", argument, setting)
 			}
 		}
 	}

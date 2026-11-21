@@ -38,7 +38,7 @@ func ProtectedPlatform(containers Containers) ProtectionPlatform {
 		EvidenceKey: ProtectedContainerPlatform + "@" + containers.Rules.AgentImage,
 		Mechanisms: map[string]DriverMechanisms{
 			"claude": claudeProtected(),
-			"codex":  codexWithoutProtectedStart(),
+			"codex":  codexProtected(),
 		},
 	}
 }
