@@ -8,13 +8,18 @@ use Domain\Plans\Exceptions\PhaseRevisionChanged;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
+use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Models\Plan;
+use Domain\Tasks\Contracts\TaskProgressCounter;
 
 /**
- * Changes a plan's structure under the plan's lock: a new phase, and tasks placed in a phase once each.
+ * Changes a plan's structure under the plan's lock: a new phase, and tasks placed in a phase once each, which moves
+ * the phase's and the plan's task tallies by the placed tasks alone.
  */
 final readonly class PlanStructure
 {
+    public function __construct(private TaskProgressCounter $taskCounts) {}
+
     public function addPhase(Plan $plan, string $title): Phase
     {
         Plan::lockStructure($plan->id);
@@ -32,7 +37,8 @@ final readonly class PlanStructure
      */
     public function addTasks(Phase $phase, array $ids): void
     {
-        Plan::lockStructure($phase->plan_id);
+        $plan = Plan::lockStructure($phase->plan_id);
+        $phase->refresh();
         $duplicateTaskIds = array_keys(array_filter(array_count_values($ids), fn (int $count) => $count > 1));
         $alreadyPlacedTaskId = PhaseTask::query()->whereIn('task_id', $ids)->value('task_id');
 
@@ -45,6 +51,10 @@ final readonly class PlanStructure
         foreach ($ids as $offset => $taskId) {
             PhaseTask::create($phase, $taskId, $next + $offset);
         }
+
+        $placed = PlanProgress::fromTaskProgress($this->taskCounts->progressOf($ids));
+        $phase->recordProgress($phase->progress->plus($placed));
+        $plan->recordProgress($plan->progress->plus($placed));
     }
 
     /**

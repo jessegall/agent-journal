@@ -126,7 +126,8 @@ final readonly class PlanReadResult
             'revision' => $plan->revision,
             'creator' => ['type' => $plan->creatorType->value, 'id' => $plan->creatorId],
             'progress' => [
-                'done' => $plan->progress->done,
+                'finished' => $plan->progress->finished,
+                'cancelled' => $plan->progress->cancelled,
                 'started' => $plan->progress->started,
                 'blocked' => $plan->progress->blocked,
                 'total' => $plan->progress->total,

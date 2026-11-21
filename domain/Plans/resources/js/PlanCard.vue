@@ -25,7 +25,7 @@ const state = computed(() => stateLook[props.card.state]);
 const progress = computed(() =>
     props.card.totalTasks === 0
         ? 0
-        : (props.card.doneTasks / props.card.totalTasks) * 100,
+        : (props.card.finishedTasks / props.card.totalTasks) * 100,
 );
 const name = computed(() => planName(props.card));
 const linkName = computed(() =>

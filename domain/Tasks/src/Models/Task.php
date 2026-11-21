@@ -247,33 +247,37 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
             $this->run_number++;
         }
 
+        $previousState = $this->state;
         $this->state = TaskState::Started;
         $this->assertSaved($this->save());
-        $this->raise(new TaskStarted($this->id, $actor));
+        $this->raise(new TaskStarted($this->id, $actor, $previousState));
     }
 
     public function finish(string $note): void
     {
+        $previousState = $this->state;
         $this->state = TaskState::Finished;
         $this->result_note = $note;
         $this->assertSaved($this->save());
-        $this->raise(new TaskFinished($this->id));
+        $this->raise(new TaskFinished($this->id, $previousState));
     }
 
     public function block(string $reason): void
     {
+        $previousState = $this->state;
         $this->state = TaskState::Blocked;
         $this->block_reason = $reason;
         $this->assertSaved($this->save());
-        $this->raise(new TaskBlocked($this->id));
+        $this->raise(new TaskBlocked($this->id, $previousState));
     }
 
     public function cancel(string $reason): void
     {
+        $previousState = $this->state;
         $this->state = TaskState::Cancelled;
         $this->cancel_reason = $reason;
         $this->assertSaved($this->save());
-        $this->raise(new TaskCancelled($this->id));
+        $this->raise(new TaskCancelled($this->id, $previousState));
     }
 
     // ----------[ Answers ]----------

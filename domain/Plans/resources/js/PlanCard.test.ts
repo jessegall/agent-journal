@@ -26,7 +26,7 @@ function card(changes: Partial<PlanCardData> = {}): PlanCardData {
         type: 'build',
         state: 'planned',
         focused: false,
-        doneTasks: 3,
+        finishedTasks: 3,
         totalTasks: 8,
         ...changes,
     } as PlanCardData;

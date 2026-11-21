@@ -24,6 +24,7 @@ use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Container\Container;
@@ -142,7 +143,11 @@ final class EventPayloadTest extends TestCase
         $this->runAsOwner(new CancelTask($cancelled->id, 'Dropped.'));
 
         $this->assertEquals(
-            [new TaskFinished($finished->id), new TaskBlocked($blocked->id), new TaskCancelled($cancelled->id)],
+            [
+                new TaskFinished($finished->id, TaskState::Started),
+                new TaskBlocked($blocked->id, TaskState::Started),
+                new TaskCancelled($cancelled->id, TaskState::Open),
+            ],
             $sent(),
         );
     }

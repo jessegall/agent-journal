@@ -14,10 +14,12 @@ use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
+use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Exceptions\PhaseRevisionChanged;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +34,12 @@ use Illuminate\Support\Carbon;
  * @property string $number_group_id
  * @property int $number
  * @property int $revision
+ * @property int $total_tasks
+ * @property int $finished_tasks
+ * @property int $cancelled_tasks
+ * @property int $blocked_tasks
+ * @property int $started_tasks
+ * @property-read PlanProgress $progress
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -48,6 +56,17 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
      */
     public const string LINK_TYPE = 'plans.phase';
 
+    /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'total_tasks' => 0,
+        'finished_tasks' => 0,
+        'cancelled_tasks' => 0,
+        'blocked_tasks' => 0,
+        'started_tasks' => 0,
+    ];
+
     // ----------[ Constructors ]----------
 
     /**
@@ -55,7 +74,15 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
      */
     protected function casts(): array
     {
-        return ['number' => 'integer', 'revision' => 'integer'];
+        return [
+            'number' => 'integer',
+            'revision' => 'integer',
+            'total_tasks' => 'integer',
+            'finished_tasks' => 'integer',
+            'cancelled_tasks' => 'integer',
+            'blocked_tasks' => 'integer',
+            'started_tasks' => 'integer',
+        ];
     }
 
     /**
@@ -96,7 +123,36 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
         $this->save();
     }
 
+    /**
+     * Keeps the tallies of the phase's tasks, changed in the transaction that placed or moved one of them.
+     */
+    public function recordProgress(PlanProgress $progress): void
+    {
+        $this->total_tasks = $progress->total;
+        $this->finished_tasks = $progress->finished;
+        $this->cancelled_tasks = $progress->cancelled;
+        $this->blocked_tasks = $progress->blocked;
+        $this->started_tasks = $progress->started;
+        $this->save();
+    }
+
     // ----------[ Answers ]----------
+
+    /**
+     * How far the tasks placed in it have got, from the tallies kept on the row; no task is read.
+     *
+     * @return Attribute<PlanProgress, never>
+     */
+    protected function progress(): Attribute
+    {
+        return Attribute::get(fn () => new PlanProgress(
+            $this->finished_tasks,
+            $this->cancelled_tasks,
+            $this->blocked_tasks,
+            $this->started_tasks,
+            $this->total_tasks,
+        ));
+    }
 
     /**
      * Refuses a change made against a revision of the phase that is no longer current.

@@ -25,7 +25,7 @@ function reader(card: Partial<PlanCardData>, brief: string): PlanReaderData {
             type: 'build',
             state: 'started',
             focused: false,
-            doneTasks: 3,
+            finishedTasks: 3,
             totalTasks: 8,
             ...card,
         },
@@ -48,7 +48,7 @@ describe('PlanReader', () => {
     });
 
     it('says No phases yet for a plan without phases and gives no progress', () => {
-        const text = shown({ doneTasks: 0, totalTasks: 0 }).text();
+        const text = shown({ finishedTasks: 0, totalTasks: 0 }).text();
 
         expect(text).toContain('No phases yet');
         expect(text).not.toContain('tasks done');

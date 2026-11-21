@@ -32,7 +32,7 @@ function card(number: string): PlanCardData {
         type: 'build',
         state: 'planned',
         focused: false,
-        doneTasks: 0,
+        finishedTasks: 0,
         totalTasks: 1,
     } as PlanCardData;
 }

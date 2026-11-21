@@ -150,10 +150,10 @@ final class RichCardsTest extends TestCase
         $this->dock('tasks.task', $docked->id);
         Event::fake([PageChanged::class]);
 
-        $this->app->make('events')->dispatch(new TaskCancelled($loose->id));
+        $this->app->make('events')->dispatch(new TaskCancelled($loose->id, TaskState::Open));
         Event::assertNotDispatched(PageChanged::class);
 
-        $this->app->make('events')->dispatch(new TaskCancelled($docked->id));
+        $this->app->make('events')->dispatch(new TaskCancelled($docked->id, TaskState::Open));
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
 

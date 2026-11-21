@@ -6,6 +6,7 @@ use App\Actors\Support\ActorIdentity;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use Tests\Architecture\Support\EventRole;
 
@@ -20,27 +21,27 @@ return [
         'owner' => 'Task::block',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskBlocked('task'),
+        'sample' => fn () => new TaskBlocked('task', TaskState::Started),
     ],
     TaskCancelled::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::cancel',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskCancelled('task'),
+        'sample' => fn () => new TaskCancelled('task', TaskState::Open),
     ],
     TaskFinished::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::finish',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskFinished('task'),
+        'sample' => fn () => new TaskFinished('task', TaskState::Started),
     ],
     TaskStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::start',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskStarted('task', ActorIdentity::system()),
+        'sample' => fn () => new TaskStarted('task', ActorIdentity::system(), TaskState::Open),
     ],
 ];

@@ -79,6 +79,6 @@ final class WorkingOnPlanState extends AgentState implements InstructsForeground
     {
         $progress = ($this->progress)();
 
-        return "Continue plan {$this->plan->number}. {$progress->done} of {$progress->total} tasks are finished.";
+        return "Continue plan {$this->plan->number}. {$progress->finished} of {$progress->total} tasks are finished.";
     }
 }

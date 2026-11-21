@@ -19,6 +19,7 @@ use App\Hooks\Stack\StateMethodSelector;
 use App\Hooks\States\AgentState;
 use App\Hooks\Values\EventCommands;
 use Carbon\CarbonImmutable;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
@@ -63,7 +64,7 @@ final class StateMethodSelectorTest extends TestCase
 
         $selector = new StateMethodSelector(new StateMethods());
         $stop = new StopRequested(TestActors::hookIdentity(1, 2, '3', 'digest'), new StopDetails('turn', false));
-        $event = new TaskStarted('4', TestActors::agentIdentity(1));
+        $event = new TaskStarted('4', TestActors::agentIdentity(1), TaskState::Open);
 
         $this->assertSelection($selector->forHook($stack, $stop), 'onStop');
         $this->assertSelection($selector->forEvent($stack, $event), 'onTaskStarted');

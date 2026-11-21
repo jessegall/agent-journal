@@ -520,18 +520,21 @@ final class EventPayloads
                 'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
+                    'previousState' => 'Domain\Tasks\Enums\TaskState',
                 ],
             ],
             TaskCancelled::class => [
                 'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
+                    'previousState' => 'Domain\Tasks\Enums\TaskState',
                 ],
             ],
             TaskFinished::class => [
                 'afterCommit' => true,
                 'fields' => [
                     'taskId' => 'string',
+                    'previousState' => 'Domain\Tasks\Enums\TaskState',
                 ],
             ],
             TaskStarted::class => [
@@ -539,6 +542,7 @@ final class EventPayloads
                 'fields' => [
                     'taskId' => 'string',
                     'actor' => 'App\Actors\Support\ActorIdentity',
+                    'previousState' => 'Domain\Tasks\Enums\TaskState',
                 ],
             ],
         ];

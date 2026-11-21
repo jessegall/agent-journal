@@ -16,6 +16,7 @@ use App\Hooks\References\SubjectReference;
 use App\Hooks\Support\StackTransaction;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Enums\TaskState;
 use Illuminate\Contracts\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
 use Tests\Fixtures\Agents\RecordedAttention;
@@ -63,15 +64,15 @@ final class TaskWatchDeliveryTest extends TestCase
         $this->app->instance(LoggerInterface::class, $logger);
 
         $dispatcher = $this->app->make(Dispatcher::class);
-        $dispatcher->dispatch(new TaskFinished($taskId));
-        $this->dispatch(new TaskFinished(TestIds::of(43)));
+        $dispatcher->dispatch(new TaskFinished($taskId, TaskState::Started));
+        $this->dispatch(new TaskFinished(TestIds::of(43), TaskState::Started));
         $this->assertSame([], $this->app->make(TaskWatchLog::class)->records);
         $this->assertSame([], $attention->wakes);
         $trace = [];
 
-        $this->dispatch(new TaskFinished($taskId));
+        $this->dispatch(new TaskFinished($taskId, TaskState::Started));
         $this->assertSame([], $attention->wakes);
-        $this->dispatch(new TaskCancelled($taskId));
+        $this->dispatch(new TaskCancelled($taskId, TaskState::Started));
 
         $actorId = $this->target->agentId;
         $this->assertSame([

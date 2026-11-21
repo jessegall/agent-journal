@@ -34,7 +34,7 @@ export const stateLook: Record<PlanState, { label: string; tone: StateTone; icon
 export function progressText(card: PlanCardData): string {
     const phase = card.phase === undefined ? '' : ` · phase ${card.phase}`;
 
-    return `${card.doneTasks} of ${card.totalTasks} tasks done${phase}`;
+    return `${card.finishedTasks} of ${card.totalTasks} tasks done${phase}`;
 }
 
 /**
