@@ -8,6 +8,7 @@ use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Connections\Commands\AssertBindingStart;
+use App\Connections\Models\ProjectBinding;
 use App\Http\Data\Connections\BindingRuntimeRequestData;
 use Illuminate\Http\JsonResponse;
 
@@ -38,7 +39,11 @@ final readonly class BindingRuntimeController
         ));
 
         return new JsonResponse(
-            ['session_id' => $opened->sessionId, 'runtime_id' => $opened->runtimeId],
+            [
+                'session_id' => $opened->sessionId,
+                'runtime_id' => $opened->runtimeId,
+                'authority_generation' => ProjectBinding::authorityGenerationOf($binding),
+            ],
             JsonResponse::HTTP_CREATED,
         );
     }

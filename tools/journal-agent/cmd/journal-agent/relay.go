@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"journal-agent/client"
+	"journal-agent/diagnostics"
 	"journal-agent/host"
 )
 
@@ -91,13 +92,15 @@ func (binder bindingRelay) run(ctx context.Context) error {
 		return err
 	}
 	journal := client.ForRemoteProject(binder.binding.Enrollment, binder.transport).WithArrangement(string(host.Local))
+	leases := &relayLeases{journal: journal, bindingID: binder.binding.BindingID,
+		events: diagnostics.Log{State: binder.state}}
 	serving, stopServing := context.WithCancel(ctx)
 	defer stopServing()
 	var lastWork atomic.Int64
 	lastWork.Store(time.Now().UnixNano())
 	served := make(chan error, 1)
 	go func() {
-		served <- binder.serveClaims(serving, journal, func() { lastWork.Store(time.Now().UnixNano()) })
+		served <- binder.serveClaims(serving, journal, leases, func() { lastWork.Store(time.Now().UnixNano()) })
 	}()
 
 	idleEnds := func() time.Time { return time.Unix(0, lastWork.Load()).Add(binder.idle) }
@@ -107,6 +110,9 @@ func (binder bindingRelay) run(ctx context.Context) error {
 			Protocol: client.RemoteProjectProtocolVersion, Combinations: []client.HostCombination{},
 			Provisioning: "succeeded", Takeover: sequence == 1,
 		})
+		if err == nil {
+			leases.authority.Store(int64(receipt.AuthorityGeneration))
+		}
 		if !binder.wait(ctx, binder.nextReport(receipt, err, bootID)) {
 			break
 		}
@@ -125,7 +131,12 @@ func (binder bindingRelay) run(ctx context.Context) error {
 
 // serveClaims runs the enrolled host's claim serving for this binding alone, local and uncontained, from a folder of
 // its own beside the binding's state, so two bindings' relays never share a socket or a start record.
-func (binder bindingRelay) serveClaims(ctx context.Context, journal *client.Client, claimed func()) error {
+func (binder bindingRelay) serveClaims(
+	ctx context.Context,
+	journal *client.Client,
+	leases *relayLeases,
+	claimed func(),
+) error {
 	folder := filepath.Join(binder.state.Folder, "relays", binder.binding.BindingID)
 	if err := os.MkdirAll(folder, 0o700); err != nil {
 		return err
@@ -153,10 +164,13 @@ func (binder bindingRelay) serveClaims(ctx context.Context, journal *client.Clie
 	}
 	for _, outcome := range outcomes {
 		log.Printf("after the restart, start %s of binding %s is %s", outcome.StartKey, binder.binding.BindingID, outcome.Outcome)
+		leases.record(diagnostics.Event{Step: "reconciled after the restart: " + string(outcome.Outcome),
+			ClaimID: outcome.StartKey})
 	}
-	executor := &protectedExecutor{preparation: preparation, open: opener.open, reports: reports, reporter: journal,
+	open := leases.opening(ctx, opener.open)
+	executor := &protectedExecutor{preparation: preparation, open: open, reports: reports, reporter: journal,
 		codexOwners: opener.codexOwners, arrangement: host.Local}
-	claims := claimServing{journal: journal, preparation: preparation, opener: opener, executor: executor,
+	claims := claimServing{journal: journal, preparation: preparation, open: open, executor: executor,
 		startSocketFolder: folder, socket: socket}
 
 	return claims.run(ctx, claimed)

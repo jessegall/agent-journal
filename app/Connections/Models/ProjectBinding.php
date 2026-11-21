@@ -151,6 +151,14 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The binding's authority generation, which every lease renewal of its runtimes must carry.
+     */
+    public static function authorityGenerationOf(string $bindingId): int
+    {
+        return self::query()->whereKey($bindingId)->firstOrFail()->authority_generation;
+    }
+
+    /**
      * Whether this agent is the main agent of a revoked binding, whose every call is refused.
      */
     public static function isRevokedMainAgent(string $agentId): bool
@@ -309,6 +317,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
 
     private function receipt(): PresenceReceipt
     {
-        return new PresenceReceipt($this->boot_generation, (string) $this->presence_expires_at?->toIso8601String());
+        return new PresenceReceipt(
+            $this->boot_generation,
+            (string) $this->presence_expires_at?->toIso8601String(),
+            $this->authority_generation,
+        );
     }
 }

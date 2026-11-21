@@ -120,6 +120,18 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
+     * Whether the session still runs and acts for this agent: it is one of the agent's own sessions, or a child the
+     * agent's session started.
+     */
+    public static function isRunningFor(string $sessionId, string $agentId): bool
+    {
+        return self::query()->whereKey($sessionId)->running()
+            ->where(fn (Builder $session) => $session->where('agent_id', $agentId)
+                ->orWhereIn('parent_session_id', self::query()->select('id')->where('agent_id', $agentId)))
+            ->exists();
+    }
+
+    /**
      * The session with this id.
      */
     public static function byId(string $sessionId): self

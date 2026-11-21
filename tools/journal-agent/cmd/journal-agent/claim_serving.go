@@ -15,7 +15,8 @@ import (
 type claimServing struct {
 	journal           *client.Client
 	preparation       host.StartPreparation
-	opener            runtimeOpener
+	// open opens each claimed runtime: the opener's own on an enrolled host, one that keeps its lease on a relay.
+	open              serving.Opener
 	executor          *protectedExecutor
 	startSocketFolder string
 	socket            *host.AttachSocket
@@ -31,7 +32,7 @@ func (claims claimServing) run(ctx context.Context, claimed func()) error {
 	}
 	defer startListener.Close()
 	go startSocket.Serve(ctx, startListener)
-	loop := serving.NewLoop(claims.journal, claims.preparation, claims.opener.open)
+	loop := serving.NewLoop(claims.journal, claims.preparation, claims.open)
 	watcher, err := host.NewScreenWatcher(ctx, claims.journal, claims.socket)
 	if err != nil {
 		return err

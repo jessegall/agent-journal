@@ -198,7 +198,7 @@ func serve(arguments []string) error {
 		preparation: preparation, open: opener.open, reports: reports, reporter: journal,
 		codexOwners: opener.codexOwners, arrangement: arrangement, bindsAccount: bindsAccount, accountFolders: folders,
 	}
-	claims := claimServing{journal: journal, preparation: preparation, opener: opener, executor: executor,
+	claims := claimServing{journal: journal, preparation: preparation, open: opener.open, executor: executor,
 		startSocketFolder: *startSocketFolder, socket: socket}
 	if err := claims.run(ctx, func() {}); err != nil {
 		return err
