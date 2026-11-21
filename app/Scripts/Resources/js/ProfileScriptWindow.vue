@@ -6,7 +6,7 @@ import type { ProfileDraftData, ProfileScriptPageData } from '@generated/types/s
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';
 import { keyedPost } from '@kit/keyedPost';
-import { checkDraft, saveDraft } from '@/routes/scripts';
+import { checkDraft, saveDraft } from '@generated/routes/scripts';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { editorDiagnostics, scriptCompletion, scriptHighlighting, type ScriptVocabulary } from './scriptLanguage';
 import ScriptFlowchart from './ScriptFlowchart.vue';
