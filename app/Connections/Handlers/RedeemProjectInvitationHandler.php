@@ -15,7 +15,6 @@ use App\Connections\Enums\ConnectionAuditType;
 use App\Connections\Exceptions\InvitationUnusable;
 use App\Connections\Models\ConnectionAudit;
 use App\Connections\Models\Environment;
-use App\Connections\Models\InstallAttempt;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Models\ProjectInvitation;
@@ -45,6 +44,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
             throw InvitationUnusable::forTicket();
         }
 
+        $attempt = $invitation->lockAttempt();
         $folder = $command->folder;
         $environment = $this->environmentOf($invitation, $command->projectLabel);
         $project = Project::forId($environment->project_id);
@@ -59,7 +59,7 @@ final readonly class RedeemProjectInvitationHandler implements CommandHandler
         $mainAgent = Agent::create("{$project->label} main agent", self::MAIN_AGENT_PROFILE);
         $binding = ProjectBinding::create($host, $project, $environment, $mainAgent, $folder);
         $invitation->spendOn($binding);
-        InstallAttempt::lockById($invitation->install_attempt_id)->spendOn($binding);
+        $attempt->spendOn($binding);
         ConnectionAudit::ofBinding(ConnectionAuditType::Redeemed, ConnectionAuditActor::Host, $host->id, $binding);
 
         return new Redemption($host->id, $project->id, $binding->id, $mainAgent->id);

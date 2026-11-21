@@ -15,8 +15,6 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('host_id')->constrained('hosts');
             $table->foreignUlid('project_id')->constrained('projects');
-            // None only for a binding whose environment is unassigned: it starts nothing until the owner assigns one.
-            $table->foreignUlid('environment_id')->nullable()->constrained('project_environments');
             $table->foreignUlid('main_agent_id')->constrained('agents');
             // The opaque id the relay gives the folder; the canonical path stays out of labels and logs.
             $table->string('root_id');

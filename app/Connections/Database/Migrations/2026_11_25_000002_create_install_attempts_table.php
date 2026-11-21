@@ -11,7 +11,7 @@ return new class extends Migration
     public function up(): void
     {
         // An owner's attempt to install a line for one target, made before any ticket; it never holds a secret.
-        Schema::create('install_attempts', function (Blueprint $table) {
+        Schema::create('install_attempts', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->string('reference')->unique();
             $table->string('owner_user_id');

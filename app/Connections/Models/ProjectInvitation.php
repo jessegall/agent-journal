@@ -34,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @property InvitationMode $mode
  * @property string|null $project_id
  * @property string|null $environment_id
- * @property string $install_attempt_id
+ * @property string|null $install_attempt_id
  * @property CarbonImmutable $expires_at
  * @property CarbonImmutable|null $revoked_at
  * @property CarbonImmutable|null $spent_at
@@ -163,6 +163,21 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * The install attempt this line belongs to, locked until the transaction ends; a line issued before attempts
+     * existed has none and cannot be used.
+     *
+     * @throws InvitationUnusable
+     */
+    public function lockAttempt(): InstallAttempt
+    {
+        if ($this->install_attempt_id === null) {
+            throw InvitationUnusable::forId($this->id);
+        }
+
+        return InstallAttempt::lockById($this->install_attempt_id);
+    }
 
     /**
      * Whether the line can still be redeemed at this server time: not revoked, not spent and not expired.
