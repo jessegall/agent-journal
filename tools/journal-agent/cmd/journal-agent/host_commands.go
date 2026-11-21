@@ -194,31 +194,15 @@ func serve(arguments []string) error {
 	if *startSocketFolder == "" {
 		*startSocketFolder = *stateFolder
 	}
-	startSocket := host.StartSocket{Folder: *startSocketFolder, Executor: &protectedExecutor{
+	executor := &protectedExecutor{
 		preparation: preparation, open: opener.open, reports: reports, reporter: journal,
 		codexOwners: opener.codexOwners, arrangement: arrangement, bindsAccount: bindsAccount, accountFolders: folders,
-	}}
-	startListener, err := startSocket.Listen()
-	if err != nil {
+	}
+	claims := claimServing{journal: journal, preparation: preparation, opener: opener, executor: executor,
+		startSocketFolder: *startSocketFolder, socket: socket}
+	if err := claims.run(ctx, func() {}); err != nil {
 		return err
 	}
-	defer startListener.Close()
-	go startSocket.Serve(ctx, startListener)
-	loop := serving.NewLoop(journal, preparation, opener.open)
-	watcher, err := host.NewScreenWatcher(ctx, journal, socket)
-	if err != nil {
-		return err
-	}
-	journal.Poll(ctx, func(claimed client.Claim) {
-		watcher.Set(claimed.Watched)
-		if len(claimed.Requests) == 0 {
-			return
-		}
-		for _, request := range claimed.Requests {
-			log.Printf("claimed %s request %s (sequence %d, attempt %d) of runtime %s", request.Operation, request.RequestID, request.Sequence, request.Attempt, request.RuntimeID)
-		}
-		loop.Take(ctx, claimed.Requests)
-	})
 	return nil
 }
 

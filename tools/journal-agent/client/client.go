@@ -273,6 +273,9 @@ var ErrConflict = errors.New("the journal's state refuses the call")
 // ErrUnauthenticated is returned when the journal does not accept the host's credential or signature (401).
 var ErrUnauthenticated = errors.New("the journal did not accept the host's credential")
 
+// ErrProtocolMismatch is returned when the journal does not speak the protocol the host signed with (426).
+var ErrProtocolMismatch = errors.New("the journal does not speak this host's protocol")
+
 // ErrUncertain is returned when the call may or may not have reached the journal: the connection failed or the
 // journal failed (5xx). A claim or report that ends this way is retried, never taken as refused.
 var ErrUncertain = errors.New("the call's outcome is unknown")
@@ -608,6 +611,8 @@ func refusalOf(response *http.Response, target string) error {
 		return errors.Join(ErrAwaitingApproval, ErrRefused, failure)
 	case response.StatusCode == http.StatusUnauthorized:
 		return errors.Join(ErrUnauthenticated, ErrRefused, failure)
+	case response.StatusCode == http.StatusUpgradeRequired:
+		return errors.Join(ErrProtocolMismatch, ErrRefused, failure)
 	case response.StatusCode >= 400 && response.StatusCode < 500:
 		return errors.Join(ErrRefused, failure)
 	default:
