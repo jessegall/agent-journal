@@ -6,6 +6,7 @@ namespace App\Profiles\Support;
 
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Enums\ArrangementType;
+use App\Agents\Enums\HostProtocolVersion;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\CleanupTarget;
@@ -183,6 +184,7 @@ final readonly class SignedSignInHost implements SignInHost
                 SignedCall::ID_HEADER => $callId,
                 SignedCall::ISSUED_AT_HEADER => (string) $issuedAt,
                 SignedCall::SIGNATURE_HEADER => $signature,
+                SignedCall::HOST_PROTOCOL_HEADER => (string) HostProtocolVersion::current()->value,
             ])
             ->withBody($body, 'application/json')
             ->post(rtrim($this->journalUrl, '/').$path);
