@@ -138,15 +138,20 @@ export async function readChallenge(attemptId: string): Promise<ChallengeRead> {
 }
 
 /**
- * What became of a sign-in start under its request key, for a new account of the driver; nothing when the read itself
- * failed, so the caller asks again.
+ * What a start's receipt is read for: a new account of a driver, or an account signed in again.
+ */
+export type ReceiptTarget = { driver: string } | { account: string };
+
+/**
+ * What became of a sign-in start under its request key; nothing when the read itself failed, so the caller asks
+ * again.
  */
 export async function readReceipt(
     key: string,
-    driver: string,
+    target: ReceiptTarget,
 ): Promise<SignInReceiptData | null> {
     const response = await fetch(
-        signInReceipt({ query: { key, driver } }).url,
+        signInReceipt({ query: { key, ...target } }).url,
         {
             credentials: 'same-origin',
             cache: 'no-store',

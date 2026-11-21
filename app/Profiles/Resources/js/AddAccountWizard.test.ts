@@ -561,6 +561,60 @@ describe('AddAccountWizard', () => {
         view.unmount();
     });
 
+    it('follows one renewal in two tabs to the same result for that account', async () => {
+        const renewing = {
+            type: 'sign_in_again' as const,
+            accountId: 'account-1',
+            method: 'oauth' as const,
+        };
+        const tab = () =>
+            mount(AddAccountWizard, {
+                attachTo: document.body,
+                props: {
+                    request: {
+                        kind: 'again',
+                        driver: 'claude-code',
+                        accountId: 'account-1',
+                    },
+                    methods,
+                    attempts: [],
+                    rows: [accountRow('account-1', 'Work')],
+                },
+            });
+        const tabs = [tab(), tab()];
+        await flushPromises();
+
+        for (const view of tabs) {
+            await view.setProps({ attempts: [attempt('waiting', renewing)] });
+            await view.setProps({
+                attempts: [
+                    attempt('complete', {
+                        ...renewing,
+                        resultAccountId: 'account-1',
+                    }),
+                ],
+            });
+            await flushPromises();
+
+            expect(view.text()).toContain('Account reconnected');
+            expect(view.text()).toContain('Work');
+        }
+
+        const renewals = forms.filter((form) =>
+            form.submit.mock.calls.some(
+                ([route]) => route.url === '/accounts/account-1/sign-in-again',
+            ),
+        );
+        expect(renewals).toHaveLength(2);
+        expect(
+            renewals.map(
+                (form) =>
+                    form.submit.mock.calls[0][1].headers['Idempotency-Key'],
+            ),
+        ).toHaveLength(2);
+        tabs.forEach((view) => view.unmount());
+    });
+
     it('walks a key sign-in from the choice to the account added', async () => {
         const view = openWizard();
         await flushPromises();

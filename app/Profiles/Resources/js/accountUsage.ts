@@ -5,7 +5,13 @@ import type {
     AccountUsageWindowData,
     UsageWindowSlot,
 } from '@generated/types/accounts';
-import { count, dateTimeWithZone, dollars, monthInUtc, weekday } from '@kit/format';
+import {
+    count,
+    dateTimeWithZone,
+    dollars,
+    monthInUtc,
+    weekday,
+} from '@kit/format';
 
 /**
  * What an account's usage shows: the one line of its row and the details of its settings, chosen from the readings
