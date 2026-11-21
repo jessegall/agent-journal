@@ -167,8 +167,9 @@ func lastFailures(events []Event) []Event {
 // secretsOf are the values the binding holds that no bundle may show.
 func secretsOf(binding host.Binding, state host.ConnectionState) []string {
 	secrets := []string{binding.Secret}
-	if grant, err := state.DeviceGrant(); err == nil {
-		secrets = append(secrets, grant)
+	signIns, _ := state.SignIns()
+	for _, signIn := range signIns {
+		secrets = append(secrets, signIn.Grant)
 	}
 
 	return secrets

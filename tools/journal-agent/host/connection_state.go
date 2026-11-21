@@ -21,7 +21,6 @@ const (
 	lockName              = "lock"
 	relayLockName         = "relay.lock"
 	relayReportName       = "relay.json"
-	deviceGrantName       = "device-grant"
 	// credentialBytes gives a credential of 64 base64url characters, as strong as the secret Host makes.
 	credentialBytes = 48
 	nonceBytes      = 16
@@ -168,20 +167,7 @@ func StartRelay(program string, stateFolder string, bindingID string) error {
 	return command.Process.Release()
 }
 
-// SaveDeviceGrant keeps a shell user's device grant for the binding, privately.
-func (state ConnectionState) SaveDeviceGrant(grant string) error {
-	return WritePrivateFile(filepath.Join(state.folder(), deviceGrantName), []byte(grant))
-}
 
-// DeviceGrant is the shell user's kept device grant; ErrNotConnected while there is none.
-func (state ConnectionState) DeviceGrant() (string, error) {
-	content, err := os.ReadFile(filepath.Join(state.folder(), deviceGrantName))
-	if errors.Is(err, os.ErrNotExist) {
-		return "", ErrNotConnected
-	}
-
-	return string(content), err
-}
 
 // SaveRelayReport keeps the relay's last acknowledged presence report.
 func (state ConnectionState) SaveRelayReport(report RelayReport) error {
