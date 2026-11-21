@@ -8,11 +8,13 @@ use App\Actors\Contracts\CurrentAuthorizer;
 use App\Drivers\Enums\HookDriver;
 use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Operations\Enums\AccessType;
+use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\StartAccounts;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\Profile;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
+use App\Profiles\Values\ProfileKey;
 
 /**
  * The accounts the owner may choose for a start of one driver, read under the authority the start itself needs, so
@@ -20,7 +22,22 @@ use App\Profiles\Policies\ProfileAdministrationPolicy;
  */
 final readonly class EligibleAccounts implements StartAccounts
 {
-    public function __construct(private CurrentAuthorizer $authorizer) {}
+    public function __construct(
+        private CurrentAuthorizer $authorizer,
+        private ProfileResolver $profiles,
+    ) {}
+
+    public function forProfileStart(HookDriver $driver, string $profileKey): EligibleAccountsData
+    {
+        $accounts = $this->forDriver($driver);
+        $profile = $this->profiles->snapshotFor(ProfileKey::from($profileKey));
+
+        return EligibleAccountsData::from([
+            'driver' => $accounts->driver,
+            'accounts' => $accounts->accounts,
+            'modelChoices' => array_values(array_unique([$profile->model, ...$profile->start->allowedModels])),
+        ]);
+    }
 
     public function forDriver(HookDriver $driver): EligibleAccountsData
     {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { dateTime } from '@kit/format';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
 import Button from '@kit/Button';
 import FormField from '@kit/FormField';
 import Modal from '@kit/Modal';
@@ -21,9 +21,12 @@ import {
 } from '@kit/sessionStarts';
 
 /**
- * Starts, resumes or switches the chosen agent's session: the driver, the variant (the profile's default unless one
- * is chosen, kept for the agent when asked), the account among those the driver may run with, and for a resume the
- * conversation it continues. The form makes one request id when it opens, so a second press repeats the same start.
+ * Starts, resumes or switches the chosen agent's session: the driver, the model among those the profile permits, the
+ * variant (the profile's default unless one is chosen, kept for the agent when asked), the account among those the
+ * driver may run with, and for a resume the conversation it continues. The form makes one request id when it opens,
+ * so a second press repeats the same start; an edit after a refusal makes a fresh one. A refusal whose next step is a
+ * field shows under that field and takes the focus; every other choice stays. Every id comes from the dialog's own
+ * mount, so two open dialogs never share one.
  * A start reads Ready only once the host runs it, and shows the host's refusal when its start was refused; a switch
  * shows each stage it passes until it ends.
  */
@@ -57,13 +60,29 @@ const variants: { value: DriverVariant | ''; label: string }[] = [
 ];
 const titles = { start: 'Start session', resume: 'Resume a conversation', switch: 'Switch session' };
 
-const requestId = newRequestId();
+// The ids of this dialog's fields, unique to this mount.
+const formId = useId();
+const fieldIds = {
+    driver: `${formId}-driver`,
+    model: `${formId}-model`,
+    variant: `${formId}-variant`,
+    accountId: `${formId}-account`,
+    conversationId: `${formId}-conversation`,
+};
+
+type FieldKey = keyof typeof fieldIds;
+
+let requestId = newRequestId();
 const switching = useSwitchOperation(() => props.agent);
 const driver = ref<HookDriver>(props.agent.conversations[0]?.driver ?? 'claude-code');
 const variant = ref<DriverVariant | ''>('');
 const saveVariant = ref(false);
 const accounts = ref<EligibleAccountData[]>([]);
 const accountId = ref<string | null>(null);
+const modelChoices = ref<string[]>([]);
+const model = ref<string | null>(null);
+// A refusal that belongs to one field, shown under it; a refusal of the whole change stays in refusal.
+const fieldRefusal = ref<{ field: FieldKey; reason: string } | null>(null);
 const conversationId = ref<string | null>(props.mode === 'resume' ? (props.agent.conversations[0]?.id ?? null) : null);
 const refusal = ref<string | null>(null);
 const progress = ref<string | null>(null);
@@ -112,18 +131,61 @@ const isEveryAccountUnavailable = computed(
     () => accounts.value.length > 0 && accounts.value.every((choice) => choice.unavailableReason !== null),
 );
 
+/**
+ * Moves the focus to a field once the page has drawn it, as the button that was pressed may be gone.
+ */
+function focusField(field: FieldKey): void {
+    void nextTick(() => document.getElementById(fieldIds[field])?.focus());
+}
+
+function refuseAt(field: FieldKey, reason: string): void {
+    fieldRefusal.value = { field, reason };
+    focusField(field);
+}
+
+/**
+ * Shows the accounts read again: a chosen account that can still start stays chosen even when another is the default;
+ * a chosen one that no longer can is cleared with its reason beside the field; with none chosen the default is.
+ */
 function showAccounts(read: EligibleAccountsData | undefined): void {
     if (read === undefined) {
         return;
     }
 
     accounts.value = read.accounts;
+    modelChoices.value = read.modelChoices;
+    model.value = model.value !== null && read.modelChoices.includes(model.value)
+        ? model.value
+        : (read.modelChoices[0] ?? null);
     refusal.value = null;
     isAccountReadFailed.value = false;
+    const kept = accounts.value.find((choice) => choice.id === accountId.value);
+
+    if (kept !== undefined && kept.unavailableReason === null) {
+        return;
+    }
+
+    if (accountId.value !== null) {
+        accountId.value = null;
+        refuseAt('accountId', kept?.unavailableSentence ?? 'The chosen account is no longer available.');
+
+        return;
+    }
+
     const preferred = accounts.value.find((choice) => choice.isDefault && choice.unavailableReason === null)
         ?? accounts.value.find((choice) => choice.unavailableReason === null);
     accountId.value = preferred?.id ?? null;
 }
+
+// An edit after a refusal is a new choice: its submission gets a fresh request id, and the field's reason goes.
+watch([driver, model, variant, accountId, conversationId], () => {
+    if (fieldRefusal.value === null && refusal.value === null) {
+        return;
+    }
+
+    requestId = newRequestId();
+    fieldRefusal.value = null;
+}, { flush: 'sync' });
 
 watch(
     () => (page.props[chatProp] as WindowResult<ChatData> | undefined),
@@ -135,7 +197,7 @@ function sessionChoice(): SessionChoice {
     return {
         requestId,
         agentId: props.agent.id,
-        model: 'default',
+        model: model.value ?? 'default',
         driver: driver.value,
         variant: variant.value === '' ? null : variant.value,
         saveVariant: saveVariant.value,
@@ -159,9 +221,20 @@ function start(): void {
             startedSessionId = typeof flash.startedSessionId === 'string' ? flash.startedSessionId : null;
             followStart();
         },
-        onRefused: (reason) => {
-            refusal.value = reason;
+        onRefused: (reason, field) => {
             progress.value = null;
+
+            if (field !== null && field in fieldIds && reason !== null) {
+                if (field === 'conversationId') {
+                    conversationId.value = null;
+                }
+
+                refuseAt(field as FieldKey, reason);
+
+                return;
+            }
+
+            refusal.value = reason;
         },
         onUncertain: () => followStart(),
         onFinish: () => (sending.value = false),
@@ -241,7 +314,12 @@ onBeforeUnmount(() => following?.stop());
                 </p>
             </template>
             <template v-if="mode === 'resume'">
-                <fieldset class="flex flex-col gap-1">
+                <fieldset
+                    :id="fieldIds.conversationId"
+                    tabindex="-1"
+                    class="flex flex-col gap-1"
+                    :aria-describedby="fieldRefusal?.field === 'conversationId' ? `${fieldIds.conversationId}-description` : undefined"
+                >
                     <legend class="text-small text-text-2">Conversation</legend>
                     <template v-for="conversation in agent.conversations" :key="conversation.id">
                         <label class="flex items-center gap-2 text-small text-text">
@@ -254,18 +332,52 @@ onBeforeUnmount(() => following?.stop());
                         <input v-model="conversationId" type="radio" :value="null" />
                         Start a new conversation instead
                     </label>
+                    <template v-if="fieldRefusal?.field === 'conversationId'">
+                        <p :id="`${fieldIds.conversationId}-description`" class="text-small text-danger">
+                            {{ fieldRefusal.reason }}
+                        </p>
+                    </template>
                 </fieldset>
             </template>
-            <FormField id="session-driver" label="Driver">
-                <template #default="{ id }">
-                    <select :id="id" v-model="driver" class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body">
+            <FormField
+                :id="fieldIds.driver"
+                label="Driver"
+                :error="fieldRefusal?.field === 'driver' ? fieldRefusal.reason : undefined"
+            >
+                <template #default="{ id, describedBy, invalid }">
+                    <select
+                        :id="id"
+                        v-model="driver"
+                        :aria-describedby="describedBy"
+                        :aria-invalid="invalid"
+                        class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body"
+                    >
                         <template v-for="choice in drivers" :key="choice.value">
                             <option :value="choice.value">{{ choice.label }}</option>
                         </template>
                     </select>
                 </template>
             </FormField>
-            <FormField id="session-variant" label="Variant">
+            <FormField
+                :id="fieldIds.model"
+                label="Model"
+                :error="fieldRefusal?.field === 'model' ? fieldRefusal.reason : undefined"
+            >
+                <template #default="{ id, describedBy, invalid }">
+                    <select
+                        :id="id"
+                        v-model="model"
+                        :aria-describedby="describedBy"
+                        :aria-invalid="invalid"
+                        class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body"
+                    >
+                        <template v-for="(choice, index) in modelChoices" :key="choice">
+                            <option :value="choice">{{ choice }}<template v-if="index === 0"> (default)</template></option>
+                        </template>
+                    </select>
+                </template>
+            </FormField>
+            <FormField :id="fieldIds.variant" label="Variant">
                 <template #default="{ id }">
                     <select :id="id" v-model="variant" class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body">
                         <template v-for="choice in variants" :key="choice.value">
@@ -278,8 +390,12 @@ onBeforeUnmount(() => following?.stop());
                 <input v-model="saveVariant" type="checkbox" :disabled="variant === ''" />
                 Use as default for this agent
             </label>
-            <FormField id="session-account" label="Account">
-                <template #default="{ id }">
+            <FormField
+                :id="fieldIds.accountId"
+                label="Account"
+                :error="fieldRefusal?.field === 'accountId' ? fieldRefusal.reason : undefined"
+            >
+                <template #default="{ id, describedBy, invalid }">
                     <template v-if="isAccountReadFailed">
                         <p class="text-small text-text-3">
                             The accounts could not be read.
@@ -293,7 +409,13 @@ onBeforeUnmount(() => following?.stop());
                         </p>
                     </template>
                     <template v-else>
-                        <select :id="id" v-model="accountId" class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body">
+                        <select
+                            :id="id"
+                            v-model="accountId"
+                            :aria-describedby="describedBy"
+                            :aria-invalid="invalid"
+                            class="rounded-control border border-border-2 bg-transparent px-2 py-1 text-body"
+                        >
                             <template v-for="choice in accounts" :key="choice.id">
                                 <option :value="choice.id" :disabled="choice.unavailableReason !== null">
                                     {{ choice.label }}<template v-if="choice.unavailableSentence">: {{ choice.unavailableSentence }}</template>
@@ -315,6 +437,9 @@ onBeforeUnmount(() => following?.stop());
             </template>
             <template v-if="shownRefusal">
                 <p class="text-small text-danger" role="alert">{{ shownRefusal }}</p>
+            </template>
+            <template v-if="fieldRefusal">
+                <p class="sr-only" role="alert">{{ fieldRefusal.reason }}</p>
             </template>
         </form>
         <template #footer>

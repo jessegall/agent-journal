@@ -20,4 +20,20 @@ enum StartRemedyType: string
     case StartNewConversation = 'start-new-conversation';
     case ChooseConversation = 'choose-conversation';
     case OperatorInstruction = 'operator-instruction';
+
+    /**
+     * The start form's field this step is taken at, which a browser's refusal is shown under; a step no field takes
+     * is shown for the whole command.
+     */
+    public function field(): string
+    {
+        return match ($this) {
+            self::ChooseModel => 'model',
+            self::ChooseProgram => 'driver',
+            self::ChooseAccount => 'accountId',
+            self::ChooseConversation, self::StartNewConversation => 'conversationId',
+            self::ReviewConfiguration, self::RetryStart, self::CheckCapacity, self::ConnectHost, self::UpdateHost,
+            self::OperatorInstruction => 'command',
+        };
+    }
 }

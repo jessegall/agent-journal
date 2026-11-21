@@ -17,6 +17,7 @@ use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Support\AuthorizedConversations;
 use Domain\Chat\Support\DockProjection;
+use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -53,21 +54,25 @@ final readonly class ChatWindowResolver implements PageResolver
                 ->getOrElse(Optional::create()),
             'conversation' => $chosen->map($this->conversationWith(...))->getOrElse(Optional::create()),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
-            ...$this->eligibleAccounts(),
+            ...$this->eligibleAccounts($chosen),
         ]);
     }
 
     /**
-     * The eligible accounts a start or switch form asked for, under the key ChatData reads them by.
+     * The eligible accounts a start or switch form asked for, under the key ChatData reads them by, with the models the
+     * chosen agent's profile permits.
      *
+     * @param  Option<AgentOption>  $chosen
      * @return array<string, EligibleAccountsData>
      */
-    private function eligibleAccounts(): array
+    private function eligibleAccounts(Option $chosen): array
     {
         $asked = [];
 
         foreach ($this->request->accountDrivers() as $driver) {
-            $asked['eligibleAccounts'] = $this->startAccounts->forDriver($driver);
+            $asked['eligibleAccounts'] = $chosen
+                ->map(fn (AgentOption $agent) => $this->startAccounts->forProfileStart($driver, $agent->profileKey))
+                ->getOrCall(fn () => $this->startAccounts->forDriver($driver));
         }
 
         return $asked;

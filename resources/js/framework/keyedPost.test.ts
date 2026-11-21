@@ -40,6 +40,7 @@ describe('keyedPost', () => {
         expect(outcome.onAccepted).toHaveBeenCalledOnce();
         expect(outcome.onRefused).toHaveBeenCalledWith(
             'The agent now runs another session.',
+            'session',
         );
         expect(outcome.onUncertain).toHaveBeenCalledOnce();
         expect(showsErrorModal).toBe(false);
