@@ -27,13 +27,13 @@ final readonly class ConnectionCalls
      * @param  list<string>  $argv
      */
     public function runProjectCommand(
-        string $binding,
+        string $bindingId,
         array $argv,
         CallKey $requestKey = new CallKey(),
         string|null $stdin = null,
     ): ProjectCommandFrames {
         return $this->sender->send(RunProjectCommandCall::from([
-            'binding' => $binding,
+            'bindingId' => $bindingId,
             'argv' => $argv,
             'requestKey' => $requestKey,
             'stdin' => $stdin,
