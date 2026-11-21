@@ -21,7 +21,7 @@ final class AccountLabelInvalid extends InvalidArgumentException implements Code
     {
         $shown = mb_substr($text, 0, 80);
 
-        return new self("An account name is 1 to 80 characters with no control character or slash; \"{$shown}\" is not.");
+        return new self("A name is 1 to 80 characters, with no slash or control character; \"{$shown}\" is not.");
     }
 
     protected function status(): int

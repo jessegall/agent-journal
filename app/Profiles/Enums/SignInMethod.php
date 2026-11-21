@@ -36,7 +36,7 @@ enum SignInMethod: string
         return match ($this) {
             self::OAuth => $programName,
             self::ApiKey => "{$programName} API key",
-            self::ProviderToken => "{$programName} provider token",
+            self::ProviderToken => "{$programName} setup token",
         };
     }
 
@@ -47,8 +47,8 @@ enum SignInMethod: string
     {
         return match ($this) {
             self::OAuth => 'Uses your subscription.',
-            self::ApiKey => 'Billed to your API account.',
-            self::ProviderToken => 'Uses your subscription, through a long-lived token provided by Anthropic.',
+            self::ApiKey => 'You pay for what agents use.',
+            self::ProviderToken => 'Uses your subscription.',
         };
     }
 
@@ -57,7 +57,7 @@ enum SignInMethod: string
      */
     public function billingLabel(): string
     {
-        return $this === self::ApiKey ? 'API usage' : 'Subscription';
+        return $this === self::ApiKey ? 'API' : 'Subscription';
     }
 
     /**
@@ -70,7 +70,7 @@ enum SignInMethod: string
         return match ([$program, $this]) {
             [HookProgram::ClaudeCode, self::OAuth] => 'Sign in with Claude',
             [HookProgram::Codex, self::OAuth] => 'Sign in with ChatGPT',
-            [HookProgram::ClaudeCode, self::ProviderToken] => 'Provider token',
+            [HookProgram::ClaudeCode, self::ProviderToken] => 'Setup token',
             [HookProgram::ClaudeCode, self::ApiKey], [HookProgram::Codex, self::ApiKey] => 'API key',
             default => throw SignInMethodMissing::for($program->value, $this->value),
         };
@@ -84,16 +84,13 @@ enum SignInMethod: string
     public function description(HookProgram $program): string
     {
         return match ([$program, $this]) {
-            [HookProgram::ClaudeCode, self::OAuth] => "Opens Claude's sign-in page. You sign in there and paste back "
-                .'the code it shows.',
-            [HookProgram::ClaudeCode, self::ProviderToken] => 'Paste a long-lived token made with claude '
-                .'setup-token. Suits a server.',
-            [HookProgram::ClaudeCode, self::ApiKey] => 'Paste a key from the Anthropic Console. Every request is '
-                .'billed to that API account.',
-            [HookProgram::Codex, self::OAuth] => "Shows a short code. You enter it on OpenAI's page, and the account "
-                .'appears here by itself.',
-            [HookProgram::Codex, self::ApiKey] => 'Paste a key from the OpenAI platform. Every request is billed to '
-                .'that API account.',
+            [HookProgram::ClaudeCode, self::OAuth] => "Sign in on Claude's site, then paste the code it gives you.",
+            [HookProgram::ClaudeCode, self::ProviderToken] => 'Paste a token made with claude setup-token. '
+                .'Suits a server.',
+            [HookProgram::ClaudeCode, self::ApiKey] => 'Paste a key from the Anthropic Console. '
+                .'You pay for what agents use.',
+            [HookProgram::Codex, self::OAuth] => "Enter a short code on OpenAI's site. The rest happens by itself.",
+            [HookProgram::Codex, self::ApiKey] => 'Paste a key from the OpenAI platform. You pay for what agents use.',
             default => throw SignInMethodMissing::for($program->value, $this->value),
         };
     }

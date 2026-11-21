@@ -12,7 +12,7 @@ use App\Profiles\Exceptions\AccountLabelInvalid;
  */
 final readonly class AccountLabel
 {
-    private const int LENGTH_LIMIT = 80;
+    public const int LENGTH_LIMIT = 80;
 
     private function __construct(public string $label) {}
 

@@ -7,15 +7,16 @@ namespace App\Http\Data\Profiles;
 use App\Agents\Values\AccountUse;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
-use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Models\Account;
+use App\Programs\Enums\HookProgram;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One saved account as its owner sees it: its name, program, state, the identity its program reported, whether new
- * starts use it, how many starts run on it and when it was last checked. Never its folder or a credential.
+ * One saved account as its owner sees it: its name, program, how it signs in, its state, the identity and workspace its
+ * program reported, whether new starts use it, how many starts run on it and when it was last checked. Never its
+ * folder or a credential.
  */
 #[TypeScript]
 final class AccountRowData extends Data
@@ -27,9 +28,10 @@ final class AccountRowData extends Data
         public readonly string $id,
         public readonly string $program,
         public readonly string $label,
-        public readonly SignInMethod $method,
+        public readonly SignInMethodData $signIn,
         public readonly AccountState $state,
         public readonly string|null $identity,
+        public readonly string|null $workspace,
         public readonly bool $isActive,
         public readonly int $runningCount,
         public readonly string|null $checkedAt,
@@ -49,9 +51,10 @@ final class AccountRowData extends Data
             $account->id,
             $account->program,
             $account->label,
-            $account->method,
+            SignInMethodData::fromMethod(HookProgram::from($account->program), $account->method),
             $account->state,
             $account->identity,
+            $account->workspace,
             $isActive,
             $runningCount,
             $account->checked_at?->toIso8601String(),

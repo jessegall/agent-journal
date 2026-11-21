@@ -4,7 +4,6 @@ import type {
     AccountRowData,
 } from '@generated/types/accounts';
 import Button from '@kit/Button';
-import ConfirmAction from '@kit/ConfirmAction';
 import EmptyState from '@kit/EmptyState';
 import Icon from '@kit/Icon';
 import PageHeader from '@kit/PageHeader';
@@ -43,18 +42,8 @@ const waitingSignIn = computed(() =>
     ),
 );
 
-function billingOf(row: AccountRowData): string {
-    const note =
-        props.data.methods
-            .find((entry) => entry.program === row.program)
-            ?.methods.find((option) => option.method === row.method)
-            ?.billingNote ?? '';
-
-    return note.replace(/\.$/, '');
-}
-
 function againLabel(row: AccountRowData): string {
-    return row.method === 'api_key' ? 'Replace key' : 'Sign in again';
+    return row.signIn.method === 'api_key' ? 'Replace key' : 'Sign in again';
 }
 
 function resumeOrAgain(row: AccountRowData): void {
@@ -114,7 +103,6 @@ function resumeOrAgain(row: AccountRowData): void {
                 <template v-for="row in data.rows" :key="row.id">
                     <AccountRow
                         :account="row"
-                        :billing="billingOf(row)"
                         :is-chosen="isChosen(selections, row.program, row.id)"
                     >
                         <template
@@ -130,16 +118,16 @@ function resumeOrAgain(row: AccountRowData): void {
                                 variant="bordered"
                                 size="small"
                                 @click="resumeOrAgain(row)"
-                                ><Spinner />Sign-in waiting · Resume</Button
+                                ><Spinner />Finish signing in</Button
                             >
                         </template>
-                        <template v-else>
-                            <ConfirmAction
-                                :label="againLabel(row)"
-                                :question="`New starts wait and work running on this account must end first. ${againLabel(row)}?`"
-                                :confirm-label="againLabel(row)"
-                                @confirm="resumeOrAgain(row)"
-                            />
+                        <template v-else-if="row.state === 'needs_sign_in'">
+                            <Button
+                                variant="bordered"
+                                size="small"
+                                @click="resumeOrAgain(row)"
+                                >{{ againLabel(row) }}</Button
+                            >
                         </template>
                     </AccountRow>
                 </template>

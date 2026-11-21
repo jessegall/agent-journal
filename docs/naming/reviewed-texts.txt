@@ -87,6 +87,7 @@ Edit
 Email
 Ended
 Endpoint version {{ runtime.endpointVersion }}, last healthy {{ runtime.lastHealthAt ?? 'never' }}: {{ runtime.isHealthy ? 'healthy' : 'stale (no health report in the last 45 seconds)' }}.
+Enter a short code on OpenAI's site. The rest happens by itself.
 Enter this code there when it asks.
 Every window is open
 Evidence only: this run never gives a result.
@@ -97,6 +98,7 @@ Expires before
 Expires {{ new Date(account.expiresAt).toLocaleDateString() }}
 Filter
 Filter shares
+Finish signing in
 Fixed public address
 Follow the system
 From line
@@ -167,16 +169,15 @@ Open {{ record.target.label }}
 Open ↗
 Opening the comment's place…
 Opening the terminal…
-Opens Claude's sign-in page. You sign in there and paste back
 Ordinary
 Output removed
 Over capacity
 Package install
 Pages
 Password
-Paste a key from the Anthropic Console. Every request is
-Paste a key from the OpenAI platform. Every request is billed to
-Paste a long-lived token made with claude
+Paste a key from the Anthropic Console.
+Paste a key from the OpenAI platform. You pay for what agents use.
+Paste a token made with claude setup-token.
 Paste it below and send it.
 Plans
 Pool empty
@@ -192,7 +193,6 @@ Progress: indeterminate
 Proposal by {{ proposal.author }}: {{ proposal.state }}, revision {{ proposal.currentRevision }}
 Proven reader revision
 Provider host
-Provider token
 Pruned on {{ audit.lastPrunedAt }}: {{ audit.prunedAllowedReads }} allowed and {{ audit.prunedDeniedReads }} denied reads, {{ audit.prunedLifecycleRows }} other entries.
 Public address
 Purpose: {{ revision.purpose }}, output {{ revision.outputRequirement }}
@@ -212,11 +212,13 @@ Record type
 Reject
 Release hold
 Remove
+Remove account
 Remove stored output ({{ storedBytes }} bytes)
 Removed
 Removed against the active rule: {{ revision.removedClasses.join(', ') || 'none' }}
 Removing
 Rename
+Rename account
 Reply
 Requests
 Reset layout
@@ -244,6 +246,7 @@ Save the current layout to it
 Saved
 Secrets
 Send code
+Setup token
 Share
 Share for
 Share gateways
@@ -253,9 +256,9 @@ Shares
 Show more comments
 Show or hide the sidebar
 Show the account
-Shows a short code. You enter it on OpenAI's page, and the account
 Side by side
 Sign in
+Sign in on Claude's site, then paste the code it gives you.
 Sign in with ChatGPT
 Sign in with Claude
 Sign out
@@ -275,6 +278,7 @@ State: {{ data.request.state }} (held because {{ data.request.holdReason }})
 Still missing: {{ revision.missingFields.join(', ') }}
 Still required: {{ data.steps.join('; ') }}
 Stop this run
+Suits a server.
 Tests and checks
 The address is not available.
 The gateway provider can see the public address and everything a share shows.
@@ -283,6 +287,7 @@ The place this comment points at is not available: {{ unavailable.message }}
 The project has no rule of its own yet.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
 The version that runs here
+This is the name you see everywhere.
 This machine and the share service must keep running for the link to work.
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 To renew it, choose Sign in again on the account.
@@ -290,7 +295,6 @@ Turning off traffic inspection does not hide the content from the provider.
 Unfinished sign-ins
 Unknown
 Update share {{ liveShare.number }}
-Use for new starts
 Use these lines
 Version control
 Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }}–{{ location.anchor.lastLine }}
@@ -311,11 +315,10 @@ Working
 Write
 Write a comment
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
+You pay for what agents use.
 a file the user names on the command line, wherever it lies
 a sharing gateway's program in the host's tool folders
-appears here by itself.
 as {{ sample.approvedClasses.join(', ') }}
-billed to that API account.
 characters
 classes
 depth
@@ -344,18 +347,14 @@ reader required
 recover
 script
 selected
-setup-token. Suits a server.
 shapes
-that API account.
 the classified command's own file system: its folder, tools and worktree
-the code it shows.
 the host's own account folders, written by the host tools without the application
 the host's secret file the sign-in runner is given
 to
 tools
 unresolved
 updated {{ ageSeconds().toFixed(1) }} s ago
-{{ account.runningCount }} running
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}

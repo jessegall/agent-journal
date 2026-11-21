@@ -87,10 +87,10 @@ const claudeMethods: SignInMethodData[] = [
     {
         method: 'api_key',
         isSecret: true,
-        billingNote: 'Billed to your API account.',
+        billingNote: 'You pay for what agents use.',
         title: 'API key',
         description: 'Paste a key from the Anthropic Console.',
-        billingLabel: 'API usage',
+        billingLabel: 'API',
         secretSource:
             'In the Anthropic Console, open API keys and create a key.',
     },
@@ -100,7 +100,10 @@ const methods: ProgramMethodsData[] = [
     { program: 'codex', methods: [claudeMethods[0]] },
 ];
 
-function attempt(state: SignInState, fields: Partial<SignInAttemptData> = {}): SignInAttemptData {
+function attempt(
+    state: SignInState,
+    fields: Partial<SignInAttemptData> = {},
+): SignInAttemptData {
     return {
         id: 'attempt-1',
         program: 'claude-code',
@@ -119,9 +122,10 @@ function accountRow(id: string, label: string): AccountRowData {
         id,
         program: 'claude-code',
         label,
-        method: 'api_key',
+        signIn: claudeMethods[1],
         state: 'signed_in',
         identity: null,
+        workspace: null,
         isActive: false,
         runningCount: 0,
         checkedAt: null,

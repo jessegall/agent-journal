@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
+use App\Profiles\Values\AccountLabel;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -16,7 +17,17 @@ final class RenameAccountRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['label' => ['required', 'string', 'max:200']];
+        return ['label' => ['required', 'string', 'max:'.AccountLabel::LENGTH_LIMIT]];
+    }
+
+    /**
+     * The field is the account's name on screen, so a refusal names it that way.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return ['label' => 'name'];
     }
 
     public function accountId(): string

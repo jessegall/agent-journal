@@ -16121,6 +16121,7 @@ method	RenameAccount::__construct()
 method	RenameAccountController::__invoke()
 method	RenameAccountHandler::handle()
 method	RenameAccountRequest::accountId()
+method	RenameAccountRequest::attributes()
 method	RenameAccountRequest::label()
 method	RenameAccountRequest::rules()
 method	RenderReply::handle()
@@ -22761,6 +22762,7 @@ parameter	$sharingNotice
 parameter	$shortName
 parameter	$shortfall
 parameter	$shownIds
+parameter	$signIn
 parameter	$signal
 parameter	$signature
 parameter	$signedAt
@@ -23242,11 +23244,12 @@ property	AccountRowData::$id
 property	AccountRowData::$identity
 property	AccountRowData::$isActive
 property	AccountRowData::$label
-property	AccountRowData::$method
 property	AccountRowData::$program
 property	AccountRowData::$recentStarts
 property	AccountRowData::$runningCount
+property	AccountRowData::$signIn
 property	AccountRowData::$state
+property	AccountRowData::$workspace
 property	AccountSelectionData::$accountId
 property	AccountSelectionData::$changeNumber
 property	AccountSelectionData::$program

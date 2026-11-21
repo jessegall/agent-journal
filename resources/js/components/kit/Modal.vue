@@ -20,6 +20,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     close: [];
+    opened: [dialog: HTMLDialogElement];
 }>();
 
 defineSlots<{
@@ -43,6 +44,7 @@ async function showOrHide(isOpen: boolean): Promise<void> {
     if (isOpen && !element.open) {
         element.showModal();
         element.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+        emit('opened', element);
 
         return;
     }
@@ -108,20 +110,23 @@ function keepFocusInside(event: KeyboardEvent): void {
                 class="flex h-[52px] items-center gap-3 border-b border-line pr-3 pl-5"
             >
                 <h3 class="m-0 flex-1 text-title font-semibold">{{ title }}</h3>
-                <span
-                    v-if="stepCount > 0"
-                    class="flex items-center gap-1"
-                    :aria-label="`Step ${step} of ${stepCount}`"
-                >
-                    <i
-                        v-for="bar in stepCount"
-                        :key="bar"
-                        data-step-bar
-                        :data-done="bar <= step"
-                        class="block h-[3px] w-5 rounded-[2px]"
-                        :class="bar <= step ? 'bg-brand' : 'bg-border-2'"
-                    />
-                </span>
+                <template v-if="stepCount > 0">
+                    <span
+                        class="flex items-center gap-1"
+                        :aria-label="`Step ${step} of ${stepCount}`"
+                    >
+                        <template v-for="bar in stepCount" :key="bar">
+                            <i
+                                data-step-bar
+                                :data-done="bar <= step"
+                                class="block h-[3px] w-5 rounded-[2px]"
+                                :class="
+                                    bar <= step ? 'bg-brand' : 'bg-border-2'
+                                "
+                            />
+                        </template>
+                    </span>
+                </template>
                 <Button
                     variant="icon"
                     aria-label="Close"

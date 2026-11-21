@@ -74,33 +74,33 @@ final class SignInMethodsTest extends TestCase
             [
                 'Sign in with Claude',
                 'Subscription',
-                "Opens Claude's sign-in page. You sign in there and paste back the code it shows.",
+                "Sign in on Claude's site, then paste the code it gives you.",
                 null,
             ],
             [
-                'Provider token',
+                'Setup token',
                 'Subscription',
-                'Paste a long-lived token made with claude setup-token. Suits a server.',
+                'Paste a token made with claude setup-token. Suits a server.',
                 'On a computer where you are signed in to Claude Code, run claude setup-token in a terminal and copy '
                     .'the token it prints.',
             ],
             [
                 'API key',
-                'API usage',
-                'Paste a key from the Anthropic Console. Every request is billed to that API account.',
+                'API',
+                'Paste a key from the Anthropic Console. You pay for what agents use.',
                 'In the Anthropic Console, open API keys and create a key. Copy it right away: the Console shows it '
                     .'only once.',
             ],
             [
                 'Sign in with ChatGPT',
                 'Subscription',
-                "Shows a short code. You enter it on OpenAI's page, and the account appears here by itself.",
+                "Enter a short code on OpenAI's site. The rest happens by itself.",
                 null,
             ],
             [
                 'API key',
-                'API usage',
-                'Paste a key from the OpenAI platform. Every request is billed to that API account.',
+                'API',
+                'Paste a key from the OpenAI platform. You pay for what agents use.',
                 'On the OpenAI platform, open API keys and create a secret key.',
             ],
         ], $shown);
