@@ -210,6 +210,8 @@ func serve(arguments []string) error {
 // a headless runtime runs one child per turn, a terminal runtime keeps one program open on a PTY the attach socket
 // owns.
 type runtimeOpener struct {
+	// worktrees prepares a connected project's children their own linked worktrees; nil on an enrolled host.
+	worktrees          *host.NativeWorktrees
 	stateFolder        string
 	installationFolder string
 	// codexOwners keeps the one app-server of each Codex account generation, shared by its runtimes' threads.
@@ -248,6 +250,13 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if err := pinnedBuild(profile, grant.Runtime.DriverBuild); err != nil {
 		return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
 	}
+	if prepared.Claim.ChildCheckout != nil && opener.worktrees != nil {
+		child, err := opener.inChildWorktree(runtimeID, prepared)
+		if err != nil {
+			return nil, err
+		}
+		prepared = child
+	}
 	environment, err := cleanEnvironmentOf(opener.stateFolder, opener.installationFolder, runtimeID, prepared)
 	if err != nil {
 		return nil, err
@@ -271,6 +280,24 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 
 	return nil, fmt.Errorf("runtime %s runs as %s, a variant this host has no runtime for", runtimeID,
 		grant.Runtime.Variant)
+}
+
+// inChildWorktree prepares the linked worktree of a connected project's child before its process exists, keeps the
+// runtime and its start on the claim's receipt, and answers the start with the worktree as the runtime's folder.
+func (opener runtimeOpener) inChildWorktree(runtimeID string, prepared host.PreparedStart) (host.PreparedStart, error) {
+	checkout := prepared.Claim.ChildCheckout
+	claim := host.WorktreeClaim{ClaimID: checkout.ClaimID, Generation: checkout.Generation,
+		ChildID: prepared.Claim.SessionID, Writes: checkout.Writes, BaseOID: checkout.BaseOID}
+	receipt, err := opener.worktrees.Prepare(context.Background(), claim)
+	if err != nil {
+		return host.PreparedStart{}, fmt.Errorf("runtime %s: its worktree was not prepared: %w", runtimeID, err)
+	}
+	if err := opener.worktrees.RecordRuntime(receipt, runtimeID, prepared.Claim.StartKey); err != nil {
+		return host.PreparedStart{}, err
+	}
+	prepared.Grant.Runtime.Folder = receipt.Path
+
+	return prepared, nil
 }
 
 // containedRuntime opens a contained runtime in its session's own container by its variant: a terminal runtime's

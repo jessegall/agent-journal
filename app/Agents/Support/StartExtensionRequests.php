@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Events\AccountSettingsRequested;
+use App\Agents\Events\ChildCheckoutRequested;
 use App\Agents\Events\StartGrantRequested;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -17,6 +18,11 @@ final readonly class StartExtensionRequests
     public function __construct(private Dispatcher $events) {}
 
     public function accountSettings(AccountSettingsRequested $request): void
+    {
+        $this->events->dispatch($request);
+    }
+
+    public function childCheckout(ChildCheckoutRequested $request): void
     {
         $this->events->dispatch($request);
     }

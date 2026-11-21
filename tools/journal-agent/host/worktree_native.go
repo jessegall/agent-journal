@@ -33,6 +33,10 @@ type WorktreeReceipt struct {
 	Path     string `json:"path"`
 	Branch   string `json:"branch,omitempty"`
 	Complete bool   `json:"complete"`
+	// RuntimeID and StartKey name the child's runtime and its process start once one runs in the worktree, so a
+	// cleanup or a restart maps the claim to the process, not only to the folder.
+	RuntimeID string `json:"runtime,omitempty"`
+	StartKey  string `json:"start,omitempty"`
 }
 
 // NativeWorktrees prepares real linked worktrees of a connected root under .journal/worktrees/<child>, for the
@@ -82,6 +86,14 @@ func (worktrees NativeWorktrees) Prepare(ctx context.Context, claim WorktreeClai
 	receipt.Complete = true
 
 	return receipt, worktrees.writeReceipt(receipt)
+}
+
+// RecordRuntime keeps on the claim's completed receipt the runtime and process start that run in its worktree.
+func (worktrees NativeWorktrees) RecordRuntime(receipt WorktreeReceipt, runtimeID string, startKey string) error {
+	receipt.RuntimeID = runtimeID
+	receipt.StartKey = startKey
+
+	return worktrees.writeReceipt(receipt)
 }
 
 func (worktrees NativeWorktrees) receiptFor(claim WorktreeClaim) WorktreeReceipt {

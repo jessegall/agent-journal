@@ -9,21 +9,24 @@ use App\Agents\Commands\ClaimStart;
 use App\Agents\Contracts\UnstartableProgram;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Events\AccountSettingsRequested;
+use App\Agents\Events\ChildCheckoutRequested;
 use App\Agents\Exceptions\StartClaimRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\StartRecord;
 use App\Agents\Support\AccountStartSettings;
+use App\Agents\Support\ChildCheckoutSlot;
 use App\Agents\Support\ClaimedStart;
 use App\Agents\Support\StartExtensionRequests;
 use App\Contracts\CommandHandler;
 
 /**
- * Hands the host a pending start of a runtime assigned to it, with the recipe the program's adapter checked; another
- * host's start is refused. When the program's build or arrangement cannot start here, the start ends stopped with that
- * reason, its session and runtime end, and the host gets none; when the adapter names no sign-in method for the account, the claim rolls back and
- * the start stays pending.
+ * Hands the host a pending start of a runtime assigned to it, with the recipe the program's adapter checked and, for a
+ * connected project's child, the checkout its worktree is prepared for; another host's start is refused. When the
+ * program's build cannot start here, the start ends stopped with that reason, its session and runtime end, and the host
+ * gets none; when the adapter names no sign-in method for the account, the claim rolls back and the start stays
+ * pending.
  */
 final readonly class ClaimStartHandler implements CommandHandler
 {
@@ -63,6 +66,18 @@ final readonly class ClaimStartHandler implements CommandHandler
             return null;
         }
 
+        $checkout = new ChildCheckoutSlot();
+
+        if ($session->parent_session_id !== null) {
+            $requested = new ChildCheckoutRequested(
+                $command->hostId,
+                $session->parent_session_id,
+                $session->agent_id,
+                $checkout,
+            );
+            $this->extensions->childCheckout($requested);
+        }
+
         return new ClaimedStart(
             $start->start_key,
             $start->session_id,
@@ -72,6 +87,7 @@ final readonly class ClaimStartHandler implements CommandHandler
             $settings->recipeFor($driver, $start->transport_profile),
             StartRecord::conversationTargetOf($start->session_id),
             StartRecord::requiresConversation($start->session_id),
+            $checkout->checkouts(),
         );
     }
 

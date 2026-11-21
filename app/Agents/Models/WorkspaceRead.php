@@ -119,6 +119,29 @@ final class WorkspaceRead extends Model implements ReadableModel
         return array_values($pending->all());
     }
 
+    /**
+     * The newest sample of the agent's workspace that names a verified commit, none or one: what a child of that agent
+     * starts from.
+     *
+     * @return list<WorkspaceFacts>
+     */
+    public static function latestCommitReadOf(string $agentId): array
+    {
+        $read = self::query()->where('actor_type', 'agent')->where('actor_id', $agentId)
+            ->where('observation_version', 2)->where('head_oid', '!=', '')->whereNotNull('sampled_at')
+            ->latest('sampled_at')->limit(1)->get();
+
+        $facts = [];
+
+        foreach ($read as $row) {
+            foreach ($row->facts() as $sample) {
+                $facts[] = $sample;
+            }
+        }
+
+        return $facts;
+    }
+
     public static function byReference(WorkspaceReadReference $reference): self
     {
         return self::query()->where('read_reference', $reference->key)->firstOrFail();
