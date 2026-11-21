@@ -11,9 +11,13 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Supervision\Contracts\AskReader;
 use App\Supervision\Data\AskCard;
+use App\Supervision\Data\AskDetail;
 use App\Supervision\Data\AskInbox;
+use App\Supervision\Enums\AskResult;
+use App\Supervision\Enums\CoreAskType;
 use App\Supervision\Models\Ask;
 use App\Supervision\Models\AskHop;
+use App\Supervision\Models\ReviewDecision;
 use App\Supervision\Support\AskRecords as VisibleAsks;
 use App\Supervision\Values\AskReference;
 
@@ -30,6 +34,23 @@ final readonly class AskRecords implements AskReader
     public function card(AskReference $reference): AskCard
     {
         return $this->cards([$this->asks->read($reference)])[0];
+    }
+
+    public function detail(AskReference $reference): AskDetail
+    {
+        $ask = $this->asks->read($reference);
+        $card = $this->cards([$ask])[0];
+        $result = AskResult::of($ask);
+        $decisionId = $ask->type_key === CoreAskType::MergeReady->value ? ReviewDecision::idMerging($ask->id) : null;
+
+        return new AskDetail(
+            $card,
+            $ask->version,
+            $result,
+            $result->label(),
+            $decisionId,
+            $ask->open && $card->obligation && $decisionId !== null,
+        );
     }
 
     public function inbox(AskReference|null $before = null): AskInbox

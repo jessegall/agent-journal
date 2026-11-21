@@ -22,6 +22,8 @@ use App\Records\Support\RecordIdentity;
 use App\Supervision\Commands\ApproveCodeReview;
 use App\Supervision\Commands\HandOffCodeReview;
 use App\Supervision\Commands\ReplyToAsk;
+use App\Supervision\Contracts\AskReader;
+use App\Supervision\Enums\AskResult;
 use App\Supervision\Enums\CodeReviewState;
 use App\Supervision\Models\Ask;
 use App\Supervision\Models\AskHop;
@@ -132,6 +134,28 @@ final class CodeReviewTest extends TestCase
             $this->merger->agent->id,
             NotificationScope::query()->whereKey($receipt->scope_id)->sole()->recipient_id,
         );
+    }
+
+    public function test_the_merge_asks_holder_reads_it_passively_with_its_version_and_approve_action(): void
+    {
+        $this->handOff('pass-1');
+        $ask = $this->reviewAsk();
+
+        $this->reviewer->startRequest($this->app);
+        $this->app->make(CommandBus::class)->run(new ApproveCodeReview($ask->reference(), $ask->version, 'Clean.'));
+        $merge = Ask::query()->acrossActors()->where('type_key', 'merge.ready')->sole();
+
+        $this->app->forgetScopedInstances();
+        $this->merger->startRequest($this->app);
+        $detail = $this->app->make(AskReader::class)->detail($merge->reference());
+        $link = $this->app->make(MergeAskNotificationTarget::class)->linkFor($merge->id)->get();
+
+        $this->assertSame($merge->version, $detail->version);
+        $this->assertSame(AskResult::Open, $detail->result);
+        $this->assertTrue($detail->canApproveMerge);
+        $this->assertSame(ReviewDecision::query()->sole()->id, $detail->mergeDecisionId);
+        $this->assertSame("/asks/{$merge->id}", $link->url);
+        $this->assertTrue($merge->refresh()->open);
     }
 
     public function test_a_reply_that_says_approved_decides_nothing(): void

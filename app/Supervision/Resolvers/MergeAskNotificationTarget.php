@@ -6,16 +6,16 @@ namespace App\Supervision\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\MergeAttempt;
 use App\Communication\Contracts\NotificationTargetResolver;
 use App\Communication\Data\NotificationLink;
+use App\Supervision\Enums\AskResult;
 use App\Supervision\Models\Ask;
 use App\Supervision\Models\AskHop;
 use App\Ui\Contracts\DeclaredPages;
 use PhpOption\Option;
 
 /**
- * A merge request notification leads to the exact ask while the reader is its current holder, and stays as
+ * A merge request notification leads to the exact ask's page while the reader is its current holder, and stays as
  * read-only history for the final holder once the ask ended: Merged only on a merged attempt, otherwise Settled.
  * Anyone else is never told it exists.
  */
@@ -23,7 +23,7 @@ final readonly class MergeAskNotificationTarget implements NotificationTargetRes
 {
     public const string KEY = 'merge.ask';
 
-    private const string ASKS_PAGE = 'web.asks';
+    private const string ASK_PAGE = 'web.ask';
 
     public function __construct(
         private CurrentActor $actors,
@@ -43,7 +43,7 @@ final readonly class MergeAskNotificationTarget implements NotificationTargetRes
                 ->getOrElse(false))
             ->map(fn (Ask $ask) => new NotificationLink(
                 $this->titleOf($ask),
-                $this->pages->addressOf(self::ASKS_PAGE, ['ask' => $ask->id]),
+                $this->pages->addressOf(self::ASK_PAGE, ['ask' => $ask->id]),
             ));
     }
 
@@ -56,10 +56,8 @@ final readonly class MergeAskNotificationTarget implements NotificationTargetRes
     {
         $line = strtok($ask->body, "\n") ?: $ask->body;
 
-        return match (true) {
-            $ask->open => "Merge request: {$line}",
-            MergeAttempt::hasMerged($ask->id) => "Merged: {$line}",
-            default => "Settled: {$line}",
-        };
+        $result = AskResult::of($ask);
+
+        return $result === AskResult::Open ? "Merge request: {$line}" : "{$result->label()}: {$line}";
     }
 }
