@@ -38,6 +38,17 @@ interface Files
     public function read(FilePath $file): string;
 
     /**
+     * A file the user names on the command line: read through its place when an open place holds it, refused with
+     * FolderClosed when a private place does, and read as named when it lies outside every place (doc 69).
+     */
+    public function readNamed(string $path): string;
+
+    /**
+     * At most the given number of bytes of a file the user names, refused and placed as readNamed.
+     */
+    public function readNamedAtMost(string $path, int $bytes): string;
+
+    /**
      * At most the given number of bytes from the start of the file, never kept.
      */
     public function readAtMost(FilePath $file, int $bytes): string;

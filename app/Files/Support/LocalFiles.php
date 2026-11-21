@@ -68,6 +68,28 @@ final class LocalFiles implements Files
         });
     }
 
+    public function readNamed(string $path): string
+    {
+        try {
+            $file = $this->roots->filePathOf($path);
+        } catch (FileOutsidePlaces) {
+            return $this->readOutsidePlaces($path, null);
+        }
+
+        return $this->read($file);
+    }
+
+    public function readNamedAtMost(string $path, int $bytes): string
+    {
+        try {
+            $file = $this->roots->filePathOf($path);
+        } catch (FileOutsidePlaces) {
+            return $this->readOutsidePlaces($path, $bytes);
+        }
+
+        return $this->readAtMost($file, $bytes);
+    }
+
     public function readAtMost(FilePath $file, int $bytes): string
     {
         return $this->whileReading($file, function () use ($file, $bytes) {
@@ -262,6 +284,25 @@ final class LocalFiles implements Files
     public function readCount(FilePath $file): int
     {
         return $this->contents->openCount($this->confinement->resolved($file));
+    }
+
+    /**
+     * A file the user named that lies outside every place, read as named: the exemption the user settled for a
+     * command's own file argument.
+     */
+    private function readOutsidePlaces(string $path, int|null $limit): string
+    {
+        if (! is_file($path)) {
+            throw FileMissing::at($path);
+        }
+
+        $bytes = @file_get_contents($path, length: $limit);
+
+        if ($bytes === false) {
+            throw FileUnreadable::at($path);
+        }
+
+        return $bytes;
     }
 
     /**

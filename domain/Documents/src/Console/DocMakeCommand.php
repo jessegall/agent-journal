@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console;
 
+use App\Files\Contracts\Files;
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\AgentRequests\Values\CommandReport;
 use App\Processes\Attributes\JournalRoute;
@@ -25,9 +26,9 @@ final class DocMakeCommand extends Command
 
     protected $help = 'Example: php artisan doc:make "Release plan" --abstract "What ships in 6.0" --file plan.md --about "task 12"';
 
-    public function handle(DocumentCalls $documents): int
+    public function handle(DocumentCalls $documents, Files $files): int
     {
-        $body = $this->bodyText();
+        $body = $this->bodyText($files);
 
         if ($body === null) {
             $this->error('Give the text with exactly one of --body <text>, --body - or --file <path>.');

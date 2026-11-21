@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console;
 
+use App\Files\Contracts\Files;
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\AgentRequests\Values\CommandReport;
 use App\Processes\Attributes\JournalRoute;
@@ -26,7 +27,7 @@ final class DocEditCommand extends Command
 
     protected $help = 'Example: php artisan doc:edit 4 --section "Risks" --body - < risks.md ; or --replace "old words" --with "new words" ; or --title "New title"';
 
-    public function handle(DocumentCalls $documents, DraftTokens $drafts): int
+    public function handle(DocumentCalls $documents, DraftTokens $drafts, Files $files): int
     {
         $number = (int) $this->argument('number');
         $held = $drafts->of($number);
@@ -44,7 +45,7 @@ final class DocEditCommand extends Command
                 version: $held['version'],
                 mode: $this->mode(),
                 section: $this->stringOption('section'),
-                body: $this->bodyText(),
+                body: $this->bodyText($files),
                 originalText: $this->stringOption('replace'),
                 replacementText: $this->stringOption('with'),
                 title: $this->stringOption('title'),

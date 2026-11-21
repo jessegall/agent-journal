@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Console;
 
+use App\Files\Contracts\Files;
+use App\Files\Exceptions\FileMissing;
+use App\Files\Exceptions\FileUnreadable;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
 use App\Profiles\Commands\SaveProfileDraft;
@@ -20,13 +23,13 @@ final class ImportProfileDraftCommand extends Command
 
     protected $description = 'Save script text and command definitions from local files into a shared draft';
 
-    public function handle(ConsoleOwner $owner, CommandBus $commands): int
+    public function handle(ConsoleOwner $owner, CommandBus $commands, Files $files): int
     {
         $owner->actAsOwner();
         $profile = ProfileKey::from((string) $this->argument('profile'));
         $expected = DraftExpectations::fromOptions([$profile->key.'='.(string) $this->argument('expected')]);
-        $source = self::read((string) $this->argument('source'));
-        $definitions = self::readCommands((string) $this->argument('commands'));
+        $source = self::read($files, (string) $this->argument('source'));
+        $definitions = self::readCommands($files, (string) $this->argument('commands'));
         $revision = $commands->run(new SaveProfileDraft(
             $profile,
             $expected->revisionOf($profile),
@@ -38,16 +41,12 @@ final class ImportProfileDraftCommand extends Command
         return self::SUCCESS;
     }
 
-    private static function read(string $path): string
+    private static function read(Files $files, string $path): string
     {
-        if (! is_file($path) || ! is_readable($path)) {
-            throw ProfileDraftRefused::unreadable($path);
-        }
-
-        $contents = file_get_contents($path, length: ScriptSource::BYTE_LIMIT + 1);
-
-        if ($contents === false) {
-            throw ProfileDraftRefused::unreadable($path);
+        try {
+            $contents = $files->readNamedAtMost($path, ScriptSource::BYTE_LIMIT + 1);
+        } catch (FileMissing|FileUnreadable $failure) {
+            throw ProfileDraftRefused::unreadable($path, $failure);
         }
 
         if (strlen($contents) > ScriptSource::BYTE_LIMIT) {
@@ -60,10 +59,10 @@ final class ImportProfileDraftCommand extends Command
     /**
      * @return array<string, mixed>
      */
-    private static function readCommands(string $path): array
+    private static function readCommands(Files $files, string $path): array
     {
         try {
-            $contents = json_decode(self::read($path), true, flags: JSON_THROW_ON_ERROR);
+            $contents = json_decode(self::read($files, $path), true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $failure) {
             throw ProfileDraftRefused::unreadable($path, $failure);
         }
