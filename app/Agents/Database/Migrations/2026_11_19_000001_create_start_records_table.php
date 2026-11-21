@@ -34,8 +34,6 @@ return new class extends Migration
             $table->boolean('conversation_resumed')->nullable();
             $table->string('payload_digest', 64);
             $table->string('disposition', 16);
-            $table->string('refusal_reason', 48)->nullable();
-            $table->timestampTz('refused_at')->nullable();
             $table->ulid('session_id')->nullable()->index();
             $table->foreignUlid('reply_inbox_id')->nullable()->constrained('inboxes')->restrictOnDelete();
             $table->timestampsTz();
