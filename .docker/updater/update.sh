@@ -27,7 +27,19 @@ echo "$(date -u +%FT%TZ) installing $branch $newest (installed: ${installed:-not
 [ -d "$mirror" ] || git clone --quiet --bare "$repository" "$mirror"
 git -C "$mirror" fetch --quiet --force "$repository" "refs/heads/$branch:refs/heads/$branch"
 
+# The images this server built are recorded in docs/accounts/docker-images.json, which the commit's own copy replaces:
+# the rows it lacks are kept, so an image built and checked here stays verified across installs.
+images="docs/accounts/docker-images.json"
+built_here=$(cat "$images" 2>/dev/null || echo '{"images": []}')
 git -C "$mirror" archive "$newest" | tar -x -C "$root"
+printf '%s' "$built_here" | python3 -c '
+import json, sys
+path = sys.argv[1]
+kept = json.load(sys.stdin)["images"]
+record = json.load(open(path))
+record["images"] += [row for row in kept if row not in record["images"]]
+open(path, "w").write(json.dumps(record, indent=4) + "\n")
+' "$images"
 # The version the journal shows, baked into the build: the commit, its branch and its release tag, if it has one.
 tag=$(git -C "$mirror" describe --tags --exact-match "$newest" 2>/dev/null || true)
 printf '%s\n%s\n%s\n' "$newest" "$branch" "$tag" > .installed-version
