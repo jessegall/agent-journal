@@ -11,6 +11,7 @@ use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Contracts\ActiveAccountReader;
+use App\Agents\Contracts\PinnedBuilds;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Events\StartAccepted;
@@ -34,7 +35,6 @@ use App\Agents\Values\StackTarget;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
-use App\Hooks\Compatibility\DriverCompatibility;
 
 /**
  * Starts inside the command's transaction: the request's record first, so a repeat finds its start; then the
@@ -53,6 +53,7 @@ final readonly class StartAgentHandler implements CommandHandler
         private ReplyInboxes $replyInboxes,
         private CommandFacts $facts,
         private AgentWakes $wakes,
+        private PinnedBuilds $builds,
     ) {}
 
     /**
@@ -99,7 +100,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->requestId,
             $parent,
             $request->authorizedSource,
-            self::hostRuntimeOf($request),
+            $this->hostRuntimeOf($request),
         );
         $this->pendingStarts->register($started->session, $account);
         $this->wakeOnHost($started);
@@ -122,14 +123,14 @@ final readonly class StartAgentHandler implements CommandHandler
      *
      * @throws HostUnavailable
      */
-    private static function hostRuntimeOf(StartRequest $request): RuntimeIntent|null
+    private function hostRuntimeOf(StartRequest $request): RuntimeIntent|null
     {
         if ($request->origin !== StartOriginType::MainStart) {
             return null;
         }
 
         $driver = $request->selection->driver;
-        $build = DriverCompatibility::pinned($driver)->version;
+        $build = $this->builds->versionOf($driver);
         $host = Host::runningStart($driver, $build, $request->execution()->mode, $request->variant);
 
         return new RuntimeIntent(

@@ -94,6 +94,16 @@ final readonly class MountRules
     }
 
     /**
+     * Whether the mounts bind an account folder at the account home.
+     *
+     * @param  list<ManifestMount>  $mounts
+     */
+    public function bindsAccount(array $mounts): bool
+    {
+        return array_any($mounts, fn (ManifestMount $mount) => $mount->target === self::ACCOUNT_TARGET);
+    }
+
+    /**
      * A contained session's own account folder, bound read-write at the account home so the program can refresh its
      * sign-in (doc 61, decision 8, the user's question 30); none locally or without an account.
      *

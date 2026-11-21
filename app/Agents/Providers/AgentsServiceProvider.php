@@ -96,6 +96,7 @@ use App\Agents\Support\GrantedSessionOutputs;
 use App\Agents\Support\HelperCommitImport;
 use App\Agents\Support\HostStartExecutor;
 use App\Agents\Support\HostStartPreflight;
+use App\Agents\Support\LaunchProfiles;
 use App\Agents\Support\NavigationExpiry;
 use App\Agents\Support\NavigationRecords;
 use App\Agents\Support\NavigationRequestProvider;
@@ -208,6 +209,11 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->string('agents.arrangement'),
             $this->app->make('config')->string('agents.installation_name'),
             $this->app->make('config')->string('agents.workspaces'),
+        ));
+        $this->app->bind(LaunchProfiles::class, fn () => new LaunchProfiles(
+            $this->app->make(ArrangementSetting::class),
+            $this->app->make(HostCapabilities::class),
+            LaunchProfiles::trialOf($this->app->make('config')->string('agents.protected_account_trial')),
         ));
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
             $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),

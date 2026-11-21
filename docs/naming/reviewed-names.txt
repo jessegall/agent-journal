@@ -3537,6 +3537,7 @@ class	PinMessage
 class	PinMessageHandler
 class	PinnableMessages
 class	PinnedCompatibilities
+class	PinnedDriverBuilds
 class	PipedCommands
 class	PipedCommandsToParse
 class	PipelineAdapter
@@ -7077,6 +7078,7 @@ interface	PageProvider
 interface	PageResolver
 interface	PartField
 interface	PendingWorkSource
+interface	PinnedBuilds
 interface	Pipable
 interface	Pipe
 interface	PipelineDefinition
@@ -13217,7 +13219,7 @@ method	LaunchLimits::stop()
 method	LaunchLimits::stopOverdue()
 method	LaunchProfileKey::__construct()
 method	LaunchProfileType::capabilities()
-method	LaunchProfileType::needsAccount()
+method	LaunchProfileType::isForAnAccount()
 method	LaunchProfileType::user()
 method	LaunchProfiles::__construct()
 method	LaunchProfiles::for()
@@ -14973,8 +14975,10 @@ method	PinMessageHandler::__construct()
 method	PinMessageHandler::handle()
 method	PinnableMessages::__construct()
 method	PinnableMessages::requireIn()
+method	PinnedBuilds::versionOf()
 method	PinnedCompatibilities::__construct()
 method	PinnedCompatibilities::for()
+method	PinnedDriverBuilds::versionOf()
 method	PipedCommands::__construct()
 method	PipedCommands::command()
 method	PipedCommands::cursor()
@@ -22354,7 +22358,6 @@ parameter	$dock
 parameter	$dockOffer
 parameter	$dockSections
 parameter	$docked
-parameter	$docking
 parameter	$docks
 parameter	$document
 parameter	$documentId
@@ -22991,7 +22994,6 @@ parameter	$memorySwapBytes
 parameter	$merge
 parameter	$mermaid
 parameter	$message
-parameter	$messageAction
 parameter	$messageAnswer
 parameter	$messageId
 parameter	$messageIds
@@ -25336,7 +25338,6 @@ property	ChatExcerpt::$open
 property	ChatWindowResolver::$agents
 property	ChatWindowResolver::$conversations
 property	ChatWindowResolver::$dock
-property	ChatWindowResolver::$docking
 property	ChatWindowResolver::$messages
 property	ChatWindowResolver::$request
 property	ChatWindowResolver::$slots
@@ -25922,7 +25923,6 @@ property	ConversationData::$agentId
 property	ConversationData::$destinationInboxId
 property	ConversationData::$dock
 property	ConversationData::$id
-property	ConversationData::$messageAction
 property	ConversationData::$messages
 property	ConversationData::$sessionGeneration
 property	ConversationData::$sessionId
@@ -31706,6 +31706,7 @@ property	StartAdditions::$folders
 property	StartAdditions::$offlineReply
 property	StartAgent::$request
 property	StartAgentHandler::$accounts
+property	StartAgentHandler::$builds
 property	StartAgentHandler::$containers
 property	StartAgentHandler::$facts
 property	StartAgentHandler::$pendingSecrets
@@ -33805,7 +33806,6 @@ variable	$menuQuery
 variable	$merge
 variable	$merged
 variable	$message
-variable	$messageAction
 variable	$messageId
 variable	$messageResponse
 variable	$messages

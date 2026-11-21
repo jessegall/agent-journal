@@ -88,6 +88,48 @@ type ContainerManifest struct {
 	Attachable bool `json:"attachable"`
 	// WorkspacePreparation is what the host fills or checks before the container mounts the workspace; nil locally.
 	WorkspacePreparation *WorkspacePreparation `json:"workspacePreparation"`
+	// LaunchProfile is how the container starts: standard, or protected-account, whose init starts as root to hand the
+	// sign-in to the program's own user; empty reads as standard.
+	LaunchProfile string `json:"launchProfile"`
+	// Entrypoint is refused when set: the host alone chooses a container's init.
+	Entrypoint string `json:"entrypoint"`
+}
+
+const (
+	LaunchStandard         = "standard"
+	LaunchProtectedAccount = "protected-account"
+	// protectedInit is the init a protected-account container starts with, never taken from a manifest.
+	protectedInit = "/opt/journal/bin/journal-init"
+	// initReadyLine is the one line the init prints once its program and executor run.
+	initReadyLine = "journal-init: ready"
+	// executorEndpoint is the private folder of the executor's socket in a protected-account container.
+	executorEndpoint = "/run/journal-exec:uid=10002,gid=10001,mode=0750,size=1m"
+	protectedUser    = "0:0"
+)
+
+// protectedCapabilities are exactly the capabilities a protected-account init needs to drop to its users.
+var protectedCapabilities = []string{"SETUID", "SETGID", "SETPCAP"}
+
+// isProtected is whether the manifest starts with the protected-account profile.
+func (manifest ContainerManifest) isProtected() bool {
+	return manifest.LaunchProfile == LaunchProtectedAccount
+}
+
+// hasKnownProfile is whether the manifest names a launch profile the host knows.
+func (manifest ContainerManifest) hasKnownProfile() bool {
+	return manifest.LaunchProfile == "" || manifest.LaunchProfile == LaunchStandard || manifest.isProtected()
+}
+
+// startsAsProfile is whether the user and capabilities are exactly the ones its launch profile allows: a named user
+// and none for standard; root with the three protected capabilities, a read-only root, no new privileges and an
+// account mount for protected-account.
+func (manifest ContainerManifest) startsAsProfile() bool {
+	if !manifest.isProtected() {
+		return len(manifest.Capabilities) == 0 && manifest.User != ""
+	}
+
+	return manifest.User == protectedUser && slices.Equal(manifest.Capabilities, protectedCapabilities) &&
+		manifest.ReadOnlyRoot && manifest.NoNewPrivileges && manifest.AccountFolder() != ""
 }
 
 // imageIDPattern is an image named by its id, the config digest a loaded image keeps.
@@ -173,11 +215,13 @@ func (manifest ContainerManifest) AccountFolder() string {
 	return ""
 }
 
-// IsSafe is whether the manifest may start a container: unprivileged, with no capabilities or published ports, an
-// exact image digest, a named user, security profiles that are one value each, and only the mounts the rules allow.
+// IsSafe is whether the manifest may start a container: unprivileged, with no published ports or entrypoint, the
+// user and capabilities its launch profile allows, an exact image digest, security profiles that are one value each,
+// and only the mounts the rules allow.
 func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
-	isConfined := !manifest.Privileged && len(manifest.Capabilities) == 0 && len(manifest.PublishedPorts) == 0
-	isPinned := IsPinnedReference(manifest.Image) && manifest.User != ""
+	isConfined := !manifest.Privileged && len(manifest.PublishedPorts) == 0 && manifest.Entrypoint == "" &&
+		manifest.hasKnownProfile() && manifest.startsAsProfile()
+	isPinned := IsPinnedReference(manifest.Image)
 
 	return isConfined && isPinned && rules.permitsImage(manifest.Image) && manifest.SecurityOptions.isPlain() &&
 		rules.permit(manifest.Mounts)
@@ -201,6 +245,14 @@ func (manifest ContainerManifest) DockerCreateArguments(name string, labels Laun
 		"--ulimit", "nofile=" + strconv.Itoa(manifest.Budgets.OpenFiles),
 	}
 	arguments = append(arguments, labels.arguments()...)
+	if manifest.isProtected() {
+		for _, capability := range protectedCapabilities {
+			arguments = append(arguments, "--cap-add", capability)
+		}
+
+		arguments = append(arguments, "--entrypoint", protectedInit, "--tmpfs", executorEndpoint)
+	}
+
 	if manifest.ReadOnlyRoot {
 		arguments = append(arguments, "--read-only")
 	}
@@ -412,15 +464,20 @@ type ConversationTranscript struct {
 }
 
 // arguments puts the process into `docker create` arguments that end with the image: its environment before the
-// image, its command after it.
-func (process ContainerProcess) arguments(create []string) []string {
+// image, its command after it, behind `--` when the protected-account init runs it.
+func (process ContainerProcess) arguments(create []string, underInit bool) []string {
 	image := create[len(create)-1]
 	arguments := append([]string{}, create[:len(create)-1]...)
 	for _, entry := range process.Environment {
 		arguments = append(arguments, "--env", entry)
 	}
 
-	return append(append(arguments, image), process.command()...)
+	arguments = append(arguments, image)
+	if underInit {
+		arguments = append(arguments, "--")
+	}
+
+	return append(arguments, process.command()...)
 }
 
 // command is the process's own command, or, with a restart command, a shell that runs the restart command once the
@@ -452,6 +509,12 @@ func (containers Containers) Create(
 		return "", err
 	}
 
+	if manifest.isProtected() {
+		if err := containers.CheckAccountFolder(ctx, manifest.AccountFolder()); err != nil {
+			return "", err
+		}
+	}
+
 	if err := containers.AssertBudgetsEnforced(ctx); err != nil {
 		return "", err
 	}
@@ -474,7 +537,7 @@ func (containers Containers) Create(
 		return "", err
 	}
 
-	output, err := containers.command(ctx, process.arguments(arguments)...).Output()
+	output, err := containers.command(ctx, process.arguments(arguments, manifest.isProtected())...).Output()
 	return strings.TrimSpace(string(output)), err
 }
 

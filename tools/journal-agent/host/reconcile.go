@@ -2,8 +2,10 @@ package host
 
 import (
 	"context"
+	"io"
 	"log"
 	"slices"
+	"strings"
 )
 
 // ReconcileJournal is what a restarted host asks the journal: its starts that may still run, and which of those
@@ -72,10 +74,39 @@ func ContainerSessionsOf(ctx context.Context, containers Containers, installatio
 
 	sessions := ContainerSessions{}
 	for _, container := range found {
+		if container.Running && container.UnderInit && !containers.initReady(ctx, container.ID) {
+			_ = containers.command(ctx, "rm", "--force", container.ID).Run()
+			container.Running = false
+		}
+
 		sessions[container.Session] = container
 	}
 
 	return sessions, nil
+}
+
+// initLogBytes bounds how much of a container's log is read to find the init's ready line, which comes first.
+const initLogBytes = 64 * 1024
+
+// initReady is whether the protected-account init in the container said it was ready: a container the host found
+// half started, as after a restart during the init, never is, and is not adopted.
+func (containers Containers) initReady(ctx context.Context, id string) bool {
+	logs := containers.command(ctx, "logs", id)
+	output, err := logs.StdoutPipe()
+	if err != nil {
+		return false
+	}
+
+	if err := logs.Start(); err != nil {
+		return false
+	}
+
+	head := make([]byte, initLogBytes)
+	read, _ := io.ReadFull(output, head)
+	_ = logs.Process.Kill()
+	_ = logs.Wait()
+
+	return strings.Contains(string(head[:read]), initReadyLine)
 }
 
 // reconcileContainer proves a contained start by its container: one still running is adopted, to be attached again;

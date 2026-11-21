@@ -21,6 +21,11 @@ final readonly class HostCapability
         public string $reason,
     ) {}
 
+    public function isSupported(): bool
+    {
+        return $this->status === CapabilityStatusType::Supported;
+    }
+
     /**
      * Refuses a start that needs this capability unless the evidence proves it; nothing is started or changed.
      *
@@ -30,7 +35,7 @@ final readonly class HostCapability
      */
     public function assertSupported(): void
     {
-        if ($this->status !== CapabilityStatusType::Supported) {
+        if (! $this->isSupported()) {
             throw $this->query->capability->refusalFor($this);
         }
     }

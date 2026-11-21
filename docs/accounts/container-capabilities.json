@@ -159,6 +159,26 @@
             "status": "supported",
             "evidence": "docs/accounts/contained-capability-runs.md#container-runtime-supported",
             "reason": "The agent daemon and its budgets do not depend on the program: the same rootful daemon under sysbox-runc runs Codex's containers with the cgroupfs driver, so their budgets hold as Claude Code's do (task 1636)."
+        },
+        {
+            "capability": "account-isolation",
+            "driver": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/accounts/contained-capability-runs.md#account-isolation",
+            "reason": "no server run of the protected-account profile yet (doc 78)"
+        },
+        {
+            "capability": "account-isolation",
+            "driver": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/accounts/contained-capability-runs.md#account-isolation",
+            "reason": "no server run of the protected-account profile yet (doc 78)"
         }
     ]
 }

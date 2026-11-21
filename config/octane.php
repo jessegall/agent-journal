@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Hooks\Listeners\GiveRequestContainerToEvents;
+use App\Hooks\Octane\GiveRequestContainerToEvents;
 use Laravel\Octane\Contracts\OperationTerminated;
 use Laravel\Octane\Events\OperationReleased;
 use Laravel\Octane\Events\RequestHandled;

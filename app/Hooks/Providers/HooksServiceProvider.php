@@ -8,6 +8,7 @@ use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Enums\ActorType;
 use App\Agents\Contracts\ActorGuidance;
+use App\Agents\Contracts\PinnedBuilds;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\PendingWorkSources;
 use App\Bus\Contracts\FactStaging;
@@ -19,6 +20,7 @@ use App\Hooks\Actions\CurrentStates;
 use App\Hooks\Actions\UserStacks;
 use App\Hooks\Actions\WorkStackPushes;
 use App\Hooks\Admission\AdvisoryStackAdmission;
+use App\Hooks\Compatibility\PinnedDriverBuilds;
 use App\Hooks\Console\PruneHookHistoryCommand;
 use App\Hooks\Console\RelayHookCommand;
 use App\Hooks\Contracts\ActorWorkStacks;
@@ -118,6 +120,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->scoped(StopConditionGate::class, StopAttemptGate::class);
         $this->app->bindIf(StopPreparer::class, NoStopPreparation::class);
         $this->app->bind(ActorGuidance::class, HookGuidance::class);
+        $this->app->bind(PinnedBuilds::class, PinnedDriverBuilds::class);
         $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
             $this->app->make('config')->integer('hooks.hook_call_days'),

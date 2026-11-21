@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Enums\LaunchProfileType;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Values\ExecutionBudgets;
@@ -47,6 +48,7 @@ final readonly class ContainerManifest
         public bool $attachable,
         // What the host fills or checks before the container mounts the workspace; none locally.
         public WorkspacePreparation|null $workspacePreparation,
+        public LaunchProfileType $launchProfile,
     ) {}
 
     /**
@@ -64,14 +66,15 @@ final readonly class ContainerManifest
         string $network,
         MountRules $rules,
         string|null $resumedSessionId,
+        LaunchProfileType $launchProfile = LaunchProfileType::Standard,
     ): self {
         $mount = $rules->workspaceMount($workspace, $use);
 
         return self::make(
             (string) $policy->imageReference,
-            self::USER,
+            $launchProfile->user(),
             true,
-            [],
+            $launchProfile->capabilities(),
             false,
             $network,
             [$mount, ...$rules->accountMounts(), ...$rules->sessionMounts($sessionId, $resumedSessionId)],
@@ -80,6 +83,7 @@ final readonly class ContainerManifest
             $rules,
             SecurityOptions::none(),
             $policy->attachable,
+            $launchProfile,
         );
     }
 
@@ -103,13 +107,23 @@ final readonly class ContainerManifest
         MountRules $rules,
         SecurityOptions $securityOptions,
         bool $attachable = false,
+        LaunchProfileType $launchProfile = LaunchProfileType::Standard,
     ): self {
         if (preg_match('/(^|@)sha256:[0-9a-f]{64}$/', $image) !== 1) {
             throw ManifestRefused::because("the image {$image} is not named by its digest");
         }
 
-        if ($privileged || $capabilities !== [] || $user !== self::USER || ! $readOnlyRoot) {
-            throw ManifestRefused::because('a helper runs unprivileged as 10001:10001 on a read-only root with no capabilities');
+        $startsAsProfile = $user === $launchProfile->user() && $capabilities === $launchProfile->capabilities();
+
+        if ($privileged || ! $startsAsProfile || ! $readOnlyRoot) {
+            throw ManifestRefused::because(match ($launchProfile) {
+                LaunchProfileType::Standard => 'a helper runs unprivileged as 10001:10001 on a read-only root with no capabilities',
+                LaunchProfileType::ProtectedAccount => 'a protected start runs its init as 0:0 with only SETUID, SETGID and SETPCAP, unprivileged, on a read-only root',
+            });
+        }
+
+        if ($launchProfile->isForAnAccount() && ! $rules->bindsAccount($mounts)) {
+            throw ManifestRefused::because('a protected start binds the account folder it protects');
         }
 
         if (in_array($network, ['host', 'none', ''], true)) {
@@ -127,7 +141,7 @@ final readonly class ContainerManifest
             $user,
             self::WORKDIR,
             true,
-            [],
+            $capabilities,
             true,
             $securityOptions,
             false,
@@ -137,6 +151,7 @@ final readonly class ContainerManifest
             $budgets,
             $attachable,
             $rules->workspacePreparation(),
+            $launchProfile,
         );
     }
 }
