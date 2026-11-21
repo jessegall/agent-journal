@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
-# The host's sign-in runner: run it on the host as the journal's own user, outside the app's containers, with
-# JOURNAL_URL and the enrolled host's JOURNAL_HOST_SECRET set. Account folders stay under the configured accounts root.
+# The sign-in runner on the Mac: run it as the journal's own user, outside the app's containers, with JOURNAL_URL and
+# the enrolled host's JOURNAL_HOST_SECRET set. Account folders stay under the configured accounts root. On a server the
+# accounts service runs the same command instead.
 exec php "$(dirname "$0")/../artisan" accounts:run-sign-ins "$@"

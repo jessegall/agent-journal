@@ -16,8 +16,9 @@ use Illuminate\Console\Command;
 use Illuminate\Http\Client\Factory;
 
 /**
- * The host's sign-in runner, started by bin/journal-account on the host, never inside the app's containers: it runs
- * sign-ins one after another until stopped, or one with --once.
+ * The sign-in runner, never inside the app's own containers: bin/journal-account starts it on the Mac, and the
+ * accounts service runs it on a server. It runs sign-ins, checks and cleanups one after another until stopped, or one
+ * with --once.
  */
 final class RunSignInsCommand extends Command
 {
