@@ -31,8 +31,12 @@ use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Enums\CleanupTarget;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
+use App\Profiles\Enums\UsageWindowSlot;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
+use App\Profiles\Models\AccountUsageCost;
+use App\Profiles\Models\AccountUsageTokens;
+use App\Profiles\Models\AccountUsageWindow;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Resolvers\AccountsWindowResolver;
@@ -41,6 +45,12 @@ use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\CleanupProgress;
+use App\Profiles\Values\ThreadTokens;
+use App\Profiles\Values\UsageCost;
+use App\Profiles\Values\UsageSource;
+use App\Profiles\Values\UsageWindowReading;
+use App\Profiles\Values\UsdAmount;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -65,6 +75,9 @@ final class AccountRemovalTest extends TestCase
     use WithActiveAccount;
 
     private const array TABLES = [
+        'account_usage_windows',
+        'account_usage_costs',
+        'account_usage_tokens',
         'accounts',
         'active_accounts',
         'sign_in_attempts',
@@ -126,10 +139,14 @@ final class AccountRemovalTest extends TestCase
 
         $this->clean($claimed->generation, true, false);
         $this->assertTrue($this->account->refresh()->store_removed);
+        $this->keepUsage();
         $this->clean($claimed->generation, false, true);
 
         $this->account->refresh();
         $this->assertSame(AccountState::Removed, $this->account->state);
+        $this->assertSame(0, AccountUsageWindow::query()->withoutGlobalScopes()->count());
+        $this->assertSame(0, AccountUsageCost::query()->withoutGlobalScopes()->count());
+        $this->assertSame(0, AccountUsageTokens::query()->withoutGlobalScopes()->count());
         $this->assertNull($this->account->directory);
         $this->assertSame('Test account', $this->account->label);
     }
@@ -357,6 +374,18 @@ final class AccountRemovalTest extends TestCase
         $this->asOwner(new RetryAttemptCleanup($started->attemptId));
 
         $this->assertSame($started->attemptId, $this->asHost(new ClaimCleanup('host'))?->id);
+    }
+
+    private function keepUsage(): void
+    {
+        $generation = $this->account->sign_in_generation;
+        $source = new UsageSource('start-1', 1, CarbonImmutable::now());
+        $window = new UsageWindowReading('claude', UsageWindowSlot::SevenDay, 40.0, null, null, $source);
+        AccountUsageWindow::record($this->account, $generation, $window);
+        AccountUsageCost::add($this->account, $generation, new UsageCost('result-1', UsdAmount::from('1'), $source->observedAt));
+        $tokens = new ThreadTokens('thread-1', 10, null, null, null, null, null, $source);
+        AccountUsageTokens::record($this->account, $generation, $tokens);
+        $this->assertSame(1, AccountUsageWindow::query()->withoutGlobalScopes()->count());
     }
 
     private function clean(int $generation, bool $isStoreRemoved, bool $isDirectoryRemoved): void
