@@ -21,9 +21,14 @@ return new class extends Migration
             $table->foreignUlid('binding_id')->constrained('project_bindings');
             $table->string('base_oid', 64);
             $table->boolean('parent_was_dirty');
-            $table->foreignUlid('parent_claim_id')->nullable()->constrained('child_claims');
+            $table->ulid('parent_claim_id')->nullable();
             $table->string('root_runtime_id');
             $table->timestampsTz();
+        });
+
+        // The chain's self-reference is added once the table and its primary key exist.
+        Schema::table('child_claims', function (Blueprint $table) {
+            $table->foreign('parent_claim_id')->references('id')->on('child_claims');
         });
     }
 

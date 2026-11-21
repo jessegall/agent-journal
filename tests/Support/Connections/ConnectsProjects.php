@@ -102,6 +102,8 @@ trait ConnectsProjects
     ): TestResponse {
         $content = (string) json_encode((object) $body);
         $issuedAt = CarbonImmutable::now()->getTimestamp();
+        // A relay's call carries no user's session.
+        $this->app['auth']->forgetGuards();
         $this->app->forgetScopedInstances();
 
         return $this->call('POST', 'https://localhost'.$target, server: [

@@ -128,7 +128,7 @@ final class DeviceGrant extends Model implements ReadableModel
      */
     public static function lockByDeviceCode(string $deviceCodeDigest): self
     {
-        return self::query()->where('device_code_digest', $deviceCodeDigest)->lockForUpdate()
+        return self::query()->with('binding')->where('device_code_digest', $deviceCodeDigest)->lockForUpdate()
             ->firstOr(fn () => throw DeviceGrantRefused::unknownCode());
     }
 

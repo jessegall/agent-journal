@@ -20,23 +20,20 @@ use Illuminate\Support\Str;
 /**
  * The shell side of device approval, signed by the binding's host: start answers the device code, the user code and
  * the HTTPS approval URL the owner opens; poll answers the grant once the owner approved it. Only digests are kept.
+ * The dispatchers come per action: they hold the request's command entrance, which a kept controller must not.
  */
 final readonly class DeviceGrantController
 {
-    public function __construct(
-        private HostCalls $calls,
-        private EntryDispatchers $dispatchers,
-        private ServerOrigin $origin,
-    ) {}
+    public function __construct(private HostCalls $calls, private ServerOrigin $origin) {}
 
-    public function start(Request $request): JsonResponse
+    public function start(Request $request, EntryDispatchers $dispatchers): JsonResponse
     {
         $host = $this->calls->verify($request, HostProtocolVersion::RemoteProject);
         $deviceCode = InstallTicket::generate();
         $userCode = Str::upper(Str::random(4)).'-'.Str::upper(Str::random(4));
         $binding = $request->string('binding')->toString();
         $start = new StartDeviceGrant($host->hostId, $binding, $deviceCode->digest(), $userCode);
-        $started = $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $start);
+        $started = $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $start);
 
         return new JsonResponse([
             'deviceCode' => $deviceCode->secret,
@@ -47,13 +44,13 @@ final readonly class DeviceGrantController
         ], JsonResponse::HTTP_CREATED, ['Cache-Control' => 'no-store']);
     }
 
-    public function poll(Request $request): JsonResponse
+    public function poll(Request $request, EntryDispatchers $dispatchers): JsonResponse
     {
         $host = $this->calls->verify($request, HostProtocolVersion::RemoteProject);
         $grant = InstallTicket::generate();
         $deviceCode = InstallTicket::digestOf($request->string('deviceCode')->toString());
         $poll = new PollDeviceGrant($host->hostId, $deviceCode, $grant->digest());
-        $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $poll);
+        $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $poll);
 
         return new JsonResponse(['grant' => $grant->secret], JsonResponse::HTTP_OK, ['Cache-Control' => 'no-store']);
     }

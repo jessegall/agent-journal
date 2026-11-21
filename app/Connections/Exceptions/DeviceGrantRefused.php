@@ -20,7 +20,7 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
 
     private int $status = 404;
 
-    private RefusalCode $code = RefusalCode::RecordUnavailable;
+    private RefusalCode $refusalCode = RefusalCode::RecordUnavailable;
 
     public static function unknownCode(): self
     {
@@ -31,7 +31,7 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
     {
         $refusal = new self('The owner has not approved this device yet.');
         $refusal->status = 428;
-        $refusal->code = RefusalCode::StateBlocked;
+        $refusal->refusalCode = RefusalCode::StateBlocked;
 
         return $refusal;
     }
@@ -40,7 +40,7 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
     {
         $refusal = new self('Poll this device code at most once every five seconds.');
         $refusal->status = 429;
-        $refusal->code = RefusalCode::Busy;
+        $refusal->refusalCode = RefusalCode::Busy;
 
         return $refusal;
     }
@@ -49,14 +49,14 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
     {
         $refusal = new self('This device grant is revoked or expired. Run the journal command again to approve a new one.');
         $refusal->status = 401;
-        $refusal->code = RefusalCode::Unauthenticated;
+        $refusal->refusalCode = RefusalCode::Unauthenticated;
 
         return $refusal;
     }
 
     public function refusalCode(): RefusalCode
     {
-        return $this->code;
+        return $this->refusalCode;
     }
 
     protected function status(): int

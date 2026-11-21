@@ -34,7 +34,8 @@ final readonly class ProjectCommands
     ) {}
 
     /**
-     * Runs the verb, or answers the frames its request id already recorded, handing each frame to emit in order.
+     * Runs a verb assertServed admitted, or answers the frames its request id already recorded, handing each frame
+     * to emit in order.
      *
      * @param  Closure(CommandFrame): void  $emit
      *
@@ -42,7 +43,6 @@ final readonly class ProjectCommands
      */
     public function run(ProjectCommandRequest $request, string $agentId, Closure $emit): void
     {
-        $this->assertServed($request, $agentId);
         $start = new StartProjectCommandRun($request->requestId(), $agentId, $request->bindingId(), $request->argv());
         $started = $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $start);
 
@@ -56,9 +56,11 @@ final readonly class ProjectCommands
     }
 
     /**
+     * Refuses, before anything streams, a verb that is no journal route or a binding that is not the agent's own.
+     *
      * @throws VerbNotServed
      */
-    private function assertServed(ProjectCommandRequest $request, string $agentId): void
+    public function assertServed(ProjectCommandRequest $request, string $agentId): void
     {
         $routes = $this->routes->routeOf($request->verbName());
 

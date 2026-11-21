@@ -58,7 +58,7 @@ final class DeviceGrantsTest extends TestCase
         $this->travel(DeviceGrant::CODE_MINUTES + 1)->minutes();
 
         $this->actingAs($this->owner)
-            ->post("/settings/project-connections/devices/{$start->json('userCode')}/approve")
+            ->postJson("/settings/project-connections/devices/{$start->json('userCode')}/approve")
             ->assertNotFound();
         $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertNotFound();
     }

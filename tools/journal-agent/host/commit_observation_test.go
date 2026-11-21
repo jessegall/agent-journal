@@ -3,19 +3,9 @@ package host
 import (
 	"context"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 )
-
-func gitIn(t *testing.T, folder string, arguments ...string) {
-	t.Helper()
-	command := exec.Command("git", append([]string{"-C", folder}, arguments...)...)
-	command.Env = append(os.Environ(), "GIT_AUTHOR_NAME=t", "GIT_AUTHOR_EMAIL=t@example.com", "GIT_COMMITTER_NAME=t", "GIT_COMMITTER_EMAIL=t@example.com")
-	if printed, err := command.CombinedOutput(); err != nil {
-		t.Fatalf("git %v: %v\n%s", arguments, err, printed)
-	}
-}
 
 func TestAConnectedRootReportsItsVerifiedHeadAndDirtyFlag(t *testing.T) {
 	root := t.TempDir()

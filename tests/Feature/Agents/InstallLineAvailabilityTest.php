@@ -140,7 +140,7 @@ final class InstallLineAvailabilityTest extends TestCase
 
     private function offer(): ReleaseOfferData
     {
-        return ReleaseOfferData::fromPublished($this->app->make(PublishedReleases::class)->publishedManifest());
+        return ReleaseOfferData::ofPublished($this->app->make(PublishedReleases::class)->publishedManifest());
     }
 
     private function switchOn(): void

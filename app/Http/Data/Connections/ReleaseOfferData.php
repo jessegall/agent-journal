@@ -31,7 +31,7 @@ final class ReleaseOfferData extends Data
      *
      * @param  list<ReleaseManifest>  $published
      */
-    public static function fromPublished(array $published): self
+    public static function ofPublished(array $published): self
     {
         if ($published === []) {
             return self::from([

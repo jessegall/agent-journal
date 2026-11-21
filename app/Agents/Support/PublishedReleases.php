@@ -73,15 +73,7 @@ final readonly class PublishedReleases
      */
     public function hasCompatibleRelease(): bool
     {
-        if ($this->current === '') {
-            return false;
-        }
-
-        if (! $this->files->exists(FilePath::in(Place::Releases, "{$this->current}/".self::MANIFEST))) {
-            return false;
-        }
-
-        return $this->manifestOf($this->current)->isPublic();
+        return $this->hasCurrentManifest() && $this->manifestOf($this->current)->isPublic();
     }
 
     /**
@@ -104,6 +96,12 @@ final readonly class PublishedReleases
             'release' => $this->current === '' ? null : $this->current,
             'protocolVersions' => HostProtocolVersion::spoken(),
         ]);
+    }
+
+    private function hasCurrentManifest(): bool
+    {
+        return $this->current !== ''
+            && $this->files->exists(FilePath::in(Place::Releases, "{$this->current}/".self::MANIFEST));
     }
 
     /**

@@ -18,6 +18,8 @@ final readonly class ProjectCommandController
 {
     public function __invoke(ProjectCommandRequest $request, AgentContext $agent, ProjectCommands $commands): StreamedResponse
     {
+        $commands->assertServed($request, $agent->agentId);
+
         return new StreamedResponse(function () use ($request, $agent, $commands): void {
             $commands->run($request, $agent->agentId, function (CommandFrame $frame): void {
                 echo json_encode($frame->toArray(), JSON_THROW_ON_ERROR)."\n";

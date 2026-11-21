@@ -23,7 +23,7 @@ final class ProjectCommandRequest extends FormRequest
             'binding' => ['required', 'string', 'ulid'],
             'argv' => ['required', 'array', 'min:2', 'max:200'],
             'argv.*' => ['string', 'max:8192'],
-            'stdin' => ['present', 'string', 'max:1048576'],
+            'stdin' => ['present', 'nullable', 'string', 'max:1048576'],
         ];
     }
 

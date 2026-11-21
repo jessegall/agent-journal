@@ -33,7 +33,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         return ConnectProjectWindowData::from([
             'serverName' => $this->origin->name(),
             'canIssue' => $this->availability->canIssue(),
-            'release' => ReleaseOfferData::fromPublished($this->releases->publishedManifest()),
+            'release' => ReleaseOfferData::ofPublished($this->releases->publishedManifest()),
             'bindings' => array_map(
                 fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding($binding, $now),
                 ProjectBinding::listed(),

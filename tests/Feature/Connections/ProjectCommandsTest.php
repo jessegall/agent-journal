@@ -7,6 +7,7 @@ namespace Tests\Feature\Connections;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Models\Host;
 use Domain\Access\Support\AccessSettings;
+use App\Connections\Enums\BindingReadiness;
 use App\Connections\Exceptions\DeviceGrantRefused;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\Project;
@@ -40,10 +41,10 @@ final class ProjectCommandsTest extends TestCase
     public function test_a_repeated_request_id_answers_the_first_result_without_running_again(): void
     {
         [$start, $binding] = $this->connectedStart();
-        $run = ProjectCommandRun::start('request-1', $start->agent->id, $binding, ['task', 'list']);
+        $run = ProjectCommandRun::start('request-1', $start->agent->id, $binding, ['comment', 'list']);
         $run->finish([CommandFrame::output(1, 'stdout', "Tasks\n"), CommandFrame::exit(2, 3)], 3);
 
-        $reply = $this->command($start, 'request-1', $binding->id, ['task', 'list'])->assertOk();
+        $reply = $this->command($start, 'request-1', $binding->id, ['comment', 'list'])->assertOk();
 
         $frames = array_map(fn (string $line) => json_decode($line, true), array_filter(explode("\n", (string) $reply->streamedContent())));
         $this->assertSame("Tasks\n", $frames[0]['data']);
@@ -65,15 +66,15 @@ final class ProjectCommandsTest extends TestCase
         [$start] = $this->connectedStart();
         [, $other] = $this->connectedStart();
 
-        $this->command($start, 'request-1', $other->id, ['task', 'list'])->assertForbidden();
+        $this->command($start, 'request-1', $other->id, ['comment', 'list'])->assertForbidden();
     }
 
     public function test_a_revoke_refuses_the_agents_token_and_device_grant_and_ends_its_streams_only(): void
     {
         [$start, $binding] = $this->connectedStart();
         [$otherStart, $other] = $this->connectedStart();
-        $stream = ProjectCommandRun::start('request-1', $start->agent->id, $binding, ['task', 'list']);
-        $otherStream = ProjectCommandRun::start('request-2', $otherStart->agent->id, $other, ['task', 'list']);
+        $stream = ProjectCommandRun::start('request-1', $start->agent->id, $binding, ['comment', 'list']);
+        $otherStream = ProjectCommandRun::start('request-2', $otherStart->agent->id, $other, ['comment', 'list']);
         $grant = DeviceGrant::start($binding, InstallTicket::digestOf('device-code'), 'ABCD-EFGH');
         $grant->issue(InstallTicket::digestOf('device-grant'));
 
@@ -81,14 +82,14 @@ final class ProjectCommandsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->actingAs($owner)->deleteJson("/settings/project-connections/bindings/{$binding->id}")->assertNoContent();
 
-        $this->command($start, 'request-3', $binding->id, ['task', 'list'])->assertUnauthorized();
+        $this->command($start, 'request-3', $binding->id, ['comment', 'list'])->assertUnauthorized();
         $this->expectException(DeviceGrantRefused::class);
         try {
             DeviceGrant::usable(InstallTicket::digestOf('device-grant'));
         } finally {
             $this->assertFalse($stream->fresh()?->isRunning());
             $this->assertTrue($otherStream->fresh()?->isRunning());
-            $this->command($otherStart, 'request-4', $other->id, ['migrate', 'fresh'])->assertForbidden();
+            $this->assertNotSame(BindingReadiness::Revoked, $other->fresh()?->readiness);
         }
     }
 
@@ -97,7 +98,7 @@ final class ProjectCommandsTest extends TestCase
         $this->postJson('/api/project-commands', [
             'requestId' => 'request-1',
             'binding' => '01JAAAAAAAAAAAAAAAAAAAAAAA',
-            'argv' => ['task', 'list'],
+            'argv' => ['comment', 'list'],
             'stdin' => '',
         ], ['Authorization' => 'Bearer a-host-secret'])->assertUnauthorized();
     }
