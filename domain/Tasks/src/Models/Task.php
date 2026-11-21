@@ -294,9 +294,10 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
-     * Who works on the task's latest run, with the runner's label when the caller may see it.
+     * Who works on the task's latest run, with the runner's label when the caller may see it; it runs now while the
+     * task is started and a claim on that run is live.
      */
-    public function executionBy(ActorIdentity $runner, ActorLabelSet $labels): TaskExecution
+    public function executionBy(ActorIdentity $runner, ActorLabelSet $labels, bool $isClaimed): TaskExecution
     {
         return new TaskExecution(
             $runner->type,
@@ -304,6 +305,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
             $labels->nameOf($runner),
             $this->run_number,
             $this->state,
+            $isClaimed && $this->state === TaskState::Started,
         );
     }
 

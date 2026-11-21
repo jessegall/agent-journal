@@ -29,6 +29,7 @@ use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\Page;
+use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
@@ -68,6 +69,7 @@ use Domain\Tasks\Resolvers\TaskAssignments;
 use Domain\Tasks\Resolvers\TaskRecords;
 use Domain\Tasks\Resolvers\TaskRunAssignments;
 use Domain\Tasks\Resolvers\TasksWindowResolver;
+use Domain\Tasks\Resolvers\TaskWindowResolver;
 use Domain\Tasks\Skills\TasksSkill;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
@@ -117,6 +119,10 @@ final class TasksDomain extends Domain implements
             Page::make('list', 'Tasks', Icon::Tasks, TasksWindowResolver::class, 'TasksWindow.vue')
                 ->at('')
                 ->onHome(25),
+            Page::make('task', 'Task', Icon::Tasks, TaskWindowResolver::class, 'TaskWindow.vue')
+                ->at('{task}')
+                ->inInspector()
+                ->slots(Slot::record('inspector', 'task', 'task')),
         ];
     }
 

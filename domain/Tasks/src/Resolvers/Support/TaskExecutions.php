@@ -39,7 +39,9 @@ final readonly class TaskExecutions
         $labels = $this->labels->labelsFor(array_values($runners));
 
         return $tasks->mapWithKeys(fn (Task $task) => [
-            $task->id => isset($runners[$task->id]) ? $task->executionBy($runners[$task->id], $labels) : null,
+            $task->id => isset($runners[$task->id])
+                ? $task->executionBy($runners[$task->id], $labels, isset($holders[$runs[$task->id]->id]))
+                : null,
         ])->all();
     }
 }
