@@ -45,12 +45,12 @@ final readonly class PolicyDefinition
     }
 
     /**
-     * The accesses a built-in agent profile gets: every accepted one but the owner's, the coordinator's only for a
+     * What a built-in agent profile is granted of this policy: every accepted access but the owner's, the coordinator's only for a
      * coordinating profile, and none a read-only profile may not have.
      *
      * @return list<AccessType>
      */
-    public function accessesForAgents(bool $coordinator, bool $readOnly): array
+    public function grantsForAgents(bool $coordinator, bool $readOnly): array
     {
         $withheld = [
             ...$this->ownerOnly,

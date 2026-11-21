@@ -12,7 +12,7 @@ use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ScopedRead;
 
 /**
- * The grants of each built-in kind of profile: every pair a registered policy accepts, its registration's owner,
+ * The grants of each built-in kind of profile: every pair a registered policy accepts, its definition's owner,
  * coordinator and read-only restrictions permit for the base, and the base's own access list includes.
  */
 final class BuiltInAuthorizations
@@ -30,9 +30,9 @@ final class BuiltInAuthorizations
         $grants = [];
 
         foreach ($definitions as $definition) {
-            $accesses = $definition->accessesForAgents($type->isCoordinator(), $type->isReadOnly());
+            $granted = $definition->grantsForAgents($type->isCoordinator(), $type->isReadOnly());
 
-            foreach (array_filter($accesses, $type->allows(...)) as $access) {
+            foreach (array_filter($granted, $type->allows(...)) as $access) {
                 $grants[] = new PolicyGrant($definition->policy, $access);
             }
         }

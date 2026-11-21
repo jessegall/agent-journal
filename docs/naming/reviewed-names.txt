@@ -12394,7 +12394,7 @@ method	PolicyCatalogue::definitions()
 method	PolicyCatalogue::grantable()
 method	PolicyCatalogue::register()
 method	PolicyDefinition::__construct()
-method	PolicyDefinition::accessesForAgents()
+method	PolicyDefinition::grantsForAgents()
 method	PolicyDefinition::isRecord()
 method	PolicyDefinition::model()
 method	PolicyDefinition::supports()
@@ -23876,13 +23876,13 @@ property	ProfileAuthorizerProvider::$actors
 property	ProfileAuthorizerProvider::$catalogue
 property	ProfileAuthorizerProvider::$gate
 property	ProfileAuthorizerProvider::$profiles
-property	ProfileBase::$accesses
 property	ProfileBase::$attachable
 property	ProfileBase::$containedBudgets
 property	ProfileBase::$containerRequired
 property	ProfileBase::$coordinator
 property	ProfileBase::$defaultVariant
 property	ProfileBase::$executionMode
+property	ProfileBase::$grants
 property	ProfileBase::$key
 property	ProfileBase::$label
 property	ProfileBase::$model

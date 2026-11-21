@@ -23,7 +23,7 @@ use App\Profiles\Exceptions\BuiltInProfileMissing;
 final readonly class ProfileBase
 {
     /**
-     * @param  list<AccessType>  $accesses  the accesses its built-in profile may hold on any policy that accepts them
+     * @param  list<AccessType>  $grants  the accesses its built-in profile may be granted on any policy that accepts them
      * @param  list<HostAccess>  $paths  the roots its profiles work in on the host, with the accesses each permits
      * @param  list<StopCondition>  $stopConditions
      */
@@ -31,7 +31,7 @@ final readonly class ProfileBase
         public string $key,
         public string $label,
         public string $model,
-        public array $accesses,
+        public array $grants,
         public array $paths,
         public ExecutionModeType $executionMode,
         public bool $containerRequired,
@@ -226,7 +226,7 @@ final readonly class ProfileBase
 
     public function allows(AccessType $access): bool
     {
-        return in_array($access, $this->accesses, true);
+        return in_array($access, $this->grants, true);
     }
 
     /**
