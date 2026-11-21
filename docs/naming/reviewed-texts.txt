@@ -6,6 +6,7 @@ ${option.description} ${option.billingNote}
 1 hour
 30 days
 7 days
+: start it with
 A sample run: it shows what the command does and gives no result.
 API key
 About the whole record
@@ -77,6 +78,7 @@ Configure a gateway
 Confirm
 Confirm disabling
 Connect a project
+Connected projects
 Continue
 Continues on its own
 Contract
@@ -148,6 +150,7 @@ Keep the sign-in waiting?
 Keep waiting
 Kept on the host only and never shown again.
 KiB
+Last contact
 Layout file to import
 Layout name
 Layouts
@@ -177,6 +180,7 @@ No
 No agent runtime is open.
 No asks to show.
 No connected host runs agents in this place.
+No connected projects
 No endpoint is serving this share.
 No gateway is configured yet.
 No install line was issued in the last 30 days.
@@ -188,6 +192,7 @@ No saved accounts yet
 No share uses this gateway.
 No terminal signed in to this folder yet.
 Not filled in yet: {{ revision.missingFields.join(', ') }}
+Not in contact yet
 Not run yet.
 Not shared yet
 Nothing is open in this pane.
@@ -300,6 +305,7 @@ Shared with it
 Shares
 Show its connection
 Show more comments
+Show more folders
 Show older attempts
 Show or hide the sidebar
 Show the account
@@ -320,10 +326,12 @@ Split below
 Split right
 Split this pane in two?
 Stacked
+Start
 Start again
 Started
 Starting the new session
 State
+Status
 Status: {{ part.lifecycle }}, ended by {{ part.end }}
 Still to do: {{ data.steps.join('; ') }}
 Stopping the old session
@@ -333,6 +341,7 @@ Switched
 Switching
 System
 Terminal
+Terminal access
 Terminal access ({{ signIns.length }})
 Tests and checks
 That conversation belongs to another agent.
@@ -354,6 +363,7 @@ This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
 This is not available.
 This journal is not issuing install lines.
+This list could not be read again, so what it shows may be out of date.
 This machine and the share service must keep running for the link to work.
 This page could not be refreshed.
 This profile does not allow that model.
@@ -414,6 +424,7 @@ executable parts
 exit %s: %s when %s
 expected
 from its sign-in.
+in the folder
 in the list.
 in {{ problem.stream }} bytes {{ problem.start }} to {{ problem.end }}:
 is saved as a {{ driverName(driver) }} account.
@@ -445,7 +456,6 @@ tools
 unresolved
 until {{ dateTime(signIn.expiresAt) }}
 updated {{ seconds(ageSeconds()) }} ago
-{{ binding.projectLabel }} on {{ binding.machineLabel }}
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
 {{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.

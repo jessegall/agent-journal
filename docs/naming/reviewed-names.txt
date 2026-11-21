@@ -512,8 +512,10 @@ case	LaunchCandidateRank::OtherPurpose
 case	LaunchCandidateRank::SamePurpose
 case	LaunchProfileType::ProtectedAccount
 case	LaunchProfileType::Standard
+case	LayoutTag::Action
 case	LayoutTag::Box
 case	LayoutTag::Collection
+case	LayoutTag::Field
 case	LayoutTag::Notice
 case	LayoutTag::Text
 case	LifecycleStage::Enter
@@ -1741,14 +1743,19 @@ class	BindingDefinition
 class	BindingDefinitionScan
 class	BindingFolder
 class	BindingHosts
+class	BindingListData
 class	BindingOutcome
 class	BindingPresenceController
+class	BindingProviderData
 class	BindingRevocation
 class	BindingRevoked
 class	BindingRules
 class	BindingRuntimeController
 class	BindingRuntimeRequestData
+class	BindingStart
+class	BindingStartRecorded
 class	BindingStartRefused
+class	BindingStatusController
 class	BindingUnrecoverable
 class	BlockBody
 class	BlockOperand
@@ -2379,6 +2386,7 @@ class	DeviceGrantRefused
 class	DeviceGrantStart
 class	DeviceOverview
 class	DeviceOverviews
+class	DevicePollOutcome
 class	DirectDestinations
 class	DirectFileAccess
 class	DisableAutoAssignment
@@ -3186,7 +3194,9 @@ class	LaunchLimits
 class	LaunchProfileKey
 class	LaunchProfiles
 class	Layout
+class	LayoutActionData
 class	LayoutData
+class	LayoutFieldData
 class	LayoutLimits
 class	LayoutPartData
 class	LayoutRefused
@@ -4027,6 +4037,7 @@ class	ProvedClaimRelease
 class	ProvedClaims
 class	ProvenBranch
 class	ProvenSkillRead
+class	ProviderEligibility
 class	ProviderKey
 class	ProviderKeyInvalid
 class	Providers
@@ -4246,6 +4257,8 @@ class	RecordAccountNoticeHandler
 class	RecordAttemptEnded
 class	RecordBindingPresence
 class	RecordBindingPresenceHandler
+class	RecordBindingStart
+class	RecordBindingStartHandler
 class	RecordCalls
 class	RecordCard
 class	RecordChanges
@@ -6181,6 +6194,7 @@ constant	BindingRules::BINDING_METHODS
 constant	BindingRules::PER_REQUEST_VALUES
 constant	BindingRules::SCOPED_METHODS
 constant	BindingRules::SINGLETON_METHODS
+constant	BindingStart::UPDATED_AT
 constant	BoundaryChecker::SHARED_NAMESPACES
 constant	BoundaryChecker::SHARED_PLACE
 constant	BuiltInAuthorizations::ORIENTATION_READS
@@ -6310,6 +6324,8 @@ constant	DeviceGrant::POLL_SECONDS_MINIMUM
 constant	DeviceGrant::REFERENCE_LETTERS
 constant	DeviceGrant::SCOPES
 constant	DeviceOverviews::TASK_LIMIT
+constant	DevicePollOutcome::ISSUED
+constant	DevicePollOutcome::PENDING
 constant	DirectFileAccess::WAITING_LIST
 constant	DockCard::BYTE_LIMIT
 constant	DockCard::NODE_LIMIT
@@ -6480,6 +6496,7 @@ constant	LaunchLimits::PASS_LIMIT
 constant	LayoutLimits::DEPTH_LIMIT
 constant	LayoutLimits::PART_LIMIT
 constant	LayoutLimits::ROW_LIMIT
+constant	LayoutPartData::TONES
 constant	LibraryWindowResolver::SHARING_NOTICE
 constant	LifecycleCommands::MAXIMUM
 constant	LimitMcpMessage::BYTE_LIMIT
@@ -6646,6 +6663,7 @@ constant	ProfileStartPolicy::WORKSPACE
 constant	Profiles::TYPE
 constant	Profiles::VERSION
 constant	ProfilesUnavailable::CODE
+constant	ProjectBinding::PAGE_LIMIT
 constant	ProjectBinding::PRESENCE_SECONDS
 constant	ProjectInvitation::LIFETIME_MINUTES
 constant	PropertyRules::LOOKUP_RULES
@@ -9398,8 +9416,10 @@ method	BindingDefinitionScan::findingsIn()
 method	BindingDefinitionScan::key()
 method	BindingFolder::__construct()
 method	BindingHosts::liveBindingOf()
+method	BindingListData::__construct()
 method	BindingOutcome::__construct()
 method	BindingPresenceController::__invoke()
+method	BindingProviderData::__construct()
 method	BindingRevocation::revoke()
 method	BindingRevoked::forAgent()
 method	BindingRevoked::refusalCode()
@@ -9422,17 +9442,24 @@ method	BindingRules::providerDefinitions()
 method	BindingRules::violations()
 method	BindingRules::violationsOf()
 method	BindingRuntimeController::__invoke()
+method	BindingRuntimeController::answer()
 method	BindingRuntimeRequestData::__construct()
 method	BindingRuntimeRequestData::asBindingStart()
 method	BindingRuntimeRequestData::asMainRuntime()
+method	BindingStart::casts()
+method	BindingStart::create()
+method	BindingStart::ofBinding()
+method	BindingStartRecorded::__construct()
 method	BindingStartRefused::environmentUnassigned()
 method	BindingStartRefused::incompatible()
 method	BindingStartRefused::notTheHost()
 method	BindingStartRefused::notTheMainAgent()
 method	BindingStartRefused::notTheRoot()
 method	BindingStartRefused::otherProjectsEnvironment()
+method	BindingStartRefused::providerUnavailable()
 method	BindingStartRefused::refusalCode()
 method	BindingStartRefused::status()
+method	BindingStatusController::__invoke()
 method	BindingUnrecoverable::generic()
 method	BindingUnrecoverable::refusalCode()
 method	BindingUnrecoverable::status()
@@ -10809,7 +10836,9 @@ method	ConnectProjectWindowData::__construct()
 method	ConnectProjectWindowResolver::__construct()
 method	ConnectProjectWindowResolver::approverOf()
 method	ConnectProjectWindowResolver::attemptsCursor()
+method	ConnectProjectWindowResolver::bindingList()
 method	ConnectProjectWindowResolver::bindingRows()
+method	ConnectProjectWindowResolver::bindingsCursor()
 method	ConnectProjectWindowResolver::read()
 method	ConnectedProject::__construct()
 method	ConnectedProject::contains()
@@ -11415,7 +11444,6 @@ method	DeviceGrant::create()
 method	DeviceGrant::environment()
 method	DeviceGrant::isApproved()
 method	DeviceGrant::isCodeExpired()
-method	DeviceGrant::isPending()
 method	DeviceGrant::issue()
 method	DeviceGrant::listedOfBindings()
 method	DeviceGrant::lockByDeviceCode()
@@ -11435,7 +11463,6 @@ method	DeviceGrantController::poll()
 method	DeviceGrantController::start()
 method	DeviceGrantRefused::alreadyIssued()
 method	DeviceGrantRefused::approverWithdrawn()
-method	DeviceGrantRefused::awaitingApproval()
 method	DeviceGrantRefused::details()
 method	DeviceGrantRefused::expired()
 method	DeviceGrantRefused::notUsable()
@@ -11448,6 +11475,8 @@ method	DeviceGrantStart::__construct()
 method	DeviceOverview::__construct()
 method	DeviceOverviews::__construct()
 method	DeviceOverviews::of()
+method	DevicePollOutcome::__construct()
+method	DevicePollOutcome::isPending()
 method	DirectDestinations::__construct()
 method	DirectDestinations::assignee()
 method	DirectDestinations::inbox()
@@ -13404,6 +13433,7 @@ method	HookDriver::driverKey()
 method	HookDriver::hookCommand()
 method	HookDriver::hostName()
 method	HookDriver::isSignInAddress()
+method	HookDriver::isolatesHooksPerSession()
 method	HookDriver::journalToolRules()
 method	HookDriver::keepsOutputsBesideTranscript()
 method	HookDriver::modelArguments()
@@ -13481,6 +13511,7 @@ method	Host::containedProtectionOf()
 method	Host::create()
 method	Host::declares()
 method	Host::declaresCombination()
+method	Host::declaresDriver()
 method	Host::forSecret()
 method	Host::hashOf()
 method	Host::isRevoked()
@@ -13529,6 +13560,7 @@ method	HostCapacityLock::holdUntilCommit()
 method	HostCombination::__construct()
 method	HostCombination::stored()
 method	HostCombinationData::__construct()
+method	HostCombinationData::combination()
 method	HostCombinationsData::__construct()
 method	HostCombinationsData::combinations()
 method	HostContext::__construct()
@@ -14064,17 +14096,28 @@ method	LaunchProfiles::trialOf()
 method	Layout::casts()
 method	Layout::create()
 method	Layout::saveNameAndShape()
+method	LayoutActionData::__construct()
+method	LayoutActionData::changing()
+method	LayoutActionData::to()
+method	LayoutActionData::unavailable()
 method	LayoutData::__construct()
+method	LayoutFieldData::__construct()
 method	LayoutPartData::__construct()
+method	LayoutPartData::action()
+method	LayoutPartData::assertBindings()
 method	LayoutPartData::assertTagAccepts()
 method	LayoutPartData::assertWithinCatalogue()
+method	LayoutPartData::badge()
 method	LayoutPartData::box()
 method	LayoutPartData::collection()
+method	LayoutPartData::field()
 method	LayoutPartData::notice()
 method	LayoutPartData::text()
+method	LayoutRefused::bindingMismatch()
 method	LayoutRefused::childrenNotAllowed()
 method	LayoutRefused::emptyKey()
 method	LayoutRefused::siblingKeyRepeated()
+method	LayoutRefused::toneNotAllowed()
 method	LayoutRefused::tooDeep()
 method	LayoutRefused::tooManyParts()
 method	LayoutRefused::tooManyRows()
@@ -16214,7 +16257,9 @@ method	PreparedStart::__construct()
 method	PreparedStart::hostDriver()
 method	PresencePolicy::model()
 method	PresenceReceipt::__construct()
+method	PresenceReceipt::toArray()
 method	PresenceRefused::anotherBootIsLive()
+method	PresenceRefused::notReadableBy()
 method	PresenceRefused::notTheHost()
 method	PresenceRefused::refusalCode()
 method	PresenceRefused::status()
@@ -16676,22 +16721,25 @@ method	ProjectBinding::assignEnvironment()
 method	ProjectBinding::authorityGenerationOf()
 method	ProjectBinding::casts()
 method	ProjectBinding::create()
+method	ProjectBinding::eligibilityOf()
+method	ProjectBinding::environment()
 method	ProjectBinding::hasLivePresenceAt()
 method	ProjectBinding::host()
 method	ProjectBinding::isEnvironmentUnassigned()
 method	ProjectBinding::isMainAgentOfRevokedBinding()
 method	ProjectBinding::isReportableBy()
 method	ProjectBinding::isRootOf()
-method	ProjectBinding::listed()
 method	ProjectBinding::liveIdOfLocalHost()
 method	ProjectBinding::lockById()
 method	ProjectBinding::mainAgent()
+method	ProjectBinding::ofHost()
 method	ProjectBinding::ofHostByNonce()
 method	ProjectBinding::ofMainAgent()
+method	ProjectBinding::pageAfter()
+method	ProjectBinding::presenceReceipt()
 method	ProjectBinding::project()
 method	ProjectBinding::readinessAt()
 method	ProjectBinding::readinessOf()
-method	ProjectBinding::receipt()
 method	ProjectBinding::recordPresence()
 method	ProjectBinding::revoke()
 method	ProjectBindingCreated::__construct()
@@ -16700,6 +16748,8 @@ method	ProjectBindingReadinessChanged::__construct()
 method	ProjectBindingRevoked::__construct()
 method	ProjectBindingRowData::__construct()
 method	ProjectBindingRowData::fromBinding()
+method	ProjectBindingRowData::providersOf()
+method	ProjectBindingRowData::stateTextOf()
 method	ProjectCommandFrame::__construct()
 method	ProjectCommandFrames::__construct()
 method	ProjectCommandFrames::ofFrames()
@@ -16883,6 +16933,10 @@ method	ProvenSkillRead::journalShow()
 method	ProvenSkillRead::of()
 method	ProvenSkillRead::shellRead()
 method	ProvenSkillRead::skillTool()
+method	ProviderEligibility::__construct()
+method	ProviderEligibility::eligible()
+method	ProviderEligibility::isEligible()
+method	ProviderEligibility::unavailable()
 method	ProviderKey::__construct()
 method	ProviderKey::__toString()
 method	ProviderKey::from()
@@ -17487,6 +17541,8 @@ method	RecordAttemptEnded::__construct()
 method	RecordAttemptEnded::handle()
 method	RecordBindingPresence::__construct()
 method	RecordBindingPresenceHandler::handle()
+method	RecordBindingStart::__construct()
+method	RecordBindingStartHandler::handle()
 method	RecordCalls::__construct()
 method	RecordCalls::addLink()
 method	RecordCalls::removeLink()
@@ -23646,6 +23702,7 @@ parameter	$currentContext
 parameter	$currentNumber
 parameter	$currentPhase
 parameter	$currentPhaseTitle
+parameter	$currentRelease
 parameter	$currentRevision
 parameter	$currentSessionId
 parameter	$currentSettings
@@ -24090,6 +24147,7 @@ parameter	$helpers
 parameter	$hereDocument
 parameter	$hidden
 parameter	$highlight
+parameter	$hint
 parameter	$historical
 parameter	$hit
 parameter	$hits
@@ -24797,6 +24855,7 @@ parameter	$prepared
 parameter	$preparer
 parameter	$prerequisites
 parameter	$presence
+parameter	$presenceExpiresAt
 parameter	$presenceLabel
 parameter	$presenceSeconds
 parameter	$presences
@@ -24995,6 +25054,7 @@ parameter	$reflection
 parameter	$reflections
 parameter	$reflectorOf
 parameter	$reflectors
+parameter	$refreshAt
 parameter	$refusal
 parameter	$refusalCode
 parameter	$refusalCodes
@@ -25409,6 +25469,7 @@ parameter	$staleScreen
 parameter	$stalledStep
 parameter	$start
 parameter	$startAccounts
+parameter	$startCommand
 parameter	$startEnvironment
 parameter	$startFlags
 parameter	$startId
@@ -25434,6 +25495,7 @@ parameter	$state
 parameter	$stateClass
 parameter	$stateLabel
 parameter	$statePush
+parameter	$stateText
 parameter	$stateType
 parameter	$stateVersion
 parameter	$statement
@@ -25707,6 +25769,7 @@ parameter	$value	app/Settings/Casts/SettingsDocumentCast.php
 parameter	$value	app/Sharing/Casts/GatewaySettingsCast.php
 parameter	$value	app/Sharing/Casts/SelectedTargetsCast.php
 parameter	$value	app/Skills/Casts/SkillSectionsCast.php
+parameter	$value	app/Ui/Layout/LayoutFieldData.php
 parameter	$value	app/Ui/Layout/LayoutPartData.php
 parameter	$value	app/Ui/Layout/LayoutRowData.php
 parameter	$valueClass
@@ -26433,6 +26496,7 @@ property	AskTypeKey::$key
 property	AskTypeRegistry::$types
 property	AssertBindingStart::$agentId
 property	AssertBindingStart::$bindingId
+property	AssertBindingStart::$driver
 property	AssertBindingStart::$folder
 property	AssertBindingStart::$hostId
 property	AssertBindingStart::$rootId
@@ -26727,8 +26791,17 @@ property	BindingFolder::$canonicalRoot
 property	BindingFolder::$installationNonce
 property	BindingFolder::$machineLabel
 property	BindingFolder::$rootId
+property	BindingListData::$nextCursor
+property	BindingListData::$refreshAt
+property	BindingListData::$rows
+property	BindingListData::$serverTime
 property	BindingOutcome::$id
 property	BindingOutcome::$result
+property	BindingProviderData::$canStart
+property	BindingProviderData::$driver
+property	BindingProviderData::$label
+property	BindingProviderData::$startCommand
+property	BindingProviderData::$unavailableReason
 property	BindingRules::$files
 property	BindingRules::$owners
 property	BindingRuntimeRequestData::$agentId
@@ -26738,6 +26811,11 @@ property	BindingRuntimeRequestData::$folder
 property	BindingRuntimeRequestData::$model
 property	BindingRuntimeRequestData::$profile
 property	BindingRuntimeRequestData::$rootId
+property	BindingRuntimeRequestData::$startId
+property	BindingStartRecorded::$bindingId
+property	BindingStartRecorded::$occurredAt
+property	BindingStartRecorded::$runtimeId
+property	BindingStartRecorded::$startId
 property	BlockBody::$decision
 property	BlockBody::$reason
 property	BlockOperand::$condition
@@ -27816,6 +27894,8 @@ property	DeviceOverview::$environmentLabel
 property	DeviceOverview::$projectLabel
 property	DeviceOverview::$tasks
 property	DeviceOverviews::$tasks
+property	DevicePollOutcome::$outcome
+property	DevicePollOutcome::$reference
 property	DirectDestinations::$actor
 property	DirectDestinations::$holder
 property	DirectDestinations::$inboxes
@@ -29350,17 +29430,25 @@ property	LaunchProfileKey::$key
 property	LaunchProfiles::$arrangement
 property	LaunchProfiles::$capabilities
 property	LaunchProfiles::$trialDrivers
+property	LayoutActionData::$href
+property	LayoutActionData::$query
+property	LayoutActionData::$reason
 property	LayoutData::$id
 property	LayoutData::$name
 property	LayoutData::$shape
+property	LayoutFieldData::$name
+property	LayoutFieldData::$value
+property	LayoutPartData::$action
 property	LayoutPartData::$children
 property	LayoutPartData::$detail
+property	LayoutPartData::$field
 property	LayoutPartData::$key
 property	LayoutPartData::$rows
 property	LayoutPartData::$size
 property	LayoutPartData::$style
 property	LayoutPartData::$tag
 property	LayoutPartData::$text
+property	LayoutPartData::$tone
 property	LayoutRowData::$key
 property	LayoutRowData::$label
 property	LayoutRowData::$value
@@ -30692,10 +30780,13 @@ property	PresenceReceipt::$authorityGeneration
 property	PresenceReceipt::$bindingId
 property	PresenceReceipt::$expiresAt
 property	PresenceReceipt::$generation
+property	PresenceReceipt::$lastContactAt
+property	PresenceReceipt::$readiness
 property	PresenceReceipt::$serverTime
 property	PresenceReceipt::$setupGeneration
 property	PresenceRefused::$status
 property	PresenceReport::$bootId
+property	PresenceReport::$combinations
 property	PresenceReport::$isProvisioned
 property	PresenceReport::$protocol
 property	PresenceReport::$release
@@ -30927,12 +31018,18 @@ property	ProjectBindingReadinessChanged::$readiness
 property	ProjectBindingRevoked::$authorityGeneration
 property	ProjectBindingRevoked::$bindingId
 property	ProjectBindingRevoked::$occurredAt
+property	ProjectBindingRowData::$capabilities
+property	ProjectBindingRowData::$environmentId
+property	ProjectBindingRowData::$environmentLabel
 property	ProjectBindingRowData::$id
 property	ProjectBindingRowData::$lastContactAt
 property	ProjectBindingRowData::$machineLabel
+property	ProjectBindingRowData::$presenceExpiresAt
+property	ProjectBindingRowData::$projectId
 property	ProjectBindingRowData::$projectLabel
 property	ProjectBindingRowData::$signIns
 property	ProjectBindingRowData::$state
+property	ProjectBindingRowData::$stateText
 property	ProjectCommandFrame::$exitCode
 property	ProjectCommandFrame::$isBase64
 property	ProjectCommandFrame::$sequence
@@ -31101,6 +31198,8 @@ property	ProvenBranch::$processRunId
 property	ProvenBranch::$status
 property	ProvenSkillRead::$evidence
 property	ProvenSkillRead::$skillKey
+property	ProviderEligibility::$driver
+property	ProviderEligibility::$unavailableReason
 property	ProviderKey::$key
 property	Providers::$keys
 property	ProvisionActorDesk::$actor
@@ -31465,6 +31564,10 @@ property	RecordAttemptEnded::$journal
 property	RecordBindingPresence::$bindingId
 property	RecordBindingPresence::$hostId
 property	RecordBindingPresence::$report
+property	RecordBindingStart::$bindingId
+property	RecordBindingStart::$runtimeId
+property	RecordBindingStart::$sessionId
+property	RecordBindingStart::$startId
 property	RecordCalls::$sender
 property	RecordCard::$abstract
 property	RecordCard::$id
@@ -35503,6 +35606,7 @@ variable	$effect
 variable	$effects
 variable	$elapsedMicroseconds
 variable	$elapsedSinceBaseline
+variable	$eligibility
 variable	$eligible
 variable	$elseLine
 variable	$email
@@ -35573,6 +35677,7 @@ variable	$expansion
 variable	$expected
 variable	$expired
 variable	$expiresAt
+variable	$expiries
 variable	$expiry
 variable	$explanation
 variable	$exportGroup
@@ -35689,6 +35794,7 @@ variable	$hasMorePhases
 variable	$hasParentheses
 variable	$hasRuntime
 variable	$hasSeenSubject
+variable	$hasTone
 variable	$hash
 variable	$hashed
 variable	$hasher
@@ -35770,10 +35876,12 @@ variable	$interface
 variable	$invalid
 variable	$invitation
 variable	$isAccount
+variable	$isAction
 variable	$isAllowed
 variable	$isApplicationCode
 variable	$isArray
 variable	$isBacktick
+variable	$isBadge
 variable	$isBareEsac
 variable	$isCall
 variable	$isCallOnThis
@@ -35791,6 +35899,7 @@ variable	$isDirectoryRemoved
 variable	$isExpanded
 variable	$isExportedUiEvent
 variable	$isFacade
+variable	$isField
 variable	$isFirstLine
 variable	$isForeignUndeclared
 variable	$isFull
@@ -36230,6 +36339,7 @@ variable	$policies
 variable	$policy
 variable	$policyOwner
 variable	$poll
+variable	$polled
 variable	$pool
 variable	$pools
 variable	$port

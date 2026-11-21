@@ -111,7 +111,7 @@ final class BindingPresenceTest extends TestCase
         $this->report(self::NONCE, $binding, 'boot-1', 1)->assertOk();
         $before = ProjectBinding::query()->findOrFail($binding);
 
-        $status = $this->status(self::NONCE, $binding)->assertOk();
+        $status = $this->readStatus(self::NONCE, $binding)->assertOk();
 
         $after = ProjectBinding::query()->findOrFail($binding);
         $this->assertSame('ready', $status->json('readiness'));
@@ -125,10 +125,10 @@ final class BindingPresenceTest extends TestCase
         $binding = $this->connected(self::NONCE);
         $this->connected('nonce-bbbbbbbbbbbbbbbb');
 
-        $this->status('nonce-bbbbbbbbbbbbbbbb', $binding)->assertForbidden();
+        $this->readStatus('nonce-bbbbbbbbbbbbbbbb', $binding)->assertForbidden();
     }
 
-    private function status(string $nonce, string $binding): TestResponse
+    private function readStatus(string $nonce, string $binding): TestResponse
     {
         return $this->signedRelayCall(
             $this->relayCredential($nonce),
