@@ -7,8 +7,11 @@ import type { IconName } from './Icon.vue';
  * Version 5's flush icon button with its tooltip: a 24 px square in one quiet grey, a slight fill on hover, and its
  * tip, with a small pointer toward the button, shown on hover or keyboard focus after a short delay, above the button
  * or to its left where above would leave its container. The label says the whole action for a screen reader; the
- * icon may draw smaller inside the same square.
+ * icon may draw smaller inside the same square. Every other attribute, a click or disabled among them, belongs to the
+ * button, not to the box around it.
  */
+defineOptions({ inheritAttrs: false });
+
 withDefaults(
     defineProps<{
         icon: IconName;
@@ -25,6 +28,7 @@ withDefaults(
 <template>
     <span class="group/tip relative inline-flex">
         <Button
+            v-bind="$attrs"
             variant="icon"
             :aria-label="label"
             :aria-pressed="isPressed === undefined ? undefined : isPressed"
