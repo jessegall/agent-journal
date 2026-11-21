@@ -13,7 +13,7 @@ use Illuminate\Container\Container;
  * keeps it and the other reads it. An event source's inserted row opens its slot in the unit, so its constructor
  * raises its fact only then.
  */
-trait InsertsIfAbsent
+trait InsertsAbsentRows
 {
     /**
      * Inserts this new row unless its key is taken, and answers whether it did. The insert reads nothing, so no read

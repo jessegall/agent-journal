@@ -118,7 +118,7 @@ final class ConditionalReviewStateTest extends TestCase
         $this->assertTrue($first->isEnabled());
         $this->assertSame(3, $first->retryLimit());
 
-        SettingsRecord::insertIfAbsent('Reviews');
+        SettingsRecord::makeEmptyFor('Reviews');
         $record = SettingsRecord::sharedRuntimeForOwner('Reviews')->get();
         $record->revise($record->document->withToggle(new EncodedToggle('review', EncodedValue::of(false))));
 

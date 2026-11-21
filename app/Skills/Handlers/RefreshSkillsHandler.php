@@ -18,6 +18,7 @@ use App\Skills\Resolvers\SkillCatalogue;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\ConditionTree;
+use App\Skills\Support\SkillPublications;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
@@ -41,6 +42,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         private SkillSelection $selection,
         private SkillTargets $targets,
         private ProgramSkillAdapters $adapters,
+        private SkillPublications $publications,
     ) {}
 
     public function handle(RefreshSkills $command): RefreshResult
@@ -125,7 +127,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
             );
         }
 
-        return count(SkillPublication::intendMany($generation, $intents));
+        return count($this->publications->intendMany($generation, $intents));
     }
 
     /**

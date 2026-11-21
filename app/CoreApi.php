@@ -554,6 +554,7 @@ use App\Contracts\EventSource;
 use App\Contracts\Exceptions\RowWriteRefused;
 use App\Contracts\Listener;
 use App\Contracts\ListenerFailureLog;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Contracts\Support\RaisesEvents;
 use App\Desks\Commands\CreateDesk;
 use App\Desks\Commands\InstallDesks;
@@ -2364,6 +2365,7 @@ final class CoreApi
             )
             ->support(
                 RaisesEvents::class,
+                InsertsAbsentRows::class,
                 BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,

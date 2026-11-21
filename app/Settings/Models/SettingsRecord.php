@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Settings\Models;
 
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Settings\Casts\SettingsDocumentCast;
 use App\Settings\Storage\SettingsDocument;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -36,6 +36,7 @@ final class SettingsRecord extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -55,18 +56,14 @@ final class SettingsRecord extends Model implements ReadableModel
      * Makes the owner's empty record at revision 0 in one insert that does nothing when it exists, so the unique owner
      * key decides between two writers without aborting the transaction.
      */
-    public static function insertIfAbsent(string $owner): void
+    public static function makeEmptyFor(string $owner): void
     {
-        $now = CarbonImmutable::now();
-
-        self::query()->insertOrIgnore([
-            'id' => new self()->newUniqueId(),
-            'owner' => $owner,
-            'revision' => 0,
-            'document' => SettingsDocument::empty()->toJson(),
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
+        $record = new self();
+        $record->setAttribute($record->getKeyName(), $record->newUniqueId());
+        $record->owner = $owner;
+        $record->revision = 0;
+        $record->document = SettingsDocument::empty();
+        $record->insertIfAbsent();
     }
 
     // ----------[ Queries ]----------

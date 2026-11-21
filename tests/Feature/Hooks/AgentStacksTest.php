@@ -250,7 +250,7 @@ final class AgentStacksTest extends TestCase
 
     public function test_a_push_of_a_switched_off_domains_state_is_declined_without_reading_its_subject(): void
     {
-        SettingsRecord::insertIfAbsent('Core');
+        SettingsRecord::makeEmptyFor('Core');
         $core = SettingsRecord::sharedRuntimeForOwner('Core')->get();
         $core->revise($core->document->withToggle(new EncodedToggle('domain_plans', EncodedValue::of(false))));
         $this->createStack();

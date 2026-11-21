@@ -28,7 +28,8 @@ final readonly class RestoreSkillHandler implements CommandHandler
             $skill->assertWritableAt($command->expectedRevision);
             $earlier = SkillRevision::numbered($skill, $command->revision);
 
-            return $skill->restoreFrom(
+            return $this->writes->restoreFrom(
+                $skill,
                 $earlier,
                 $this->writes->checkedCondition($skill->key, $earlier->draft()),
                 $this->writes->author(),

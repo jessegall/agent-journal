@@ -7,6 +7,7 @@ namespace Tests\Support\Skills;
 use App\Skills\Enums\GenerationState;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
+use App\Skills\Support\SkillPublications;
 use Tests\Support\TestIds;
 
 /**
@@ -33,7 +34,7 @@ trait IntendsSkillPublications
             ],
         ], null);
 
-        return SkillPublication::intend(
+        return $this->app->make(SkillPublications::class)->intend(
             TestIds::of(1),
             'claude-code',
             $this->target(),

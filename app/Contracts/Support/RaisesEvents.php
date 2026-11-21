@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait RaisesEvents
 {
-    use InsertsIfAbsent;
+    use InsertsAbsentRows;
 
     /**
      * @var list<Event>

@@ -28,7 +28,7 @@ final readonly class RequiredDrain
      */
     public function applyRequired(EventUnit $unit): void
     {
-        $unit->pump(function () use ($unit): void {
+        $unit->runUnlessDraining(function () use ($unit): void {
             $unit->seal();
 
             while ($unit->hasPending()) {

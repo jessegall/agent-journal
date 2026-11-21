@@ -8,8 +8,11 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Comments\Data\CommentDetails;
 use App\Comments\Enums\WholeRecord;
+use App\Comments\Events\CommentPosted;
 use App\Comments\Exceptions\CommentAnchorCorrupt;
 use App\Comments\Exceptions\CommentImmutable;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -52,11 +55,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $created_at
  */
 #[Fillable(['body', 'submission_key', 'submission_hash'])]
-final class Comment extends Model implements ReadableModel, Shareable
+final class Comment extends Model implements EventSource, ReadableModel, Shareable
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.comment';
 
@@ -106,7 +110,8 @@ final class Comment extends Model implements ReadableModel, Shareable
             $comment->end_offset = $anchor->quote === '' ? null : $anchor->endOffset;
         }
 
-        $comment->save();
+        $comment->assertSaved($comment->save());
+        $comment->raise(new CommentPosted($comment->id, $comment->target()));
 
         return $comment;
     }

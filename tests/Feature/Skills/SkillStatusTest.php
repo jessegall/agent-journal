@@ -18,6 +18,7 @@ use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Resolvers\Support\SkillStatusResolver;
 use App\Skills\Support\HostSkillPublisher;
+use App\Skills\Support\SkillPublications;
 use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
 use Domain\Access\Support\AccessSettings;
@@ -141,7 +142,7 @@ final class SkillStatusTest extends TestCase
             'markdown' => $markdown,
             'digest' => hash('sha256', $markdown),
         ]], null);
-        $publication = SkillPublication::intend(
+        $publication = $this->app->make(SkillPublications::class)->intend(
             $session->id,
             'claude-code',
             "{$this->root}/targets/{$session->id}/claude-code",

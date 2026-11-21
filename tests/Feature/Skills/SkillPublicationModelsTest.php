@@ -10,7 +10,7 @@ use App\Skills\Exceptions\SkillGenerationImmutable;
 use App\Skills\Exceptions\SkillPublicationFailed;
 use App\Skills\Exceptions\SkillPublicationStale;
 use App\Skills\Models\SkillGeneration;
-use App\Skills\Models\SkillPublication;
+use App\Skills\Support\SkillPublications;
 use App\Skills\Values\PublicationManifest;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Schema;
@@ -45,7 +45,7 @@ final class SkillPublicationModelsTest extends TestCase
 
     public function test_a_publication_goes_from_pending_to_delivered_and_never_back_to_pending(): void
     {
-        $publication = SkillPublication::intend(
+        $publication = $this->app->make(SkillPublications::class)->intend(
             TestIds::of(1),
             'codex',
             '/work/.agents/skills',
@@ -76,7 +76,7 @@ final class SkillPublicationModelsTest extends TestCase
     public function test_an_older_fence_is_refused_and_a_new_intent_supersedes_the_open_one(): void
     {
         $generation = $this->generation();
-        $first = SkillPublication::intend(
+        $first = $this->app->make(SkillPublications::class)->intend(
             TestIds::of(1),
             'codex',
             '/work/.agents/skills',
@@ -94,7 +94,7 @@ final class SkillPublicationModelsTest extends TestCase
             $this->assertStringContainsString('a newer worker owns it', $refusal->getMessage());
         }
 
-        $second = SkillPublication::intend(
+        $second = $this->app->make(SkillPublications::class)->intend(
             TestIds::of(1),
             'codex',
             '/work/.agents/skills',
@@ -109,7 +109,7 @@ final class SkillPublicationModelsTest extends TestCase
 
     public function test_a_failed_publication_is_retried_with_the_same_generation(): void
     {
-        $publication = SkillPublication::intend(
+        $publication = $this->app->make(SkillPublications::class)->intend(
             TestIds::of(1),
             'codex',
             '/work/.agents/skills',

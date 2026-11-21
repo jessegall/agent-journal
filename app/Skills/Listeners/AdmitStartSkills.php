@@ -11,9 +11,9 @@ use App\Contracts\Listener;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Events\SessionSkillsIntended;
 use App\Skills\Models\SkillGeneration;
-use App\Skills\Models\SkillPublication;
 use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Resolvers\Support\SkillContextResolver;
+use App\Skills\Support\SkillPublications;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StartProgram;
@@ -33,6 +33,7 @@ final readonly class AdmitStartSkills implements Listener
         private SkillTargets $targets,
         private SkillResolver $skills,
         private Dispatcher $events,
+        private SkillPublications $publications,
     ) {}
 
     public function handle(SessionOpened $event): void
@@ -52,7 +53,7 @@ final readonly class AdmitStartSkills implements Listener
 
         $context = $this->contexts->forSession($session);
         $selected = $this->selection->select($this->skills->all(), $context);
-        $publication = SkillPublication::intend(
+        $publication = $this->publications->intend(
             $session->id,
             $program->key,
             $this->targets->targetFor($session->id, $program),

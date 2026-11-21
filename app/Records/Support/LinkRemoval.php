@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Links\Support;
+namespace App\Records\Support;
 
 use App\Bus\Contracts\CommandFacts;
 use App\Links\Events\LinksRemoved;
@@ -11,8 +11,9 @@ use App\Reads\Support\ReadBuilder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Removes links one at a time and tells LinksRemoved with their ids through the command's ordered stream, so what
- * rested on them ends in the same transaction; outside a command the fact is delivered at once.
+ * Removes links one at a time and tells LinksRemoved with their ids through the command's ordered stream, then runs
+ * its required listeners at once, so what rested on the links ends before the caller reads on; outside a command the
+ * fact is delivered at once.
  */
 final readonly class LinkRemoval
 {
@@ -67,5 +68,6 @@ final readonly class LinkRemoval
         }
 
         $this->facts->publishAfterCommit(new LinksRemoved($ids));
+        $this->facts->applyRequired();
     }
 }

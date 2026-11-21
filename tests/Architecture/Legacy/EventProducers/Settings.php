@@ -12,8 +12,7 @@ use Tests\Architecture\Support\EventRole;
  */
 return [
     SettingsChanged::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'SettingsRecord::revise',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Settings/Support/SettingsWriter.php',

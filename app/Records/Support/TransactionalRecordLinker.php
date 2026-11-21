@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Records\Support;
 
-use App\Links\Support\LinkRemoval;
 use App\Bus\Contracts\CommandTransaction;
 use App\Links\Models\Link;
 use App\Records\Contracts\RecordLinker;

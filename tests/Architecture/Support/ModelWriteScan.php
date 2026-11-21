@@ -40,7 +40,7 @@ final readonly class ModelWriteScan implements FileScan
     /**
      * The trait whose insert of a model's own new row the capture of an event source sees.
      */
-    public const string INSERTS_IF_ABSENT = 'App\Contracts\Support\InsertsIfAbsent';
+    public const string INSERTS_ABSENT_ROWS = 'App\Contracts\Support\InsertsAbsentRows';
 
     /**
      * The Eloquent calls that write a row, a relation or a pivot.

@@ -60,7 +60,7 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
             $commit();
             $unit->markReady();
             $this->units->close($connection);
-            $this->publication->committed($unit);
+            $this->publication->takeCommitted($unit);
 
             return $result;
         } catch (Throwable $failure) {
@@ -95,7 +95,7 @@ final readonly class EventUnitLifecycle implements CommandFacts, UnitOwner
         $unit = $active->get();
 
         try {
-            return $unit->deeper(function () use ($work, $unit): mixed {
+            return $unit->runNested(function () use ($work, $unit): mixed {
                 $result = $work();
                 $this->drain->applyRequired($unit);
 

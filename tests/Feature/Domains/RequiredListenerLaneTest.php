@@ -12,6 +12,7 @@ use App\Domains\Registration\ListenerPolicy;
 use App\Domains\Support\AvailableListener;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerOwnership;
+use App\Links\Events\LinksRemoved;
 use App\Pipelines\Contracts\PipelineRunner;
 use App\Profiles\Events\SignInAttemptFinished;
 use App\Profiles\Listeners\ReleaseSignInWriter;
@@ -56,12 +57,12 @@ final class RequiredListenerLaneTest extends TestCase
         }
     }
 
-    public function test_the_application_requires_the_sign_in_writer_release_and_the_task_and_sequence_start_work(): void
+    public function test_the_application_requires_only_the_listeners_plan_40_moved_so_far(): void
     {
         $registry = $this->app->make(RequiredListenerRegistry::class);
 
         $this->assertEqualsCanonicalizing(
-            [TaskStarted::class, SignInAttemptFinished::class, SequenceStarted::class],
+            [TaskStarted::class, SignInAttemptFinished::class, SequenceStarted::class, LinksRemoved::class],
             $registry->events(),
         );
         $this->assertSame(

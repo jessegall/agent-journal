@@ -14,6 +14,6 @@ final readonly class ProvedClaimRelease implements ClaimRelease
 {
     public function releaseAuthorizedBy(AssignmentReference $source): void
     {
-        AssignmentRecord::releaseClaimsFor($source);
+        AssignmentRecord::claimsProvedBy($source)->delete();
     }
 }

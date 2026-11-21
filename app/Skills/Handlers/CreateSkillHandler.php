@@ -39,11 +39,12 @@ final readonly class CreateSkillHandler implements CommandHandler
             $condition = $this->writes->checkedCondition($key->key, $draft);
             $author = $this->writes->author();
 
-            return Skill::create(
-                $key,
+            return $this->writes->appendRevision(
+                Skill::create($key, $author, SkillContextResolver::ENVIRONMENT),
+                $draft,
+                $condition,
                 $author,
-                SkillContextResolver::ENVIRONMENT,
-            )->appendRevision($draft, $condition, $author);
+            );
         });
     }
 }

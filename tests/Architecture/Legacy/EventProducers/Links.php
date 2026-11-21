@@ -12,11 +12,10 @@ use Tests\Architecture\Support\EventRole;
  */
 return [
     LinksRemoved::class => [
-        'role' => EventRole::RowFact,
-        'owner' => 'Link::removeAll',
+        'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Links/Models/Link.php',
+            'app/Records/Support/LinkRemoval.php',
         ],
     ],
 ];

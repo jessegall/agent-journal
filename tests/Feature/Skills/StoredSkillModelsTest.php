@@ -12,6 +12,7 @@ use App\Skills\Models\SkillRequest;
 use App\Skills\Models\SkillRevision;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\ConditionTree;
+use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillKey;
@@ -45,8 +46,14 @@ final class StoredSkillModelsTest extends TestCase
     public function test_revisions_append_in_order_keep_their_content_and_refuse_updates(): void
     {
         $skill = Skill::create(SkillKey::from('user-review-notes'), $this->author(), SkillContextResolver::ENVIRONMENT);
-        $first = $skill->appendRevision($this->draft('First.'), Conditions::everyone(), $this->author());
-        $second = $skill->appendRevision($this->draft('Second.'), Conditions::dispatchesWork(), $this->author());
+        $writes = $this->writes();
+        $first = $writes->appendRevision($skill, $this->draft('First.'), Conditions::everyone(), $this->author());
+        $second = $writes->appendRevision(
+            $skill,
+            $this->draft('Second.'),
+            Conditions::dispatchesWork(),
+            $this->author(),
+        );
 
         $this->assertSame([1, 2], [$first->revision, $second->revision]);
         $this->assertSame($second->id, $skill->current_revision_id);
@@ -56,7 +63,7 @@ final class StoredSkillModelsTest extends TestCase
             SkillRevision::currentOf($skill)->conditionThrough($this->app->make(ConditionTree::class))->toArray(),
         );
 
-        $restored = $skill->restoreFrom($first, Conditions::everyone(), $this->author());
+        $restored = $this->writes()->restoreFrom($skill, $first, Conditions::everyone(), $this->author());
         $this->assertSame(3, $restored->revision);
         $this->assertSame($first->input_digest, $restored->input_digest);
 
@@ -69,7 +76,12 @@ final class StoredSkillModelsTest extends TestCase
     public function test_a_request_id_remembers_its_input_digest_and_result(): void
     {
         $skill = Skill::create(SkillKey::from('user-review-notes'), $this->author(), null);
-        $revision = $skill->appendRevision($this->draft('First.'), Conditions::everyone(), $this->author());
+        $revision = $this->writes()->appendRevision(
+            $skill,
+            $this->draft('First.'),
+            Conditions::everyone(),
+            $this->author(),
+        );
         SkillRequest::create($this->author(), 'request-1', $this->draft('First.')->digest(), $revision);
 
         $earlier = SkillRequest::earlier($this->author(), 'request-1');
@@ -106,5 +118,10 @@ final class StoredSkillModelsTest extends TestCase
             [new SectionDraft('notes', 'Notes', $text)],
             '{"type":"everyone","version":1}',
         );
+    }
+
+    private function writes(): StoredSkillWrites
+    {
+        return $this->app->make(StoredSkillWrites::class);
     }
 }

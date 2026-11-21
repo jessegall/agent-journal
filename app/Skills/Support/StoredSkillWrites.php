@@ -7,7 +7,6 @@ namespace App\Skills\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Skills\Contracts\SkillCondition;
-use App\Skills\Events\SkillsChanged;
 use App\Skills\Exceptions\SkillRequestReused;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRequest;
@@ -16,7 +15,6 @@ use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillOwner;
 use App\Skills\Values\SkillRevisionResult;
 use Closure;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * What every stored skill write shares: the acting user, the replay of a request id it already answered, the check of a
@@ -30,7 +28,6 @@ final readonly class StoredSkillWrites
         private CurrentActor $actors,
         private ConditionTree $conditions,
         private CanonicalRenderer $renderer,
-        private Dispatcher $events,
     ) {}
 
     public function author(): ActorIdentity
@@ -59,9 +56,44 @@ final readonly class StoredSkillWrites
 
         $revision = $write();
         SkillRequest::create($author, $requestId, $inputDigest, $revision);
-        $this->events->dispatch(new SkillsChanged($revision->skill_id, $revision->revision));
 
         return $this->resultOf($revision, $requestId);
+    }
+
+    /**
+     * Writes the draft as the skill's next revision and makes it current.
+     */
+    public function appendRevision(
+        Skill $skill,
+        SkillDraft $draft,
+        SkillCondition $condition,
+        ActorIdentity $author,
+        string|null $sourceKey = null,
+        string|null $sourceDigest = null,
+    ): SkillRevision {
+        $revision = SkillRevision::create($skill, $draft, $condition, $author, $sourceKey, $sourceDigest);
+        $skill->makeCurrent($revision);
+
+        return $revision;
+    }
+
+    /**
+     * Appends an earlier revision's content as the next revision, with its condition checked again today.
+     */
+    public function restoreFrom(
+        Skill $skill,
+        SkillRevision $earlier,
+        SkillCondition $condition,
+        ActorIdentity $author,
+    ): SkillRevision {
+        return $this->appendRevision(
+            $skill,
+            $earlier->draft(),
+            $condition,
+            $author,
+            $earlier->source_key,
+            $earlier->source_digest,
+        );
     }
 
     /**

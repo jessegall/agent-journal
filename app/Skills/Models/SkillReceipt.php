@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Models;
 
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -29,6 +30,7 @@ final class SkillReceipt extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     public const string CREATED_AT = 'read_at';
@@ -61,15 +63,25 @@ final class SkillReceipt extends Model implements ReadableModel
         string $digest,
         ReadEvidence $evidence,
     ): self {
-        return self::query()->firstOrCreate(
-            [
-                'session_id' => $sessionId,
-                'context_epoch' => $epoch,
-                'skill_key' => $skillKey,
-                'content_digest' => $digest,
-            ],
-            ['evidence' => $evidence],
-        );
+        $receipt = new self([
+            'session_id' => $sessionId,
+            'context_epoch' => $epoch,
+            'skill_key' => $skillKey,
+            'content_digest' => $digest,
+            'evidence' => $evidence,
+        ]);
+        $receipt->setAttribute($receipt->getKeyName(), $receipt->newUniqueId());
+
+        if ($receipt->insertIfAbsent()) {
+            return $receipt;
+        }
+
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->where('context_epoch', $epoch)
+            ->where('skill_key', $skillKey)
+            ->where('content_digest', $digest)
+            ->sole();
     }
 
     /**

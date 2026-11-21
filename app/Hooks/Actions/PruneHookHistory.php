@@ -10,8 +10,8 @@ use App\Hooks\Models\StopResult;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\PrunedHistory;
 use App\Hooks\Support\RetentionPeriods;
-use App\Links\Support\LinkRemoval;
 use App\Reads\Support\ReadBuilder;
+use App\Records\Support\LinkRemoval;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 

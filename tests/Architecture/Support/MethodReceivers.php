@@ -142,13 +142,13 @@ final readonly class MethodReceivers
     public function receiverOf(Expr $expression): Receiver
     {
         return match (true) {
-            $expression instanceof Expr\Variable => $this->variable($expression),
-            $expression instanceof Expr\New_ => $this->made($expression),
-            $expression instanceof Expr\PropertyFetch => $this->property($expression->var),
-            $expression instanceof Expr\NullsafePropertyFetch => $this->property($expression->var),
-            $expression instanceof Expr\MethodCall => $this->chained($expression),
-            $expression instanceof Expr\NullsafeMethodCall => $this->chained($expression),
-            $expression instanceof Expr\StaticCall => $this->static($expression),
+            $expression instanceof Expr\Variable => $this->receiverOfVariable($expression),
+            $expression instanceof Expr\New_ => $this->receiverOfNew($expression),
+            $expression instanceof Expr\PropertyFetch => $this->receiverOfProperty($expression->var),
+            $expression instanceof Expr\NullsafePropertyFetch => $this->receiverOfProperty($expression->var),
+            $expression instanceof Expr\MethodCall => $this->receiverOfCall($expression),
+            $expression instanceof Expr\NullsafeMethodCall => $this->receiverOfCall($expression),
+            $expression instanceof Expr\StaticCall => $this->receiverOfStaticCall($expression),
             $expression instanceof Expr\BinaryOp\Coalesce => $this->receiverOf($expression->left),
             $expression instanceof Expr\Clone_ => $this->receiverOf($expression->expr),
             default => Receiver::unknown(),
@@ -160,12 +160,12 @@ final readonly class MethodReceivers
         return $variable instanceof Expr\Variable && is_string($variable->name) ? $variable->name : null;
     }
 
-    private function ownAs(ReceiverOrigin $origin): Receiver
+    private function ownReceiver(ReceiverOrigin $origin): Receiver
     {
         return new Receiver($origin, $this->type);
     }
 
-    private function variable(Expr\Variable $variable): Receiver
+    private function receiverOfVariable(Expr\Variable $variable): Receiver
     {
         $name = self::nameOf($variable);
 
@@ -174,20 +174,20 @@ final readonly class MethodReceivers
         }
 
         if ($name === 'this') {
-            return $this->ownAs(ReceiverOrigin::Own);
+            return $this->ownReceiver(ReceiverOrigin::Own);
         }
 
         $value = $this->lastValueOf($name, $variable->getStartFilePos());
 
         if ($value !== false) {
-            return $value === null ? Receiver::unknown() : $this->assigned($this->receiverOf($value), $value);
+            return $value === null ? Receiver::unknown() : $this->receiverAfterAssignment($this->receiverOf($value), $value);
         }
 
         $class = $this->parameterTypes[$name] ?? null;
 
         return match (true) {
             $class === null => Receiver::unknown(),
-            $this->isOwnClass($class) => $this->ownAs(ReceiverOrigin::OwnClass),
+            $this->isOwnClass($class) => $this->ownReceiver(ReceiverOrigin::OwnClass),
             default => new Receiver(ReceiverOrigin::OtherClass, $class),
         };
     }
@@ -196,13 +196,13 @@ final readonly class MethodReceivers
      * What a variable holds once the value was given it: a query only when the value is built on query(), else
      * the row its own class's static method answered.
      */
-    private function assigned(Receiver $receiver, Expr $value): Receiver
+    private function receiverAfterAssignment(Receiver $receiver, Expr $value): Receiver
     {
         $isRowOfOwnClass = $receiver->origin === ReceiverOrigin::OwnQuery && ! $this->isBuiltOnQuery($value);
 
         return match (true) {
             $receiver->origin === ReceiverOrigin::Relation => Receiver::unknown(),
-            $isRowOfOwnClass => $this->ownAs(ReceiverOrigin::OwnClass),
+            $isRowOfOwnClass => $this->ownReceiver(ReceiverOrigin::OwnClass),
             default => $receiver,
         };
     }
@@ -237,7 +237,7 @@ final readonly class MethodReceivers
         return $last;
     }
 
-    private function made(Expr\New_ $made): Receiver
+    private function receiverOfNew(Expr\New_ $made): Receiver
     {
         if (! $made->class instanceof Node\Name) {
             return Receiver::unknown();
@@ -246,18 +246,18 @@ final readonly class MethodReceivers
         $class = $made->class->toString();
 
         return $this->isOwnClass($class)
-            ? $this->ownAs(ReceiverOrigin::NewRow)
+            ? $this->ownReceiver(ReceiverOrigin::NewRow)
             : new Receiver(ReceiverOrigin::OtherClass, $class);
     }
 
-    private function property(Expr $owner): Receiver
+    private function receiverOfProperty(Expr $owner): Receiver
     {
         $isOwnProperty = $this->receiverOf($owner)->origin === ReceiverOrigin::Own;
 
         return $isOwnProperty ? new Receiver(ReceiverOrigin::Property) : Receiver::unknown();
     }
 
-    private function chained(Expr\MethodCall|Expr\NullsafeMethodCall $call): Receiver
+    private function receiverOfCall(Expr\MethodCall|Expr\NullsafeMethodCall $call): Receiver
     {
         $receiver = $this->receiverOf($call->var);
         $origin = $receiver->origin;
@@ -267,17 +267,17 @@ final readonly class MethodReceivers
 
         return match (true) {
             $origin->isOwnRow() && in_array($method, self::SAME_OBJECT, true) => $receiver,
-            $startsOwnQuery => $this->ownAs(ReceiverOrigin::OwnQuery),
+            $startsOwnQuery => $this->ownReceiver(ReceiverOrigin::OwnQuery),
             $origin->isOwnRow() => new Receiver(ReceiverOrigin::Relation),
             in_array($method, self::ROW_ANSWERS, true) => new Receiver($origin->rowOfQuery(), $receiver->class),
             $answersRows => new Receiver(ReceiverOrigin::Unknown, $receiver->class),
-            $origin === ReceiverOrigin::OwnQuery && $method === 'create' => $this->ownAs(ReceiverOrigin::NewRow),
+            $origin === ReceiverOrigin::OwnQuery && $method === 'create' => $this->ownReceiver(ReceiverOrigin::NewRow),
             $origin->isQuery() => $receiver,
             default => new Receiver(ReceiverOrigin::Unknown, $receiver->class),
         };
     }
 
-    private function static(Expr\StaticCall $call): Receiver
+    private function receiverOfStaticCall(Expr\StaticCall $call): Receiver
     {
         if (! $call->class instanceof Node\Name || ! $call->name instanceof Node\Identifier) {
             return Receiver::unknown();
@@ -288,8 +288,8 @@ final readonly class MethodReceivers
         $makesRow = $method === 'create' || in_array($method, $this->rowMakers, true);
 
         return match (true) {
-            $this->isOwnClass($class) && $makesRow => $this->ownAs(ReceiverOrigin::NewRow),
-            $this->isOwnClass($class) => $this->ownAs(ReceiverOrigin::OwnQuery),
+            $this->isOwnClass($class) && $makesRow => $this->ownReceiver(ReceiverOrigin::NewRow),
+            $this->isOwnClass($class) => $this->ownReceiver(ReceiverOrigin::OwnQuery),
             default => new Receiver(ReceiverOrigin::OtherQuery, $class),
         };
     }

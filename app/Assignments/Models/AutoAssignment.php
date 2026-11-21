@@ -14,6 +14,7 @@ use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\AutoAssignmentPage;
 use App\Assignments\Support\Page;
 use App\Assignments\Support\PoolReference;
+use App\Contracts\Support\InsertsAbsentRows;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -48,6 +49,7 @@ final class AutoAssignment extends Model implements ReadableModel
     use BoundedReads;
     use HasActorColumns;
     use HasUlids;
+    use InsertsAbsentRows;
     use Linkable;
 
     // ----------[ Constructors ]----------
@@ -84,8 +86,7 @@ final class AutoAssignment extends Model implements ReadableModel
             'configuration_revision' => 1,
         ]);
         $row->setAttribute($row->getKeyName(), $row->newUniqueId());
-        $row->updateTimestamps();
-        self::query()->insertOrIgnore($row->getAttributes());
+        $row->insertIfAbsent();
 
         return self::query()->forKey($input->key)->lockForUpdate()->firstOrFail();
     }

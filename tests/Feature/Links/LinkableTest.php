@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Links;
 
-use App\Links\Support\LinkRemoval;
 use App\Links\Exceptions\LinkTypeRepeated;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
+use App\Records\Support\LinkRemoval;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;

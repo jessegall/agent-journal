@@ -9,7 +9,6 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Enums\WholeRecord;
-use App\Comments\Events\CommentPosted;
 use App\Comments\Exceptions\SubmissionKeyConflict;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Models\Comment;
@@ -30,7 +29,6 @@ final readonly class CommentWriter
     public function __construct(
         private RecordResolver $records,
         private WorkStacks $workStacks,
-        private CommentEvents $events,
     ) {}
 
     public function post(
@@ -69,7 +67,6 @@ final readonly class CommentWriter
                 $hash,
             )
             : Comment::create($target, $author, $sessionId, $body, null, $submissionKey, $hash);
-        $this->events->posted(new CommentPosted($comment->id, $targetIdentity));
 
         return $comment->id;
     }

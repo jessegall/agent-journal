@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Links\Support\LinkRemoval;
 use App\Actors\Support\ActorContext;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionPolicyReader;
@@ -14,6 +13,7 @@ use App\Agents\Values\Operation;
 use App\Agents\Values\OperationGrant;
 use App\Links\Models\Link;
 use App\Records\Contracts\IdentityLinks;
+use App\Records\Support\LinkRemoval;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
