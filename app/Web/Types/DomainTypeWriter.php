@@ -37,7 +37,7 @@ final readonly class DomainTypeWriter implements Writer
             array_push($files, ...new FlatModuleWriter($path)->output($types, $transformedCollection));
         }
 
-        $exports = $this->compatibilityExports($byPath);
+        $exports = $this->ownerExportLines($byPath);
 
         return [
             ...$files,
@@ -55,14 +55,14 @@ final readonly class DomainTypeWriter implements Writer
      * One export line per owner naming its types, leaving out a name more than one owner exports: such a name means
      * nothing unambiguous here, so a page that uses it imports it from its owner.
      *
-     * @param  array<string, list<Transformed>>  $byPath
+     * @param  array<string, list<Transformed>>  $typesByPath
      * @return list<string>
      */
-    private function compatibilityExports(array $byPath): array
+    private function ownerExportLines(array $typesByPath): array
     {
         $names = array_map(
             fn (array $types) => array_map(fn (Transformed $type) => (string) $type->getName(), $types),
-            $byPath,
+            $typesByPath,
         );
 
         $owners = array_count_values(array_merge(...array_values($names)));
@@ -71,8 +71,8 @@ final readonly class DomainTypeWriter implements Writer
         foreach ($names as $path => $ownNames) {
             $unique = array_values(array_filter($ownNames, fn (string $name) => $owners[$name] === 1));
             sort($unique);
-            $module = preg_replace('/\/index\.ts$/', '', $path);
-            $exports[] = 'export type { '.implode(', ', $unique)." } from '../../{$module}';";
+            $modulePath = preg_replace('/\/index\.ts$/', '', $path);
+            $exports[] = 'export type { '.implode(', ', $unique)." } from '../../{$modulePath}';";
         }
 
         return $exports;

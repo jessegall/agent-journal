@@ -164,7 +164,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
             ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
                 ->whereColumn('newer.agent_id', 'process_starts.agent_id')
                 ->where(fn (QueryBuilder $later) => $later->whereColumn('newer.created_at', '>', 'process_starts.created_at')
-                    ->orWhere(fn (QueryBuilder $tied) => $tied->whereColumn('newer.created_at', 'process_starts.created_at')
+                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime->whereColumn('newer.created_at', 'process_starts.created_at')
                         ->whereColumn('newer.id', '>', 'process_starts.id'))))
             ->readExactly(count($agentIds))
             ->get();
