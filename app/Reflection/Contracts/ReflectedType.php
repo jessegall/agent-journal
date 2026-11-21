@@ -8,7 +8,7 @@ namespace App\Reflection\Contracts;
  * What a domain may ask of one reflected class: whether it declares a method, calling that method on an instance,
  * and an instance whose constructor runs only on its first use.
  *
- * @template T of object
+ * @template-covariant T of object
  */
 interface ReflectedType
 {

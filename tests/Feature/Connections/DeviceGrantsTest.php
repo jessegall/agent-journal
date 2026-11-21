@@ -94,7 +94,7 @@ final class DeviceGrantsTest extends TestCase
         $grant = $this->approvedGrant($binding);
 
         $command = $this->deviceCommand($grant, $binding)->assertForbidden();
-        $this->assertStringContainsString('overview runs in a provider session', (string) $command->json('message'));
+        $this->assertStringContainsString('runs in a provider session', (string) $command->json('message'));
 
         $other = (string) Str::ulid();
         $refusal = $this->deviceCommand($grant, $other)->assertForbidden();

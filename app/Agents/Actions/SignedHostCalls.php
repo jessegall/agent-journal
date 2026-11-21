@@ -73,13 +73,13 @@ final readonly class SignedHostCalls implements HostCalls
      * The protocol the call speaks, one of those the route speaks; a host of another version is refused before it can
      * claim, report, open or recover anything.
      *
-     * @param  list<HostProtocolVersion>  $spoken
+     * @param  array<HostProtocolVersion>  $spoken
      *
      * @throws HostProtocolMismatch
      */
     private function spokenProtocol(Request $request, array $spoken): HostProtocolVersion
     {
-        $first = $spoken[0]->value;
+        $first = array_values($spoken)[0]->value;
 
         $version = $request->headers->get(SignedCall::HOST_PROTOCOL_HEADER)
             ?? throw HostProtocolMismatch::missing($first);

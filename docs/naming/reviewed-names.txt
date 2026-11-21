@@ -1666,6 +1666,7 @@ class	AttributeTypeUnexpected
 class	Attributes
 class	AuditPruning
 class	AuthenticateAgent
+class	AuthenticateDeviceGrant
 class	AuthenticateHost
 class	AuthenticateUser
 class	Authorize
@@ -1718,6 +1719,7 @@ class	BindDispatcher
 class	BindingDefinition
 class	BindingDefinitionScan
 class	BindingFolder
+class	BindingHosts
 class	BindingOutcome
 class	BindingPresenceController
 class	BindingRevocation
@@ -1889,6 +1891,9 @@ class	CheckRunCurrencyCall
 class	CheckRunCurrencyController
 class	CheckedCommandRegistries
 class	CheckpointBuilder
+class	ChildCheckout
+class	ChildCheckoutRequested
+class	ChildCheckoutSlot
 class	ChildClaim
 class	ChildClaimRefused
 class	ChildCommand
@@ -2344,6 +2349,7 @@ class	DestinationRegistry
 class	DeviceApprovalData
 class	DeviceApprovalPageRequest
 class	DeviceApprovalWindowResolver
+class	DeviceCaller
 class	DeviceCommandController
 class	DeviceGrant
 class	DeviceGrantController
@@ -3082,6 +3088,7 @@ class	InvalidateRemovedLinkMembers
 class	InvitationUnusable
 class	IsolatedHookSettings
 class	IsolatedSettingsFile
+class	IssueChildClaim
 class	IssueEvidencePermit
 class	IssueEvidencePermitHandler
 class	IssueProjectInvitation
@@ -7385,6 +7392,7 @@ interface	LaunchCandidates
 interface	LinkRecordProvider
 interface	Listener
 interface	ListenerFailureLog
+interface	LocalProjectHosts
 interface	MainDesk
 interface	MainSeatTakeover
 interface	MaintenanceAdmission
@@ -8313,6 +8321,7 @@ method	AgentSession::endWithEvidenceAt()
 method	AgentSession::enterConversation()
 method	AgentSession::idsOfAgent()
 method	AgentSession::isActive()
+method	AgentSession::isRunningFor()
 method	AgentSession::jobSourceMessage()
 method	AgentSession::jobSourceMessageIds()
 method	AgentSession::latestOf()
@@ -9121,8 +9130,12 @@ method	AuditPruning::__construct()
 method	AuthenticateAgent::__construct()
 method	AuthenticateAgent::handle()
 method	AuthenticateAgent::refreshHeartbeatOf()
+method	AuthenticateDeviceGrant::__construct()
+method	AuthenticateDeviceGrant::approverOf()
+method	AuthenticateDeviceGrant::handle()
 method	AuthenticateHost::__construct()
 method	AuthenticateHost::handle()
+method	AuthenticateHost::servingContext()
 method	AuthenticateUser::__construct()
 method	AuthenticateUser::handle()
 method	AuthoritySource::description()
@@ -9289,6 +9302,7 @@ method	BindingDefinition::violation()
 method	BindingDefinitionScan::findingsIn()
 method	BindingDefinitionScan::key()
 method	BindingFolder::__construct()
+method	BindingHosts::liveBindingOf()
 method	BindingOutcome::__construct()
 method	BindingPresenceController::__invoke()
 method	BindingRevocation::revoke()
@@ -9737,10 +9751,15 @@ method	CheckpointBuilder::problem()
 method	CheckpointBuilder::problemOfWholeOutput()
 method	CheckpointBuilder::record()
 method	CheckpointBuilder::streamsWithPending()
+method	ChildCheckout::__construct()
+method	ChildCheckoutRequested::__construct()
+method	ChildCheckoutSlot::checkouts()
+method	ChildCheckoutSlot::fill()
 method	ChildClaim::assertBaseIsHead()
 method	ChildClaim::casts()
 method	ChildClaim::issue()
 method	ChildClaim::nestedUnder()
+method	ChildClaim::ofChildAgent()
 method	ChildClaim::ofMain()
 method	ChildClaimRefused::baseMoved()
 method	ChildClaimRefused::firstCommitMissing()
@@ -11274,6 +11293,7 @@ method	DeviceApprovalPageRequest::rules()
 method	DeviceApprovalPageRequest::userCode()
 method	DeviceApprovalWindowResolver::__construct()
 method	DeviceApprovalWindowResolver::read()
+method	DeviceCaller::__construct()
 method	DeviceCommandController::__invoke()
 method	DeviceGrant::approveBy()
 method	DeviceGrant::binding()
@@ -11293,6 +11313,7 @@ method	DeviceGrant::usable()
 method	DeviceGrantController::__construct()
 method	DeviceGrantController::poll()
 method	DeviceGrantController::start()
+method	DeviceGrantRefused::approverWithdrawn()
 method	DeviceGrantRefused::awaitingApproval()
 method	DeviceGrantRefused::notUsable()
 method	DeviceGrantRefused::pollingTooFast()
@@ -13362,6 +13383,7 @@ method	HostCombinationData::__construct()
 method	HostCombinationsData::__construct()
 method	HostCombinationsData::combinations()
 method	HostContext::__construct()
+method	HostContext::servingBinding()
 method	HostCredentialRejected::missing()
 method	HostCredentialRejected::replayed()
 method	HostCredentialRejected::revoked()
@@ -13680,6 +13702,8 @@ method	IsolatedHookSettings::hasHooks()
 method	IsolatedSettingsFile::__construct()
 method	IsolatedSettingsFile::jsonSerialize()
 method	IsolatedSettingsFile::of()
+method	IssueChildClaim::claimsOf()
+method	IssueChildClaim::handle()
 method	IssueEvidencePermit::__construct()
 method	IssueEvidencePermitHandler::__construct()
 method	IssueEvidencePermitHandler::handle()
@@ -14096,6 +14120,7 @@ method	LocalFiles::scratch()
 method	LocalFiles::whileReading()
 method	LocalFiles::writablePath()
 method	LocalFiles::write()
+method	LocalProjectHosts::liveBindingOf()
 method	LocateCommentCall::__construct()
 method	LocateCommentController::__invoke()
 method	LockFileData::__construct()
@@ -16424,6 +16449,7 @@ method	Project::create()
 method	Project::forId()
 method	ProjectAccountsChanged::__construct()
 method	ProjectAccountsChanged::handle()
+method	ProjectBinding::authorityGenerationOf()
 method	ProjectBinding::casts()
 method	ProjectBinding::create()
 method	ProjectBinding::hasLivePresenceAt()
@@ -16431,6 +16457,7 @@ method	ProjectBinding::host()
 method	ProjectBinding::isReportableBy()
 method	ProjectBinding::isRevokedMainAgent()
 method	ProjectBinding::listed()
+method	ProjectBinding::liveIdOfLocalHost()
 method	ProjectBinding::lockById()
 method	ProjectBinding::mainAgent()
 method	ProjectBinding::ofHostByNonce()
@@ -20320,8 +20347,8 @@ method	SignedCallSender::pathOf()
 method	SignedCallSender::refusalOf()
 method	SignedCallSender::send()
 method	SignedHostCalls::__construct()
-method	SignedHostCalls::assertSpeaksProtocol()
 method	SignedHostCalls::header()
+method	SignedHostCalls::spokenProtocol()
 method	SignedHostCalls::verify()
 method	SignedInScope::__construct()
 method	SignedInScope::apply()
@@ -20810,6 +20837,7 @@ method	StartExecutor::start()
 method	StartExecutor::stop()
 method	StartExtensionRequests::__construct()
 method	StartExtensionRequests::accountSettings()
+method	StartExtensionRequests::childCheckout()
 method	StartExtensionRequests::grantAdditions()
 method	StartFile::__construct()
 method	StartFile::toArray()
@@ -22746,6 +22774,7 @@ method	WorkspaceRead::byReference()
 method	WorkspaceRead::casts()
 method	WorkspaceRead::commitObservation()
 method	WorkspaceRead::facts()
+method	WorkspaceRead::latestCommitReadOf()
 method	WorkspaceRead::pendingOn()
 method	WorkspaceRead::reference()
 method	WorkspaceRead::retain()
@@ -23013,6 +23042,7 @@ parameter	$barSections
 parameter	$base
 parameter	$base64
 parameter	$baseClass
+parameter	$baseOid
 parameter	$baseOverrides
 parameter	$basePath
 parameter	$baseRevision
@@ -23157,6 +23187,8 @@ parameter	$checkpoints
 parameter	$checks
 parameter	$checksum
 parameter	$child
+parameter	$childAgentId
+parameter	$childCheckouts
 parameter	$childClaimId
 parameter	$children
 parameter	$childrenResolver
@@ -23929,6 +23961,7 @@ parameter	$isSatisfied
 parameter	$isScoped
 parameter	$isSecret
 parameter	$isSelected
+parameter	$isSharedWorkRoute
 parameter	$isSignedIn
 parameter	$isSingleton
 parameter	$isStale
@@ -24067,6 +24100,7 @@ parameter	$liveness
 parameter	$loaded
 parameter	$loader
 parameter	$localFolder
+parameter	$localHosts
 parameter	$locations
 parameter	$lock
 parameter	$lockKey
@@ -25061,6 +25095,7 @@ parameter	$sourceType
 parameter	$sources
 parameter	$speaker
 parameter	$spellings
+parameter	$spoken
 parameter	$spoolFolder
 parameter	$stack
 parameter	$stackBefore
@@ -25298,6 +25333,7 @@ parameter	$typeKeys
 parameter	$typeParameter
 parameter	$types
 parameter	$typesByPath
+parameter	$unavailable
 parameter	$unavailableCount
 parameter	$unavailableReason
 parameter	$unavailableRequirements
@@ -26275,10 +26311,14 @@ property	AuthenticateAgent::$commands
 property	AuthenticateAgent::$container
 property	AuthenticateAgent::$contexts
 property	AuthenticateAgent::$presence
+property	AuthenticateDeviceGrant::$actors
+property	AuthenticateDeviceGrant::$container
+property	AuthenticateDeviceGrant::$resolver
 property	AuthenticateHost::$actors
 property	AuthenticateHost::$calls
 property	AuthenticateHost::$container
 property	AuthenticateHost::$entrance
+property	AuthenticateHost::$localHosts
 property	AuthenticateUser::$actors
 property	AuthenticateUser::$admission
 property	Authorize::$access
@@ -26636,6 +26676,15 @@ property	CheckpointBuilder::$pending
 property	CheckpointBuilder::$problems
 property	CheckpointBuilder::$readerRevision
 property	CheckpointBuilder::$records
+property	ChildCheckout::$baseOid
+property	ChildCheckout::$claimId
+property	ChildCheckout::$generation
+property	ChildCheckout::$writes
+property	ChildCheckoutRequested::$childAgentId
+property	ChildCheckoutRequested::$hostId
+property	ChildCheckoutRequested::$parentSessionId
+property	ChildCheckoutRequested::$slot
+property	ChildCheckoutSlot::$checkouts
 property	Choice::$label
 property	Choice::$optionKey
 property	ChoiceOption::$choices
@@ -26723,6 +26772,7 @@ property	ClaimedSignIn::$driver
 property	ClaimedSignIn::$expiresAt
 property	ClaimedSignIn::$generation
 property	ClaimedSignIn::$method
+property	ClaimedStart::$childCheckouts
 property	ClaimedStart::$conversationRequired
 property	ClaimedStart::$conversationTarget
 property	ClaimedStart::$directory
@@ -27439,6 +27489,9 @@ property	DeviceApprovalData::$projectLabel
 property	DeviceApprovalData::$scopes
 property	DeviceApprovalData::$userCode
 property	DeviceApprovalWindowResolver::$page
+property	DeviceCaller::$bindingId
+property	DeviceCaller::$grantId
+property	DeviceCaller::$userId
 property	DeviceGrantController::$calls
 property	DeviceGrantController::$origin
 property	DeviceGrantRefused::$refusalCode
@@ -28680,8 +28733,10 @@ property	HostCombinationData::$placement
 property	HostCombinationData::$variant
 property	HostCombinationsData::$combinations
 property	HostCombinationsData::$protocolVersion
+property	HostContext::$bindingIds
 property	HostContext::$call
 property	HostContext::$hostId
+property	HostContext::$protocol
 property	HostRefusalData::$refusal
 property	HostSkillPublisher::$files
 property	HostSkillPublisher::$targets
@@ -30249,6 +30304,7 @@ property	PreparedStart::$selectedDriver
 property	PreparedStart::$sessionId
 property	PreparedStart::$startId
 property	PreparedStart::$workspace
+property	PresenceReceipt::$authorityGeneration
 property	PresenceReceipt::$expiresAt
 property	PresenceReceipt::$generation
 property	PresenceRefused::$status
@@ -34658,6 +34714,7 @@ variable	$approval
 variable	$approvals
 variable	$approve
 variable	$approved
+variable	$approver
 variable	$area
 variable	$areas
 variable	$areasOnStack

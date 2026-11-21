@@ -9,6 +9,7 @@ use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
+use Throwable;
 
 /**
  * A device grant step that does not go on: an unknown or expired code, a poll before the owner approved or sooner
@@ -54,11 +55,13 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
         return $refusal;
     }
 
-    public static function approverWithdrawn(): self
+    public static function approverWithdrawn(Throwable $unavailable): self
     {
         $refusal = new self(
             'The user who approved this terminal can no longer use the journal. Ask an owner to approve it again.',
+            previous: $unavailable,
         );
+
         $refusal->status = 403;
         $refusal->refusalCode = RefusalCode::Forbidden;
 

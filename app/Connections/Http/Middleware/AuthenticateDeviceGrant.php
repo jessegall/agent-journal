@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Connections\Http\Middleware;
 
+use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Contracts\JournalAdmission;
+use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
@@ -29,7 +30,6 @@ final readonly class AuthenticateDeviceGrant
     public function __construct(
         private Container $container,
         private ActorResolver $resolver,
-        private JournalAdmission $admission,
         private CurrentActorSetter $actors,
     ) {}
 
@@ -42,11 +42,7 @@ final readonly class AuthenticateDeviceGrant
     {
         $grant = DeviceGrant::usable(InstallTicket::digestOf((string) $request->bearerToken()));
         $caller = new DeviceCaller($grant->id, $grant->binding_id, (string) $grant->approved_by_user_id);
-        $approver = $this->resolver->get(ActorIdentity::of(ActorContext::forUser($caller->userId)));
-
-        if (! $this->admission->admits($approver)) {
-            throw DeviceGrantRefused::approverWithdrawn();
-        }
+        $approver = $this->approverOf($caller);
 
         $this->container->instance(DeviceCaller::class, $caller);
         $this->actors->set($approver, new OwnerAuthority("the terminal sign-in {$caller->grantId}"));
@@ -56,6 +52,21 @@ final readonly class AuthenticateDeviceGrant
         } finally {
             $this->actors->clear();
             $this->container->forgetInstance(DeviceCaller::class);
+        }
+    }
+
+    /**
+     * The user who approved the grant, as an actor: the resolver admits only a user that exists and that the journal
+     * still lets in, and a user it refuses withdrew the grant's approval.
+     *
+     * @throws DeviceGrantRefused
+     */
+    private function approverOf(DeviceCaller $caller): Actor
+    {
+        try {
+            return $this->resolver->get(ActorIdentity::of(ActorContext::forUser($caller->userId)));
+        } catch (ActorUnavailable $unavailable) {
+            throw DeviceGrantRefused::approverWithdrawn($unavailable);
         }
     }
 }

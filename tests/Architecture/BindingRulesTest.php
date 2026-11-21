@@ -47,6 +47,7 @@ final class BindingRulesTest extends TestCase
         'app/CoreApi.php',
         'app/Http/Middleware/Agents/AuthenticateAgent.php',
         'app/Http/Middleware/Agents/AuthenticateHost.php',
+        'app/Connections/Http/Middleware/AuthenticateDeviceGrant.php',
         'app/Bus/Support/ConsoleOwner.php',
         'app/Bus/Support/EntryDispatchers.php',
         'domain/Access/Http/Middleware/AuthenticateUser.php',

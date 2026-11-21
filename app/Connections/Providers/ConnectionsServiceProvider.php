@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Connections\Providers;
 
-use App\Agents\Contracts\LocalProjectHosts;
-use App\Connections\Support\BindingHosts;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyDefinition;
+use App\Agents\Contracts\LocalProjectHosts;
 use App\Bus\Support\EntryDispatchers;
 use App\Connections\Policies\ConnectionsPolicy;
+use App\Connections\Support\BindingHosts;
 use App\Connections\Support\ProjectCommands;
 use App\Operations\Enums\AccessType;
 use App\Processes\Support\JournalRoutes;
@@ -24,6 +24,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(LocalProjectHosts::class, BindingHosts::class);
+
         $this->app->bind(ProjectCommands::class, fn () => new ProjectCommands(
             $this->app->make(JournalRoutes::class),
             $this->app->make(EntryDispatchers::class),

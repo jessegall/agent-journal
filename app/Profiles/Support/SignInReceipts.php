@@ -28,12 +28,9 @@ final readonly class SignInReceipts
         }
 
         $receipt = $answers[0];
+        $state = $receipt->isExpired ? ReceiptState::Expired : $receipt->state;
 
-        if ($receipt->isExpired) {
-            return SignInReceiptData::without(SignInReceiptStatus::Expired);
-        }
-
-        return match ($receipt->state) {
+        return match ($state) {
             ReceiptState::Completed => $this->started((string) ($receipt->fields['attemptId'] ?? '')),
             ReceiptState::Refused => SignInReceiptData::without(SignInReceiptStatus::Refused, $receipt->refusalMessage),
             ReceiptState::Taken => SignInReceiptData::without(SignInReceiptStatus::Pending),

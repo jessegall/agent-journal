@@ -75,6 +75,7 @@ final readonly class ClaimStartHandler implements CommandHandler
                 $session->agent_id,
                 $checkout,
             );
+
             $this->extensions->childCheckout($requested);
         }
 
