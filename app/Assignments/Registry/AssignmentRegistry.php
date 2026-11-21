@@ -302,13 +302,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function autoAssignerClass(string $type): string
     {
-        $class = $this->autoAssigners->get($type)->assignerClass;
-
-        if (! Reflector::factory()->isSubclassOf($class, AutoAssigner::class)) {
-            throw AssignmentProviderInvalid::forAutoAssigner($type, $class);
-        }
-
-        return $class;
+        return $this->autoAssigners->get($type)->assignerClass;
     }
 
     /**

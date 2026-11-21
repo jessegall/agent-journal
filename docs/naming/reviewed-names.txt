@@ -5420,6 +5420,7 @@ class	StateTypeUnknown
 class	StateTypes
 class	StateTypesFrozen
 class	StateTypesRequested
+class	StaticFactoryScan
 class	SteerHelper
 class	SteerHelperCall
 class	SteerHelperController
@@ -6447,7 +6448,6 @@ constant	ProtectedAccounts::SIGN_IN_COMMAND
 constant	ProtectedMerge::SAFE_SETTINGS
 constant	ProtectedMerge::STEP_SECONDS_LIMIT
 constant	ProtectedViewInvalidated::NAME
-constant	ProtectionReport::CONTAINER_PLATFORM
 constant	ProvenSkillRead::SHELL_READ
 constant	ProvenSkillRead::SKILL_FILE
 constant	Providers::TYPE
@@ -6691,6 +6691,9 @@ constant	StateEventActivity::MAXIMUM_DEPTH
 constant	StateEventBridge::LISTENER
 constant	StateReferenceFactory::TYPE_KEY
 constant	StateReferences::MAXIMUM
+constant	StaticFactoryScan::FRESH_EACH_CALL
+constant	StaticFactoryScan::INJECTABLE
+constant	StaticFactoryScan::REPEATED
 constant	StopAttempt::FIRST_GENERATION
 constant	StopAttemptGate::CHECKS_RUNNING
 constant	StopAttemptGate::CHECKS_UNRESOLVED
@@ -9410,6 +9413,10 @@ method	CatalogueOnFirstRead::__construct()
 method	CatalogueOnFirstRead::all()
 method	CatalogueOnFirstRead::catalogue()
 method	CatalogueOnFirstRead::find()
+method	CatalogueReflectorFactory::exists()
+method	CatalogueReflectorFactory::found()
+method	CatalogueReflectorFactory::is()
+method	CatalogueReflectorFactory::isSubclassOf()
 method	CatalogueReflectorFactory::make()
 method	CatalogueReflectorFactory::makeForClass()
 method	CatalogueReflectorFactory::makeForInstance()
@@ -10387,7 +10394,6 @@ method	ComposedCard::__construct()
 method	ComposerAutoloadMissing::for()
 method	CompositionSite::files()
 method	CompositionSite::holding()
-method	CompositionSite::isSubclass()
 method	CompositionSite::mayName()
 method	CompoundCommandReader::back()
 method	CompoundCommandReader::definition()
@@ -11492,7 +11498,6 @@ method	DomainEntry::registerMcpToolsIn()
 method	DomainEntry::requiredNames()
 method	DomainEntry::requiresDomain()
 method	DomainEntry::scriptFolder()
-method	DomainEntry::settings()
 method	DomainEntry::shareGateways()
 method	DomainEntry::shareRecords()
 method	DomainEntry::skillConditions()
@@ -13568,9 +13573,11 @@ method	LaunchLimits::stopOverdue()
 method	LaunchProfileKey::__construct()
 method	LaunchProfileType::capabilities()
 method	LaunchProfileType::isForAnAccount()
+method	LaunchProfileType::protectionPlatform()
 method	LaunchProfileType::user()
 method	LaunchProfiles::__construct()
 method	LaunchProfiles::for()
+method	LaunchProfiles::forSignedIn()
 method	LaunchProfiles::trialOf()
 method	Layout::casts()
 method	Layout::create()
@@ -16289,6 +16296,7 @@ method	ProtectedViewInvalidated::broadcastWith()
 method	ProtectionReport::__construct()
 method	ProtectionReport::fromStored()
 method	ProtectionReport::isEnforcedInContainer()
+method	ProtectionReport::key()
 method	ProtectionReport::keyOf()
 method	ProtectionReport::shortfall()
 method	ProtectionReport::stored()
@@ -17241,6 +17249,7 @@ method	Reflector::constructor()
 method	Reflector::declaredAttributes()
 method	Reflector::docComment()
 method	Reflector::exists()
+method	Reflector::factory()
 method	Reflector::fileName()
 method	Reflector::find()
 method	Reflector::hasMethod()
@@ -17255,8 +17264,6 @@ method	Reflector::isFinal()
 method	Reflector::isInstance()
 method	Reflector::isInstantiable()
 method	Reflector::isInterface()
-method	Reflector::isNameOf()
-method	Reflector::isNameSubclassOf()
 method	Reflector::isReadOnly()
 method	Reflector::isSubclassOf()
 method	Reflector::isTrait()
@@ -17277,6 +17284,9 @@ method	Reflector::shortName()
 method	Reflector::startLine()
 method	Reflector::traits()
 method	Reflector::uses()
+method	ReflectorFactory::exists()
+method	ReflectorFactory::is()
+method	ReflectorFactory::isSubclassOf()
 method	ReflectorFactory::make()
 method	ReflectorNegation::__call()
 method	ReflectorNegation::__construct()
@@ -20777,6 +20787,12 @@ method	StateTypes::registry()
 method	StateTypes::ticking()
 method	StateTypesFrozen::forKey()
 method	StateTypesRequested::__construct()
+method	StaticFactoryScan::buildsAFailure()
+method	StaticFactoryScan::findingsIn()
+method	StaticFactoryScan::isHiddenService()
+method	StaticFactoryScan::isInjectableInstanceMethod()
+method	StaticFactoryScan::key()
+method	StaticFactoryScan::ownStaticCalls()
 method	SteerHelper::__construct()
 method	SteerHelperCall::__construct()
 method	SteerHelperController::__invoke()
@@ -23290,6 +23306,7 @@ parameter	$from
 parameter	$fromHostId
 parameter	$fromOffset
 parameter	$fromRevision
+parameter	$function
 parameter	$gate
 parameter	$gateway
 parameter	$gatewayConfigurationId
@@ -24232,6 +24249,8 @@ parameter	$ref
 parameter	$reference
 parameter	$references
 parameter	$reflection
+parameter	$reflectorOf
+parameter	$reflectors
 parameter	$refusal
 parameter	$refusalCode
 parameter	$refusalCodes
@@ -24380,6 +24399,7 @@ parameter	$revisions
 parameter	$revocations
 parameter	$rewrite
 parameter	$rewrites
+parameter	$right
 parameter	$role
 parameter	$rollBack
 parameter	$room
@@ -26122,6 +26142,7 @@ property	CheckAccount::$generation
 property	CheckAccount::$hostId
 property	CheckAccountHandler::$notices
 property	CheckCommandHandlers::$policies
+property	CheckCommandHandlers::$reflectors
 property	CheckEntry::$actors
 property	CheckEntry::$entrance
 property	CheckEntry::$nesting
@@ -27047,6 +27068,7 @@ property	DockDefinition::$type
 property	DockDefinitions::$fallbacks
 property	DockDefinitions::$offered
 property	DockDefinitions::$owned
+property	DockDefinitions::$reflectors
 property	DockDestination::$arguments
 property	DockDestination::$page
 property	DockDestinationOptionData::$label
@@ -28360,6 +28382,7 @@ property	KeywordDefinition::$implementation
 property	KeywordDefinition::$token
 property	KeywordRegistry::$container
 property	KeywordRegistry::$keywords
+property	KeywordRegistry::$reflectors
 property	KnownFolderClasses::$found
 property	LaravelCommandBus::$container
 property	LaravelCommandBus::$dispatcher
@@ -28543,6 +28566,7 @@ property	ListenerDeclarations::$ownership
 property	ListenerDeclarations::$required
 property	ListenerOwnership::$coreExports
 property	ListenerOwnership::$coreListenerFolders
+property	ListenerOwnership::$reflectors
 property	ListenerOwnership::$registry
 property	ListenerPolicy::$ownership
 property	ListenerPolicy::$runner
@@ -28652,6 +28676,7 @@ property	MarkdownText::$sections
 property	MarkdownText::$text
 property	McpCatalogue::$commands
 property	McpCatalogue::$overviewContributions
+property	McpCatalogue::$reflectors
 property	McpCatalogue::$resources
 property	McpCatalogue::$searchContributions
 property	McpCatalogue::$tools
@@ -29059,6 +29084,7 @@ property	ObjectRead::$unread
 property	ObjectRead::$value
 property	ObjectReader::$objects
 property	ObjectReflection::$operations
+property	ObjectReflection::$reflectors
 property	ObjectRegistry::$container
 property	ObjectRegistry::$objects
 property	ObjectRegistry::$reflection
@@ -29464,6 +29490,7 @@ property	PinMessage::$messageId
 property	PinMessage::$sourceInboxId
 property	PinMessageHandler::$pinnable
 property	PinnableMessages::$messages
+property	PinnedCompatibilities::$launchProfiles
 property	PinnedCompatibilities::$setting
 property	PipedCommands::$commands
 property	PipedCommands::$start
@@ -29471,6 +29498,7 @@ property	PipedCommandsToParse::$negationStart
 property	PipedCommandsToParse::$toParse
 property	PipelineAdapter::$pipelines
 property	PipelineRunner::$container
+property	PipelineRunner::$reflectors
 property	PipelineRunner::$steps
 property	PlaceRoots::$config
 property	PlainGroupAvailabilityData::$state
@@ -29612,6 +29640,7 @@ property	PlansWindowResolver::$request
 property	PolicyAuthorizer::$catalogue
 property	PolicyAuthorizer::$gate
 property	PolicyAuthorizer::$grants
+property	PolicyAuthorizer::$reflectors
 property	PolicyDefinition::$accesses
 property	PolicyDefinition::$policy
 property	PolicyGrant::$access
@@ -29773,6 +29802,7 @@ property	ProfileAuthorizerProvider::$actors
 property	ProfileAuthorizerProvider::$catalogue
 property	ProfileAuthorizerProvider::$gate
 property	ProfileAuthorizerProvider::$profiles
+property	ProfileAuthorizerProvider::$reflectors
 property	ProfileBase::$attachable
 property	ProfileBase::$containedBudgets
 property	ProfileBase::$containerRequired
@@ -29959,6 +29989,7 @@ property	ProofSampleData::$exit
 property	ProofSampleData::$file
 property	ProofSampleData::$proves
 property	PropertyRules::$denormalizer
+property	PropertyRules::$reflectors
 property	ProposalChecks::$rules
 property	ProposalData::$author
 property	ProposalData::$currentRevision
@@ -30283,6 +30314,7 @@ property	ReadRequestKey::$app
 property	ReadRequestKey::$failures
 property	ReadRequestKey::$key
 property	ReadRequestKey::$reads
+property	ReadRequestKey::$reflectors
 property	ReadRetainedDraftTool::$continuations
 property	ReadRetainedDraftTool::$drafts
 property	ReadRetainedDraftTool::$fields
@@ -30355,6 +30387,7 @@ property	ReaderReference::$revision
 property	ReaderReplay::$output
 property	ReaderRequests::$container
 property	ReaderRequests::$redirector
+property	ReaderRequests::$reflectors
 property	ReaderSampleApproveCommand::$description
 property	ReaderSampleApproveCommand::$signature
 property	ReaderSampleRunCommand::$description
@@ -30450,6 +30483,7 @@ property	RecordCard::$title
 property	RecordCard::$type
 property	RecordChanges::$actors
 property	RecordChanges::$authorizer
+property	RecordChanges::$reflectors
 property	RecordCommentLocation::$target
 property	RecordCommentLocation::$type
 property	RecordCommentView::$comment
@@ -30649,12 +30683,14 @@ property	ReflectedMethod::$declaredAttributes
 property	ReflectedMethod::$label
 property	ReflectedMethod::$method
 property	ReflectedMethod::$parameters
+property	ReflectedMethod::$reflectorOf
 property	ReflectedMethod::$returnType
 property	ReflectedParameter::$declaredAttributes
 property	ReflectedParameter::$parameter
 property	ReflectedParameter::$type
 property	ReflectedProperty::$declaredAttributes
 property	ReflectedProperty::$property
+property	ReflectedProperty::$reflectorOf
 property	ReflectedProperty::$type
 property	ReflectionCatalogue::$canonicalNames
 property	ReflectionCatalogue::$current
@@ -30797,6 +30833,7 @@ property	RegisteredSection::$propName
 property	RegisteredSection::$resolver
 property	RegisteredSection::$section
 property	RegisteredSection::$slot
+property	RegisteredSettingCommands::$reflectors
 property	RegisteredSettingCommands::$registry
 property	RegisteredStateFactory::$clock
 property	RegisteredStateFactory::$states
@@ -32040,6 +32077,7 @@ property	SettingRegistry::$addresses
 property	SettingRegistry::$definitions
 property	SettingRegistry::$groups
 property	SettingTargets::$gate
+property	SettingTargets::$reflectors
 property	SettingTargets::$registry
 property	SettingsAccessGate::$access
 property	SettingsAccessGate::$actor
@@ -32186,6 +32224,7 @@ property	ShareGatewayChanged::$isDisabled
 property	ShareGatewayChanged::$occurredAt
 property	ShareGatewayRegistry::$container
 property	ShareGatewayRegistry::$gatewayClasses
+property	ShareGatewayRegistry::$reflectors
 property	ShareGrant::$configurationId
 property	ShareGrant::$configurationVersion
 property	ShareGrant::$ownerUserId
@@ -32898,6 +32937,7 @@ property	StateLabel::$key
 property	StateLabel::$text
 property	StateLabel::$tone
 property	StateListenerDeclarations::$ownership
+property	StateListenerDeclarations::$reflectors
 property	StateMethod::$declaringClass
 property	StateMethod::$name
 property	StateMethod::$stackWide
@@ -33765,6 +33805,7 @@ property	WatchedRuntime::$intervalMs
 property	WatchedRuntime::$runtimeId
 property	WindowResults::$log
 property	WindowResults::$offers
+property	WindowResults::$reflectors
 property	WindowResults::$visibility
 property	WithdrawAsk::$ask
 property	WithdrawAskCall::$id
@@ -34096,6 +34137,7 @@ variable	$byOwner
 variable	$byPath
 variable	$byType
 variable	$bytes
+variable	$bytesOption
 variable	$cache
 variable	$call
 variable	$callContractMatch
@@ -34182,6 +34224,7 @@ variable	$code
 variable	$codes
 variable	$collect
 variable	$collected
+variable	$colorOption
 variable	$column
 variable	$columns
 variable	$combination
@@ -34292,6 +34335,7 @@ variable	$definition
 variable	$definitionOwners
 variable	$definitions
 variable	$delete
+variable	$deleteClasses
 variable	$deleted
 variable	$delimiter
 variable	$delimiterLength
@@ -34390,6 +34434,7 @@ variable	$entries	app/Bus/Support/DeclaredCommand.php
 variable	$entries	app/Files/Support/FileWriter.php
 variable	$entries	app/Files/Support/FolderWalker.php
 variable	$entry
+variable	$enum
 variable	$envelopes
 variable	$environment
 variable	$epoch
@@ -34411,6 +34456,7 @@ variable	$eventMethod
 variable	$eventName
 variable	$eventNameItem
 variable	$eventOwner
+variable	$eventType
 variable	$events
 variable	$eventsAreOff
 variable	$evidence
@@ -34528,6 +34574,7 @@ variable	$grants
 variable	$graph
 variable	$group
 variable	$groupKeys
+variable	$groupName
 variable	$groupPositions
 variable	$grouped
 variable	$groups
@@ -34710,12 +34757,14 @@ variable	$issuedAt
 variable	$issuedHere
 variable	$issuerIsOwner
 variable	$item
+variable	$item	app/Bus/Support/CommandGrammar.php
 variable	$job
 variable	$join
 variable	$joined
 variable	$journalUrl
 variable	$journeys
 variable	$json
+variable	$jsonFlag
 variable	$kept
 variable	$keptPerTarget
 variable	$key
@@ -34725,6 +34774,7 @@ variable	$keyword
 variable	$keywords
 variable	$known
 variable	$label
+variable	$labelField
 variable	$labels
 variable	$largest
 variable	$last
@@ -34751,6 +34801,7 @@ variable	$lineEnd
 variable	$lineStart
 variable	$lineage
 variable	$lines
+variable	$linesOption
 variable	$link
 variable	$linkIds
 variable	$linkOfId
@@ -34766,6 +34817,7 @@ variable	$listenerClass
 variable	$listenerDomain
 variable	$listenerResult
 variable	$listenerResults
+variable	$listenerType
 variable	$listeners
 variable	$listing
 variable	$lists
@@ -34807,6 +34859,8 @@ variable	$matchOffset
 variable	$matches
 variable	$matching
 variable	$matchingFamilies
+variable	$maxCountOption
+variable	$maxDepthOption
 variable	$maximum
 variable	$mayAdminister
 variable	$mayName
@@ -34849,6 +34903,7 @@ variable	$missingPhase
 variable	$missingProfile
 variable	$missingReceipt
 variable	$mode
+variable	$modeOption
 variable	$model
 variable	$modelOwner
 variable	$models
@@ -34861,6 +34916,7 @@ variable	$movedSources
 variable	$moves
 variable	$name
 variable	$nameLength
+variable	$nameOperands
 variable	$nameStart
 variable	$nameUsesByFile
 variable	$named
@@ -34880,6 +34936,7 @@ variable	$needed
 variable	$negation
 variable	$negationStart
 variable	$networkRead
+variable	$networkWriteClasses
 variable	$new
 variable	$newLevel
 variable	$newProfiles
@@ -34893,11 +34950,13 @@ variable	$nextAfterId
 variable	$nextRound
 variable	$nextStep
 variable	$nextTaskOffset
+variable	$noEmitOperands
 variable	$node
 variable	$nodes
 variable	$none
 variable	$normalized
 variable	$normalizedDefault
+variable	$notYetObservable
 variable	$notice
 variable	$notices
 variable	$now
@@ -34922,6 +34981,7 @@ variable	$oldest
 variable	$omitted
 variable	$oneLine
 variable	$open
+variable	$openField
 variable	$openKey
 variable	$openKeys
 variable	$opened
@@ -34930,6 +34990,7 @@ variable	$opening
 variable	$opens
 variable	$operand
 variable	$operandCount
+variable	$operandType
 variable	$operands
 variable	$operation
 variable	$operationId
@@ -34980,6 +35041,7 @@ variable	$ownerId
 variable	$ownerNames
 variable	$owners
 variable	$ownsClass
+variable	$pFlag
 variable	$package
 variable	$page
 variable	$pageFields
@@ -35009,9 +35071,11 @@ variable	$pass
 variable	$passClockNanoseconds
 variable	$passNow
 variable	$path
+variable	$pathOperands
 variable	$paths
 variable	$pattern
 variable	$patternFolder
+variable	$patternPathOperands
 variable	$peers
 variable	$pending
 variable	$perPass
@@ -35046,6 +35110,7 @@ variable	$planId
 variable	$planPage
 variable	$planPhases
 variable	$plans
+variable	$platform
 variable	$plugin
 variable	$pointer
 variable	$points
@@ -35071,10 +35136,12 @@ variable	$preview
 variable	$previous
 variable	$previousDeadline
 variable	$printed
+variable	$printer
 variable	$privateTypeOwner
 variable	$problem
 variable	$problems
 variable	$process
+variable	$processControlClasses
 variable	$processRun
 variable	$processes
 variable	$producerDone
@@ -35086,6 +35153,7 @@ variable	$progressByPhase
 variable	$progressOfPhase
 variable	$project
 variable	$projectKey
+variable	$projectOption
 variable	$projection
 variable	$promised
 variable	$promotedProperties
@@ -35137,6 +35205,7 @@ variable	$rank
 variable	$ranked
 variable	$ranks
 variable	$read
+variable	$readGrant
 variable	$readOnly
 variable	$readPath
 variable	$readable
@@ -35179,6 +35248,7 @@ variable	$refresh
 variable	$refusal
 variable	$refusals
 variable	$refused
+variable	$regexpOption
 variable	$registered
 variable	$registeredModel
 variable	$registeredName
@@ -35455,6 +35525,7 @@ variable	$stopReports
 variable	$stopped
 variable	$stored
 variable	$storedOwner
+variable	$storedSkill
 variable	$storedValues
 variable	$stream
 variable	$streams
@@ -35472,6 +35543,7 @@ variable	$subjects
 variable	$submission
 variable	$substituted
 variable	$substitution
+variable	$successReport
 variable	$suffix
 variable	$suggestedCommand
 variable	$summaries
@@ -35510,6 +35582,8 @@ variable	$tasks
 variable	$temporary
 variable	$text
 variable	$textBeforeTitle
+variable	$textField
+variable	$textOperands
 variable	$textStart
 variable	$texts
 variable	$theirs
@@ -35645,6 +35719,7 @@ variable	$wanted
 variable	$wasAtCommandStart
 variable	$wasHeld
 variable	$wasLive
+variable	$watchFlag
 variable	$watchedTerminals
 variable	$weight
 variable	$whenFalse

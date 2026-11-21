@@ -109,15 +109,8 @@ final readonly class ReadingRules
                 $textOperands->repeating(),
                 CommandClassSet::empty(),
             ),
-            $this->reader('grep', ArgumentGrammar::operands(
-                OperandType::Pattern,
-                OperandType::Path,
-            )->repeating()->endingOptionsAtDoubleDash()->withOptions(
-                OptionGrammar::valued(
-                    OperandType::Pattern,
-                    '-e',
-                    '--regexp',
-                ),
+            $this->reader('grep', $patternPathOperands->repeating()->endingOptionsAtDoubleDash()->withOptions(
+                $regexpOption,
                 OptionGrammar::valued(
                     OperandType::Count,
                     '-A',
@@ -168,10 +161,7 @@ final readonly class ReadingRules
                     '--quiet',
                 ),
             ), $read),
-            $this->reader('rg', ArgumentGrammar::operands(
-                OperandType::Pattern,
-                OperandType::Path,
-            )->repeating()->endingOptionsAtDoubleDash()->withOptions(
+            $this->reader('rg', $patternPathOperands->repeating()->endingOptionsAtDoubleDash()->withOptions(
                 OptionGrammar::valued(
                     OperandType::Pattern,
                     '-g',

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Web\Support;
 
-use App\Reflection\Contracts\ReflectorFactory;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Declarations\RegisteredNavigation;
 use App\Ui\Exceptions\UiKeyRepeated;
@@ -34,7 +33,6 @@ final readonly class NavigationRecords implements NavigationRecordsContract
         private UrlGenerator $urls,
         private LoggerInterface $log,
         private UiOwnerAvailability $owners,
-        private ReflectorFactory $reflectors,
     ) {}
 
     public function tree(Request $request): NavigationData
