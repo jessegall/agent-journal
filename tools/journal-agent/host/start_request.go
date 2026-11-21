@@ -76,12 +76,27 @@ type FolderUseReply struct {
 	Reason string `json:"reason,omitempty"`
 }
 
-// HostRequest is one line the host-local adapters send: one start, stop, drain or folder use.
+// AccountFolderRequest names one account folder by its plain id, for the host to make or remove: the accounts root
+// is root's, so the sign-in service, the program's user, cannot do either itself.
+type AccountFolderRequest struct {
+	Folder string `json:"folder"`
+}
+
+// AccountFolderReply answers whether the folder was made or removed, and why not when it was not.
+type AccountFolderReply struct {
+	Done   bool   `json:"done"`
+	Reason string `json:"reason,omitempty"`
+}
+
+// HostRequest is one line the host-local adapters send: one start, stop, drain, folder use, or an account folder to
+// make or remove.
 type HostRequest struct {
-	Start     *StartRequest     `json:"start,omitempty"`
-	Stop      *StopRequest      `json:"stop,omitempty"`
-	Drain     *DrainRequest     `json:"drain,omitempty"`
-	FolderUse *FolderUseRequest `json:"folderUse,omitempty"`
+	Start        *StartRequest         `json:"start,omitempty"`
+	Stop         *StopRequest          `json:"stop,omitempty"`
+	Drain        *DrainRequest         `json:"drain,omitempty"`
+	FolderUse    *FolderUseRequest     `json:"folderUse,omitempty"`
+	MakeFolder   *AccountFolderRequest `json:"makeFolder,omitempty"`
+	RemoveFolder *AccountFolderRequest `json:"removeFolder,omitempty"`
 }
 
 // Executor starts and stops prepared starts; the protected start service implements it.
@@ -90,6 +105,8 @@ type Executor interface {
 	Stop(ctx context.Context, request StopRequest) (StopReply, error)
 	Drain(ctx context.Context, request DrainRequest) (DrainReply, error)
 	FolderUse(ctx context.Context, request FolderUseRequest) (FolderUseReply, error)
+	MakeFolder(ctx context.Context, request AccountFolderRequest) (AccountFolderReply, error)
+	RemoveFolder(ctx context.Context, request AccountFolderRequest) (AccountFolderReply, error)
 }
 
 var (
@@ -147,6 +164,10 @@ func (request HostRequest) carryOut(ctx context.Context, executor Executor) (any
 		return executor.Drain(ctx, *request.Drain)
 	case request.isFolderUse():
 		return executor.FolderUse(ctx, *request.FolderUse)
+	case request.isAccountFolder(request.MakeFolder):
+		return executor.MakeFolder(ctx, *request.MakeFolder)
+	case request.isAccountFolder(request.RemoveFolder):
+		return executor.RemoveFolder(ctx, *request.RemoveFolder)
 	case request.isStart():
 		if err := request.Start.Check(); err != nil {
 			return StartReply{StartID: request.Start.StartID, Refusal: err.Error()}, nil
@@ -169,6 +190,11 @@ func (request HostRequest) isFolderUse() bool {
 	return request.operations() == 1 && request.FolderUse != nil && plainAccountID.MatchString(request.FolderUse.Folder)
 }
 
+// isAccountFolder is whether the request names only that account folder operation, on a folder named by a plain id.
+func (request HostRequest) isAccountFolder(operation *AccountFolderRequest) bool {
+	return request.operations() == 1 && operation != nil && plainAccountID.MatchString(operation.Folder)
+}
+
 // isStart is whether the request asks only for a start.
 func (request HostRequest) isStart() bool {
 	return request.operations() == 1 && request.Start != nil
@@ -182,7 +208,8 @@ func (request HostRequest) isStop() bool {
 // operations is how many operations the request names; a request names exactly one.
 func (request HostRequest) operations() int {
 	named := 0
-	for _, isNamed := range []bool{request.Start != nil, request.Stop != nil, request.Drain != nil, request.FolderUse != nil} {
+	for _, isNamed := range []bool{request.Start != nil, request.Stop != nil, request.Drain != nil, request.FolderUse != nil,
+		request.MakeFolder != nil, request.RemoveFolder != nil} {
 		if isNamed {
 			named++
 		}

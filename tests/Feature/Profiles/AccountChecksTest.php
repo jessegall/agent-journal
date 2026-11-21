@@ -21,6 +21,7 @@ use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
+use App\Profiles\Support\LocalAccountFolders;
 use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\AccountLabel;
@@ -108,7 +109,7 @@ final class AccountChecksTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
 
-        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class))->checkNext();
+        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->checkNext();
 
         $this->assertTrue($ran);
         $this->assertSame([AccountCheckResult::SignedIn], $host->checks);

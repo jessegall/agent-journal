@@ -46,6 +46,14 @@ func (executor *recordingExecutor) FolderUse(_ context.Context, request FolderUs
 	return FolderUseReply{Bound: request.Folder == "bound7"}, nil
 }
 
+func (executor *recordingExecutor) MakeFolder(_ context.Context, request AccountFolderRequest) (AccountFolderReply, error) {
+	return AccountFolderReply{Done: true, Reason: "made " + request.Folder}, nil
+}
+
+func (executor *recordingExecutor) RemoveFolder(_ context.Context, request AccountFolderRequest) (AccountFolderReply, error) {
+	return AccountFolderReply{Done: true, Reason: "removed " + request.Folder}, nil
+}
+
 func TestAFolderUseRequestNeedsAPlainIdAndReachesTheExecutor(t *testing.T) {
 	for line, want := range map[string]string{
 		`{"folderUse":{"folder":"bound7"}}`: `{"bound":true}`,
@@ -147,5 +155,25 @@ func TestADrainAnswersWhetherNothingOfTheAccountRuns(t *testing.T) {
 	var reply DrainReply
 	if err := json.Unmarshal(pipe.written.Bytes(), &reply); err != nil || !reply.Drained {
 		t.Fatalf("reply %+v %v", reply, err)
+	}
+}
+
+func TestAnAccountFolderRequestNeedsAPlainIdAndReachesTheExecutor(t *testing.T) {
+	for line, want := range map[string]string{
+		`{"makeFolder":{"folder":"a7"}}`:   `{"done":true,"reason":"made a7"}`,
+		`{"removeFolder":{"folder":"a7"}}`: `{"done":true,"reason":"removed a7"}`,
+	} {
+		pipe := &connection{Reader: strings.NewReader(line + "\n")}
+		if err := AnswerHostRequest(context.Background(), pipe, &recordingExecutor{}); err != nil || strings.TrimSpace(pipe.written.String()) != want {
+			t.Fatalf("%s gave %q, %v", line, pipe.written.String(), err)
+		}
+	}
+
+	for _, line := range []string{`{"makeFolder":{"folder":"../a7"}}`, `{"removeFolder":{"folder":"a/7"}}`,
+		`{"makeFolder":{"folder":"a7"},"removeFolder":{"folder":"a7"}}`} {
+		pipe := &connection{Reader: strings.NewReader(line + "\n")}
+		if err := AnswerHostRequest(context.Background(), pipe, &recordingExecutor{}); !errors.Is(err, ErrMalformedRequest) {
+			t.Fatalf("%s was answered: %v", line, err)
+		}
 	}
 }

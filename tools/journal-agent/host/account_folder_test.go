@@ -133,3 +133,33 @@ func TestTheHostMakesTheHistoryFolderAsTheProgramBeforeItChecksTheAccount(t *tes
 		t.Fatalf("the check ran as %q", checked)
 	}
 }
+
+func TestTheHostMakesAnAccountFolderAsRootForTheProgramAndKeepsTheRootRoots(t *testing.T) {
+	folder := t.TempDir()
+	log := filepath.Join(folder, "calls.log")
+	docker := filepath.Join(folder, "docker")
+	if err := os.WriteFile(docker, []byte("#!/bin/sh\necho \"$*\" >> "+log+"\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	containers := Containers{Docker: docker, Rules: ContainerRules{AgentImage: "sha256:image"}}
+
+	if err := containers.MakeAccountFolder(context.Background(), "a1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := containers.MakeAccountFolder(context.Background(), "../a1"); !errors.Is(err, ErrAccountFolderUnsafe) {
+		t.Fatalf("a path for an id was answered %v", err)
+	}
+
+	content, err := os.ReadFile(log)
+	if err != nil {
+		t.Fatal(err)
+	}
+	made := string(content)
+	for _, want := range []string{"--user 0:0", "--cap-drop ALL", "--cap-add CHOWN", "source=/srv/journal/accounts,target=/accounts",
+		"chown 0:0 /accounts && chmod 0755 /accounts", `mkdir -m 0700 "$folder"; chown 10001:10001 "$folder"`,
+		`mkdir -m 0700 "$folder/projects"`} {
+		if !strings.Contains(made, want) {
+			t.Fatalf("the folder was made without %q: %s", want, made)
+		}
+	}
+}

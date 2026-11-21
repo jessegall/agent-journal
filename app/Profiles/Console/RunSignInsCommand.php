@@ -8,7 +8,10 @@ use App\Agents\Support\ArrangementSetting;
 use App\Files\Contracts\Files;
 use App\Profiles\Exceptions\SignInRunnerRefused;
 use App\Profiles\Support\HostAccountDrain;
+use App\Profiles\Support\HostAccountFolders;
 use App\Profiles\Support\HostSecret;
+use App\Profiles\Support\HostStartSocket;
+use App\Profiles\Support\LocalAccountFolders;
 use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignedSignInHost;
 use App\Profiles\Support\SignInProtocols;
@@ -36,6 +39,9 @@ final class RunSignInsCommand extends Command
             $protocols,
             static fn () => usleep(500_000),
             $files,
+            $arrangement->arrangement->isContained()
+                ? new HostAccountFolders(new HostStartSocket((string) getenv('AGENTS_HOST_START_SOCKET')))
+                : new LocalAccountFolders($files),
             new HostAccountDrain((string) getenv('AGENTS_HOST_START_SOCKET'), $arrangement->arrangement),
         );
 

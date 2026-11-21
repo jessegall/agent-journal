@@ -17,6 +17,7 @@ use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\SignInAttempt;
+use App\Profiles\Support\LocalAccountFolders;
 use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignInProtocols;
 use Carbon\CarbonImmutable;
@@ -67,7 +68,7 @@ final class SignInRestartTest extends TestCase
     {
         $host = new RecordingSignInHost(null);
 
-        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null, $this->app->make(Files::class))->reconcileAtStart();
+        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null, $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->reconcileAtStart();
 
         $this->assertSame([[]], $host->reconciled);
     }

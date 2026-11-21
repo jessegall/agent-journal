@@ -6,9 +6,8 @@ namespace App\Profiles\Support;
 
 use App\Agents\Enums\ArrangementType;
 use App\Files\Contracts\Files;
-use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
-use App\Files\Values\Depth;
+use App\Profiles\Contracts\AccountFolders;
 use App\Profiles\Contracts\AccountOwnerDrain;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Contracts\SignInProtocol;
@@ -36,6 +35,7 @@ final readonly class PrivateSignInProcesses
         private SignInProtocols $protocols,
         private Closure $pause,
         private Files $files,
+        private AccountFolders $folders,
         private AccountOwnerDrain $owners = new HostAccountDrain('', ArrangementType::Local),
     ) {}
 
@@ -189,11 +189,7 @@ final readonly class PrivateSignInProcesses
 
     private function removeDirectory(string $directory): bool
     {
-        $folder = $this->files->pathIn(Place::Accounts, $directory);
-
-        if (! $this->files->isLink($folder) && $this->files->isFolder($folder)) {
-            $this->files->deleteFolder($folder, Depth::levels(Depth::LEVEL_LIMIT));
-        }
+        $this->folders->remove($directory);
 
         return $this->isGone($directory);
     }
@@ -259,7 +255,7 @@ final readonly class PrivateSignInProcesses
      */
     private function makePrivateFolder(string $directory): void
     {
-        $this->files->makeFolder($this->files->pathIn(Place::Accounts, $directory), Permissions::OwnerOnly);
+        $this->folders->make($directory);
         umask(0077);
     }
 }

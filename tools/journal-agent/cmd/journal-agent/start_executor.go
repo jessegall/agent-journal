@@ -24,8 +24,11 @@ type protectedExecutor struct {
 	// bindsAccount asks the agent daemon whether a container binds an account folder; none on a local host, where
 	// no container binds one.
 	bindsAccount func(ctx context.Context, folder string) (bool, error)
-	mutex        sync.Mutex
-	executions   map[string]execution
+	// accountFolders makes and removes account folders on the agent daemon as root; none on a local host, where the
+	// sign-in service makes its folders itself.
+	accountFolders accountFolders
+	mutex          sync.Mutex
+	executions     map[string]execution
 }
 
 // execution is one start the executor runs: its driver, the start key its reports carry and its account.
@@ -146,6 +149,41 @@ func (executor *protectedExecutor) FolderUse(ctx context.Context, request host.F
 	}
 
 	return host.FolderUseReply{Bound: bound}, nil
+}
+
+// accountFolders is the agent daemon's side of an account folder: made and removed by root.
+type accountFolders interface {
+	MakeAccountFolder(ctx context.Context, accountID string) error
+	RemoveAccountFolder(ctx context.Context, accountID string) error
+}
+
+// errNoAccountFolders refuses a folder request on a host whose agents do not run in containers.
+const errNoAccountFolders = "this host runs no containers, so the sign-in service makes its folders itself"
+
+// MakeFolder makes the account's folder on the agent daemon, owned by the program's user.
+func (executor *protectedExecutor) MakeFolder(ctx context.Context, request host.AccountFolderRequest) (host.AccountFolderReply, error) {
+	if executor.accountFolders == nil {
+		return host.AccountFolderReply{Reason: errNoAccountFolders}, nil
+	}
+
+	if err := executor.accountFolders.MakeAccountFolder(ctx, request.Folder); err != nil {
+		return host.AccountFolderReply{Reason: err.Error()}, nil
+	}
+
+	return host.AccountFolderReply{Done: true}, nil
+}
+
+// RemoveFolder removes the account's folder on the agent daemon.
+func (executor *protectedExecutor) RemoveFolder(ctx context.Context, request host.AccountFolderRequest) (host.AccountFolderReply, error) {
+	if executor.accountFolders == nil {
+		return host.AccountFolderReply{Reason: errNoAccountFolders}, nil
+	}
+
+	if err := executor.accountFolders.RemoveAccountFolder(ctx, request.Folder); err != nil {
+		return host.AccountFolderReply{Reason: err.Error()}, nil
+	}
+
+	return host.AccountFolderReply{Done: true}, nil
 }
 
 // report queues the report and sends what is queued; what the journal does not acknowledge now is sent later.
