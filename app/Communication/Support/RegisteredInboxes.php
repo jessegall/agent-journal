@@ -14,6 +14,7 @@ use App\Communication\Contracts\NamedInboxes;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\InboxRecord;
+use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,11 +37,11 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
 
     public function register(string $providerKey, string $providerClass, string $accessClass): void
     {
-        if (! is_subclass_of($providerClass, InboxProvider::class)) {
+        if (! Reflector::isNameSubclassOf($providerClass, InboxProvider::class)) {
             throw InboxProviderInvalid::notAProvider($providerKey, $providerClass);
         }
 
-        if (! is_subclass_of($accessClass, InboxAccess::class)) {
+        if (! Reflector::isNameSubclassOf($accessClass, InboxAccess::class)) {
             throw InboxProviderInvalid::withoutAccess($providerKey, $accessClass);
         }
 

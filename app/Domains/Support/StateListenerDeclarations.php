@@ -9,7 +9,7 @@ use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Declarations\StateMethod;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\StateCatalog\StateTypeRegistry;
-use ReflectionMethod;
+use App\Reflection\Support\Reflector;
 
 /**
  * Collects state listeners from loaders and checks the owners of their methods and source files.
@@ -43,7 +43,7 @@ final readonly class StateListenerDeclarations
             $this->ownership->assertOwnership($event, $listener, $method->name, $declaring);
         }
 
-        $file = new ReflectionMethod($method->stateClass, $method->name)->getFileName();
+        $file = Reflector::of($method->stateClass)->method($method->name)->fileName();
         $source = $this->ownership->stateSource($file, $listener, $event);
 
         if ($source !== $listenerDomain && $source !== $declaring) {

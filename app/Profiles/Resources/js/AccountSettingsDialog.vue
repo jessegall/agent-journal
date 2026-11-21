@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AccountListData, AccountRowData } from '@generated/types/accounts';
-import type { WindowResult } from '@generated/types/page-props';
+import type { WindowResult } from '@kit/PageTypes';
 import { accountStart, activate, remove } from '@generated/routes/accounts';
 import { Link, useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';

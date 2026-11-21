@@ -7,8 +7,9 @@ namespace App\Pipelines\Support;
 use App\Pipelines\Contracts\Pipe;
 use App\Pipelines\Exceptions\NotAPipelineStep;
 use App\Pipelines\Exceptions\StepOutOfOrder;
-use ReflectionMethod;
-use ReflectionNamedType;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\Reflector;
+use PhpOption\None;
 
 /**
  * A pipe of a resolved pipeline, with the input class its handle method takes, read once by reflection.
@@ -32,16 +33,18 @@ final readonly class ResolvedPipe
             throw NotAPipelineStep::named($pipe::class);
         }
 
-        $type = new ReflectionMethod($pipe, 'handle')->getParameters()[0]->getType();
+        $parameters = Reflector::of($pipe)->method('handle')->parameters();
+        $type = $parameters === [] ? None::create() : $parameters[0]->type()
+            ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin());
 
-        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+        if ($type->isEmpty()) {
             return new self($pipe, null);
         }
 
         /**
          * @var class-string $takes
          */
-        $takes = $type->getName();
+        $takes = $type->get()->name();
 
         return new self($pipe, $takes);
     }
@@ -53,7 +56,7 @@ final readonly class ResolvedPipe
      */
     public function handle(object $input): object
     {
-        if ($this->takes !== null && ! $input instanceof $this->takes) {
+        if ($this->takes !== null && ! Reflector::of($this->takes)->isInstance($input)) {
             throw StepOutOfOrder::handing($this->pipe::class, $input);
         }
 

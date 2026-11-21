@@ -10,6 +10,7 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\RecordPolicy;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Values\ProfileAuthorization;
+use App\Reflection\Support\Reflector;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Auth\Access\Gate;
 
@@ -33,7 +34,7 @@ final readonly class PolicyAuthorizer implements Authorizer
             return Response::deny("The profile does not grant {$access->value} on {$policy}.");
         }
 
-        if (! is_subclass_of($policy, RecordPolicy::class)) {
+        if (! Reflector::isNameSubclassOf($policy, RecordPolicy::class)) {
             return Response::allow();
         }
 

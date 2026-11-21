@@ -24,6 +24,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Reads\Providers\ReadsServiceProvider;
 use App\Records\Providers\RecordsServiceProvider;
+use App\Reflection\Providers\ReflectionServiceProvider;
 use App\Scripts\Providers\ScriptsServiceProvider;
 use App\Settings\Providers\SettingsServiceProvider;
 use App\Sharing\Providers\SharingServiceProvider;
@@ -44,6 +45,7 @@ use Domain\Tasks\Providers\TasksServiceProvider;
 
 return [
     AppServiceProvider::class,
+    ReflectionServiceProvider::class,
     FilesServiceProvider::class,
     DomainServiceProvider::class,
     SkillsServiceProvider::class,

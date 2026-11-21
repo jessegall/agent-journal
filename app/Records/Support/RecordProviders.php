@@ -12,6 +12,7 @@ use App\Records\Contracts\RecordProviderRegistration;
 use App\Records\Contracts\RecordResolver;
 use App\Records\Data\RecordCard;
 use App\Records\Exceptions\RecordProviderInvalid;
+use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Container\Container;
@@ -40,7 +41,7 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
     {
         RecordIdentity::assertKnownType($type);
 
-        if (! is_subclass_of($class, RecordProvider::class)) {
+        if (! Reflector::isNameSubclassOf($class, RecordProvider::class)) {
             throw RecordProviderInvalid::notAProvider($type, $class);
         }
 

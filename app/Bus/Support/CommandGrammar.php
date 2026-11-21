@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Files\Support\CodeFiles;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 use BackedEnum;
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionProperty;
-use ReflectionType;
+use PhpOption\Option;
 
 /**
  * What a command may carry and a handler may return (doc 19, section 6.7): whole numbers, text, yes or no and
@@ -19,6 +20,9 @@ use ReflectionType;
 final readonly class CommandGrammar
 {
     private const array SCALARS = ['int', 'string', 'bool', 'float'];
+
+    private const string UNLISTED_ARRAY = 'is an array without a list<int>, list<string>, list of an enum or list of '
+        .'a value docblock';
 
     /**
      * @param  callable(string): bool  $mayName  whether the command's owner may name a value class
@@ -33,17 +37,15 @@ final readonly class CommandGrammar
      */
     public function problemWithProperties(string $class, array $seen = []): string|null
     {
-        $reflection = new ReflectionClass($class);
-
-        foreach ($reflection->getProperties() as $property) {
+        foreach (Reflector::of($class)->properties() as $property) {
             if (! $property->isPublic() || ! $property->isPromoted()) {
-                return "{$property->getName()} is not a public constructor property";
+                return "{$property->name()} is not a public constructor property";
             }
 
-            $problem = $this->problemWithType($property->getType(), $property, [...$seen, $class]);
+            $problem = $this->problemWithType($property->type(), $property, [...$seen, $class]);
 
             if ($problem !== null) {
-                return "{$property->getName()} {$problem}";
+                return "{$property->name()} {$problem}";
             }
         }
 
@@ -51,11 +53,13 @@ final readonly class CommandGrammar
     }
 
     /**
-     * Why a handler's declared return type falls outside the grammar, or null when it fits.
+     * Why a handler method's declared return type falls outside the grammar, or null when it fits.
      */
-    public function problemWithResult(ReflectionType|null $type): string|null
+    public function problemWithResult(ReflectedMethod $handle): string|null
     {
-        if ($type instanceof ReflectionNamedType && $type->getName() === 'void') {
+        $type = $handle->returnType();
+
+        if ($type->isDefined() && $type->get()->isNamedAs('void')) {
             return null;
         }
 
@@ -63,18 +67,16 @@ final readonly class CommandGrammar
     }
 
     /**
+     * @param  Option<DeclaredType>  $type
      * @param  list<string>  $seen
      */
-    private function problemWithType(
-        ReflectionType|null $type,
-        ReflectionProperty|null $property,
-        array $seen,
-    ): string|null {
-        if (! $type instanceof ReflectionNamedType) {
+    private function problemWithType(Option $type, ReflectedProperty|null $property, array $seen): string|null
+    {
+        if (! $type->isDefined() || ! $type->get()->isNamed()) {
             return 'has no single declared type';
         }
 
-        $name = $type->getName();
+        $name = $type->get()->name();
 
         if (in_array($name, self::SCALARS, true)) {
             return null;
@@ -84,8 +86,10 @@ final readonly class CommandGrammar
             return $this->problemWithList($property, $seen);
         }
 
-        if (enum_exists($name)) {
-            return is_subclass_of($name, BackedEnum::class) ? null : "is the enum {$name}, which has no values";
+        if (Reflector::exists($name) && Reflector::of($name)->isEnum()) {
+            return Reflector::of($name)->implements(BackedEnum::class)
+                ? null
+                : "is the enum {$name}, which has no values";
         }
 
         return $this->problemWithValue($name, $seen);
@@ -94,14 +98,19 @@ final readonly class CommandGrammar
     /**
      * @param  list<string>  $seen
      */
-    private function problemWithList(ReflectionProperty|null $property, array $seen): string|null
+    private function problemWithList(ReflectedProperty|null $property, array $seen): string|null
     {
-        $doc = (string) ($property?->getDeclaringClass()->getConstructor()?->getDocComment()
-            ?: $property?->getDocComment());
+        if ($property === null) {
+            return self::UNLISTED_ARRAY;
+        }
 
-        if ($property === null
-            || preg_match('/list<([A-Za-z\\\\]+)>(?:\|null)?\s+\$'.$property->getName().'\b/', $doc, $match) !== 1) {
-            return 'is an array without a list<int>, list<string>, list of an enum or list of a value docblock';
+        $doc = $property->declaringClass()->constructor()
+            ->flatMap(fn (ReflectedMethod $constructor) => $constructor->docComment())
+            ->orElse($property->docComment())
+            ->getOrElse('');
+
+        if (preg_match('/list<([A-Za-z\\\\]+)>(?:\|null)?\s+\$'.$property->name().'\b/', $doc, $match) !== 1) {
+            return self::UNLISTED_ARRAY;
         }
 
         $elementType = ltrim($match[1], '\\');
@@ -112,14 +121,13 @@ final readonly class CommandGrammar
 
         $class = $this->classNamed($elementType, $property);
 
-        if (enum_exists($class)) {
-            return is_subclass_of(
-                $class,
-                BackedEnum::class,
-            ) ? null : "is a list of the enum {$class}, which has no values";
+        if (Reflector::exists($class) && Reflector::of($class)->isEnum()) {
+            return Reflector::of($class)->implements(BackedEnum::class)
+                ? null
+                : "is a list of the enum {$class}, which has no values";
         }
 
-        $problem = class_exists($class) ? $this->problemWithValue(
+        $problem = Reflector::exists($class) && Reflector::of($class)->isClass() ? $this->problemWithValue(
             $class,
             $seen,
         ) : "is typed {$class}, which is no class, enum or allowed type";
@@ -131,16 +139,16 @@ final readonly class CommandGrammar
      * The class a docblock names: a full name as written, a short one through the file's imports, else in the
      * declaring class's namespace, as PHP itself would read it.
      */
-    private function classNamed(string $elementType, ReflectionProperty $property): string
+    private function classNamed(string $elementType, ReflectedProperty $property): string
     {
         if (str_contains($elementType, '\\')) {
             return $elementType;
         }
 
-        $class = $property->getDeclaringClass();
+        $class = $property->declaringClass();
 
-        return self::importsOf((string) $class->getFileName())[$elementType]
-            ?? $class->getNamespaceName().'\\'.$elementType;
+        return self::importsOf($class->fileName()->getOrElse(''))[$elementType]
+            ?? $class->namespaceName().'\\'.$elementType;
     }
 
     /**
@@ -172,13 +180,13 @@ final readonly class CommandGrammar
      */
     private function problemWithValue(string $name, array $seen): string|null
     {
-        if (! class_exists($name)) {
+        if (! Reflector::exists($name) || ! Reflector::of($name)->isClass()) {
             return "is typed {$name}, which is no class, enum or allowed type";
         }
 
-        $reflectedClass = new ReflectionClass($name);
+        $declaration = Reflector::of($name);
 
-        if (! $reflectedClass->isFinal() || ! $reflectedClass->isReadOnly()) {
+        if (! $declaration->isFinal() || ! $declaration->isReadOnly()) {
             return "holds {$name}, which is not a final readonly value";
         }
 

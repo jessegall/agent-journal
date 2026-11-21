@@ -12,12 +12,12 @@ use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Records\Support\RecordIdentity;
+use App\Reflection\Support\Reflector;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PDOException;
-use ReflectionProperty;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
@@ -152,7 +152,7 @@ final class AssignmentStoreTest extends TestCase
     {
         $attempts = 0;
         $conflict = new PDOException('could not serialize access');
-        new ReflectionProperty(Exception::class, 'code')->setValue($conflict, '40001');
+        Reflector::of(Exception::class)->property('code')->writeTo($conflict, '40001');
 
         $this->expectException(AssignmentRetryExhausted::class);
 

@@ -6,11 +6,12 @@ namespace Tests\Architecture\Support;
 
 use App\Agents\Support\AgentContext;
 use App\Agents\Values\StackTarget;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
-use ReflectionType;
-use ReflectionUnionType;
+use App\Reflection\Enums\TypeShape;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\ReflectedParameter;
+use App\Reflection\Support\Reflector;
+use PhpOption\Option;
 use Tests\Architecture\Support\Exceptions\FileDeclaresNoClass;
 
 /**
@@ -74,9 +75,11 @@ final readonly class AgentReferences
         foreach (glob($modelsFolder.'/*.php') ?: [] as $file) {
             $class = self::classIn($file);
 
-            foreach (new ReflectionClass($class)->getMethods() as $method) {
-                if ($method->getDeclaringClass()->getName() === $class && self::namesAnAgent($method)) {
-                    $found[] = new ReflectionClass($class)->getShortName()."::{$method->getName()}()";
+            $model = Reflector::of($class);
+
+            foreach ($model->methods() as $method) {
+                if ($method->declaringClass()->name() === $class && self::namesAnAgent($method)) {
+                    $found[] = $model->shortName()."::{$method->name()}()";
                 }
             }
         }
@@ -84,33 +87,38 @@ final readonly class AgentReferences
         return $found;
     }
 
-    private static function namesAnAgent(ReflectionMethod $method): bool
+    private static function namesAnAgent(ReflectedMethod $method): bool
     {
         $types = [
-            $method->getReturnType(),
-            ...array_map(fn ($parameter) => $parameter->getType(), $method->getParameters()),
+            $method->returnType(),
+            ...array_map(fn (ReflectedParameter $parameter) => $parameter->type(), $method->parameters()),
         ];
 
         return array_filter(
             $types,
-            fn (ReflectionType|null $type) => array_intersect(self::typeNames($type), self::AGENT_TYPES) !== [],
+            fn (Option $type) => array_intersect(self::typeNames($type), self::AGENT_TYPES) !== [],
         ) !== [];
     }
 
     /**
+     * @param  Option<DeclaredType>  $declared
      * @return list<string>
      */
-    private static function typeNames(ReflectionType|null $type): array
+    private static function typeNames(Option $declared): array
     {
-        return match (true) {
-            $type instanceof ReflectionNamedType => [$type->getName()],
-            $type instanceof ReflectionUnionType => array_values(
-                array_map(
-                    fn (ReflectionType $part) => $part instanceof ReflectionNamedType ? $part->getName() : '',
-                    $type->getTypes(),
-                ),
-            ),
-            default => [],
+        if ($declared->isEmpty()) {
+            return [];
+        }
+
+        $type = $declared->get();
+
+        return match ($type->shape) {
+            TypeShape::Named => [$type->name()],
+            TypeShape::Union => array_values(array_map(
+                fn (DeclaredType $part) => $part->isNamed() ? $part->name() : '',
+                $type->members,
+            )),
+            TypeShape::Intersection => [],
         };
     }
 

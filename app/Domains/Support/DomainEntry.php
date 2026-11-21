@@ -39,6 +39,7 @@ use App\Processes\Contracts\CommandRuleProvider;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\RuleScope;
 use App\Records\Contracts\RecordProvider;
+use App\Reflection\Support\Reflector;
 use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Contracts\SettingsProvider;
 use App\Settings\Support\EmptySettingsDefinition;
@@ -61,7 +62,6 @@ use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
-use ReflectionClass;
 use Spatie\LaravelData\Data;
 
 /**
@@ -92,20 +92,20 @@ final readonly class DomainEntry
      */
     public static function fromClass(string $className): self
     {
-        if (! is_subclass_of($className, Domain::class)) {
+        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(Domain::class)) {
             throw NotADomain::for($className);
         }
 
-        $class = new ReflectionClass($className);
-        $file = $class->getFileName();
+        $class = Reflector::of($className);
 
-        if ($file === false) {
+        if ($class->fileName()->isEmpty()) {
             throw NotADomain::for($className);
         }
 
+        $file = $class->fileName()->get();
         $domain = $class->newInstance();
         $name = self::nameOf($className);
-        $namespace = $class->getNamespaceName();
+        $namespace = $class->namespaceName();
 
         return new self(
             name: $name,
@@ -161,7 +161,9 @@ final readonly class DomainEntry
     {
         $className = ltrim($name, '\\');
 
-        return $this->ownsName($className) && is_subclass_of($className, Event::class);
+        return $this->ownsName($className)
+            && Reflector::exists($className)
+            && Reflector::of($className)->isSubclassOf(Event::class);
     }
 
     /**
@@ -255,7 +257,7 @@ final readonly class DomainEntry
         $seen = [];
 
         foreach ($requires as $requiredClass) {
-            if (! is_subclass_of($requiredClass, Domain::class)) {
+            if (! Reflector::exists($requiredClass) || ! Reflector::of($requiredClass)->isSubclassOf(Domain::class)) {
                 throw NotADomain::for($requiredClass);
             }
 
@@ -282,11 +284,11 @@ final readonly class DomainEntry
     private static function checkedSkills(string $name, string $namespace, array $skills): array
     {
         foreach ($skills as $class) {
-            if (! class_exists($class)) {
+            if (! Reflector::exists($class) || ! Reflector::of($class)->isClass()) {
                 throw SkillDeclarationRefused::for($name, $class, 'no such class exists');
             }
 
-            if (! is_subclass_of($class, Skill::class)) {
+            if (! Reflector::of($class)->isSubclassOf(Skill::class)) {
                 throw SkillDeclarationRefused::for($name, $class, 'it does not implement '.Skill::class);
             }
 
@@ -318,14 +320,12 @@ final readonly class DomainEntry
                     $key,
                 ) !== 1 => "its key does not start with {$prefix}",
                 in_array($key, $seen, true) => 'it registers that key twice',
-                ! is_subclass_of(
-                    $definition->parameters,
-                    Data::class,
-                ) => 'its parameters class is no Spatie Data class',
-                ! is_subclass_of(
-                    $definition->evaluator,
-                    SkillConditionEvaluator::class,
-                ) => 'its evaluator does not implement App\\Skills\\Contracts\\SkillConditionEvaluator',
+                ! Reflector::exists($definition->parameters)
+                    || ! Reflector::of($definition->parameters)->isSubclassOf(Data::class)
+                    => 'its parameters class is no Spatie Data class',
+                ! Reflector::exists($definition->evaluator)
+                    || ! Reflector::of($definition->evaluator)->isSubclassOf(SkillConditionEvaluator::class)
+                    => 'its evaluator does not implement App\\Skills\\Contracts\\SkillConditionEvaluator',
                 $definition->version < 1 => 'its version is below 1',
                 default => null,
             };
@@ -674,6 +674,6 @@ final readonly class DomainEntry
      */
     private function provided(string $contract): Option
     {
-        return $this->domain instanceof $contract ? new Some($this->domain) : None::create();
+        return Reflector::of($contract)->isInstance($this->domain) ? new Some($this->domain) : None::create();
     }
 }

@@ -14,6 +14,7 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\RegisteredMiddleware;
 use App\Bus\Support\SharedBindingCheck;
 use App\Pipelines\Contracts\Pipe;
+use App\Reflection\Support\Reflector;
 
 /**
  * Checks every middleware declaration: a CommandMiddleware in its owner's CommandMiddleware folder, built fresh,
@@ -33,7 +34,7 @@ final readonly class CheckCommandMiddleware implements Pipe
                 $class = $declaration->middleware;
                 $key = $declaration->identity();
 
-                if (! class_exists($class) || ! is_subclass_of($class, CommandMiddleware::class)) {
+                if (! Reflector::isNameSubclassOf($class, CommandMiddleware::class)) {
                     throw MiddlewareDeclarationInvalid::for($class, 'it is no class implementing CommandMiddleware');
                 }
 

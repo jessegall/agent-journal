@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Reflection\Support\Reflector;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -23,14 +24,16 @@ final class DomainTestCaseTest extends TestCase
             $domain = basename(dirname($folder, 2));
             $base = "Domain\\{$domain}\\Tests\\TestCase";
 
-            if (! is_subclass_of($base, TestCase::class)) {
+            $isBase = Reflector::find($base)->filter(fn (Reflector $type) => $type->isSubclassOf(TestCase::class));
+
+            if ($isBase->isEmpty()) {
                 $wrong[] = "{$domain} has feature tests but no {$base} extending Tests\\TestCase";
 
                 continue;
             }
 
             foreach ($this->featureTestClassesIn($folder, "Domain\\{$domain}\\Tests\\Feature") as $class) {
-                if (! is_subclass_of($class, $base)) {
+                if (! Reflector::of($class)->isSubclassOf($base)) {
                     $wrong[] = "{$class} does not extend {$base}";
                 }
             }

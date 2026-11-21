@@ -7,6 +7,8 @@ namespace Tests\Architecture;
 use App\Contracts\CommandHandler;
 use App\Contracts\Event;
 use App\Contracts\Listener;
+use App\Reflection\Support\Reflector;
+use PhpOption\None;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -50,12 +52,14 @@ final class EventMarkerTest extends TestCase
         ) as $file) {
             $class = self::classIn($file);
 
-            if ($class === null || interface_exists($class)) {
+            $type = $class === null ? None::create() : Reflector::find($class);
+
+            if ($type->filter(fn (Reflector $found) => ! $found->isInterface())->isEmpty()) {
                 continue;
             }
 
             $inFolder = str_contains($file, $folder);
-            $marked = is_subclass_of($class, $marker);
+            $marked = $type->get()->isSubclassOf($marker);
 
             if ($inFolder && ! $marked) {
                 $unmarked[] = $class;

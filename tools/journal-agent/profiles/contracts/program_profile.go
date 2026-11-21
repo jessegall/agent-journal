@@ -24,6 +24,9 @@ type Start struct {
 	// Account is the saved account the start signs in with, as its prepared claim gives it; nil for a start with
 	// no account, such as a recording.
 	Account *AccountStart
+	// Protected is whether the start runs under the protected-account launch profile: the program alone reads the
+	// sign-in, and every command the model runs goes to the executor's user.
+	Protected bool
 }
 
 // JournalServer is how a start runs the journal's MCP server: the protected PHP binary running the protected

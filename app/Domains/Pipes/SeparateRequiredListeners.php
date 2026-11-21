@@ -9,11 +9,11 @@ use App\Contracts\Attributes\RequiresListener;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\ListenerDeclarations;
 use App\Pipelines\Contracts\Pipe;
+use App\Reflection\Support\Reflector;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use ReflectionClass;
 
 /**
  * Takes the listeners marked InCommandTransaction out of the dispatcher's map into the required map, each event's in
@@ -58,23 +58,23 @@ final readonly class SeparateRequiredListeners implements Pipe
     /**
      * The listener's class when it carries InCommandTransaction, or none.
      *
-     * @return ReflectionClass<object>|null
+     * @return Reflector<object>|null
      */
-    private static function requiredClassOf(string $listener): ReflectionClass|null
+    private static function requiredClassOf(string $listener): Reflector|null
     {
         $class = explode('@', $listener, 2)[0];
 
-        if (! class_exists($class)) {
+        if (! Reflector::exists($class) || ! Reflector::of($class)->isClass()) {
             return null;
         }
 
-        $reflection = new ReflectionClass($class);
+        $declaration = Reflector::of($class);
 
-        return $reflection->getAttributes(InCommandTransaction::class) === [] ? null : $reflection;
+        return $declaration->hasAttribute(InCommandTransaction::class) ? $declaration : null;
     }
 
     /**
-     * @param  ReflectionClass<object>  $class
+     * @param  Reflector<object>  $class
      * @param  list<string>  $earlier  the event's required listeners already taken
      *
      * @throws InvalidListener
@@ -83,11 +83,11 @@ final readonly class SeparateRequiredListeners implements Pipe
         ListenerDeclarations $declarations,
         string $event,
         string $listener,
-        ReflectionClass $class,
+        Reflector $class,
         array $earlier,
     ): void {
         foreach (self::DEFERRING_INTERFACES as $interface) {
-            if ($class->implementsInterface($interface)) {
+            if ($class->implements($interface)) {
                 throw InvalidListener::requiredButDeferred($listener, $event, $interface);
             }
         }
@@ -96,12 +96,12 @@ final readonly class SeparateRequiredListeners implements Pipe
             throw InvalidListener::requiredTwice($listener, $event);
         }
 
-        $owner = $declarations->ownership->domainHoldingListener((string) $class->getFileName());
+        $owner = $declarations->ownership->domainHoldingListener($class->fileName()->getOrElse(''));
         $eventOwner = $declarations->ownership->eventDomain($event, $listener);
 
         $isForeignUndeclared = $owner !== null
             && $owner !== $eventOwner
-            && ! self::isDeclaredBy($event, $class->getName());
+            && ! self::isDeclaredBy($event, $class->name());
 
         if ($isForeignUndeclared) {
             throw InvalidListener::requiredWithoutDeclaration($listener, $event, $owner->name);
@@ -110,12 +110,12 @@ final readonly class SeparateRequiredListeners implements Pipe
 
     private static function isDeclaredBy(string $event, string $listener): bool
     {
-        if (! class_exists($event)) {
+        if (! Reflector::exists($event) || ! Reflector::of($event)->isClass()) {
             return false;
         }
 
-        foreach (new ReflectionClass($event)->getAttributes(RequiresListener::class) as $declaration) {
-            if ($declaration->newInstance()->listener === $listener) {
+        foreach (Reflector::of($event)->attributes(RequiresListener::class) as $declaration) {
+            if ($declaration->listener === $listener) {
                 return true;
             }
         }

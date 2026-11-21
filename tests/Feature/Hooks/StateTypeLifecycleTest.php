@@ -12,10 +12,10 @@ use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
-use ReflectionClass;
-use ReflectionProperty;
 use Tests\Fixtures\Hooks\Lifecycle\Listeners\RegisterNoteState;
 use Tests\Support\SetsEventCachePath;
 use Tests\TestCase;
@@ -30,7 +30,7 @@ final class StateTypeLifecycleTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->discoveryPathsBefore = $this->discoveryPaths()->getValue();
+        $this->discoveryPathsBefore = $this->discoveryPaths()->readStatic();
         $this->eventCachePath = sys_get_temp_dir().'/state-type-lifecycle-events-'.getmypid().'.php';
         $this->useEventCachePath($this->eventCachePath);
         EventServiceProvider::addEventDiscoveryPaths([$this->fixtureListenerFolder()]);
@@ -42,7 +42,7 @@ final class StateTypeLifecycleTest extends TestCase
     {
         parent::tearDown();
 
-        $this->discoveryPaths()->setValue(null, $this->discoveryPathsBefore);
+        $this->discoveryPaths()->writeStatic($this->discoveryPathsBefore);
         $this->useEventCachePath(null);
 
         if (is_file($this->eventCachePath)) {
@@ -105,11 +105,11 @@ final class StateTypeLifecycleTest extends TestCase
 
     private function fixtureListenerFolder(): string
     {
-        return dirname((string) new ReflectionClass(RegisterNoteState::class)->getFileName());
+        return dirname(Reflector::of(RegisterNoteState::class)->fileName()->getOrElse(''));
     }
 
-    private function discoveryPaths(): ReflectionProperty
+    private function discoveryPaths(): ReflectedProperty
     {
-        return new ReflectionProperty(EventServiceProvider::class, 'eventDiscoveryPaths');
+        return Reflector::of(EventServiceProvider::class)->property('eventDiscoveryPaths');
     }
 }

@@ -20,8 +20,8 @@ use App\Bus\Support\CommandGrammar;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\DeclaredCommand;
 use App\Pipelines\Contracts\Pipe;
+use App\Reflection\Support\Reflector;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use ReflectionClass;
 
 /**
  * Reads every owner's commands against the command grammar and finds each one's handler by its name: a command is
@@ -72,21 +72,21 @@ final readonly class ReadCommandHandlers implements Pipe
             throw CommandDeclarationInvalid::for($command, "it is not in {$owner->name}'s Commands folder");
         }
 
-        if (! class_exists($command) || ! is_subclass_of($command, Command::class)) {
+        if (! Reflector::exists($command) || ! Reflector::of($command)->isSubclassOf(Command::class)) {
             throw CommandDeclarationInvalid::for($command, 'it is no class implementing Command');
         }
 
-        $reflection = new ReflectionClass($command);
+        $declaration = Reflector::of($command);
 
-        if (! $reflection->isFinal() || ! $reflection->isReadOnly()) {
+        if (! $declaration->isFinal() || ! $declaration->isReadOnly()) {
             throw CommandDeclarationInvalid::for($command, 'a command is a final readonly class');
         }
 
-        if (! $reflection->isSubclassOf(BaseCommand::class)) {
+        if (! $declaration->isSubclassOf(BaseCommand::class)) {
             throw CommandDeclarationInvalid::for($command, 'a command extends App\\Bus\\Support\\Command');
         }
 
-        if ($reflection->implementsInterface(ShouldQueue::class)) {
+        if ($declaration->implements(ShouldQueue::class)) {
             throw CommandDeclarationInvalid::for(
                 $command,
                 'queueing a command is not supported yet; take ShouldQueue off',
@@ -94,7 +94,7 @@ final readonly class ReadCommandHandlers implements Pipe
         }
 
         foreach (self::SINGLE_ATTRIBUTES as $attribute) {
-            if (count($reflection->getAttributes($attribute)) > 1) {
+            if (count($declaration->attributes($attribute)) > 1) {
                 throw CommandDeclarationInvalid::for($command, 'it repeats '.class_basename($attribute));
             }
         }
@@ -107,7 +107,7 @@ final readonly class ReadCommandHandlers implements Pipe
 
         $handler = self::handlerNamedFor($command);
 
-        if (! class_exists($handler)) {
+        if (! Reflector::exists($handler)) {
             throw CommandHandlerMissing::for($command, $handler);
         }
 

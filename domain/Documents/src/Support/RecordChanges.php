@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Operations\Enums\AccessType;
+use App\Reflection\Support\Reflector;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Illuminate\Database\Eloquent\Model;
@@ -43,6 +44,6 @@ final readonly class RecordChanges
 
     private function createdByActor(Model $record): bool
     {
-        return method_exists($record, 'isCreatedBy') && $record->isCreatedBy($this->actors->actor());
+        return Reflector::of($record)->hasMethod('isCreatedBy') && $record->isCreatedBy($this->actors->actor());
     }
 }

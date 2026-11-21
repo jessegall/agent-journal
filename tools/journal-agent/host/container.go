@@ -105,30 +105,27 @@ const (
 	initReadyLine = "journal-init: ready"
 	// executorEndpoint is the private folder of the executor's socket in a protected-account container.
 	executorEndpoint = "/run/journal-exec:uid=10002,gid=10001,mode=0750,size=1m"
-	// protectedShell is the shell bridge Claude Code takes as its shell in a protected-account container: every command
-	// the model runs goes, unparsed, to the executor (docs/accounts/claude-integration.md, section Shell handoff).
-	protectedShell = "CLAUDE_CODE_SHELL=/opt/journal/shell/bash"
 	protectedUser    = "0:0"
 )
 
 // protectedCapabilities are exactly the capabilities a protected-account init needs to drop to its users.
 var protectedCapabilities = []string{"SETUID", "SETGID", "SETPCAP"}
 
-// isProtected is whether the manifest starts with the protected-account profile.
-func (manifest ContainerManifest) isProtected() bool {
+// IsProtected is whether the manifest starts with the protected-account profile.
+func (manifest ContainerManifest) IsProtected() bool {
 	return manifest.LaunchProfile == LaunchProtectedAccount
 }
 
 // hasKnownProfile is whether the manifest names a launch profile the host knows.
 func (manifest ContainerManifest) hasKnownProfile() bool {
-	return manifest.LaunchProfile == "" || manifest.LaunchProfile == LaunchStandard || manifest.isProtected()
+	return manifest.LaunchProfile == "" || manifest.LaunchProfile == LaunchStandard || manifest.IsProtected()
 }
 
 // startsAsProfile is whether the user and capabilities are exactly the ones its launch profile allows: a named user
 // and none for standard; root with the three protected capabilities, a read-only root, no new privileges and an
 // account mount for protected-account.
 func (manifest ContainerManifest) startsAsProfile() bool {
-	if !manifest.isProtected() {
+	if !manifest.IsProtected() {
 		return len(manifest.Capabilities) == 0 && manifest.User != ""
 	}
 
@@ -249,12 +246,12 @@ func (manifest ContainerManifest) DockerCreateArguments(name string, labels Laun
 		"--ulimit", "nofile=" + strconv.Itoa(manifest.Budgets.OpenFiles),
 	}
 	arguments = append(arguments, labels.arguments()...)
-	if manifest.isProtected() {
+	if manifest.IsProtected() {
 		for _, capability := range protectedCapabilities {
 			arguments = append(arguments, "--cap-add", capability)
 		}
 
-		arguments = append(arguments, "--entrypoint", protectedInit, "--tmpfs", executorEndpoint, "--env", protectedShell)
+		arguments = append(arguments, "--entrypoint", protectedInit, "--tmpfs", executorEndpoint)
 	}
 
 	if manifest.ReadOnlyRoot {
@@ -513,7 +510,7 @@ func (containers Containers) Create(
 		return "", err
 	}
 
-	if manifest.isProtected() {
+	if manifest.IsProtected() {
 		if err := containers.CheckAccountFolder(ctx, manifest.AccountFolder()); err != nil {
 			return "", err
 		}
@@ -541,7 +538,7 @@ func (containers Containers) Create(
 		return "", err
 	}
 
-	output, err := containers.command(ctx, process.arguments(arguments, manifest.isProtected())...).Output()
+	output, err := containers.command(ctx, process.arguments(arguments, manifest.IsProtected())...).Output()
 	return strings.TrimSpace(string(output)), err
 }
 

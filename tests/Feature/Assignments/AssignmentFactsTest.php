@@ -13,6 +13,7 @@ use App\Assignments\Events\AssignmentsChanged;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Records\Support\RecordIdentity;
+use App\Reflection\Support\Reflector;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
@@ -21,7 +22,6 @@ use Illuminate\Database\DatabaseTransactionsManager;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use PDOException;
-use ReflectionProperty;
 use RuntimeException;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
@@ -93,7 +93,7 @@ final class AssignmentFactsTest extends TestCase
     {
         $attempts = 0;
         $conflict = new PDOException('could not serialize access');
-        new ReflectionProperty(Exception::class, 'code')->setValue($conflict, '40001');
+        Reflector::of(Exception::class)->property('code')->writeTo($conflict, '40001');
 
         $this->app->make(AssignmentTransaction::class)->run(function () use (&$attempts, $conflict): void {
             $attempts++;

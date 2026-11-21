@@ -12,10 +12,10 @@ use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;
 use App\Records\Commands\UnlinkRecords;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use ReflectionProperty;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\Ticks\InheritedTickingLoader;
 use Tests\Fixtures\Hooks\Ticks\TickingLoader;
@@ -58,10 +58,13 @@ final class TickDeclarationsTest extends TestCase
             CarbonImmutable::now(),
             new StackTarget('a', 's'),
         );
-        $fields = array_map(
-            fn (ReflectionProperty $property) => $property->getName(),
-            new ReflectionClass($context)->getProperties(ReflectionProperty::IS_PUBLIC),
-        );
+        $fields = array_values(array_map(
+            fn (ReflectedProperty $property) => $property->name(),
+            array_filter(
+                Reflector::of($context)->properties(),
+                fn (ReflectedProperty $property) => $property->isPublic(),
+            ),
+        ));
 
         $this->assertSame(['now', 'delta', 'enteredAt', 'target'], $fields);
     }

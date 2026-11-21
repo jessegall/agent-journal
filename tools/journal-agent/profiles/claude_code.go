@@ -41,6 +41,10 @@ const claudeCodeJournalTools = "mcp__journal__*"
 // The client's MCP timeouts in milliseconds: to start the server, and for one tool call.
 const (
 	claudeCodeMcpStartTimeout = "15000"
+	// claudeCodeProtectedShell is the shell bridge of a protected start: Claude Code takes a shell only by the name bash
+	// and starts it as a login shell, so the bridge takes the shell's place and hands every command, unparsed, to the
+	// executor's user (docs/accounts/claude-integration.md, section Shell handoff).
+	claudeCodeProtectedShell = "/opt/journal/shell/bash"
 	claudeCodeMcpToolTimeout  = "30000"
 	claudeCodeJournalTimeout  = 30000
 )
@@ -136,6 +140,9 @@ func (ClaudeCode) Environment(inherited []string, start contracts.Start) []strin
 	}
 	if start.Account != nil {
 		kept = append(kept, "JOURNAL_LAUNCH_REF="+start.Account.LaunchReference)
+	}
+	if start.Protected {
+		kept = append(kept, "CLAUDE_CODE_SHELL="+claudeCodeProtectedShell)
 	}
 
 	return kept
@@ -332,6 +339,11 @@ func (ClaudeCode) RejectContrary(extraArguments []string) error {
 		for _, refused := range []string{"--dangerously-skip-permissions", "--allowedTools", "--allowed-tools", "--tools", "--agents", "--setting-sources", "--continue", "-c", "--mcp-config", "--bare", "--permission-mode"} {
 			if argument == refused || strings.HasPrefix(argument, refused+"=") {
 				return fmt.Errorf("the argument %s would undo the claude profile", argument)
+			}
+		}
+		for _, name := range []string{"CLAUDE_CODE_SHELL", "shellPrefix", "CLAUDE_CONFIG_DIR"} {
+			if strings.Contains(argument, name) {
+				return fmt.Errorf("the argument %s names %s, which a protected start fixes", argument, name)
 			}
 		}
 		for _, tool := range claudeCodeDelegationTools {

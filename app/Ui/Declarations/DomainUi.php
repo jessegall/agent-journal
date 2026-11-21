@@ -11,6 +11,7 @@ use App\Files\Exceptions\FolderClosed;
 use App\Files\Exceptions\LinkLeavesPlace;
 use App\Files\Exceptions\LinkLoop;
 use App\Files\Support\CodeFiles;
+use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
@@ -128,7 +129,7 @@ final readonly class DomainUi
      */
     public function assertImplements(string $declaration, string $className, string $interface): void
     {
-        if (! is_subclass_of($className, $interface)) {
+        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf($interface)) {
             throw UiResolverInvalid::notA($declaration, $className, $interface);
         }
     }
@@ -138,7 +139,8 @@ final readonly class DomainUi
      */
     public function assertInvokableController(string $declaration, string $controller): void
     {
-        if (! str_starts_with($controller, $this->namespace.'\\') || ! method_exists($controller, '__invoke')) {
+        if (! str_starts_with($controller, $this->namespace.'\\') || ! Reflector::exists($controller)
+            || ! Reflector::of($controller)->hasMethod('__invoke')) {
             throw UiResolverInvalid::controllerNotOwned($declaration, $controller);
         }
     }

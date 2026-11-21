@@ -8,8 +8,9 @@ use App\Pipelines\Contracts\Pipe;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\PipelineAdapter;
 use App\Pipelines\Support\PipelineRunner;
-use ReflectionClass;
-use ReflectionNamedType;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -34,7 +35,8 @@ final class PipelineRulesTest extends TestCase
         $wronglyNamed = array_values(array_filter(
             self::classes(),
             fn (string $class): bool => str_ends_with($class, 'Pipeline')
-                && (is_subclass_of($class, Pipe::class) || ! is_subclass_of($class, PipelineDefinition::class)),
+                && (Reflector::of($class)->isSubclassOf(Pipe::class)
+                    || ! Reflector::of($class)->isSubclassOf(PipelineDefinition::class)),
         ));
 
         $this->assertSame([], $wronglyNamed);
@@ -52,7 +54,7 @@ final class PipelineRulesTest extends TestCase
             $startsWithVerb = preg_match('/^[A-Z][a-z]+/', $name, $firstWord) === 1
                 && in_array($firstWord[0], self::VERBS, true);
 
-            if (is_subclass_of($class, PipelineDefinition::class) && ! $startsWithVerb) {
+            if (Reflector::of($class)->isSubclassOf(PipelineDefinition::class) && ! $startsWithVerb) {
                 $vague[] = $class;
             }
         }
@@ -65,9 +67,10 @@ final class PipelineRulesTest extends TestCase
         $running = [];
 
         foreach (self::classes() as $class) {
-            $isAdapter = is_a($class, PipelineAdapter::class, true);
+            $type = Reflector::of($class);
+            $isAdapter = $type->is(PipelineAdapter::class);
 
-            if (is_subclass_of($class, Pipe::class) && ! $isAdapter && self::reachesPipelines($class, [])) {
+            if ($type->isSubclassOf(Pipe::class) && ! $isAdapter && self::reachesPipelines($class, [])) {
                 $running[] = $class;
             }
         }
@@ -85,24 +88,30 @@ final class PipelineRulesTest extends TestCase
     private static function reachesPipelines(string $class, array $seen): bool
     {
         $seen[$class] = true;
-        $constructor = new ReflectionClass($class)->getConstructor();
+        $parameters = Reflector::of($class)->constructor()
+            ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+            ->getOrElse([]);
 
-        foreach ($constructor?->getParameters() ?? [] as $parameter) {
-            $type = $parameter->getType();
+        foreach ($parameters as $parameter) {
+            $type = $parameter->type()
+                ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin());
 
-            if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+            if ($type->isEmpty()) {
                 continue;
             }
-            /**
-             * @var class-string $given
-             */
-            $given = $type->getName();
 
-            if ($given === PipelineRunner::class || is_subclass_of($given, PipelineAdapter::class)) {
+            $given = $type->get()->name();
+            $givenType = Reflector::find($given);
+
+            if ($given === PipelineRunner::class
+                || $givenType->filter(fn (Reflector $found) => $found->isSubclassOf(PipelineAdapter::class))
+                    ->isDefined()) {
                 return true;
             }
 
-            if (! isset($seen[$given]) && class_exists($given) && self::reachesPipelines($given, $seen)) {
+            $isClass = $givenType->filter(fn (Reflector $found) => $found->isClass())->isDefined();
+
+            if (! isset($seen[$given]) && $isClass && self::reachesPipelines($given, $seen)) {
                 return true;
             }
         }

@@ -1029,6 +1029,7 @@ use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\ProvidesModelRecords;
 use App\Records\Support\RecordIdentity;
+use App\Reflection\Support\Reflector;
 use App\Scripts\Attributes\ScriptMember;
 use App\Scripts\Attributes\ScriptObject;
 use App\Scripts\Contracts\ScriptKeywordDefinition;
@@ -2564,6 +2565,7 @@ final class CoreApi
                 SkillOwnerRequired::class,
             )
             ->support(
+                Reflector::class,
                 RaisesEvents::class,
                 InsertsAbsentRows::class,
                 BelongsToOneActor::class,

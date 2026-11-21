@@ -7,6 +7,7 @@ namespace Tests\Architecture;
 use App\Bus\Support\CommandRegistry;
 use App\CoreApi;
 use App\CoreCommands;
+use App\Reflection\Support\Reflector;
 use App\Sharing\Commands\ApproveShareRequest;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Commands\ConfigureShareGateway;
@@ -126,7 +127,7 @@ final class SharingBoundaryTest extends TestCase
 
         foreach ($sharing as $command) {
             $this->assertTrue($registry->has($command), "{$command} is not registered.");
-            $this->assertFalse(is_subclass_of($command, ShouldQueue::class), "{$command} is queued.");
+            $this->assertFalse(Reflector::of($command)->implements(ShouldQueue::class), "{$command} is queued.");
         }
     }
 

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Domains\Support\Domain;
+use App\Reflection\Support\Reflector;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\ServiceProvider;
+use PhpOption\Option;
 
 /**
  * A file outside every domain that puts the application together, and the one type of domain or Core class it may name.
@@ -30,13 +32,25 @@ enum CompositionSite: string
      */
     public function mayName(string $className): bool
     {
+        $type = Reflector::find($className);
+
         return match ($this) {
-            self::Domains => is_subclass_of($className, Domain::class),
-            self::Providers => is_subclass_of($className, ServiceProvider::class),
-            self::Application => str_contains($className, '\\Http\\Middleware\\') && class_exists($className),
-            self::Authentication => is_subclass_of($className, Authenticatable::class),
-            self::Seeders => is_subclass_of($className, Seeder::class),
+            self::Domains => self::isSubclass($type, Domain::class),
+            self::Providers => self::isSubclass($type, ServiceProvider::class),
+            self::Application => str_contains($className, '\\Http\\Middleware\\')
+                && $type->filter(fn (Reflector $found) => $found->isClass())->isDefined(),
+            self::Authentication => self::isSubclass($type, Authenticatable::class),
+            self::Seeders => self::isSubclass($type, Seeder::class),
         };
+    }
+
+    /**
+     * @param  Option<Reflector<object>>  $type
+     * @param  class-string  $parent
+     */
+    private static function isSubclass(Option $type, string $parent): bool
+    {
+        return $type->filter(fn (Reflector $found) => $found->isSubclassOf($parent))->isDefined();
     }
 
     /**

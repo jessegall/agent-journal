@@ -13,8 +13,8 @@ use App\Files\Support\LocalFiles;
 use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
 use App\Files\Values\FolderEntry;
+use App\Reflection\Support\Reflector;
 use Illuminate\Filesystem\Filesystem;
-use ReflectionMethod;
 use Tests\TestCase;
 
 /**
@@ -81,15 +81,15 @@ final class LocalFilesListTest extends TestCase
 
     public function test_a_list_or_pattern_inside_a_read_is_refused(): void
     {
-        $whileReading = new ReflectionMethod(LocalFiles::class, 'whileReading');
+        $whileReading = Reflector::of(LocalFiles::class)->method('whileReading');
         $outer = $this->path('app/readme.md');
 
         $this->assertThrows(
-            fn () => $whileReading->invoke($this->files, $outer, fn () => $this->files->list($this->path('app'))),
+            fn () => $whileReading->invokeOn($this->files, $outer, fn () => $this->files->list($this->path('app'))),
             FileReadReentered::class,
         );
         $this->assertThrows(
-            fn () => $whileReading->invoke($this->files, $outer, fn () => $this->files->matching($this->path('app/*'))),
+            fn () => $whileReading->invokeOn($this->files, $outer, fn () => $this->files->matching($this->path('app/*'))),
             FileReadReentered::class,
         );
     }

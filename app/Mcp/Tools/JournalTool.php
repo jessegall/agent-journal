@@ -13,10 +13,8 @@ use App\Mcp\Support\ToolArguments;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Server\Tool;
-use PhpOption\None;
 use PhpOption\Option;
-use PhpOption\Some;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 
 /**
  * The base of every journal tool: a strict published schema and arguments limited to the fields it declares.
@@ -30,14 +28,10 @@ abstract class JournalTool extends Tool
 
     final public function isVisibleTo(DiscoveryProfile $profile): bool
     {
-        $type = new ReflectionClass($this);
-
-        while ($type !== false) {
-            foreach ($type->getAttributes(VisibleToProfiles::class) as $attribute) {
-                return in_array($profile, $attribute->newInstance()->profiles, true);
+        foreach (Reflector::of($this)->lineage() as $type) {
+            if ($type->hasAttribute(VisibleToProfiles::class)) {
+                return in_array($profile, $type->attribute(VisibleToProfiles::class)->profiles, true);
             }
-
-            $type = $type->getParentClass();
         }
 
         return true;
@@ -48,11 +42,7 @@ abstract class JournalTool extends Tool
      */
     final public function writeDeclaration(): Option
     {
-        foreach (new ReflectionClass($this)->getAttributes(Dispatches::class) as $declaration) {
-            return new Some($declaration->newInstance());
-        }
-
-        return None::create();
+        return Reflector::of($this)->attributes(Dispatches::class)->first();
     }
 
     /**

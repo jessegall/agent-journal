@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Engine\Contracts\EngineListener;
+use App\Reflection\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
-use ReflectionClass;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -114,14 +114,14 @@ final readonly class RaiseCallers
      */
     private function outsideUnit(string $path, string $type): string|null
     {
-        $reflection = class_exists($type) ? new ReflectionClass($type) : null;
-        $isModel = $reflection !== null && $reflection->isSubclassOf(Model::class);
-        $isRequired = $reflection !== null && $reflection->getAttributes($this->requiredListenerAttribute) !== [];
+        $declaration = Reflector::exists($type) ? Reflector::of($type) : null;
+        $isModel = $declaration !== null && $declaration->isSubclassOf(Model::class);
+        $isRequired = $declaration !== null && $declaration->hasAttribute($this->requiredListenerAttribute);
 
         return match (true) {
             $isModel, $isRequired => null,
             str_contains($path, '/Listeners/') => 'a public listener',
-            $reflection?->implementsInterface(EngineListener::class) === true => 'an engine tick listener',
+            $declaration?->implements(EngineListener::class) === true => 'an engine tick listener',
             str_contains($path, '/Jobs/') => 'a queued job',
             str_contains($path, '/Console/') => 'a console command',
             str_contains($path, '/Http/') => 'a controller',
