@@ -56,11 +56,13 @@ final readonly class GateListenersByDomain implements Pipe
     ): string|AvailableListener {
         $class = explode('@', $listener, 2)[0];
 
-        if (! Reflector::exists($class) || ! Reflector::of($class)->isClass()) {
+        $listenerType = Reflector::find($class)->filter(fn (Reflector $type) => $type->isClass());
+
+        if ($listenerType->isEmpty()) {
             throw InvalidListener::staleCache($listener, $event);
         }
 
-        $file = Reflector::of($class)->fileName()->getOrElse('');
+        $file = $listenerType->get()->fileName()->getOrElse('');
         $domain = $declarations->ownership->domainHoldingListener($file);
 
         return $domain === null ? $listener : new AvailableListener($domain->name, $listener);

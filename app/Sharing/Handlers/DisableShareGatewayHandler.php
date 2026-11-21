@@ -39,7 +39,8 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
         ShareInstallation::create();
         $configuration = ShareGatewayConfiguration::lockById($command->configurationId);
 
-        $this->endings->revokeAll(Share::lockUnendedOf($configuration->id), ActorIdentity::of($owner));
+        $actor = ActorIdentity::of($owner);
+        $this->endings->revokeAll(Share::lockUnendedOf($configuration->id), $actor);
         $this->cancelOpensOf($configuration);
 
         if (ShareGatewayEndpoint::anyRunningOf($configuration)) {
@@ -47,7 +48,7 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
         }
 
         $configuration->disable();
-        ShareAudit::create(null, ShareAuditType::GatewayChanged, ActorIdentity::of($owner), 'disabled');
+        ShareAudit::create(null, ShareAuditType::GatewayChanged, $actor, 'disabled');
 
         return $configuration->toConfiguration();
     }

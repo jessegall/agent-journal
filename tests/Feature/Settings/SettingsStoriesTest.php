@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
@@ -68,7 +69,7 @@ final class SettingsStoriesTest extends TestCase
         )->settingDeclarations(new CoreSettings());
         $this->app->instance(SettingRegistry::class, $registry);
         $this->reviews = $registry->definition('Reviews');
-        $this->commands = new RegisteredSettingCommands($registry);
+        $this->commands = new RegisteredSettingCommands($registry, new CatalogueReflectorFactory());
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));

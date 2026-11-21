@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Registration\ListenerPolicy;
@@ -82,8 +83,8 @@ final class DomainEventRulesTest extends TestCase
     public function test_state_event_permissions_and_manual_registration_use_the_listener_policy(): void
     {
         $registry = DomainRegistry::from([TasksDomain::class, PlansDomain::class]);
-        $ownership = new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders());
-        $states = new StateListenerDeclarations($ownership);
+        $ownership = new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory());
+        $states = new StateListenerDeclarations($ownership, new CatalogueReflectorFactory());
         $policy = new ListenerPolicy($this->app->make(PipelineRunner::class), $ownership);
         $declaration = new StateMethods()->forState(PlanState::class)[self::TASK_CLOSED];
 
@@ -107,7 +108,8 @@ final class DomainEventRulesTest extends TestCase
     {
         $registry = $this->app->make(DomainRegistry::class);
         $states = new StateListenerDeclarations(
-            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders()),
+            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory()),
+            new CatalogueReflectorFactory(),
         );
         $methods = new StateMethods();
         $loaders = $this->app->make(StateTypes::class)->registry()->loaders();

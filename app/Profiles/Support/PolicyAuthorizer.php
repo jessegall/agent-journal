@@ -10,6 +10,7 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\RecordPolicy;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Values\ProfileAuthorization;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Auth\Access\Gate;
@@ -24,6 +25,7 @@ final readonly class PolicyAuthorizer implements Authorizer
         private ProfileAuthorization $grants,
         private PolicyCatalogue $catalogue,
         private Gate $gate,
+        private ReflectorFactory $reflectors,
     ) {}
 
     public function evaluate(string $policy, Actor $actor, object|string $subject, AccessType $access): Response
@@ -34,7 +36,7 @@ final readonly class PolicyAuthorizer implements Authorizer
             return Response::deny("The profile does not grant {$access->value} on {$policy}.");
         }
 
-        if (! Reflector::isNameSubclassOf($policy, RecordPolicy::class)) {
+        if (! $this->reflectors->isSubclassOf($policy, RecordPolicy::class)) {
             return Response::allow();
         }
 

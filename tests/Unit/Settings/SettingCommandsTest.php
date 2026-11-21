@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Domains\Support\DomainRegistry;
 use App\Settings\Commands\DisableSettingGroup;
 use App\Settings\Commands\EnableSettingGroup;
@@ -46,7 +47,7 @@ final class SettingCommandsTest extends TestCase
         parent::setUp();
 
         $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings());
-        $this->commands = new RegisteredSettingCommands($registry);
+        $this->commands = new RegisteredSettingCommands($registry, new CatalogueReflectorFactory());
         $this->reviews = $registry->definition('Reviews');
     }
 

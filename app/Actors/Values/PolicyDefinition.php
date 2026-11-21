@@ -31,7 +31,7 @@ final readonly class PolicyDefinition
      */
     public function grantsForAgents(bool $coordinator, bool $readOnly): array
     {
-        if (Reflector::isNameSubclassOf($this->policy, OwnerPolicy::class)) {
+        if (Reflector::factory()->isSubclassOf($this->policy, OwnerPolicy::class)) {
             return [];
         }
 
@@ -48,7 +48,7 @@ final readonly class PolicyDefinition
 
     public function isRecord(): bool
     {
-        return Reflector::isNameSubclassOf($this->policy, RecordPolicy::class);
+        return Reflector::factory()->isSubclassOf($this->policy, RecordPolicy::class);
     }
 
     /**
@@ -66,12 +66,12 @@ final readonly class PolicyDefinition
         }
 
         if ($readOnly
-            && Reflector::isNameSubclassOf($this->policy, WorkspacePolicy::class)
+            && Reflector::factory()->isSubclassOf($this->policy, WorkspacePolicy::class)
             && $access->changesFiles()) {
             return false;
         }
 
-        if (Reflector::isNameSubclassOf($this->policy, RestrictedPolicy::class)) {
+        if (Reflector::factory()->isSubclassOf($this->policy, RestrictedPolicy::class)) {
             return $this->policy::additionalAudience($access)->admitsAgent($coordinator, $readOnly);
         }
 

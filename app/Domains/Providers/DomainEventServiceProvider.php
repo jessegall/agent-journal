@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Providers;
 
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Bus\Support\RequiredListenerRegistry;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
@@ -123,7 +124,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
 
     private function stateEvents(): StateEvents
     {
-        return new StateListenerDeclarations($this->listenerOwnership())->declarations(
+        return new StateListenerDeclarations($this->listenerOwnership(), $this->app->make(ReflectorFactory::class))->declarations(
             $this->app->make(StateTypes::class)->registrationSnapshot(),
             $this->app->make(StateMethods::class),
         );
@@ -178,6 +179,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
             $this->app->make(DomainRegistry::class),
             CoreApi::exports(),
             $this->coreListenerFolders(),
+            $this->app->make(ReflectorFactory::class),
         );
     }
 

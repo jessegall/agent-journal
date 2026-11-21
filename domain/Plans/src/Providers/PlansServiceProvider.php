@@ -47,11 +47,13 @@ final class PlansServiceProvider extends ServiceProvider
         ReadEntitlements $reads,
         DockRegistration $docks,
     ): void {
+        $readGrant = ReadEntitlement::grant(PlanPolicy::class);
+
         $docks->offerDockFor($docks->register(Plan::LINK_TYPE, DockedPlan::class, PlanDocking::class));
-        $reads->declare('plans_read', ReadEntitlement::grant(PlanPolicy::class));
-        $reads->declare('plans_list', ReadEntitlement::grant(PlanPolicy::class));
-        $reads->declare('plans_assigned', ReadEntitlement::grant(PlanPolicy::class));
-        $reads->declare('phases_read', ReadEntitlement::grant(PlanPolicy::class));
+        $reads->declare('plans_read', $readGrant);
+        $reads->declare('plans_list', $readGrant);
+        $reads->declare('plans_assigned', $readGrant);
+        $reads->declare('phases_read', $readGrant);
 
         // A missing plan is not found; a refused start is a form error on the start button.
         if ($exceptions instanceof Handler) {

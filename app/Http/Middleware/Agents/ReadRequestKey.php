@@ -12,6 +12,7 @@ use App\AgentRequests\Support\CallRoutes;
 use App\Agents\Support\ReadGrant;
 use App\Agents\Values\ReadRequest;
 use App\Bus\Support\RequestKey;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 use Closure;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -34,6 +35,7 @@ final readonly class ReadRequestKey
         private ExceptionHandler $failures,
         private Application $app,
         private ReadGrant $reads,
+        private ReflectorFactory $reflectors,
     ) {}
 
     /**
@@ -48,7 +50,7 @@ final readonly class ReadRequestKey
     public function handle(Request $request, Closure $next): Response
     {
         $call = $request->route()?->defaults[CallRoutes::CALL_DEFAULT] ?? null;
-        $declaration = is_string($call) && Reflector::exists($call) ? CallDeclaration::of($call) : null;
+        $declaration = is_string($call) && $this->reflectors->exists($call) ? CallDeclaration::of($call) : null;
 
         if ($declaration !== null) {
             self::requireDeclaredFields($request, $declaration);

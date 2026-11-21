@@ -28,13 +28,15 @@ final readonly class RequestOutcomes
         $command = $request->operation->command();
         $caller = $this->callers->forCommand($command, $this->callers->current()->actor);
         $receipt = CommandReceipt::readFor($caller, $command, $request->requestKey);
+        $notYetObservable = RequestOutcomeData::of(RequestOutcome::NotYetObservable);
+        $expired = RequestOutcomeData::of(RequestOutcome::Expired);
 
         if ($receipt === null || ! $receipt->isForTarget($request->target())) {
-            return RequestOutcomeData::of(RequestOutcome::NotYetObservable);
+            return $notYetObservable;
         }
 
         if ($receipt->isExpired()) {
-            return RequestOutcomeData::of(RequestOutcome::Expired);
+            return $expired;
         }
 
         return match ($receipt->state) {
@@ -44,8 +46,8 @@ final readonly class RequestOutcomes
                 'code' => (string) $receipt->refusal_code,
                 'message' => (string) $receipt->refusal_message,
             ]),
-            ReceiptState::Taken => RequestOutcomeData::of(RequestOutcome::NotYetObservable),
-            ReceiptState::Expired => RequestOutcomeData::of(RequestOutcome::Expired),
+            ReceiptState::Taken => $notYetObservable,
+            ReceiptState::Expired => $expired,
         };
     }
 

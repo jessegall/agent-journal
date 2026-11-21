@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 use App\Settings\Commands\DisableSettingGroup;
 use App\Settings\Commands\EnableSettingGroup;
@@ -39,7 +40,7 @@ use BackedEnum;
  */
 final readonly class RegisteredSettingCommands implements SettingCommands
 {
-    public function __construct(private SettingRegistry $registry) {}
+    public function __construct(private SettingRegistry $registry, private ReflectorFactory $reflectors) {}
 
     /**
      * @throws SettingHandleUnknown
@@ -109,7 +110,7 @@ final readonly class RegisteredSettingCommands implements SettingCommands
         $reference = $this->settingReference($setting);
         $backing = $input->value;
 
-        if (Reflector::of($setting->enum)->asInstance($input)->isEmpty() || ! is_string($backing)) {
+        if ($this->reflectors->make($setting->enum)->asInstance($input)->isEmpty() || ! is_string($backing)) {
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 
@@ -132,7 +133,7 @@ final readonly class RegisteredSettingCommands implements SettingCommands
         $reference = $this->settingReference($setting);
         $backing = $input->value;
 
-        if (Reflector::of($setting->enum)->asInstance($input)->isEmpty() || ! is_int($backing)) {
+        if ($this->reflectors->make($setting->enum)->asInstance($input)->isEmpty() || ! is_int($backing)) {
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reflection\Support;
 
+use Closure;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -24,7 +25,10 @@ final class ReflectedProperty
      */
     private Option $type;
 
-    public function __construct(private readonly ReflectionProperty $property)
+    /**
+     * @param  Closure(class-string): Reflector<object>  $reflectorOf  answers the Reflector of a declaring class
+     */
+    public function __construct(private readonly ReflectionProperty $property, private readonly Closure $reflectorOf)
     {
         $label = "property {$property->getDeclaringClass()->getName()}::\${$property->getName()}";
         $this->declaredAttributes = new DeclarationAttributes(fn () => $property->getAttributes(), $label);
@@ -146,7 +150,7 @@ final class ReflectedProperty
      */
     public function declaringClass(): Reflector
     {
-        return Reflector::of($this->property->getDeclaringClass()->getName());
+        return ($this->reflectorOf)($this->property->getDeclaringClass()->getName());
     }
 
     /**

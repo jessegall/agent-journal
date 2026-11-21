@@ -9,6 +9,7 @@ use App\Docking\Sources\Contracts\DockSourceChanged;
 use App\Docking\Sources\Contracts\DockSourceDeleted;
 use App\Domains\Exceptions\InvalidListener;
 use App\Exports\Support\Exports;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\DeclaredType;
 use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\UserInterfaceUpdater;
@@ -39,6 +40,7 @@ final readonly class ListenerOwnership
         private DomainRegistry $registry,
         private Exports $coreExports,
         private array $coreListenerFolders,
+        private ReflectorFactory $reflectors,
     ) {}
 
     public function assertOwnership(
@@ -62,8 +64,7 @@ final readonly class ListenerOwnership
         if ($domain === null) {
             $isExpanded = array_filter(
                 self::EXPANDED_INTERFACES,
-                fn (string $interface) => Reflector::exists($interface)
-                    && Reflector::isNameSubclassOf($event, $interface),
+                fn (string $interface) => $this->reflectors->isSubclassOf($event, $interface),
             ) !== [];
             $isExportedUiEvent = $owner->exportsEvent($event) && $isExpanded;
 
@@ -96,7 +97,7 @@ final readonly class ListenerOwnership
      */
     public function stateDomain(string $class, string $listener, string $event): DomainEntry|null
     {
-        $domain = $this->stateSource(Reflector::of($class)->fileName(), $listener, $event);
+        $domain = $this->stateSource($this->reflectors->make($class)->fileName(), $listener, $event);
         $ownsClass = $domain === null ? str_starts_with($class, 'App\\') : $domain->ownsName($class);
 
         if (! $ownsClass) {
@@ -137,7 +138,7 @@ final readonly class ListenerOwnership
      */
     public function listenerDomain(string $class, string $listener, string $event): DomainEntry|null
     {
-        $file = Reflector::of($class)->fileName()->getOrElse('');
+        $file = $this->reflectors->make($class)->fileName()->getOrElse('');
         $domain = $this->domainHoldingListener($file);
         $isCoreListener = array_any(
             $this->coreListenerFolders,
@@ -205,7 +206,6 @@ final readonly class ListenerOwnership
             ->getOrElse('');
 
         return in_array($type, self::EXPANDED_INTERFACES, true)
-            && Reflector::exists($type)
-            && Reflector::isNameSubclassOf($event, $type);
+            && Reflector::factory()->isSubclassOf($event, $type);
     }
 }

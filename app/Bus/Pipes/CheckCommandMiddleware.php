@@ -34,7 +34,7 @@ final readonly class CheckCommandMiddleware implements Pipe
                 $class = $declaration->middleware;
                 $key = $declaration->identity();
 
-                if (! Reflector::isNameSubclassOf($class, CommandMiddleware::class)) {
+                if (! Reflector::factory()->isSubclassOf($class, CommandMiddleware::class)) {
                     throw MiddlewareDeclarationInvalid::for($class, 'it is no class implementing CommandMiddleware');
                 }
 

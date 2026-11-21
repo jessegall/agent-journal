@@ -25,6 +25,10 @@ final readonly class BuildRules
      */
     public function all(): array
     {
+        $watchFlag = OptionGrammar::flag('--watch');
+
+        $modeOption = OptionGrammar::valued(OperandType::Name, '--mode');
+
         $build = CommandClassSet::of(CommandClass::Build, CommandClass::Read, CommandClass::Write);
 
         return [
@@ -33,8 +37,8 @@ final readonly class BuildRules
                 new ProgramSpellings('vite'),
                 ['build'],
                 ArgumentGrammar::none()->withOptions(
-                    OptionGrammar::valued(OperandType::Name, '--mode'),
-                    OptionGrammar::flag('--watch'),
+                    $modeOption,
+                    $watchFlag,
                 ),
                 $build,
             ),
@@ -43,8 +47,8 @@ final readonly class BuildRules
                 new ProgramSpellings('vp'),
                 ['build'],
                 ArgumentGrammar::none()->withOptions(
-                    OptionGrammar::valued(OperandType::Name, '--mode'),
-                    OptionGrammar::flag('--watch'),
+                    $modeOption,
+                    $watchFlag,
                 ),
                 $build,
             ),

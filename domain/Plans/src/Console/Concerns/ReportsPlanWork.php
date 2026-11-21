@@ -14,15 +14,17 @@ trait ReportsPlanWork
 {
     protected function workReport(PlanWorkResultData $work): CommandReport
     {
+        $successReport = CommandReport::ending(self::SUCCESS);
+
         if ($this->option('json') === true) {
             $json = json_encode($work->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
 
-            return CommandReport::ending(self::SUCCESS)->line($json);
+            return $successReport->line($json);
         }
 
         $counts = "{$work->changed} changed, {$work->unchanged} unchanged, {$work->skipped} skipped as finished";
 
-        return CommandReport::ending(self::SUCCESS)
+        return $successReport
             ->line(
                 sprintf(
                     'Cascade over %s %s and its unfinished work: %s.',

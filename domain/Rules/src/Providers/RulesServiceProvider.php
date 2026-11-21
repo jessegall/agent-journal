@@ -34,8 +34,10 @@ final class RulesServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions, ReadEntitlements $reads): void
     {
-        $reads->declare('rules_read', ReadEntitlement::grant(RulePolicy::class));
-        $reads->declare('rules_list', ReadEntitlement::grant(RulePolicy::class));
+        $readGrant = ReadEntitlement::grant(RulePolicy::class);
+
+        $reads->declare('rules_read', $readGrant);
+        $reads->declare('rules_list', $readGrant);
 
         // A missing rule is not found; a rule no longer proposed is a review error on the review buttons.
         if ($exceptions instanceof Handler) {

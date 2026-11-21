@@ -9,6 +9,7 @@ use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Declarations\StateMethod;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\StateCatalog\StateTypeRegistry;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 
 /**
@@ -16,7 +17,7 @@ use App\Reflection\Support\Reflector;
  */
 final readonly class StateListenerDeclarations
 {
-    public function __construct(private ListenerOwnership $ownership) {}
+    public function __construct(private ListenerOwnership $ownership, private ReflectorFactory $reflectors) {}
 
     public function declarations(StateTypeRegistry $types, StateMethods $methods): StateEvents
     {
@@ -43,7 +44,7 @@ final readonly class StateListenerDeclarations
             $this->ownership->assertOwnership($event, $listener, $method->name, $declaring);
         }
 
-        $file = Reflector::of($method->stateClass)->method($method->name)->fileName();
+        $file = $this->reflectors->make($method->stateClass)->method($method->name)->fileName();
         $source = $this->ownership->stateSource($file, $listener, $event);
 
         if ($source !== $listenerDomain && $source !== $declaring) {

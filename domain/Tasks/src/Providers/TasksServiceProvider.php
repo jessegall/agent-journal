@@ -46,10 +46,12 @@ final class TasksServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links, ReadEntitlements $reads, DockRegistration $docks): void
     {
+        $readGrant = ReadEntitlement::grant(TaskPolicy::class);
+
         $docks->offerDockFor($docks->register(Task::LINK_TYPE, DockedTask::class, TaskDocking::class));
-        $reads->declare('tasks_read', ReadEntitlement::grant(TaskPolicy::class));
-        $reads->declare('tasks_list', ReadEntitlement::grant(TaskPolicy::class));
-        $reads->declare('tasks_assigned', ReadEntitlement::grant(TaskPolicy::class));
+        $reads->declare('tasks_read', $readGrant);
+        $reads->declare('tasks_list', $readGrant);
+        $reads->declare('tasks_assigned', $readGrant);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $this->commands([AssignedTasksCommand::class]);
         $links->register([

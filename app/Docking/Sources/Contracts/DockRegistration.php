@@ -14,8 +14,8 @@ use App\Docking\Sources\DockDefinition;
 interface DockRegistration
 {
     /**
-     * @param  class-string<Dockable>  $class
-     * @param  class-string<DockableProvider>  $provider
+     * @param  string  $class  a class name, refused unless it is a Dockable
+     * @param  string  $provider  a class name, refused unless it is a DockableProvider
      *
      * @throws DockDefinitionInvalid
      */

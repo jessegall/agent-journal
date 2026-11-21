@@ -12,7 +12,7 @@ use App\Records\Exceptions\RecordProviderInvalid;
 interface RecordProviderRegistration
 {
     /**
-     * @param  class-string<RecordProvider>  $providerClass
+     * @param  string  $providerClass  a class name, refused unless it is a RecordProvider
      *
      * @throws RecordProviderInvalid
      */

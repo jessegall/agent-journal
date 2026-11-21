@@ -109,7 +109,7 @@ final class CallGroups
         foreach ($code->folder($code->projectPathOf("{$folder}/*Call.php")) as $entry) {
             $class = $namespace.'\\'.basename($entry->name(), '.php');
 
-            if (Reflector::isNameSubclassOf($class, JournalCall::class)) {
+            if (Reflector::factory()->isSubclassOf($class, JournalCall::class)) {
                 $calls[] = $class;
             }
         }

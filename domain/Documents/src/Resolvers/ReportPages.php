@@ -43,9 +43,11 @@ final readonly class ReportPages implements ReportReader
         ) : $this->continuations->open($cursor, self::TOOL, (string) $id);
         $card = new ReportReadCard($report->number, $report->id, $report->attention);
 
+        $body = MarkdownText::body($report->body);
+
         return match (PublicationView::from($position->filters['view'])) {
             PublicationView::Summary => $this->pages->summary(
-                MarkdownText::body($report->body),
+                $body,
                 $report->abstract,
                 $position,
                 self::KEY,
@@ -54,7 +56,7 @@ final readonly class ReportPages implements ReportReader
             PublicationView::Body => $this->chunks->page(
                 $report->body,
                 $cursor === null
-                    ? $this->chunks->range($position, MarkdownText::body($report->body), $arguments)
+                    ? $this->chunks->range($position, $body, $arguments)
                     : $position,
                 self::KEY,
                 $card->toArray(),

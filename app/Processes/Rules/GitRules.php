@@ -25,6 +25,8 @@ final readonly class GitRules
      */
     public function all(): array
     {
+        $pathOperands = ArgumentGrammar::operands(OperandType::Path);
+
         $read = $this->classes(CommandClass::Read);
         $write = $this->classes(CommandClass::Read, CommandClass::Write);
         $delete = $this->classes(CommandClass::Read, CommandClass::Delete);
@@ -258,7 +260,7 @@ final readonly class GitRules
             $this->rule(['worktree', 'list'], ArgumentGrammar::options(['--porcelain']), $read),
             $this->rule(
                 ['add'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(
+                $pathOperands->repeating()->endingOptionsAtDoubleDash()->withOptions(
                     ...$this->flags(
                         '-A',
                         '--all',
@@ -277,7 +279,7 @@ final readonly class GitRules
             ),
             $this->rule(
                 ['commit'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(
+                $pathOperands->repeating()->endingOptionsAtDoubleDash()->withOptions(
                     ...$this->valued('-m', '--message', '-F', '--file', '--author', '--date'),
                     ...$this->flags(
                         '-a',
@@ -359,21 +361,21 @@ final readonly class GitRules
             ),
             $this->rule(
                 ['clean'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(
+                $pathOperands->repeating()->endingOptionsAtDoubleDash()->withOptions(
                     ...$this->flags('-f', '-d', '-x', '-X', '-n', '--dry-run', '-q', '-i'),
                 ),
                 $delete,
             ),
             $this->rule(
                 ['rm'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(
+                $pathOperands->repeating()->endingOptionsAtDoubleDash()->withOptions(
                     ...$this->flags('-r', '--cached', '-f', '--force', '-q', '-n', '--dry-run'),
                 ),
                 $this->classes(CommandClass::Read, CommandClass::Write, CommandClass::Delete),
             ),
             $this->rule(
                 ['mv'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(
+                $pathOperands->repeating()->endingOptionsAtDoubleDash()->withOptions(
                     ...$this->flags('-f', '-k', '-n', '-v'),
                 ),
                 $this->classes(CommandClass::Read, CommandClass::Write, CommandClass::Delete),
@@ -437,7 +439,7 @@ final readonly class GitRules
             ),
             $this->rule(
                 ['submodule', 'update'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
+                $pathOperands->repeating()->withOptions(
                     ...$this->flags('--init', '--recursive', '--remote'),
                 ),
                 $remoteChange,

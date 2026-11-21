@@ -7,6 +7,7 @@ namespace App\Web\Support;
 use App\Docking\Data\DockOfferData;
 use App\Docking\Sources\Contracts\DockableWindow;
 use App\Docking\Sources\Contracts\DockOffers;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Declarations\ResolverDefinition;
@@ -37,6 +38,7 @@ final readonly class WindowResults implements WindowResultsContract
         private DockOffers $offers,
         private VisibilityChecks $visibility,
         private LoggerInterface $log,
+        private ReflectorFactory $reflectors,
     ) {}
 
     /**
@@ -52,7 +54,7 @@ final readonly class WindowResults implements WindowResultsContract
         try {
             $windowContent = $read();
 
-            if (Reflector::of($resolver->dataClass)->asInstance($windowContent)->isEmpty()) {
+            if ($this->reflectors->make($resolver->dataClass)->asInstance($windowContent)->isEmpty()) {
                 throw ReaderDataMismatch::for($key, $resolver->dataClass, $windowContent::class);
             }
 
