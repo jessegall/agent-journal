@@ -100,6 +100,7 @@ const handlers: Record<StatusActionData['type'], () => void> = {
     },
     'check-capacity': checkCapacity,
     'sign-in': () => router.visit(accountsPage.url()),
+    'open-terminal': () => router.visit(terminalPage.url(props.agent.id)),
     dismiss,
     'cancel-start': cancelStart,
 };

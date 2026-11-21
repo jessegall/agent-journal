@@ -126,6 +126,24 @@ final class AgentStatusTest extends TestCase
                 'Waiting for sign-in',
                 ['sign-in'],
             ],
+            'first-run setup with a terminal' => [
+                self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired), terminal: true),
+                SessionState::Idle,
+                'Finish setup',
+                ['open-terminal'],
+            ],
+            'first-run setup without a terminal' => [
+                self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired)),
+                SessionState::Idle,
+                'Finish setup',
+                [],
+            ],
+            'unreadable screen' => [
+                self::live(self::runtime(RuntimeActivity::Idle, HoldReason::ScreenUnreadable)),
+                SessionState::Idle,
+                "The journal can't read the program screen.",
+                [],
+            ],
             'navigation hold' => [
                 self::live(self::runtime(RuntimeActivity::Idle, HoldReason::NavigationNeeded)),
                 SessionState::Idle,
@@ -192,6 +210,15 @@ final class AgentStatusTest extends TestCase
         );
     }
 
+    public function test_a_setup_hold_without_a_terminal_asks_the_host_operator(): void
+    {
+        $evidence = self::live(self::runtime(RuntimeActivity::Starting, HoldReason::OnboardingRequired));
+
+        $status = AgentStatus::of($evidence, self::words(false));
+
+        $this->assertSame('Ask the host operator to finish setup in the running program.', $status->reason);
+    }
+
     public function test_a_retired_agent_offers_no_lifecycle_command(): void
     {
         $evidence = new AgentEvidence(true, null, null, null, null, false, null, null, null, true, false);
@@ -220,6 +247,7 @@ final class AgentStatusTest extends TestCase
         LaunchOutcome|null $launch = null,
         ProcessStartState $start = ProcessStartState::Running,
         DriverRequestStatus|null $request = null,
+        bool $terminal = false,
     ): AgentEvidence {
         return new AgentEvidence(
             false,
@@ -233,6 +261,7 @@ final class AgentStatusTest extends TestCase
             $launch,
             false,
             false,
+            $terminal,
         );
     }
 

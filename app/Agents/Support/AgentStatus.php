@@ -109,7 +109,8 @@ final readonly class AgentStatus
         };
     }
 
-    // A fresh hold of the current process that waits for someone takes over the display.
+    // A fresh hold of the current process that waits for someone takes over the display, with its own words and the
+    // place it is answered; a login or a secret is answered in the program or on the host, never in chat.
     private static function held(AgentEvidence $evidence): self|null
     {
         $runtime = $evidence->runtime;
@@ -118,33 +119,20 @@ final readonly class AgentStatus
             return null;
         }
 
-        return match ($runtime->hold) {
-            HoldReason::None, HoldReason::Interrupted => null,
-            HoldReason::LoginRequired => self::plain(
-                SessionState::WaitingForSignIn,
-                $evidence,
-                [StatusAction::of(StatusActionType::SignIn)],
-            ),
-            HoldReason::Compacting => self::labelled(SessionState::Working, 'Compacting', $evidence, []),
-            default => self::labelled(SessionState::Idle, self::holdLabel($runtime->hold), $evidence, []),
-        };
-    }
+        $hold = $runtime->hold;
 
-    private static function holdLabel(HoldReason $hold): string
-    {
-        return match ($hold) {
-            HoldReason::OnboardingRequired => 'Finish setup',
-            HoldReason::TrustRequired => 'Waiting for trust',
-            HoldReason::PermissionRequired => 'Waiting for permission',
-            HoldReason::UserInput, HoldReason::DriverInput => 'Waiting for input',
-            HoldReason::UpdateRequired => 'Update required',
-            HoldReason::UnknownScreen => 'Unknown screen',
-            HoldReason::ScreenUnreadable => 'Screen unreadable',
-            HoldReason::NavigationNeeded => 'Waiting for the main desk',
-            HoldReason::UsageLimited => 'Usage limit reached',
-            HoldReason::NeedsAttention => 'Needs attention',
-            HoldReason::None, HoldReason::Interrupted, HoldReason::Compacting, HoldReason::LoginRequired => 'Held',
+        if ($hold === HoldReason::None) {
+            return null;
+        }
+
+        $copy = HoldCopy::of($hold, $evidence->hasTerminal);
+        $state = match ($hold) {
+            HoldReason::LoginRequired => SessionState::WaitingForSignIn,
+            HoldReason::Compacting => SessionState::Working,
+            default => SessionState::Idle,
         };
+
+        return self::labelled($state, $copy->label, $evidence, $copy->actions, null, $copy->reason);
     }
 
     // A live session: its supervised start, its runtime's fresh activity, or unknown when neither can say.
@@ -320,6 +308,7 @@ final readonly class AgentStatus
         AgentEvidence $evidence,
         array $actions,
         StatusOperation|null $operation = null,
+        string|null $reason = null,
     ): self {
         $commandOutcome = self::commandOutcomeOf($evidence);
         $dismiss = $commandOutcome !== null && $evidence->showsLaunchRefusal()
@@ -329,7 +318,7 @@ final readonly class AgentStatus
         return new self(
             $state,
             $commandOutcome === null ? $label : "{$label} · {$commandOutcome}",
-            null,
+            $reason,
             null,
             $operation,
             $commandOutcome,

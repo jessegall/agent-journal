@@ -28,6 +28,7 @@ final readonly class AgentEvidence
         public LaunchOutcome|null $launch,
         public bool $resumable,
         public bool $canCancelLaunch,
+        public bool $hasTerminal = false,
     ) {}
 
     public function hasLiveSession(): bool

@@ -22,6 +22,7 @@ enum StatusActionType: string
     case Dismiss = 'dismiss';
     case CancelStart = 'cancel-start';
     case RecheckSwitch = 'recheck-switch';
+    case OpenTerminal = 'open-terminal';
 
     /**
      * The button's words; a retry names the operation it repeats.
@@ -39,6 +40,7 @@ enum StatusActionType: string
             self::Dismiss => 'Dismiss',
             self::CancelStart => 'Cancel start',
             self::RecheckSwitch => 'Check and continue switch',
+            self::OpenTerminal => 'Open the program',
         };
     }
 }
