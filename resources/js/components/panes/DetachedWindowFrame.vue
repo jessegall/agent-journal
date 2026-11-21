@@ -21,9 +21,7 @@ const props = defineProps<{ window: DetachedWindow }>();
 const store = usePaneLayout();
 const isMenuOpen = ref(false);
 
-const shown = computed(() =>
-    store.windows.value.find((each) => each.key === props.window.key),
-);
+const shown = computed(() => store.windowOf(props.window.key));
 
 function change(patch: Partial<Omit<DetachedWindow, 'key'>>): void {
     store.apply(

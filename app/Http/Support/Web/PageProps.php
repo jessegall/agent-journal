@@ -57,8 +57,8 @@ final readonly class PageProps
     }
 
     /**
-     * Home: one optional prop per window, each reading only its own part of the query, window[full.page.key], and one
-     * per section of a window's slots.
+     * Home: one optional prop per window, each reading only its own part of the query, window[full.page.key], one per
+     * copy of a window the visit asks for, and one per section of a window's slots.
      *
      * @return array<string, mixed>
      */
@@ -74,6 +74,13 @@ final readonly class PageProps
             $props[$page->propName] = $this->inertia->optional(
                 fn () => $this->pageResult($page, $request, $request->windowQuery($page->key)),
             );
+
+            // A further copy of the window reads its own part of the query, window[<full page key>~<copy id>].
+            foreach ($request->copiesAskedFor($page->propName) as $copyId) {
+                $props["{$page->propName}__{$copyId}"] = $this->inertia->optional(
+                    fn () => $this->pageResult($page, $request, $request->windowQuery("{$page->key}~{$copyId}")),
+                );
+            }
 
             if ($page->isHome()) {
                 continue;

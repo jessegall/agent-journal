@@ -3,6 +3,7 @@ import {
     closeWindow,
     defaultLayout,
     moveWindow,
+    originalKeyOf,
     pane,
     panesIn,
     splitPane,
@@ -282,7 +283,7 @@ export function arrangementFrom(
     const gone = shownWindows({
         grid: value.grid,
         detached: value.detached,
-    }).filter((key) => !knownWindows.includes(key));
+    }).filter((key) => !knownWindows.includes(originalKeyOf(key)));
 
     return {
         grid: gone.reduce((grid, key) => closeWindow(grid, key), value.grid),

@@ -6281,6 +6281,7 @@ constant	DatabaseSettingsCatalogue::TITLE
 constant	DeadlineExpired::CODE
 constant	DecimalSetting::MOST_DIGITS
 constant	DecimalSetting::MOST_FRACTIONAL_DIGITS
+constant	DeclaredPageRequest::COPY_LIMIT
 constant	DeclaredRouteKey::NAME
 constant	DeliveredSkillsAccess::DELIVERED_SKILL
 constant	DeliveredSkillsAccess::OTHER_RUNTIME
@@ -6464,9 +6465,9 @@ constant	JournalTools::SERVER
 constant	JournalTools::TOOL_PREFIX
 constant	JournalUnavailable::CODE
 constant	LaunchLimits::PASS_LIMIT
-constant	LayoutLimits::MOST_DEPTH
-constant	LayoutLimits::MOST_PARTS
-constant	LayoutLimits::MOST_ROWS
+constant	LayoutLimits::DEPTH_LIMIT
+constant	LayoutLimits::PART_LIMIT
+constant	LayoutLimits::ROW_LIMIT
 constant	LibraryWindowResolver::SHARING_NOTICE
 constant	LifecycleCommands::MAXIMUM
 constant	LimitMcpMessage::BYTE_LIMIT
@@ -11220,6 +11221,7 @@ method	DeclaredPageGate::__construct()
 method	DeclaredPageGate::contextFor()
 method	DeclaredPageGate::permits()
 method	DeclaredPageRequest::chosenSession()
+method	DeclaredPageRequest::copiesAskedFor()
 method	DeclaredPageRequest::inspectedPage()
 method	DeclaredPageRequest::parameter()
 method	DeclaredPageRequest::plainQuery()
@@ -11931,10 +11933,11 @@ method	DomainUi::__construct()
 method	DomainUi::assertImplements()
 method	DomainUi::assertInvokableController()
 method	DomainUi::componentFile()
-method	DomainUi::declaredLayoutFile()
 method	DomainUi::declaring()
 method	DomainUi::fullKey()
 method	DomainUi::of()
+method	DomainUi::presentationFile()
+method	DomainUi::presentationName()
 method	DomainUi::uri()
 method	DraftClosed::__construct()
 method	DraftClosing::__construct()
@@ -13821,6 +13824,7 @@ method	InvalidRecordReference::status()
 method	InvalidRecordReference::unreadable()
 method	InvalidScript::__construct()
 method	InvalidScript::withDiagnostics()
+method	InvalidSectionDeclaration::readerReturnsNoLayout()
 method	InvalidSectionDeclaration::resolverReturnsNoData()
 method	InvalidSectionDeclaration::slotNotFullKey()
 method	InvalidShellAnswer::forAnswer()
@@ -19323,6 +19327,7 @@ method	SecondForwardingSeat::status()
 method	Section::__construct()
 method	Section::actions()
 method	Section::at()
+method	Section::layout()
 method	Section::make()
 method	Section::preamble()
 method	Section::visibleWhen()
@@ -32840,6 +32845,7 @@ property	Section::$component
 property	Section::$dataClass
 property	Section::$firstLine
 property	Section::$heading
+property	Section::$isDeclared
 property	Section::$key
 property	Section::$lastLine
 property	Section::$level
@@ -35283,6 +35289,8 @@ variable	$conversationId
 variable	$conversationKey
 variable	$conversations
 variable	$cookie
+variable	$copies
+variable	$copyId
 variable	$coreExports
 variable	$coreGroups
 variable	$coreRoot

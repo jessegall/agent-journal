@@ -12,9 +12,7 @@ const props = defineProps<{ drag: WindowDrag }>();
 
 const store = usePaneLayout();
 
-const window = computed(() =>
-    store.windows.value.find((each) => each.key === props.drag.windowKey),
-);
+const window = computed(() => store.windowOf(props.drag.windowKey));
 
 const hint = computed(() => {
     const target = props.drag.target;

@@ -65,6 +65,34 @@ final class PagePropsTest extends TestCase
         $this->assertSame($result->windowFields, $result->toArray()['data']);
     }
 
+    public function test_two_copies_of_one_window_each_read_their_own_part_of_homes_query(): void
+    {
+        $request = DeclaredPageRequest::create(
+            '/?window[shelf.shelves][q]=oak&window[shelf.shelves~a1b2c3d4e5f6][q]=pine&window[shelf.shelves~0f0f0f0f0f0f][q]=elm',
+        );
+        $request->headers->set('X-Inertia-Partial-Data', 'window_shelf_shelves__a1b2c3d4e5f6,window_shelf_shelves__0f0f0f0f0f0f,window_shelf_shelves__not-a-copy');
+        $props = $this->app->make(PageProps::class)->forHome($request);
+
+        $this->assertArrayNotHasKey('window_shelf_shelves__not-a-copy', $props);
+        $this->assertSame('oak', ($props['window_shelf_shelves'])()->windowFields['titles'][0]);
+        $this->assertSame('pine', ($props['window_shelf_shelves__a1b2c3d4e5f6'])()->windowFields['titles'][0]);
+        $this->assertSame('elm', ($props['window_shelf_shelves__0f0f0f0f0f0f'])()->windowFields['titles'][0]);
+    }
+
+    public function test_home_serves_no_more_than_its_copy_limit_of_one_window(): void
+    {
+        $asked = array_map(fn (int $copy) => sprintf('window_shelf_shelves__%012x', $copy), range(1, DeclaredPageRequest::COPY_LIMIT + 3));
+        $request = DeclaredPageRequest::create('/');
+        $request->headers->set('X-Inertia-Partial-Data', implode(',', $asked));
+
+        $copies = array_filter(
+            array_keys($this->app->make(PageProps::class)->forHome($request)),
+            fn (string $prop) => str_starts_with($prop, 'window_shelf_shelves__'),
+        );
+
+        $this->assertCount(DeclaredPageRequest::COPY_LIMIT, $copies);
+    }
+
     public function test_a_window_query_its_request_refuses_is_a_validation_error_not_a_failed_window(): void
     {
         $this->expectException(ValidationException::class);

@@ -11,7 +11,7 @@ import {
     shownWindows,
 } from './arrangement';
 import type { DropTarget } from './arrangement';
-import { panesIn, zoneAt } from './paneLayout';
+import { pane, panesIn, windowsIn, zoneAt } from './paneLayout';
 
 const screen = { width: 1440, height: 900 };
 const home = () => defaultArrangement('chat', ['plans', 'rules']);
@@ -190,6 +190,23 @@ describe('detached windows', () => {
 });
 
 describe('a stored or imported arrangement', () => {
+    it('keeps a stored copy of a window that is still there and drops a copy of one that is gone', () => {
+        const stored = {
+            grid: pane(
+                ['chat', 'plans~a1b2c3d4e5f6', 'gone~0f0f0f0f0f0f'],
+                'pane-1',
+            ),
+            detached: [],
+        };
+
+        const applied = arrangementFrom(stored, ['chat', 'plans']);
+
+        expect(applied && windowsIn(applied.grid)).toEqual([
+            'chat',
+            'plans~a1b2c3d4e5f6',
+        ]);
+    });
+
     it('leaves out windows Home no longer has', () => {
         const stored = detachWindow(
             home(),

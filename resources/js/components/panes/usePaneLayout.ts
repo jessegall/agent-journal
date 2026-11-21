@@ -22,6 +22,7 @@ import type {
     DropTarget,
     Screen,
 } from '@/components/panes/arrangement';
+import { originalKeyOf } from '@/components/panes/paneLayout';
 import type { LayoutNode, PaneWindow } from '@/components/panes/paneLayout';
 
 /**
@@ -44,6 +45,10 @@ export type PaneLayoutStore = {
     layout: ComputedRef<LayoutNode>;
     detached: ComputedRef<DetachedWindow[]>;
     windows: ComputedRef<PaneWindow[]>;
+    /**
+     * The window a pane tab's key shows, a copy's key naming the window it copies; undefined once it is gone.
+     */
+    windowOf(key: string): PaneWindow | undefined;
     closedWindows: ComputedRef<PaneWindow[]>;
     presets: ComputedRef<Preset[]>;
     isDefault: ComputedRef<boolean>;
@@ -89,6 +94,8 @@ export function providePaneLayout(
         layout: computed(() => arrangement.value.grid),
         detached: computed(() => arrangement.value.detached),
         windows: windowList,
+        windowOf: (key) =>
+            windowList.value.find((each) => each.key === originalKeyOf(key)),
         closedWindows: computed(() =>
             windowList.value.filter(
                 (each) => !shownWindows(arrangement.value).includes(each.key),
@@ -119,7 +126,9 @@ export function providePaneLayout(
     }
 
     onMounted(() => {
-        const applied = readStoredJson('local', storageKey, (decoded) => arrangementFrom(decoded, knownWindows.value));
+        const applied = readStoredJson('local', storageKey, (decoded) =>
+            arrangementFrom(decoded, knownWindows.value),
+        );
 
         if (applied) {
             arrangement.value = keptOnScreen(applied, screen());

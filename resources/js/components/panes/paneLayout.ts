@@ -69,6 +69,51 @@ function newId(prefix: string): string {
     return `${prefix}-${crypto.randomUUID()}`;
 }
 
+/**
+ * What joins a window's key and a copy's own id in the copy's key, such as web.plans~c4f1a2b9.
+ */
+const COPY_MARK = '~';
+
+/**
+ * The key of the window a pane tab shows: the key itself, or for a copy the key of the window it copies.
+ */
+export function originalKeyOf(windowKey: string): string {
+    return windowKey.split(COPY_MARK)[0];
+}
+
+/**
+ * The copy's own id in its key, or null for the window itself.
+ */
+export function copyIdOf(windowKey: string): string | null {
+    const [, copyId] = windowKey.split(COPY_MARK);
+
+    return copyId ?? null;
+}
+
+/**
+ * Opens a further copy of a window as the active tab of a pane, under a new key of its own that the copy keeps when
+ * it is moved; the window it copies stays where it is.
+ */
+export function copyWindow(
+    node: LayoutNode,
+    windowKey: string,
+    paneId: string,
+): LayoutNode {
+    const copyKey = `${originalKeyOf(windowKey)}${COPY_MARK}${crypto.randomUUID().replaceAll('-', '').slice(0, 12)}`;
+
+    return mapNodes(node, (each) => {
+        if (each.type !== 'pane' || each.id !== paneId) {
+            return each;
+        }
+
+        return {
+            ...each,
+            windows: [...each.windows, copyKey],
+            active: copyKey,
+        };
+    });
+}
+
 export function pane(windows: string[], id: string = newId('pane')): Pane {
     return {
         type: 'pane',
@@ -133,9 +178,7 @@ export function withRatio(
  */
 export function centreSplit(node: LayoutNode, splitId: string): LayoutNode {
     return mapNodes(node, (each) =>
-        isSplit(each, splitId)
-            ? { ...each, ratio: 0.5 }
-            : each,
+        isSplit(each, splitId) ? { ...each, ratio: 0.5 } : each,
     );
 }
 
@@ -156,9 +199,7 @@ export function activate(
  */
 export function toggleLimitWidth(node: LayoutNode, paneId: string): LayoutNode {
     return mapNodes(node, (each) =>
-        isPane(each, paneId)
-            ? { ...each, limitWidth: !each.limitWidth }
-            : each,
+        isPane(each, paneId) ? { ...each, limitWidth: !each.limitWidth } : each,
     );
 }
 

@@ -14,6 +14,11 @@ use Illuminate\Foundation\Http\FormRequest;
 final class DeclaredPageRequest extends FormRequest
 {
     /**
+     * The most copies of one window Home serves in one request.
+     */
+    public const int COPY_LIMIT = 8;
+
+    /**
      * @return array<string, list<string>>
      */
     public function rules(): array
@@ -36,6 +41,25 @@ final class DeclaredPageRequest extends FormRequest
     public function parameter(string $name): string
     {
         return $this->string($name)->toString();
+    }
+
+    /**
+     * The ids of the copies of a window whose props this partial visit asks for by name, <prop>__<copy id>, at most
+     * COPY_LIMIT of them; an id is only an address, read as twelve hexadecimal characters.
+     *
+     * @return list<string>
+     */
+    public function copiesAskedFor(string $propName): array
+    {
+        $copies = [];
+
+        foreach (explode(',', (string) $this->header('X-Inertia-Partial-Data')) as $asked) {
+            if (preg_match('/^'.preg_quote($propName, '/').'__([a-f0-9]{12})$/', trim($asked), $match) === 1) {
+                $copies[] = $match[1];
+            }
+        }
+
+        return array_slice(array_values(array_unique($copies)), 0, self::COPY_LIMIT);
     }
 
     /**

@@ -3,8 +3,11 @@ import {
     activate,
     closePane,
     closeWindow,
+    copyIdOf,
+    copyWindow,
     defaultLayout,
     moveWindow,
+    originalKeyOf,
     paneBoxes,
     panesIn,
     settledRatio,
@@ -45,6 +48,35 @@ describe('a splitter', () => {
 });
 
 describe('windows in panes', () => {
+    it('opens a copy under a key of its own that keeps its window and its id when moved', () => {
+        const layout = copyWindow(
+            defaultLayout('chat', ['plans']),
+            'plans',
+            'pane-chat',
+        );
+        const copyKey = panesIn(layout).find(
+            (each) => each.id === 'pane-chat',
+        )!.active!;
+
+        expect(windowsIn(layout)).toContain('plans');
+        expect(originalKeyOf(copyKey)).toBe('plans');
+        expect(copyIdOf(copyKey)).toMatch(/^[a-f0-9]{12}$/);
+        expect(copyIdOf('plans')).toBeNull();
+
+        const second = copyWindow(layout, 'plans', 'pane-chat');
+        const copies = windowsIn(second).filter(
+            (key) => copyIdOf(key) !== null,
+        );
+        expect(new Set(copies).size).toBe(2);
+
+        const moved = moveWindow(
+            second,
+            copyKey,
+            panesIn(second).find((each) => each.id !== 'pane-chat')!.id,
+        );
+        expect(windowsIn(moved)).toContain(copyKey);
+    });
+
     it('moves a window into another pane as its active tab', () => {
         const layout = moveWindow(
             defaultLayout('chat', ['plans', 'rules']),

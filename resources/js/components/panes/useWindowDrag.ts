@@ -135,7 +135,10 @@ export function useWindowDrag(): {
         );
 
         const dropsNewWindowOnFullPane =
-            fromPaneId === null && target.zone === 'centre' && (pane?.windows.length ?? 0) > 0;
+            fromPaneId === null &&
+            target.zone === 'centre' &&
+            pane !== undefined &&
+            pane.windows.length > 0;
 
         if (dropsNewWindowOnFullPane) {
             store.splitOffer.value = { paneId: target.paneId, windowKey };

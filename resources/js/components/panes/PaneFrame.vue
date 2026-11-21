@@ -16,6 +16,7 @@ import {
     activate,
     closePane,
     closeWindow,
+    copyWindow,
     moveWindow,
     panesIn,
     splitPane,
@@ -37,10 +38,10 @@ const isMenuOpen = ref(false);
 
 const tabs = computed<PaneTab[]>(() =>
     props.pane.windows.flatMap((key) => {
-        const window = store.windows.value.find((each) => each.key === key);
+        const window = store.windowOf(key);
 
         return window
-            ? [{ ...window, isActive: key === props.pane.active }]
+            ? [{ ...window, key, isActive: key === props.pane.active }]
             : [];
     }),
 );
@@ -50,10 +51,11 @@ const otherPanes = computed(() =>
 );
 
 function titleOf(pane: Pane): string {
-    return (
-        store.windows.value.find((each) => each.key === pane.active)?.title ??
-        'the empty pane'
-    );
+    if (pane.active === null) {
+        return 'the empty pane';
+    }
+
+    return store.windowOf(pane.active)?.title ?? 'the empty pane';
 }
 
 function split(key: string | null, side: SplitSide): void {
@@ -102,8 +104,7 @@ const offeredTitle = computed(() => {
     const offer = store.splitOffer.value;
 
     return offer?.paneId === props.pane.id
-        ? (store.windows.value.find((each) => each.key === offer.windowKey)
-              ?.title ?? '')
+        ? (store.windowOf(offer.windowKey)?.title ?? '')
         : null;
 });
 
@@ -136,9 +137,20 @@ const menuEntries = computed<MenuEntry[]>(() => {
     }));
     const foot: MenuEntry[] = [
         {
+            label: 'Open a copy',
+            disabled: active === null,
+            startsGroup: true,
+            run: () => {
+                if (active !== null) {
+                    store.change(
+                        copyWindow(store.layout.value, active, props.pane.id),
+                    );
+                }
+            },
+        },
+        {
             label: 'Close',
             disabled: otherPanes.value.length === 0,
-            startsGroup: true,
             run: () =>
                 store.change(closePane(store.layout.value, props.pane.id)),
         },
