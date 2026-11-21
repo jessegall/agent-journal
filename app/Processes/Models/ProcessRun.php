@@ -74,7 +74,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $responsible_type
  * @property string|null $responsible_id
  * @property string|null $outcome_user_id
- * @property string|null $attempt_id
+ * @property string $attempt_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

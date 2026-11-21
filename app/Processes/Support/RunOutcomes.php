@@ -20,7 +20,7 @@ final readonly class RunOutcomes
     public function record(ProcessRun $run, RunLogicalResult $result, RunResultSource $source): void
     {
         $locked = ProcessRun::lockedForOutcome($run->id);
-        $attemptId = (string) $locked->attempt_id;
+        $attemptId = $locked->attempt_id;
 
         RunOutcome::lockedForAttempt($attemptId)
             ->map(fn (RunOutcome $kept) => $this->settle($kept, $result, $source))
