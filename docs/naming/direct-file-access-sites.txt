@@ -1,5 +1,5 @@
-# The direct file access sites outside app/Files (plan 39): 85 still waiting to move to App\Files\Contracts\Files,
-# and 9 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
+# The direct file access sites outside app/Files (plan 39): 73 still waiting to move to App\Files\Contracts\Files,
+# and 11 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
 # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
 # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
 # tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed site the code no
@@ -7,17 +7,6 @@
 app/Hooks/Programs/CodexFolderTrust.php is_dir()
 app/Hooks/Programs/CodexFolderTrust.php is_link()
 app/Hooks/Programs/CodexFolderTrust.php scandir()
-app/Hooks/Relay/BypassLog.php file_get_contents()
-app/Hooks/Relay/BypassLog.php file_put_contents()
-app/Hooks/Relay/BypassLog.php is_file()
-app/Hooks/Relay/BypassLog.php unlink()
-app/Hooks/Relay/HookRelay.php Illuminate\Filesystem\Filesystem
-app/Hooks/Relay/HookRelay.php file_get_contents()
-app/Hooks/Relay/HookRelay.php is_file()
-app/Hooks/Relay/OutputGrants.php is_file()
-app/Hooks/Relay/OutputGrants.php realpath()
-app/Hooks/Relay/PendingEnvelopes.php Illuminate\Filesystem\Filesystem
-app/Hooks/Relay/PreparationState.php Illuminate\Filesystem\Filesystem
 app/Hooks/Support/AccountConfigurationWrite.php chmod()
 app/Hooks/Support/AccountConfigurationWrite.php file_get_contents()
 app/Hooks/Support/AccountConfigurationWrite.php file_put_contents()
@@ -88,7 +77,8 @@ app/Skills/Support/HostSkillPublisher.php symlink()
 app/Skills/Support/HostSkillPublisher.php unlink()
 domain/Documents/src/Console/Concerns/ReadsRecordBody.php file_get_contents()
 domain/Documents/src/Console/Concerns/ReadsRecordBody.php is_readable()
-domain/Documents/src/Console/Support/DraftTokens.php Illuminate\Filesystem\Filesystem
+exempt CommandFileSystem app/Hooks/Relay/OutputGrants.php is_file()
+exempt CommandFileSystem app/Hooks/Relay/OutputGrants.php realpath()
 exempt CommandFileSystem app/Processes/Execution/BuiltinSteps.php is_dir()
 exempt CommandFileSystem app/Processes/Execution/BuiltinSteps.php realpath()
 exempt CommandFileSystem app/Processes/Rules/JournalClassifier.php realpath()

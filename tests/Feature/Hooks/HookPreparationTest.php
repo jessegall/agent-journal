@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 use App\Hooks\Enums\CallFailure;
 use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
@@ -11,7 +14,6 @@ use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\PreparationState;
 use App\Hooks\Relay\RelaySettings;
 use App\Programs\Enums\HookProgram;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Http;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Hooks\JournalUnreachable;
@@ -118,7 +120,7 @@ final class HookPreparationTest extends TestCase
 
     private function preparation(): PreparationState
     {
-        return new PreparationState(new Filesystem(), $this->preparationFile());
+        return $this->preparationState();
     }
 
     private function preparationFile(): string
@@ -137,5 +139,18 @@ final class HookPreparationTest extends TestCase
         );
 
         return $this->app->make(HookRelay::class)->relay(HookProgram::ClaudeCode, $payload, $settings);
+    }
+
+    /**
+     * The preparation file beside the bypass log, in the hook runtime place the relay points at the log's folder.
+     */
+    private function preparationState(): PreparationState
+    {
+        config([Place::HookRuntime->rootSetting() => dirname($this->bypassLog)]);
+
+        return new PreparationState(
+            $this->app->make(Files::class),
+            FilePath::in(Place::HookRuntime, basename($this->bypassLog).'.preparation.json'),
+        );
     }
 }

@@ -7,6 +7,9 @@ namespace Tests\Feature\Hooks;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Models\StartBypass;
 use App\Agents\Support\StackTarget;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 use App\Hooks\Actions\StartStacks;
 use App\Hooks\Enums\CallFailure;
 use App\Hooks\Models\HookCall;
@@ -21,7 +24,6 @@ use App\Hooks\Support\StackTransaction;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Promise\PromiseInterface;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -71,7 +73,7 @@ final class HookRelayTest extends TestCase
             new StackTarget($this->start->agent->id, $this->start->session->id),
         ));
         $this->bypassLog = sys_get_temp_dir().'/hook-relay-bypasses-'.getmypid().'.jsonl';
-        $preparation = new PreparationState(new Filesystem(), $this->bypassLog.'.preparation.json');
+        $preparation = $this->preparationState();
         $preparation->openGeneration('generation-1');
         $preparation->prepare('generation-1');
     }
@@ -305,5 +307,18 @@ final class HookRelayTest extends TestCase
     private function target(): StackTarget
     {
         return new StackTarget($this->start->agent->id, $this->start->session->id);
+    }
+
+    /**
+     * The preparation file beside the bypass log, in the hook runtime place the relay points at the log's folder.
+     */
+    private function preparationState(): PreparationState
+    {
+        config([Place::HookRuntime->rootSetting() => dirname($this->bypassLog)]);
+
+        return new PreparationState(
+            $this->app->make(Files::class),
+            FilePath::in(Place::HookRuntime, basename($this->bypassLog).'.preparation.json'),
+        );
     }
 }

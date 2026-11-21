@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Relay;
 
-use Illuminate\Filesystem\Filesystem;
-use JsonException;
+use App\Files\Contracts\Files;
+use App\Files\Exceptions\FileJsonInvalid;
+use App\Files\Values\FilePath;
 
 /**
  * Whether the program's current context generation is prepared, kept by the host in a file beside the pending
@@ -16,8 +17,8 @@ use JsonException;
 final readonly class PreparationState
 {
     public function __construct(
-        private Filesystem $files,
-        private string $file,
+        private Files $files,
+        private FilePath $file,
     ) {}
 
     public function openGeneration(string $generation): void
@@ -47,8 +48,8 @@ final readonly class PreparationState
         }
 
         try {
-            $stored = json_decode($this->files->get($this->file), true, 4, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
+            $stored = $this->files->readJson($this->file);
+        } catch (FileJsonInvalid) {
             return ['generation' => null, 'prepared' => false];
         }
 
@@ -62,10 +63,9 @@ final readonly class PreparationState
 
     private function write(string $generation, bool $prepared): void
     {
-        $this->files->put(
+        $this->files->write(
             $this->file,
             json_encode(['generation' => $generation, 'prepared' => $prepared], JSON_THROW_ON_ERROR),
-            true,
         );
     }
 }

@@ -13,6 +13,8 @@ return [
         'sharing-tunnels' => storage_path('sharing'),
         'host-skills' => null,
         'temporary' => sys_get_temp_dir(),
+        // The agent host's runtime folder of one start, set by the hook relay from the folder of its bypass log.
+        'hook-runtime' => null,
     ],
 
     // The most bytes of file contents kept for repeated reads in one process, and the largest file kept.

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Relay;
 
-use Illuminate\Filesystem\Filesystem;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Values\FilePath;
 
 /**
  * The host's file of callback envelopes sent but not yet answered, one per file in a folder beside the bypass log:
@@ -13,14 +15,14 @@ use Illuminate\Filesystem\Filesystem;
 final readonly class PendingEnvelopes
 {
     public function __construct(
-        private Filesystem $files,
-        private string $folder,
+        private Files $files,
+        private FilePath $folder,
     ) {}
 
     public function keep(CallbackEnvelope $envelope): void
     {
-        $this->files->ensureDirectoryExists($this->folder, 0700);
-        $this->files->put($this->pathOf($envelope->id), $envelope->toJson(), lock: true);
+        $this->files->makeFolder($this->folder, Permissions::OwnerOnly);
+        $this->files->write($this->pathOf($envelope->id), $envelope->toJson());
     }
 
     public function acknowledge(CallbackEnvelope $envelope): void
@@ -33,15 +35,18 @@ final readonly class PendingEnvelopes
      */
     public function all(): array
     {
-        $paths = $this->files->glob($this->folder.'/*.json');
+        if (! $this->files->isFolder($this->folder)) {
+            return [];
+        }
 
-        return array_values(
-            array_map(fn (string $path) => CallbackEnvelope::fromJson($this->files->get($path)), $paths),
+        return array_map(
+            fn (FilePath $path) => CallbackEnvelope::fromJson($this->files->read($path)),
+            $this->files->list($this->folder, pattern: '*.json')->paths(),
         );
     }
 
-    private function pathOf(string $envelopeId): string
+    private function pathOf(string $envelopeId): FilePath
     {
-        return "{$this->folder}/{$envelopeId}.json";
+        return $this->folder->child("{$envelopeId}.json");
     }
 }

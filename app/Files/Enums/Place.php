@@ -16,6 +16,7 @@ enum Place: string
     case HostSkills = 'host-skills';
     case Temporary = 'temporary';
     case ProcessOutput = 'process-output';
+    case HookRuntime = 'hook-runtime';
 
     /**
      * The places a path given from outside, such as a command's --file, may lie in.
@@ -30,7 +31,7 @@ enum Place: string
     public function isPrivate(): bool
     {
         return match ($this) {
-            self::Accounts, self::SharingSecrets, self::SharingTunnels => true,
+            self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HookRuntime => true,
             self::Project, self::HostSkills, self::Temporary, self::ProcessOutput => false,
         };
     }
@@ -51,7 +52,7 @@ enum Place: string
         return match ($this) {
             self::Project => ['.journal/worktrees', '.git', 'vendor', 'node_modules', 'storage/app/private'],
             self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HostSkills, self::Temporary,
-            self::ProcessOutput => [],
+            self::ProcessOutput, self::HookRuntime => [],
         };
     }
 
@@ -64,7 +65,8 @@ enum Place: string
             self::Accounts => 'accounts.root',
             self::SharingSecrets => 'sharing.secrets_dir',
             self::ProcessOutput => 'filesystems.disks.process-output.root',
-            self::Project, self::SharingTunnels, self::HostSkills, self::Temporary => "files.places.{$this->value}",
+            self::Project, self::SharingTunnels, self::HostSkills, self::Temporary,
+            self::HookRuntime => "files.places.{$this->value}",
         };
     }
 }

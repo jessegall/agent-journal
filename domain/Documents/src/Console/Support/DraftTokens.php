@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Support;
 
-use Illuminate\Filesystem\Filesystem;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 
 /**
  * The token and version of the drafts this agent holds, kept in a file beside the agent so an edit can name the
@@ -14,7 +16,7 @@ final readonly class DraftTokens
 {
     private const string FILE = 'journal-document-drafts.json';
 
-    public function __construct(private Filesystem $files) {}
+    public function __construct(private Files $files) {}
 
     /**
      * @return array{token: string, version: int}|null
@@ -30,26 +32,26 @@ final readonly class DraftTokens
     {
         $drafts = $this->all();
         $drafts["doc {$documentNumber}"] = ['token' => $token, 'version' => $version];
-        $this->files->put($this->path(), json_encode($drafts, JSON_THROW_ON_ERROR));
+        $this->files->write($this->path(), json_encode($drafts, JSON_THROW_ON_ERROR));
     }
 
     public function forget(int $documentNumber): void
     {
         $drafts = $this->all();
         unset($drafts["doc {$documentNumber}"]);
-        $this->files->put($this->path(), json_encode($drafts, JSON_THROW_ON_ERROR));
+        $this->files->write($this->path(), json_encode($drafts, JSON_THROW_ON_ERROR));
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      */
     private function all(): array
     {
-        return $this->files->exists($this->path()) ? $this->files->json($this->path(), JSON_THROW_ON_ERROR) : [];
+        return $this->files->exists($this->path()) ? $this->files->readJson($this->path()) : [];
     }
 
-    private function path(): string
+    private function path(): FilePath
     {
-        return sys_get_temp_dir().'/'.self::FILE;
+        return FilePath::in(Place::Temporary, self::FILE);
     }
 }

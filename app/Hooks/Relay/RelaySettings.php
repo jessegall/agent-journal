@@ -10,6 +10,8 @@ use App\AgentRequests\Support\StartProfilePin;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Exceptions\OfflineReplySealInvalid;
 use App\Agents\Support\OfflineReplySeal;
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 use App\Hooks\Support\ProtectedAccounts;
 
 /**
@@ -93,19 +95,44 @@ final readonly class RelaySettings
     }
 
     /**
+     * The host's runtime folder of this start, which holds the bypass log and the files beside it: the root of the
+     * private place hook-runtime.
+     */
+    public function runtimeFolder(): string
+    {
+        return dirname($this->bypassLogPath);
+    }
+
+    /**
+     * The bypass log, in the runtime folder.
+     */
+    public function bypassLog(): FilePath
+    {
+        return FilePath::in(Place::HookRuntime, basename($this->bypassLogPath));
+    }
+
+    /**
      * The folder of callback envelopes not yet answered, beside the bypass log.
      */
-    public function pendingEnvelopesFolder(): string
+    public function pendingEnvelopesFolder(): FilePath
     {
-        return $this->bypassLogPath.'.pending';
+        return FilePath::in(Place::HookRuntime, basename($this->bypassLogPath).'.pending');
     }
 
     /**
      * The host file that says whether the program's current context generation is prepared, beside the bypass log.
      */
-    public function preparationFile(): string
+    public function preparationFile(): FilePath
     {
-        return $this->bypassLogPath.'.preparation.json';
+        return FilePath::in(Place::HookRuntime, basename($this->bypassLogPath).'.preparation.json');
+    }
+
+    /**
+     * The start's sealed output grants, which the host writes into the same runtime folder.
+     */
+    public function outputGrants(): FilePath
+    {
+        return FilePath::in(Place::HookRuntime, basename($this->outputGrantsFile));
     }
 
     /**
