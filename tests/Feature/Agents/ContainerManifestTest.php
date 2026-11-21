@@ -128,10 +128,10 @@ final class ContainerManifestTest extends TestCase
         $helper = new AgentSession();
         $helper->parent_session_id = 'session-main';
 
-        $this->assertSame(WorkspaceUse::ReadOnly, WorkspaceUse::of(ProfileBase::readOnlyHelper()->defaultAccess(), $helper));
-        $this->assertSame(WorkspaceUse::OwnCheckout, WorkspaceUse::of(ProfileBase::writingHelper()->defaultAccess(), $helper));
-        $this->assertSame(WorkspaceUse::Shared, WorkspaceUse::of(ProfileBase::mainAgent()->defaultAccess(), $main));
-        $this->assertSame(WorkspaceUse::Shared, WorkspaceUse::of(ProfileBase::writingHelper()->defaultAccess(), $main));
+        $this->assertSame(WorkspaceUse::ReadOnly, $helper->workspaceUse(ProfileBase::readOnlyHelper()->defaultAccess()));
+        $this->assertSame(WorkspaceUse::OwnCheckout, $helper->workspaceUse(ProfileBase::writingHelper()->defaultAccess()));
+        $this->assertSame(WorkspaceUse::Shared, $main->workspaceUse(ProfileBase::mainAgent()->defaultAccess()));
+        $this->assertSame(WorkspaceUse::Shared, $main->workspaceUse(ProfileBase::writingHelper()->defaultAccess()));
     }
 
     public function test_a_contained_read_only_helper_mounts_the_mains_workspace_read_only_its_history_and_account(): void
@@ -159,7 +159,7 @@ final class ContainerManifestTest extends TestCase
         );
     }
 
-    public function test_a_contained_writer_mounts_its_own_checkout_of_the_workspace_read_write(): void
+    public function test_a_contained_writer_mounts_its_own_checkout_and_names_the_source_the_host_fills(): void
     {
         $setting = ArrangementSetting::fromConfig('contained', 'acme', self::GIT_SOURCE);
 
@@ -172,7 +172,8 @@ final class ContainerManifestTest extends TestCase
             $setting->mountRules(null, 'main'),
             null,
         );
-        $workspace = json_decode((string) json_encode($manifest), true)['mounts'][0];
+        $wire = json_decode((string) json_encode($manifest), true);
+        $workspace = $wire['mounts'][0];
 
         $this->assertSame(
             [
@@ -188,6 +189,18 @@ final class ContainerManifestTest extends TestCase
         $this->assertSame(
             ['/workspace', '/home/journal/.account/projects'],
             array_map(fn (ManifestMount $mount) => $mount->target, $manifest->mounts),
+        );
+        $this->assertSame(
+            [
+                'clone' => [
+                    'volume' => 'acme-workspace-main',
+                    'repository' => 'git@github.com:acme/shop.git',
+                    'revision' => 'main',
+                    'deployKeySecret' => 'deploy_key_main',
+                ],
+                'folder' => null,
+            ],
+            $wire['workspacePreparation'],
         );
         $this->assertTrue(
             MountRules::local()->workspaceMount('/workspaces/writer-1', WorkspaceUse::OwnCheckout)->writable,
@@ -384,6 +397,7 @@ final class ContainerManifestTest extends TestCase
             $wire['securityOptions'],
         );
         $this->assertSame(ExecutionBudgets::DEFAULT_HOME_BYTES, $wire['budgets']['homeBytes']);
+        $this->assertSame(['clone' => null, 'folder' => 'main'], $wire['workspacePreparation']);
     }
 
     public function test_a_local_manifest_goes_on_the_wire_as_before_with_its_bind_type(): void

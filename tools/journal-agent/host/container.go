@@ -86,6 +86,8 @@ type ContainerManifest struct {
 	// Attachable is a session's own terminal process, such as the main agent's program: it gets a tty and an open
 	// stdin, and the host attaches to it, again after a restart. Helpers are not attachable.
 	Attachable bool `json:"attachable"`
+	// WorkspacePreparation is what the host fills or checks before the container mounts the workspace; nil locally.
+	WorkspacePreparation *WorkspacePreparation `json:"workspacePreparation"`
 }
 
 // imageIDPattern is an image named by its id, the config digest a loaded image keeps.
@@ -410,8 +412,8 @@ func (process ContainerProcess) arguments(create []string) []string {
 }
 
 // Create creates the container from the manifest, running the process, and answers its id; a daemon that would
-// discard the manifest's budgets is refused before anything is created, and a writer's checkout is made before its
-// container.
+// discard the manifest's budgets is refused before anything is created, and the workspace is filled or checked and a
+// writer's checkout made before its container.
 func (containers Containers) Create(
 	ctx context.Context,
 	manifest ContainerManifest,
@@ -424,6 +426,10 @@ func (containers Containers) Create(
 	}
 
 	if err := containers.AssertBudgetsEnforced(ctx); err != nil {
+		return "", err
+	}
+
+	if err := containers.PrepareWorkspace(ctx, manifest.WorkspacePreparation); err != nil {
 		return "", err
 	}
 

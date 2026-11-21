@@ -8,6 +8,7 @@ use App\Agents\Contracts\WorkspaceSource;
 use App\Agents\Enums\MountType;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
+use App\Agents\Values\WorkspacePreparation;
 
 /**
  * Which mounts a helper container may have: in the local arrangement exactly one folder of this machine at
@@ -81,6 +82,15 @@ final readonly class MountRules
         }
 
         return $this->workspaceSource->mount($use->isWritable());
+    }
+
+    /**
+     * What the host makes ready before a contained container mounts the workspace; none locally, where the start's
+     * own folder is bound as it is.
+     */
+    public function workspacePreparation(): WorkspacePreparation|null
+    {
+        return $this->workspaceSource?->preparation();
     }
 
     /**

@@ -57,9 +57,10 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
         $now = CarbonImmutable::now();
         $claimed = [];
-        $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(
-            $runtimes->pluck('agent_session_id')->values()->all(),
-        );
+        $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(array_values(array_map(
+            fn (AgentRuntime $runtime) => $runtime->agent_session_id,
+            $runtimes->all(),
+        )));
 
         foreach ($control as $request) {
             if ($this->waitsOnHelpers($request, $runtimes->get($request->agent_runtime_id), $waitingOnHelpers)) {

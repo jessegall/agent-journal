@@ -98,11 +98,58 @@ func TestADeployKeyIsReadFromItsEnvironmentsSecret(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if key, err := ReadDeployKey("main"); err != nil || string(key) != testDeployKey {
+	if key, err := ReadDeployKey("deploy_key_main"); err != nil || string(key) != testDeployKey {
 		t.Fatalf("the secret gave %q, %v", key, err)
 	}
 
-	if _, err := ReadDeployKey("other"); !errors.Is(err, ErrDeployKeyMissing) {
+	if _, err := ReadDeployKey("deploy_key_other"); !errors.Is(err, ErrDeployKeyMissing) {
 		t.Fatalf("a missing secret gave %v", err)
+	}
+}
+
+func TestAGitWorkspaceIsFilledBeforeItsFirstContainerAndLeftAloneOnceItExists(t *testing.T) {
+	DeployKeyFolder = t.TempDir()
+	if err := os.WriteFile(filepath.Join(DeployKeyFolder, "deploy_key_main"), []byte(testDeployKey), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	source := &WorkspacePreparation{Clone: &WorkspaceClone{Volume: "journal-workspace-main",
+		Repository: "git@example.test:team/app.git", Revision: "main", DeployKeySecret: "deploy_key_main"}}
+
+	folder := t.TempDir()
+	empty := fakeImageDocker(t, `n=$(ls "`+folder+`" | wc -l | tr -d ' '); echo "$@" > "`+folder+`/call-$n"; `+
+		`if [ "$3" = volume ] && [ "$4" = inspect ]; then exit 1; fi; if [ "$3" = run ]; then cat > /dev/null; fi`)
+	empty.Rules = containedRules
+	if err := empty.PrepareWorkspace(context.Background(), source); err != nil {
+		t.Fatal(err)
+	}
+	if calls := recorded(t, folder, "call-"); !strings.Contains(calls, "volume create") || !strings.Contains(calls, " run ") {
+		t.Fatalf("an empty workspace was not filled: %s", calls)
+	}
+
+	filled, filledFolder := recordingDocker(t, "exit 0")
+	if err := filled.PrepareWorkspace(context.Background(), source); err != nil {
+		t.Fatal(err)
+	}
+	if calls := recorded(t, filledFolder, "call-"); strings.Contains(calls, " run ") || strings.Contains(calls, "volume create") {
+		t.Fatalf("a filled workspace was cloned again: %s", calls)
+	}
+}
+
+func TestAWorkspaceSourceThatReachesOutsideIsRefusedBeforeAnything(t *testing.T) {
+	containers, folder := recordingDocker(t, "exit 0")
+
+	for source, want := range map[*WorkspacePreparation]error{
+		{Clone: &WorkspaceClone{Volume: "other-workspace-main", Repository: "r", Revision: "main", DeployKeySecret: "k"}}: ErrManifestUnsafe,
+		{Folder: "../etc"}: ErrWorkspaceFolderNameInvalid,
+	} {
+		if err := containers.PrepareWorkspace(context.Background(), source); !errors.Is(err, want) {
+			t.Fatalf("%+v gave %v, want %v", *source, err, want)
+		}
+	}
+	if _, err := ReadDeployKey("../deploy_key_main"); !errors.Is(err, ErrDeployKeyMissing) {
+		t.Fatalf("a secret name with a path gave %v", err)
+	}
+	if calls := recorded(t, folder, "call-"); calls != "" {
+		t.Fatalf("docker was called: %s", calls)
 	}
 }

@@ -8,12 +8,13 @@ use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
+use App\Agents\Values\WorkspacePreparation;
 
 /**
  * What the protected host starts a helper container with (doc 14, section 63; doc 61, decision 6): the image by
  * digest, an unprivileged user, a read-only root without capabilities, the mounts its arrangement allows, its
- * security profiles, rotated logs and the start's budgets, which size its tmpfs folders. It is validated when built;
- * anything else is refused by name.
+ * security profiles, rotated logs and the start's budgets, which size its tmpfs folders, and where a contained
+ * workspace comes from. It is validated when built; anything else is refused by name.
  */
 final readonly class ContainerManifest
 {
@@ -44,6 +45,8 @@ final readonly class ContainerManifest
         public array $publishedPorts,
         public ExecutionBudgets $budgets,
         public bool $attachable,
+        // What the host fills or checks before the container mounts the workspace; none locally.
+        public WorkspacePreparation|null $workspacePreparation,
     ) {}
 
     /**
@@ -133,6 +136,7 @@ final readonly class ContainerManifest
             [],
             $budgets,
             $attachable,
+            $rules->workspacePreparation(),
         );
     }
 }

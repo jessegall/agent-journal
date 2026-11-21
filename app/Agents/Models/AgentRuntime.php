@@ -174,19 +174,19 @@ final class AgentRuntime extends Model implements ReadableModel
     /**
      * Of the sessions given, those with a helper whose runtime is not proven stopped yet, so their own stop waits.
      *
-     * @param  list<string>  $sessionIds
+     * @param  list<string>  $ids
      * @return list<string>
      */
-    public static function sessionsWaitingOnHelpers(array $sessionIds): array
+    public static function sessionsWaitingOnHelpers(array $ids): array
     {
-        return AgentSession::query()
-            ->whereIn('parent_session_id', $sessionIds)
+        $helped = AgentSession::query()
+            ->whereIn('parent_session_id', $ids)
             ->whereIn('id', self::query()->where('activity', '!=', RuntimeActivity::Stopped)->select('agent_session_id'))
             ->readAll('every helper still running holds back the stop of the session it helps')
             ->pluck('parent_session_id')
-            ->unique()
-            ->values()
             ->all();
+
+        return array_values(array_filter($ids, fn (string $id) => in_array($id, $helped, true)));
     }
 
     /**

@@ -6,7 +6,6 @@ namespace App\Agents\Support;
 
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\AccountFolderInvalid;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Exceptions\WorkspaceSourceMissing;
@@ -52,7 +51,7 @@ final readonly class SessionContainers
         return ContainerManifest::compile(
             $runtime->agent_session_id,
             $runtime->canonical_folder,
-            WorkspaceUse::of($policy->access, $runtime->session),
+            $runtime->session->workspaceUse($policy->access),
             $policy->execution,
             $this->arrangement->sessionContainerName($runtime->agent_session_id),
             $rules,

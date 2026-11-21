@@ -9,7 +9,9 @@ use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\SessionStatus;
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\SessionSelectionFixed;
+use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\AccountUse;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\SelectedProgram;
@@ -375,6 +377,20 @@ final class AgentSession extends Model implements ReadableModel
     public function isActive(): bool
     {
         return $this->status->isRunning();
+    }
+
+    /**
+     * How the session's container has the workspace, from its start's access declaration and whether it helps
+     * another session, never from the profile's name: read-only without a grant to change files, the main's own
+     * workspace for a session that helps none, and its own clone for a helper that writes.
+     */
+    public function workspaceUse(AccessPolicy $access): WorkspaceUse
+    {
+        if (! $access->changesFiles()) {
+            return WorkspaceUse::ReadOnly;
+        }
+
+        return $this->parent_session_id === null ? WorkspaceUse::Shared : WorkspaceUse::OwnCheckout;
     }
 
     // ----------[ Relations ]----------
