@@ -1,4 +1,4 @@
-# The direct file access sites outside app/Files (plan 39): 14 still waiting to move to App\Files\Contracts\Files,
+# The direct file access sites outside app/Files (plan 39): 12 still waiting to move to App\Files\Contracts\Files,
 # and 18 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
 # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
 # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
@@ -13,8 +13,6 @@ app/Hooks/Support/AccountConfigurationWrite.php rename()
 app/Hooks/Support/AccountConfigurationWrite.php unlink()
 app/Processes/Support/OutputDiskCapacity.php disk_free_space()
 app/Processes/Support/OutputDiskCapacity.php is_dir()
-app/Processes/Values/ShippedReader.php file_get_contents()
-app/Processes/Values/ToolVersions.php file_get_contents()
 app/Profiles/Support/HostSecret.php file_get_contents()
 app/Profiles/Support/HostSecret.php fileperms()
 app/Profiles/Support/HostSecret.php is_file()
