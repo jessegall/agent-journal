@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/creack/pty"
 	"golang.org/x/term"
@@ -168,6 +169,9 @@ func serve(arguments []string) error {
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
 		containers := host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
 		bindsAccount = containers.BindsAccount
+		cleanup := host.LaunchCleanup{Containers: containers, Installation: installation,
+			RuntimeFolders: filepath.Join(*stateFolder, "runtimes"), StopSeconds: host.StopSeconds}
+		go runCleanups(ctx, cleanup, journal)
 		evidence := host.NativeEvidence{Folder: *stateFolder}
 		// Without a report the journal refuses every contained start, so a failed report stops no other work.
 		if err := host.ReportContainedProtection(ctx, containers, *seccomp, evidence, journal); err != nil {
@@ -753,6 +757,7 @@ func startOf(
 	startEnvironment = append(startEnvironment, relayVariables...)
 	return host.AttachRequest{
 		RuntimeID: runtimeID,
+		Program:   profile.Program(),
 		Command:   append([]string{executable}, startArguments...),
 		Folder:    grant.Runtime.Folder,
 		Env:       startEnvironment,
@@ -811,14 +816,11 @@ func newConversationID() (string, error) {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", random[0:4], random[4:6], random[6:8], random[8:10], random[10:16]), nil
 }
 
-// layoutOf is the screen layout of the program an attach request starts, from the profile of its program name.
+// layoutOf is the screen layout of the program an attach request starts, from the profile of the program it names.
 func layoutOf(request host.AttachRequest) (screen.Layout, error) {
-	if len(request.Command) == 0 {
-		return screen.Layout{}, errors.New("an attach request names no program")
-	}
-	profile, known := profileFor[filepath.Base(request.Command[0])]
+	profile, known := profileFor[request.Program]
 	if !known {
-		return screen.Layout{}, fmt.Errorf("no profile for the program %q", request.Command[0])
+		return screen.Layout{}, fmt.Errorf("no profile for the program %q", request.Program)
 	}
 
 	return profile.Screens(), nil
@@ -879,3 +881,24 @@ const (
 	oauthSignIn      = "oauth"
 	statusLineSocket = "status-line.sock"
 )
+
+// cleanupInterval is how often a contained host takes the launch cleanups the journal says it owes; a closed
+// session's capacity is given back only once its cleanup is reported.
+const cleanupInterval = 10 * time.Second
+
+// runCleanups takes the journal's pending launch cleanups now and then every interval until the host stops; a failed
+// round is logged and tried again on the next.
+func runCleanups(ctx context.Context, cleanup host.LaunchCleanup, journal host.CleanupJournal) {
+	ticker := time.NewTicker(cleanupInterval)
+	defer ticker.Stop()
+	for {
+		if err := cleanup.RunPending(ctx, journal); err != nil && ctx.Err() == nil {
+			log.Printf("the launch cleanups were not all done: %v", err)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}

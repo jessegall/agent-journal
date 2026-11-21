@@ -25,6 +25,10 @@ func (containers Containers) CheckAccountFolder(ctx context.Context, accountID s
 		return fmt.Errorf("%w: %q is not a plain account id", ErrAccountFolderUnsafe, accountID)
 	}
 
+	if err := containers.makeHistoryMountPoint(ctx, accountID); err != nil {
+		return err
+	}
+
 	rootMount := []string{"--mount", "type=bind,source=" + journalRoot + ",target=" + journalRoot + ",readonly"}
 	output, err := containers.runCheckWith(ctx, rootMount, "sh", "-c",
 		accountFolderScript(journalRoot, accountID, agentUID, 0))
@@ -72,4 +76,21 @@ func accountFolderScript(root, accountID string, owner, rootOwner int) string {
 		`[ -z "$leaving" ] || refuse "is a link leading out of the folder" "$leaving"`,
 		"exit 0",
 	}, "\n")
+}
+
+// historyFolder is the folder in an account where each session's own history volume is mounted.
+const historyFolder = "projects"
+
+// makeHistoryMountPoint makes the account's history folder as the program's user with mode 0700 when it is missing,
+// so the agent daemon never makes it as root while it mounts a session's history volume there. It runs with only the
+// account's own folder mounted, so it reaches nothing above it.
+func (containers Containers) makeHistoryMountPoint(ctx context.Context, accountID string) error {
+	accountMount := []string{"--mount", "type=bind,source=" + journalRoot + "/accounts/" + accountID + ",target=/account"}
+	output, err := containers.runCheckWith(ctx, accountMount, "sh", "-c",
+		`[ -L /account/`+historyFolder+` ] || [ -e /account/`+historyFolder+` ] || mkdir -m 0700 /account/`+historyFolder)
+	if err != nil {
+		return fmt.Errorf("%w: making its history folder failed: %v: %s", ErrAccountFolderUnsafe, err, output)
+	}
+
+	return nil
 }

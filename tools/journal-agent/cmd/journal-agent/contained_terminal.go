@@ -77,7 +77,7 @@ func (opener runtimeOpener) containedTerminalRuntime(
 	}
 
 	opened, err := opener.socket.Open(host.AttachRequest{
-		RuntimeID: runtimeID, Command: attach, Folder: opener.stateFolder,
+		RuntimeID: runtimeID, Program: profile.Program(), Command: attach, Folder: opener.stateFolder,
 		Env: []string{"PATH=" + os.Getenv("PATH")}, Rows: defaultRows, Columns: defaultColumns,
 	})
 	if err != nil {

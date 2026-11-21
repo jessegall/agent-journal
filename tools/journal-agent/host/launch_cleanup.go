@@ -210,3 +210,26 @@ func isAbsentOutput(output string) bool {
 	return strings.Contains(output, "No such container") || strings.Contains(output, "No such network") ||
 		strings.Contains(output, "No such volume") || strings.Contains(output, "not found")
 }
+
+// CleanupJournal is the journal's side of launch cleanups: the ones this host still owes, and each pass's report.
+type CleanupJournal interface {
+	PendingCleanups(ctx context.Context, answer any) error
+	ReportCleanup(ctx context.Context, sessionID string, report any) error
+}
+
+// RunPending makes one pass over every cleanup the journal says this host owes and reports each; a pass that
+// failed is reported with its failure and offered again by the journal on the next round.
+func (cleanup LaunchCleanup) RunPending(ctx context.Context, journal CleanupJournal) error {
+	var answer struct {
+		Pending []PendingCleanup `json:"pending"`
+	}
+	if err := journal.PendingCleanups(ctx, &answer); err != nil {
+		return err
+	}
+	for _, pending := range answer.Pending {
+		if err := journal.ReportCleanup(ctx, pending.SessionID, cleanup.CleanUp(ctx, pending)); err != nil {
+			return err
+		}
+	}
+	return nil
+}

@@ -92,7 +92,7 @@ func openedTerminal(t *testing.T) (*host.AttachSocket, host.Terminal, *fakeProgr
 	}
 	t.Cleanup(func() { listener.Close() })
 
-	request := host.AttachRequest{RuntimeID: "runtime-1", Command: []string{"claude"}, Rows: 12, Columns: 40}
+	request := host.AttachRequest{RuntimeID: "runtime-1", Program: "claude", Command: []string{"claude"}, Rows: 12, Columns: 40}
 	opened, err := socket.Open(request)
 	if err != nil {
 		t.Fatal(err)

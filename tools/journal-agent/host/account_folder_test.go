@@ -1,6 +1,7 @@
 package host
 
 import (
+	"context"
 	"errors"
 	"os"
 	"os/exec"
@@ -99,5 +100,36 @@ func TestAnAccountFolderOwnedByAnotherUserIsRefused(t *testing.T) {
 	if err := runAccountFolderCheck(root); !errors.Is(err, ErrAccountFolderUnsafe) ||
 		!strings.Contains(err.Error(), "accounts/a1 is not owned") {
 		t.Fatalf("another user's folder gave %v", err)
+	}
+}
+
+func TestTheHostMakesTheHistoryFolderAsTheProgramBeforeItChecksTheAccount(t *testing.T) {
+	folder := t.TempDir()
+	log := filepath.Join(folder, "calls.log")
+	docker := filepath.Join(folder, "docker")
+	if err := os.WriteFile(docker, []byte("#!/bin/sh\necho \"$*\" >> "+log+"\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	containers := Containers{Docker: docker, Rules: ContainerRules{AgentImage: "sha256:image"}}
+
+	if err := containers.CheckAccountFolder(context.Background(), "a1"); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(log)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runs := strings.Split(strings.TrimPrefix(string(content), "run "), "\nrun ")
+	if len(runs) != 2 {
+		t.Fatalf("docker ran %d times: %v", len(runs), runs)
+	}
+	made, checked := runs[0], runs[1]
+	if !strings.Contains(made, "--user "+agentUser) || !strings.Contains(made, "source=/srv/journal/accounts/a1,target=/account") ||
+		!strings.Contains(made, "mkdir -m 0700 /account/projects") || strings.Contains(made, "target=/srv/journal") {
+		t.Fatalf("the history folder was made by %q", made)
+	}
+	if !strings.Contains(checked, "source=/srv/journal,target=/srv/journal,readonly") {
+		t.Fatalf("the check ran as %q", checked)
 	}
 }

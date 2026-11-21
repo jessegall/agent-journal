@@ -23,6 +23,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println(executor.ReadyLine)
+
 	if err := executor.NewServer().Serve(listener); err != nil {
 		fmt.Fprintln(os.Stderr, "journal-exec: serving ended:", err)
 		os.Exit(1)
