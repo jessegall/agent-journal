@@ -328,7 +328,7 @@ final class ProfileStartTest extends TestCase
             'owner',
         );
         $switch->markPreflighted();
-        $switch->beginStopping();
+        $switch->beginStopping(null);
         $switch->markStopped();
 
         return $switch;

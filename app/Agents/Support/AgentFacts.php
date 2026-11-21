@@ -57,6 +57,7 @@ final readonly class AgentFacts
             $this->runtime?->variant === DriverVariant::Terminal,
             $canStop && $session !== null,
             $this->waitsOnHelpers,
+            $canStop,
         );
     }
 }

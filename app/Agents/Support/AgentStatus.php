@@ -116,21 +116,31 @@ final readonly class AgentStatus
         $stage = $switch->stage;
         $operation = $switch->operation();
 
+        // Only an actor allowed to reconcile may advance an unconfirmed leg; everyone else may only read it again.
+        $reconcile = $evidence->canReconcile ? [StatusAction::of(StatusActionType::RecheckSwitch)] : [
+            StatusAction::of(StatusActionType::CheckStatus),
+        ];
+        $reconcileReason = $evidence->canReconcile
+            ? 'If the host confirms this step, the approved switch can continue.'
+            : null;
+
         return match ($stage) {
             DriverSwitchStage::Stopping => self::plain(SessionState::Stopping, $evidence, [], $operation),
             DriverSwitchStage::StopUnconfirmed => self::labelled(
                 SessionState::Unknown,
                 'Stop could not be confirmed',
                 $evidence,
-                [StatusAction::of(StatusActionType::RecheckSwitch)],
+                $reconcile,
                 $operation,
+                $reconcileReason,
             ),
             DriverSwitchStage::StartUnconfirmed => self::labelled(
                 SessionState::Unknown,
                 'Start could not be confirmed',
                 $evidence,
-                [StatusAction::of(StatusActionType::RecheckSwitch)],
+                $reconcile,
                 $operation,
+                $reconcileReason,
             ),
             DriverSwitchStage::LaunchFailed => self::labelled(
                 SessionState::Failed,

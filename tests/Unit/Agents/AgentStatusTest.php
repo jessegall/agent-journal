@@ -166,7 +166,7 @@ final class AgentStatusTest extends TestCase
                 ),
                 SessionState::Unknown,
                 'Stop could not be confirmed',
-                ['recheck-switch'],
+                ['check-status'],
             ],
         ];
     }
@@ -247,6 +247,32 @@ final class AgentStatusTest extends TestCase
                 array_map(fn (StatusAction $action) => $action->type, $refused->actions),
             ],
         );
+    }
+
+    public function test_only_an_actor_allowed_to_reconcile_may_continue_an_unconfirmed_switch(): void
+    {
+        $evidence = new AgentEvidence(
+            false,
+            self::SESSION,
+            SessionStatus::Active,
+            ProcessStartState::Running,
+            self::runtime(RuntimeActivity::Running),
+            true,
+            new SwitchEvidence('01jd8x0g9m3qz6v4k2t7r5w1cg', DriverSwitchStage::StartUnconfirmed, 4),
+            null,
+            null,
+            false,
+            false,
+            canReconcile: true,
+        );
+
+        $status = AgentStatus::of($evidence, self::words(false));
+
+        $this->assertSame(
+            ['Start could not be confirmed', 'If the host confirms this step, the approved switch can continue.'],
+            [$status->label, $status->reason],
+        );
+        $this->assertSame(StatusActionType::RecheckSwitch, $status->actions[0]->type);
     }
 
     public function test_a_retired_agent_offers_no_lifecycle_command(): void

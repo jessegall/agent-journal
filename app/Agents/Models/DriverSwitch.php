@@ -41,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $replacement_session_id
  * @property DriverSwitchStage $stage
  * @property string|null $failure_reason
+ * @property int|null $stop_boundary_sequence
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -170,8 +171,13 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
         $this->moveTo(DriverSwitchStage::Refused, $reason);
     }
 
-    public function beginStopping(): void
+    /**
+     * The source's stop was accepted: the switch keeps how far the source's observations had got, so only a later
+     * observation can prove the source still runs.
+     */
+    public function beginStopping(AgentRuntime|null $source): void
     {
+        $this->stop_boundary_sequence = $source?->observation_sequence;
         $this->moveTo(DriverSwitchStage::Stopping);
     }
 
@@ -219,10 +225,11 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
 
     /**
      * A recheck of a stop or start that has no answer yet, from the process state the host last reported: without one
-     * the switch is marked unconfirmed and waits; a proven stop moves on to the replacement and an old process still
-     * running cancels the switch; a replacement that runs is confirmed and one that ended failed.
+     * the switch is marked unconfirmed and waits; a proven stop moves on to the replacement, and an old process cancels
+     * the switch only when it was observed running after its stop was accepted; a replacement that runs is confirmed
+     * and one that ended failed.
      */
-    public function recheck(ProcessStartState|null $reported): void
+    public function recheck(ProcessStartState|null $reported, AgentRuntime|null $source): void
     {
         if ($this->stage === DriverSwitchStage::Stopping) {
             $this->moveTo(DriverSwitchStage::StopUnconfirmed);
@@ -237,7 +244,8 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
 
         match (true) {
             $waitsForStop && $reported === ProcessStartState::Stopped => $this->markStopped(),
-            $waitsForStop && $reported === ProcessStartState::Running => $this->cancel('the old session still runs'),
+            $waitsForStop && $reported === ProcessStartState::Running && $this->isSourceSeenAfterStop($source)
+                => $this->cancel('the old session still runs'),
             $waitsForStart && $reported === ProcessStartState::Running => $this->confirm(),
             $waitsForStart && $reported === ProcessStartState::Stopped => $this->failLaunch('the new session ended'),
             default => null,
@@ -258,6 +266,16 @@ final class DriverSwitch extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Internals ]----------
+
+    /**
+     * Whether the source was observed running after its stop was accepted; without a boundary nothing proves it.
+     */
+    private function isSourceSeenAfterStop(AgentRuntime|null $source): bool
+    {
+        return $source !== null
+            && $this->stop_boundary_sequence !== null
+            && $source->isObservedRunningAfter($this->stop_boundary_sequence);
+    }
 
     /**
      * @throws DriverSwitchStageRefused

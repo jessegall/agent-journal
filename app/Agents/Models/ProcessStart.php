@@ -288,17 +288,20 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * The host made the start's process and reports its execution identity; reporting it again changes nothing.
+     * The host made the start's process and reports its execution identity, answering whether that moved the start to
+     * running; reporting it again, or after the start ended, changes nothing.
      */
-    public function recordRunning(string $executionId): void
+    public function recordRunning(string $executionId): bool
     {
         if ($this->state !== ProcessStartState::Starting) {
-            return;
+            return false;
         }
 
         $this->state = ProcessStartState::Running;
         $this->execution_id = $executionId;
         $this->save();
+
+        return true;
     }
 
     /**

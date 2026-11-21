@@ -31,6 +31,7 @@ final readonly class AgentEvidence
         public bool $hasTerminal = false,
         public bool $canStop = false,
         public bool $waitsOnHelpers = false,
+        public bool $canReconcile = false,
     ) {}
 
     public function hasLiveSession(): bool

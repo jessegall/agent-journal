@@ -33,6 +33,8 @@ return new class extends Migration
             $table->unsignedInteger('process_generation')->default(0);
             $table->timestampTz('generation_started_at')->nullable();
             $table->timestampTz('last_observed_at')->nullable();
+            // How many observations the host has reported, so a later one is told from a delayed earlier one.
+            $table->unsignedBigInteger('observation_sequence')->default(0);
             $table->unsignedInteger('row_version')->default(1);
             $table->timestampsTz();
         });
