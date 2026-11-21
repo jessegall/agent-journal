@@ -125,6 +125,15 @@ docker compose --profile contained up -d --wait
 running, and these report healthy: `app`, `reverb`, `share`, `postgres`, `redis`, `egress`, `agent-docker`,
 `agent-host` and `accounts`. `accounts-volume`, `agent-images` and `agent-host-enroll` run once and exit with code 0.
 
+Then activate the built-in profiles, so a session can start as the main agent and its helpers:
+
+```sh
+docker compose exec -T app php artisan profile:activate
+```
+
+It lists each profile with its revision. The updater runs it again on every install, which leaves an unchanged profile
+as it is.
+
 ## 7. Reach it from a browser
 
 The journal answers on `127.0.0.1:${APP_PORT}` only. Put a TLS reverse proxy in front of it, with the websocket paths

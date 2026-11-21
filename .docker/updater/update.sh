@@ -2,8 +2,8 @@
 # Brings an installation up to the newest commit of its branch. The updater service fetches this script from the
 # repository every minute and runs it in the installation's folder, so a change to it reaches every installation.
 # When the branch has a commit newer than the installed one, it writes that commit's files into the folder (never a
-# checkout there), removes the files the commit deleted, rebuilds, restarts, migrates and records the commit. A
-# commit that fails is recorded too and not tried again; the next push is.
+# checkout there), removes the files the commit deleted, rebuilds, restarts, migrates, activates the built-in profiles
+# and records the commit. A commit that fails is recorded too and not tried again; the next push is.
 #
 # It reads, from the environment the updater service passes on:
 #   JOURNAL_ROOT       the installation's folder, the same path inside the updater as on the server
@@ -59,6 +59,7 @@ install() {
         docker compose $profiles up -d --wait --wait-timeout 240 &&
         restart_changed_mounts &&
         docker compose exec -T app php artisan agents:install &&
+        docker compose exec -T app php artisan profile:activate >/dev/null &&
         docker compose exec -T app php artisan cache:forget installed-version &&
         check_front_door &&
         docker image prune -f >/dev/null
