@@ -42,6 +42,14 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
         );
     }
 
+    public static function notReconciled(string $bindingId): self
+    {
+        return new self(
+            "Binding {$bindingId} runs journal verbs again once its relay has reported what became of its earlier "
+            ."sessions.",
+        );
+    }
+
     public static function stillRunning(string $requestKey): self
     {
         $refusal = new self("Request {$requestKey} is still running; wait for it or cancel it.");

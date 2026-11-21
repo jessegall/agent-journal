@@ -113,6 +113,10 @@ final readonly class ProjectCommands
             if ($binding->isEnvironmentUnassigned()) {
                 throw VerbNotServed::environmentUnassigned($binding->id);
             }
+
+            if (! $binding->isReconciled()) {
+                throw VerbNotServed::notReconciled($binding->id);
+            }
         }
     }
 

@@ -260,6 +260,7 @@ func (commands dispatcher) claude(binding host.Binding, folder project.Folder, s
 	supervision, endSupervision := context.WithCancel(context.Background())
 	defer endSupervision()
 	go superviseSession(supervision, journal, binding.BindingID, opened, listener, command, stderr)
+	defer confirmStop(journal, state, binding.BindingID, opened.RuntimeID, stderr)
 	if err := command.Wait(); err != nil {
 		var exited *exec.ExitError
 		if errors.As(err, &exited) {
@@ -304,6 +305,20 @@ func openMainRuntime(
 	start.RuntimeID = opened.RuntimeID
 
 	return opened, state.SaveMainStart(start)
+}
+
+// confirmStop keeps the ended session's stop receipt and sends it; a journal out of reach gets it from the relay
+// once the device is back, so the session reads stopped there once.
+func confirmStop(journal *client.Client, state host.ConnectionState, bindingID, runtimeID string, stderr io.Writer) {
+	if err := state.QueueStopReceipt(runtimeID); err != nil {
+		fmt.Fprintln(stderr, "journal: the session's stop could not be kept for the journal:", err)
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := state.SendStopReceipts(ctx, bindingID, journal); err != nil {
+		fmt.Fprintln(stderr, "journal: the journal has not confirmed the session stopped yet; this machine tells it once it is back.")
+	}
 }
 
 // firstProcessGeneration is the process generation of a runtime the journal just opened.

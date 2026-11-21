@@ -57,6 +57,9 @@ use Illuminate\Support\Carbon;
  * @property int $report_sequence
  * @property int $boot_generation
  * @property int $setup_generation
+ * @property string|null $reconciled_boot_id
+ * @property string|null $leased_runtime_id
+ * @property CarbonImmutable|null $lease_expires_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Agent $mainAgent
@@ -100,6 +103,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             'report_sequence' => 'integer',
             'boot_generation' => 'integer',
             'setup_generation' => 'integer',
+            'lease_expires_at' => 'immutable_datetime',
         ];
     }
 
@@ -253,6 +257,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
 
         $readiness = $this->readinessOf($report);
         $changed = $readiness !== $this->readiness;
+        if ($report->isReconciled) {
+            $this->reconciled_boot_id = $report->bootId;
+        }
+
         $this->report_sequence = $report->sequence;
         $this->setup_generation = $report->setupGeneration;
         $this->readiness = $readiness;
@@ -265,6 +273,32 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         }
 
         return $this->presenceReceipt();
+    }
+
+    /**
+     * Keeps which runtime holds the binding's lease and when it ends, so a lease that ends with no stop confirmed is
+     * shown.
+     */
+    public function holdLease(string $runtimeId, CarbonImmutable $expiresAt): void
+    {
+        $this->leased_runtime_id = $runtimeId;
+        $this->lease_expires_at = $expiresAt;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * Takes the device's receipt that the runtime's session stopped; a receipt for another runtime, or one taken
+     * already, changes nothing.
+     */
+    public function confirmStop(string $runtimeId): void
+    {
+        if ($this->leased_runtime_id !== $runtimeId) {
+            return;
+        }
+
+        $this->leased_runtime_id = null;
+        $this->lease_expires_at = null;
+        $this->assertSaved($this->save());
     }
 
     /**
@@ -295,6 +329,25 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * Whether the relay of the binding's current boot reported what became of its earlier sessions, so starts and
+     * commands may run again.
+     */
+    public function isReconciled(): bool
+    {
+        return $this->reconciled_boot_id !== null && $this->reconciled_boot_id === $this->boot_id;
+    }
+
+    /**
+     * Whether a session's lease ended at this server time and its device has not confirmed the session stopped.
+     */
+    public function isStopUnconfirmedAt(CarbonImmutable $serverTime): bool
+    {
+        return $this->leased_runtime_id !== null
+            && $this->lease_expires_at !== null
+            && ! $serverTime->lessThan($this->lease_expires_at);
+    }
 
     /**
      * Whether the binding works in no environment yet: it starts nothing and runs no command until the owner assigns

@@ -571,6 +571,7 @@ use App\Connections\Commands\FinishProjectCommandRun;
 use App\Connections\Commands\IssueProjectInvitation;
 use App\Connections\Commands\PollDeviceGrant;
 use App\Connections\Commands\RecordBindingPresence;
+use App\Connections\Commands\RecordBindingRuntimeStop;
 use App\Connections\Commands\RecordBindingStart;
 use App\Connections\Commands\RecordProjectCommandProcess;
 use App\Connections\Commands\RecoverProjectBinding;
@@ -2352,6 +2353,7 @@ final class CoreApi
                 RevokeDeviceGrant::class,
                 AssignBindingEnvironment::class,
                 RecordBindingStart::class,
+                RecordBindingRuntimeStop::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

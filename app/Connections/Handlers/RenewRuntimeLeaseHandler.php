@@ -47,12 +47,14 @@ final readonly class RenewRuntimeLeaseHandler implements CommandHandler
         }
 
         $now = CarbonImmutable::now();
+        $expiresAt = $now->addSeconds(RuntimeLease::SECONDS);
+        $binding->holdLease($runtime->id, $expiresAt);
 
         return new RuntimeLease(
             $runtime->id,
             $runtime->process_generation,
             $now->toIso8601String(),
-            $now->addSeconds(RuntimeLease::SECONDS)->toIso8601String(),
+            $expiresAt->toIso8601String(),
         );
     }
 }

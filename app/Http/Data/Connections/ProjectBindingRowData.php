@@ -64,7 +64,10 @@ final class ProjectBindingRowData extends Data
             'environmentLabel' => $binding->environment?->label ?? 'No environment',
             'capabilities' => self::providersOf($binding, $state),
             'presenceExpiresAt' => $binding->presence_expires_at?->toIso8601String(),
-            'stateText' => self::stateTextOf($binding, $state, $currentRelease),
+            'stateText' => self::stateTextOf($binding, $state, $currentRelease)
+                .($binding->isStopUnconfirmedAt($serverTime)
+                    ? ' Session stop unconfirmed: its lease ended and the device has not confirmed it stopped.'
+                    : ''),
             'signIns' => $signIns,
         ]);
     }
@@ -82,6 +85,10 @@ final class ProjectBindingRowData extends Data
 
             if ($reason === '' && $state !== BindingReadiness::Ready) {
                 $reason = 'Start waits until the folder is ready.';
+            }
+
+            if ($reason === '' && ! $binding->isReconciled()) {
+                $reason = "Start waits until the folder's relay has reported what became of its earlier sessions.";
             }
 
             if ($reason === '' && $binding->isEnvironmentUnassigned()) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Agents\Enums\ArrangementType;
+use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Models\Host;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Enums\CommandRunState;
@@ -18,6 +19,7 @@ use App\Connections\Values\BindingFolder;
 use App\Connections\Values\CommandFingerprint;
 use App\Connections\Values\CommandFrame;
 use App\Connections\Values\InstallTicket;
+use App\Connections\Values\PresenceReport;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Testing\TestResponse;
@@ -176,6 +178,17 @@ final class ProjectCommandsTest extends TestCase
             $start->agent,
             new BindingFolder('root-'.bin2hex(random_bytes(4)), '/Users/owner/shop', 'Owner laptop', bin2hex(random_bytes(8))),
         );
+        $binding->recordPresence(new PresenceReport(
+            'boot-1',
+            1,
+            '1.0.0',
+            HostProtocolVersion::RemoteProject->value,
+            true,
+            false,
+            0,
+            [],
+            true,
+        ));
 
         return [$start, $binding];
     }

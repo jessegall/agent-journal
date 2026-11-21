@@ -77,6 +77,16 @@ type PresenceReport struct {
 	Takeover     bool              `json:"takeover"`
 	// SetupGeneration is the folder's setup generation, which rises on every setup or resume of it.
 	SetupGeneration int `json:"setupGeneration"`
+	// Reconciled is whether this boot already reported what became of its earlier sessions: until it did, the
+	// journal starts nothing and runs no command for the binding.
+	Reconciled bool `json:"reconciled"`
+}
+
+// ReportRuntimeStopped gives the journal the device's receipt that the runtime's session stopped; sent again, it
+// changes nothing.
+func (client *Client) ReportRuntimeStopped(ctx context.Context, bindingID string, runtimeID string) error {
+	return client.call(ctx, "/host/bindings/"+url.PathEscape(bindingID)+"/runtimes/"+url.PathEscape(runtimeID)+"/stopped",
+		nil, nil)
 }
 
 // PresenceReceipt is the journal's answer to a presence report: the binding, the boot generation it holds, the setup
