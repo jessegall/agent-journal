@@ -15,7 +15,8 @@ import (
 var ErrBrokerRefused = errors.New("the Git broker refuses this operation")
 
 // brokerSettings switch off everything in a repository or a user's configuration that would run a program with
-// the broker's powers: hooks, filters, an external diff, a pager, an editor, credential helpers and fsmonitor.
+// the broker's powers: hooks, filters, an external diff, a pager, an editor, credential helpers and fsmonitor; the
+// repository's own filter drivers are emptied per run by GitBroker.settings.
 var brokerSettings = []string{
 	"-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "-c", "core.pager=cat", "-c", "core.editor=true",
 	"-c", "diff.external=", "-c", "credential.helper=", "-c", "protocol.allow=never", "-c", "core.attributesFile=/dev/null",
@@ -94,7 +95,35 @@ func (broker GitBroker) Verified(ctx context.Context, ref string) (string, error
 }
 
 func (broker GitBroker) run(ctx context.Context, arguments ...string) (string, error) {
-	command := exec.CommandContext(ctx, broker.Git, append(append([]string{"-C", broker.Checkout}, brokerSettings...), arguments...)...)
+	settings, err := broker.settings(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return broker.runWith(ctx, settings, arguments...)
+}
+
+// settings are brokerSettings plus an empty clean, smudge and process command for every filter driver the
+// repository's own configuration names, so a planted .gitattributes filter never runs on add or status.
+func (broker GitBroker) settings(ctx context.Context) ([]string, error) {
+	listed, err := broker.runWith(ctx, brokerSettings, "config", "--name-only", "--get-regexp", `^filter\.`)
+	if err != nil && !strings.Contains(err.Error(), "exit status 1") {
+		return nil, err
+	}
+	settings := append([]string{}, brokerSettings...)
+	for _, name := range strings.Fields(listed) {
+		driver := name[len("filter."):strings.LastIndex(name, ".")]
+		for _, key := range []string{"clean", "smudge", "process"} {
+			settings = append(settings, "-c", "filter."+driver+"."+key+"=")
+		}
+		settings = append(settings, "-c", "filter."+driver+".required=false")
+	}
+
+	return settings, nil
+}
+
+func (broker GitBroker) runWith(ctx context.Context, settings []string, arguments ...string) (string, error) {
+	command := exec.CommandContext(ctx, broker.Git, append(append([]string{"-C", broker.Checkout}, settings...), arguments...)...)
 	command.Env = []string{"GIT_CONFIG_GLOBAL=/dev/null", "GIT_CONFIG_NOSYSTEM=1", "GIT_TERMINAL_PROMPT=0",
 		"GIT_OPTIONAL_LOCKS=0", "GIT_AUTHOR_NAME=journal", "GIT_AUTHOR_EMAIL=journal@localhost",
 		"GIT_COMMITTER_NAME=journal", "GIT_COMMITTER_EMAIL=journal@localhost",

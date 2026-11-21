@@ -9,6 +9,7 @@ import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import BindingRow from './BindingRow.vue';
 import InstallLineField from './InstallLineField.vue';
+import ReleasePlatforms from './ReleasePlatforms.vue';
 
 /**
  * The owner connects a project on another machine: one Generate action issues a one-time install line, shown with
@@ -65,7 +66,8 @@ async function revokeBinding(bindingId: string): Promise<void> {
             </p>
             <template v-if="!data.canIssue">
                 <p class="text-small text-muted">
-                    Connecting projects is switched off on this server.
+                    Connecting projects is switched off on this server, or its
+                    release cannot connect a project yet.
                 </p>
             </template>
             <template v-else-if="issued === null">
@@ -93,6 +95,7 @@ async function revokeBinding(bindingId: string): Promise<void> {
                     >
                 </div>
             </template>
+            <ReleasePlatforms :release="data.release" />
             <template v-if="refusal !== null">
                 <p class="text-small text-danger">{{ refusal }}</p>
             </template>

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Data\ReleaseCompatibilityData;
-use App\Agents\Data\ReleaseOfferData;
-use App\Agents\Data\ReleaseTargetData;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Exceptions\ReleaseMissing;
 use App\Agents\Values\ReleaseArtifact;
@@ -87,22 +85,13 @@ final readonly class PublishedReleases
     }
 
     /**
-     * What the window shows beside Copy: each platform of the current release with its size and prerequisites, the
-     * platforms and providers it withholds, and the capabilities it lacks; nothing while no release is published.
+     * The manifest of the current release, if one is published: none or one.
+     *
+     * @return list<ReleaseManifest>
      */
-    public function offer(): ReleaseOfferData
+    public function publishedManifest(): array
     {
-        if ($this->current === '' || ! $this->files->exists(FilePath::in(Place::Releases, "{$this->current}/".self::MANIFEST))) {
-            return ReleaseOfferData::from(['release' => null, 'targets' => [], 'withheldCapabilities' => ReleaseManifest::CAPABILITIES]);
-        }
-
-        $manifest = $this->manifestOf($this->current);
-
-        return ReleaseOfferData::from([
-            'release' => $manifest->version,
-            'targets' => array_map(ReleaseTargetData::fromTarget(...), $manifest->targets),
-            'withheldCapabilities' => $manifest->withheldCapabilities(),
-        ]);
+        return $this->hasCurrentManifest() ? [$this->manifestOf($this->current)] : [];
     }
 
     /**

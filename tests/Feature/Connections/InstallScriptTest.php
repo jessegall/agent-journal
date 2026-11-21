@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Agents\Enums\HostProtocolVersion;
+use App\Agents\Values\ReleaseManifest;
+use App\Agents\Values\ReleaseTarget;
 use App\Connections\Exceptions\TicketMalformed;
 use App\Connections\Support\InstallScript;
 use Symfony\Component\Process\Process;
@@ -27,6 +29,11 @@ final class InstallScriptTest extends TestCase
     private const string TICKET = 'Tk3_x-9QvZ0aB1cD2eF3gH4iJ5kL6mN7';
 
     private const string RELAY_SHA256 = 'aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44';
+
+    /**
+     * What each platform of the test release offers: its prerequisites and both local providers.
+     */
+    private const array OFFERED = ['prerequisites' => ['git', 'curl'], 'providers' => ReleaseTarget::PROVIDERS];
 
     private string $folder;
 
@@ -160,9 +167,10 @@ final class InstallScriptTest extends TestCase
         return (string) json_encode([
             'version' => self::VERSION,
             'hostProtocolVersion' => HostProtocolVersion::RemoteProject->value,
+            'capabilities' => ReleaseManifest::CAPABILITIES,
             'targets' => [
-                ['os' => 'darwin', 'arch' => 'arm64', 'artifacts' => [$relay('darwin-arm64')]],
-                ['os' => 'linux', 'arch' => 'amd64', 'artifacts' => [$relay('linux-amd64')]],
+                ['os' => 'darwin', 'arch' => 'arm64', ...self::OFFERED, 'artifacts' => [$relay('darwin-arm64')]],
+                ['os' => 'linux', 'arch' => 'amd64', ...self::OFFERED, 'artifacts' => [$relay('linux-amd64')]],
             ],
         ]);
     }

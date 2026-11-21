@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Connections;
 
-use App\Agents\Data\ReleaseOfferData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

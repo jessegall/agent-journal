@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Data;
+namespace App\Http\Data\Connections;
 
 use App\Agents\Values\ReleaseTarget;
 use Spatie\LaravelData\Data;

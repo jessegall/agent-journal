@@ -33,11 +33,7 @@ trait ConnectsProjects
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $folder = sys_get_temp_dir().'/connections-'.bin2hex(random_bytes(4));
         mkdir("{$folder}/1.0.0", 0755, true);
-        file_put_contents("{$folder}/1.0.0/manifest.json", (string) json_encode([
-            'version' => '1.0.0',
-            'hostProtocolVersion' => HostProtocolVersion::RemoteProject->value,
-            'targets' => [],
-        ]));
+        file_put_contents("{$folder}/1.0.0/manifest.json", (string) json_encode(PublicRelease::manifest('1.0.0', HostProtocolVersion::RemoteProject->value)));
         config([
             'files.places.releases' => $folder,
             'agents.release' => '1.0.0',

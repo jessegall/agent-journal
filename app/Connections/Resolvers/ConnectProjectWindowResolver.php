@@ -10,6 +10,7 @@ use App\Agents\Support\ServerOrigin;
 use App\Connections\Models\ProjectBinding;
 use App\Http\Data\Connections\ConnectProjectWindowData;
 use App\Http\Data\Connections\ProjectBindingRowData;
+use App\Http\Data\Connections\ReleaseOfferData;
 use App\Ui\Contracts\PageResolver;
 use Carbon\CarbonImmutable;
 
@@ -32,7 +33,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         return ConnectProjectWindowData::from([
             'serverName' => $this->origin->name(),
             'canIssue' => $this->availability->canIssue(),
-            'release' => $this->releases->offer(),
+            'release' => ReleaseOfferData::fromPublished($this->releases->publishedManifest()),
             'bindings' => array_map(
                 fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding($binding, $now),
                 ProjectBinding::listed(),

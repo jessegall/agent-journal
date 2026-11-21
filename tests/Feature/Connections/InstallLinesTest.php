@@ -8,6 +8,8 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\HostProtocolVersion;
+use App\Agents\Values\ReleaseManifest;
+use App\Agents\Values\ReleaseTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Connections\Models\ProjectInvitation;
 use App\Settings\Commands\SetBooleanSetting;
@@ -175,7 +177,14 @@ final class InstallLinesTest extends TestCase
         file_put_contents("{$folder}/".self::VERSION.'/manifest.json', (string) json_encode([
             'version' => self::VERSION,
             'hostProtocolVersion' => HostProtocolVersion::RemoteProject->value,
-            'targets' => [['os' => 'linux', 'arch' => 'amd64', 'artifacts' => [$relay('linux-amd64')]]],
+            'capabilities' => ReleaseManifest::CAPABILITIES,
+            'targets' => [[
+                'os' => 'linux',
+                'arch' => 'amd64',
+                'prerequisites' => ['git', 'curl'],
+                'providers' => ReleaseTarget::PROVIDERS,
+                'artifacts' => [$relay('linux-amd64')],
+            ]],
         ]));
         config(['files.places.releases' => $folder, 'agents.release' => self::VERSION]);
     }

@@ -30,6 +30,28 @@ function windowWith(canIssue: boolean) {
             data: {
                 serverName: 'journal.example.com',
                 canIssue,
+                release: {
+                    release: '1.0.0',
+                    targets: [
+                        {
+                            name: 'darwin-arm64',
+                            bytes: 9_000_000,
+                            isMeasured: true,
+                            prerequisites: ['git', 'curl'],
+                            withheldProviders: [],
+                            isSupported: true,
+                        },
+                        {
+                            name: 'linux-amd64',
+                            bytes: 9_000_000,
+                            isMeasured: true,
+                            prerequisites: ['git', 'curl'],
+                            withheldProviders: ['codex'],
+                            isSupported: false,
+                        },
+                    ],
+                    withheldCapabilities: [],
+                },
                 bindings: [
                     {
                         id: 'binding-1',
@@ -58,6 +80,13 @@ afterEach(() => {
 });
 
 describe('ConnectProjectWindow', () => {
+    it('shows each supported platform with its size and prerequisites and names a withheld provider', () => {
+        const text = windowWith(true).text();
+
+        expect(text).toContain('darwin-arm64: 9.0 MB to download and install. Needs git, curl.');
+        expect(text).toContain('linux-amd64 is withheld: it does not run codex yet.');
+    });
+
     it('generates a line, copies exactly its bytes and replaces it under the same action', async () => {
         const writeText = vi.fn();
         Object.assign(navigator, { clipboard: { writeText } });
