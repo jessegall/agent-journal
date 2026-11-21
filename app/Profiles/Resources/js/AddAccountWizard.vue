@@ -154,8 +154,11 @@ function begin(of: string, chosen: SignInMethod): void {
     actions.begin(of, chosen);
 }
 
+/**
+ * Starts the chosen sign-in once: a second press while that start is pending starts nothing.
+ */
 function continueWithChoice(): void {
-    if (method.value !== null) {
+    if (method.value !== null && awaited.value === null) {
         begin(driver.value, method.value);
     }
 }

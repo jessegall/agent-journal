@@ -41,14 +41,22 @@ enum SignInMethod: string
     }
 
     /**
-     * The one sentence the sign-in form shows about how the method is paid for or how long it lasts.
+     * The sentences the sign-in form shows about how the program's method is paid for, and, for a key or token, that
+     * checking it may send one small request with it.
+     *
+     * @throws SignInMethodMissing when the program has no such sign-in
      */
-    public function billingNote(): string
+    public function billingNote(HookDriver $driver): string
     {
-        return match ($this) {
-            self::OAuth => 'Uses your subscription.',
-            self::ApiKey => 'You pay for what agents use.',
-            self::ProviderToken => 'Uses your subscription.',
+        $check = ' Checking it may send one small request with it.';
+
+        return match ([$driver, $this]) {
+            [HookDriver::ClaudeCode, self::OAuth] => 'Your Claude subscription pays for what agents use.',
+            [HookDriver::ClaudeCode, self::ProviderToken] => 'Your Claude subscription pays for what agents use.'.$check,
+            [HookDriver::ClaudeCode, self::ApiKey] => 'Billed to the API key, apart from any subscription.'.$check,
+            [HookDriver::Codex, self::OAuth] => 'Your ChatGPT subscription pays for what agents use.',
+            [HookDriver::Codex, self::ApiKey] => 'Billed to the API key by what agents use.'.$check,
+            default => throw SignInMethodMissing::for($driver->value, $this->value),
         };
     }
 
@@ -87,10 +95,9 @@ enum SignInMethod: string
             [HookDriver::ClaudeCode, self::OAuth] => "Sign in on Claude's site, then paste the code it gives you.",
             [HookDriver::ClaudeCode, self::ProviderToken] => 'Paste a token made with claude setup-token. '
                 .'Suits a server.',
-            [HookDriver::ClaudeCode, self::ApiKey] => 'Paste a key from the Anthropic Console. '
-                .'You pay for what agents use.',
+            [HookDriver::ClaudeCode, self::ApiKey] => 'Paste a key from the Anthropic Console.',
             [HookDriver::Codex, self::OAuth] => "Enter a short code on OpenAI's site. The rest happens by itself.",
-            [HookDriver::Codex, self::ApiKey] => 'Paste a key from the OpenAI platform. You pay for what agents use.',
+            [HookDriver::Codex, self::ApiKey] => 'Paste a key from the OpenAI platform.',
             default => throw SignInMethodMissing::for($driver->value, $this->value),
         };
     }

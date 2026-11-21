@@ -45,7 +45,22 @@ final class SignInMethodsTest extends TestCase
         $secrets = array_filter(SignInMethod::cases(), fn (SignInMethod $method) => $method->isSecret());
 
         $this->assertSame([SignInMethod::ProviderToken, SignInMethod::ApiKey], array_values($secrets));
-        $this->assertSame('Uses your subscription.', SignInMethod::OAuth->billingNote());
+        $this->assertSame(
+            [
+                'Your Claude subscription pays for what agents use.',
+                'Your Claude subscription pays for what agents use. Checking it may send one small request with it.',
+                'Billed to the API key, apart from any subscription. Checking it may send one small request with it.',
+                'Your ChatGPT subscription pays for what agents use.',
+                'Billed to the API key by what agents use. Checking it may send one small request with it.',
+            ],
+            array_map(fn (array $pair) => $pair[1]->billingNote($pair[0]), [
+                [HookDriver::ClaudeCode, SignInMethod::OAuth],
+                [HookDriver::ClaudeCode, SignInMethod::ProviderToken],
+                [HookDriver::ClaudeCode, SignInMethod::ApiKey],
+                [HookDriver::Codex, SignInMethod::OAuth],
+                [HookDriver::Codex, SignInMethod::ApiKey],
+            ]),
+        );
     }
 
     public function test_each_method_card_says_how_it_works_what_it_bills_and_where_to_get_its_secret(): void
@@ -87,7 +102,7 @@ final class SignInMethodsTest extends TestCase
             [
                 'API key',
                 'API',
-                'Paste a key from the Anthropic Console. You pay for what agents use.',
+                'Paste a key from the Anthropic Console.',
                 'In the Anthropic Console, open API keys and create a key. Copy it right away: the Console shows it '
                     .'only once.',
             ],
@@ -100,11 +115,11 @@ final class SignInMethodsTest extends TestCase
             [
                 'API key',
                 'API',
-                'Paste a key from the OpenAI platform. You pay for what agents use.',
+                'Paste a key from the OpenAI platform.',
                 'On the OpenAI platform, open API keys and create a secret key.',
             ],
         ], $shown);
-        $this->assertSame('Uses your subscription.', $cards[0]['billingNote']);
+        $this->assertSame('Your Claude subscription pays for what agents use.', $cards[0]['billingNote']);
     }
 
     public function test_a_card_for_a_sign_in_the_program_lacks_is_refused(): void

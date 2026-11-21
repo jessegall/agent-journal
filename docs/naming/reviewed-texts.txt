@@ -1,5 +1,6 @@
 ${diagnostic.code}: ${diagnostic.message}
 ${node.line}: ${node.label}
+${option.description} ${option.billingNote}
 (on an older version): open where it was
 1 day
 1 hour
@@ -200,7 +201,7 @@ Package install
 Pages
 Password
 Paste a key from the Anthropic Console.
-Paste a key from the OpenAI platform. You pay for what agents use.
+Paste a key from the OpenAI platform.
 Paste a token made with claude setup-token.
 Paste it below and send it.
 Paste it in a terminal in the project folder. It works once, until {{ new Date(expiresAt).toLocaleTimeString() }}.
@@ -367,7 +368,6 @@ You can approve once the request is ready for review; a check first needs a chec
 You can change it later from the list.
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
 You don't have access to this.
-You pay for what agents use.
 a file the user names on the command line, wherever it lies
 a sharing gateway's program in the host's tool folders
 as {{ sample.approvedClasses.join(', ') }}

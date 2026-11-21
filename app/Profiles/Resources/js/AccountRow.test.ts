@@ -73,7 +73,7 @@ const subscription: SignInMethodData = {
     method: 'oauth',
     isSecret: false,
     secretSource: null,
-    billingNote: 'Uses your subscription.',
+    billingNote: 'Your Claude subscription pays for what agents use.',
     title: 'Sign in with ChatGPT',
     description:
         "Enter a short code on OpenAI's site. The rest happens by itself.",

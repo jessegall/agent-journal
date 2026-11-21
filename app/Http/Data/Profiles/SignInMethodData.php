@@ -32,7 +32,7 @@ final class SignInMethodData extends Data
         return SignInMethodData::from([
             'method' => $method,
             'isSecret' => $method->isSecret(),
-            'billingNote' => $method->billingNote(),
+            'billingNote' => $method->billingNote($driver),
             'title' => $method->title($driver),
             'description' => $method->description($driver),
             'billingLabel' => $method->billingLabel(),

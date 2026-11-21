@@ -88,7 +88,7 @@ const claudeMethods: SignInMethodData[] = [
         method: 'oauth',
         isSecret: false,
         secretSource: null,
-        billingNote: 'Uses your subscription.',
+        billingNote: 'Your Claude subscription pays for what agents use.',
         title: 'Sign in with Claude',
         description: "Opens Claude's sign-in page.",
         billingLabel: 'Subscription',
@@ -96,7 +96,7 @@ const claudeMethods: SignInMethodData[] = [
     {
         method: 'api_key',
         isSecret: true,
-        billingNote: 'You pay for what agents use.',
+        billingNote: 'Billed to the API key, apart from any subscription.',
         title: 'API key',
         description: 'Paste a key from the Anthropic Console.',
         billingLabel: 'API',
@@ -179,6 +179,22 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('AddAccountWizard', () => {
+    it('starts one sign-in however often Continue is pressed', async () => {
+        const view = openWizard();
+        await flushPromises();
+        const [start] = forms;
+
+        await view
+            .findAll('[role="radio"]')
+            .find((card) => card.text().includes('API key'))!
+            .trigger('click');
+        const continueButton = button(view, 'Continue');
+        void continueButton.trigger('click');
+        await continueButton.trigger('click');
+
+        expect(start.submit).toHaveBeenCalledTimes(1);
+    });
+
     it('walks a key sign-in from the choice to the account added', async () => {
         const view = openWizard();
         await flushPromises();

@@ -11,7 +11,7 @@ import { driverIcon, driverName } from './accountLooks';
 
 /**
  * The wizard's first step: the driver switch, then a card for each way that driver signs in on this host, each
- * saying how it works and what it bills. Enter or a double click on a card moves on.
+ * saying how it works and how it is billed. Enter or a double click on a card moves on.
  */
 const props = defineProps<{ methods: DriverMethodsData[] }>();
 
@@ -35,7 +35,7 @@ const cards = computed(() =>
         value: option.method,
         title: option.title,
         aside: option.billingLabel,
-        description: option.description,
+        description: `${option.description} ${option.billingNote}`,
     })),
 );
 
