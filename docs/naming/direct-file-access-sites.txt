@@ -1,5 +1,5 @@
-# The direct file access sites outside app/Files (plan 39): 10 still waiting to move to App\Files\Contracts\Files,
-# and 18 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
+# The direct file access sites outside app/Files (plan 39): 7 still waiting to move to App\Files\Contracts\Files,
+# and 21 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
 # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
 # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
 # tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed site the code no
@@ -11,9 +11,6 @@ app/Hooks/Support/AccountConfigurationWrite.php fopen()
 app/Hooks/Support/AccountConfigurationWrite.php is_file()
 app/Hooks/Support/AccountConfigurationWrite.php rename()
 app/Hooks/Support/AccountConfigurationWrite.php unlink()
-app/Profiles/Support/HostSecret.php file_get_contents()
-app/Profiles/Support/HostSecret.php fileperms()
-app/Profiles/Support/HostSecret.php is_file()
 exempt CommandFileSystem app/Hooks/Programs/CodexFolderTrust.php is_dir()
 exempt CommandFileSystem app/Hooks/Programs/CodexFolderTrust.php is_link()
 exempt CommandFileSystem app/Hooks/Programs/CodexFolderTrust.php scandir()
@@ -31,4 +28,7 @@ exempt GatewayBinary app/Sharing/Gateways/Ngrok/NgrokGateway.php is_executable()
 exempt GatewayBinary app/Sharing/Gateways/Ngrok/NgrokGateway.php is_file()
 exempt GatewayBinary app/Sharing/Gateways/Tunler/TunlerGateway.php is_executable()
 exempt GatewayBinary app/Sharing/Gateways/Tunler/TunlerGateway.php is_file()
+exempt HostSecretFile app/Profiles/Support/HostSecret.php file_get_contents()
+exempt HostSecretFile app/Profiles/Support/HostSecret.php fileperms()
+exempt HostSecretFile app/Profiles/Support/HostSecret.php is_file()
 exempt UserNamedFile app/Processes/Console/ProcessExportCommand.php file_put_contents()
