@@ -16,16 +16,19 @@ import { signInAgainLabel } from './accountLooks';
 import { isChosen, newestSelections } from './accountSelections';
 import { attemptToRejoin, isLive } from './signIn';
 import type { WizardRequest } from './signIn';
+import { useUsageClock } from './usageClock';
 
 /**
  * The owner's saved Claude Code and Codex accounts in one list: which one new starts of each driver use, choosing
  * or renaming one, and adding one through the add-account wizard. A sign-in still waiting on the host is resumed from
  * the header. The page reloads on every change; a reload that answers an older choice never takes back a newer one,
- * by each driver's change number.
+ * by each driver's change number. Each row's usage line is chosen again when a window resets, a UTC month begins
+ * or the window gets focus.
  */
 const props = defineProps<{ data: AccountListData }>();
 
 const selections = ref(props.data.selections);
+const now = useUsageClock(() => props.data.rows);
 const request = ref<WizardRequest | null>(null);
 
 watch(
@@ -103,6 +106,7 @@ function resumeOrAgain(row: AccountRowData): void {
                     <AccountRow
                         :account="row"
                         :is-chosen="isChosen(selections, row.driver, row.id)"
+                        :now="now"
                         @sign-in-again="resumeOrAgain(row)"
                     >
                         <template

@@ -58,6 +58,7 @@ vi.mock('@kit/usePageChanges', () => ({
 
 import type {
     AccountRowData,
+    AccountUsageWindowData,
     SignInMethodData,
 } from '@generated/types/accounts';
 import AccountRow from './AccountRow.vue';
@@ -99,8 +100,31 @@ function row(props: { account?: AccountRowData; isChosen?: boolean } = {}) {
         props: {
             account: props.account ?? account(),
             isChosen: props.isChosen ?? false,
+            now: new Date('2026-11-21T12:00:00Z'),
         },
     });
+}
+
+const week: AccountUsageWindowData = {
+    limitId: 'claude',
+    slot: 'seven_day',
+    usedPercent: 42,
+    windowMinutes: null,
+    resetsAt: '2026-11-23T10:00:00Z',
+    observedAt: '2026-11-21T11:00:00Z',
+};
+const fiveHours: AccountUsageWindowData = {
+    ...week,
+    slot: 'five_hour',
+    usedPercent: 17,
+    resetsAt: '2026-11-21T15:00:00Z',
+};
+
+function usageLineOf(shown: ReturnType<typeof row>): string | undefined {
+    return shown
+        .findAll('li > div > span')
+        .map((found) => found.text())
+        .find((text) => / used|Est\. |Latest thread/.test(text));
 }
 
 async function openSettings(shown: ReturnType<typeof row>): Promise<void> {
@@ -253,5 +277,91 @@ describe('the settings dialog', () => {
         await button(shown, 'Sign in again')!.trigger('click');
 
         expect(shown.emitted('signInAgain')).toHaveLength(1);
+    });
+
+    it('shows one Week line for an account with both windows and both windows in settings', async () => {
+        const shown = row({
+            account: account({ usage: { windows: [fiveHours, week] } }),
+        });
+
+        expect(usageLineOf(shown)).toMatch(/^Week 42% used, resets \S+$/);
+        await openSettings(shown);
+        const usage = document.querySelector('[aria-label="Usage"]');
+
+        expect(usage?.textContent).toContain('Week');
+        expect(usage?.textContent).toContain('42% used, resets');
+        expect(usage?.textContent).toContain('5-hour');
+        expect(usage?.textContent).toContain('17% used, resets');
+    });
+
+    it('shows the five-hour line for an account with only that window', () => {
+        const shown = row({
+            account: account({ usage: { windows: [fiveHours] } }),
+        });
+
+        expect(usageLineOf(shown)).toMatch(/^5-hour 17% used, resets /);
+    });
+
+    it('shows no usage line and no usage part for an account without a reading', async () => {
+        const shown = row();
+
+        expect(usageLineOf(shown)).toBeUndefined();
+        await openSettings(shown);
+
+        expect(document.querySelector('[aria-label="Usage"]')).toBeNull();
+    });
+
+    it('shows a positive cost below a cent as less than a cent', () => {
+        const shown = row({
+            account: account({
+                usage: {
+                    windows: [],
+                    monthCost: {
+                        usd: '0.004000000000',
+                        observations: 2,
+                        monthStart: '2026-11-01T00:00:00+00:00',
+                        lastObservedAt: '2026-11-21T10:00:00+00:00',
+                    },
+                },
+            }),
+        });
+
+        expect(usageLineOf(shown)).toBe('Est. < $0.01 this month');
+    });
+});
+
+describe('usage on an open page', () => {
+    it('drops a window from the row line once the clock passes its reset, without a reload', async () => {
+        const shown = row({
+            account: account({ usage: { windows: [fiveHours, week] } }),
+        });
+
+        expect(usageLineOf(shown)).toMatch(/^Week 42% used/);
+
+        await shown.setProps({ now: new Date('2026-11-23T11:00:00Z') });
+
+        expect(usageLineOf(shown)).toBeUndefined();
+    });
+
+    it('keeps the open settings, a typed name and the focus when the account changes', async () => {
+        const shown = row();
+        await openSettings(shown);
+        const field = document.querySelector<HTMLInputElement>(
+            '#account-name-acc-1',
+        )!;
+        const naming = forms.find((form) => form.label === 'jesse@example.com');
+        naming!.label = 'Typed name';
+        field.focus();
+        await flushPromises();
+
+        await shown.setProps({
+            account: account({ usage: { windows: [week] } }),
+        });
+        await flushPromises();
+
+        expect(document.querySelector('dialog[open]')).not.toBeNull();
+        expect(naming!.label).toBe('Typed name');
+        expect(document.activeElement).toBe(field);
+        expect(document.querySelector('[aria-label="Usage"]')).not.toBeNull();
     });
 });

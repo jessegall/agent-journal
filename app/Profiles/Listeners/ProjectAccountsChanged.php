@@ -16,6 +16,7 @@ use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\AccountSignedIn;
 use App\Profiles\Events\AccountSignedOut;
 use App\Profiles\Events\AccountSwitched;
+use App\Profiles\Events\AccountUsageChanged;
 use App\Profiles\Events\SignInAttemptCleanupRetried;
 use App\Profiles\Events\SignInAttemptFinished;
 use App\Profiles\Events\SignInAttemptReleased;
@@ -41,6 +42,7 @@ final readonly class ProjectAccountsChanged implements Listener
         |AccountSignedIn
         |AccountSignedOut
         |AccountSwitched
+        |AccountUsageChanged
         |SignInAttemptCleanupRetried
         |SignInAttemptFinished
         |SignInAttemptReleased

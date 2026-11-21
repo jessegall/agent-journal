@@ -94,6 +94,7 @@ Email
 Ended
 Enter a short code on OpenAI's site. The rest happens by itself.
 Enter this code there when it asks.
+Estimated USD value observed by the journal. It covers only the sessions the journal ran.
 Every window is open
 Examples
 Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(', ') }}
@@ -313,6 +314,7 @@ Turning off traffic inspection does not hide the content from the provider.
 Unfinished sign-ins
 Unknown
 Update share {{ liveShare.number }}
+Usage
 Use these lines
 Used for {{ revision.purpose }}; its output is {{ revision.outputRequirement }}
 Version control
