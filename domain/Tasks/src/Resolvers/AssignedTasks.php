@@ -47,7 +47,8 @@ final readonly class AssignedTasks implements AssignedTaskResolver
 
         return $this->transaction->run(function () use ($filters, $holder): TaskList {
             $heldIds = $this->assignments->allRecordIdsFor(Task::LINK_TYPE, $holder);
-            $matching = Task::query()->amongIds($heldIds)->matching($filters->search)->inStates($filters->states);
+            $matching = Task::query()->amongIds($heldIds)->matching($filters->search)->inStates($filters->states)
+                ->inEnvironments($filters->environmentIds);
             $total = $matching->clone()->count();
             $tasks = $matching->orderBy('id')->forPage($filters->page->number, $filters->page->size)->get();
 

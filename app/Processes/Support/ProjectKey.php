@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
+use App\Processes\Contracts\ServedEnvironment;
 use App\Processes\Exceptions\FolderOutsideProject;
 use Illuminate\Contracts\Config\Repository;
 
@@ -12,7 +13,7 @@ use Illuminate\Contracts\Config\Repository;
  * came from, once the request named one, else the project this installation serves, from configuration. It lives for
  * one request (Octane), never longer, and is never taken from what a client sends.
  */
-final class ProjectKey
+final class ProjectKey implements ServedEnvironment
 {
     private ConnectedProject|null $connectedProject = null;
 
@@ -33,6 +34,18 @@ final class ProjectKey
         }
 
         return $this->connectedProject->key;
+    }
+
+    /**
+     * The environment of the binding the request came through: none for this installation's own project.
+     *
+     * @return list<string>
+     */
+    public function environmentIds(): array
+    {
+        $environmentId = $this->connectedProject?->environmentId;
+
+        return $environmentId === null ? [] : [$environmentId];
     }
 
     /**

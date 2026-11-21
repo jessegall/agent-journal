@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
+use App\Processes\Contracts\ServedEnvironment;
 use Domain\Tasks\Commands\CreateTask;
 use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 
+/**
+ * Files the task for its actor, in the environment of the connected binding the command came through, if any.
+ */
 final readonly class CreateTaskHandler extends TaskCommandHandler
 {
+    public function __construct(private ServedEnvironment $environment) {}
+
     public function handle(CreateTask $command): string
     {
         $creator = $command->dispatchedBy();
 
-        return Task::create($command->title, $command->brief, $creator)->id;
+        return Task::create($command->title, $command->brief, $creator, $this->environment->environmentIds())->id;
     }
 }
