@@ -23,6 +23,9 @@ final class SignInEgressTest extends TestCase
     {
         parent::setUp();
 
+        // The account folders of this test lie in the system's temporary folder, so the accounts root is that folder.
+        config(['accounts.root' => sys_get_temp_dir()]);
+
         $this->folder = sys_get_temp_dir().'/sign-in-egress-'.uniqid();
         mkdir($this->folder, 0o700);
         $program = $this->folder.'/program';

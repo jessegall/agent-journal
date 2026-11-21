@@ -66,6 +66,11 @@ interface Files
      */
     public function isLink(FilePath $path): bool;
 
+    /**
+     * Where a link points, in the link's own place; a target outside it is refused without being named.
+     */
+    public function linkTarget(FilePath $link): FilePath;
+
     public function fingerprint(FilePath $file): Fingerprint;
 
     /**

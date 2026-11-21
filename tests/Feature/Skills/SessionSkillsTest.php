@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Files\Enums\Place;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
 use App\Assignments\Policies\AssignmentRecipientPolicy;
@@ -56,6 +57,7 @@ final class SessionSkillsTest extends TestCase
         parent::setUp();
 
         $this->makeTemporaryFolder('journal-skills');
+        config([Place::HostSkills->rootSetting() => $this->root]);
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->stack = new RecordingStack();

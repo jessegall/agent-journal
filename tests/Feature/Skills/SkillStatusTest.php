@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Files\Enums\Place;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Agents\Enums\SessionStatus;
@@ -53,6 +54,7 @@ final class SkillStatusTest extends TestCase
         parent::setUp();
 
         $this->makeTemporaryFolder('journal-skills');
+        config([Place::HostSkills->rootSetting() => $this->root]);
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
     }

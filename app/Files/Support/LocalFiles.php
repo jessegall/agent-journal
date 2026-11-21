@@ -8,6 +8,8 @@ use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Files\Exceptions\FileJsonInvalid;
+use App\Files\Exceptions\FileMissing;
+use App\Files\Exceptions\FileOutsidePlaces;
 use App\Files\Exceptions\FileReadReentered;
 use App\Files\Exceptions\FileUnreadable;
 use App\Files\Exceptions\LinkLeavesPlace;
@@ -110,6 +112,24 @@ final class LocalFiles implements Files
     public function isLink(FilePath $path): bool
     {
         return is_link($this->confinement->entryPath($path));
+    }
+
+    public function linkTarget(FilePath $link): FilePath
+    {
+        $path = $this->confinement->entryPath($link);
+        $target = is_link($path) ? readlink($path) : false;
+
+        if ($target === false) {
+            throw FileMissing::at($link->label());
+        }
+
+        try {
+            $absolute = str_starts_with($target, '/') ? $target : dirname($path)."/{$target}";
+
+            return $this->roots->pathIn($link->place, $absolute);
+        } catch (FileOutsidePlaces $outside) {
+            throw LinkLeavesPlace::from($link->label(), $outside);
+        }
     }
 
     public function isFolder(FilePath $folder): bool

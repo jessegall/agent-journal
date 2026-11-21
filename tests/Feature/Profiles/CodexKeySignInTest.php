@@ -22,6 +22,9 @@ final class CodexKeySignInTest extends TestCase
     {
         parent::setUp();
 
+        // The account folders of this test lie in the system's temporary folder, so the accounts root is that folder.
+        config(['accounts.root' => sys_get_temp_dir()]);
+
         config(['accounts.codex_program' => base_path('tests/Fixtures/Accounts/Codex/fake/codex')]);
         $this->directory = sys_get_temp_dir().'/codex-key-'.bin2hex(random_bytes(4));
         mkdir($this->directory, 0700);

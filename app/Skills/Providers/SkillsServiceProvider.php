@@ -7,6 +7,7 @@ namespace App\Skills\Providers;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
+use App\Files\Enums\Place;
 use App\Hooks\Contracts\FileAccessPolicy;
 use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
@@ -34,6 +35,7 @@ use App\Skills\Support\StoredSkillSource;
 use App\Skills\Values\SkillContext;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
@@ -54,7 +56,10 @@ final class SkillsServiceProvider extends ServiceProvider
             SkillContext::class,
             fn (Application $app) => $app->make(SkillContextResolver::class)->current(),
         );
-        $this->app->singleton(SkillTargets::class, fn () => new SkillTargets(storage_path('app/skills')));
+        $this->app->singleton(
+            SkillTargets::class,
+            fn () => new SkillTargets($this->app->make(Repository::class)->string(Place::HostSkills->rootSetting())),
+        );
         $this->app->bind(SkillPublisher::class, HostSkillPublisher::class);
         $this->app->scoped(FileAccessPolicy::class, DeliveredSkillsAccess::class);
         $this->app->bind(SkillTables::class, fn (Application $app) => new SkillTables(

@@ -53,11 +53,11 @@ final readonly class PreparationState
             return ['generation' => null, 'prepared' => false];
         }
 
-        $generation = is_array($stored) ? $stored['generation'] ?? null : null;
+        $generation = $stored['generation'] ?? null;
 
         return [
             'generation' => is_string($generation) ? $generation : null,
-            'prepared' => is_array($stored) && ($stored['prepared'] ?? false) === true,
+            'prepared' => ($stored['prepared'] ?? false) === true,
         ];
     }
 

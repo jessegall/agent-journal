@@ -6,11 +6,12 @@ return [
     /*
      * The root folder of each place the file funnel may touch. The private places of accounts and sharing keep their one
      * setting where their own areas read it (accounts.root, sharing.secrets_dir, sharing.tunnels_dir), as process-output
-     * keeps its disk's root; host-skills is filled by the Skills area's provider from SkillTargets::root().
+     * keeps its disk's root.
      */
     'places' => [
         'project' => base_path(),
-        'host-skills' => null,
+        // The protected folder of each session's delivered skills; SkillTargets takes its root from here.
+        'host-skills' => storage_path('app/skills'),
         'temporary' => sys_get_temp_dir(),
         // The agent host's runtime folder of one start, set by the hook relay from the folder of its bypass log.
         'hook-runtime' => null,

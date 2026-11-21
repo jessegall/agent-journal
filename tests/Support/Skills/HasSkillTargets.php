@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
+use App\Files\Enums\Place;
 use App\Skills\Support\SkillTargets;
 use Tests\Support\UsesTemporaryFolder;
 
@@ -21,6 +22,7 @@ trait HasSkillTargets
         }
 
         $this->makeTemporaryFolder('journal-skills');
+        config([Place::HostSkills->rootSetting() => $this->root]);
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
     }
 }

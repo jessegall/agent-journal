@@ -561,7 +561,9 @@ case	PartResultType::Unavailable
 case	Permissions::OwnerOnly
 case	Permissions::Shared
 case	Place::Accounts
+case	Place::HookRuntime
 case	Place::HostSkills
+case	Place::ProcessOutput
 case	Place::Project
 case	Place::SharingSecrets
 case	Place::SharingTunnels
@@ -2383,6 +2385,7 @@ class	FolderEntries
 class	FolderEntry
 class	FolderLoop
 class	FolderMissing
+class	FolderTooDeep
 class	FolderTrustRefused
 class	FolderWalker
 class	FollowingSequenceState
@@ -3307,6 +3310,7 @@ class	PresenceWindow
 class	PresentList
 class	PresentUserCounter
 class	PrivateAccountProcess
+class	PrivatePlaceScan
 class	PrivateSignInProcesses
 class	ProbeChallengeController
 class	ProbeChallenges
@@ -3415,6 +3419,7 @@ class	ProgramKey
 class	ProgramKeyInvalid
 class	ProgramMethodsData
 class	ProgramNames
+class	ProgramNotContainable
 class	ProgramReplies
 class	ProgramReply
 class	ProgramReplyMalformed
@@ -3461,7 +3466,12 @@ class	ProposedRule
 class	ProposedStopConditionData
 class	ProtectedAccounts
 class	ProtectedFileRead
+class	ProtectedItem
+class	ProtectedItemData
 class	ProtectedMerge
+class	ProtectionReport
+class	ProtectionReportController
+class	ProtectionReportData
 class	ProveNavigation
 class	ProveNavigationHandler
 class	ProveReader
@@ -3693,6 +3703,8 @@ class	RecordHeartbeatCall
 class	RecordHeartbeatController
 class	RecordHeartbeatHandler
 class	RecordHolderData
+class	RecordHostProtection
+class	RecordHostProtectionHandler
 class	RecordIdentity
 class	RecordIds
 class	RecordImmutable
@@ -5661,6 +5673,7 @@ constant	MountRules::ACCOUNTS_ROOT
 constant	MountRules::CONTAINED_TARGETS
 constant	MountRules::DAEMON_ROOT
 constant	MountRules::MOST_CONTAINED_MOUNTS
+constant	MountRules::PROJECTS_TARGET
 constant	MountRules::PROTECTED_SOURCES
 constant	Named::TYPE
 constant	NamedTaskPoolFactory::KEY
@@ -5731,6 +5744,8 @@ constant	PrepareSkillPublicationHandler::MOST_FILES
 constant	PrintsHelperReceipts::MODEL_REQUIRED
 constant	PrivateAccountProcess::BUFFER_BYTES
 constant	PrivateAccountProcess::CHECK_SECONDS_LIMIT
+constant	PrivatePlaceScan::PLACE
+constant	PrivatePlaceScan::PRIVATE_PLACES
 constant	ProbeChallenges::SECONDS
 constant	ProcessEvent::OPERATIONAL_ERROR
 constant	ProcessPages::LIST_VIEW
@@ -5762,6 +5777,7 @@ constant	PropertyRules::TYPE_RULES
 constant	ProtectedAccounts::SIGN_IN_COMMAND
 constant	ProtectedMerge::SAFE_SETTINGS
 constant	ProtectedMerge::STEP_SECONDS_LIMIT
+constant	ProtectionReport::CONTAINER_PLATFORM
 constant	ProvenSkillRead::SHELL_READ
 constant	ProvenSkillRead::SKILL_FILE
 constant	Providers::TYPE
@@ -7549,6 +7565,7 @@ method	ArgumentGrammar::withOptions()
 method	ArithmeticCommandReader::reads()
 method	ArithmeticCommandReader::reason()
 method	ArrangementSetting::__construct()
+method	ArrangementSetting::assertContainable()
 method	ArrangementSetting::assertFits()
 method	ArrangementSetting::assertRunnerFits()
 method	ArrangementSetting::fromConfig()
@@ -8731,6 +8748,7 @@ method	ClaudeKeySignIn::install()
 method	ClaudeKeySignIn::readFiles()
 method	ClaudeKeySignIn::saveSettings()
 method	ClaudeKeySignIn::secretFile()
+method	ClaudeKeySignIn::settingsFile()
 method	ClaudeKeySignIn::settingsOf()
 method	ClaudeKeySignIn::uninstall()
 method	ClaudeKeySignIn::variables()
@@ -8748,7 +8766,9 @@ method	ClaudeSecretSignIn::hasFinished()
 method	ClaudeSecretSignIn::install()
 method	ClaudeSecretSignIn::prove()
 method	ClaudeSecretSignIn::readFiles()
+method	ClaudeSecretSignIn::realFolder()
 method	ClaudeSecretSignIn::secretFile()
+method	ClaudeSecretSignIn::secretPath()
 method	ClaudeSecretSignIn::signOut()
 method	ClaudeSecretSignIn::uninstall()
 method	ClaudeSecretSignIn::variables()
@@ -8900,6 +8920,7 @@ method	CodexKeySignIn::prove()
 method	CodexKeySignIn::signOut()
 method	CodexKeySignIn::verify()
 method	CodexProgram::__construct()
+method	CodexProgram::accountFile()
 method	CodexProgram::environment()
 method	CodexProgram::signOut()
 method	CodexProgram::start()
@@ -10928,7 +10949,9 @@ method	FilePath::__construct()
 method	FilePath::child()
 method	FilePath::in()
 method	FilePath::label()
+method	FilePath::name()
 method	FilePath::ofAbsolute()
+method	FilePath::parent()
 method	FilePathInvalid::climbs()
 method	FilePathInvalid::nulByte()
 method	FilePathInvalid::recursivePattern()
@@ -10941,27 +10964,42 @@ method	FileUnreadable::at()
 method	FileUnwritable::at()
 method	FileWriter::append()
 method	FileWriter::create()
+method	FileWriter::link()
+method	FileWriter::lockOpened()
 method	FileWriter::makeFolder()
+method	FileWriter::makeFolderWithMode()
+method	FileWriter::move()
 method	FileWriter::opened()
+method	FileWriter::remove()
+method	FileWriter::removeFolder()
 method	FileWriter::replace()
 method	FileWriter::writeNew()
 method	Files::append()
 method	Files::codeFile()
 method	Files::codeFolder()
 method	Files::create()
+method	Files::delete()
+method	Files::deleteFolder()
 method	Files::digest()
 method	Files::exists()
 method	Files::filePathOf()
 method	Files::fingerprint()
 method	Files::freeSpace()
 method	Files::isFolder()
+method	Files::isLink()
+method	Files::link()
 method	Files::list()
+method	Files::locked()
 method	Files::makeFolder()
 method	Files::matching()
+method	Files::move()
+method	Files::pathIn()
 method	Files::read()
 method	Files::readAtMost()
 method	Files::readCount()
 method	Files::readJson()
+method	Files::realPath()
+method	Files::scratch()
 method	Files::write()
 method	FilesServiceProvider::register()
 method	FindNextSubstitution::__construct()
@@ -11026,6 +11064,7 @@ method	FolderEntry::isFolder()
 method	FolderEntry::name()
 method	FolderLoop::at()
 method	FolderMissing::at()
+method	FolderTooDeep::at()
 method	FolderTrustRefused::notEmpty()
 method	FolderTrustRefused::outsideWorkingRoots()
 method	FolderType::ofFolder()
@@ -11163,8 +11202,10 @@ method	GatewaySetupCheck::isComplete()
 method	GatewaySetupCheck::passed()
 method	GatewayStarts::__construct()
 method	GatewayStarts::open()
+method	GenerateCallsCommand::callFolders()
 method	GenerateCallsCommand::files()
 method	GenerateCallsCommand::formatted()
+method	GenerateCallsCommand::generated()
 method	GenerateCallsCommand::handle()
 method	GenerateCallsCommand::relative()
 method	GenerateUiManifest::handle()
@@ -11545,11 +11586,14 @@ method	HooksServiceProvider::boot()
 method	HooksServiceProvider::register()
 method	Host::assertEnrolledAs()
 method	Host::casts()
+method	Host::containedProtectionOf()
 method	Host::create()
 method	Host::forSecret()
 method	Host::hashOf()
 method	Host::isRevoked()
 method	Host::permitsFolder()
+method	Host::protectionOf()
+method	Host::recordProtection()
 method	Host::revokeAt()
 method	HostAccess::__construct()
 method	HostAccess::changesFiles()
@@ -12146,6 +12190,8 @@ method	LocalFiles::codeFile()
 method	LocalFiles::codeFolder()
 method	LocalFiles::create()
 method	LocalFiles::decoded()
+method	LocalFiles::delete()
+method	LocalFiles::deleteFolder()
 method	LocalFiles::digest()
 method	LocalFiles::exists()
 method	LocalFiles::filePathOf()
@@ -12153,14 +12199,21 @@ method	LocalFiles::fingerprint()
 method	LocalFiles::freeSpace()
 method	LocalFiles::hashed()
 method	LocalFiles::isFolder()
+method	LocalFiles::isLink()
+method	LocalFiles::link()
 method	LocalFiles::list()
 method	LocalFiles::loaded()
+method	LocalFiles::locked()
 method	LocalFiles::makeFolder()
 method	LocalFiles::matching()
+method	LocalFiles::move()
+method	LocalFiles::pathIn()
 method	LocalFiles::read()
 method	LocalFiles::readAtMost()
 method	LocalFiles::readCount()
 method	LocalFiles::readJson()
+method	LocalFiles::realPath()
+method	LocalFiles::scratch()
 method	LocalFiles::whileReading()
 method	LocalFiles::writablePath()
 method	LocalFiles::write()
@@ -12228,6 +12281,7 @@ method	ManifestCheck::stateOf()
 method	ManifestMount::__construct()
 method	ManifestMount::bind()
 method	ManifestMount::daemonBind()
+method	ManifestMount::existingVolume()
 method	ManifestMount::volume()
 method	ManifestRefused::because()
 method	MapSessionOutputs::continuedFrom()
@@ -12712,6 +12766,7 @@ method	MountRules::assertPermits()
 method	MountRules::contained()
 method	MountRules::isDaemonFolder()
 method	MountRules::local()
+method	MountRules::sessionMounts()
 method	NameAdmission::handle()
 method	NameOutsideEveryDomain::for()
 method	NameScan::classConstantType()
@@ -13410,6 +13465,7 @@ method	PasswordValidationRules::passwordRules()
 method	PathConfinement::__construct()
 method	PathConfinement::absolutePath()
 method	PathConfinement::confined()
+method	PathConfinement::entryPath()
 method	PathConfinement::existingRealPath()
 method	PathConfinement::freshRealPath()
 method	PathConfinement::isLinkLoop()
@@ -13450,6 +13506,7 @@ method	PendingWorkSources::register()
 method	PermissionRevocation::casts()
 method	PermissionRevocation::create()
 method	PermissionRevocation::narrow()
+method	Permissions::folderMode()
 method	Permissions::mode()
 method	Permissions::of()
 method	PermitLimits::__construct()
@@ -13528,6 +13585,7 @@ method	PinMessageHandler::__construct()
 method	PinMessageHandler::handle()
 method	PinnableMessages::__construct()
 method	PinnableMessages::requireIn()
+method	PinnedCompatibilities::__construct()
 method	PinnedCompatibilities::for()
 method	PipedCommands::__construct()
 method	PipedCommands::command()
@@ -13564,6 +13622,8 @@ method	PlaceRoots::existingRoot()
 method	PlaceRoots::filePathOf()
 method	PlaceRoots::innermostPlaceOf()
 method	PlaceRoots::isWithin()
+method	PlaceRoots::madeRoot()
+method	PlaceRoots::pathIn()
 method	PlaceRoots::realPathOf()
 method	PlaceRoots::root()
 method	PlaceUnavailable::for()
@@ -13908,6 +13968,8 @@ method	PrivateAccountProcess::start()
 method	PrivateAccountProcess::stop()
 method	PrivateAccountProcess::waitFor()
 method	PrivateAccountProcess::workingDirectory()
+method	PrivatePlaceScan::findingsIn()
+method	PrivatePlaceScan::key()
 method	PrivateSignInProcesses::__construct()
 method	PrivateSignInProcesses::checkNext()
 method	PrivateSignInProcesses::cleanNext()
@@ -14340,6 +14402,8 @@ method	ProgramMethodsData::__construct()
 method	ProgramMethodsData::fromMethods()
 method	ProgramNames::canonical()
 method	ProgramNames::proposalHints()
+method	ProgramNotContainable::codex()
+method	ProgramNotContainable::reason()
 method	ProgramReplies::allowTool()
 method	ProgramReplies::denyProtected()
 method	ProgramReplies::denyTool()
@@ -14475,6 +14539,10 @@ method	ProtectedFileRead::__construct()
 method	ProtectedFileRead::inFolder()
 method	ProtectedFileRead::patternFolder()
 method	ProtectedFileRead::resolve()
+method	ProtectedItem::__construct()
+method	ProtectedItem::fromStored()
+method	ProtectedItem::stored()
+method	ProtectedItemData::__construct()
 method	ProtectedMerge::__construct()
 method	ProtectedMerge::build()
 method	ProtectedMerge::git()
@@ -14482,6 +14550,17 @@ method	ProtectedMerge::inspect()
 method	ProtectedMerge::merge()
 method	ProtectedMerge::publish()
 method	ProtectedMerge::revision()
+method	ProtectionReport::__construct()
+method	ProtectionReport::fromStored()
+method	ProtectionReport::isEnforcedInContainer()
+method	ProtectionReport::keyOf()
+method	ProtectionReport::shortfall()
+method	ProtectionReport::stored()
+method	ProtectionReport::unenforced()
+method	ProtectionReport::unreported()
+method	ProtectionReportController::__invoke()
+method	ProtectionReportData::__construct()
+method	ProtectionReportData::report()
 method	ProveNavigation::__construct()
 method	ProveNavigationHandler::__construct()
 method	ProveNavigationHandler::handle()
@@ -15078,6 +15157,8 @@ method	RecordHeartbeatHandler::__construct()
 method	RecordHeartbeatHandler::handle()
 method	RecordHolderData::__construct()
 method	RecordHolderData::of()
+method	RecordHostProtection::__construct()
+method	RecordHostProtectionHandler::handle()
 method	RecordIdentity::__construct()
 method	RecordIdentity::among()
 method	RecordIdentity::assertKnownType()
@@ -15432,13 +15513,16 @@ method	RelayFrames::write()
 method	RelayFrames::writeError()
 method	RelayHookCommand::handle()
 method	RelaySettings::__construct()
+method	RelaySettings::bypassLog()
 method	RelaySettings::client()
 method	RelaySettings::forStart()
 method	RelaySettings::hookPath()
+method	RelaySettings::outputGrants()
 method	RelaySettings::pendingEnvelopesFolder()
 method	RelaySettings::preparationFile()
 method	RelaySettings::processGenerationOf()
 method	RelaySettings::protectedAccountsOf()
+method	RelaySettings::runtimeFolder()
 method	RelaySettings::valueOrEmpty()
 method	ReleaseAccountRemoval::__construct()
 method	ReleaseAccountRemovalHandler::__construct()
@@ -20614,6 +20698,7 @@ parameter	$endings
 parameter	$endpoint
 parameter	$endpointVersion
 parameter	$endsOptionsAtDoubleDash
+parameter	$enforced
 parameter	$engine
 parameter	$engineFrame
 parameter	$engineListeners
@@ -20709,6 +20794,7 @@ parameter	$exposed
 parameter	$exposureChecked
 parameter	$expression
 parameter	$extended
+parameter	$extension
 parameter	$fact
 parameter	$factLimit
 parameter	$factory
@@ -20986,7 +21072,9 @@ parameter	$issue
 parameter	$issued
 parameter	$issuedAt
 parameter	$italic
+parameter	$item
 parameter	$item	app/Ui/Declarations/RegisteredNavigation.php
+parameter	$items
 parameter	$job
 parameter	$jobId
 parameter	$jobState
@@ -21195,6 +21283,7 @@ parameter	$mount
 parameter	$mounts
 parameter	$move
 parameter	$ms
+parameter	$mustExist
 parameter	$name
 parameter	$nameContext
 parameter	$namedPaths
@@ -21444,6 +21533,7 @@ parameter	$planNumber
 parameter	$planTitle
 parameter	$planner
 parameter	$plans
+parameter	$platform
 parameter	$policies
 parameter	$policy
 parameter	$policyDigest
@@ -21604,6 +21694,7 @@ parameter	$reading
 parameter	$reads
 parameter	$readyStates
 parameter	$real
+parameter	$realDirectory
 parameter	$realPath
 parameter	$reason
 parameter	$reasonCode
@@ -21749,6 +21840,7 @@ parameter	$resultNote
 parameter	$resultNumber
 parameter	$resultRevision
 parameter	$results	app/Hooks/StateEvents/StateEventEffects.php
+parameter	$resumedSessionId
 parameter	$resumesConversation
 parameter	$retained
 parameter	$retainedCards
@@ -21840,6 +21932,7 @@ parameter	$schemaVersions
 parameter	$scope
 parameter	$scopeVersion
 parameter	$scoped
+parameter	$scratch
 parameter	$screen
 parameter	$screens
 parameter	$script
@@ -23185,6 +23278,8 @@ property	BundleRowData::$digest
 property	BundleRowData::$module
 property	BundleRowData::$rules
 property	BundleRowData::$version
+property	BypassLog::$files
+property	BypassLog::$log
 property	BypassLog::$path
 property	BypassReport::$bypasses
 property	BypassReportController::$bypasses
@@ -23298,6 +23393,7 @@ property	ChangeSupervisor::$target
 property	ChangeSupervisor::$type
 property	ChangeSupervisorHandler::$routes
 property	ChannelRunEvents::$eventKey
+property	ChannelRunEvents::$files
 property	ChannelRunEvents::$lastHeartbeat
 property	ChannelRunEvents::$offsets
 property	ChannelRunEvents::$processes
@@ -23462,7 +23558,9 @@ property	ClaudeCodeAdapter::$protection
 property	ClaudeProgram::$config
 property	ClaudeProgram::$egress
 property	ClaudeSecretSignIn::$claude
+property	ClaudeSecretSignIn::$files
 property	ClaudeSignIn::$claude
+property	ClaudeSignIn::$files
 property	ClaudeStatus::$authMethod
 property	ClaudeStatus::$configDirectory
 property	ClaudeStatus::$email
@@ -23548,6 +23646,7 @@ property	CodexJournalServer::$relay
 property	CodexKeySignIn::$codex
 property	CodexProgram::$config
 property	CodexProgram::$egress
+property	CodexProgram::$files
 property	CodexSignIn::$codex
 property	CodexStatus::$exitCode
 property	CodexStatus::$hasAuthFile
@@ -24787,6 +24886,7 @@ property	GatewayRevisionData::$publicOrigin
 property	GatewayRevisionData::$secretReferences
 property	GatewayRevisionData::$setupProblems
 property	GatewayRevisionData::$version
+property	GatewaySecrets::$files
 property	GatewaySecrets::$folder
 property	GatewaySettings::$executableVersion
 property	GatewaySettings::$gatewayKey
@@ -25001,6 +25101,7 @@ property	HookPayload::$toolResponse
 property	HookPayload::$transcriptPath
 property	HookPayload::$turnId
 property	HookRelay::$client
+property	HookRelay::$config
 property	HookRelay::$files
 property	HookRelay::$grantSeal
 property	HookResponse::$exitCode
@@ -25430,6 +25531,8 @@ property	MakeReportCall::$requestKey
 property	MakeReportCall::$title
 property	MakeReportCall::$uploadId
 property	ManifestCheck::$disks
+property	ManifestCheck::$files
+property	ManifestMount::$mustExist
 property	ManifestMount::$source
 property	ManifestMount::$target
 property	ManifestMount::$type
@@ -25800,6 +25903,7 @@ property	NgrokGateway::$binary
 property	NgrokGateway::$children
 property	NgrokGateway::$configFolder
 property	NgrokGateway::$controlPort
+property	NgrokGateway::$files
 property	NgrokGateway::$http
 property	NgrokGateway::$origins
 property	NgrokGateway::$probe
@@ -26221,6 +26325,7 @@ property	PinMessage::$messageId
 property	PinMessage::$sourceInboxId
 property	PinMessageHandler::$pinnable
 property	PinnableMessages::$messages
+property	PinnedCompatibilities::$setting
 property	PipedCommands::$commands
 property	PipedCommands::$start
 property	PipedCommandsToParse::$negationStart
@@ -26463,6 +26568,7 @@ property	PrivateAccountProcess::$isClosed
 property	PrivateAccountProcess::$pipes
 property	PrivateAccountProcess::$process
 property	PrivateAccountProcess::$workingDirectory
+property	PrivateSignInProcesses::$files
 property	PrivateSignInProcesses::$host
 property	PrivateSignInProcesses::$owners
 property	PrivateSignInProcesses::$pause
@@ -26780,8 +26886,24 @@ property	ProposedStopConditionData::$outputBytes
 property	ProposedStopConditionData::$timeoutSeconds
 property	ProtectedAccounts::$folders
 property	ProtectedFileRead::$paths
+property	ProtectedItem::$enforced
+property	ProtectedItem::$evidence
+property	ProtectedItem::$item
+property	ProtectedItem::$reason
+property	ProtectedItemData::$enforced
+property	ProtectedItemData::$evidence
+property	ProtectedItemData::$item
+property	ProtectedItemData::$reason
 property	ProtectedMerge::$processes
 property	ProtectedMerge::$repository
+property	ProtectionReport::$build
+property	ProtectionReport::$items
+property	ProtectionReport::$platform
+property	ProtectionReport::$program
+property	ProtectionReportData::$build
+property	ProtectionReportData::$items
+property	ProtectionReportData::$platform
+property	ProtectionReportData::$program
 property	ProveNavigation::$completes
 property	ProveNavigation::$expectedRowVersion
 property	ProveNavigation::$navigationId
@@ -27175,6 +27297,8 @@ property	RecordHeartbeatHandler::$clock
 property	RecordHolderData::$holder
 property	RecordHolderData::$recordId
 property	RecordHolderData::$recordType
+property	RecordHostProtection::$hostId
+property	RecordHostProtection::$report
 property	RecordIdentity::$id
 property	RecordIdentity::$type
 property	RecordIds::$ids
@@ -29132,6 +29256,7 @@ property	SpawnedProcess::$pipes
 property	SpawnedProcess::$process
 property	SpoolRecorder::$disks
 property	SpoolRecorder::$events
+property	SpoolRecorder::$files
 property	SpoolRecorder::$manifest
 property	StackAccess::$calls
 property	StackAccess::$retryWindow
@@ -29637,6 +29762,7 @@ property	SubstitutionsToParse::$context
 property	SubstitutionsToParse::$depth
 property	SubstitutionsToParse::$owner
 property	SubstitutionsToParse::$word
+property	SuperviseRun::$files
 property	SuperviseRun::$processes
 property	SuperviseRun::$supervisor
 property	SuperviseSharingCommand::$description
@@ -29978,6 +30104,7 @@ property	TrustedEntryAuthority::$entry
 property	TunlerGateway::$binary
 property	TunlerGateway::$children
 property	TunlerGateway::$configFolder
+property	TunlerGateway::$files
 property	TunlerGateway::$origins
 property	TunlerGateway::$probe
 property	TunlerGateway::$processes
@@ -29996,6 +30123,7 @@ property	UiDeclarations::$owners
 property	UiDeclarations::$pages
 property	UiDeclarations::$sections
 property	UiManifest::$declarations
+property	UiManifest::$files
 property	UiManifest::$propTypes
 property	UiManifest::$views
 property	UiOwnerAvailability::$availability
@@ -30443,6 +30571,7 @@ variable	$card
 variable	$cards
 variable	$carriageReturn
 variable	$carriedFrames
+variable	$case
 variable	$caseNames
 variable	$cases
 variable	$catalogue
@@ -30802,6 +30931,7 @@ variable	$free
 variable	$freshContext
 variable	$from
 variable	$fromHostId
+variable	$fromPath
 variable	$fromTraits
 variable	$frontMatter
 variable	$frozen
@@ -30811,6 +30941,7 @@ variable	$gated
 variable	$gatewayClass
 variable	$gatewayKeys
 variable	$gathered
+variable	$generated
 variable	$generation
 variable	$gh
 variable	$given
@@ -30860,6 +30991,7 @@ variable	$hereDocument
 variable	$hidden
 variable	$highest
 variable	$historicalLabel
+variable	$history
 variable	$hits
 variable	$holder
 variable	$holderFields
@@ -30929,6 +31061,7 @@ variable	$isDirectoryRemoved
 variable	$isExportedUiEvent
 variable	$isFull
 variable	$isGenerated
+variable	$isGiven
 variable	$isHeldForCheck
 variable	$isInside
 variable	$isInsideFilter
@@ -30948,6 +31081,7 @@ variable	$isRecordCommand
 variable	$isRecordPolicy
 variable	$isRefusedCommand
 variable	$isRelative
+variable	$isRemoved
 variable	$isSameAgent
 variable	$isSameFailure
 variable	$isScoped
@@ -31266,6 +31400,7 @@ variable	$phasesOfPlan
 variable	$php
 variable	$pieces
 variable	$pin
+variable	$pinned
 variable	$pins
 variable	$pipe
 variable	$pipeline
@@ -31383,6 +31518,7 @@ variable	$readsAgain
 variable	$readsOnePerParent
 variable	$ready
 variable	$real
+variable	$realDirectory
 variable	$realRoot
 variable	$reason
 variable	$reasons
@@ -31725,6 +31861,7 @@ variable	$timers
 variable	$times
 variable	$title
 variable	$to
+variable	$toPath
 variable	$token
 variable	$tokens
 variable	$tooLong
@@ -31761,6 +31898,7 @@ variable	$unchangedFailures
 variable	$undeclared
 variable	$underline
 variable	$underlined
+variable	$unenforced
 variable	$unexpected
 variable	$unfinished
 variable	$unique
