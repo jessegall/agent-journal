@@ -173,22 +173,8 @@ def test_with_places_free_a_task_queued_behind_a_busy_worker_goes_out_to_a_worke
 @story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
 @setting(WorkersOptions.AUTO_DISPATCH, True)
 @setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
-def test_with_the_switch_off_a_queued_task_waits_for_its_worker(story):
-    printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
-    story.agent_runs(story.agents.subject, f"worker queue {story.agents.workers.first()} {printer}")
-    workers = story.newest("workers")
-    story.time_travel(seconds=121)
-    story.journal_dispatches_the_next_tasks()
-    story.expect_task(printer, delegated=True)
-    assert story.newest("workers") == workers, "no worker of its own is sent"
-    story.expect_stack(story.agents.subject, Orchestrating)
-
-
-@story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
-@setting(WorkersOptions.AUTO_DISPATCH, True)
-@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
 @setting(WorkersOptions.AUTO_DISPATCH_UNQUEUE, True)
-def test_a_task_queued_behind_a_running_worker_stays_in_its_queue_unless_the_project_allows_otherwise(story):
+def test_a_task_queued_behind_a_running_worker_waits_for_it_unless_the_project_allows_otherwise(story):
     """On 21 Nov ten queued mobile proof tasks went to new workers that waited in the same two-slot e2e queue and did nothing."""
     printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
     story.agent_runs(story.agents.subject, f"worker queue {story.agents.workers.first()} {printer}")
@@ -196,7 +182,7 @@ def test_a_task_queued_behind_a_running_worker_stays_in_its_queue_unless_the_pro
     story.time_travel(seconds=121)
     story.journal_dispatches_the_next_tasks()
     story.expect_task(printer, delegated=True)
-    assert story.newest("workers") == workers, "no worker of its own is sent while its worker runs"
+    assert story.newest("workers") == workers, "no worker of its own is sent"
     story.expect_stack(story.agents.subject, Orchestrating)
 
 
