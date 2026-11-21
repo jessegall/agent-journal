@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { ConnectProjectWindowData } from '@generated/types/connections';
-import { revoke, revokeChosen as revokeChosenBindings } from '@generated/routes/connections/bindings';
+import {
+    revoke,
+    revokeChosen as revokeChosenBindings,
+} from '@generated/routes/connections/bindings';
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';
 import { router } from '@inertiajs/vue3';
@@ -53,7 +56,11 @@ const chosen = ref<Set<string>>(new Set());
 const outcomes = ref<Record<string, string>>({});
 
 const machines = computed(() => [
-    ...new Set(props.data.bindings.filter((binding) => binding.state !== 'revoked').map((binding) => binding.machineLabel)),
+    ...new Set(
+        props.data.bindings
+            .filter((binding) => binding.state !== 'revoked')
+            .map((binding) => binding.machineLabel),
+    ),
 ]);
 
 function choose(bindingId: string, isChosen: boolean): void {
@@ -74,7 +81,11 @@ function choose(bindingId: string, isChosen: boolean): void {
 function chooseMachine(machine: string): void {
     chosen.value = new Set(
         props.data.bindings
-            .filter((binding) => binding.machineLabel === machine && binding.state !== 'revoked')
+            .filter(
+                (binding) =>
+                    binding.machineLabel === machine &&
+                    binding.state !== 'revoked',
+            )
             .map((binding) => binding.id),
     );
 }
@@ -83,14 +94,25 @@ function chooseMachine(machine: string): void {
  * Revokes every chosen folder in one action; each one's outcome comes back as the answer's flash and shows beside it.
  */
 function revokeChosen(): void {
-    keyedPost(revokeChosenBindings().url, { bindings: [...chosen.value] }, crypto.randomUUID(), {
-        onAccepted: (flash) => {
-            outcomes.value = (flash.revokedBindings as Record<string, string> | undefined) ?? {};
-            chosen.value = new Set();
+    keyedPost(
+        revokeChosenBindings().url,
+        { bindings: [...chosen.value] },
+        crypto.randomUUID(),
+        {
+            onAccepted: (flash) => {
+                outcomes.value =
+                    (flash.revokedBindings as
+                        | Record<string, string>
+                        | undefined) ?? {};
+                chosen.value = new Set();
+            },
+            onRefused: (reason) => (refusal.value = reason),
+            onUncertain: () =>
+                (refusal.value =
+                    'The journal did not answer; look at each folder before revoking again.'),
         },
-        onRefused: (reason) => (refusal.value = reason),
-        onUncertain: () => (refusal.value = 'The journal did not answer; look at each folder before revoking again.'),
-    }, ['page']);
+        ['page'],
+    );
 }
 
 function revokeBinding(bindingId: string): void {
@@ -120,7 +142,11 @@ function revokeBinding(bindingId: string): void {
                 </p>
             </template>
             <template v-else>
-                <InstallLinePanel :projects="data.projects" :attempts="data.attempts.rows" :fresh="fresh" />
+                <InstallLinePanel
+                    :projects="data.projects"
+                    :attempts="data.attempts.rows"
+                    :fresh="fresh"
+                />
             </template>
             <ReleasePlatforms :release="data.release" />
             <template v-if="refusal !== null">
@@ -131,10 +157,19 @@ function revokeBinding(bindingId: string): void {
         <template v-if="data.bindings.length > 0">
             <div class="flex flex-wrap items-center gap-2 px-4 sm:px-0">
                 <template v-for="machine in machines" :key="machine">
-                    <Button variant="ghost" size="small" @click="chooseMachine(machine)">Choose all on {{ machine }}</Button>
+                    <Button
+                        variant="ghost"
+                        size="small"
+                        @click="chooseMachine(machine)"
+                        >Choose all on {{ machine }}</Button
+                    >
                 </template>
                 <span class="flex-1"></span>
-                <Button variant="danger" size="small" :disabled="chosen.size === 0" @click="revokeChosen"
+                <Button
+                    variant="danger"
+                    size="small"
+                    :disabled="chosen.size === 0"
+                    @click="revokeChosen"
                     >Revoke chosen ({{ chosen.size }})</Button
                 >
             </div>

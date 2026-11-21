@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import type { InstallAttemptRowData, JoinTargetData } from '@generated/types/connections';
-import { issue, revoke as cancelLine } from '@generated/routes/connections/invitations';
+import type {
+    InstallAttemptRowData,
+    JoinTargetData,
+} from '@generated/types/connections';
+import {
+    issue,
+    revoke as cancelLine,
+} from '@generated/routes/connections/invitations';
 import Button from '@kit/Button';
 import FormField from '@kit/FormField';
 import SegmentedSwitch from '@kit/SegmentedSwitch';
@@ -14,7 +20,11 @@ import InstallLineField from './InstallLineField.vue';
  * then Generate, Copy, Replace and Cancel. The line lives in this component alone, never in the page's props, the URL
  * or the history, and is dropped when it expires, is replaced or cancelled, or the window closes.
  */
-const props = defineProps<{ projects: JoinTargetData[]; attempts: InstallAttemptRowData[]; fresh: boolean }>();
+const props = defineProps<{
+    projects: JoinTargetData[];
+    attempts: InstallAttemptRowData[];
+    fresh: boolean;
+}>();
 
 type IssuedLine = {
     installLine: string;
@@ -36,16 +46,29 @@ const refusal = ref<string | null>(null);
 const notice = ref<string | null>(null);
 let expiry: ReturnType<typeof setTimeout> | undefined;
 
-const environments = computed(() => props.projects.find((project) => project.id === projectId.value)?.environments ?? []);
-const canGenerate = computed(() => target.value === 'new' || environmentId.value !== '');
+const environments = computed(
+    () =>
+        props.projects.find((project) => project.id === projectId.value)
+            ?.environments ?? [],
+);
+const canGenerate = computed(
+    () => target.value === 'new' || environmentId.value !== '',
+);
 
-watch(projectId, () => (environmentId.value = environments.value[0]?.id ?? ''), { immediate: true });
+watch(
+    projectId,
+    () => (environmentId.value = environments.value[0]?.id ?? ''),
+    { immediate: true },
+);
 
 watch(issued, (line) => {
     clearTimeout(expiry);
 
     if (line !== null) {
-        expiry = setTimeout(() => drop('This install line expired. Generate a new one.'), Date.parse(line.expiresAt) - Date.now());
+        expiry = setTimeout(
+            () => drop('This install line expired. Generate a new one.'),
+            Date.parse(line.expiresAt) - Date.now(),
+        );
     }
 });
 
@@ -57,14 +80,20 @@ watch(
     () => props.attempts,
     (rows) => {
         const line = issued.value;
-        const row = rows.find((each) => each.reference === line?.attemptReference);
+        const row = rows.find(
+            (each) => each.reference === line?.attemptReference,
+        );
 
         if (line === null || row === undefined) {
             return;
         }
 
         if (row.state !== 'open' || row.version !== line.attemptVersion) {
-            drop(row.state === 'spent' ? 'This line was used: its folder is connected now.' : 'This line no longer works.');
+            drop(
+                row.state === 'spent'
+                    ? 'This line was used: its folder is connected now.'
+                    : 'This line no longer works.',
+            );
         }
     },
 );
@@ -75,7 +104,9 @@ function drop(message: string): void {
 }
 
 function targetBody(): Record<string, string> {
-    return target.value === 'new' ? {} : { projectId: projectId.value, environmentId: environmentId.value };
+    return target.value === 'new'
+        ? {}
+        : { projectId: projectId.value, environmentId: environmentId.value };
 }
 
 /**
@@ -83,19 +114,31 @@ function targetBody(): Record<string, string> {
  * line before is refused from then on.
  */
 function generate(): void {
-    const replacing = issued.value === null ? {} : {
-        attemptReference: issued.value.attemptReference,
-        seenVersion: String(issued.value.attemptVersion),
-    };
+    const replacing =
+        issued.value === null
+            ? {}
+            : {
+                  attemptReference: issued.value.attemptReference,
+                  seenVersion: String(issued.value.attemptVersion),
+              };
     pending.value = true;
     refusal.value = null;
     notice.value = null;
-    keyedPost(issue().url, { issuanceKey, ...targetBody(), ...replacing }, crypto.randomUUID(), {
-        onAccepted: (flash) => (issued.value = (flash.issuedLine as IssuedLine | undefined) ?? null),
-        onRefused: (reason) => (refusal.value = reason),
-        onUncertain: () => (refusal.value = 'The journal did not answer. Generate the line again.'),
-        onFinish: () => (pending.value = false),
-    });
+    keyedPost(
+        issue().url,
+        { issuanceKey, ...targetBody(), ...replacing },
+        crypto.randomUUID(),
+        {
+            onAccepted: (flash) =>
+                (issued.value =
+                    (flash.issuedLine as IssuedLine | undefined) ?? null),
+            onRefused: (reason) => (refusal.value = reason),
+            onUncertain: () =>
+                (refusal.value =
+                    'The journal did not answer. Generate the line again.'),
+            onFinish: () => (pending.value = false),
+        },
+    );
 }
 
 function cancel(): void {
@@ -109,7 +152,10 @@ function cancel(): void {
         data: { seenVersion: line.attemptVersion },
         only: ['page'],
         preserveState: true,
-        onSuccess: () => drop('Cancelled. The line no longer works, and no project was made.'),
+        onSuccess: () =>
+            drop(
+                'Cancelled. The line no longer works, and no project was made.',
+            ),
         onError: (errors) => (refusal.value = Object.values(errors)[0] ?? null),
         onFinish: () => (pending.value = false),
     });
@@ -129,23 +175,40 @@ function cancel(): void {
             />
             <template v-if="target === 'join'">
                 <template v-if="projects.length === 0">
-                    <p class="text-small text-muted">No project is connected yet, so there is nothing to join.</p>
+                    <p class="text-small text-muted">
+                        No project is connected yet, so there is nothing to
+                        join.
+                    </p>
                 </template>
                 <template v-else>
                     <FormField id="join-project" label="Project">
                         <template #default="{ id }">
                             <select :id="id" v-model="projectId" class="input">
-                                <template v-for="project in projects" :key="project.id">
-                                    <option :value="project.id">{{ project.label }}</option>
+                                <template
+                                    v-for="project in projects"
+                                    :key="project.id"
+                                >
+                                    <option :value="project.id">
+                                        {{ project.label }}
+                                    </option>
                                 </template>
                             </select>
                         </template>
                     </FormField>
                     <FormField id="join-environment" label="Environment">
                         <template #default="{ id }">
-                            <select :id="id" v-model="environmentId" class="input">
-                                <template v-for="environment in environments" :key="environment.id">
-                                    <option :value="environment.id">{{ environment.label }}</option>
+                            <select
+                                :id="id"
+                                v-model="environmentId"
+                                class="input"
+                            >
+                                <template
+                                    v-for="environment in environments"
+                                    :key="environment.id"
+                                >
+                                    <option :value="environment.id">
+                                        {{ environment.label }}
+                                    </option>
                                 </template>
                             </select>
                         </template>
@@ -153,20 +216,40 @@ function cancel(): void {
                 </template>
             </template>
             <div>
-                <Button variant="primary" :disabled="pending || !canGenerate" @click="generate"
+                <Button
+                    variant="primary"
+                    :disabled="pending || !canGenerate"
+                    @click="generate"
                     >Generate install line</Button
                 >
             </div>
         </template>
         <template v-else>
-            <InstallLineField :line="issued.installLine" :expires-at="issued.expiresAt" :is-fresh="fresh" />
+            <InstallLineField
+                :line="issued.installLine"
+                :expires-at="issued.expiresAt"
+                :is-fresh="fresh"
+            />
             <p class="text-small text-muted">
-                If nothing installs, check the journal address and this invitation in Settings. When the installer
-                prints nothing, the folder is not confirmed as connected.
+                If nothing installs, check the journal's address and this
+                install line. The folder is connected only once the installer
+                says so.
             </p>
             <div class="flex gap-2">
-                <Button variant="bordered" size="small" :disabled="pending" @click="generate">Replace</Button>
-                <Button variant="ghost" size="small" :disabled="pending" @click="cancel">Cancel</Button>
+                <Button
+                    variant="bordered"
+                    size="small"
+                    :disabled="pending"
+                    @click="generate"
+                    >Replace</Button
+                >
+                <Button
+                    variant="ghost"
+                    size="small"
+                    :disabled="pending"
+                    @click="cancel"
+                    >Cancel</Button
+                >
             </div>
         </template>
         <template v-if="notice !== null">

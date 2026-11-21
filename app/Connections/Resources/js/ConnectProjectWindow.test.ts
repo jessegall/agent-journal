@@ -1,25 +1,38 @@
 // @vitest-environment happy-dom
-import type { ConnectProjectWindowData, InstallAttemptRowData } from '@generated/types/connections';
+import type {
+    ConnectProjectWindowData,
+    InstallAttemptRowData,
+} from '@generated/types/connections';
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const reload = vi.fn();
 const destroy = vi.fn();
 // The page's issue action answers with the line as its one-time flash.
-const keyedPost = vi.fn((_url: string, _body: Record<string, unknown>, _key: string, outcome: KeyedOutcome) => {
-    outcome.onAccepted({
-        issuedLine: {
-            installLine: LINE,
-            expiresAt: new Date(Date.now() + 600_000).toISOString(),
-            invitationId: 'one',
-            attemptReference: 'IA-ABCDEFGH',
-            attemptVersion: keyedPost.mock.calls.length,
-        },
-    });
-    outcome.onFinish?.();
-});
+const keyedPost = vi.fn(
+    (
+        _url: string,
+        _body: Record<string, unknown>,
+        _key: string,
+        outcome: KeyedOutcome,
+    ) => {
+        outcome.onAccepted({
+            issuedLine: {
+                installLine: LINE,
+                expiresAt: new Date(Date.now() + 600_000).toISOString(),
+                invitationId: 'one',
+                attemptReference: 'IA-ABCDEFGH',
+                attemptVersion: keyedPost.mock.calls.length,
+            },
+        });
+        outcome.onFinish?.();
+    },
+);
 
-type KeyedOutcome = { onAccepted: (flash: Record<string, unknown>) => void; onFinish?: () => void };
+type KeyedOutcome = {
+    onAccepted: (flash: Record<string, unknown>) => void;
+    onFinish?: () => void;
+};
 
 vi.mock('@inertiajs/vue3', () => ({ router: { reload, delete: destroy } }));
 vi.mock('@kit/keyedPost', () => ({ keyedPost }));
@@ -33,17 +46,21 @@ vi.mock('@generated/routes/connections/bindings', () => ({
     revoke: ({ binding }: { binding: string }) => ({
         url: `/settings/project-connections/bindings/${binding}`,
     }),
-    revokeChosen: () => ({ url: '/settings/project-connections/bindings/revoke' }),
+    revokeChosen: () => ({
+        url: '/settings/project-connections/bindings/revoke',
+    }),
 }));
 
-const { default: ConnectProjectWindow } = await import(
-    './ConnectProjectWindow.vue'
-);
+const { default: ConnectProjectWindow } =
+    await import('./ConnectProjectWindow.vue');
 
 const LINE =
     'curl -fsSL https://journal.example.com/install/Tk3_x-9QvZ0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0u | sh';
 
-function windowData(canIssue: boolean, attempts: InstallAttemptRowData[] = []): ConnectProjectWindowData {
+function windowData(
+    canIssue: boolean,
+    attempts: InstallAttemptRowData[] = [],
+): ConnectProjectWindowData {
     return {
         serverName: 'journal.example.com',
         origin: 'https://journal.example.com',
@@ -94,11 +111,15 @@ function windowData(canIssue: boolean, attempts: InstallAttemptRowData[] = []): 
 }
 
 function windowWith(canIssue: boolean) {
-    return mount(ConnectProjectWindow, { props: { data: windowData(canIssue) } });
+    return mount(ConnectProjectWindow, {
+        props: { data: windowData(canIssue) },
+    });
 }
 
 function button(wrapper: ReturnType<typeof windowWith>, label: string) {
-    const found = wrapper.findAll('button').find((each) => each.text() === label);
+    const found = wrapper
+        .findAll('button')
+        .find((each) => each.text() === label);
     if (found === undefined) {
         throw new Error(`no ${label} button`);
     }
@@ -114,13 +135,20 @@ describe('ConnectProjectWindow', () => {
     it('shows each supported platform with its size and prerequisites and names a provider not offered yet', () => {
         const text = windowWith(true).text();
 
-        expect(text).toMatch(/darwin-arm64: 9\.0 MB to\s+download and install\.\s+Needs\s+git, curl\./);
-        expect(text).toMatch(/linux-amd64 is not offered yet, because it does not\s+run\s+codex\./);
+        expect(text).toMatch(
+            /darwin-arm64: 9\.0 MB to\s+download and install\.\s+Needs\s+git, curl\./,
+        );
+        expect(text).toMatch(
+            /linux-amd64 is not offered yet, because it does not\s+run\s+codex\./,
+        );
     });
 
     it('generates a line, copies exactly its bytes and replaces it under the same action', async () => {
         const writeText = vi.fn();
-        Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText },
+            configurable: true,
+        });
         const wrapper = windowWith(true);
 
         await button(wrapper, 'Generate install line').trigger('click');
@@ -136,16 +164,21 @@ describe('ConnectProjectWindow', () => {
         const keys = keyedPost.mock.calls.map((call) => call[1].issuanceKey);
         expect(keys).toHaveLength(2);
         expect(keys[0]).toBe(keys[1]);
-        expect(keyedPost.mock.calls[1][1]).toMatchObject({ attemptReference: 'IA-ABCDEFGH', seenVersion: '1' });
+        expect(keyedPost.mock.calls[1][1]).toMatchObject({
+            attemptReference: 'IA-ABCDEFGH',
+            seenVersion: '1',
+        });
     });
 
     it('offers no install action while connecting projects is switched off', () => {
         const wrapper = windowWith(false);
 
-        expect(wrapper.text()).toContain('This journal is not issuing install lines.');
-        expect(wrapper.findAll('button').map((each) => each.text())).not.toContain(
-            'Generate install line',
+        expect(wrapper.text()).toContain(
+            'This journal is not issuing install lines.',
         );
+        expect(
+            wrapper.findAll('button').map((each) => each.text()),
+        ).not.toContain('Generate install line');
     });
 
     it('opens again with no line and a new action', async () => {
@@ -200,15 +233,23 @@ describe('ConnectProjectWindow', () => {
         const wrapper = windowWith(true);
 
         await button(wrapper, 'Join a project').trigger('click');
-        await wrapper.find('#join-environment').setValue('environment-research');
+        await wrapper
+            .find('#join-environment')
+            .setValue('environment-research');
         await button(wrapper, 'Generate install line').trigger('click');
         await flushPromises();
 
-        expect(keyedPost.mock.calls[0][1]).toMatchObject({ projectId: 'project-1', environmentId: 'environment-research' });
+        expect(keyedPost.mock.calls[0][1]).toMatchObject({
+            projectId: 'project-1',
+            environmentId: 'environment-research',
+        });
     });
 
     it('cancels the line at the version it saw and drops it from the window', async () => {
-        destroy.mockImplementation((_url: string, options: { onSuccess?: () => void }) => options.onSuccess?.());
+        destroy.mockImplementation(
+            (_url: string, options: { onSuccess?: () => void }) =>
+                options.onSuccess?.(),
+        );
         const wrapper = windowWith(true);
         await button(wrapper, 'Generate install line').trigger('click');
         await flushPromises();
@@ -244,6 +285,8 @@ describe('ConnectProjectWindow', () => {
 
         expect(wrapper.find('input[readonly]').exists()).toBe(false);
         expect(wrapper.text()).toContain('This line was used');
-        expect(wrapper.find('a[href="#binding-binding-1"]').exists()).toBe(true);
+        expect(wrapper.find('a[href="#binding-binding-1"]').exists()).toBe(
+            true,
+        );
     });
 });

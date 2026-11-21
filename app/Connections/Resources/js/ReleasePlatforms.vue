@@ -7,7 +7,6 @@ import { size } from '@kit/format';
  * machine needs first, each platform not offered with why, and the capabilities the release still lacks.
  */
 defineProps<{ release: ReleaseOfferData }>();
-
 </script>
 
 <template>
@@ -15,9 +14,8 @@ defineProps<{ release: ReleaseOfferData }>();
         <template v-for="target in release.targets" :key="target.name">
             <template v-if="target.isSupported">
                 <li>
-                    {{ target.name }}: {{ size(target.bytes) }} to
-                    download and install. Needs
-                    {{ target.prerequisites.join(', ') }}.
+                    {{ target.name }}: {{ size(target.bytes) }} to download and
+                    install. Needs {{ target.prerequisites.join(', ') }}.
                 </li>
             </template>
             <template v-else-if="!target.isMeasured">

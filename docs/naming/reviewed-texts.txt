@@ -39,6 +39,7 @@ Approved. Go back to the terminal.
 Asks
 Audit
 Back
+Back to Accounts
 Before you choose a gateway
 Before you share
 Breadcrumb
@@ -76,8 +77,6 @@ Configure a gateway
 Confirm
 Confirm disabling
 Connect a project
-Connecting lets {{ data.serverName }} direct an agent that can read and change the files of that project.
-Connecting projects is switched off on this server, or its release cannot connect a project yet.
 Continue
 Continues on its own
 Contract
@@ -85,6 +84,7 @@ Copy code
 Copy failed. Select the link below and copy it yourself.
 Copy link
 Copy the code the page shows when you are done.
+Could not reach the journal for this sign-in. It keeps waiting on the host.
 Dark
 Default
 Delete
@@ -106,13 +106,14 @@ Email
 Ended
 Enter a short code on OpenAI's site. The rest happens by itself.
 Enter this code there when it asks.
+Environment
 Estimated USD value observed by the journal. It covers only the sessions the journal ran.
 Every window is open
 Examples
 Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(', ') }}
 Expires
 Expires before
-Expires {{ new Date(account.expiresAt).toLocaleDateString() }}
+Expires {{ dateOnly(account.expiresAt) }}
 Failed
 Filter
 Filter shares
@@ -128,7 +129,9 @@ Generate install line
 Home
 How to sign in
 Idle
+If nothing installs, check the journal's address and this install line. The folder is connected only once the installer says so.
 Import
+Install attempts
 Install line
 Invalid settings
 It arrived
@@ -174,9 +177,11 @@ No asks to show.
 No connected host runs agents in this place.
 No endpoint is serving this share.
 No gateway is configured yet.
+No install line was issued in the last 30 days.
 No linked record can be shared with it.
 No linked record is shared with it.
 No module bundle is waiting.
+No project is connected yet, so there is nothing to join.
 No saved accounts yet
 No share uses this gateway.
 Not filled in yet: {{ revision.missingFields.join(', ') }}
@@ -210,7 +215,7 @@ Paste a key from the Anthropic Console.
 Paste a key from the OpenAI platform.
 Paste a token made with claude setup-token.
 Paste it below and send it.
-Paste it in a terminal in the project folder. It works once, until {{ new Date(expiresAt).toLocaleTimeString() }}.
+Paste it in a terminal in the project folder. It works once, until {{ timeOfDay(expiresAt) }}.
 Plans
 Pool empty
 Pool too large
@@ -220,6 +225,7 @@ Privilege change
 Problems
 Process control
 Program version
+Project
 Proposal by {{ proposal.author }}: {{ proposal.state }}, revision {{ proposal.currentRevision }}
 Provider host
 Public address
@@ -233,6 +239,7 @@ Readers
 Readers and proofs
 Ready
 Reason
+Recheck
 Reconnecting to the sign-in…
 Reconnecting…
 Record
@@ -262,7 +269,7 @@ Revoke chosen ({{ chosen.size }})
 Revoked
 Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.activeRevision}` }}
 Rules
-Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }}.
+Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }} ({{ data.origin }}).
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
 Runs
 Runtimes
@@ -284,7 +291,9 @@ Share gateways
 Share {{ share.number }} ({{ share.state }})
 Shared with it
 Shares
+Show its connection
 Show more comments
+Show older attempts
 Show or hide the sidebar
 Show the account
 Side by side
@@ -296,6 +305,7 @@ Sign in with Claude
 Sign out
 Sign-in
 Signed in
+Signed in as {{ accountIdentity }}.
 Sorting a command into kinds does not allow it to run, and a sample run only shows what the command does.
 Sorting a command into kinds does not allow it to run.
 Source text
@@ -326,17 +336,21 @@ The gateway provider can see the public address and everything a share shows.
 The gateway provider can see the public address and everything this share shows.
 The host has not said it can run this driver this way.
 The host speaks another protocol version; upgrade journal-agent.
+The journal cannot be reached to check this line is still valid, so it cannot be copied now.
 The new session failed to start
 The place this comment points at is not available: {{ unavailable.message }}
 The project has no rule of its own yet.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
 The version that runs here
 This account must sign in again.
+This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
+This journal is not issuing install lines.
 This machine and the share service must keep running for the link to work.
 This page could not be refreshed.
 This profile does not allow that model.
 This profile runs only its own driver.
 This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
+This server can direct an agent to read and change files in your project. A line works once, for ten minutes.
 This sign-in is already running
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 This window could not be refreshed. It shows what it last loaded.
@@ -349,6 +363,7 @@ Usage
 Use
 Use these lines
 Used for {{ revision.purpose }}; its output is {{ revision.outputRequirement }}
+Verification pending
 Version control
 Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }}–{{ location.anchor.lastLine }}
 Version {{ version }}, lines {{ firstLine }}–{{ lastLine }}
@@ -360,6 +375,7 @@ Watch terminal
 What
 What is still needed
 What the journal is and how to read and write its records.
+What the line connects
 When
 Where the request stands
 Where to get it.
@@ -375,6 +391,8 @@ You can approve once the request is ready for review; a check first needs a chec
 You can change it later from the list.
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
 You don't have access to this.
+Your last answer did not arrive. Paste it again.
+Your last code did not arrive. Paste it again.
 a file the user names on the command line, wherever it lies
 a sharing gateway's program in the host's tool folders
 as {{ sample.approvedClasses.join(', ') }}
@@ -414,7 +432,7 @@ the host's secret file the sign-in runner is given
 to
 tools
 unresolved
-updated {{ ageSeconds().toFixed(1) }} s ago
+updated {{ seconds(ageSeconds()) }} ago
 {{ binding.projectLabel }} on {{ binding.machineLabel }}
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
 {{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
@@ -428,7 +446,7 @@ updated {{ ageSeconds().toFixed(1) }} s ago
 {{ status.watchers }} watching
 {{ target.name }} is not offered yet, because it does not run {{ target.missingProviders.join(' or ') }}.
 {{ target.name }} is not offered yet: its size was not measured.
-{{ target.name }}: {{ megabytes(target.bytes) }} to download and install. Needs {{ target.prerequisites.join(', ') }}.
+{{ target.name }}: {{ size(target.bytes) }} to download and install. Needs {{ target.prerequisites.join(', ') }}.
 {{ title }} can sit beside this pane or join its tabs.
 · device sign-in
 · sign-in page
