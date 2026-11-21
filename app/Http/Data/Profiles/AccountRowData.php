@@ -11,12 +11,13 @@ use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Models\Account;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One saved account as its owner sees it: its name, program, how it signs in, its state, the identity and workspace its
- * program reported, whether new starts use it, how many starts run on it and when it was last checked. Never its
- * folder or a credential.
+ * program reported, whether new starts use it, how many starts run on it, when it was last checked and the usage its
+ * programs reported. Never its folder or a credential.
  */
 #[TypeScript]
 final class AccountRowData extends Data
@@ -40,13 +41,19 @@ final class AccountRowData extends Data
         public readonly bool $awaitsCleanupRetry,
         #[DataCollectionOf(AccountStartData::class)]
         public readonly array $recentStarts,
+        public readonly AccountUsageData|Optional $usage,
     ) {}
 
     /**
      * @param  list<AccountUse>  $recentUses
      */
-    public static function fromAccount(Account $account, bool $isActive, int $runningCount, array $recentUses): self
-    {
+    public static function fromAccount(
+        Account $account,
+        bool $isActive,
+        int $runningCount,
+        array $recentUses,
+        AccountUsageData|Optional $usage,
+    ): self {
         return new self(
             $account->id,
             $account->driver,
@@ -62,6 +69,7 @@ final class AccountRowData extends Data
             $account->cleanup_problem,
             $account->awaitsCleanupRetry(),
             array_map(AccountStartData::fromUse(...), $recentUses),
+            $usage,
         );
     }
 }

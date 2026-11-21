@@ -57,6 +57,8 @@ type HeadlessRuntime struct {
 	Executable string
 	// Container runs each turn's program as its session container's own process; nil runs it as a child of the host.
 	Container TurnContainer
+	// Usage takes the limit windows and result costs a Claude account start's program reports; nil reads none.
+	Usage UsageObserver
 }
 
 // TurnContainer gives the command that runs one turn of the program, at the process generation given, as its session
@@ -282,9 +284,11 @@ func (driver *HeadlessDriver) checkSignIn(command *exec.Cmd) error {
 	return nil
 }
 
-// resultOf reads a Claude account turn's result from its output; other starts have none to read.
+// resultOf reads a Claude account turn's result and usage from its output. A contained Claude turn's output is its
+// container process's own stream-json, attached by the container start: it is read for usage only, so its turn ends
+// with its exit as before. Other starts have nothing to read.
 func (driver *HeadlessDriver) resultOf(command *exec.Cmd) (<-chan error, error) {
-	if !driver.claudeAccountStart() {
+	if !driver.claudeAccountStart() && !driver.containedClaudeStart() {
 		return nil, nil
 	}
 	output, err := command.StdoutPipe()
@@ -292,8 +296,29 @@ func (driver *HeadlessDriver) resultOf(command *exec.Cmd) (<-chan error, error) 
 		return nil, err
 	}
 	result := make(chan error, 1)
-	go func() { result <- readClaudeResult(output) }()
+	usage, process, decides := driver.usage(), driver.generation, driver.claudeAccountStart()
+	go func() {
+		answer := readClaudeResult(output, usage, process)
+		if !decides {
+			answer = nil
+		}
+		result <- answer
+	}()
 	return result, nil
+}
+
+// containedClaudeStart is whether the runtime runs Claude Code in its session's container, where the container
+// process holds the account.
+func (driver *HeadlessDriver) containedClaudeStart() bool {
+	return driver.runtime.Container != nil && driver.runtime.Profile.Program() == "claude"
+}
+
+// usage is the observer of the start's usage; a start nobody reads usage of has one that ignores it.
+func (driver *HeadlessDriver) usage() UsageObserver {
+	if driver.runtime.Usage == nil {
+		return ignoredUsage{}
+	}
+	return driver.runtime.Usage
 }
 
 // wait ends the turn with the process exit, or with the turn's own failure when the process exited cleanly but its

@@ -147,6 +147,13 @@ describe('an account row', () => {
         expect(shown.find('li > div > div').text()).toContain('Expires');
     });
 
+    it('opens its settings tip to the left of the button, inside the card, with a pointer', () => {
+        const tip = row().find('[role="tooltip"]');
+
+        expect(tip.classes()).toContain('right-full');
+        expect(tip.find('[aria-hidden="true"]').exists()).toBe(true);
+    });
+
     it('has one settings button and no other icon actions', () => {
         const labels = row()
             .findAll('li [aria-label]')

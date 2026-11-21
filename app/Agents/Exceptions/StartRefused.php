@@ -29,6 +29,11 @@ final class StartRefused extends RuntimeException
         return new self("No adapter prepares an account start of {$driver}, so it is not claimed.");
     }
 
+    public static function withoutSignInMethod(string $driver): self
+    {
+        return new self("No sign-in method is named for this account start of {$driver}, so it is not claimed.");
+    }
+
     public static function skillsUnsupported(string $driver): self
     {
         return new self("The journal cannot deliver skills to {$driver}, so it is not started.");

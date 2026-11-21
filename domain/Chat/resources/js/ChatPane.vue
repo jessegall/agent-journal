@@ -102,8 +102,6 @@ watch(
             <MessageList
                 :messages="conversation.messages"
                 :own-inbox-id="conversation.sourceInboxId"
-                :agent-id="conversation.agentId"
-                :message-action="conversation.messageAction"
                 @reply="(message) => (replyingTo = message)"
             />
             <template v-if="unreadShown.length > 0">

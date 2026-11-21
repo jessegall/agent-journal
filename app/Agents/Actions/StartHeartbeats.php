@@ -7,10 +7,12 @@ namespace App\Agents\Actions;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\PresenceWindow;
 use App\Agents\Contracts\StartHeartbeats as StartHeartbeatsContract;
+use App\Agents\Enums\ProcessStartState;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Support\DriverRequestEndings;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\StartTransaction;
@@ -19,10 +21,16 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Follows a start by its heartbeats. A session whose beats stop for a presence window is marked silent, which only
- * means absent: silence never times a session out. The host's verified report that the program exited ends it.
+ * means absent: silence never times a session out. The host's verified report that the program exited ends it, and
+ * a session no host took up, that never beat and whose start nobody claimed within a presence window, ends too.
  */
 final readonly class StartHeartbeats implements StartHeartbeatsContract
 {
+    /**
+     * How many never-started sessions one sweep ends; the next sweep takes the rest.
+     */
+    private const int UNCLAIMED_ENDED_PER_SWEEP = 50;
+
     public function __construct(
         private StartTransaction $transaction,
         private StartTokens $credentials,
@@ -38,8 +46,10 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     public function markSilentStarts(): void
     {
         $now = $this->clock->now();
+        $cutoff = $now->subSeconds($this->window->presenceSeconds);
 
-        $this->markSilentSince($now->subSeconds($this->window->presenceSeconds), $now);
+        $this->markSilentSince($cutoff, $now);
+        $this->endUnclaimedSince($cutoff, $now);
     }
 
     /**
@@ -49,6 +59,49 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     {
         $this->transaction->runForSession($session->id, function () use ($session, $evidence): void {
             $session->endWithEvidenceAt(CarbonImmutable::now(), "host reported exit: {$evidence}");
+            $this->credentials->revoke($session);
+            AgentRuntime::query()
+                ->where('agent_session_id', $session->id)
+                ->lockForUpdate()
+                ->limit(1)
+                ->get()
+                ->each(fn (AgentRuntime $runtime) => $this->endings->closeAfterExit($runtime));
+
+            $this->facts->publishAfterCommit(new SessionClosed($session->agent_id, $session->id));
+            $this->facts->applyRequired();
+        });
+    }
+
+    /**
+     * Ends each running session that never beat and whose start is still waiting for a host since the cutoff, so the
+     * agent can start again and its reserved capacity is freed.
+     */
+    private function endUnclaimedSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
+    {
+        ProcessStart::supervised()
+            ->where('state', ProcessStartState::Pending->value)
+            ->where('created_at', '<=', $cutoff)
+            ->whereIn('session_id', AgentSession::query()
+                ->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
+                ->whereNull('last_heartbeat_at')
+                ->select('id'))
+            ->limit(self::UNCLAIMED_ENDED_PER_SWEEP)
+            ->get()
+            ->each(fn (ProcessStart $start) => $this->endUnclaimed($start->session_id, $now));
+    }
+
+    private function endUnclaimed(string $sessionId, CarbonImmutable $now): void
+    {
+        $this->transaction->runForSession($sessionId, function () use ($sessionId, $now): void {
+            $start = ProcessStart::lockedCurrentOf($sessionId);
+
+            if ($start === null || $start->state !== ProcessStartState::Pending) {
+                return;
+            }
+
+            $session = AgentSession::query()->findOrFail($sessionId);
+            $session->endWithEvidenceAt($now, 'no host took up its start within the presence window');
+            $start->cancelPending();
             $this->credentials->revoke($session);
             AgentRuntime::query()
                 ->where('agent_session_id', $session->id)

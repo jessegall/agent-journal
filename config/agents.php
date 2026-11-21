@@ -11,6 +11,12 @@ return [
     */
     'arrangement' => (string) env('AGENTS_ARRANGEMENT', 'local'),
 
+    /*
+    | Contained only, for the acceptance run of doc 78: the drivers whose signed-in starts use the protected-account
+    | launch profile before their account-isolation row is proven, as a comma list such as claude-code,codex.
+    */
+    'protected_account_trial' => (string) env('AGENTS_PROTECTED_ACCOUNT_TRIAL', ''),
+
     // The agent image a server's session containers run, by its digest; the same variable compose pins it with.
     'agent_image' => (string) env('AGENT_IMAGE', ''),
 

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Form, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import type { Appearance } from '@/composables/useAppearance';
 import { useAppearance } from '@/composables/useAppearance';
+import { useDropdown } from '@/composables/useDropdown';
 import { useSidebar } from '@/composables/useSidebar';
 import { logout } from '@/routes';
 
@@ -20,7 +21,7 @@ const appName = computed(() => page.props.name);
 const userName = computed(() => page.props.currentUser?.name);
 const { appearance, update } = useAppearance();
 const { toggle: toggleSidebar } = useSidebar();
-const isSchemeMenuOpen = ref(false);
+const { isOpen: isSchemeMenuOpen, toggle: toggleSchemeMenu, close: closeSchemeMenu } = useDropdown('schemeMenu');
 
 const schemes: { value: Appearance; label: string }[] = [
     { value: 'system', label: 'System' },
@@ -30,7 +31,7 @@ const schemes: { value: Appearance; label: string }[] = [
 
 function chooseScheme(value: Appearance): void {
     update(value);
-    isSchemeMenuOpen.value = false;
+    closeSchemeMenu();
 }
 
 function toggleFullScreen(): void {
@@ -62,12 +63,12 @@ function toggleFullScreen(): void {
             @click="toggleSidebar"
             ><Icon name="list" :size="13"
         /></Button>
-        <div class="relative">
+        <div ref="schemeMenu" class="relative">
             <Button
                 variant="icon"
                 aria-label="Color scheme"
                 :aria-expanded="isSchemeMenuOpen"
-                @click="isSchemeMenuOpen = !isSchemeMenuOpen"
+                @click="toggleSchemeMenu"
                 ><Icon name="scheme" :size="13"
             /></Button>
             <template v-if="isSchemeMenuOpen">

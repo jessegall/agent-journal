@@ -34,6 +34,7 @@ start) echo true > ` + state + ` ;;
 stop) rm -f ` + state + ` ;;
 inspect) case "$3" in *OOMKilled*) echo true ;; *) [ -f ` + state + ` ] && echo true || echo false ;; esac ;;
 wait) rm -f ` + state + `; echo ` + waited + ` ;;
+run) [ -f ` + filepath.Join(folder, "unsafe") + ` ] && { printf 'is readable or writable by group or other\t/srv/journal/accounts/7/.credentials.json\n'; exit 1; }; exit 0 ;;
 *) exit 0 ;;
 esac
 `
@@ -217,5 +218,65 @@ func TestACheckoutOfAnotherInstallationIsRefusedBeforeAnyClone(t *testing.T) {
 	}
 	if slices.ContainsFunc(calls(t, log), func(call string) bool { return strings.Contains(call, "checkout") }) {
 		t.Fatalf("a checkout was made: %v", calls(t, log))
+	}
+}
+
+func protectedAttachableManifest() ContainerManifest {
+	protected := attachableManifest()
+	protected.LaunchProfile = LaunchProtectedAccount
+	protected.User = "0:0"
+	protected.Capabilities = []string{"SETUID", "SETGID", "SETPCAP"}
+
+	return protected
+}
+
+func TestAProtectedSessionChecksItsAccountFolderThenHandsItsProgramToTheInit(t *testing.T) {
+	container, log := sessionDocker(t, false, "0")
+	process := ContainerProcess{Command: []string{"claude", "--settings", "{}"}}
+
+	if _, err := container.Open(context.Background(), protectedAttachableManifest(), process); err != nil {
+		t.Fatal(err)
+	}
+
+	made := calls(t, log)
+	check := slices.IndexFunc(made, func(call string) bool { return strings.HasPrefix(call, "run ") })
+	create := slices.IndexFunc(made, func(call string) bool { return strings.HasPrefix(call, "create ") })
+	if check < 0 || create < check {
+		t.Fatalf("the account folder was not checked before the create: %v", made)
+	}
+	for _, want := range []string{"--entrypoint /opt/journal/bin/journal-init",
+		"journal/helper@sha256:abc -- claude --settings {}"} {
+		if !strings.Contains(made[create], want) {
+			t.Fatalf("the create lacks %q: %s", want, made[create])
+		}
+	}
+}
+
+func TestAProtectedSessionOnAnUnsafeAccountFolderIsRefusedBeforeAnythingIsCreated(t *testing.T) {
+	container, log := sessionDocker(t, false, "0")
+	if err := os.WriteFile(filepath.Join(filepath.Dir(log), "unsafe"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err := container.Open(context.Background(), protectedAttachableManifest(), ContainerProcess{Command: []string{"claude"}})
+	if !errors.Is(err, ErrAccountFolderUnsafe) || !strings.Contains(err.Error(), ".credentials.json") {
+		t.Fatalf("got %v", err)
+	}
+	if slices.ContainsFunc(calls(t, log), func(call string) bool { return strings.HasPrefix(call, "create ") }) {
+		t.Fatal("a container was created on an unsafe account folder")
+	}
+}
+
+func TestAStandardSessionPassesItsProgramWithoutTheInitsSeparator(t *testing.T) {
+	container, log := sessionDocker(t, false, "0")
+
+	if _, err := container.Open(context.Background(), attachableManifest(), ContainerProcess{Command: []string{"claude"}}); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, call := range calls(t, log) {
+		if strings.HasPrefix(call, "run ") || (strings.HasPrefix(call, "create ") && strings.Contains(call, " -- ")) {
+			t.Fatalf("a standard session took the protected path: %s", call)
+		}
 	}
 }

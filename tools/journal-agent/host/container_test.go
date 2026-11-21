@@ -373,3 +373,83 @@ func TestATerminalContainerRestartsByItselfAndResumesOnceItsTranscriptExists(t *
 		t.Fatalf("a process without a restart command is wrapped: %v", got)
 	}
 }
+
+func protectedManifest() ContainerManifest {
+	protected := containedManifest()
+	protected.LaunchProfile = LaunchProtectedAccount
+	protected.User = "0:0"
+	protected.Capabilities = []string{"SETUID", "SETGID", "SETPCAP"}
+
+	return protected
+}
+
+func TestAProtectedAccountContainerStartsItsInitAsRootWithOnlyThreeCapabilities(t *testing.T) {
+	arguments, err := protectedManifest().DockerCreateArguments("journal-session-7", accountLabels("7"), containedRules)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	joined := strings.Join(arguments, " ")
+	for _, want := range []string{
+		"--user 0:0", "--cap-drop ALL", "--cap-add SETUID --cap-add SETGID --cap-add SETPCAP",
+		"--entrypoint /opt/journal/bin/journal-init",
+		"--tmpfs /run/journal-exec:uid=10002,gid=10001,mode=0750,size=1m",
+		"--read-only", "no-new-privileges", "seccomp=/etc/journal/seccomp.json", "apparmor=journal-agent",
+	} {
+		if !strings.Contains(joined, want) {
+			t.Fatalf("the arguments lack %s: %v", want, arguments)
+		}
+	}
+	if strings.Count(joined, "--cap-add") != 3 || arguments[len(arguments)-1] != "journal/helper@sha256:abc" {
+		t.Fatalf("unexpected capabilities or image place: %v", arguments)
+	}
+}
+
+func TestAProtectedAccountManifestAskingForMoreIsRefusedBeforeAnythingIsCreated(t *testing.T) {
+	unsafe := map[string]func(*ContainerManifest) LaunchLabels{
+		"a fourth capability": func(changed *ContainerManifest) LaunchLabels {
+			changed.Capabilities = append(changed.Capabilities, "NET_ADMIN")
+			return accountLabels("7")
+		},
+		"another user": func(changed *ContainerManifest) LaunchLabels {
+			changed.User = "10001:10001"
+			return accountLabels("7")
+		},
+		"an entrypoint": func(changed *ContainerManifest) LaunchLabels {
+			changed.Entrypoint = "/bin/sh"
+			return accountLabels("7")
+		},
+		"no account": func(changed *ContainerManifest) LaunchLabels {
+			changed.Mounts = changed.Mounts[:1]
+			return labels()
+		},
+		"a writable root": func(changed *ContainerManifest) LaunchLabels {
+			changed.ReadOnlyRoot = false
+			return accountLabels("7")
+		},
+		"an unknown profile": func(changed *ContainerManifest) LaunchLabels {
+			changed.LaunchProfile = "root"
+			return accountLabels("7")
+		},
+	}
+	for name, change := range unsafe {
+		changed := protectedManifest()
+		changedLabels := change(&changed)
+
+		if _, err := changed.DockerCreateArguments("journal-session-7", changedLabels, containedRules); !errors.Is(err, ErrManifestUnsafe) {
+			t.Fatalf("%s gave %v", name, err)
+		}
+	}
+}
+
+func TestAStandardManifestNamesNoInitAndAddsNoCapabilities(t *testing.T) {
+	arguments, err := containedManifest().DockerCreateArguments("journal-session-7", accountLabels("7"), containedRules)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	joined := strings.Join(arguments, " ")
+	if strings.Contains(joined, "--entrypoint") || strings.Contains(joined, "--cap-add") || strings.Contains(joined, "journal-exec") {
+		t.Fatalf("a standard container got protected arguments: %v", arguments)
+	}
+}

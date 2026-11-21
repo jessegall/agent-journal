@@ -2,8 +2,8 @@
 # Builds one of the journal's images for one architecture, the agent image (the default) or the runner image, and
 # records it by digest and name in docs/accounts/docker-images.json. The record is written verified only after the
 # build checks pass: no secret in any layer, the pinned clients answer their versions, and for the agent image
-# journal-check is installed read-only, bwrap and socat answer, no Docker, journal-agent or console is in it and it
-# runs as 10001:10001.
+# journal-check, journal-init and journal-exec are installed read-only, the executor's user shares the workspace group,
+# bwrap and socat answer, no Docker, journal-agent or console is in it and it runs as 10001:10001.
 set -eu
 
 architecture="${1:?name the architecture, such as linux/arm64}"
@@ -33,6 +33,11 @@ docker run --rm --entrypoint codex "$tag" --version | grep -q "$codex"
 if [ "$name" = agent ]; then
     docker run --rm --entrypoint id "$tag" -u | grep -qx 10001
     docker run --rm --entrypoint test "$tag" -x /opt/journal/bin/journal-check
+    for protected in journal-init journal-exec; do
+        docker run --rm --entrypoint stat "$tag" -c '%U:%G %a' "/opt/journal/bin/$protected" | grep -qx 'root:root 555'
+    done
+    docker run --rm --entrypoint id "$tag" journal-tools | grep -q 'uid=10002(journal-tools).*10010(journal-work)'
+    docker run --rm --entrypoint stat "$tag" -c '%u:%g %a' /workspace | grep -qx '10001:10010 2770'
     docker run --rm --entrypoint bwrap "$tag" --version >/dev/null
     docker run --rm --entrypoint socat "$tag" -V >/dev/null
     for absent in docker journal-agent; do

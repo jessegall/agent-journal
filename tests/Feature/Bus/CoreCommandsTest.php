@@ -55,6 +55,7 @@ use App\Processes\Commands\StopProcessRun;
 use App\Processes\Commands\StopSurvivors;
 use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Commands\WithdrawRuleProposal;
+use App\Profiles\Commands\AddUsageCost;
 use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Commands\ClaimAccountCheck;
 use App\Profiles\Commands\ClaimCleanup;
@@ -70,6 +71,8 @@ use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\ReconcileSignIns;
 use App\Profiles\Commands\RecordAccountFailure;
 use App\Profiles\Commands\RecordAccountNotice;
+use App\Profiles\Commands\RecordThreadTokens;
+use App\Profiles\Commands\RecordUsageWindow;
 use App\Profiles\Commands\ReleaseAccountRemoval;
 use App\Profiles\Commands\ReleaseSignInAgain;
 use App\Profiles\Commands\ReportSignIn;
@@ -155,6 +158,9 @@ final class CoreCommandsTest extends CommandBusTestCase
             TakeSignInCode::class,
             RecordAccountFailure::class,
             RecordAccountNotice::class,
+            RecordUsageWindow::class,
+            AddUsageCost::class,
+            RecordThreadTokens::class,
             ClaimAccountCheck::class,
             CheckAccount::class,
             ClaimSignIn::class,

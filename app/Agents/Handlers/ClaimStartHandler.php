@@ -19,8 +19,8 @@ use App\Contracts\CommandHandler;
 
 /**
  * Hands the host a pending start of a runtime assigned to it, with the recipe the program's adapter checked; another
- * host's start is refused, and when the adapter refuses the program's build or arrangement, the claim rolls back and
- * the start stays pending.
+ * host's start is refused, and when the adapter refuses the program's build or arrangement, or names no sign-in
+ * method for the account, the claim rolls back and the start stays pending.
  */
 final readonly class ClaimStartHandler implements CommandHandler
 {
@@ -54,6 +54,7 @@ final readonly class ClaimStartHandler implements CommandHandler
             $start->session_id,
             $start->directory,
             $start->account_generation,
+            $settings->signInMethod($driver),
             $settings->recipeFor($driver, $start->transport_profile),
             StartRecord::conversationTargetOf($start->session_id),
             StartRecord::requiresConversation($start->session_id),

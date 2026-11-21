@@ -64,6 +64,7 @@ final readonly class StartSessions
         string $requestId,
         AgentSession|null $parent = null,
         RecordIdentity|null $authorizedSource = null,
+        RuntimeIntent|null $intent = null,
     ): StartedAgent {
         return $this->open(
             $agent,
@@ -71,7 +72,7 @@ final readonly class StartSessions
             $requestId,
             $parent,
             $this->settingsFor($selection),
-            null,
+            $intent,
             $authorizedSource,
         );
     }

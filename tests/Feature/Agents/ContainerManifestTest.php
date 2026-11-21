@@ -11,6 +11,7 @@ use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostCapabilityType;
+use App\Agents\Enums\LaunchProfileType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\AccountFolderInvalid;
@@ -534,6 +535,62 @@ final class ContainerManifestTest extends TestCase
 
         $this->assertRefused(fn () => SecurityOptions::make('unconfined,apparmor=unconfined', null, ''));
         $this->assertRefused(fn () => SecurityOptions::make('/tmp/seccomp.json', null, '/etc/journal/profiles'));
+    }
+
+    public function test_a_protected_start_runs_its_init_as_root_with_three_capabilities_and_says_so(): void
+    {
+        $manifest = $this->protected($this->containedMounts(), ['SETUID', 'SETGID', 'SETPCAP'], '0:0');
+        $sent = json_decode((string) json_encode($manifest), true);
+
+        $this->assertSame(['0:0', ['SETUID', 'SETGID', 'SETPCAP'], 'protected-account', true, false], [
+            $sent['user'],
+            $sent['capabilities'],
+            $sent['launchProfile'],
+            $sent['noNewPrivileges'],
+            $sent['privileged'],
+        ]);
+    }
+
+    public function test_a_protected_start_with_another_user_an_extra_capability_or_no_account_is_refused(): void
+    {
+        $withoutAccount = array_values(array_filter(
+            $this->containedMounts(),
+            fn (ManifestMount $mount) => $mount->target !== '/home/journal/.account',
+        ));
+
+        $this->assertRefused(fn () => $this->protected($this->containedMounts(), ['SETUID', 'SETGID', 'SETPCAP'], '10001:10001'));
+        $this->assertRefused(fn () => $this->protected($this->containedMounts(), ['SETUID', 'SETGID', 'SETPCAP', 'NET_ADMIN'], '0:0'));
+        $this->assertRefused(fn () => $this->protected($withoutAccount, ['SETUID', 'SETGID', 'SETPCAP'], '0:0'));
+    }
+
+    public function test_a_standard_start_still_sends_its_standard_launch_profile(): void
+    {
+        $sent = json_decode((string) json_encode($this->contained($this->containedMounts(), SecurityOptions::none())), true);
+
+        $this->assertSame('standard', $sent['launchProfile']);
+    }
+
+    /**
+     * @param  list<ManifestMount>  $mounts
+     * @param  list<string>  $capabilities
+     */
+    private function protected(array $mounts, array $capabilities, string $user): ContainerManifest
+    {
+        return ContainerManifest::make(
+            self::IMAGE,
+            $user,
+            true,
+            $capabilities,
+            false,
+            'acme-s1',
+            $mounts,
+            [],
+            ExecutionBudgets::defaults(),
+            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main')),
+            SecurityOptions::none(),
+            false,
+            LaunchProfileType::ProtectedAccount,
+        );
     }
 
     /**

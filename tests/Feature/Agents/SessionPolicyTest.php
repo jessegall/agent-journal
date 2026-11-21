@@ -16,6 +16,7 @@ use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsOwnerRequest;
 use Tests\Support\WithActiveAccount;
@@ -28,6 +29,7 @@ use Tests\TestCase;
 final class SessionPolicyTest extends TestCase
 {
     use RefreshHookDatabase;
+    use ServesEveryCombination;
     use StartsOwnerRequest;
     use WithActiveAccount;
 
@@ -36,6 +38,7 @@ final class SessionPolicyTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
+        $this->serveEveryCombination();
         $this->startUserRequestAs($this->owner->id);
     }
 

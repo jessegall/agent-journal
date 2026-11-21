@@ -206,6 +206,7 @@ use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\LaunchCandidateRank;
+use App\Agents\Enums\LaunchProfileType;
 use App\Agents\Enums\MenuEntryState;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\MountType;
@@ -1651,6 +1652,7 @@ final class CoreApi
                 HostCapability::class,
                 CapabilityStatusType::class,
                 ExecutionModeType::class,
+                LaunchProfileType::class,
                 AccountModeType::class,
                 AgentAction::class,
                 AgentPresence::class,

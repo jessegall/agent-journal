@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"journal-agent/shellwords"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -159,9 +160,9 @@ func cloneScript(repository, revision string) string {
 
 // cloneSteps are Prepare's clone, checkout and hook removal as shell lines into the workspace target.
 func cloneSteps(repository, revision string) []string {
-	lines := []string{"git " + shellWords(cloneArguments(repository, workspaceTarget))}
+	lines := []string{"git " + shellwords.Quoted(cloneArguments(repository, workspaceTarget)...)}
 	for _, step := range checkoutSteps(revision) {
-		lines = append(lines, "git -C "+workspaceTarget+" "+shellWords(step))
+		lines = append(lines, "git -C "+workspaceTarget+" "+shellwords.Quoted(step...))
 	}
 
 	return append(lines, "rm -rf "+workspaceTarget+"/.git/hooks")
@@ -178,14 +179,4 @@ func cloneFailure(output string) error {
 	}
 
 	return ErrWorkspaceCloneFailed
-}
-
-// shellWords quotes each word for sh.
-func shellWords(words []string) string {
-	quoted := make([]string, len(words))
-	for index, word := range words {
-		quoted[index] = "'" + strings.ReplaceAll(word, "'", `'\''`) + "'"
-	}
-
-	return strings.Join(quoted, " ")
 }

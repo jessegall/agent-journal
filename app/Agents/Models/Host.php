@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Agents\Enums\ArrangementType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\HostCredentialRejected;
+use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Values\HostCombination;
 use App\Agents\Values\ProtectionReport;
 use App\Agents\Values\StartProposal;
@@ -135,6 +137,27 @@ final class Host extends Model implements ReadableModel
         );
     }
 
+    /**
+     * The first serving host that runs this placement, speaks this protocol and declared the driver build and variant.
+     *
+     * @throws HostUnavailable
+     */
+    public static function runningStart(
+        HookDriver $driver,
+        string $build,
+        ExecutionModeType $placement,
+        DriverVariant $variant,
+    ): self {
+        foreach (self::serving() as $host) {
+            if ($host->runsPlacement($placement) && $host->speaksCurrentProtocol()
+                && $host->declaresCombination($driver, $build, $placement, $variant)) {
+                return $host;
+            }
+        }
+
+        throw HostUnavailable::forStart($driver, $variant);
+    }
+
     // ----------[ Mutations ]----------
 
     public function recordProtection(ProtectionReport $report): void
@@ -183,15 +206,31 @@ final class Host extends Model implements ReadableModel
      */
     public function declares(StartProposal $proposal): bool
     {
-        $combination = new HostCombination(
-            $proposal->driver,
-            $proposal->build,
-            $this->arrangement,
-            $proposal->placement,
-            $proposal->variant,
-        );
+        return $this->declaresCombination($proposal->driver, $proposal->build, $proposal->placement, $proposal->variant);
+    }
+
+    /**
+     * Whether the host reported it can run this driver build, in its own arrangement, the placement and the variant.
+     */
+    public function declaresCombination(
+        HookDriver $driver,
+        string $build,
+        ExecutionModeType $placement,
+        DriverVariant $variant,
+    ): bool {
+        $combination = new HostCombination($driver, $build, $this->arrangement, $placement, $variant);
 
         return in_array($combination->stored(), $this->combinations, false);
+    }
+
+    /**
+     * The folder a start the host was not asked for in a folder runs in: the first of its start roots.
+     *
+     * @throws HostUnavailable
+     */
+    public function startFolder(): string
+    {
+        return $this->start_roots[0] ?? throw HostUnavailable::withoutStartFolder($this->id);
     }
 
     public function protectionOf(HookDriver $driver, string $build): ProtectionReport

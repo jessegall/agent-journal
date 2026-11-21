@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"journal-agent/shellwords"
 	"regexp"
 	"strconv"
 	"strings"
@@ -62,7 +63,7 @@ func (containers Containers) CheckFolder(ctx context.Context, name string) (Cont
 // folderCheckScript prints the one word of the first check the folder fails and exits 1, or exits 0.
 func folderCheckScript(folder string) string {
 	lines := []string{
-		"folder=" + shellWords([]string{folder}),
+		"folder=" + shellwords.Quoted(folder),
 		`refuse() { echo "$1"; exit 1; }`,
 		`[ -e "$folder" ] || [ -L "$folder" ] || refuse missing`,
 		`[ -L "$folder" ] && refuse outside`,

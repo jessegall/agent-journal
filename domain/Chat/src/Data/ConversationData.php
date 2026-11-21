@@ -7,10 +7,8 @@ namespace Domain\Chat\Data;
 use App\Agents\Support\AgentOption;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
-use App\Docking\Data\SourceActionData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -35,7 +33,6 @@ final class ConversationData extends Data
         #[DataCollectionOf(MessageView::class)]
         public readonly array $messages,
         public readonly DockPageData $dock,
-        public readonly SourceActionData|Optional $messageAction,
     ) {}
 
     /**
@@ -48,7 +45,6 @@ final class ConversationData extends Data
         MessagePage $page,
         AgentOption $agent,
         DockPageData $dock,
-        SourceActionData|Optional $messageAction,
     ): self {
         return self::from([
             'id' => "{$sourceInboxId}-{$destinationInboxId}",
@@ -59,7 +55,6 @@ final class ConversationData extends Data
             'destinationInboxId' => $destinationInboxId,
             'messages' => $page->messages,
             'dock' => $dock,
-            'messageAction' => $messageAction,
         ]);
     }
 }

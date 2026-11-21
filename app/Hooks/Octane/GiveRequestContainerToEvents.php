@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Listeners;
+namespace App\Hooks\Octane;
 
 use Illuminate\Contracts\Foundation\Application;
 

@@ -50,6 +50,9 @@ type AccountStart struct {
 	JournalServer *JournalServer
 	// LaunchReference names the launch to the journal's relays; it is no secret.
 	LaunchReference string
+	// StatusLine is the command of the journal's status-line reader for a terminal start whose status line reports
+	// limit windows; empty for a start that reads none there.
+	StatusLine string
 }
 
 // SettingsFile is one generated file of the isolated settings folder: its name and content. A sign-in is never one:

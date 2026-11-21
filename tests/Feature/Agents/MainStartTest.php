@@ -8,6 +8,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use Illuminate\Support\Str;
 use Tests\Support\ActsAsOwner;
+use Tests\Support\Agents\ServesEveryCombination;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -21,6 +22,7 @@ final class MainStartTest extends TestCase
 {
     use ActsAsOwner;
     use RefreshHookDatabase;
+    use ServesEveryCombination;
     use WithActiveAccount;
 
     protected function setUp(): void
@@ -28,6 +30,7 @@ final class MainStartTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
+        $this->serveEveryCombination();
     }
 
     public function test_a_named_program_and_model_start_the_agent(): void

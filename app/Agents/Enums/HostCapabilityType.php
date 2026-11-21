@@ -23,6 +23,7 @@ enum HostCapabilityType: string
     case CompletionFence = 'completion-fence';
     case StopDeadline = 'stop-deadline';
     case ContainerRuntime = 'container-runtime';
+    case AccountIsolation = 'account-isolation';
 
     /**
      * The refusal of a start that needs this capability where the evidence does not prove it.
