@@ -153,12 +153,15 @@ def test_a_task_a_clocked_out_worker_holds_keeps_its_delegated_mark(story):
 @setting(WorkersOptions.AUTO_DISPATCH, True)
 @setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
 @setting(WorkersOptions.AUTO_DISPATCH_UNQUEUE, True)
-@setting(WorkersOptions.AUTO_DISPATCH_UNQUEUE_RUNNING, True)
 def test_with_places_free_a_task_queued_behind_a_busy_worker_goes_out_to_a_worker_of_its_own(story):
     """On the hosted journal four open tasks sat behind two busy workers while 18 of 30 places stood free (19 Nov)."""
     printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
     story.agent_runs(story.agents.subject, f"worker queue {story.agents.workers.first()} {printer}")
     story.expect_task(printer, delegated=True)
+    story.time_travel(seconds=121)
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task(printer, delegated=True)
+    story.user_sets(WorkersOptions.AUTO_DISPATCH_UNQUEUE_RUNNING, True)
     story.time_travel(seconds=121)
     story.journal_dispatches_the_next_tasks()
     story.expect_task_logged(printer, "taken out of a busy worker's queue so a worker of its own takes it")
@@ -173,9 +176,7 @@ def test_with_places_free_a_task_queued_behind_a_busy_worker_goes_out_to_a_worke
 @story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
 @setting(WorkersOptions.AUTO_DISPATCH, True)
 @setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
-@setting(WorkersOptions.AUTO_DISPATCH_UNQUEUE, True)
-def test_a_task_queued_behind_a_running_worker_waits_for_it_unless_the_project_allows_otherwise(story):
-    """On 21 Nov ten queued mobile proof tasks went to new workers that waited in the same two-slot e2e queue and did nothing."""
+def test_with_the_switch_off_a_queued_task_waits_for_its_worker(story):
     printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
     story.agent_runs(story.agents.subject, f"worker queue {story.agents.workers.first()} {printer}")
     workers = story.newest("workers")
