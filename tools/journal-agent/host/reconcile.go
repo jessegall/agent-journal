@@ -131,7 +131,7 @@ func reconcileStart(startKey string, records []StartRecord, sessions ContainerSe
 	switch {
 	case record.Stage == ExitKnown || record.Stage == ReportAcknowledged:
 		return Exited
-	case record.InContainer:
+	case record.RunsInContainer():
 		return sessions.reconcileContainer(record)
 	case record.Execution == nil:
 		return NeedsAttention

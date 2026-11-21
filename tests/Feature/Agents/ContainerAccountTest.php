@@ -12,7 +12,10 @@ use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\ReconcileStarts;
 use App\Agents\Enums\DriverVariant;
+use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentRuntime;
+use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
@@ -120,6 +123,11 @@ final class ContainerAccountTest extends TestCase
         $this->asSystem(new ReconcileStarts($host->hostId, [$key]));
 
         $this->assertSame([], ProcessStart::unresolvedKeysOf($host->hostId));
+        $this->assertFalse(AgentSession::query()->findOrFail($launch->sessionId)->isActive());
+        $this->assertSame(
+            RuntimeActivity::Stopped,
+            AgentRuntime::query()->where('agent_session_id', $launch->sessionId)->sole()->activity,
+        );
     }
 
     private function startOf(OpenedRuntime $runtime): ProcessStart
