@@ -14,8 +14,6 @@ use App\Records\Contracts\RecordResolver;
 use App\Records\Data\RecordCard;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
-use App\Records\Docking\LegacyDockable;
-use App\Records\Docking\DeclaredPageRoutes;
 
 /**
  * Reads records with no card of their own through their record provider: one the actor may read for docking, and the
