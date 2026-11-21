@@ -9,6 +9,7 @@ import Icon from '@kit/Icon';
 import PageHeader from '@kit/PageHeader';
 import Spinner from '@kit/Spinner';
 import { computed, ref, watch } from 'vue';
+import { useIsStale } from '@/framework/windowFreshness';
 import AccountRecovery from './AccountRecovery.vue';
 import AccountRow from './AccountRow.vue';
 import AddAccountWizard from './AddAccountWizard.vue';
@@ -23,13 +24,14 @@ import { useUsageClock } from './usageClock';
  * or renaming one, and adding one through the add-account wizard. A sign-in still waiting on the host is resumed from
  * the header. The page reloads on every change; a reload that answers an older choice never takes back a newer one,
  * by each driver's change number. Each row's usage line is chosen again when a window resets, a UTC month begins
- * or the window gets focus.
+ * or the window gets focus. While the list is the last read kept after a failed refresh, nothing can be added.
  */
 const props = defineProps<{ data: AccountListData }>();
 
 const selections = ref(props.data.selections);
 const now = useUsageClock(() => props.data.rows);
 const request = ref<WizardRequest | null>(null);
+const isStale = useIsStale();
 
 watch(
     () => props.data.selections,
@@ -60,7 +62,7 @@ function resumeOrAgain(row: AccountRowData): void {
     <div class="mx-auto flex w-full max-w-[760px] flex-col sm:pt-4">
         <PageHeader title="Accounts" :count="data.rows.length">
             <template #actions>
-                <template v-if="waitingSignIn !== undefined">
+                <template v-if="waitingSignIn !== undefined && !isStale">
                     <Button
                         variant="bordered"
                         size="small"
@@ -76,7 +78,7 @@ function resumeOrAgain(row: AccountRowData): void {
                 <Button
                     variant="primary"
                     size="small"
-                    :disabled="waitingSignIn !== undefined"
+                    :disabled="waitingSignIn !== undefined || isStale"
                     @click="request = { kind: 'new' }"
                     ><Icon name="plus" />Add account</Button
                 >
@@ -91,7 +93,7 @@ function resumeOrAgain(row: AccountRowData): void {
                 >
                     <Button
                         variant="primary"
-                        :disabled="waitingSignIn !== undefined"
+                        :disabled="waitingSignIn !== undefined || isStale"
                         @click="request = { kind: 'new' }"
                         ><Icon name="plus" />Add account</Button
                     >

@@ -7,6 +7,7 @@ import IconAction from '@kit/IconAction';
 import DriverIcon from '@kit/DriverIcon';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, ref } from 'vue';
+import { useIsStale } from '@/framework/windowFreshness';
 import AccountSettingsDialog from './AccountSettingsDialog.vue';
 import { usageLine } from './accountUsage';
 import {
@@ -20,7 +21,7 @@ import {
  * One saved account in the list: its driver's icon, its name, and one grey line with its driver, what it bills,
  * whether it is the default, its state and its expiry, and under it one line of the usage its programs reported;
  * on the right only its buttons, the way back for an account that must sign in again and one settings button that
- * opens everything else.
+ * opens everything else. A row of a list kept after a failed refresh offers none of them.
  */
 const props = withDefaults(
     defineProps<{
@@ -51,6 +52,7 @@ const stateColour: Record<string, string> = {
 };
 const usage = computed(() => usageLine(props.account.usage, props.now));
 const isOpen = ref(false);
+const isStale = useIsStale();
 // Why removing this account was refused, kept on the row after its dialog closed.
 const removalRefusal = ref<string | null>(null);
 const retrying = useForm({});
@@ -111,7 +113,7 @@ function retryAccountCleanup(): void {
                     <span class="text-small text-text-2">{{
                         cleanupProblemText[account.cleanupProblem]
                     }}</span>
-                    <template v-if="account.awaitsCleanupRetry">
+                    <template v-if="account.awaitsCleanupRetry && !isStale">
                         <Button
                             size="small"
                             :pending="retrying.processing"
@@ -126,7 +128,7 @@ function retryAccountCleanup(): void {
             </template>
         </div>
         <div class="flex shrink-0 items-center gap-1.5">
-            <template v-if="!isLeaving">
+            <template v-if="!isLeaving && !isStale">
                 <slot />
             </template>
             <IconAction
@@ -135,6 +137,7 @@ function retryAccountCleanup(): void {
                 :label="`Settings of ${account.label}`"
                 :icon-size="14"
                 tip-side="left"
+                :disabled="isStale"
                 @click="isOpen = true"
             />
         </div>
