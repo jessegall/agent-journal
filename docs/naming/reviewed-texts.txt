@@ -40,7 +40,6 @@ Breadcrumb
 Build
 Cancel
 Cancel script
-Cancel sign-in
 Cancelled
 Checked reader revision
 Checking the new session
@@ -220,6 +219,7 @@ Readers and proofs
 Ready
 Reason
 Recent starts
+Reconnecting…
 Record
 Record type
 Refused
@@ -293,7 +293,6 @@ Starting the sign-in…
 State
 Status: {{ part.lifecycle }}, ended by {{ part.end }}
 Still to do: {{ data.steps.join('; ') }}
-Stop this run
 Stopping the old session
 Stops after {{ sample.byteCap }} bytes or {{ sample.secondsCap }} seconds
 Suits a server.
@@ -307,6 +306,7 @@ That conversation is not one this agent can continue.
 That conversation ran on another driver; start a new conversation instead.
 That conversation was for other work; start a new conversation instead.
 The address is not available.
+The change was refused.
 The gateway provider can see the public address and everything a share shows.
 The gateway provider can see the public address and everything this share shows.
 The host has not said it can run this driver this way.
@@ -319,6 +319,7 @@ The version that runs here
 This account must sign in again.
 This is the default account for new {{ driverName(account.driver) }} starts.
 This machine and the share service must keep running for the link to work.
+This page could not be refreshed.
 This profile does not allow that model.
 This profile runs only its own driver.
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
@@ -392,6 +393,7 @@ shapes
 the classified command's own file system: its folder, tools and worktree
 the host's own account folders, written by the host tools without the application
 the host's secret file the sign-in runner is given
+the request failed
 to
 tools
 unresolved
