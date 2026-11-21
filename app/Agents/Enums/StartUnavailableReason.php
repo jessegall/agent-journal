@@ -20,7 +20,7 @@ enum StartUnavailableReason: string
     public function sentence(): string
     {
         return match ($this) {
-            self::NoAccount => 'no account is signed in for it',
+            self::NoAccount => 'no default account is chosen for it; choose one in Accounts',
             self::NeedsSignIn => 'its account needs to sign in again',
             self::Maintenance => 'its account is being signed in again or removed',
             self::ChosenAccountMissing => 'the chosen account is not one you can start it with',

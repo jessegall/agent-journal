@@ -9,6 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ProcessStartState;
+use App\Agents\Exceptions\AccountUnavailable;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Bus\Support\EntryDispatchers;
@@ -119,6 +120,11 @@ final class AccountRemovalTest extends TestCase
         $this->assertSame(SignInState::Cancelled, SignInAttempt::query()->withoutGlobalScopes()->sole()->state);
         $this->assertNull(
             ActiveAccount::query()->withoutGlobalScopes()->where('driver', 'codex')->value('account_id'),
+        );
+        $this->assertThrows(
+            fn () => ActiveAccount::lockedAccountForStart(HookDriver::Codex),
+            AccountUnavailable::class,
+            'codex cannot be started now: no default account is chosen for it; choose one in Accounts.',
         );
     }
 

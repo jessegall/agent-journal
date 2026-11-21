@@ -98,9 +98,19 @@ function readAccounts(chosen: HookDriver): void {
     router.reload({
         only: [chatProp],
         data: ownPage ? { accountsFor: chosen } : { window: { 'chat.conversation': { accountsFor: chosen } } },
-        onError: (errors) => (refusal.value = Object.values(errors)[0] ?? 'The accounts could not be read.'),
+        onError: (errors) => {
+            isAccountReadFailed.value = true;
+            refusal.value = Object.values(errors)[0] ?? 'The accounts could not be read.';
+        },
     });
 }
+
+// Whether the last read of the driver's accounts failed, which offers Retry instead of an empty list.
+const isAccountReadFailed = ref(false);
+// Whether accounts exist for the driver but none can start now, which disables Start and points to Accounts.
+const isEveryAccountUnavailable = computed(
+    () => accounts.value.length > 0 && accounts.value.every((choice) => choice.unavailableReason !== null),
+);
 
 function showAccounts(read: EligibleAccountsData | undefined): void {
     if (read === undefined) {
@@ -109,6 +119,7 @@ function showAccounts(read: EligibleAccountsData | undefined): void {
 
     accounts.value = read.accounts;
     refusal.value = null;
+    isAccountReadFailed.value = false;
     const preferred = accounts.value.find((choice) => choice.isDefault && choice.unavailableReason === null)
         ?? accounts.value.find((choice) => choice.unavailableReason === null);
     accountId.value = preferred?.id ?? null;
@@ -269,7 +280,13 @@ onBeforeUnmount(() => following?.stop());
             </label>
             <FormField id="session-account" label="Account">
                 <template #default="{ id }">
-                    <template v-if="accounts.length === 0">
+                    <template v-if="isAccountReadFailed">
+                        <p class="text-small text-text-3">
+                            The accounts could not be read.
+                            <Button variant="bordered" size="small" @click="readAccounts(driver)">Retry</Button>
+                        </p>
+                    </template>
+                    <template v-else-if="accounts.length === 0">
                         <p class="text-small text-text-3">
                             No account can run this driver.
                             <Link :href="accountsPage.url()" class="underline">Add account</Link>
@@ -283,6 +300,12 @@ onBeforeUnmount(() => following?.stop());
                                 </option>
                             </template>
                         </select>
+                        <template v-if="isEveryAccountUnavailable">
+                            <p class="mt-1 text-small text-text-3">
+                                None of its accounts can start now.
+                                <Link :href="accountsPage.url()" class="underline">Open Accounts</Link>
+                            </p>
+                        </template>
                     </template>
                 </template>
             </FormField>

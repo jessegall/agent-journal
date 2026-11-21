@@ -19,12 +19,22 @@ const accountsAnswer = {
     ],
 };
 
+// How many of the next account reads fail, as when the journal cannot be reached.
+const readFailures = { count: 0 };
+
 vi.mock('@inertiajs/vue3', () => ({
     Link: { template: '<a><slot /></a>' },
     usePage: () => shownPage,
     router: {
-        reload: (options: { only: string[] }) => {
-            shownPage.props = { [options.only[0]]: { state: 'ready', data: { eligibleAccounts: accountsAnswer } } };
+        reload: (options: { only: string[]; onError?: (errors: Record<string, string>) => void }) => {
+            if (readFailures.count > 0) {
+                readFailures.count--;
+                options.onError?.({ page: 'The accounts could not be read.' });
+
+                return;
+            }
+
+            shownPage.props = { [options.only[0]]: { state: 'ready', data: { eligibleAccounts: { ...accountsAnswer } } } };
         },
         on: () => () => undefined,
         post: (url: string, body: Record<string, unknown>, options: PostOptions) => {
@@ -86,6 +96,32 @@ describe('SessionForm', () => {
             ['/profiles/journal-main/start-main', 'ready', 4],
         ]);
         expect(posted[0].body.requestId).toBe(posted[1].body.requestId);
+        form.unmount();
+    });
+
+    it('disables Start and points to Accounts when every account is unavailable', async () => {
+        const all = accountsAnswer.accounts;
+        accountsAnswer.accounts = [all[0]];
+        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        await flushPromises();
+
+        expect(form.text()).toContain('None of its accounts can start now.');
+        const start = form.findAll('button').find((candidate) => candidate.text() === 'Start session');
+        expect(start?.attributes('disabled')).toBeDefined();
+        accountsAnswer.accounts = all;
+        form.unmount();
+    });
+
+    it('offers Retry when the accounts could not be read', async () => {
+        readFailures.count = 1;
+        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        await flushPromises();
+
+        expect(form.text()).toContain('The accounts could not be read.');
+        await form.findAll('button').find((candidate) => candidate.text() === 'Retry')!.trigger('click');
+        await flushPromises();
+
+        expect(form.findAll('#session-account option')).toHaveLength(2);
         form.unmount();
     });
 
