@@ -43,3 +43,30 @@ export function useWindowQuery(): (
         return `${url.pathname}${url.search}`;
     };
 }
+
+/**
+ * Builds a link that changes only the named keys of this window's query and keeps every other key, of this window and
+ * of the others; a key given undefined is removed.
+ */
+export function useWindowQueryChange(): (
+    changes: Record<string, string | undefined>,
+) => string {
+    const page = usePage();
+    const key = inject<string | null>(WINDOW_KEY, null);
+
+    return (changes) => {
+        const url = new URL(page.url, 'http://journal.local');
+
+        for (const [name, value] of Object.entries(changes)) {
+            const param = key === null ? name : `window[${key}][${name}]`;
+
+            if (value === undefined || value === '') {
+                url.searchParams.delete(param);
+            } else {
+                url.searchParams.set(param, value);
+            }
+        }
+
+        return `${url.pathname}${url.search}`;
+    };
+}

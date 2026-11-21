@@ -23,6 +23,11 @@ const badgeTone = computed(() => (props.part.tone ?? 'quiet') as BadgeTone);
         <template #badge>
             <StateBadge :label="part.text ?? ''" :tone="badgeTone" />
         </template>
+        <template #paragraph>
+            <p class="text-body whitespace-pre-wrap text-text">
+                {{ part.text }}
+            </p>
+        </template>
         <template #code>
             <code class="font-mono text-field">{{ part.text }}</code>
         </template>

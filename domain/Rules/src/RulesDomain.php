@@ -112,7 +112,7 @@ final class RulesDomain extends Domain implements
     public function pages(): array
     {
         return [
-            Page::make('list', 'Rules', Icon::Rules, RulesWindowResolver::class, 'RulesWindow.vue')
+            Page::layout('list', 'Rules', Icon::Rules, RulesWindowResolver::class)
                 ->at('')
                 ->onHome(30)
                 ->actions(

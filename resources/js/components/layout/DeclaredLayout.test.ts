@@ -46,6 +46,8 @@ describe('a declared layout', () => {
                                         key: 'count',
                                         label: 'Books',
                                         value: '2',
+                                        query: {},
+                                        isCurrent: false,
                                     },
                                 ],
                             }),
@@ -161,6 +163,7 @@ describe('a declared layout', () => {
                                             field: {
                                                 name: 'reason',
                                                 value: '',
+                                                clears: [],
                                             },
                                         }),
                                         part({

@@ -2,22 +2,27 @@
 import { router } from '@inertiajs/vue3';
 import { ref, useId } from 'vue';
 import TextField from '@/components/kit/TextField.vue';
-import { useWindowQuery } from '@/framework/useWindowQuery';
+import { useWindowQueryChange } from '@/framework/useWindowQuery';
 import type { LayoutFieldData, LayoutPartData } from '@/generated/types/core';
 
-// A filter field's form: submitting writes its one key into its own window's query and clears the list cursor, so
-// the filtered list starts on its first page; its id comes from this mount.
+// A filter field's form: submitting writes its one key into its own window's query and clears the keys the server
+// names, such as the page and the chosen row, keeping every other key; its id comes from this mount.
 const props = defineProps<{
     field: LayoutFieldData;
     part: LayoutPartData;
 }>();
-const windowQuery = useWindowQuery();
+const windowQuery = useWindowQueryChange();
 const fieldId = `layout-field-${useId()}`;
 const value = ref(props.field.value);
 
 function apply(): void {
     router.visit(
-        windowQuery({ [props.field.name]: value.value, cursor: undefined }),
+        windowQuery({
+            ...Object.fromEntries(
+                props.field.clears.map((name) => [name, undefined]),
+            ),
+            [props.field.name]: value.value,
+        }),
         {
             preserveState: true,
             preserveScroll: true,

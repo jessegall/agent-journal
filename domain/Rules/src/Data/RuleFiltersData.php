@@ -48,16 +48,6 @@ final class RuleFiltersData extends Data
         return self::from([...$this->toArray(), 'page' => $page]);
     }
 
-    /**
-     * The filters as the rules page's query string: no empty search, no first page.
-     *
-     * @return array<string, mixed>
-     */
-    public function toQuery(): array
-    {
-        return array_filter($this->toArray(), fn (mixed $filterValue) => $filterValue !== '' && $filterValue !== 1);
-    }
-
     public function toDomain(): RuleFilters
     {
         return new RuleFilters(

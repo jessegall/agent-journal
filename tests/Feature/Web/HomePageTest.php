@@ -124,9 +124,12 @@ final class HomePageTest extends TestCase
             ->missing('page.data.rules')
             ->reloadOnly(['window_plans_list', 'window_rules_list'], fn (AssertableInertia $reload) => $reload
                 ->where('window_plans_list.data.filters.q', 'release')
-                ->where('window_rules_list.data.filters.q', 'phase')
-                ->where('window_rules_list.data.pagination.total', 1)
-                ->where('window_rules_list.data.rows.0.text', 'Every phase ends with its tests.')));
+                ->where('window_rules_list.data.root.children.0.children.1.field.value', 'phase')
+                ->where('window_rules_list.data.root.children.0.children.0.text', 'Rules (1)')
+                ->where(
+                    'window_rules_list.data.root.children.1.children.0.children.0.rows.0.label',
+                    'Every phase ends with its tests.',
+                )));
     }
 
     public function test_a_sent_message_keeps_its_indentation_and_returns_to_the_conversation(): void

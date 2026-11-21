@@ -49,7 +49,7 @@ final class DomainSwitchPagesTest extends TestCase
         $items = $this->inertia('/rules')->assertOk()->json('props.navigation.items');
         $counts = $this->inertia(
             '/rules',
-            ['X-Inertia-Partial-Component' => 'rules/RulesWindow', 'X-Inertia-Partial-Data' => 'navigationCounts'],
+            ['X-Inertia-Partial-Component' => 'layout/DeclaredLayout', 'X-Inertia-Partial-Data' => 'navigationCounts'],
         )->assertOk()->json('props.navigationCounts.counts');
 
         $this->assertNotContains('plans.list', array_column($items, 'key'));

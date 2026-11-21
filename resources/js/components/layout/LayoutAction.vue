@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { useId } from 'vue';
 import Button from '@/components/kit/Button.vue';
-import { useWindowQuery } from '@/framework/useWindowQuery';
+import { useWindowQueryChange } from '@/framework/useWindowQuery';
 import type { LayoutPartData } from '@/generated/types/core';
 import { useLayoutForm } from './layoutForm';
 
 // An action of a declared layout: a link to a page, a link that changes only its own window's query, or a disabled
 // button whose reason stays readable beside it and is its accessible description.
 const props = defineProps<{ part: LayoutPartData }>();
-const windowQuery = useWindowQuery();
+const windowQuery = useWindowQueryChange();
 const form = useLayoutForm();
 const reasonId = `layout-reason-${useId()}`;
 const style = props.part.style as 'bordered' | 'ghost' | 'primary' | 'danger';

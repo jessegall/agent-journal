@@ -4808,7 +4808,6 @@ class	RuleExample
 class	RuleFilters
 class	RuleFiltersData
 class	RuleList
-class	RuleListData
 class	RuleMissing
 class	RuleNotProposed
 class	RuleOrigin
@@ -4818,7 +4817,6 @@ class	RuleProposalRefused
 class	RuleProposalRevision
 class	RuleProposals
 class	RuleReadTool
-class	RuleReaderData
 class	RuleRecords
 class	RuleReference
 class	RuleRejected
@@ -4826,7 +4824,6 @@ class	RuleRemoved
 class	RuleRetired
 class	RuleRevision
 class	RuleRevisionInvalid
-class	RuleRowData
 class	RuleScope
 class	RuleScopeCast
 class	RuleSearch
@@ -18914,10 +18911,8 @@ method	RuleFiltersData::__construct()
 method	RuleFiltersData::onPage()
 method	RuleFiltersData::rules()
 method	RuleFiltersData::toDomain()
-method	RuleFiltersData::toQuery()
 method	RuleList::__construct()
 method	RuleList::selection()
-method	RuleListData::__construct()
 method	RuleMissing::withId()
 method	RuleNotProposed::inState()
 method	RuleOrigin::__construct()
@@ -18964,8 +18959,6 @@ method	RuleProposals::revise()
 method	RuleReadTool::__construct()
 method	RuleReadTool::read()
 method	RuleReadTool::schema()
-method	RuleReaderData::__construct()
-method	RuleReaderData::fromRuleView()
 method	RuleRecords::__construct()
 method	RuleRecords::all()
 method	RuleRecords::list()
@@ -18991,8 +18984,6 @@ method	RuleRevision::create()
 method	RuleRevision::ofProject()
 method	RuleRevisionInvalid::readerMissing()
 method	RuleRevisionInvalid::readerWithoutContract()
-method	RuleRowData::__construct()
-method	RuleRowData::fromRuleView()
 method	RuleScope::__construct()
 method	RuleScope::core()
 method	RuleScope::isSameOwner()
@@ -19007,6 +18998,8 @@ method	RuleSearch::readRequest()
 method	RuleSearch::recordType()
 method	RuleSearch::search()
 method	RuleSelfApproval::forRule()
+method	RuleState::label()
+method	RuleState::tone()
 method	RuleView::__construct()
 method	RulesDomain::commands()
 method	RulesDomain::description()
@@ -19039,7 +19032,11 @@ method	RulesSkill::key()
 method	RulesSkill::name()
 method	RulesSkill::sections()
 method	RulesWindowResolver::__construct()
+method	RulesWindowResolver::listOf()
+method	RulesWindowResolver::pagerOf()
 method	RulesWindowResolver::read()
+method	RulesWindowResolver::readerOf()
+method	RulesWindowResolver::reviewOf()
 method	RunAdmission::__construct()
 method	RunAdmissionPipeline::pipes()
 method	RunAdmissionStale::because()
@@ -23558,6 +23555,7 @@ parameter	$claude
 parameter	$claudeCode
 parameter	$cleanup
 parameter	$cleanupProblem
+parameter	$clears
 parameter	$client
 parameter	$clock
 parameter	$clone
@@ -24262,6 +24260,7 @@ parameter	$isCheckInconclusive
 parameter	$isClean
 parameter	$isContinuation
 parameter	$isCredentialWriteInProgress
+parameter	$isCurrent
 parameter	$isCurrentRun
 parameter	$isDeclared
 parameter	$isDefault
@@ -25246,6 +25245,7 @@ parameter	$rowVersion
 parameter	$rows
 parameter	$rule
 parameter	$ruleId
+parameter	$rulePage
 parameter	$rules
 parameter	$run
 parameter	$runId
@@ -29446,6 +29446,7 @@ property	LayoutActionData::$submits
 property	LayoutData::$id
 property	LayoutData::$name
 property	LayoutData::$shape
+property	LayoutFieldData::$clears
 property	LayoutFieldData::$name
 property	LayoutFieldData::$value
 property	LayoutFormData::$fixed
@@ -29463,8 +29464,10 @@ property	LayoutPartData::$style
 property	LayoutPartData::$tag
 property	LayoutPartData::$text
 property	LayoutPartData::$tone
+property	LayoutRowData::$isCurrent
 property	LayoutRowData::$key
 property	LayoutRowData::$label
+property	LayoutRowData::$query
 property	LayoutRowData::$value
 property	LayoutsController::$redirect
 property	LayoutsController::$users
@@ -32633,21 +32636,11 @@ property	RuleList::$rules
 property	RuleList::$selected
 property	RuleList::$selectionMissing
 property	RuleList::$total
-property	RuleListData::$filters
-property	RuleListData::$pagination
-property	RuleListData::$rows
-property	RuleListData::$selected
-property	RuleListData::$selectionMissing
 property	RuleOrigin::$revision
 property	RuleOrigin::$rule
 property	RuleReadTool::$continuations
 property	RuleReadTool::$fields
 property	RuleReadTool::$rules
-property	RuleReaderData::$canReview
-property	RuleReaderData::$id
-property	RuleReaderData::$number
-property	RuleReaderData::$state
-property	RuleReaderData::$text
 property	RuleRecords::$actors
 property	RuleReference::$id
 property	RuleReference::$revision
@@ -32662,10 +32655,6 @@ property	RuleRetired::$reason
 property	RuleRetired::$revision
 property	RuleRetired::$ruleId
 property	RuleRetired::$state
-property	RuleRowData::$id
-property	RuleRowData::$number
-property	RuleRowData::$state
-property	RuleRowData::$text
 property	RuleScope::$owner
 property	RuleScope::$type
 property	RuleScope::$version
@@ -36284,6 +36273,7 @@ variable	$pageFields
 variable	$pageKey
 variable	$pageMax
 variable	$pageSize
+variable	$pages
 variable	$pairs
 variable	$parameter
 variable	$parameterAssignments
@@ -36591,7 +36581,6 @@ variable	$rowVersion
 variable	$rows
 variable	$rowsOfShare
 variable	$rule
-variable	$rulePage
 variable	$rules
 variable	$run
 variable	$runFailures
