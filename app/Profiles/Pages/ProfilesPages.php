@@ -78,7 +78,7 @@ final class ProfilesPages implements NavigationProvider, PageProvider, SectionPr
                 'notices',
                 'Account notices',
                 'web.bar',
-                SlotContextType::Session,
+                SlotContextType::Nothing,
                 AccountNoticesSection::class,
                 'AccountNotices.vue',
             ),

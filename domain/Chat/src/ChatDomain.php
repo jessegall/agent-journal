@@ -119,7 +119,7 @@ final class ChatDomain extends Domain implements
                 'agent',
                 'Agent',
                 'web.bar',
-                SlotContextType::Session,
+                SlotContextType::Nothing,
                 ChosenAgentSection::class,
                 'ChosenAgent.vue',
             ),

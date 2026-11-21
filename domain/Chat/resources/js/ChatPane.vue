@@ -11,11 +11,13 @@ import Composer from './Composer.vue';
 import MessageList from './MessageList.vue';
 
 /**
- * Home's left pane (doc 4, 6.1): the agents to talk to, idle ones included, the chosen agent's conversation with its
- * session actions, the dock above the composer (its cards arrive later through the dock slot) and the composer.
+ * The chat (doc 4, 6.1): the chosen agent's conversation, the dock above the composer (its cards arrive later through
+ * the dock slot) and the composer. On Chat's own page it also offers the agents and their session actions, which
+ * Home's agent bar offers instead.
  */
 const props = defineProps<{
     chat: ChatData;
+    offersChoice: boolean;
     agentUrl: (agent: AgentOptionData) => string;
 }>();
 
@@ -77,11 +79,13 @@ watch(
         class="@container flex h-full min-h-0 flex-col gap-2 px-3 pb-2"
         aria-label="Chat"
     >
-        <AgentPicker
-            :agents="chat.agents"
-            :selected-agent-id="chat.selectedAgentId"
-            :agent-url="agentUrl"
-        />
+        <template v-if="offersChoice">
+            <AgentPicker
+                :agents="chat.agents"
+                :selected-agent-id="chat.selectedAgentId"
+                :agent-url="agentUrl"
+            />
+        </template>
         <template v-if="chat.setupRequired">
             <p class="text-small text-text-3">
                 This installation has no main agent yet. Run
@@ -89,7 +93,9 @@ watch(
             </p>
         </template>
         <template v-if="conversation && key && selected">
-            <AgentSessionActions :agent="selected" />
+            <template v-if="offersChoice">
+                <AgentSessionActions :agent="selected" />
+            </template>
             <MessageList
                 :messages="conversation.messages"
                 :own-inbox-id="conversation.sourceInboxId"

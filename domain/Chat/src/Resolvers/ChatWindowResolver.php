@@ -47,6 +47,7 @@ final readonly class ChatWindowResolver implements PageResolver
         return ChatData::from([
             'agents' => $agents,
             'setupRequired' => $main->isEmpty(),
+            'mainAgentId' => $main->getOrElse(Optional::create()),
             'selectedAgentId' => $chosen
                 ->map(fn (AgentOption $agent) => $agent->agentId)
                 ->getOrElse(Optional::create()),

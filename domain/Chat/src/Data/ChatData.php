@@ -23,6 +23,7 @@ final class ChatData extends Data
         #[DataCollectionOf(AgentOptionData::class)]
         public readonly array $agents,
         public readonly bool $setupRequired,
+        public readonly string|Optional $mainAgentId = new Optional(),
         public readonly string|Optional $selectedAgentId = new Optional(),
         public readonly ConversationData|Optional $conversation = new Optional(),
     ) {}

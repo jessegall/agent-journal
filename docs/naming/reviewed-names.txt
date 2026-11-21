@@ -2189,6 +2189,7 @@ class	HoldAccountUses
 class	HoldAccountUsesHandler
 class	HoldReleaseRequest
 class	HomeData
+class	HomeSectionData
 class	HomeWindowData
 class	HomeWindowResolver
 class	HookAnswer
@@ -10015,6 +10016,7 @@ method	HoldReleaseRequest::reason()
 method	HoldReleaseRequest::rules()
 method	HoldReleaseRequest::sessionId()
 method	HomeData::__construct()
+method	HomeSectionData::__construct()
 method	HomeWindowData::__construct()
 method	HomeWindowResolver::__construct()
 method	HomeWindowResolver::read()
@@ -17462,7 +17464,7 @@ parameter	$accountGeneration
 parameter	$accountId
 parameter	$accountLabel
 parameter	$accountMode
-parameter	$accountOrProgram
+parameter	$accountOrDriver
 parameter	$accountReference
 parameter	$accountSettings
 parameter	$accountSource
@@ -17627,7 +17629,7 @@ parameter	$awaitsCleanupRetry
 parameter	$awaitsRetry
 parameter	$backing
 parameter	$backward
-parameter	$barProps
+parameter	$barSections
 parameter	$base
 parameter	$baseClass
 parameter	$baseOverrides
@@ -18015,6 +18017,7 @@ parameter	$drained
 parameter	$driver
 parameter	$driverBuild
 parameter	$driverKey
+parameter	$driverName
 parameter	$driverPinned
 parameter	$driverSource
 parameter	$driverVersion
@@ -18881,7 +18884,6 @@ parameter	$profilesFolder
 parameter	$program
 parameter	$programArguments
 parameter	$programClassifiers
-parameter	$programName
 parameter	$programWord
 parameter	$programs
 parameter	$progress
@@ -21899,9 +21901,11 @@ property	HistoryPage::$limit
 property	HistoryPage::$olderCursor
 property	HoldAccountUses::$account
 property	HoldAccountUsesHandler::$facts
-property	HomeData::$barProps
+property	HomeData::$barSections
 property	HomeData::$layouts
 property	HomeData::$windows
+property	HomeSectionData::$component
+property	HomeSectionData::$propName
 property	HomeWindowData::$component
 property	HomeWindowData::$icon
 property	HomeWindowData::$key
@@ -26966,6 +26970,7 @@ variable	$draftKey
 variable	$drafts
 variable	$driver
 variable	$driverEnvelope
+variable	$driverReply
 variable	$driverSource
 variable	$due
 variable	$duration
@@ -27551,7 +27556,6 @@ variable	$producerDone
 variable	$profile
 variable	$profiles
 variable	$program
-variable	$programReply
 variable	$progress
 variable	$project
 variable	$projectKey

@@ -32,7 +32,7 @@ final class WebPages implements PageProvider
         return [
             Page::make('home', 'Home', Icon::Home, HomeWindowResolver::class, 'Home.vue')
                 ->at('')
-                ->slots(Slot::make('bar', SlotContextType::Session)),
+                ->slots(Slot::make('bar', SlotContextType::Nothing)),
             Page::make('asks', 'Asks', Icon::Chat, AskInboxResolver::class, 'Asks.vue')->at('asks'),
             Page::make('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class, 'Runtimes.vue')
                 ->at('runtimes')

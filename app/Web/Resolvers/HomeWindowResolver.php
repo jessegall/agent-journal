@@ -9,6 +9,7 @@ use App\Ui\Declarations\RegisteredPage;
 use App\Ui\Declarations\RegisteredSection;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Data\HomeData;
+use App\Web\Data\HomeSectionData;
 use App\Web\Data\HomeWindowData;
 use App\Web\Views\LayoutsView;
 
@@ -48,8 +49,11 @@ final readonly class HomeWindowResolver implements PageResolver
                 'title' => $page->page->title,
                 'icon' => $page->page->icon,
             ]), $windows),
-            'barProps' => array_values(array_map(
-                fn (RegisteredSection $section) => $section->propName,
+            'barSections' => array_values(array_map(
+                fn (RegisteredSection $section) => HomeSectionData::from([
+                    'propName' => $section->propName,
+                    'component' => $section->componentName(),
+                ]),
                 array_filter(
                     $this->declarations->sections(),
                     fn (RegisteredSection $section) => $section->host->isHome(),

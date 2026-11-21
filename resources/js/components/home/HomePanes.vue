@@ -13,7 +13,7 @@ import AgentBar from './AgentBar.vue';
 import InformationBar from './InformationBar.vue';
 
 /**
- * Home as version 5 draws it: the agent bar, the information bar, then the pane grid with the windows the installed
+ * Home as version 5 draws it: the agent bar with the domains' bar sections, the information bar, then the pane grid with the windows the installed
  * domains offer, each loaded by its component name and fed by its own prop. A window's links change only its own part
  * of Home's query, window[<key>].
  */
@@ -43,39 +43,33 @@ providePaneLayout('home-layout', () =>
 const windowsByPane = computed(() => new Map(props.home.windows.map((window) => [window.paneKey, window])));
 const loaded = new Map<string, Component>();
 
-function componentOf(window: HomeWindowData): Component {
-    const known = loaded.get(window.component);
+function componentNamed(name: string): Component {
+    const known = loaded.get(name);
 
     if (known !== undefined) {
         return known;
     }
 
-    const component = defineAsyncComponent(async () => (await components[window.component]()).default as Component);
-    loaded.set(window.component, component);
+    const component = defineAsyncComponent(async () => (await components[name]()).default as Component);
+    loaded.set(name, component);
 
     return component;
 }
 
-/**
- * The first section in Home's bar that names something, such as the agent the chat talks to.
- */
-const barLabel = computed(() => {
-    for (const name of props.home.barProps) {
-        const result = pageProps[name] as WindowResult<{ label?: string }> | null | undefined;
+function componentOf(window: HomeWindowData): Component {
+    return componentNamed(window.component);
+}
 
-        if (result?.state === 'ready' && result.data.label !== undefined) {
-            return result.data.label;
-        }
-    }
-
-    return undefined;
-});
 </script>
 
 <template>
     <div class="flex h-full min-h-0 flex-col">
-        <AgentBar :agent-name="barLabel" />
-        <InformationBar :agent-name="barLabel" :layouts="home.layouts" />
+        <AgentBar>
+            <template v-for="section in home.barSections" :key="section.propName">
+                <WindowHost :component="componentNamed(section.component)" :prop-name="section.propName" />
+            </template>
+        </AgentBar>
+        <InformationBar :layouts="home.layouts" />
         <PaneGrid>
             <template #default="{ windowKey }">
                 <template v-if="windowsByPane.get(windowKey)">

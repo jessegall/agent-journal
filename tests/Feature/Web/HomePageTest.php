@@ -92,7 +92,8 @@ final class HomePageTest extends TestCase
             ->where('page.data.windows.0.paneKey', 'chat')
             ->where('page.data.windows.1.paneKey', 'plans')
             ->where('page.data.windows.2.paneKey', 'rules')
-            ->where('page.data.barProps', ['section_web_bar_accounts_notices', 'section_web_bar_chat_agent'])
+            ->where('page.data.barSections.0.propName', 'section_web_bar_accounts_notices')
+            ->where('page.data.barSections.1.propName', 'section_web_bar_chat_agent')
             ->missing('window_chat_conversation')
             ->missing('page.data.plans')
             ->missing('page.data.chat')
@@ -188,11 +189,12 @@ final class HomePageTest extends TestCase
     public function test_homes_bar_names_the_chosen_agent_through_chats_section(): void
     {
         $this->actingAs($this->owner)->get(
-            "/?session={$this->session->id}",
+            "/?agent={$this->session->agent_id}",
         )->assertInertia(fn (AssertableInertia $page) => $page
             ->loadDeferredProps('section_web_bar_chat_agent', fn (AssertableInertia $section) => $section
                 ->where('section_web_bar_chat_agent.state', 'ready')
-                ->where('section_web_bar_chat_agent.data.label', 'Builder')));
+                ->where('section_web_bar_chat_agent.data.selectedAgentId', $this->session->agent_id)
+                ->where('section_web_bar_chat_agent.data.agents.0.name', 'Builder')));
     }
 
     public function test_a_blank_message_is_refused_on_its_body(): void

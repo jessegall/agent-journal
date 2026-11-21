@@ -18,13 +18,14 @@ final class HomeData extends Data
     /**
      * @param  list<LayoutData>  $layouts
      * @param  list<HomeWindowData>  $windows
-     * @param  list<string>  $barProps
+     * @param  list<HomeSectionData>  $barSections
      */
     public function __construct(
         #[DataCollectionOf(LayoutData::class)]
         public readonly array $layouts,
         #[DataCollectionOf(HomeWindowData::class)]
         public readonly array $windows,
-        public readonly array $barProps,
+        #[DataCollectionOf(HomeSectionData::class)]
+        public readonly array $barSections,
     ) {}
 }

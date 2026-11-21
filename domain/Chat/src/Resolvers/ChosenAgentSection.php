@@ -4,32 +4,34 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
-use App\Agents\Contracts\SessionResolver;
-use App\Agents\Support\SessionOption;
+use App\Agents\Contracts\AgentDirectory;
+use App\Agents\Support\AgentOption;
 use App\Ui\Contracts\SectionResolver;
 use App\Ui\Declarations\SlotContext;
-use Domain\Chat\Data\ChosenAgentData;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Domain\Chat\Data\ChatData;
+use Domain\Chat\Http\Requests\ConversationRequest;
+use Spatie\LaravelData\Optional;
 
 /**
- * The name of the agent whose session the chat talks to, in Home's bar; a session the user may not talk to now
- * names no agent.
+ * Home's agent bar: every agent the user can see, the one the page chose (the main agent unless the query's agent
+ * names another) with its state and actions. An agent out of sight is refused like a missing one.
  */
 final readonly class ChosenAgentSection implements SectionResolver
 {
-    public function __construct(private SessionResolver $sessions) {}
+    public function __construct(private ConversationRequest $request, private AgentDirectory $agents) {}
 
-    public function read(SlotContext $context): ChosenAgentData
+    public function read(SlotContext $context): ChatData
     {
-        $chosen = array_values(
-            array_filter(
-                $this->sessions->active(),
-                fn (SessionOption $session) => (string) $session->sessionId === $context->id,
-            ),
-        );
+        $main = $this->agents->mainAgentId();
+        $chosen = $this->request->chosenAgent()->orElse($main)->map($this->agents->visibleAgent(...));
 
-        return $chosen === [] ? throw new NotFoundHttpException() : ChosenAgentData::from(
-            ['label' => $chosen[0]->agentName],
-        );
+        return ChatData::from([
+            'agents' => $this->agents->visible(),
+            'setupRequired' => $main->isEmpty(),
+            'mainAgentId' => $main->getOrElse(Optional::create()),
+            'selectedAgentId' => $chosen
+                ->map(fn (AgentOption $agent) => $agent->agentId)
+                ->getOrElse(Optional::create()),
+        ]);
     }
 }

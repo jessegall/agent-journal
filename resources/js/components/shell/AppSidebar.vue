@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import Icon from '@/components/kit/Icon.vue';
 import type { IconName } from '@/components/kit/Icon.vue';
 import { useSidebar } from '@/composables/useSidebar';
 
 /**
  * Version 5's sidebar (shell/SidebarPages.vue, doc 12 section 1.4): 220 px, Home pinned first, then a fold head per
- * group, rows of 6 by 8 with a 7 px radius, and the foot line; the 52 px mini form shows icons only.
+ * group, rows of 6 by 8 with a 7 px radius, and the foot line; the 52 px mini form shows icons only. On a phone it
+ * is hidden until the menu button opens it over the page.
  */
 type SidebarRow = { label: string; icon: IconName; href: string };
 
@@ -26,7 +27,9 @@ const home: SidebarRow = { label: 'Home', icon: 'home', href: '/' };
 
 const page = usePage();
 const appName = computed(() => page.props.name);
-const { isMini } = useSidebar();
+const { isMini, isOpenOnPhone, closeOnPhone } = useSidebar();
+
+watch(() => page.url, closeOnPhone);
 
 function isActive(href: string): boolean {
     if (href === '/') {
@@ -43,8 +46,8 @@ function isActive(href: string): boolean {
 
 <template>
     <aside
-        class="flex shrink-0 flex-col border-r border-border bg-side"
-        :class="isMini ? 'w-[52px]' : 'w-[220px]'"
+        class="flex shrink-0 flex-col border-r border-border bg-side max-[760px]:fixed max-[760px]:inset-y-0 max-[760px]:left-0 max-[760px]:z-90 max-[760px]:w-[220px]"
+        :class="[isMini ? 'w-[52px]' : 'w-[220px]', isOpenOnPhone ? '' : 'max-[760px]:hidden']"
     >
         <div
             class="flex items-center gap-2.5 py-3.5"
