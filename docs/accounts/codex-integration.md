@@ -55,6 +55,21 @@ The decision for task 236, with what is missing named:
    restart persistence of a sign-in and reuse by a later process; a refresh under parallel threads. Until task 251
    records them, parallel Codex starts are refused, not assumed.
 
+## Usage on the Accounts page
+
+A protected Codex start reports usage through its account generation's app-server owner
+(`tools/journal-agent/host/codex_owner.go`, decoders in `host/codex_usage.go`): a ChatGPT owner asks
+`account/rateLimits/read` once and hears `account/rateLimits/updated`, keeping only the `codex` limit's primary and
+secondary windows; an API-key owner (`account/read` type `apiKey`) asks for no limits and keeps each of its threads'
+latest `thread/tokenUsage/updated` total.
+
+**A contained Codex start has no usage reading yet.** It never uses that owner: a headless contained start runs
+`codex exec --json` as its session container's own process, one per turn, and a terminal one runs the program on
+the container's terminal. Neither carries app-server notifications to the host, and the host does not read a
+contained Codex turn's output at all, so there is nothing of `account/rateLimits/updated` or
+`thread/tokenUsage/updated` to decode. Starting a second app-server only to read usage is outside the design (doc 81),
+so the contained Codex row shows no usage until its transport carries one of those readings.
+
 ## Work-folder trust and project configuration
 
 A work folder must be trusted for Codex to run the journal's hooks (`projects."<path>".trust_level = "trusted"` in the
