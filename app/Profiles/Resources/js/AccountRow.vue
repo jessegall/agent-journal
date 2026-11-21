@@ -118,6 +118,7 @@ function retryAccountCleanup(): void {
                 tip="Settings"
                 :label="`Settings of ${account.label}`"
                 :icon-size="14"
+                tip-side="left"
                 @click="isOpen = true"
             />
         </div>
