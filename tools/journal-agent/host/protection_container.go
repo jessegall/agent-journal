@@ -8,6 +8,10 @@ import (
 // ContainerPlatform names the platform of a contained host's tools in reports and evidence.
 const ContainerPlatform = "linux-container"
 
+// ProtectedContainerPlatform names the agent container under the protected-account launch profile: the program and
+// the commands the model runs are two users, so its items hold by other mechanisms than the program's own sandbox.
+const ProtectedContainerPlatform = "linux-container-protected"
+
 // sandboxProbe is bubblewrap with the namespaces and mounts Claude Code's sandbox asks for: a fresh /proc in its own
 // PID namespace, its own user and network namespaces and a new session.
 var sandboxProbe = []string{
@@ -23,6 +27,19 @@ func ContainedPlatform(ctx context.Context, containers Containers, seccomp strin
 		Name:        ContainerPlatform,
 		EvidenceKey: ContainerPlatform + "@" + containers.Rules.AgentImage,
 		Mechanisms:  linuxMechanisms(claudeInContainer(ctx, containers, seccomp)),
+	}
+}
+
+// ProtectedPlatform is the agent image under the protected-account launch profile. Its evidence is kept per agent
+// image like the standard container's, under its own key.
+func ProtectedPlatform(containers Containers) ProtectionPlatform {
+	return ProtectionPlatform{
+		Name:        ProtectedContainerPlatform,
+		EvidenceKey: ProtectedContainerPlatform + "@" + containers.Rules.AgentImage,
+		Mechanisms: map[string]DriverMechanisms{
+			"claude": claudeProtected(),
+			"codex":  codexWithoutProtectedStart(),
+		},
 	}
 }
 

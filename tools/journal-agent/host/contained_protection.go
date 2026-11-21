@@ -22,8 +22,9 @@ var containedPrograms = []struct{ journal, binary string }{
 
 var buildVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
 
-// ReportContainedProtection inspects each program's protection in the agent image at the build the image holds and
-// sends it to the journal, which admits a contained start only on a report with every item enforced.
+// ReportContainedProtection inspects each program's protection in the agent image at the build the image holds, under
+// the standard and the protected-account launch profile, and sends both to the journal, which admits a contained
+// start only on the report of its profile with every item enforced.
 func ReportContainedProtection(
 	ctx context.Context,
 	containers Containers,
@@ -31,7 +32,7 @@ func ReportContainedProtection(
 	evidence NativeEvidence,
 	reporter ProtectionReporter,
 ) error {
-	platform := ContainedPlatform(ctx, containers, seccomp)
+	platforms := []ProtectionPlatform{ContainedPlatform(ctx, containers, seccomp), ProtectedPlatform(containers)}
 	for _, program := range containedPrograms {
 		output, err := containers.RunCheck(ctx, seccomp, program.binary, "--version")
 		if err != nil {
@@ -43,13 +44,15 @@ func ReportContainedProtection(
 			return fmt.Errorf("the agent image's %s names no build: %q", program.binary, output)
 		}
 
-		capability, err := InspectProtection(platform, program.binary, build, evidence)
-		if err != nil {
-			return err
-		}
+		for _, platform := range platforms {
+			capability, err := InspectProtection(platform, program.binary, build, evidence)
+			if err != nil {
+				return err
+			}
 
-		if err := reporter.ReportProtection(ctx, protectionReport(program.journal, capability)); err != nil {
-			return err
+			if err := reporter.ReportProtection(ctx, protectionReport(program.journal, capability)); err != nil {
+				return err
+			}
 		}
 	}
 

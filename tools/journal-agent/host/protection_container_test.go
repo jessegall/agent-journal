@@ -138,9 +138,10 @@ esac`)
 		t.Fatal(err)
 	}
 
-	if len(reports) != 2 || reports[0].Driver != "claude-code" || reports[0].Build != "2.1.323" ||
-		reports[1].Driver != "codex" || reports[1].Build != "0.165.0" {
-		t.Fatalf("got reports %+v, want claude-code 2.1.323 and codex 0.165.0", reports)
+	if len(reports) != 4 || reports[0].Driver != "claude-code" || reports[0].Build != "2.1.323" ||
+		reports[1].Platform != ProtectedContainerPlatform || reports[1].Driver != "claude-code" ||
+		reports[2].Driver != "codex" || reports[2].Build != "0.165.0" || reports[3].Platform != ProtectedContainerPlatform {
+		t.Fatalf("got reports %+v, want claude-code 2.1.323 and codex 0.165.0, each standard then protected", reports)
 	}
 
 	claude := reports[0]
@@ -152,5 +153,49 @@ esac`)
 		if item.Enforced || !strings.Contains(item.Reason, "Can't mount proc") {
 			t.Fatalf("item %s is enforced or does not name why the sandbox cannot start: %+v", item.Item, item)
 		}
+	}
+}
+
+// A protected start keeps each item by its two users and the managed policy, not by Claude Code's sandbox: its report
+// names those mechanisms even where bwrap cannot start, and still counts an item only with native evidence of this
+// agent image.
+func TestTheProtectedReportNamesTheExecutorAndTheManagedPolicyAndNeedsEvidence(t *testing.T) {
+	daemon, _ := agentDaemon(t, `case "$*" in *bwrap*) echo "bwrap: Can't mount proc"; exit 1 ;; esac`)
+	folder := t.TempDir()
+
+	capability, err := InspectProtection(ProtectedPlatform(daemon), "claude", "2.1.323", NativeEvidence{Folder: folder})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if capability.Platform != ProtectedContainerPlatform || capability.Available {
+		t.Fatalf("a protected report without evidence counts as available: %+v", capability)
+	}
+	secrets := capability.Items[0]
+	if secrets.Item != AccountSecrets || !strings.Contains(secrets.Mechanism.Native, "uid 10002 executor") ||
+		!strings.Contains(secrets.Mechanism.Native, "managed permissions.deny") {
+		t.Fatalf("the account secrets item does not name the executor and the managed policy: %+v", secrets)
+	}
+	for _, item := range capability.Items {
+		if item.Mechanism.Native == "" {
+			t.Fatalf("item %s has no protected mechanism: %+v", item.Item, item)
+		}
+	}
+
+	records := map[string]map[BoundaryItem]string{}
+	key := "claude@2.1.323/" + ProtectedContainerPlatform + "@" + containerImage
+	records[key] = map[BoundaryItem]string{}
+	for _, item := range BoundaryItems {
+		records[key][item] = "run-protected-1"
+	}
+	writeEvidence(t, folder, records)
+
+	capability, err = InspectProtection(ProtectedPlatform(daemon), "claude", "2.1.323", NativeEvidence{Folder: folder})
+	if err != nil || !capability.Available {
+		t.Fatalf("the protected report with this image's evidence is not available: %+v, %v", capability, err)
+	}
+
+	codex, err := InspectProtection(ProtectedPlatform(daemon), "codex", "0.165.0", NativeEvidence{Folder: folder})
+	if err != nil || codex.Available || !strings.Contains(codex.Items[0].Reason, "executor") {
+		t.Fatalf("Codex's protected report does not say why it is unavailable: %+v, %v", codex, err)
 	}
 }

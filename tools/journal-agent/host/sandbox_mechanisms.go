@@ -36,6 +36,35 @@ func claudeSandbox() DriverMechanisms {
 	}
 }
 
+// claudeProtected is how a protected-account start keeps each item from the model's tools without Claude Code's own
+// sandbox: every command the model runs is a process of the executor's user 10002, and the program's file tools obey
+// the image's managed policy (docs/accounts/claude-integration.md, sections Shell handoff and Managed policy).
+func claudeProtected() DriverMechanisms {
+	return DriverMechanisms{
+		AccountSecrets: native("uid 10002 executor through CLAUDE_CODE_SHELL for Bash and its children, which cannot " +
+			"read the account folder of uid 10001; managed permissions.deny on the account folder for the file tools"),
+		ForeignHistory: native("each session's own history volume over the account's projects folder"),
+		Keychain: native("the agent image runs no session D-Bus or secret service, and the executor's uid 10002 " +
+			"reaches nothing of uid 10001"),
+		ControlSockets: native("the executor socket admits only uid 10001, and the commands of uid 10002 reach no " +
+			"socket of the program"),
+		ProcessInspection: native("the client runs as another uid: /proc environ, fd, root and mem of uid 10001 are " +
+			"refused to uid 10002"),
+		InstallWrites: native("uid 10002 writes only the workspace (group journal-work) and /tmp; /opt and /etc are " +
+			"root-owned, and the managed policy denies Edit outside /workspace and /tmp"),
+	}
+}
+
+// codexWithoutProtectedStart is every item unavailable until Codex dispatches its tools to the executor.
+func codexWithoutProtectedStart() DriverMechanisms {
+	missing := DriverMechanisms{}
+	for _, item := range BoundaryItems {
+		missing[item] = unavailable("Codex does not yet hand its commands to the executor (plan 45, tasks 1766 and 1768)")
+	}
+
+	return missing
+}
+
 // claudeWithoutSandbox is every item unavailable for the one reason Claude Code's sandbox cannot run.
 func claudeWithoutSandbox(why string) DriverMechanisms {
 	missing := DriverMechanisms{}

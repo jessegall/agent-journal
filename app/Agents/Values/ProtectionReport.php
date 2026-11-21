@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
+use App\Agents\Enums\LaunchProfileType;
 use App\Drivers\Enums\HookDriver;
 
 /**
@@ -16,9 +17,6 @@ use App\Drivers\Enums\HookDriver;
  */
 final readonly class ProtectionReport
 {
-    // The platform a contained host's tools run on, as journal-agent names it.
-    public const string CONTAINER_PLATFORM = 'linux-container';
-
     /**
      * @param  list<ProtectedItem>  $items
      */
@@ -30,11 +28,11 @@ final readonly class ProtectionReport
     ) {}
 
     /**
-     * The report of a program and build no contained host has reported on.
+     * The report of a program, build and platform no contained host has reported on.
      */
-    public static function unreported(HookDriver $driver, string $build): self
+    public static function unreported(HookDriver $driver, string $build, string $platform): self
     {
-        return new self($driver, $build, '', []);
+        return new self($driver, $build, $platform, []);
     }
 
     /**
@@ -51,11 +49,22 @@ final readonly class ProtectionReport
     }
 
     /**
-     * The key a host keeps a report under, one per program and build.
+     * The key a host keeps a report under, one per program, build and platform; the standard container's keeps the
+     * key reports had before protected starts had their own.
      */
-    public static function keyOf(HookDriver $driver, string $build): string
+    public static function keyOf(HookDriver $driver, string $build, string $platform): string
     {
-        return "{$driver->value}@{$build}";
+        return $platform === LaunchProfileType::Standard->protectionPlatform()
+            ? "{$driver->value}@{$build}"
+            : "{$driver->value}@{$build}/{$platform}";
+    }
+
+    /**
+     * The key this report is kept under.
+     */
+    public function key(): string
+    {
+        return self::keyOf($this->driver, $this->build, $this->platform);
     }
 
     /**
@@ -76,7 +85,7 @@ final readonly class ProtectionReport
      */
     public function isEnforcedInContainer(): bool
     {
-        return $this->platform === self::CONTAINER_PLATFORM && $this->items !== [] && $this->unenforced() === [];
+        return $this->items !== [] && $this->unenforced() === [];
     }
 
     /**
@@ -86,12 +95,7 @@ final readonly class ProtectionReport
     {
         if ($this->items === []) {
             return "no contained host has reported the protection of {$this->driver->value} {$this->build} in the "
-                .'agent image (journal-agent protection --arrangement=contained)';
-        }
-
-        if ($this->platform !== self::CONTAINER_PLATFORM) {
-            return "the protection report of {$this->driver->value} {$this->build} is for {$this->platform}, not the "
-                .'agent container';
+                ."agent image for {$this->platform} (journal-agent protection --arrangement=contained)";
         }
 
         $unenforced = $this->unenforced();

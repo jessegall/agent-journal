@@ -39,6 +39,18 @@ enum LaunchProfileType: string
     }
 
     /**
+     * The platform a contained host's protection report names for starts of this profile: a protected start keeps
+     * the account by its two users and the managed policy, not by the program's own sandbox, so it has its own report.
+     */
+    public function protectionPlatform(): string
+    {
+        return match ($this) {
+            self::Standard => 'linux-container',
+            self::ProtectedAccount => 'linux-container-protected',
+        };
+    }
+
+    /**
      * Whether the start is for an account folder: a protected start exists to keep that folder from the model.
      */
     public function isForAnAccount(): bool
