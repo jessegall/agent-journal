@@ -16,18 +16,20 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * One step of connecting a project: issuing, replacing or revoking a line, redeeming it, recovering a binding or
- * revoking one, with who took it, on what, when and how it ended. It holds no ticket, credential or canonical root.
+ * revoking one, approving or revoking a terminal sign-in, with who took it, on which project and binding, when and how
+ * it ended. It holds no ticket or its digest, device code, bearer, host secret, credential or canonical root.
  *
  * @property string $id
  * @property ConnectionAuditType $type
  * @property ConnectionAuditActor $actor_type
  * @property string $actor_id
  * @property string|null $invitation_id
+ * @property string|null $project_id
  * @property string|null $binding_id
  * @property string $outcome
  * @property CarbonImmutable $created_at
  */
-#[Fillable(['type', 'actor_type', 'actor_id', 'invitation_id', 'binding_id', 'outcome'])]
+#[Fillable(['type', 'actor_type', 'actor_id', 'invitation_id', 'project_id', 'binding_id', 'outcome'])]
 final class ConnectionAudit extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -37,6 +39,11 @@ final class ConnectionAudit extends Model implements ReadableModel
     public const string DONE = 'done';
 
     public const ?string UPDATED_AT = null;
+
+    /**
+     * The most steps of one folder its support record shows.
+     */
+    public const int SUPPORT_RECORD_LIMIT = 10;
 
     // ----------[ Constructors ]----------
 
@@ -57,7 +64,14 @@ final class ConnectionAudit extends Model implements ReadableModel
      */
     public static function ofInvitation(ConnectionAuditType $type, string $userId, ProjectInvitation $invitation): self
     {
-        return self::record($type, ConnectionAuditActor::User, $userId, $invitation->id, $invitation->binding_id);
+        return self::record(
+            $type,
+            ConnectionAuditActor::User,
+            $userId,
+            $invitation->id,
+            $invitation->project_id,
+            $invitation->binding_id,
+        );
     }
 
     /**
@@ -69,7 +83,7 @@ final class ConnectionAudit extends Model implements ReadableModel
         string $actorId,
         ProjectBinding $binding,
     ): self {
-        return self::record($type, $actorType, $actorId, null, $binding->id);
+        return self::record($type, $actorType, $actorId, null, $binding->project_id, $binding->id);
     }
 
     // ----------[ Queries ]----------
@@ -84,6 +98,19 @@ final class ConnectionAudit extends Model implements ReadableModel
         return array_values(self::query()->orderByDesc('created_at')->orderByDesc('id')->limit($most)->get()->all());
     }
 
+    /**
+     * The newest steps on these bindings, newest first, at most SUPPORT_RECORD_LIMIT for each one shown.
+     *
+     * @param  list<string>  $bindingIds
+     * @return list<self>
+     */
+    public static function newestOfBindings(array $bindingIds): array
+    {
+        return array_values(self::query()->whereIn('binding_id', $bindingIds)
+            ->orderByDesc('created_at')->orderByDesc('id')
+            ->limit(count($bindingIds) * self::SUPPORT_RECORD_LIMIT)->get()->all());
+    }
+
     // ----------[ Internals ]----------
 
     private static function record(
@@ -91,6 +118,7 @@ final class ConnectionAudit extends Model implements ReadableModel
         ConnectionAuditActor $actorType,
         string $actorId,
         string|null $invitationId,
+        string|null $projectId,
         string|null $bindingId,
     ): self {
         $audit = new self();
@@ -98,6 +126,7 @@ final class ConnectionAudit extends Model implements ReadableModel
         $audit->actor_type = $actorType;
         $audit->actor_id = $actorId;
         $audit->invitation_id = $invitationId;
+        $audit->project_id = $projectId;
         $audit->binding_id = $bindingId;
         $audit->outcome = self::DONE;
         $audit->save();

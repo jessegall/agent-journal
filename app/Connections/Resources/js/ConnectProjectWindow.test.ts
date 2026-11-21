@@ -114,6 +114,7 @@ function windowData(
                     revokedAt: null,
                     stateText: 'Ready.',
                     signIns: [],
+                    supportRecord: [],
                 },
             ],
             serverTime: new Date().toISOString(),

@@ -16,7 +16,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * One connected folder as the owner sees it, read at one server time: its reference, the project and environment it
  * works in by label and id, the machine it is on, each program and whether Start is offered for it, when its relay
  * was last in contact and until when its presence holds, when the server took its revocation, where it stands now
- * with the words for that, and its terminal sign-ins. Its canonical path is never shown.
+ * with the words for that, its terminal sign-ins, and its support record of who did what to it and when. Its
+ * canonical path is never shown.
  */
 #[TypeScript]
 final class ProjectBindingRowData extends Data
@@ -24,6 +25,7 @@ final class ProjectBindingRowData extends Data
     /**
      * @param  list<BindingProviderData>  $capabilities
      * @param  list<TerminalSignInRowData>  $signIns
+     * @param  list<SupportRecordRowData>  $supportRecord
      */
     public function __construct(
         public readonly string $id,
@@ -41,16 +43,20 @@ final class ProjectBindingRowData extends Data
         public readonly string $stateText = '',
         #[DataCollectionOf(TerminalSignInRowData::class)]
         public readonly array $signIns = [],
+        #[DataCollectionOf(SupportRecordRowData::class)]
+        public readonly array $supportRecord = [],
     ) {}
 
     /**
      * @param  list<TerminalSignInRowData>  $signIns
+     * @param  list<SupportRecordRowData>  $supportRecord
      */
     public static function fromBinding(
         ProjectBinding $binding,
         CarbonImmutable $serverTime,
         array $signIns = [],
         string $currentRelease = '',
+        array $supportRecord = [],
     ): self {
         $state = $binding->readinessAt($serverTime);
 
@@ -71,6 +77,7 @@ final class ProjectBindingRowData extends Data
                     ? ' Session stop unconfirmed: its lease ended and the device has not confirmed it stopped.'
                     : ''),
             'signIns' => $signIns,
+            'supportRecord' => $supportRecord,
         ]);
     }
 

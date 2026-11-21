@@ -53,3 +53,39 @@ func TestTheBundleOfAFailedStartNamesItsIdsAndSideAndHoldsNoSecret(t *testing.T)
 		}
 	}
 }
+
+func TestTheBundleCarriesTheRelaysLastReportAndStrikesTheStagedInstallSecrets(t *testing.T) {
+	state := host.ConnectionState{Folder: t.TempDir(), CanonicalRoot: "/work/shop"}
+	staged, err := state.Pending("https://journal.example.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	binding := host.Binding{BindingID: "binding-1", ProjectID: "project-1"}
+	if err := state.SaveRelayReport(host.RelayReport{BindingID: "binding-1", Generation: 3, Readiness: "ready"}); err != nil {
+		t.Fatal(err)
+	}
+	failure := Event{At: time.Now(), Step: "redeem", Side: Server,
+		Failure: "refused " + staged.HostCredential + " with nonce " + staged.InstallationNonce}
+	if err := (Log{State: state}).Record(failure); err != nil {
+		t.Fatal(err)
+	}
+
+	path, err := Write(binding, state, Install{Release: "1.4.0", Protocol: 2}, t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bundle := string(content)
+	if !strings.Contains(bundle, `"generation": 3`) || !strings.Contains(bundle, `"readiness": "ready"`) {
+		t.Fatalf("the bundle lacks the relay's last report:\n%s", bundle)
+	}
+	for _, secret := range []string{staged.HostCredential, staged.InstallationNonce} {
+		if strings.Contains(bundle, secret) {
+			t.Fatalf("the bundle holds the staged secret %q", secret)
+		}
+	}
+}

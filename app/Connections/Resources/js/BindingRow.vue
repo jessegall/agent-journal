@@ -126,6 +126,18 @@ const deviceName = computed(() => `${props.binding.machineLabel} ${shortReferenc
             </template>
             <dt class="sr-only">Terminal access</dt>
             <dd><TerminalAccess :sign-ins="binding.signIns" /></dd>
+            <dt class="sr-only">Support record</dt>
+            <dd>
+                <details class="text-small text-muted">
+                    <summary>Support record of {{ binding.id }}</summary>
+                    <ul class="flex flex-col gap-0.5 pt-1">
+                        <li v-for="(step, index) in binding.supportRecord" :key="index">
+                            <time :datetime="step.at">{{ dateTimeWithZone(step.at) }}</time>: {{ step.action }} by
+                            {{ step.actor }}, project {{ step.projectId ?? 'not recorded' }}
+                        </li>
+                    </ul>
+                </details>
+            </dd>
         </dl>
         <template v-if="binding.state !== 'revoked'">
             <Button
