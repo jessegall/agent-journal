@@ -192,6 +192,49 @@ type TurnReport struct {
 	Outcome           *string `json:"outcome"`
 }
 
+// UsageReport mirrors App\Http\Data\Agents\UsageReportData: one usage measurement of a claimed start, under the
+// sign-in generation the start ran in, the source that made it with its order and the UTC second it was observed.
+type UsageReport struct {
+	StartKey    string           `json:"start_key"`
+	Generation  int              `json:"generation"`
+	SourceID    string           `json:"source_id"`
+	SourceOrder int64            `json:"source_order"`
+	ObservedAt  string           `json:"observed_at"`
+	Measurement UsageMeasurement `json:"measurement"`
+}
+
+// The types of a usage measurement and the windows of a limit, as the journal names them.
+const (
+	UsageWindow       = "window"
+	UsageResultCost   = "result_cost"
+	UsageThreadTokens = "thread_tokens"
+
+	WindowFiveHour  = "five_hour"
+	WindowSevenDay  = "seven_day"
+	WindowPrimary   = "primary"
+	WindowSecondary = "secondary"
+)
+
+// UsageMeasurement mirrors the measurement data of a usage report, read by its type: a window carries its limit,
+// slot and what was reported of it, a result cost its US dollars as an exact decimal, a thread token count its
+// thread and totals. A field the program did not report is left out.
+type UsageMeasurement struct {
+	Type            string   `json:"type"`
+	LimitID         string   `json:"limit_id,omitempty"`
+	Slot            string   `json:"slot,omitempty"`
+	UsedPercent     *float64 `json:"used_percent,omitempty"`
+	WindowMinutes   *int     `json:"window_minutes,omitempty"`
+	ResetsAt        string   `json:"resets_at,omitempty"`
+	USD             string   `json:"usd,omitempty"`
+	ThreadID        string   `json:"thread_id,omitempty"`
+	Total           *int64   `json:"total,omitempty"`
+	Input           *int64   `json:"input,omitempty"`
+	CachedInput     *int64   `json:"cached_input,omitempty"`
+	Output          *int64   `json:"output,omitempty"`
+	ReasoningOutput *int64   `json:"reasoning_output,omitempty"`
+	LastTurnTotal   *int64   `json:"last_turn_total,omitempty"`
+}
+
 // LivenessReport mirrors App\Http\Data\Agents\RuntimeLivenessReportData.
 type LivenessReport struct {
 	RuntimeID         string `json:"runtime_id"`
@@ -428,6 +471,12 @@ func (client *Client) ReportActivity(ctx context.Context, report ActivityReport)
 
 func (client *Client) ReportTurn(ctx context.Context, report TurnReport) error {
 	return client.call(ctx, "/host/reports/turn", report, nil)
+}
+
+// ReportUsage sends one usage measurement of a start this host claimed; the journal acknowledges a repeated report
+// like the first, so a report whose acknowledgement was lost is sent again unchanged.
+func (client *Client) ReportUsage(ctx context.Context, report UsageReport) error {
+	return client.call(ctx, "/host/reports/usage", report, nil)
 }
 
 func (client *Client) ReportHeartbeat(ctx context.Context, report LivenessReport) error {

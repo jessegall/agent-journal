@@ -117,6 +117,7 @@ func (opener runtimeOpener) containedHeadlessRuntime(
 			container: container, manifest: manifest, profile: profile, journalURL: opener.journalURL,
 			prepared: prepared, runtimeID: runtimeID,
 		},
+		Usage: opener.usageOf(prepared),
 	}, grant.Runtime.ProcessGeneration)
 
 	return &containedRuntime{Runtime: driver, container: container, manifest: manifest}, nil

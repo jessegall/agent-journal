@@ -114,3 +114,22 @@ func journalAnswering(t *testing.T, status int) *Client {
 	t.Cleanup(server.Close)
 	return New(Enrollment{JournalURL: server.URL, HostID: "host", Secret: "secret"})
 }
+
+func TestAUsageReportIsPostedWithItsMeasurementAndNoMissingField(t *testing.T) {
+	journal, target, body := fakeJournal(t, ``)
+	percent := 42.0
+
+	report := UsageReport{StartKey: "start-1", Generation: 3, SourceID: "start-1:7", SourceOrder: 2,
+		ObservedAt:  "2026-11-21T10:00:00Z",
+		Measurement: UsageMeasurement{Type: UsageWindow, LimitID: "claude", Slot: WindowSevenDay, UsedPercent: &percent}}
+	if err := journal.ReportUsage(context.Background(), report); err != nil {
+		t.Fatal(err)
+	}
+
+	want := `{"start_key":"start-1","generation":3,"source_id":"start-1:7","source_order":2,` +
+		`"observed_at":"2026-11-21T10:00:00Z","measurement":{"type":"window","limit_id":"claude","slot":"seven_day",` +
+		`"used_percent":42}}`
+	if *target != "/host/reports/usage" || string(*body) != want {
+		t.Fatalf("posted %s to %s", *body, *target)
+	}
+}

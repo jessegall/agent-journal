@@ -214,3 +214,42 @@ func TestBareAndPermissionModeArgumentsAreRefused(t *testing.T) {
 		}
 	}
 }
+
+func statusLineOf(t *testing.T, mode recording.Mode, protection, reader string) map[string]any {
+	t.Helper()
+	start := contracts.Start{
+		Mode: mode, SettingsFolder: "/state/runtimes/r1", SessionID: "session",
+		Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: protection, JournalServer: &journalServer,
+			LaunchReference: "r1", StatusLine: reader},
+	}
+	files, err := ClaudeCode{}.SettingsFiles(start)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var settings struct {
+		StatusLine map[string]any `json:"statusLine"`
+	}
+	if err := json.Unmarshal(files[0].Content, &settings); err != nil {
+		t.Fatal(err)
+	}
+	return settings.StatusLine
+}
+
+func TestATerminalStartWithAStatusLineReaderNamesItAndKeepsAStatusLineItHadByRunningIt(t *testing.T) {
+	reader := "'/opt/journal-agent' 'status-line' '--relay' '/state/runtimes/r1/status-line.sock'"
+	withOwn := strings.TrimSuffix(accountProtection, "}") + `,"statusLine":{"type":"command","command":"echo it's mine","padding":1}}`
+
+	if line := statusLineOf(t, recording.TerminalMode, accountProtection, reader); line["command"] != reader {
+		t.Fatalf("the terminal start's status line is %v", line)
+	}
+	composed := statusLineOf(t, recording.TerminalMode, withOwn, reader)
+	if composed["command"] != reader+` --then 'echo it'\''s mine'` || composed["padding"] != 1.0 {
+		t.Fatalf("the status line the settings had became %v", composed)
+	}
+	if line := statusLineOf(t, recording.ProcessMode, accountProtection, reader); line != nil {
+		t.Fatalf("a process start got a status line %v", line)
+	}
+	if line := statusLineOf(t, recording.TerminalMode, accountProtection, ""); line != nil {
+		t.Fatalf("a start without a reader got a status line %v", line)
+	}
+}

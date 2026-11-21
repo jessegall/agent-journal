@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"journal-agent/shellwords"
 	"os/exec"
 	"path"
 	"regexp"
@@ -489,7 +490,7 @@ func (process ContainerProcess) command() []string {
 	}
 
 	script := `if find "$1" -name "*$2.jsonl" -print -quit 2>/dev/null | grep -q .; then exec ` +
-		shellWords(process.Restart) + `; fi; exec ` + shellWords(process.Command)
+		shellwords.Quoted(process.Restart...) + `; fi; exec ` + shellwords.Quoted(process.Command...)
 
 	return []string{"/bin/sh", "-c", script, "journal-session", process.Transcript.Folder,
 		process.Transcript.ConversationID}

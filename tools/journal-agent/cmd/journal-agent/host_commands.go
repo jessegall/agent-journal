@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"journal-agent/recording"
+	"journal-agent/shellwords"
 	"log"
 	"net"
 	"os"
@@ -160,6 +161,10 @@ func serve(arguments []string) error {
 	}
 	preparation := startPreparation(journal, *stateFolder, *installationFolder)
 	reports := &host.StartReports{Folder: *stateFolder}
+	// Usage reports keep their own file and worker, so a usage retry never waits in front of a start report.
+	opener.usage = host.NewUsageReports(*stateFolder)
+	opener.statusLines = &host.StatusLineRelays{}
+	go opener.usage.Run(ctx, journal)
 	sessions := host.ContainerSessions{}
 	var bindsAccount func(ctx context.Context, folder string) (bool, error)
 	if arrangement.IsContained() {
@@ -236,6 +241,10 @@ type runtimeOpener struct {
 	reportExit   func(ctx context.Context, report client.LivenessReport) error
 	// declared is every combination this host told the journal it can run; a grant for any other is refused.
 	declared []client.HostCombination
+	// usage queues what the usage readers of each start observed, for its own worker to send.
+	usage *host.UsageReports
+	// statusLines are the sockets where terminal starts' status-line readers hand their windows.
+	statusLines *host.StatusLineRelays
 }
 
 // defaultRows and defaultColumns size a terminal the host opens before any user attaches to it.
@@ -382,6 +391,7 @@ func (opener runtimeOpener) headlessRuntime(
 		Account:             accountOf(prepared, opener.installationFolder, runtimeID),
 		RelayVariables:      prepared.RelayVariables(settingsFolder),
 		Executable:          installedProgram(opener.installationFolder, profile),
+		Usage:               opener.usageOf(prepared),
 	}, grant.Runtime.ProcessGeneration)
 	identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
 	if grant.Runtime.Model != nil {
@@ -405,8 +415,10 @@ func (opener runtimeOpener) terminalRuntime(
 	environment []string,
 ) (serving.Runtime, error) {
 	grant := prepared.Grant
+	account := accountOf(prepared, opener.installationFolder, runtimeID)
+	account.StatusLine = opener.statusLineOf(runtimeID, prepared, profile)
 	request, err := startOf(profile, opener.stateFolder, opener.journalURL, opener.hookCommand, runtimeID, grant,
-		environment, accountOf(prepared, opener.installationFolder, runtimeID),
+		environment, account,
 		prepared.RelayVariables(filepath.Join(opener.stateFolder, "runtimes", runtimeID)),
 		installedProgram(opener.installationFolder, profile))
 	if err != nil {
@@ -797,3 +809,45 @@ func pinnedBuild(profile contracts.ProgramProfile, requested string) error {
 
 	return profile.CheckBuild(strings.TrimSpace(string(output)))
 }
+
+// usageOf is the usage sink of the start; none when this host queues no usage.
+func (opener runtimeOpener) usageOf(prepared host.PreparedStart) drivers.UsageObserver {
+	if opener.usage == nil {
+		return nil
+	}
+	return host.NewUsageSink(prepared, opener.usage)
+}
+
+// statusLineOf is the status-line reader command of a terminal Claude start signed in with Claude, whose status line
+// reports its limit windows: the installed host program, given the socket of this start's own relay. Any other start,
+// or one whose relay cannot open, reads no window there.
+func (opener runtimeOpener) statusLineOf(
+	runtimeID string,
+	prepared host.PreparedStart,
+	profile contracts.ProgramProfile,
+) string {
+	if profile.Program() != "claude" || prepared.Claim.SignInMethod != oauthSignIn || opener.statusLines == nil {
+		return ""
+	}
+	program, err := os.Executable()
+	if err != nil {
+		log.Printf("runtime %s reads no limit windows: %v", runtimeID, err)
+		return ""
+	}
+	relay := filepath.Join(opener.stateFolder, "runtimes", runtimeID, statusLineSocket)
+	if err := os.MkdirAll(filepath.Dir(relay), 0o700); err != nil {
+		log.Printf("runtime %s reads no limit windows: %v", runtimeID, err)
+		return ""
+	}
+	if err := opener.statusLines.Open(runtimeID, relay, host.NewUsageSink(prepared, opener.usage)); err != nil {
+		log.Printf("runtime %s reads no limit windows: %v", runtimeID, err)
+		return ""
+	}
+	return shellwords.Quoted(program, "status-line", "--relay", relay)
+}
+
+const (
+	// oauthSignIn is the sign-in method of an account signed in with Claude or ChatGPT.
+	oauthSignIn      = "oauth"
+	statusLineSocket = "status-line.sock"
+)
