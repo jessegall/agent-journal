@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import Button from '@kit/Button';
 import FormField from '@kit/FormField';
 import Modal from '@kit/Modal';
-import { getJson, postJson } from '@kit/jsonRequests';
+import { getJson } from '@kit/jsonRequests';
+import { followPage } from '@kit/followPage';
+import { keyedPost } from '@kit/keyedPost';
 import { newRequestId } from '@kit/requestId';
 import { useSwitchOperation } from './composables/useSwitchOperation';
 import type { AgentOptionData } from '@generated/types/chat';
@@ -65,7 +67,8 @@ const conversationId = ref<string | null>(props.mode === 'resume' ? (props.agent
 const refusal = ref<string | null>(null);
 const progress = ref<string | null>(null);
 const sending = ref(false);
-let polling: ReturnType<typeof setInterval> | undefined;
+let startedSessionId: string | null = null;
+let following: { stop: () => void } | undefined;
 
 const account = computed(() => accounts.value.find((choice) => choice.id === accountId.value));
 const review = computed(() => {
@@ -107,17 +110,52 @@ function sessionChoice(): SessionChoice {
     };
 }
 
-async function start(): Promise<void> {
-    const reply = await postJson(startMain.url(props.agent.profileKey), sessionChoice());
+/**
+ * Starts or resumes once under the form's request id, through Inertia. Starting or Resuming shows at once and stays
+ * until the page shows the session the start answered with running; a session another request started is shown as
+ * it is, and does not confirm this one.
+ */
+function start(): void {
+    progress.value = props.mode === 'resume' ? 'Resuming' : 'Starting';
+    refusal.value = null;
+    sending.value = true;
+    keyedPost(startMain.url(props.agent.profileKey), sessionChoice(), requestId, {
+        onAccepted: (flash) => {
+            startedSessionId = typeof flash.startedSessionId === 'string' ? flash.startedSessionId : null;
+            followStart();
+        },
+        onRefused: (reason) => {
+            refusal.value = reason;
+            progress.value = null;
+        },
+        onUncertain: () => followStart(),
+        onFinish: () => (sending.value = false),
+    });
+}
 
-    if (!reply.ok) {
-        refusal.value = reply.message;
+/**
+ * Shows the start as the page has it now, and answers whether this request's session runs.
+ */
+function showStart(): boolean {
+    const shown = props.agent;
 
-        return;
+    if (startedSessionId !== null && shown.sessionId === startedSessionId && shown.presence === 'working') {
+        progress.value = 'Ready';
+
+        return true;
     }
 
-    progress.value = 'Starting';
-    polling = setInterval(() => router.reload(), 2000);
+    if (shown.presence === 'working' && shown.sessionId !== startedSessionId) {
+        progress.value = 'Another session is running; this start is not confirmed yet';
+    }
+
+    return false;
+}
+
+function followStart(): void {
+    if (!showStart()) {
+        following = followPage(showStart);
+    }
 }
 
 /**
@@ -133,27 +171,21 @@ function switchSession(): void {
     });
 }
 
-async function submit(): Promise<void> {
+function submit(): void {
     if (!canSubmit.value) {
         return;
     }
 
-    sending.value = true;
-    await (props.mode === 'switch' ? switchSession() : start());
-    sending.value = false;
+    if (props.mode === 'switch') {
+        switchSession();
+
+        return;
+    }
+
+    start();
 }
 
-watch(
-    () => props.agent.presence,
-    (presence) => {
-        if (progress.value === 'Starting' && presence === 'working') {
-            clearInterval(polling);
-            progress.value = 'Ready';
-        }
-    },
-);
-
-onBeforeUnmount(() => clearInterval(polling));
+onBeforeUnmount(() => following?.stop());
 </script>
 
 <template>

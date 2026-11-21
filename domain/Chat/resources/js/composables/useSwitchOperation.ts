@@ -1,15 +1,13 @@
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import type { AgentOptionData } from '@generated/types/chat';
 import { keyedPost } from '@kit/keyedPost';
-import { appliedReadGeneration, markDirty } from '@kit/usePageChanges';
+import { followPage } from '@kit/followPage';
 
 /**
  * Where a switch this dialog asked for stands: being sent, followed through the page's reads until it is over,
  * uncertain after an answer that never came (still followed, never sent again), over, or refused.
  */
 export type SwitchState = 'idle' | 'sending' | 'following' | 'uncertain' | 'over' | 'refused';
-
-const FOLLOW_PAUSE_MS = 2000;
 
 /**
  * One switch of one dialog: sent once through Inertia under its request key, then followed by reading the page
@@ -22,8 +20,8 @@ export function useSwitchOperation(agent: () => AgentOptionData) {
     const refusal = ref<string | null>(null);
     const switchBefore = agent().switchId;
     let isOpen = true;
-    let awaitedRead = 0;
-    let pause: ReturnType<typeof setTimeout> | undefined;
+    let following: { stop: () => void } | undefined;
+    let followedSwitchId: string | null = null;
 
     function begin(requestId: string, url: string, choice: Record<string, unknown>): void {
         state.value = 'sending';
@@ -35,59 +33,81 @@ export function useSwitchOperation(agent: () => AgentOptionData) {
                 refusal.value = reason;
                 state.value = 'refused';
             },
-            onUncertain: () => markUncertain(),
+            onUncertain: () => {
+                // The answer never came: the switch is followed by reading the page, never sent again.
+                state.value = 'uncertain';
+                follow();
+            },
         });
     }
 
     /**
-     * The answer never came: the switch is followed by reading the page, never sent again.
+     * Retries or rechecks the agent's switch under one key: Retrying or Checking shows at once, and the switch is then
+     * followed from the page until it is over. While one is out, another press does nothing.
      */
-    function markUncertain(): void {
-        state.value = 'uncertain';
-        follow();
+    function retry(url: string, key: string, label: 'Retrying' | 'Checking'): void {
+        if (isOut()) {
+            return;
+        }
+
+        followedSwitchId = agent().switchId;
+        state.value = 'sending';
+        refusal.value = null;
+        progress.value = label;
+        keyedPost(url, {}, key, {
+            onAccepted: () => (following = followPage(showSwitch)),
+            onRefused: (reason) => {
+                refusal.value = reason;
+                state.value = 'refused';
+            },
+            onUncertain: () => {
+                state.value = 'uncertain';
+                following = followPage(showSwitch);
+            },
+        });
+    }
+
+    function isOut(): boolean {
+        return state.value === 'sending' || state.value === 'following' || state.value === 'uncertain';
     }
 
     /**
-     * Shows the agent's switch as the page has it now, and asks for the next read unless it is over.
+     * Whether the page's switch is the one this operation follows: the same one for a retry, a new one for a switch.
      */
-    function follow(): void {
-        if (!isOpen) {
-            return;
-        }
-
-        const shown = agent();
-
-        if (shown.switchId !== null && shown.switchId !== switchBefore) {
-            progress.value = shown.switchStageLabel;
-
-            if (shown.isSwitchOver) {
-                state.value = 'over';
-
-                return;
-            }
-
-            state.value = 'following';
-        }
-
-        awaitedRead = markDirty('write');
+    function isFollowed(switchId: string | null): boolean {
+        return followedSwitchId === null ? switchId !== null && switchId !== switchBefore : switchId === followedSwitchId;
     }
 
-    // The next read is asked for only once the previous one answered, after a short pause.
-    watch(appliedReadGeneration, (applied) => {
-        if (!isOpen || awaitedRead === 0 || applied < awaitedRead) {
+    /**
+     * Shows the agent's switch as the page has it now, and answers whether it is over.
+     */
+    function showSwitch(): boolean {
+        const shown = agent();
+
+        if (!isFollowed(shown.switchId)) {
+            return false;
+        }
+
+        progress.value = shown.switchStageLabel;
+        state.value = shown.isSwitchOver ? 'over' : 'following';
+
+        return shown.isSwitchOver;
+    }
+
+    function follow(): void {
+        if (!isOpen || showSwitch()) {
             return;
         }
 
-        awaitedRead = 0;
-        pause = setTimeout(follow, FOLLOW_PAUSE_MS);
-    });
+        following = followPage(showSwitch);
+    }
 
     function stop(): void {
         isOpen = false;
-        clearTimeout(pause);
+        following?.stop();
     }
 
     onBeforeUnmount(stop);
 
-    return { state, progress, refusal, begin, stop };
+    return { state, progress, refusal, begin, retry, isOut, stop };
 }

@@ -282,7 +282,7 @@ function cancelAndClose(): void {
                     variant="bordered"
                     :pending="actions.cancelling.processing"
                     @click="cancelAndClose"
-                    >Cancel sign-in</Button
+                    >{{ actions.cancelling.processing ? 'Cancelling…' : 'Cancel sign-in' }}</Button
                 >
                 <Button variant="primary" @click="close">Keep waiting</Button>
             </template>

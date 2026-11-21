@@ -5,7 +5,8 @@ import { router } from '@inertiajs/vue3';
  * of the page can tell.
  */
 export type KeyedPostOutcome = {
-    onAccepted: () => void;
+    // The values the server flashed with its answer, such as the id of what it made.
+    onAccepted: (flash: Record<string, unknown>) => void;
     onRefused: (reason: string | null) => void;
     onUncertain: () => void;
     onFinish?: () => void;
@@ -30,7 +31,7 @@ export function keyedPost(
         preserveState: true,
         preserveScroll: true,
         headers: { 'Idempotency-Key': key },
-        onSuccess: () => outcome.onAccepted(),
+        onSuccess: (page) => outcome.onAccepted(page.flash),
         onError: (errors) => outcome.onRefused(Object.values(errors)[0] ?? null),
         onHttpException: () => {
             outcome.onUncertain();

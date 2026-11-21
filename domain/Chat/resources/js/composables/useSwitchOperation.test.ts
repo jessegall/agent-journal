@@ -6,7 +6,7 @@ import type { AgentOptionData } from '@generated/types/chat';
 
 type PostOptions = {
     headers: Record<string, string>;
-    onSuccess: () => void;
+    onSuccess: (page: { flash: Record<string, unknown> }) => void;
     onError: (errors: Record<string, string>) => void;
     onNetworkError: () => boolean;
 };
@@ -18,7 +18,7 @@ let marked = 0;
 vi.mock('@inertiajs/vue3', () => ({
     router: { post: (url: string, _choice: unknown, options: PostOptions) => posts.push({ url, options }) },
 }));
-vi.mock('@kit/usePageChanges', () => ({ appliedReadGeneration: applied, markDirty: () => ++marked }));
+vi.mock('@/composables/usePageChanges', () => ({ appliedReadGeneration: applied, markDirty: () => ++marked }));
 
 const { useSwitchOperation } = await import('./useSwitchOperation');
 
@@ -55,7 +55,7 @@ describe('useSwitchOperation', () => {
 
         operation.begin('request-1', '/profiles/main/switch', {});
         showSwitch('Confirmed', true);
-        posts[0].options.onSuccess();
+        posts[0].options.onSuccess({ flash: {} });
 
         expect(posts[0].options.headers['Idempotency-Key']).toBe('request-1');
         expect(operation.state.value).toBe('over');
@@ -86,7 +86,7 @@ describe('useSwitchOperation', () => {
     it('ignores a late read once its dialog closed', async () => {
         const { dialog, operation } = mountSwitch();
         operation.begin('request-1', '/profiles/main/switch', {});
-        posts[0].options.onSuccess();
+        posts[0].options.onSuccess({ flash: {} });
         dialog.unmount();
 
         showSwitch('Confirmed', true);
@@ -104,5 +104,38 @@ describe('useSwitchOperation', () => {
 
         expect(operation.state.value).toBe('refused');
         expect(operation.refusal.value).toBe('The account needs to sign in again.');
+    });
+
+    it('runs one retry at a time, shows Checking for a recheck, and follows the same switch until it is over', async () => {
+        showSwitch('Launch failed', true);
+        const { operation } = mountSwitch();
+
+        operation.retry('/agents/switches/switch-1/recheck', 'key-1', 'Checking');
+        operation.retry('/agents/switches/switch-1/recheck', 'key-2', 'Checking');
+        expect(posts).toHaveLength(1);
+        expect(operation.progress.value).toBe('Checking');
+
+        posts[0].options.onSuccess({ flash: {} });
+        showSwitch('Starting', false);
+        applied.value = marked;
+        await vi.advanceTimersByTimeAsync(2000);
+        expect(operation.progress.value).toBe('Starting');
+        showSwitch('Confirmed', true);
+        applied.value = marked;
+        await vi.advanceTimersByTimeAsync(0);
+
+        expect(operation.state.value).toBe('over');
+        expect(operation.progress.value).toBe('Confirmed');
+    });
+
+    it('shows the reason a retry was refused', () => {
+        showSwitch('Launch failed', true);
+        const { operation } = mountSwitch();
+
+        operation.retry('/agents/switches/switch-1/retry', 'key-1', 'Retrying');
+        posts[0].options.onError({ switch: 'The switch was cancelled.' });
+
+        expect(operation.refusal.value).toBe('The switch was cancelled.');
+        expect(operation.isOut()).toBe(false);
     });
 });

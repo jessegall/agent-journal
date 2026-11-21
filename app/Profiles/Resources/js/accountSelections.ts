@@ -46,3 +46,26 @@ export function isChosen(
             selection.driver === driver && selection.accountId === accountId,
     );
 }
+
+/**
+ * The change number of the driver's choice as shown, which a new choice names so the server can tell it is current;
+ * a driver nobody chose for yet is at 0.
+ */
+export function changeNumberOf(selections: AccountSelection[], driver: string): number {
+    return selections.find((selection) => selection.driver === driver)?.changeNumber ?? 0;
+}
+
+/**
+ * The selections with the account chosen for its driver at the change number shown, as a page shows them until the
+ * server answers; the same change number lets the server's answer, or a collaborator's newer one, replace it.
+ */
+export function chosenIn(
+    selections: AccountSelection[],
+    driver: string,
+    accountId: string,
+    changeNumber: number,
+): AccountSelection[] {
+    const others = selections.filter((selection) => selection.driver !== driver);
+
+    return [...others, { driver, accountId, changeNumber }];
+}

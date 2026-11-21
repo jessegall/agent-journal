@@ -9,7 +9,7 @@ type PostOptions = {
     preserveState: boolean;
     optimistic?: unknown;
     headers: Record<string, string>;
-    onSuccess: () => void;
+    onSuccess: (page: { flash: Record<string, unknown> }) => void;
     onError: (errors: Record<string, string>) => void;
     onNetworkError: () => boolean;
     onFinish: () => void;
@@ -103,7 +103,7 @@ describe('useConversationIntents', () => {
         const intent = owner.beginSend(draft('Hello'));
         owner.submit(intent, 'page');
 
-        posts[0].options.onSuccess();
+        posts[0].options.onSuccess({ flash: {} });
         posts[0].options.onFinish();
 
         expect(intent.status).toBe('confirmed');

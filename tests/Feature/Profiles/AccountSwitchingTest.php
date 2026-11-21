@@ -18,6 +18,7 @@ use App\Profiles\Exceptions\AccountLabelInvalid;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Models\Account;
+use App\Profiles\Exceptions\AccountSelectionChanged;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
 use Illuminate\Support\Facades\Event;
@@ -62,6 +63,19 @@ final class AccountSwitchingTest extends TestCase
         $this->assertSame([$home->id, 2], [$selection->account_id, $selection->change_number]);
         $this->assertSame(1, $home->refresh()->sign_in_generation);
         Event::assertDispatchedTimes(AccountsChanged::class, 2);
+    }
+
+    public function test_a_choice_made_against_an_older_selection_is_refused_and_leaves_the_newer_one(): void
+    {
+        [$work, $home] = [$this->account('Work'), $this->account('Home')];
+        $this->bus()->run(new SwitchAccount($work->id, 0));
+
+        $this->assertRefused(AccountSelectionChanged::class, new SwitchAccount($home->id, 0));
+
+        $selection = ActiveAccount::query()->sole();
+        $this->assertSame([$work->id, 1], [$selection->account_id, $selection->change_number]);
+        $this->bus()->run(new SwitchAccount($home->id, 1));
+        $this->assertSame($home->id, $selection->refresh()->account_id);
     }
 
     public function test_an_account_that_must_sign_in_again_or_is_removed_cannot_be_chosen(): void

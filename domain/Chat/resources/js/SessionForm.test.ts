@@ -2,16 +2,23 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import type { AgentOptionData } from '@generated/types/chat';
-import type { JsonReply } from '@kit/jsonRequests';
 
-type StartAnswer = { sessionId: string; newSession: boolean };
 
 const posted: { url: string; body: Record<string, unknown> }[] = [];
-const startReply: JsonReply<StartAnswer> = { ok: true, value: { sessionId: 'session-1', newSession: true } };
+type PostOptions = { onFinish?: () => void; onSuccess: (page: { flash: Record<string, unknown> }) => void };
+const postOptions: PostOptions[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
     Link: { template: '<a><slot /></a>' },
-    router: { reload: () => undefined },
+    router: {
+        reload: () => undefined,
+        on: () => () => undefined,
+        post: (url: string, body: Record<string, unknown>, options: PostOptions) => {
+            posted.push({ url, body });
+            postOptions.push(options);
+            options.onFinish?.();
+        },
+    },
 }));
 vi.mock('@kit/Modal', () => ({
     default: { template: '<div><slot /><slot name="footer" /></div>' },
@@ -27,18 +34,12 @@ vi.mock('@kit/jsonRequests', () => ({
             ],
         },
     }),
-    postJson: async (url: string, body: Record<string, unknown>) => {
-        posted.push({ url, body });
-
-        return startReply;
-    },
 }));
 vi.mock('@kit/sessionStarts', () => ({
     accountsPage: { url: () => '/accounts' },
     eligibleAccounts: { url: (driver: string) => `/eligible/${driver}` },
     startMain: { url: (profile: string) => `/profiles/${profile}/start-main` },
     switchMethod: { url: (profile: string) => `/profiles/${profile}/switch` },
-    switchStage: { url: (requestId: string) => `/switches/${requestId}` },
 }));
 
 const { default: SessionForm } = await import('./SessionForm.vue');
@@ -83,6 +84,24 @@ describe('SessionForm', () => {
             ['/profiles/journal-main/start-main', 'ready', 4],
         ]);
         expect(posted[0].body.requestId).toBe(posted[1].body.requestId);
+        form.unmount();
+    });
+
+    it('shows Starting at once and Ready only once the session the start answered with runs', async () => {
+        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        await flushPromises();
+        await form.find('form').trigger('submit');
+        expect(form.text()).toContain('Starting');
+
+        await form.setProps({ agent: { ...idle, presence: 'working', sessionId: 'session-2' } });
+        postOptions.at(-1)?.onSuccess({ flash: { startedSessionId: 'session-1' } });
+        await flushPromises();
+        expect(form.text()).toContain('Another session is running; this start is not confirmed yet');
+
+        await form.setProps({ agent: { ...idle, presence: 'working', sessionId: 'session-1' } });
+        postOptions.at(-1)?.onSuccess({ flash: { startedSessionId: 'session-1' } });
+        await flushPromises();
+        expect(form.text()).toContain('Ready');
         form.unmount();
     });
 });

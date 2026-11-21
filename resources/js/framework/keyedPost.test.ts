@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 type Options = Record<string, unknown> & {
-    onSuccess: () => void;
+    onSuccess: (page: { flash: Record<string, unknown> }) => void;
     onError: (errors: Record<string, string>) => void;
     onNetworkError: () => boolean;
 };
@@ -20,7 +20,7 @@ describe('keyedPost', () => {
 
         keyedPost('/chat/messages', { body: 'Hi' }, 'key-1', outcome, ['page']);
         const { options } = posts[0];
-        options.onSuccess();
+        options.onSuccess({ flash: {} });
         options.onError({ session: 'The agent now runs another session.' });
         const showsErrorModal = options.onNetworkError();
 
