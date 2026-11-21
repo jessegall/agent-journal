@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import type { InstallAttemptRowData } from '@generated/types/connections';
+import type { ConnectProjectWindowData, InstallAttemptRowData } from '@generated/types/connections';
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -43,7 +43,7 @@ const { default: ConnectProjectWindow } = await import(
 const LINE =
     'curl -fsSL https://journal.example.com/install/Tk3_x-9QvZ0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0u | sh';
 
-function windowData(canIssue: boolean, attempts: InstallAttemptRowData[] = []) {
+function windowData(canIssue: boolean, attempts: InstallAttemptRowData[] = []): ConnectProjectWindowData {
     return {
         serverName: 'journal.example.com',
         origin: 'https://journal.example.com',
