@@ -138,6 +138,50 @@ and a workspace `.claude/settings.json` both allowed `Read(//home/**)` and `Edit
 - WebFetch of `file:///home/journal/.account/.credentials.json` answered `Invalid URL`, also with WebFetch allowed.
 - The two settings files that allowed the account folder changed none of these answers.
 
+## Protected inventory
+
+Every action the model or a message to it can take in Claude Code 2.1.323 under the protected-account profile, how
+it is reached and what closes it. Lines are `tools/journal-agent/profiles/claude_code.go` unless named; the managed
+policy is `.docker/helper/claude-managed-settings.json` (section Managed policy).
+
+| Route | Reached by | Closed by | Where |
+|---|---|---|---|
+| Bash | the model | runs as uid 10002 through the shell bridge; paths in a command are checked against the `Read` denies | `CLAUDE_CODE_SHELL`, line 50 and `Environment`; managed `permissions.deny` |
+| Read, Edit, Write | the model | managed `Read`/`Edit` rules: only `/workspace` and `/tmp`, account, `/proc`, `/dev/fd`, `/run`, `/sys` denied | managed policy |
+| NotebookEdit | the model (deferred) | managed `Edit` rules, and a notebook must be read first | managed policy |
+| WebFetch, WebSearch | the model (deferred) | no local file: a `file:` URL answers `Invalid URL` | section Managed policy |
+| ToolSearch | the model | finds only the deferred tools of `--tools`: a `select:` of Agent, Task, Skill, Grep and Glob answered WebFetch, WebSearch and NotebookEdit | `--tools`, lines 26 and 91 |
+| Agent, Task, Workflow, SendMessage, ListAgents, RemoteTrigger | the model | left out of `--tools`, named in `--disallowedTools` and denied in the managed policy | lines 29 and 91; managed `deny` |
+| Built-in subagents (Explore, general-purpose, Plan, statusline-setup) | the Agent tool | listed at start but unreachable: no Agent or Task tool; `--agents {}` adds none | line 90 |
+| Skills and the Skill tool | the model | the Skill tool is left out and denied; skills in the workspace's `.claude/skills` do not load | line 29; resume check below |
+| Slash commands | the user typing in the terminal | not model-controlled; workspace `.claude/commands` do not load | resume check below |
+| Nested programs | Bash | `Bash(claude:*)`, `Bash(codex:*)` and the print forms denied | line 60; managed `deny` |
+| Project, user and local settings | files in the workspace or home | `--setting-sources ''`, and `allowManagedPermissionRulesOnly` ignores every rule outside the managed file | line 89; managed policy |
+| Hooks | settings files | `allowManagedHooksOnly`: only the managed hooks, the image's `journal-hook` with fixed arguments, run | managed policy |
+| MCP servers | `.mcp.json`, settings, `--mcp-config` | `--strict-mcp-config`, the one journal descriptor, `allowManagedMcpServersOnly` with `allowedMcpServers` naming only `journal` | lines 97 and 253; managed policy |
+| Permission prompts and approvals | the user answering a prompt | `allowManagedPermissionRulesOnly` hides the always-allow choices and saves no rule, so an approval allows one call and adds no directory | managed policy |
+| Added directories | `/add-dir`, typed by the user | `--restricted`; file rules still stop at `/workspace` and `/tmp` | line 100; managed policy |
+| Bypass mode | `--dangerously-skip-permissions`, `--permission-mode` | `disableBypassPermissionsMode: disable`; `RejectContrary` refuses both arguments | line 342; managed policy |
+| A shell, shell prefix or config folder of the launch's choosing | extra arguments | `RejectContrary` refuses `CLAUDE_CODE_SHELL`, `shellPrefix` and `CLAUDE_CONFIG_DIR` | line 340 |
+| `@path` attachments in a prompt | a message the journal hands the agent | no attachment of a denied path reached the API: a prompt naming `@/home/journal/.account/.credentials.json` and a workspace link into the account sent no byte of the planted credential | resume check below |
+| Image paste | the user in the terminal | not model-controlled; a pasted image is the user's own | none needed |
+| Resume | `--resume <session>` | the same arguments and managed policy apply; the resumed session listed the same tools and no MCP server | line 111; resume check below |
+
+No route is left open.
+
+Checked in the arm64 agent image as uid 10001, with the shell bridge, the executor and the managed policy, against
+the fake Messages API (scratchpad probe `policy/routes.sh`). The workspace held a `.claude/settings.json` with a
+PreToolUse and a SessionStart hook writing `/workspace/HOOK_RAN`, `enableAllProjectMcpServers` and an allow rule for
+the account folder; a `.mcp.json` server writing `/workspace/MCP_RAN`; and a planted agent, skill and command. A
+first session started with `--session-id` and was then resumed with `--resume`:
+
+- neither marker file was written, and both sessions reported `mcp_servers: []` and the tools Bash, Edit,
+  NotebookEdit, Read, ToolSearch, WebFetch, WebSearch and Write;
+- the planted agent, skill and command appeared in no list; the lists held only Claude Code's built-in ones;
+- ToolSearch found only WebFetch, WebSearch and NotebookEdit; Read of the workspace marker answered and Read of the
+  account's credentials was refused, before and after the resume;
+- no request to the API carried the planted credential, with both `@` paths in the prompt.
+
 ## Checked and unchecked
 
 | Claim | State | How |
@@ -153,5 +197,6 @@ and a workspace `.claude/settings.json` both allowed `Read(//home/**)` and `Edit
 | Parallel starts on one account share a refresh safely | unchecked: needs sign-in | task 250 |
 | Bash tool commands run as the executor user, not the program user | checked for one-shot | section Shell handoff, fake API in the agent image |
 | Native file tools never reach the account folder, whatever a project or launch allows | checked for one-shot | section Managed policy, fake API in the agent image |
+| No workspace hook, MCP server, agent, skill or command loads, also after a resume | checked for one-shot and resume | section Protected inventory, fake API in the agent image |
 | An agent reads its own saved output but no other session's or the credentials | unchecked: needs sign-in and the protected host | task 250 and the starter |
 | Model commands cannot read the Keychain entry | unchecked: needs sign-in | task 250 |
