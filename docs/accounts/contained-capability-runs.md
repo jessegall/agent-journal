@@ -33,18 +33,11 @@ none
 The agent daemon cannot list a container's processes itself (`docker top` fails: it has no cgroup for the
 container), so the host proves an end by the container's state and the PID namespace, never by `docker top`.
 
-## container-runtime: unsupported
+## container-runtime: supported
 
-The daemon part holds. It answers on its socket alone and holds exactly the two pinned images; `agent-images` removes
-any other and loads the archives only when a pin is missing, and `agent-host` checks both pins before it serves:
-
-```
-$ docker --host unix:///run/agent-docker/docker.sock image ls --format '{{.ID}}'
-bbdbdc31c9ba
-c97cd8c276ef
-```
-
-With no daemon at its socket, a contained host refuses to serve with the named refusal (story 64 of doc 61):
+The daemon answers on its socket alone and holds exactly the two pinned images; `agent-images` removes any other and
+loads the archives only when a pin is missing, and `agent-host` checks both pins before it serves. With no daemon at
+its socket, a contained host refuses to serve with the named refusal (story 64 of doc 61):
 
 ```
 $ journal-agent serve --arrangement=contained --docker=unix:///run/agent-docker/missing.sock ...
@@ -52,18 +45,24 @@ journal-agent: the agent container runtime cannot be reached: Cannot connect to 
 unix:///run/agent-docker/missing.sock. Is the docker daemon running?
 ```
 
-The kernel control does not hold. The agent daemon reports `cgroup driver none, version 2`, so the budgets every
-agent container is created with (`--cpus`, `--memory`, `--memory-swap`, `--pids-limit`,
-`tools/journal-agent/host/container.go:147-150`) are accepted without a warning and discarded:
+The kernel control holds since the agent daemon runs as a rootful `docker:28-dind` under Sysbox (`sysbox-runc`, task
+1636). The rootless image had no cgroup driver: rootless Docker enforces budgets only through a systemd user manager,
+so `--cpus`, `--memory` and `--pids-limit` were accepted and discarded. Under Sysbox the daemon owns its cgroup
+namespace and runs the cgroupfs driver, so the budgets every agent container is created with
+(`tools/journal-agent/host/container.go`) hold. On the test server (Ubuntu 26.04, kernel 7.0, Sysbox 0.7.1):
 
 ```
-$ docker run --rm --network none --pids-limit 8 ... sh -c 'start 20 background sleeps; count /proc'
-started 24 processes, limit 8
-$ docker run --rm --network none --memory 67108864b --memory-swap 67108864b ... sh -c 'buffer 200 MB'
-held 200 MB under a 64 MB limit
+$ docker info --format 'driver={{.CgroupDriver}} cgroup={{.CgroupVersion}}'
+driver=cgroupfs cgroup=2
+$ docker run --rm --pids-limit 8 ... sh -c 'start 10 background sleeps'
+sh: 0: Cannot fork
+$ docker run --rm --memory 64m --memory-swap 64m ... sh -c 'head -c 200000000 /dev/zero | tail'
+Killed
 ```
 
-The host refuses to create an agent container on such a daemon (`ErrBudgetsUnenforced`, task 1633); task 1636 gives the daemon a delegated cgroup.
+The ninth process is refused and the 200 MB buffer is killed under its 64 MB limit. The settings are
+`AGENT_DAEMON_IMAGE=docker:28-dind`, `AGENT_DAEMON_RUNTIME=sysbox-runc`, `AGENT_DAEMON_DATA=/var/lib/docker` and
+`AGENT_DAEMON_SOCKET_GROUP=1000`, after Sysbox is installed on the server (the contained installation document, task 1502, holds the steps).
 
 ## relay-protection: unsupported
 

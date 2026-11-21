@@ -146,9 +146,9 @@
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
-            "status": "unsupported",
-            "evidence": "docs/accounts/contained-capability-runs.md#container-runtime-unsupported",
-            "reason": "The agent daemon reports cgroup driver none, so every agent container's CPU, memory and process budgets are accepted and discarded (24 processes ran under a limit of 8, 200 MB under 64 MB); the daemon itself answers on its socket with the two pinned images, and a host without it refuses to serve (task 1633)."
+            "status": "supported",
+            "evidence": "docs/accounts/contained-capability-runs.md#container-runtime-supported",
+            "reason": "The agent daemon runs rootful under sysbox-runc with the cgroupfs driver, so every agent container's budgets hold: the ninth process under a limit of 8 is refused and a 200 MB buffer under 64 MB is killed (task 1636); it answers on its socket with the two pinned images, and a host without it refuses to serve (task 1633)."
         },
         {
             "capability": "container-runtime",
@@ -156,9 +156,9 @@
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "required_container",
-            "status": "unverified",
-            "evidence": "docs/accounts/start-handshake.md#the-protected-host",
-            "reason": "No protected host runs Docker for the journal yet (task 258), so no container runtime, rootless mode or kernel control has been checked on this host."
+            "status": "supported",
+            "evidence": "docs/accounts/contained-capability-runs.md#container-runtime-supported",
+            "reason": "The agent daemon and its budgets do not depend on the program: the same rootful daemon under sysbox-runc runs Codex's containers with the cgroupfs driver, so their budgets hold as Claude Code's do (task 1636)."
         }
     ]
 }
