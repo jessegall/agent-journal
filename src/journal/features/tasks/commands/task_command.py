@@ -158,8 +158,9 @@ class TaskCommand(Command):
         return 0
 
     def refuse_transfer(self, task: Task, plans: list[Plan], force: bool) -> None:
-        if task.delegated:
-            raise Rejection(f"task {task.id} is worker {self.tasks.holder(task).id}'s: release the worker first")
+        holder = self.tasks.holder(task)
+        if task.delegated and holder is not None:
+            raise Rejection(f"task {task.id} is worker {holder.id}'s: release the worker first")
         if not force and task.is_active():
             raise Rejection(f"task {task.id} is in progress: block it first, or --force moves it as it is")
         if not force and plans:

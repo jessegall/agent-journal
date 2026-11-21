@@ -58,7 +58,7 @@ class Receiver:
     def receive(self, raw_hook: Hook) -> Decision:
         self.recorder.begin(self.time_source.seconds())
         hook = raw_hook if raw_hook.researcher else self.worker_hooks.attributed(raw_hook)
-        environment = self.environments.lookup(hook.environment)
+        environment = self.environments.existing(hook.environment)
         with self.scope.environment(environment.row_id):
             if self.is_resent(hook):
                 return self.resent_answer(hook)

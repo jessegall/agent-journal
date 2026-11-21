@@ -1712,7 +1712,7 @@ def test_the_restart_notice_closes_in_every_environment_once_a_session_started_o
     from journal.repositories.environments import Environments
     from journal.repositories.notices import Notices
     from journal.version import VERSION
-    app.container.get(Environments).lookup("second")
+    app.container.get(Environments).ensure("second")
     restart, notices = app.container.get(SessionRestart), app.container.get(Notices)
     restart.notice()
     def open_everywhere():
@@ -3035,7 +3035,7 @@ def test_the_viewer_lists_an_environments_worktree_with_its_branch(app: App):
         subprocess.run(["git", *argv], cwd=root, capture_output=True, timeout=30)
     Worktree(root, "calm-river").created()
     environments = app.container.get(Environments)
-    rows = app.container.get(EnvironmentController).shown_page([environments.lookup("main"), environments.lookup("calm-river")])
+    rows = app.container.get(EnvironmentController).shown_page([environments.ensure("main"), environments.ensure("calm-river")])
     assert [(r["name"], r["worktree"]) for r in rows] == [("main", ""), ("calm-river", "worktree on worktree-calm-river")]
 
 

@@ -27,7 +27,8 @@ class Environments(Repository[Environment]):
     def namesakes(self, name: str, key: str) -> list[Environment]:
         return self.selected(self.query().filter(name=name).filter_unequal("key", key).order("id"))
 
-    def lookup(self, name: str) -> Environment:
+    def ensure(self, name: str) -> Environment:
+        """The environment of that name, created when it does not exist: only for creating and seeding, never for a caller's own name."""
         return self.name_row(name) or self.save(Environment(name=name), Actor.system())
 
     def entered(self, name: str) -> int:
