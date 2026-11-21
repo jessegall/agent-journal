@@ -5,10 +5,12 @@ import Button from '@kit/Button';
 import StateBadge from '@kit/StateBadge';
 import { computed } from 'vue';
 import { bindingLooks } from './bindingLooks';
+import TerminalAccess from './TerminalAccess.vue';
 
 /**
  * One connected folder: its machine and project, when it was last in contact, its state and, unless it is revoked
- * already, a box to choose it for revoking with others and its own Revoke action; what came of a revoke shows under it.
+ * already, a box to choose it for revoking with others and its own Revoke action; what came of a revoke shows under it,
+ * and its terminal sign-ins under Terminal access.
  */
 const props = defineProps<{
     binding: ProjectBindingRowData;
@@ -47,6 +49,7 @@ const lastContact = computed(() =>
                 {{ binding.projectLabel }} on {{ binding.machineLabel }}
             </div>
             <div class="text-small text-muted">{{ lastContact }}</div>
+            <TerminalAccess :sign-ins="binding.signIns" />
             <template v-if="outcome">
                 <div class="text-small text-text-2" aria-live="polite">
                     {{ outcome }}

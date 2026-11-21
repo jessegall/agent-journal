@@ -134,6 +134,18 @@ final class DeviceGrant extends Model implements ReadableModel
     }
 
     /**
+     * The terminal sign-ins of these bindings, newest first, in one read; a binding has a few shells that asked.
+     *
+     * @param  list<string>  $bindingIds
+     * @return list<self>
+     */
+    public static function listedOfBindings(array $bindingIds): array
+    {
+        return array_values(self::query()->whereIn('binding_id', $bindingIds)->orderByDesc('created_at')->orderByDesc('id')
+            ->readAll('a binding has a device grant per shell that asked')->get()->all());
+    }
+
+    /**
      * The generation the binding's next sign-in gets: one past its newest.
      */
     public static function nextGenerationOf(ProjectBinding $binding): int

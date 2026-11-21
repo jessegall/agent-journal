@@ -8,6 +8,7 @@ use App\Agents\Enums\HostProtocolVersion;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\ProjectBinding;
+use App\Connections\Values\InstallTicket;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -113,6 +114,25 @@ final class DeviceGrantsTest extends TestCase
 
         $refusal = $this->deviceCommand($grant, $binding)->assertForbidden();
         $this->assertStringContainsString('can no longer use the journal', (string) $refusal->json('message'));
+    }
+
+    public function test_revoking_one_terminal_sign_in_leaves_the_other_working(): void
+    {
+        $binding = $this->connected();
+        $first = $this->approvedGrant($binding);
+        $second = $this->approvedGrant($binding);
+        $revoked = DeviceGrant::query()->where('grant_digest', InstallTicket::digestOf($first))->sole();
+
+        $this->actingAs($this->owner)
+            ->deleteJson("/settings/project-connections/devices/{$revoked->id}")
+            ->assertNoContent();
+
+        $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('page.data.bindings.0.signIns', 2)
+            ->where('page.data.bindings.0.signIns.1.reference', $revoked->reference)
+            ->where('page.data.bindings.0.signIns.1.state', 'revoked'));
+        $this->deviceCommand($first, $binding)->assertUnauthorized();
+        $this->deviceCommand($second, $binding)->assertForbidden();
     }
 
     private function approvedGrant(string $binding): string
