@@ -2488,6 +2488,7 @@ class	DockSource
 class	DockSourceHandler
 class	DockSourceUnavailable
 class	DockSuggestion
+class	DockablePublicationData
 class	DockedOutput
 class	DockedPlan
 class	DockedSourceData
@@ -4290,6 +4291,7 @@ class	RecordCommentLocation
 class	RecordCommentView
 class	RecordCommented
 class	RecordComments
+class	RecordCommentsPartData
 class	RecordConversationVisit
 class	RecordDriverFailure
 class	RecordEvidenceReads
@@ -4315,6 +4317,7 @@ class	RecordIds
 class	RecordImmutable
 class	RecordInspection
 class	RecordLinkPolicy
+class	RecordLinksPartData
 class	RecordNotFound
 class	RecordPageData
 class	RecordPageReads
@@ -4351,6 +4354,7 @@ class	RecordScriptStepResultHandler
 class	RecordSettled
 class	RecordSettlement
 class	RecordSettling
+class	RecordSharePartData
 class	RecordSkillRead
 class	RecordSkillReadHandler
 class	RecordStopResults
@@ -7531,6 +7535,7 @@ interface	MessageRecipient
 interface	MessageSender
 interface	MonotonicClock
 interface	NamedInboxes
+interface	NativePartProvider
 interface	NativeTurnRecords
 interface	NavigationChildren
 interface	NavigationExpiry
@@ -7563,6 +7568,7 @@ interface	PlanResolver
 interface	Policy
 interface	PolicyCatalogue
 interface	PolicyProvider
+interface	PresentsLayout
 interface	ProfileLanguage
 interface	ProfileResolver
 interface	ProfileScripts
@@ -11298,6 +11304,7 @@ method	DeclaredCommand::needsRepeatableRead()
 method	DeclaredCommand::read()
 method	DeclaredCommand::retention()
 method	DeclaredLayoutData::__construct()
+method	DeclaredLayoutData::layout()
 method	DeclaredLayoutData::of()
 method	DeclaredPageGate::__construct()
 method	DeclaredPageGate::contextFor()
@@ -11721,6 +11728,10 @@ method	Dockable::composeDockCard()
 method	Dockable::identifyFor()
 method	DockableProvider::cardsFor()
 method	DockableProvider::requireReadable()
+method	DockablePublicationData::__construct()
+method	DockablePublicationData::dockSource()
+method	DockablePublicationData::layout()
+method	DockablePublicationData::of()
 method	DockableWindow::dockSource()
 method	DockedOutput::__construct()
 method	DockedOutput::composeDockCard()
@@ -11890,6 +11901,7 @@ method	DocumentsDomain::exports()
 method	DocumentsDomain::linkRecords()
 method	DocumentsDomain::mcpResources()
 method	DocumentsDomain::mcpTools()
+method	DocumentsDomain::nativeParts()
 method	DocumentsDomain::navigation()
 method	DocumentsDomain::numberedModels()
 method	DocumentsDomain::overviewContributions()
@@ -15114,6 +15126,7 @@ method	NamesUsedAnywhere::findingsIn()
 method	NamesUsedAnywhere::key()
 method	NamespacesDeclared::findingsIn()
 method	NamespacesDeclared::key()
+method	NativePartProvider::nativeParts()
 method	NativeTurnRecords::recordPrompt()
 method	NativeTurns::acknowledgeWake()
 method	NativeTurns::checkGeneration()
@@ -16322,6 +16335,7 @@ method	PresentList::parameters()
 method	PresentUserCounter::__construct()
 method	PresentUserCounter::count()
 method	PresentUserCounter::type()
+method	PresentsLayout::layout()
 method	PreventsRevisionUpdates::bootPreventsRevisionUpdates()
 method	PrintsComments::commentReport()
 method	PrintsComments::commentsReport()
@@ -17632,6 +17646,7 @@ method	RecordCommentView::__construct()
 method	RecordCommented::__construct()
 method	RecordComments::__construct()
 method	RecordComments::post()
+method	RecordCommentsPartData::__construct()
 method	RecordConversationVisit::__construct()
 method	RecordConversationVisit::compacted()
 method	RecordConversationVisit::confirmConversation()
@@ -17674,12 +17689,14 @@ method	RecordLinkPolicy::model()
 method	RecordLinker::link()
 method	RecordLinker::linkFrom()
 method	RecordLinker::unlink()
+method	RecordLinksPartData::__construct()
 method	RecordPageData::__construct()
 method	RecordPageData::dockSource()
 method	RecordPageData::fromDocumentView()
 method	RecordPageData::fromReportView()
 method	RecordPageReads::__construct()
 method	RecordPageReads::of()
+method	RecordPageRequest::chosenTab()
 method	RecordPageRequest::commentIdsToLocate()
 method	RecordPageRequest::commentsPage()
 method	RecordPageRequest::documentNumber()
@@ -17776,6 +17793,7 @@ method	RecordSettlement::casts()
 method	RecordSettlement::create()
 method	RecordSettlement::onRecord()
 method	RecordSettling::settle()
+method	RecordSharePartData::__construct()
 method	RecordSkillRead::__construct()
 method	RecordSkillReadHandler::__construct()
 method	RecordSkillReadHandler::handle()
@@ -18518,7 +18536,9 @@ method	ReportUnchangeable::snapshot()
 method	ReportUnchangeable::status()
 method	ReportView::__construct()
 method	ReportWindowResolver::__construct()
+method	ReportWindowResolver::detailsOf()
 method	ReportWindowResolver::read()
+method	ReportWindowResolver::textOf()
 method	ReportWorkspaceRead::__construct()
 method	ReportWorkspaceReadHandler::__construct()
 method	ReportWorkspaceReadHandler::handle()
@@ -22753,6 +22773,7 @@ method	UiDeclarations::assertUniqueKeys()
 method	UiDeclarations::check()
 method	UiDeclarations::childrenOf()
 method	UiDeclarations::declares()
+method	UiDeclarations::nativeParts()
 method	UiDeclarations::navigation()
 method	UiDeclarations::ownerOf()
 method	UiDeclarations::owners()
@@ -24672,6 +24693,7 @@ parameter	$narrower
 parameter	$native
 parameter	$nativeEvent
 parameter	$nativeId
+parameter	$nativeParts
 parameter	$nativePromptId
 parameter	$navigation
 parameter	$navigationId
@@ -28195,6 +28217,8 @@ property	DockSuggestion::$number
 property	DockSuggestion::$route
 property	DockSuggestion::$title
 property	DockSuggestion::$type
+property	DockablePublicationData::$shown
+property	DockablePublicationData::$source
 property	DockedOutput::$attempt
 property	DockedOutput::$lines
 property	DockedOutput::$part
@@ -28309,6 +28333,7 @@ property	DomainTypeWriter::$owners
 property	DomainUi::$key
 property	DomainUi::$name
 property	DomainUi::$namespace
+property	DomainUi::$nativeParts
 property	DomainUi::$navigation
 property	DomainUi::$pages
 property	DomainUi::$scriptFolder
@@ -31730,6 +31755,9 @@ property	RecordCommentView::$type
 property	RecordCommented::$commentId
 property	RecordComments::$commands
 property	RecordComments::$key
+property	RecordCommentsPartData::$comments
+property	RecordCommentsPartData::$reads
+property	RecordCommentsPartData::$target
 property	RecordConversationVisit::$outputs
 property	RecordDriverFailure::$facts
 property	RecordEvidenceReads::$processRunId
@@ -31771,6 +31799,8 @@ property	RecordInspection::$editing
 property	RecordInspection::$label
 property	RecordInspection::$links
 property	RecordInspection::$settlements
+property	RecordLinksPartData::$links
+property	RecordLinksPartData::$source
 property	RecordPageData::$abstract
 property	RecordPageData::$attention
 property	RecordPageData::$body
@@ -31853,6 +31883,7 @@ property	RecordScriptStepResult::$stepReference
 property	RecordScriptStepResultHandler::$guidance
 property	RecordSettled::$recordId
 property	RecordSettled::$recordType
+property	RecordSharePartData::$reference
 property	RecordSkillRead::$evidence
 property	RecordSkillRead::$sessionId
 property	RecordSkillRead::$skillKey
@@ -35579,6 +35610,7 @@ variable	$compatibility
 variable	$compiled
 variable	$completes
 variable	$completion
+variable	$component
 variable	$components
 variable	$composed
 variable	$composer
@@ -36678,6 +36710,7 @@ variable	$result	app/Bus/Support/EventUnitLifecycle.php
 variable	$result	app/Http/Support/Web/PageProps.php
 variable	$result	app/Scripts/Models/ProfileRun.php
 variable	$result	app/Scripts/Models/ProfileStepResult.php
+variable	$result	app/Ui/Declarations/Page.php
 variable	$resultBytes
 variable	$resumable
 variable	$resumed
@@ -36801,6 +36834,7 @@ variable	$settingsAge
 variable	$settingsByKey
 variable	$settled
 variable	$settlement
+variable	$settlements
 variable	$setupCheck
 variable	$shape
 variable	$share

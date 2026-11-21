@@ -12,6 +12,7 @@ use App\Docking\Sources\Contracts\DockOffers;
 use App\Reflection\Contracts\ReflectorFactory;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Declarations\ResolverDefinition;
+use App\Ui\Layout\PresentsLayout;
 use App\Web\Contracts\WindowResults as WindowResultsContract;
 use App\Web\Data\DeniedWindow;
 use App\Web\Data\FailedWindow;
@@ -63,8 +64,13 @@ final readonly class WindowResults implements WindowResultsContract
             $dockSource = $windowContent instanceof DockableWindow ? $windowContent->dockSource() : None::create();
             $offer = $dockSource->flatMap($this->offers->offerFor(...));
 
-            return $offer->map(fn (DockOfferData $made) => ReadyWindow::offering($windowContent->toArray(), $made))
-                ->getOrCall(fn () => ReadyWindow::of($windowContent->toArray()));
+            // A layout result is sent as the layout it presents, never with its server-only facts.
+            $shown = $windowContent instanceof PresentsLayout
+                ? $windowContent->layout()->toArray()
+                : $windowContent->toArray();
+
+            return $offer->map(fn (DockOfferData $made) => ReadyWindow::offering($shown, $made))
+                ->getOrCall(fn () => ReadyWindow::of($shown));
         } catch (
             AuthenticationException
             |TokenMismatchException

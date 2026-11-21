@@ -29,7 +29,16 @@ final class RecordPageRequest extends FormRequest
             'textVersion' => ['nullable', 'string', 'max:64'],
             'firstLine' => ['nullable', 'integer', 'min:1'],
             'lastLine' => ['nullable', 'integer', 'min:1'],
+            'tab' => ['nullable', 'string', 'max:40'],
         ];
+    }
+
+    /**
+     * The tab of the record's page the window chose; none chooses the page's first.
+     */
+    public function chosenTab(): string
+    {
+        return $this->string('tab')->toString();
     }
 
     /**

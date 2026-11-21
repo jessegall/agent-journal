@@ -12,7 +12,13 @@ const props = defineProps<{ action: string; label: string }>();
 const form = useForm({ title: '', abstract: '', body: '', about: '' });
 
 function submit(): void {
-    form.transform((fields) => ({ ...fields, about: fields.about.split(',').map((reference) => reference.trim()).filter((reference) => reference !== '') })).post(props.action, {
+    form.transform((fields) => ({
+        ...fields,
+        about: fields.about
+            .split(',')
+            .map((reference) => reference.trim())
+            .filter((reference) => reference !== ''),
+    })).post(props.action, {
         preserveScroll: true,
         onSuccess: () => form.reset(),
         ...formSendingHooks(),
@@ -22,11 +28,38 @@ function submit(): void {
 
 <template>
     <form class="flex flex-col gap-2" @submit.prevent="submit">
-        <input v-model="form.title" class="input" :aria-invalid="form.errors.title ? 'true' : undefined" aria-label="Title" placeholder="Title" />
-        <input v-model="form.abstract" class="input" :aria-invalid="form.errors.abstract ? 'true' : undefined" aria-label="Abstract" placeholder="One line saying what it is" />
-        <textarea v-model="form.body" class="input" :aria-invalid="form.errors.body ? 'true' : undefined" aria-label="Body" rows="6" placeholder="Markdown text" />
-        <input v-model="form.about" class="input" :aria-invalid="form.errors.about ? 'true' : undefined" aria-label="About" placeholder="What it is about, such as task 12, plan 3" />
-        <Button type="submit" variant="primary" :pending="form.processing">{{ label }}</Button>
+        <input
+            v-model="form.title"
+            class="input"
+            :aria-invalid="form.errors.title ? 'true' : undefined"
+            aria-label="Title"
+            placeholder="Title"
+        />
+        <input
+            v-model="form.abstract"
+            class="input"
+            :aria-invalid="form.errors.abstract ? 'true' : undefined"
+            aria-label="Abstract"
+            placeholder="One line saying what it is"
+        />
+        <textarea
+            v-model="form.body"
+            class="input"
+            :aria-invalid="form.errors.body ? 'true' : undefined"
+            aria-label="Body"
+            rows="6"
+            placeholder="Markdown text"
+        />
+        <input
+            v-model="form.about"
+            class="input"
+            :aria-invalid="form.errors.about ? 'true' : undefined"
+            aria-label="About"
+            placeholder="What it is about, such as task 12, plan 3"
+        />
+        <Button type="submit" variant="primary" :pending="form.processing">{{
+            label
+        }}</Button>
         <FormErrors :errors="form.errors" />
     </form>
 </template>

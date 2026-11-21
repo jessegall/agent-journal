@@ -15,11 +15,20 @@ defineProps<{ data: RecordPageData; editing: string; settleAction: string }>();
             <span>Editing: {{ editing }}</span>
             <span>Attention: {{ data.attention }}</span>
         </p>
-        <template v-for="settlement in data.settlements" :key="settlement.settledAt">
-            <p class="text-small text-text-3">Settled {{ settlement.settledAt }} by {{ settlement.actorType }} {{ settlement.actorId }}: {{ settlement.reason }}</p>
+        <template
+            v-for="settlement in data.settlements"
+            :key="settlement.settledAt"
+        >
+            <p class="text-small text-text-3">
+                Settled {{ settlement.settledAt }} by {{ settlement.actorType }}
+                {{ settlement.actorId }}: {{ settlement.reason }}
+            </p>
         </template>
         <template v-if="data.attention === 'active'">
-            <SettleForm :action="settleAction" :revision="data.revision ?? '1'" />
+            <SettleForm
+                :action="settleAction"
+                :revision="data.revision ?? '1'"
+            />
         </template>
     </section>
 </template>

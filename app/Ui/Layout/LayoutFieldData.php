@@ -19,7 +19,7 @@ final class LayoutFieldData extends Data
      */
     public function __construct(
         public readonly string $name,
-        public readonly string $value,
+        public readonly string $value = '',
         public readonly array $clears = [],
     ) {}
 }

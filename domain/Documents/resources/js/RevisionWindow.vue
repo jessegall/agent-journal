@@ -7,13 +7,14 @@ import Reader from '@kit/Reader';
  * text.
  */
 defineProps<{ data: RevisionPageData }>();
-
 </script>
 
 <template>
     <Reader :title="data.title">
         <template #meta>
-            <span class="font-mono tabular-nums">doc {{ data.documentNumber }}, revision {{ data.number }}</span>
+            <span class="font-mono tabular-nums"
+                >doc {{ data.documentNumber }}, revision {{ data.number }}</span
+            >
             <template v-if="data.historical">
                 <span class="text-warn">historical</span>
                 <a :href="`/documents/docs/${data.documentNumber}`">Current</a>

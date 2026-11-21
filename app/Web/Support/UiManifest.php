@@ -135,6 +135,10 @@ final readonly class UiManifest
             $components[$section->componentName()] = $this->fromRoot($root, $section->componentFile);
         }
 
+        foreach ($this->declarations->nativeParts() as $name => $file) {
+            $components[$name] = $this->fromRoot($root, $file);
+        }
+
         ksort($components);
 
         return $components;

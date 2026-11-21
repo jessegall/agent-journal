@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Ui\Declarations;
 
+use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\PageOption;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\VisibilityCheck;
@@ -11,7 +12,7 @@ use App\Ui\Enums\Icon;
 use App\Ui\Enums\PageDestination;
 use App\Ui\Enums\PageSkeleton;
 use App\Ui\Exceptions\InvalidPageDeclaration;
-use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\PresentsLayout;
 use Spatie\LaravelData\Data;
 
 /**
@@ -73,7 +74,9 @@ final class Page
      */
     public static function layout(string $key, string $title, Icon $icon, string $resolver): self
     {
-        if (ResolverDataClass::of($resolver) !== DeclaredLayoutData::class) {
+        $result = (string) ResolverDataClass::of($resolver);
+
+        if ($result === '' || ! Reflector::factory()->isSubclassOf($result, PresentsLayout::class)) {
             throw InvalidPageDeclaration::readerReturnsNoLayout($key, $resolver);
         }
 
@@ -83,7 +86,7 @@ final class Page
             $icon,
             $key,
             $resolver,
-            DeclaredLayoutData::class,
+            $result,
             DomainUi::DECLARED_LAYOUT,
             FloatSize::standard(),
             isDeclared: true,

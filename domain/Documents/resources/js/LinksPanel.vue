@@ -15,11 +15,19 @@ const props = defineProps<{ source: string; links: RecordCard[] }>();
 const form = useForm({ source: props.source, target: '' });
 
 function add(): void {
-    form.post(addLink.url(), { preserveScroll: true, onSuccess: () => form.reset('target'), ...formSendingHooks() });
+    form.post(addLink.url(), {
+        preserveScroll: true,
+        onSuccess: () => form.reset('target'),
+        ...formSendingHooks(),
+    });
 }
 
 function remove(link: RecordCard): void {
-    router.post(removeLink.url(), { source: props.source, target: link.label }, { preserveScroll: true, ...formSendingHooks() });
+    router.post(
+        removeLink.url(),
+        { source: props.source, target: link.label },
+        { preserveScroll: true, ...formSendingHooks() },
+    );
 }
 </script>
 
@@ -36,8 +44,18 @@ function remove(link: RecordCard): void {
             </div>
         </template>
         <form class="flex gap-2" @submit.prevent="add">
-            <input v-model="form.target" class="input flex-1" maxlength="64" placeholder="Link to, such as task 7 or plan 3" />
-            <Button type="submit" :pending="form.processing" :disabled="form.processing || form.target.trim() === ''">Add link</Button>
+            <input
+                v-model="form.target"
+                class="input flex-1"
+                maxlength="64"
+                placeholder="Link to, such as task 7 or plan 3"
+            />
+            <Button
+                type="submit"
+                :pending="form.processing"
+                :disabled="form.processing || form.target.trim() === ''"
+                >Add link</Button
+            >
             <FormErrors :errors="form.errors" />
         </form>
     </section>
