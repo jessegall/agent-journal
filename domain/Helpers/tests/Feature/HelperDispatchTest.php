@@ -7,10 +7,14 @@ namespace Domain\Helpers\Tests\Feature;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\StartReservations;
+use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Models\Agent;
+use App\Agents\Support\HostCapability;
+use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\StartReceipt;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
@@ -164,7 +168,19 @@ final class HelperDispatchTest extends TestCase
 
     public function test_a_nested_container_refusal_rolls_back_the_purpose_identity_agent_and_job(): void
     {
-        $this->app->forgetInstance(HostCapabilities::class);
+        // A host whose account transport into a nested container is not proved: the evidence file has since proved
+        // it for the pinned builds, so the refusal is set here rather than read from that file.
+        $this->app->instance(HostCapabilities::class, new class implements HostCapabilities
+        {
+            public function capability(HostCapabilityQuery $query): HostCapability
+            {
+                $status = $query->capability === HostCapabilityType::AccountTransport
+                    ? CapabilityStatusType::Unverified
+                    : CapabilityStatusType::Supported;
+
+                return new HostCapability($query, $status, 'docs/x.md', 'Not proved on this host.');
+            }
+        });
         $agents = Agent::query()->count();
 
         $this->assertThrows(
