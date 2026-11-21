@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Hooks\Delivery;
 
-use App\Hooks\StateEvents\StateEventScope;
 use App\Contracts\Event;
+use App\Hooks\StateEvents\StateEventDispatch;
+use App\Hooks\StateEvents\StateEventPayload;
+use App\Hooks\StateEvents\StateEventScope;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Events\Dispatcher;
 use stdClass;
-use App\Hooks\Delivery\StateEventBridge;
-use App\Hooks\StateEvents\StateEventDispatch;
-use App\Hooks\StateEvents\StateEventPayload;
 
 /**
  * Carries an event's captured scope through Laravel's dispatch and transaction scheduling.
@@ -29,6 +28,14 @@ final class StateEventDispatcher extends Dispatcher
     {
         parent::__construct($container);
         $this->payloadKey = new stdClass();
+    }
+
+    /**
+     * Builds every class listener from this container from now on: Octane gives it the request's own on each request.
+     */
+    public function useContainer(Container $container): void
+    {
+        $this->container = $container;
     }
 
     /**

@@ -472,6 +472,8 @@ case	LaunchCandidateRank::CompatibleConversation
 case	LaunchCandidateRank::ExactConversation
 case	LaunchCandidateRank::OtherPurpose
 case	LaunchCandidateRank::SamePurpose
+case	LaunchProfileType::ProtectedAccount
+case	LaunchProfileType::Standard
 case	LifecycleStage::Enter
 case	LifecycleStage::Event
 case	LifecycleStage::Exit
@@ -2693,6 +2695,7 @@ class	GenerateUiManifest
 class	GenerationStatus
 class	GitRules
 class	GitWorkspace
+class	GiveRequestContainerToEvents
 class	GlobalGroup
 class	GlobalGroupMissing
 class	GrammarContext
@@ -6699,6 +6702,7 @@ enum	JobState
 enum	JournalRouteType
 enum	KeywordCategory
 enum	LaunchCandidateRank
+enum	LaunchProfileType
 enum	LifecycleStage
 enum	LifecycleState
 enum	MenuEntryState
@@ -12354,6 +12358,7 @@ method	GitRules::valued()
 method	GitWorkspace::__construct()
 method	GitWorkspace::mount()
 method	GitWorkspace::preparation()
+method	GiveRequestContainerToEvents::handle()
 method	GlobalGroup::installJournal()
 method	GlobalGroup::journal()
 method	GlobalGroupMissing::named()
@@ -13202,6 +13207,9 @@ method	LaunchLimits::enforceFences()
 method	LaunchLimits::stop()
 method	LaunchLimits::stopOverdue()
 method	LaunchProfileKey::__construct()
+method	LaunchProfileType::capabilities()
+method	LaunchProfileType::needsAccount()
+method	LaunchProfileType::user()
 method	Layout::casts()
 method	Layout::create()
 method	Layout::saveNameAndShape()
@@ -14076,6 +14084,7 @@ method	MountRules::accountMounts()
 method	MountRules::assertContainedSource()
 method	MountRules::assertLocal()
 method	MountRules::assertPermits()
+method	MountRules::bindsAccount()
 method	MountRules::contained()
 method	MountRules::isDaemonFolder()
 method	MountRules::local()
@@ -20007,6 +20016,7 @@ method	StateEventDispatcher::getListeners()
 method	StateEventDispatcher::hasBridge()
 method	StateEventDispatcher::invokeListeners()
 method	StateEventDispatcher::parseEventAndPayload()
+method	StateEventDispatcher::useContainer()
 method	StateEventEffects::__construct()
 method	StateEventEffects::apply()
 method	StateEventEffects::applyOrigin()
@@ -22852,6 +22862,7 @@ parameter	$later
 parameter	$latest
 parameter	$latestLine
 parameter	$launch
+parameter	$launchProfile
 parameter	$launchReference
 parameter	$launches
 parameter	$layout
@@ -25812,6 +25823,7 @@ property	ContainerManifest::$attachable
 property	ContainerManifest::$budgets
 property	ContainerManifest::$capabilities
 property	ContainerManifest::$image
+property	ContainerManifest::$launchProfile
 property	ContainerManifest::$mounts
 property	ContainerManifest::$network
 property	ContainerManifest::$noNewPrivileges
@@ -34357,6 +34369,7 @@ variable	$startedEntry
 variable	$starter
 variable	$starting
 variable	$starts
+variable	$startsAsProfile
 variable	$startsExpansion
 variable	$startsOwnQuery
 variable	$startup

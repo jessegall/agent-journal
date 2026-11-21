@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Hooks\Listeners\GiveRequestContainerToEvents;
 use Laravel\Octane\Contracts\OperationTerminated;
 use Laravel\Octane\Events\OperationReleased;
 use Laravel\Octane\Events\RequestHandled;
@@ -77,6 +78,7 @@ return [
         RequestReceived::class => [
             ...Octane::prepareApplicationForNextOperation(),
             ...Octane::prepareApplicationForNextRequest(),
+            GiveRequestContainerToEvents::class,
             //
         ],
 
@@ -90,6 +92,7 @@ return [
 
         TaskReceived::class => [
             ...Octane::prepareApplicationForNextOperation(),
+            GiveRequestContainerToEvents::class,
             //
         ],
 
@@ -99,6 +102,7 @@ return [
 
         TickReceived::class => [
             ...Octane::prepareApplicationForNextOperation(),
+            GiveRequestContainerToEvents::class,
             //
         ],
 
