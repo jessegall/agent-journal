@@ -34,6 +34,7 @@ use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverType;
+use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RecoveryAction;
 use App\Agents\Enums\RequestOutcome;
@@ -41,6 +42,7 @@ use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\DriverRequestRecovered;
+use App\Agents\Exceptions\AccountFolderInvalid;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Exceptions\KeyScriptRefused;
@@ -49,6 +51,8 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\DriverTurn;
+use App\Agents\Models\SessionPolicy;
+use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\EnrolledHost;
@@ -57,8 +61,18 @@ use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\StartGrant;
 use App\Agents\Values\DriverReceipt;
+use App\Agents\Values\ExecutionBudgets;
+use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\ScriptProgress;
+use App\Agents\Values\StartPolicy;
+use App\Agents\Values\StopConditions;
 use App\Bus\Contracts\CommandBus;
+use App\Profiles\Models\Account;
+use App\Profiles\Models\ActiveAccount;
+use App\Profiles\Values\AccountLabel;
+use App\Profiles\Values\ProfileBase;
+use App\Profiles\Values\ProfileStartPolicy;
+use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Spatie\LaravelData\Optional;
@@ -319,6 +333,89 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertInstanceOf(StartGrant::class, $first);
         $this->assertNotSame('', $first->token);
         $this->assertNull($second);
+    }
+
+    public function test_a_start_grant_of_a_session_on_the_protected_host_carries_no_container(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+
+        $grant = $this->asSystem(new ClaimStartGrant($host->hostId, $opened->runtimeId));
+
+        $this->assertNull($grant->container);
+        $this->assertNull($grant->toArray()['container']);
+    }
+
+    public function test_a_contained_main_sessions_grant_carries_its_attachable_container(): void
+    {
+        $account = Account::create(HookProgram::ClaudeCode, AccountLabel::from('Plain'), '/journal/accounts/01plain');
+        ActiveAccount::lockedFor(HookProgram::ClaudeCode)->select($account);
+        [$host, $opened] = $this->openRuntime();
+        $this->app->instance(
+            ArrangementSetting::class,
+            ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
+        );
+        $image = 'journal-agent@sha256:'.str_repeat('a', 64);
+        $execution = ExecutionPolicy::make(
+            ExecutionModeType::RequiredContainer,
+            $image,
+            ProfileStartPolicy::WORKSPACE,
+            ExecutionBudgets::mainAgent(),
+            [],
+            ProfileBase::mainAgent()->isAttachable(),
+        );
+        SessionPolicy::create(
+            AgentSession::query()->findOrFail($opened->sessionId),
+            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), StopConditions::make([]), $execution, null, null, null),
+        );
+
+        $grant = $this->asSystem(new ClaimStartGrant($host->hostId, $opened->runtimeId));
+        $manifest = $grant->container;
+
+        $this->assertNotNull($manifest);
+        $this->assertTrue($manifest->attachable);
+        $this->assertSame($image, $manifest->image);
+        $this->assertSame("acme-{$opened->sessionId}", $manifest->network);
+        $this->assertSame(
+            ['/srv/journal/workspaces/main', '/srv/journal/accounts/01plain', "acme-history-{$opened->sessionId}"],
+            array_map(fn ($mount) => $mount->source, $manifest->mounts),
+        );
+        $this->assertTrue($manifest->mounts[0]->writable);
+        $wire = json_decode(json_encode($grant->toArray(), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertTrue($wire['container']['attachable']);
+        $this->assertSame('daemon-bind', $wire['container']['mounts'][0]['type']);
+    }
+
+    public function test_a_contained_session_whose_account_folder_is_no_plain_id_gets_no_grant(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $this->app->instance(
+            ArrangementSetting::class,
+            ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}'),
+        );
+        $execution = ExecutionPolicy::make(
+            ExecutionModeType::RequiredContainer,
+            'journal-agent@sha256:'.str_repeat('a', 64),
+            ProfileStartPolicy::WORKSPACE,
+            ExecutionBudgets::mainAgent(),
+            [],
+            true,
+        );
+        SessionPolicy::create(
+            AgentSession::query()->findOrFail($opened->sessionId),
+            new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), StopConditions::make([]), $execution, null, null, null),
+        );
+
+        $this->assertThrows(
+            fn () => $this->asSystem(new ClaimStartGrant($host->hostId, $opened->runtimeId)),
+            AccountFolderInvalid::class,
+        );
+    }
+
+    public function test_helpers_are_never_attachable(): void
+    {
+        $this->assertTrue(ProfileBase::mainAgent()->isAttachable());
+        $this->assertFalse(ProfileBase::readOnlyHelper()->isAttachable());
+        $this->assertFalse(ProfileBase::writingHelper()->isAttachable());
     }
 
     public function test_another_host_cannot_take_a_runtimes_start_grant(): void

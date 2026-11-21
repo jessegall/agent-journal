@@ -43,23 +43,26 @@ final readonly class ContainerManifest
         public array $mounts,
         public array $publishedPorts,
         public ExecutionBudgets $budgets,
+        public bool $attachable,
     ) {}
 
     /**
-     * The manifest of one prepared start: its workspace mounted at /workspace as its arrangement places it, writable
-     * only when the start's access declaration grants changing workspace files, whatever the profile is called.
+     * The manifest of one session's start: its workspace mounted at /workspace as its arrangement places it, writable
+     * only when the start's access declaration grants changing workspace files, whatever the profile is called; its
+     * program its own terminal process when the execution policy makes it attachable.
      *
      * @throws ManifestRefused
      */
     public static function compile(
-        PreparedStart $start,
+        string $sessionId,
+        string $workspace,
         AccessPolicy $access,
         ExecutionPolicy $policy,
         string $network,
         MountRules $rules,
         string|null $resumedSessionId,
     ): self {
-        $mount = $rules->workspaceMount($start->workspace, $access->changesFiles());
+        $mount = $rules->workspaceMount($workspace, $access->changesFiles());
 
         return self::make(
             (string) $policy->imageReference,
@@ -68,11 +71,12 @@ final readonly class ContainerManifest
             [],
             false,
             $network,
-            [$mount, ...$rules->accountMounts(), ...$rules->sessionMounts($start->sessionId, $resumedSessionId)],
+            [$mount, ...$rules->accountMounts(), ...$rules->sessionMounts($sessionId, $resumedSessionId)],
             [],
             $policy->budgets,
             $rules,
             SecurityOptions::none(),
+            $policy->attachable,
         );
     }
 
@@ -95,6 +99,7 @@ final readonly class ContainerManifest
         ExecutionBudgets $budgets,
         MountRules $rules,
         SecurityOptions $securityOptions,
+        bool $attachable = false,
     ): self {
         if (preg_match('/(^|@)sha256:[0-9a-f]{64}$/', $image) !== 1) {
             throw ManifestRefused::because("the image {$image} is not named by its digest");
@@ -127,6 +132,7 @@ final readonly class ContainerManifest
             $mounts,
             [],
             $budgets,
+            $attachable,
         );
     }
 }

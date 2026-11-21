@@ -171,6 +171,7 @@ final readonly class PolicyResolver
                 ProfileStartPolicy::WORKSPACE,
                 $type->containedBudgets,
                 [],
+                $type->isAttachable(),
             );
         }
 

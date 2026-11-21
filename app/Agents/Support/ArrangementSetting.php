@@ -23,6 +23,12 @@ use App\Programs\Enums\HookProgram;
  */
 final readonly class ArrangementSetting
 {
+    /**
+     * The one environment version 6 runs per installation, whose workspace source a contained start mounts; the
+     * skill conditions read the same name.
+     */
+    public const string ENVIRONMENT = 'main';
+
     private function __construct(
         public ArrangementType $arrangement,
         private string $installationName,
@@ -64,6 +70,15 @@ final readonly class ArrangementSetting
             $account === null ? null : MountRules::accountFolder($account->folder()),
             $this->workspaceSources->for($environment),
         );
+    }
+
+    /**
+     * The name a contained session's container and its own network share on the agent daemon: the installation name
+     * and the session, so the host's sweep tells this installation's sessions apart (task 1472).
+     */
+    public function sessionContainerName(string $sessionId): string
+    {
+        return "{$this->installationName}-{$sessionId}";
     }
 
     /**

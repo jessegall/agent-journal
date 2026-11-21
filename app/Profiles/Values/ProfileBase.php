@@ -39,6 +39,9 @@ final readonly class ProfileBase
         public bool $coordinator,
         // What its sessions may use in a container on a server; locally every start keeps the defaults.
         public ExecutionBudgets $containedBudgets,
+        // Whether its program is its container's own terminal process, which the host attaches to, again after a
+        // restart: the main agent's is; a helper runs without a terminal.
+        public bool $attachable,
     ) {}
 
     /**
@@ -54,7 +57,7 @@ final readonly class ProfileBase
             ...self::running(),
         ], [
             HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
-        ], ExecutionModeType::ProtectedHost, false, [], OfflineReplyMode::Neutral, true, ExecutionBudgets::mainAgent());
+        ], ExecutionModeType::ProtectedHost, false, [], OfflineReplyMode::Neutral, true, ExecutionBudgets::mainAgent(), true);
     }
 
     /**
@@ -62,12 +65,25 @@ final readonly class ProfileBase
      */
     public static function readOnlyHelper(): self
     {
-        return new self('read-only-helper', 'Read-only helper', 'sonnet', [
-            ...self::journalWork(),
-            AccessType::Execute,
-        ], [
-            HostAccess::root('.', [...self::looking(), AccessType::Execute]),
-        ], ExecutionModeType::RequiredContainer, false, [], OfflineReplyMode::Refuse, false, ExecutionBudgets::defaults());
+        return new self(
+            'read-only-helper',
+            'Read-only helper',
+            'sonnet',
+            [
+                ...self::journalWork(),
+                AccessType::Execute,
+            ],
+            [
+                HostAccess::root('.', [...self::looking(), AccessType::Execute]),
+            ],
+            ExecutionModeType::RequiredContainer,
+            false,
+            [],
+            OfflineReplyMode::Refuse,
+            false,
+            ExecutionBudgets::defaults(),
+            false
+        );
     }
 
     /**
@@ -82,7 +98,7 @@ final readonly class ProfileBase
             HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
         ], ExecutionModeType::RequiredContainer, true, [
             StopCondition::cleanWorktree(),
-        ], OfflineReplyMode::Refuse, false, ExecutionBudgets::defaults());
+        ], OfflineReplyMode::Refuse, false, ExecutionBudgets::defaults(), false);
     }
 
     /**
@@ -118,6 +134,14 @@ final readonly class ProfileBase
     public function defaultExecutionMode(): ExecutionModeType
     {
         return $this->executionMode;
+    }
+
+    /**
+     * Whether a contained start's program is its container's own terminal process, which the host attaches to.
+     */
+    public function isAttachable(): bool
+    {
+        return $this->attachable;
     }
 
     /**

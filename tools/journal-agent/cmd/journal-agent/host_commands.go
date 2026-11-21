@@ -151,6 +151,12 @@ func serve(arguments []string) error {
 	journal := client.New(enrollment).WithArrangement(string(arrangement))
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket}
+	if arrangement.IsContained() {
+		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
+		opener.containers = host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
+		opener.installation = installation
+		opener.reportExit = journal.ReportExit
+	}
 	preparation := startPreparation(journal, *stateFolder, *installationFolder)
 	reports := &host.StartReports{Folder: *stateFolder}
 	sessions := host.ContainerSessions{}
@@ -218,6 +224,11 @@ type runtimeOpener struct {
 	journalURL  string
 	hookCommand string
 	socket      *host.AttachSocket
+	// containers, installation and reportExit run a contained session's program in its own container and report its
+	// end; a local host has none of them.
+	containers   host.Containers
+	installation host.InstallationName
+	reportExit   func(ctx context.Context, report client.LivenessReport) error
 }
 
 // defaultRows and defaultColumns size a terminal the host opens before any user attaches to it.
@@ -238,6 +249,17 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	environment, err := cleanEnvironmentOf(opener.stateFolder, opener.installationFolder, runtimeID, prepared)
 	if err != nil {
 		return nil, err
+	}
+	manifest, contained, err := prepared.ContainerManifest()
+	if err != nil {
+		return nil, err
+	}
+	if contained {
+		if grant.Runtime.DriverType != drivers.TerminalDriverType || opener.installation == "" {
+			return nil, fmt.Errorf("runtime %s runs contained under the %s driver, which this host runs in no container",
+				runtimeID, grant.Runtime.DriverType)
+		}
+		return opener.containedTerminalRuntime(runtimeID, prepared, profile, manifest)
 	}
 	if profile.Program() == "codex" {
 		return opener.codexRuntime(runtimeID, prepared, environment)

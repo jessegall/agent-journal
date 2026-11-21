@@ -67,7 +67,8 @@ final class ContainerManifestTest extends TestCase
     public function test_a_writer_start_compiles_a_manifest_with_exactly_the_listed_controls(): void
     {
         $manifest = ContainerManifest::compile(
-            $this->prepared(),
+            $this->prepared()->sessionId,
+            $this->prepared()->workspace,
             ProfileBase::writingHelper()->defaultAccess(),
             $this->policy(),
             'journal-start-1',
@@ -105,7 +106,8 @@ final class ContainerManifestTest extends TestCase
         $this->assertSame(2, $manifest->budgets->cpuCores);
         $this->assertFalse(
             ContainerManifest::compile(
-                $this->prepared(),
+                $this->prepared()->sessionId,
+                $this->prepared()->workspace,
                 ProfileBase::readOnlyHelper()->defaultAccess(),
                 $this->policy(),
                 'journal-start-1',
@@ -121,7 +123,8 @@ final class ContainerManifestTest extends TestCase
         $readerStart = $this->prepared();
 
         $manifest = ContainerManifest::compile(
-            $readerStart,
+            $readerStart->sessionId,
+            $readerStart->workspace,
             $writerAccess,
             $this->policy(),
             'journal-start-1',
@@ -323,7 +326,8 @@ final class ContainerManifestTest extends TestCase
     public function test_a_local_manifest_goes_on_the_wire_as_before_with_its_bind_type(): void
     {
         $manifest = ContainerManifest::compile(
-            $this->prepared(),
+            $this->prepared()->sessionId,
+            $this->prepared()->workspace,
             ProfileBase::writingHelper()->defaultAccess(),
             $this->policy(),
             'journal-start-1',
@@ -370,7 +374,8 @@ final class ContainerManifestTest extends TestCase
         $accountB = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01b2', 1);
 
         $manifestOf = fn (SelectedAccount $account) => ContainerManifest::compile(
-            $this->prepared(),
+            $this->prepared()->sessionId,
+            $this->prepared()->workspace,
             ProfileBase::writingHelper()->defaultAccess(),
             $this->policy(),
             'acme-s1',
