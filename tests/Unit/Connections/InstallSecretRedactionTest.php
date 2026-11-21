@@ -8,8 +8,8 @@ use App\Connections\Logging\InstallSecretRedaction;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Log;
 use Monolog\Level;
-use Monolog\LogRecord;
 use Monolog\Logger;
+use Monolog\LogRecord;
 use Tests\TestCase;
 
 /**
