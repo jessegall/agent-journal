@@ -18,8 +18,9 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 /**
- * Hands a host its pending requests in turn per runtime. A wake of an idle session with no pending work anywhere is
- * settled as NoWork here and never reaches the host, so no turn starts for nothing.
+ * Hands a host its pending requests in turn per runtime; a session's stop waits until its helpers are proven stopped.
+ * A wake of an idle session with no pending work anywhere is settled as NoWork here and never reaches the host, so no
+ * turn starts for nothing.
  */
 final readonly class ClaimDriverRequestsHandler implements CommandHandler
 {
@@ -56,8 +57,15 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
         $now = CarbonImmutable::now();
         $claimed = [];
+        $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(
+            $runtimes->pluck('agent_session_id')->values()->all(),
+        );
 
         foreach ($control as $request) {
+            if ($this->waitsOnHelpers($request, $runtimes->get($request->agent_runtime_id), $waitingOnHelpers)) {
+                continue;
+            }
+
             $request->stage($now);
             $claimed[] = $request->claimed();
         }
@@ -86,6 +94,17 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         }
 
         return new ClaimedRequests($claimed);
+    }
+
+    /**
+     * A stop of a session whose helpers are not all proven stopped stays waiting, so the helpers end first.
+     *
+     * @param  list<string>  $waitingOnHelpers
+     */
+    private function waitsOnHelpers(DriverRequest $request, AgentRuntime $runtime, array $waitingOnHelpers): bool
+    {
+        return $request->operation === DriverOperation::Stop
+            && in_array($runtime->agent_session_id, $waitingOnHelpers, true);
     }
 
     private function settledWithoutWork(DriverRequest $request, AgentRuntime $runtime): bool

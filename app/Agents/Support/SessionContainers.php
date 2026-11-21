@@ -6,6 +6,7 @@ namespace App\Agents\Support;
 
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\AccountFolderInvalid;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Exceptions\WorkspaceSourceMissing;
@@ -15,9 +16,9 @@ use App\Agents\Values\SelectedAccount;
 
 /**
  * The container a runtime's session runs in, compiled when the host takes its start grant: its frozen policy's image,
- * budgets and access, the workspace its environment's source gives, its own account folder and history, and its own
- * network, all named for the installation and the session. A session that runs on the protected host, or one opened
- * without a frozen policy, has none.
+ * budgets and access, the workspace its environment's source gives (a writing helper's own clone of it), its own
+ * account folder and history, and its own network, all named for the installation and the session. A session that
+ * runs on the protected host, or one opened without a frozen policy, has none.
  */
 final readonly class SessionContainers
 {
@@ -51,7 +52,7 @@ final readonly class SessionContainers
         return ContainerManifest::compile(
             $runtime->agent_session_id,
             $runtime->canonical_folder,
-            $policy->access,
+            WorkspaceUse::of($policy->access, $runtime->session),
             $policy->execution,
             $this->arrangement->sessionContainerName($runtime->agent_session_id),
             $rules,

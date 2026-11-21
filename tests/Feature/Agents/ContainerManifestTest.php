@@ -12,11 +12,13 @@ use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\StartOriginType;
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\AccountFolderInvalid;
 use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Exceptions\ContainerUnavailable;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\ContainerManifest;
@@ -55,6 +57,9 @@ final class ContainerManifestTest extends TestCase
     use StartsAgentRequests;
     use WithActiveAccount;
 
+    private const string GIT_SOURCE = '{"main":{"git":"git@github.com:acme/shop.git","revision":"main",'
+        .'"deploy_key_secret":"deploy_key_main"}}';
+
     private const string IMAGE = 'registry.example/journal-helper@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
     protected function setUp(): void
@@ -69,7 +74,7 @@ final class ContainerManifestTest extends TestCase
         $manifest = ContainerManifest::compile(
             $this->prepared()->sessionId,
             $this->prepared()->workspace,
-            ProfileBase::writingHelper()->defaultAccess(),
+            WorkspaceUse::Shared,
             $this->policy(),
             'journal-start-1',
             MountRules::local(),
@@ -108,7 +113,7 @@ final class ContainerManifestTest extends TestCase
             ContainerManifest::compile(
                 $this->prepared()->sessionId,
                 $this->prepared()->workspace,
-                ProfileBase::readOnlyHelper()->defaultAccess(),
+                WorkspaceUse::ReadOnly,
                 $this->policy(),
                 'journal-start-1',
                 MountRules::local(),
@@ -117,22 +122,76 @@ final class ContainerManifestTest extends TestCase
         );
     }
 
-    public function test_the_mount_follows_the_access_declaration_not_the_type(): void
+    public function test_the_mount_follows_the_access_declaration_and_the_parent_not_the_profile_name(): void
     {
-        $writerAccess = ProfileBase::writingHelper()->defaultAccess();
-        $readerStart = $this->prepared();
+        $main = new AgentSession();
+        $helper = new AgentSession();
+        $helper->parent_session_id = 'session-main';
+
+        $this->assertSame(WorkspaceUse::ReadOnly, WorkspaceUse::of(ProfileBase::readOnlyHelper()->defaultAccess(), $helper));
+        $this->assertSame(WorkspaceUse::OwnCheckout, WorkspaceUse::of(ProfileBase::writingHelper()->defaultAccess(), $helper));
+        $this->assertSame(WorkspaceUse::Shared, WorkspaceUse::of(ProfileBase::mainAgent()->defaultAccess(), $main));
+        $this->assertSame(WorkspaceUse::Shared, WorkspaceUse::of(ProfileBase::writingHelper()->defaultAccess(), $main));
+    }
+
+    public function test_a_contained_read_only_helper_mounts_the_mains_workspace_read_only_its_history_and_account(): void
+    {
+        $setting = ArrangementSetting::fromConfig('contained', 'acme', self::GIT_SOURCE);
+        $account = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01b2', 1);
 
         $manifest = ContainerManifest::compile(
-            $readerStart->sessionId,
-            $readerStart->workspace,
-            $writerAccess,
+            'helper-1',
+            '/ignored',
+            WorkspaceUse::ReadOnly,
             $this->policy(),
-            'journal-start-1',
-            MountRules::local(),
+            'acme-helper-1',
+            $setting->mountRules($account, 'main'),
             null,
         );
 
-        $this->assertTrue($manifest->mounts[0]->writable);
+        $this->assertEquals(
+            [
+                ManifestMount::volume('acme-workspace-main', '/workspace', false),
+                ManifestMount::daemonBind('/srv/journal/accounts/01b2', '/home/journal/.account', true),
+                ManifestMount::volume('acme-history-helper-1', '/home/journal/.account/projects', true),
+            ],
+            $manifest->mounts,
+        );
+    }
+
+    public function test_a_contained_writer_mounts_its_own_checkout_of_the_workspace_read_write(): void
+    {
+        $setting = ArrangementSetting::fromConfig('contained', 'acme', self::GIT_SOURCE);
+
+        $manifest = ContainerManifest::compile(
+            'writer-1',
+            '/ignored',
+            WorkspaceUse::OwnCheckout,
+            $this->policy(),
+            'acme-writer-1',
+            $setting->mountRules(null, 'main'),
+            null,
+        );
+        $workspace = json_decode((string) json_encode($manifest), true)['mounts'][0];
+
+        $this->assertSame(
+            [
+                'type' => 'volume',
+                'source' => 'acme-workspace-main',
+                'target' => '/workspace',
+                'writable' => true,
+                'mustExist' => false,
+                'checkout' => true,
+            ],
+            $workspace,
+        );
+        $this->assertSame(
+            ['/workspace', '/home/journal/.account/projects'],
+            array_map(fn (ManifestMount $mount) => $mount->target, $manifest->mounts),
+        );
+        $this->assertTrue(
+            MountRules::local()->workspaceMount('/workspaces/writer-1', WorkspaceUse::OwnCheckout)->writable,
+        );
     }
 
     public function test_a_parent_folder_a_credential_mount_a_mutable_tag_and_a_privileged_flag_are_refused(): void
@@ -279,6 +338,7 @@ final class ContainerManifestTest extends TestCase
 
         $this->assertThrows(fn () => $this->start($this->containerRequest()), CapacityUnavailable::class);
         $this->assertSame(1, CapacityReservation::query()->count());
+        $this->assertSame(1, AgentSession::query()->count());
     }
 
     public function test_a_contained_manifest_takes_its_volumes_account_and_profiles_and_goes_on_the_wire(): void
@@ -298,6 +358,7 @@ final class ContainerManifestTest extends TestCase
                     'target' => '/workspace',
                     'writable' => false,
                     'mustExist' => false,
+                    'checkout' => false,
                 ],
                 [
                     'type' => 'daemon-bind',
@@ -305,6 +366,7 @@ final class ContainerManifestTest extends TestCase
                     'target' => '/home/journal/.account',
                     'writable' => true,
                     'mustExist' => false,
+                    'checkout' => false,
                 ],
                 [
                     'type' => 'volume',
@@ -312,6 +374,7 @@ final class ContainerManifestTest extends TestCase
                     'target' => '/home/journal/.account/projects',
                     'writable' => true,
                     'mustExist' => false,
+                    'checkout' => false,
                 ],
             ],
             $wire['mounts'],
@@ -328,7 +391,7 @@ final class ContainerManifestTest extends TestCase
         $manifest = ContainerManifest::compile(
             $this->prepared()->sessionId,
             $this->prepared()->workspace,
-            ProfileBase::writingHelper()->defaultAccess(),
+            WorkspaceUse::Shared,
             $this->policy(),
             'journal-start-1',
             MountRules::local(),
@@ -342,6 +405,7 @@ final class ContainerManifestTest extends TestCase
                 'target' => '/workspace',
                 'writable' => true,
                 'mustExist' => false,
+                'checkout' => false,
             ],
             json_decode((string) json_encode($manifest), true)['mounts'][0],
         );
@@ -376,7 +440,7 @@ final class ContainerManifestTest extends TestCase
         $manifestOf = fn (SelectedAccount $account) => ContainerManifest::compile(
             $this->prepared()->sessionId,
             $this->prepared()->workspace,
-            ProfileBase::writingHelper()->defaultAccess(),
+            WorkspaceUse::Shared,
             $this->policy(),
             'acme-s1',
             $setting->mountRules($account, 'main'),

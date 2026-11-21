@@ -7,10 +7,13 @@ import (
 	"testing"
 )
 
+// mainWorkspace is the main's workspace volume a writer's checkout is cloned from.
+var mainWorkspace = ContainerMount{Type: MountVolume, Source: "journal-workspace-main", Target: workspaceTarget}
+
 func TestACheckoutIsClonedFromTheMainWorkspaceIntoItsOwnBoundedVolume(t *testing.T) {
 	containers, folder := recordingDocker(t, "exit 0")
 
-	volume, err := containers.PrepareCheckout(context.Background(), "s9", "journal-workspace-main", "abc123", 4096)
+	volume, err := containers.PrepareCheckout(context.Background(), "s9", mainWorkspace, "abc123", 4096)
 	if err != nil || volume != "journal-checkout-s9" {
 		t.Fatalf("a checkout gave %q, %v", volume, err)
 	}
@@ -30,7 +33,7 @@ func TestADaemonThatCannotBoundAVolumeGetsNoCheckout(t *testing.T) {
 		`echo "a container ran" >&2; exit 1`)
 	containers.Rules = containedRules
 
-	_, err := containers.PrepareCheckout(context.Background(), "s9", "journal-workspace-main", "abc123", 4096)
+	_, err := containers.PrepareCheckout(context.Background(), "s9", mainWorkspace, "abc123", 4096)
 	if !errors.Is(err, ErrWorkspaceQuotaUnavailable) {
 		t.Fatalf("an unbounded daemon gave %v", err)
 	}
@@ -39,7 +42,7 @@ func TestADaemonThatCannotBoundAVolumeGetsNoCheckout(t *testing.T) {
 func TestACheckoutThatFailsItsCheckIsRemovedAndNamed(t *testing.T) {
 	containers, folder := recordingDocker(t, "echo symlink-out; exit 1")
 
-	_, err := containers.PrepareCheckout(context.Background(), "s9", "journal-workspace-main", "abc123", 4096)
+	_, err := containers.PrepareCheckout(context.Background(), "s9", mainWorkspace, "abc123", 4096)
 	if !errors.Is(err, ErrWorkspaceFolderSymlinkOut) {
 		t.Fatalf("a checkout with a symlink out gave %v", err)
 	}
@@ -51,7 +54,7 @@ func TestACheckoutThatFailsItsCheckIsRemovedAndNamed(t *testing.T) {
 
 func TestATakenCheckoutIsRemovedAndADirtyOneKeptAndNamed(t *testing.T) {
 	taken, folder := recordingDocker(t, "echo taken")
-	kept, err := taken.RemoveCheckout(context.Background(), "s9")
+	kept, err := taken.RemoveCheckout(context.Background(), "s9", mainWorkspace)
 	if err != nil || kept != "" {
 		t.Fatalf("a taken checkout gave %q, %v", kept, err)
 	}
@@ -61,7 +64,7 @@ func TestATakenCheckoutIsRemovedAndADirtyOneKeptAndNamed(t *testing.T) {
 	}
 
 	dirty, folder := recordingDocker(t, "exit 0")
-	kept, err = dirty.RemoveCheckout(context.Background(), "s9")
+	kept, err = dirty.RemoveCheckout(context.Background(), "s9", mainWorkspace)
 	if err != nil || kept != "journal-checkout-s9" {
 		t.Fatalf("a dirty checkout gave %q, %v", kept, err)
 	}
@@ -75,7 +78,7 @@ func TestASessionWithoutACheckoutCountsAsRemoved(t *testing.T) {
 	containers := fakeImageDocker(t, `echo "Error: No such volume: journal-checkout-s9" >&2; exit 1`)
 	containers.Rules = containedRules
 
-	if kept, err := containers.RemoveCheckout(context.Background(), "s9"); err != nil || kept != "" {
+	if kept, err := containers.RemoveCheckout(context.Background(), "s9", mainWorkspace); err != nil || kept != "" {
 		t.Fatalf("a session without a checkout gave %q, %v", kept, err)
 	}
 }

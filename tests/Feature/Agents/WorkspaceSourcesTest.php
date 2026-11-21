@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Agents\Enums\MountType;
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\WorkspaceSourceMissing;
 use App\Agents\Exceptions\WorkspaceSourcesInvalid;
 use App\Agents\Support\ArrangementSetting;
@@ -24,16 +25,16 @@ final class WorkspaceSourcesTest extends TestCase
 
         $this->assertEquals(
             ManifestMount::volume('acme-workspace-main', '/workspace', true),
-            $rules->workspaceMount('/ignored', true),
+            $rules->workspaceMount('/ignored', WorkspaceUse::Shared),
         );
-        $this->assertFalse($rules->workspaceMount('/ignored', false)->writable);
+        $this->assertFalse($rules->workspaceMount('/ignored', WorkspaceUse::ReadOnly)->writable);
     }
 
     public function test_a_contained_start_with_a_folder_source_binds_its_server_folder(): void
     {
         $mount = ArrangementSetting::fromConfig('contained', 'acme', self::SOURCES)
             ->mountRules(null, 'staging')
-            ->workspaceMount('/ignored', true);
+            ->workspaceMount('/ignored', WorkspaceUse::Shared);
 
         $this->assertSame(MountType::DaemonBind, $mount->type);
         $this->assertSame('/srv/journal/workspaces/staging', $mount->source);
@@ -57,7 +58,7 @@ final class WorkspaceSourcesTest extends TestCase
         $this->assertEquals(MountRules::local(), $rules);
         $this->assertEquals(
             ManifestMount::bind('/Users/me/work/shop', '/workspace', true),
-            $rules->workspaceMount('/Users/me/work/shop', true),
+            $rules->workspaceMount('/Users/me/work/shop', WorkspaceUse::Shared),
         );
     }
 

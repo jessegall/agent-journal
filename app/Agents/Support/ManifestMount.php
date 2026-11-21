@@ -18,6 +18,8 @@ final readonly class ManifestMount
         public bool $writable,
         // A volume the host must find, never make: the history of a conversation being resumed.
         public bool $mustExist = false,
+        // A writer's own clone: the host clones the source into the session's checkout volume and mounts that.
+        public bool $checkout = false,
     ) {}
 
     /**
@@ -42,6 +44,15 @@ final readonly class ManifestMount
     public static function existingVolume(string $name, string $target, bool $writable): self
     {
         return new self(MountType::Volume, $name, $target, $writable, true);
+    }
+
+    /**
+     * A writer's own clone of the workspace mount, read-write: the host clones the workspace into the session's
+     * checkout volume (<installation>-checkout-<session>) before the container and mounts that at the same target.
+     */
+    public static function checkoutOf(self $workspace): self
+    {
+        return new self($workspace->type, $workspace->source, $workspace->target, true, false, true);
     }
 
     /**

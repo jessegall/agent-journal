@@ -11,6 +11,7 @@ use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Enums\SessionStatus;
 use App\Agents\Values\RuntimeIntent;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -150,6 +151,42 @@ final class AgentRuntime extends Model implements ReadableModel
             ->where('agent_session_id', $sessionId)
             ->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped])
             ->exists();
+    }
+
+    /**
+     * The runtimes of the session's running helpers that are not stopping yet, each with its session.
+     *
+     * @return list<self>
+     */
+    public static function runningHelpersOf(string $sessionId): array
+    {
+        return array_values(self::query()
+            ->with('session')
+            ->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped])
+            ->whereHas('session', fn (Builder $sessions) => $sessions
+                ->where('parent_session_id', $sessionId)
+                ->whereIn('status', SessionStatus::running()))
+            ->readAll('every running helper of one session is stopped before the session itself')
+            ->get()
+            ->all());
+    }
+
+    /**
+     * Of the sessions given, those with a helper whose runtime is not proven stopped yet, so their own stop waits.
+     *
+     * @param  list<string>  $sessionIds
+     * @return list<string>
+     */
+    public static function sessionsWaitingOnHelpers(array $sessionIds): array
+    {
+        return AgentSession::query()
+            ->whereIn('parent_session_id', $sessionIds)
+            ->whereIn('id', self::query()->where('activity', '!=', RuntimeActivity::Stopped)->select('agent_session_id'))
+            ->readAll('every helper still running holds back the stop of the session it helps')
+            ->pluck('parent_session_id')
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**

@@ -43,6 +43,9 @@ type ContainerMount struct {
 	Writable bool      `json:"writable"`
 	// MustExist is a volume the host finds and never makes, such as the history of a resumed conversation.
 	MustExist bool `json:"mustExist"`
+	// Checkout is a writer's workspace: the host clones the source into the session's own checkout volume and mounts
+	// that, read-write, at the target instead.
+	Checkout bool `json:"checkout"`
 }
 
 // ContainerBudgets mirrors App\Agents\Support\ExecutionBudgets: the bounds a container runs under.
@@ -274,6 +277,12 @@ func (mount ContainerMount) argument() string {
 	return argument
 }
 
+// readOnlyAt is the mount as `docker run --mount` reads it, read-only at another target, as a check or a clone
+// reads the workspace.
+func (mount ContainerMount) readOnlyAt(target string) string {
+	return ContainerMount{Type: mount.Type, Source: mount.Source, Target: target}.argument()
+}
+
 // isPlain is whether each profile is one value, since a comma or a newline would smuggle in another option.
 func (options SecurityOptions) isPlain() bool {
 	return !strings.ContainsAny(options.Seccomp+options.AppArmor, ",\n")
@@ -401,7 +410,8 @@ func (process ContainerProcess) arguments(create []string) []string {
 }
 
 // Create creates the container from the manifest, running the process, and answers its id; a daemon that would
-// discard the manifest's budgets is refused before anything is created.
+// discard the manifest's budgets is refused before anything is created, and a writer's checkout is made before its
+// container.
 func (containers Containers) Create(
 	ctx context.Context,
 	manifest ContainerManifest,
@@ -409,12 +419,21 @@ func (containers Containers) Create(
 	labels LaunchLabels,
 	process ContainerProcess,
 ) (string, error) {
-	arguments, err := manifest.DockerCreateArguments(name, labels, containers.Rules)
-	if err != nil {
+	if _, err := manifest.DockerCreateArguments(name, labels, containers.Rules); err != nil {
 		return "", err
 	}
 
 	if err := containers.AssertBudgetsEnforced(ctx); err != nil {
+		return "", err
+	}
+
+	manifest, err := containers.withCheckout(ctx, manifest, labels.Session)
+	if err != nil {
+		return "", err
+	}
+
+	arguments, err := manifest.DockerCreateArguments(name, labels, containers.Rules)
+	if err != nil {
 		return "", err
 	}
 
