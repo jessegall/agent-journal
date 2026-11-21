@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 /**
- * A refusal as the caller sees it (doc 19, Book I): a form error on a web route and a 403 with its message on an
- * agent route. Refused input (doc 49, Book 3) is Laravel's 422 with its fields, and invalid_input to an agent.
+ * A refusal as the caller sees it (doc 19, Book I): a form error on a web page, and on a JSON request the refusal's
+ * code, message and fields with its status. Refused input (doc 49, Book 3) is a 422 invalid-input with its fields.
  */
 final class CommandRefusalRenderingTest extends TestCase
 {
@@ -31,7 +31,7 @@ final class CommandRefusalRenderingTest extends TestCase
             ->assertSessionHasErrors(['command' => 'Notes are closed for now.']);
         $this->postJson('/bus-test/refuse')
             ->assertStatus(403)
-            ->assertExactJson(['message' => 'Notes are closed for now.']);
+            ->assertExactJson(['code' => 'command-refused', 'message' => 'Notes are closed for now.', 'fields' => []]);
     }
 
     public function test_the_message_names_each_wrong_field_once_per_line_and_never_its_value(): void
@@ -52,7 +52,8 @@ final class CommandRefusalRenderingTest extends TestCase
 
         $this->postJson('/bus-test/invalid-input', ['title' => "Secret\nnotes"])
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['title', 'expectedRevision']);
+            ->assertJsonPath('code', 'invalid-input')
+            ->assertJsonStructure(['fields' => ['title', 'expectedRevision']]);
     }
 
     public function test_refused_input_is_a_field_error_with_old_input_on_a_page(): void

@@ -140,7 +140,8 @@ final class ShareManagementPagesTest extends TestCase
                 ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum],
             )
             ->assertUnprocessable()
-            ->assertJsonValidationErrors('idempotency_key');
+            ->assertJsonPath('code', 'invalid-input')
+            ->assertJsonStructure(['fields' => ['idempotency_key']]);
         $this->assertSame(0, Share::query()->count());
     }
 

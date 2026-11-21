@@ -72,6 +72,7 @@ final class MessageEntryRoutesTest extends MessagingTestCase
         $this->actingAs($this->owner)
             ->postJson('/communication/send', ['session' => $this->builder->id, 'body' => 'Hello'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['sourceInboxId', 'destinationInboxId']);
+            ->assertJsonPath('code', 'invalid-input')
+            ->assertJsonStructure(['fields' => ['sourceInboxId', 'destinationInboxId']]);
     }
 }

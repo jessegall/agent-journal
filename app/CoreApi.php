@@ -302,6 +302,7 @@ use App\Agents\Support\StartReceipt;
 use App\Agents\Support\StartRecordDetails;
 use App\Agents\Support\TerminalViewReceipt;
 use App\Agents\Values\AccessDecision;
+use App\Agents\Values\SeenSession;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\AccountUse;
 use App\Agents\Values\ChosenAccount;
@@ -1577,6 +1578,7 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                SeenSession::class,
                 DockOfferData::class,
                 DockDestinationOptionData::class,
                 ComposedCard::class,
