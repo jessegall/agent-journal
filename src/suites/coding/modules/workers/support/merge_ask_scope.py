@@ -62,7 +62,7 @@ class MergeAskScope:
         shared = self.range.worktree_file_base_changes(worktree, part.commit_id)
         if not shared:
             return
-        raise Refusal(f"{worktree.base_branch} changed {len(shared)} of the files your work changed, such as {shared[0]}", "run journal worker update, commit, let the checkpoint tests run on it, and ask again")
+        raise Refusal(f"{worktree.base_branch} changed {len(shared)} of the files your work changed, such as {shared[0]}", "run journal worker update and ask again: the ask takes the update with it")
 
     def check_runs(self, worktree: Worktree, task_ids: tuple[int, ...]) -> None:
         blocking = self.runs.blocking_run(worktree.id)

@@ -31,9 +31,16 @@ class WorkerMergeRange:
     def worktree_file_base_changes(self, worktree: Worktree, commit: str) -> tuple[str, ...]:
         return self.git.worktree_file_base_changes(worktree.folder, worktree.base_branch, commit)
 
+    # the task's last commit and the update merges of the base that follow it before the next task's commit, so an ask
+    # or a merge up to the task takes the settled code of an update and never the commit from before it
     def task_commit(self, worktree: Worktree, task_id: int) -> str | None:
-        commits = self.git.task_commits(worktree, task_id)
-        return commits[0].short_id if commits else None
+        commits = self.git.worktree_commits(worktree)
+        position = next((index for index, commit in enumerate(commits) if commit.has_task_subject([task_id])), None)
+        if position is None:
+            return None
+        while position > 0 and not commits[position - 1].task_ids():
+            position -= 1
+        return commits[position].short_id
 
     def is_branch_commit(self, worktree: Worktree, commit: str) -> bool:
         return self.git.branch_contains(worktree, commit)

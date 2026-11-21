@@ -768,9 +768,6 @@ class WorktreeGit:
         else:
             self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
 
-    def task_commits(self, worktree: Worktree, task_id: int) -> tuple[TaskBranchCommit, ...]:
-        return tuple(commit for commit in self.worktree_commits(worktree) if commit.has_task_subject([task_id]))
-
     def worktree_commits(self, worktree: Worktree) -> tuple[TaskBranchCommit, ...]:
         return self.branch_commits(worktree.folder, f"{worktree.base_commit}..{worktree.branch}")
 
