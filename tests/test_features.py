@@ -7841,6 +7841,9 @@ def test_a_wait_on_a_row_that_does_not_exist_is_open_and_broken_and_never_fails_
     from journal.models.task import Task
     from journal.repositories.links import Links
     from journal.repositories.tasks import WAIT_LINK, Tasks
+    from journal.features.tasks.support.person_wait import PersonWait
+    from journal.hooks.receiver import GUARD_FAILED
+    from journal.repositories.entries import Entries
     from journal.support.actor import Actor
     with app.container.get(Scope).environment(1):
         tasks = app.container.get(Tasks)
@@ -7850,6 +7853,10 @@ def test_a_wait_on_a_row_that_does_not_exist_is_open_and_broken_and_never_fails_
         assert tasks.open_waits(blocked) == [Ref("questions", 725)], "a missing target keeps the wait open"
         assert tasks.open_wait_refs([blocked]) == {blocked.id: [Ref("questions", 725)]}
         assert tasks.waiting_ids([blocked]) == {blocked.id}
+        assert [t.id for t in tasks.blocked_tasks()] == [blocked.id], "the task stays blocked"
+        assert not app.container.get(PersonWait).is_person_wait(blocked), "the person-wait read passes over the missing row"
         assert [(t.id, ref) for t, ref in tasks.dangling_waits()] == [(blocked.id, Ref("questions", 725))], "the link is reported as broken"
-    answer = hook(app, "Stop")
-    assert "raised" not in str(answer), "the Stop is answered without a guard failure"
+    hook(app, "Stop")
+    with app.container.get(Scope).environment(1):
+        failed = [e.data for e in app.container.get(Entries).scoped() if e.entry_type == GUARD_FAILED]
+    assert failed == [], f"the Stop raised no guard failure: {failed}"
