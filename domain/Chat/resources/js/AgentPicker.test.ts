@@ -38,6 +38,7 @@ function agent(id: string, name: string, presenceLabel: string): AgentOptionData
             commandOutcome: null,
             observationAgeSeconds: null,
             actions: [{ type: 'start', label: 'Start session' }],
+            isProcessConfirmed: false,
         },
     };
 }

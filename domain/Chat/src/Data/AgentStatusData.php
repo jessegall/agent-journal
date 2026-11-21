@@ -33,6 +33,8 @@ final class AgentStatusData extends Data
         public readonly int|null $observationAgeSeconds,
         #[DataCollectionOf(StatusActionData::class)]
         public readonly array $actions,
+        // Whether the host confirmed the session's process exists, whatever it does now.
+        public readonly bool $isProcessConfirmed,
     ) {}
 
     public static function fromAgentStatus(AgentStatus $status): self
@@ -46,6 +48,7 @@ final class AgentStatusData extends Data
             'commandOutcome' => $status->commandOutcome,
             'observationAgeSeconds' => $status->observationAgeSeconds,
             'actions' => $status->actions,
+            'isProcessConfirmed' => $status->isProcessConfirmed,
         ]);
     }
 }

@@ -24,6 +24,7 @@ use App\Agents\Enums\StatusActionType;
  * in a fixed order: retirement, then an accepted stop or unresolved delivery, then a fresh blocking hold of the current
  * process, then launch progress and fresh activity. Session existence alone proves neither idle nor working; a
  * refused or failed command stays beside the current session until a newer one replaces it or the viewer dismisses it.
+ * Whether the host confirmed the session's process exists is told apart from what the process does.
  */
 final readonly class AgentStatus
 {
@@ -39,6 +40,7 @@ final readonly class AgentStatus
         public string|null $commandOutcome,
         public int|null $observationAgeSeconds,
         public array $actions,
+        public bool $isProcessConfirmed = false,
     ) {}
 
     public static function of(AgentEvidence $evidence, StartRemedyWords $words): self
@@ -333,6 +335,7 @@ final readonly class AgentStatus
             $commandOutcome,
             $evidence->runtime?->observationAgeSeconds,
             [...$actions, ...$dismiss],
+            $evidence->processStart === ProcessStartState::Running,
         );
     }
 

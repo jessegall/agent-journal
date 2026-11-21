@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { reactive } from 'vue';
 import type { AgentOptionData } from '@generated/types/chat';
 
@@ -30,6 +30,7 @@ const readFailures = { count: 0 };
 vi.mock('@inertiajs/vue3', () => ({
     Link: { template: '<a><slot /></a>' },
     usePage: () => shownPage,
+    useHttp: () => ({ requestId: '', get: vi.fn(), post: vi.fn() }),
     router: {
         reload: (options: { only: string[]; onError?: (errors: Record<string, string>) => void }) => {
             if (readFailures.count > 0) {
@@ -54,7 +55,9 @@ vi.mock('@kit/Modal', () => ({
 }));
 vi.mock('@kit/sessionStarts', () => ({
     accountsPage: { url: () => '/accounts' },
+    cancelLaunch: { url: () => '/agents/main/sessions/session-1/cancel-launch' },
     startMain: { url: (profile: string) => `/profiles/${profile}/start-main` },
+    startReceipt: { url: (requestId: string) => `/profiles/starts/${requestId}` },
     switchMethod: { url: (profile: string) => `/profiles/${profile}/switch` },
 }));
 
@@ -86,10 +89,13 @@ const idle: AgentOptionData = {
         commandOutcome: null,
         observationAgeSeconds: null,
         actions: [{ type: 'start', label: 'Start session' }],
+        isProcessConfirmed: false,
     },
 };
 
 describe('SessionForm', () => {
+    beforeEach(() => window.sessionStorage.clear());
+
     it('chooses the ready account over an expired default, says why the other is unavailable, and sends one request id twice', async () => {
         const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
         await flushPromises();
@@ -146,12 +152,16 @@ describe('SessionForm', () => {
         await form.find('form').trigger('submit');
         expect(form.text()).toContain('Starting');
 
-        await form.setProps({ agent: { ...idle, presence: 'working', sessionId: 'session-2' } });
+        await form.setProps({
+            agent: { ...idle, presence: 'working', sessionId: 'session-2', status: { ...idle.status, isProcessConfirmed: true } },
+        });
         postOptions.at(-1)?.onSuccess({ flash: { startedSessionId: 'session-1' } });
         await flushPromises();
         expect(form.text()).toContain('Another session is running; this start is not confirmed yet');
 
-        await form.setProps({ agent: { ...idle, presence: 'working', sessionId: 'session-1' } });
+        await form.setProps({
+            agent: { ...idle, sessionId: 'session-1', status: { ...idle.status, sessionState: 'idle', isProcessConfirmed: true } },
+        });
         postOptions.at(-1)?.onSuccess({ flash: { startedSessionId: 'session-1' } });
         await flushPromises();
         expect(form.text()).toContain('Ready');
@@ -205,5 +215,29 @@ describe('SessionForm', () => {
         );
         first.unmount();
         second.unmount();
+    });
+
+    it('keeps the sent start for this tab and shows it again after a reload without posting again', async () => {
+        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        await flushPromises();
+        await form.find('form').trigger('submit');
+        const sentCount = posted.length;
+        form.unmount();
+
+        const reloaded = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        await flushPromises();
+
+        expect(reloaded.text()).toContain('Starting');
+        expect(posted).toHaveLength(sentCount);
+        reloaded.unmount();
+    });
+
+    it('forgets the tab record when the dialog is closed', async () => {
+        const form = mount(SessionForm, { props: { agent: idle, mode: 'start' } });
+        await flushPromises();
+        await form.findAll('button').find((candidate) => candidate.text() === 'Close')!.trigger('click');
+
+        expect(window.sessionStorage.length).toBe(0);
+        form.unmount();
     });
 });

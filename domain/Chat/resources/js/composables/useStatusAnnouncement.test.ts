@@ -13,6 +13,7 @@ function status(sessionState: AgentStatusData['sessionState'], label: string, ve
         commandOutcome: null,
         observationAgeSeconds: null,
         actions: [],
+        isProcessConfirmed: false,
     };
 }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { dateTime } from '@kit/format';
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, router, useHttp, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
 import Button from '@kit/Button';
 import FormField from '@kit/FormField';
@@ -8,13 +8,16 @@ import Modal from '@kit/Modal';
 import { followPage } from '@kit/followPage';
 import { keyedPost } from '@kit/keyedPost';
 import { newRequestId } from '@kit/requestId';
+import { useStartRestoration } from './composables/useStartRestoration';
 import { useSwitchOperation } from './composables/useSwitchOperation';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import type { WindowResult } from '@kit/PageTypes';
 import type { DriverVariant, HookDriver } from '@kit/CoreTypes';
 import {
     accountsPage,
+    cancelLaunch,
     startMain,
+    startReceipt,
     switchMethod,
     type EligibleAccountData,
     type EligibleAccountsData,
@@ -26,7 +29,9 @@ import {
  * driver may run with, and for a resume the conversation it continues. The form makes one request id when it opens,
  * so a second press repeats the same start; an edit after a refusal makes a fresh one. A refusal whose next step is a
  * field shows under that field and takes the focus; every other choice stays. Every id comes from the dialog's own
- * mount, so two open dialogs never share one.
+ * mount, so two open dialogs never share one. A start ends once the host confirms its session's process exists,
+ * whatever it does then; a lost reply is recovered by reading the start's receipt by its key, never by posting again.
+ * The tab keeps the dialog's choices and request id, so a reload shows the same start; closing the dialog forgets them.
  * A start reads Ready only once the host runs it, and shows the host's refusal when its start was refused; a switch
  * shows each stage it passes until it ends.
  */
@@ -87,6 +92,7 @@ const conversationId = ref<string | null>(props.mode === 'resume' ? (props.agent
 const refusal = ref<string | null>(null);
 const progress = ref<string | null>(null);
 const sending = ref(false);
+const isCancelling = ref(false);
 let startedSessionId: string | null = null;
 let following: { stop: () => void } | undefined;
 
@@ -99,7 +105,11 @@ const review = computed(() => {
 });
 const isSwitchOpen = computed(() => ['sending', 'following', 'uncertain'].includes(switching.state.value));
 const canSubmit = computed(
-    () => account.value !== undefined && account.value.unavailableReason === null && !sending.value && !isSwitchOpen.value,
+    () => account.value !== undefined
+        && account.value.unavailableReason === null
+        && !sending.value
+        && !isSwitchOpen.value
+        && !isCancelling.value,
 );
 // A switch shows its own stage and refusal; a start or resume shows the form's.
 const shownProgress = computed(() => (props.mode === 'switch' ? switching.progress.value : progress.value));
@@ -107,6 +117,110 @@ const shownRefusal = computed(() => (props.mode === 'switch' ? switching.refusal
 
 // The chat window's own prop: the page on Chat's own page, the window's part of Home elsewhere.
 const page = usePage();
+const viewer = page.props.currentUser as { id: string } | undefined;
+const restoration = useStartRestoration(viewer?.id ?? 'guest', props.agent.id, props.mode);
+const restored = restoration.read();
+const focusedField = ref<string | null>(restored?.focus ?? null);
+
+type StartReceiptAnswer = {
+    state: 'pending' | 'accepted' | 'refused';
+    sessionId?: string | null;
+    explanation?: string;
+    remedy?: string;
+};
+
+const receipts = useHttp<{ requestId: string }, StartReceiptAnswer>({ requestId: '' });
+
+if (restored !== null) {
+    driver.value = restored.driver;
+    variant.value = restored.variant;
+    model.value = restored.model;
+    accountId.value = restored.accountId;
+    conversationId.value = restored.conversationId;
+    saveVariant.value = restored.saveVariant;
+    requestId = restored.requestId ?? requestId;
+}
+
+/**
+ * The tab's record of the dialog as it stands now; the request id only once the start was sent.
+ */
+function keepRestoration(sentRequestId: string | null): void {
+    restoration.keep({
+        driver: driver.value,
+        variant: variant.value,
+        model: model.value,
+        accountId: accountId.value,
+        conversationId: conversationId.value,
+        saveVariant: saveVariant.value,
+        focus: focusedField.value,
+        requestId: sentRequestId,
+    });
+}
+
+let sentRequestId: string | null = restored?.requestId ?? null;
+watch([driver, variant, model, accountId, conversationId, saveVariant, focusedField], () => keepRestoration(sentRequestId));
+
+/**
+ * Keeps which field has the focus by its key, not its id, since ids belong to one mount.
+ */
+function noteFocus(event: FocusEvent): void {
+    const target = event.target as HTMLElement;
+    const field = (Object.keys(fieldIds) as FieldKey[]).find((key) => fieldIds[key] === target.id);
+    focusedField.value = field ?? null;
+}
+
+let isFocusRestored = restored === null;
+
+function close(): void {
+    restoration.forget();
+    emit('close');
+}
+
+/**
+ * Reads where the start sent under the form's key stands, when its reply was lost or the page was loaded again: the
+ * session it started is then followed, a refusal shown, and a start still pending is followed from the page.
+ */
+function readReceipt(): void {
+    receipts.get(startReceipt.url(requestId), {
+        onSuccess: (answer) => {
+            if (answer.state === 'refused') {
+                progress.value = null;
+                refusal.value = [answer.explanation, answer.remedy].filter(Boolean).join(' ');
+
+                return;
+            }
+
+            startedSessionId = answer.sessionId ?? startedSessionId;
+            followStart();
+        },
+        onError: () => {
+            progress.value = null;
+            refusal.value = 'This start could not be read; check the agent before starting again.';
+        },
+    });
+}
+
+const canCancelStart = computed(
+    () => sending.value === false && props.agent.status.actions.some((action) => action.type === 'cancel-start'),
+);
+function cancelStart(): void {
+    if (props.agent.sessionId === null) {
+        return;
+    }
+
+    isCancelling.value = true;
+    receipts.requestId = newRequestId();
+    receipts.post(cancelLaunch.url({ agent: props.agent.id, session: props.agent.sessionId }), {
+        onSuccess: () => {
+            following?.stop();
+            progress.value = 'Cancelled';
+            sentRequestId = null;
+            requestId = newRequestId();
+            keepRestoration(null);
+        },
+        onFinish: () => (isCancelling.value = false),
+    });
+}
 const ownPage = page.component === 'chat/ChatWindow';
 const chatProp = ownPage ? 'page' : 'window_chat_conversation';
 
@@ -154,6 +268,12 @@ function showAccounts(read: EligibleAccountsData | undefined): void {
 
     accounts.value = read.accounts;
     modelChoices.value = read.modelChoices;
+
+    if (!isFocusRestored && restored?.focus && restored.focus in fieldIds) {
+        isFocusRestored = true;
+        focusField(restored.focus as FieldKey);
+    }
+
     model.value = model.value !== null && read.modelChoices.includes(model.value)
         ? model.value
         : (read.modelChoices[0] ?? null);
@@ -216,6 +336,8 @@ function start(): void {
     progress.value = props.mode === 'resume' ? 'Resuming' : 'Starting';
     refusal.value = null;
     sending.value = true;
+    sentRequestId = requestId;
+    keepRestoration(sentRequestId);
     keyedPost(startMain.url(props.agent.profileKey), sessionChoice(), requestId, {
         onAccepted: (flash) => {
             startedSessionId = typeof flash.startedSessionId === 'string' ? flash.startedSessionId : null;
@@ -236,16 +358,27 @@ function start(): void {
 
             refusal.value = reason;
         },
-        onUncertain: () => followStart(),
+        onUncertain: () => readReceipt(),
         onFinish: () => (sending.value = false),
     });
 }
 
 /**
- * Shows the start as the page has it now, and answers whether this request's session runs.
+ * Shows the start as the page has it now, and answers whether it ended: the host confirmed the process of the session
+ * this start answered with, whatever it does now, or the agent's latest start is this one, refused. A session another
+ * request started is shown as it is, and does not end this one.
  */
 function showStart(): boolean {
     const shown = props.agent;
+    const status = shown.status;
+    const isThisStart = status.operation?.id === requestId;
+
+    if (isThisStart && ['refused', 'no-capacity', 'waiting-for-sign-in'].includes(status.sessionState)) {
+        progress.value = null;
+        refusal.value = [status.reason, status.remedy].filter(Boolean).join(' ');
+
+        return true;
+    }
 
     // A refused start ends its session, so the refusal shows on the agent once the page reads it again.
     if (startedSessionId !== null && shown.sessionId !== startedSessionId && shown.startRefusal !== null) {
@@ -255,13 +388,13 @@ function showStart(): boolean {
         return true;
     }
 
-    if (startedSessionId !== null && shown.sessionId === startedSessionId && shown.presence === 'working') {
+    if (startedSessionId !== null && shown.sessionId === startedSessionId && status.isProcessConfirmed) {
         progress.value = 'Ready';
 
         return true;
     }
 
-    if (shown.presence === 'working' && shown.sessionId !== startedSessionId) {
+    if (shown.sessionId !== null && shown.sessionId !== startedSessionId && status.isProcessConfirmed) {
         progress.value = 'Another session is running; this start is not confirmed yet';
     }
 
@@ -301,12 +434,18 @@ function submit(): void {
     start();
 }
 
+// A reload during a start shows the same start, read by its key; a restore never submits.
+if (sentRequestId !== null && props.mode !== 'switch') {
+    progress.value = props.mode === 'resume' ? 'Resuming' : 'Starting';
+    readReceipt();
+}
+
 onBeforeUnmount(() => following?.stop());
 </script>
 
 <template>
-    <Modal :is-open="true" :title="titles[mode]" @close="emit('close')">
-        <form class="flex flex-col gap-3" @submit.prevent="submit">
+    <Modal :is-open="true" :title="titles[mode]" @close="close">
+        <form class="flex flex-col gap-3" @submit.prevent="submit" @focusin="noteFocus">
             <template v-if="mode === 'switch'">
                 <p class="text-small text-text-3">
                     {{ agent.name }} stops its current session first; the new one starts once the stop is confirmed.
@@ -443,7 +582,10 @@ onBeforeUnmount(() => following?.stop());
             </template>
         </form>
         <template #footer>
-            <Button variant="ghost" @click="emit('close')">Cancel</Button>
+            <Button variant="ghost" @click="close">Close</Button>
+            <template v-if="canCancelStart">
+                <Button variant="bordered" :pending="isCancelling" @click="cancelStart">Cancel start</Button>
+            </template>
             <Button variant="primary" :disabled="!canSubmit" @click="submit">{{ titles[mode] }}</Button>
         </template>
     </Modal>

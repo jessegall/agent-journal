@@ -65,6 +65,17 @@ export function keepStored(area: StorageArea, key: string, value: string): void 
 }
 
 /**
+ * Removes what is stored under the key; a refused removal is said in the console.
+ */
+export function forgetStored(area: StorageArea, key: string): void {
+    try {
+        storageOf(area).removeItem(key);
+    } catch (error) {
+        console.warn(`The browser refused to remove ${key} from its ${area} storage.`, error);
+    }
+}
+
+/**
  * Whether the browser lets this page keep values in the storage area, so a caller can say when they last only as
  * long as the page stays open.
  */
