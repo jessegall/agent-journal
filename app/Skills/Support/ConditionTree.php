@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
-use App\Contracts\Attributes\DecodesAnyJson;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\AccessRequirement;
 use App\Actors\Values\PolicyRegistration;
+use App\Contracts\Attributes\DecodesAnyJson;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;

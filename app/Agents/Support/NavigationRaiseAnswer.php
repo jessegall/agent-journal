@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\NavigationRaiseOutcome;
+use App\Agents\Values\LibraryEntryAnswer;
 
 /**
  * The journal's answer to a host's raise: what came of it, the navigation request it opened, when a waiting host asks

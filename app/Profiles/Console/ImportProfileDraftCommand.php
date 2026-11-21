@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Console;
 
-use App\Contracts\Attributes\DecodesAnyJson;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
+use App\Contracts\Attributes\DecodesAnyJson;
 use App\Files\Contracts\Files;
 use App\Files\Exceptions\FileMissing;
 use App\Files\Exceptions\FileUnreadable;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
-use TypeError;
-use Spatie\LaravelData\Exceptions\CannotCreateData;
-use JsonException;
 use App\Profiles\Data\ClaudeAnswerData;
 use App\Profiles\Values\ClaudeStatus;
 use Illuminate\Contracts\Config\Repository;
+use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * Claude Code as every sign-in method runs it on the host: the configured program, with the account folder as its

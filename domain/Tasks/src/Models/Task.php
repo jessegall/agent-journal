@@ -193,7 +193,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
             PoolMembersType::Ordered => $query->whereIn('id', $members->ids->ids)->inListedOrder($members->ids),
         };
 
-        return new OrderedRecordIds(array_values($ordered->readLimit($limit)->pluck('id')->all()));
+        return new OrderedRecordIds(array_values($ordered->readExactly($limit)->pluck('id')->all()));
     }
 
     // ----------[ Mutations ]----------

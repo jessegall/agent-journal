@@ -28,7 +28,7 @@ final readonly class StartRecords implements StartRecordResolver
     {
         $this->actors->actor();
 
-        return array_values(StartRecord::query()->forOwnerReference($reference)->orderByDesc('id')->readLimit(
+        return array_values(StartRecord::query()->forOwnerReference($reference)->orderByDesc('id')->readExactly(
             self::MOST_PER_OWNER,
         )->get()
             ->map(fn (StartRecord $record) => self::detailsOf($record))

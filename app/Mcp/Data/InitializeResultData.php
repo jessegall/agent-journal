@@ -11,5 +11,5 @@ use Spatie\LaravelData\Data;
  */
 final class InitializeResultData extends Data
 {
-    public function __construct(public readonly string|null $protocolVersion = null) {}
+    public function __construct(public readonly string $protocolVersion) {}
 }

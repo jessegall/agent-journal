@@ -105,7 +105,7 @@ final class ClaimAuthorization extends Model implements ReadableModel
     {
         return self::query()
             ->whereIn('claim_assignment_id', $assignmentIds)
-            ->readLimit(count($assignmentIds))
+            ->readExactly(count($assignmentIds))
             ->get()
             ->keyBy('claim_assignment_id')
             ->all();

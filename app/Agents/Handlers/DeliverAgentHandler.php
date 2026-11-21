@@ -8,8 +8,8 @@ use App\Agents\Commands\DeliverAgent;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Support\DriverBudgets;
-use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\DriverRequests;
+use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\DriverRequestPayload;
 use App\Contracts\CommandHandler;
 

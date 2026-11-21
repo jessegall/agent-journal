@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Relay;
 
-use App\Agents\Support\BypassReport;
-use App\Agents\Support\LoggedBypass;
+use App\Agents\Values\BypassReport;
+use App\Agents\Values\LoggedBypass;
 use App\Files\Contracts\Files;
 use App\Files\Values\FilePath;
 
@@ -25,16 +25,7 @@ final readonly class BypassLog
     {
         $lines = $this->files->exists($this->log) ? array_filter(explode(PHP_EOL, $this->files->read($this->log))) : [];
 
-        return BypassReport::from(
-            [
-                'bypasses' => array_values(
-                    array_map(
-                        fn (string $line) => LoggedBypass::from(json_decode($line, true, flags: JSON_THROW_ON_ERROR)),
-                        $lines,
-                    ),
-                ),
-            ],
-        );
+        return BypassReport::from(['bypasses' => LoggedBypass::collect(array_values($lines))]);
     }
 
     public function clear(): void

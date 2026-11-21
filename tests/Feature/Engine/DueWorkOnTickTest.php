@@ -6,7 +6,7 @@ namespace Tests\Feature\Engine;
 
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActiveActorsResolver;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\CommandEntrance;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Resolvers;
 
-use App\Agents\Support\ModelSelection;
-use App\Agents\Support\ProfileDefaults;
-use App\Agents\Support\SelectedProgram;
+use App\Agents\Values\ModelSelection;
+use App\Agents\Values\ProfileDefaults;
+use App\Agents\Values\SelectedProgram;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Values\ProfileKey;

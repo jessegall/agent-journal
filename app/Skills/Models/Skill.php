@@ -101,7 +101,7 @@ final class Skill extends Model implements Numbered, ReadableModel
             self::query()->visibleIn($environment)
                 ->whereNull('retired_at')
                 ->orderBy('key')
-                ->readLimit($limit)
+                ->readExactly($limit)
                 ->get()
                 ->all(),
         );
@@ -115,7 +115,7 @@ final class Skill extends Model implements Numbered, ReadableModel
      */
     public static function allForMaintenance(int $limit): array
     {
-        return array_values(self::query()->orderBy('key')->readLimit($limit)->get()->all());
+        return array_values(self::query()->orderBy('key')->readExactly($limit)->get()->all());
     }
 
     // ----------[ Mutations ]----------

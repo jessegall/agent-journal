@@ -8,7 +8,7 @@ use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Exceptions\CallRefused;
 use App\AgentRequests\Exceptions\JournalUnreachable;
-use App\AgentRequests\Support\SendSignedCalls;
+use App\AgentRequests\Support\SignedCallSender;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Assert;
 use RuntimeException;
@@ -91,7 +91,7 @@ final class RecordedCalls implements CallSender
         }
 
         if ($this->passesThrough) {
-            return Container::getInstance()->make(SendSignedCalls::class)->send($call);
+            return Container::getInstance()->make(SignedCallSender::class)->send($call);
         }
 
         $cut = new RuntimeException('The connection was cut.');

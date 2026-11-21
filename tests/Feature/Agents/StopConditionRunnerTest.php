@@ -6,8 +6,8 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\SessionPolicy;
-use App\Agents\Support\SelectedAccount;
-use App\Agents\Support\StartPolicy;
+use App\Agents\Values\SelectedAccount;
+use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Hooks\Commands\RecordStopResults;

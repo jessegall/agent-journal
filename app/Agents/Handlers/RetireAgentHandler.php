@@ -18,7 +18,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\DriverRequests;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Assignments\Contracts\AssignmentFactPublisher;
 use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Enums\AssignmentReason;

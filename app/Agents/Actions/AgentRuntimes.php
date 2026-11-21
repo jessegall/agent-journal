@@ -8,8 +8,8 @@ use App\Agents\Enums\DriverOperation;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
-use App\Agents\Support\RuntimeIntent;
 use App\Agents\Values\DriverRequestPayload;
+use App\Agents\Values\RuntimeIntent;
 use Illuminate\Support\Str;
 
 /**

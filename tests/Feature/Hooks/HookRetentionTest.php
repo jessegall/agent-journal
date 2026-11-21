@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Actions\PruneHookHistory;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\AnswerType;

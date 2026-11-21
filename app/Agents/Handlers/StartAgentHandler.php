@@ -26,12 +26,12 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\SessionPolicy;
 use App\Agents\Models\StartRecord;
-use App\Agents\Resolvers\Support\HostStartMaterial;
+use App\Agents\Resolvers\Support\PendingStartSecrets;
 use App\Agents\Support\ContainerAdmission;
-use App\Agents\Support\HostCapacity;
 use App\Agents\Support\HostCapacityLock;
 use App\Agents\Support\StartReceipt;
-use App\Agents\Support\StartRequest;
+use App\Agents\Values\HostCapacity;
+use App\Agents\Values\StartRequest;
 use App\Contracts\CommandHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -47,7 +47,7 @@ final readonly class StartAgentHandler implements CommandHandler
         private AgentSessions $sessions,
         private ActiveAccountReader $accounts,
         private RegisterPendingStart $pendingStarts,
-        private HostStartMaterial $material,
+        private PendingStartSecrets $pendingSecrets,
         private Dispatcher $events,
         private ContainerAdmission $containers,
         private DockerImageVerifier $images,
@@ -94,7 +94,7 @@ final readonly class StartAgentHandler implements CommandHandler
         $this->pendingStarts->register($started->session, $account);
         SessionPolicy::create($started->session, $request->policy);
         $record->startedAs($started->session);
-        $this->material->keep($request->requestId, $started);
+        $this->pendingSecrets->keep($request->requestId, $started);
         $this->events->dispatch(new StartAccepted(
             $request->requestId,
             $request->agentId,

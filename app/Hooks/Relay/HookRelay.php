@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Hooks\Relay;
 
-use TypeError;
-use Spatie\LaravelData\Exceptions\CannotCreateData;
 use App\AgentRequests\Contracts\AgentRequestClient;
 use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\AgentCallReply;
-use App\Agents\Support\LoggedBypass;
+use App\Agents\Values\LoggedBypass;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Hooks\Enums\CallFailure;
@@ -25,6 +23,8 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Client\ConnectionException;
 use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * What the host runs for every native hook call: upload the bypasses logged while the journal was away, give the

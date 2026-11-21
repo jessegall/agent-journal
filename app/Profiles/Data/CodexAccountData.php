@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 final class CodexAccountData extends Data
 {
     public function __construct(
-        public readonly string|null $type = null,
+        public readonly string $type,
         public readonly string|null $email = null,
     ) {}
 }

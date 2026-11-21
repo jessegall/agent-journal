@@ -68,7 +68,7 @@ final class DeskPlanAssignmentTest extends TestCase
         );
 
         $records = array_map(fn ($record) => $record->assignmentIdentity(), [$plan, $phase, ...$tasks]);
-        $assignments = AssignmentRecord::query()->forRecords($records)->readLimit(count($records))->get();
+        $assignments = AssignmentRecord::query()->forRecords($records)->readExactly(count($records))->get();
 
         $this->assertCount(count($records), $assignments);
 

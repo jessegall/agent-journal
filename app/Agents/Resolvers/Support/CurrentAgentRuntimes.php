@@ -7,7 +7,7 @@ namespace App\Agents\Resolvers\Support;
 use App\Actors\Contracts\ActorResolver;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
-use App\Agents\Support\RunningRuntime;
+use App\Agents\Values\RunningRuntime;
 use PhpOption\None;
 use PhpOption\Option;
 

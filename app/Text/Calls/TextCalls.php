@@ -6,7 +6,7 @@ namespace App\Text\Calls;
 
 use App\AgentRequests\Contracts\CallSender;
 use App\Text\Data\TextSections;
-use App\Text\Data\TextVersionInfo;
+use App\Text\Data\TextVersionSummary;
 use App\Text\Support\TextPart;
 
 /**
@@ -49,7 +49,7 @@ final readonly class TextCalls
     public function readTextVersion(
         string $target,
         string|null $version = null,
-    ): TextVersionInfo {
+    ): TextVersionSummary {
         return $this->sender->send(ReadTextVersionCall::from([
             'target' => $target,
             'version' => $version,

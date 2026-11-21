@@ -8,7 +8,7 @@ use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Support\ActorStore;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;

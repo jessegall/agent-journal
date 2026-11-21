@@ -201,10 +201,7 @@ final class ChannelRunEvents implements RunEvents
      */
     private function sendSpooled(): void
     {
-        $events = array_map(
-            fn (string $line): RunEvent => RunEvent::from(json_decode($line, true, 512, JSON_THROW_ON_ERROR)),
-            array_slice($this->spooledLines('events.jsonl'), $this->sent),
-        );
+        $events = array_values(RunEvent::collect(array_slice($this->spooledLines('events.jsonl'), $this->sent)));
 
         if ($events !== []) {
             $this->processes->recordRunEvents($this->runId, $this->eventKey, $events);
@@ -213,8 +210,7 @@ final class ChannelRunEvents implements RunEvents
 
         $chunks = $this->spooledLines('chunks.jsonl');
 
-        foreach ($chunks as $index => $line) {
-            $chunk = RunChunk::from(json_decode($line, true, 512, JSON_THROW_ON_ERROR));
+        foreach (RunChunk::collect($chunks) as $index => $chunk) {
             $this->processes->recordRunChunk($this->runId, $this->eventKey, $chunk);
             $rest = implode('', array_map(fn (string $left) => $left."\n", array_slice($chunks, $index + 1)));
             $this->files->write($this->spoolFolder->child('chunks.jsonl'), $rest);

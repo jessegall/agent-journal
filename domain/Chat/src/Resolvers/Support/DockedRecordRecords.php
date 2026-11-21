@@ -37,7 +37,7 @@ final readonly class DockedRecordRecords
             ->shown($hidden)
             ->orderByDesc('docked_at')
             ->orderByDesc('id')
-            ->readLimit(max(1, min($limit, DockedRecord::LARGEST_LIMIT)))
+            ->readExactly(max(1, min($limit, DockedRecord::LARGEST_LIMIT)))
             ->get();
         $readablePlacements = [];
 

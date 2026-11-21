@@ -6,7 +6,7 @@ namespace App\Profiles\Models;
 
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
-use App\Agents\Support\SelectedAccount;
+use App\Agents\Values\SelectedAccount;
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
@@ -311,7 +311,7 @@ final class Account extends Model implements ReadableModel
             ->where('state', AccountState::Removing->value)
             ->where('cleanup_released', false)
             ->orderBy('updated_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));

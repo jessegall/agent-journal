@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Engine;
 
 use App\Actors\Contracts\ServerClock;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Contracts\MonotonicClock;

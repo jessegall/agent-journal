@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;

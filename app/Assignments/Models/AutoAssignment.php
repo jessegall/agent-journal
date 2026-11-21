@@ -174,7 +174,7 @@ final class AutoAssignment extends Model implements ReadableModel
         $rows = $query
             ->when($page->afterId !== null, fn (Builder $after) => $after->where('id', '>', $page->afterId))
             ->orderBy('id')
-            ->readLimit($page->limit + 1)
+            ->readExactly($page->limit + 1)
             ->get();
         $shown = $rows->take($page->limit);
         $facts = array_values($shown->map(fn (self $row) => $row->toFact())->all());

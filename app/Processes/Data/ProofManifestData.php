@@ -14,10 +14,18 @@ use Spatie\LaravelData\Data;
 final class ProofManifestData extends Data
 {
     /**
-     * @param  list<ProofSample>  $samples
+     * @param  list<ProofSampleData>  $samples
      */
     public function __construct(
-        #[DataCollectionOf(ProofSample::class)]
+        #[DataCollectionOf(ProofSampleData::class)]
         public readonly array $samples,
     ) {}
+
+    /**
+     * @return list<ProofSample>
+     */
+    public function samples(): array
+    {
+        return array_map(fn (ProofSampleData $sample) => $sample->sample(), $this->samples);
+    }
 }

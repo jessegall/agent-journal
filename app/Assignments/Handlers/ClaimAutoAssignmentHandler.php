@@ -12,9 +12,9 @@ use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Contracts\MaintenanceAdmission;
 use App\Assignments\Support\AssigneeIdentity;
+use App\Assignments\Support\AssignmentRoom;
 use App\Assignments\Support\AutoAssignmentFact;
 use App\Assignments\Support\AutoAssignmentOutcome;
-use App\Assignments\Support\SizeAssignmentRoom;
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
 use App\Records\Support\RecordIdentity;
@@ -27,7 +27,7 @@ final readonly class ClaimAutoAssignmentHandler implements CommandHandler
         private AutoAssignmentAvailability $availability,
         private AssignmentProviders $providers,
         private AssignedWorkResolver $work,
-        private SizeAssignmentRoom $room,
+        private AssignmentRoom $room,
         private CommandBus $commands,
     ) {}
 

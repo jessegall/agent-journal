@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Hooks;
 
 use App\Agents\Actions\StartBypasses;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\BypassReport;
+use App\Agents\Values\BypassReport;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 

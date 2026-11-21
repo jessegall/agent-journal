@@ -7,6 +7,7 @@ namespace App\Agents\Support;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\RuntimeStops;
 use App\Agents\Models\AgentSession;
+use App\Agents\Values\StackTarget;
 
 /**
  * Sends a stop request to each running session of the agent; a session already stopped needs none.

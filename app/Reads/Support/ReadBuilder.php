@@ -119,7 +119,7 @@ class ReadBuilder extends Builder
     public function readRelationCompletely(int $max): void
     {
         $this->completeRelationMax = $max;
-        $this->readLimit($max + 1);
+        $this->readExactly($max + 1);
     }
 
     /**

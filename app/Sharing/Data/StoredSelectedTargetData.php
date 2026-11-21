@@ -13,6 +13,8 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 /**
  * One selected target as a preview's JSON selection column stores it: its record type and id, link id and
  * publication version.
+ *
+ * @method static array<int, static> collect(mixed $items) read only from decoded JSON, so always an array
  */
 #[MapInputName(SnakeCaseMapper::class)]
 final class StoredSelectedTargetData extends Data

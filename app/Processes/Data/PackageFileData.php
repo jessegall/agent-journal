@@ -27,6 +27,6 @@ final class PackageFileData extends Data
             return [];
         }
 
-        return array_values(array_map(strval(...), (array) $this->scripts[$name]));
+        return array_map(strval(...), (array) $this->scripts[$name]);
     }
 }

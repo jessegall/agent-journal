@@ -78,7 +78,7 @@ final class WorkReservation extends Model implements ReadableModel
             ->whereNull('handed_off_at')
             ->whereNull('released_at')
             ->orderBy('updated_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get()
             ->all());
     }

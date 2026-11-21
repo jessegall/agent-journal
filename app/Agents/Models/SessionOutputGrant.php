@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Agents\Support\SessionOutputPaths;
+use App\Agents\Values\SessionOutputPaths;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;

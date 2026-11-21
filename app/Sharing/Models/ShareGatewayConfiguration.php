@@ -135,7 +135,7 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     {
         return array_map(
             strval(...),
-            self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->pluck('gateway_key', 'id')->all(),
+            self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->pluck('gateway_key', 'id')->all(),
         );
     }
 

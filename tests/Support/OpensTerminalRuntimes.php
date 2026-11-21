@@ -13,7 +13,7 @@ use App\Agents\Actions\StartSessions;
 use App\Agents\Enums\DriverType;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
-use App\Agents\Support\RuntimeIntent;
+use App\Agents\Values\RuntimeIntent;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Support\Str;

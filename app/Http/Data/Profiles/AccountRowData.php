@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Profiles;
 
-use App\Agents\Support\AccountUse;
+use App\Agents\Values\AccountUse;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Enums\SignInMethod;

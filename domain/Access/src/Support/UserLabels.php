@@ -24,7 +24,7 @@ final readonly class UserLabels implements ActorLabelProvider
         $this->actors->actor();
         $ids = array_values(array_unique($actorIds));
 
-        return User::query()->whereKey($ids)->readLimit(count($ids))->get()
+        return User::query()->whereKey($ids)->readExactly(count($ids))->get()
             ->mapWithKeys(fn (User $user) => [$user->id => $user->name])
             ->all();
     }

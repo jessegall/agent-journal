@@ -39,7 +39,7 @@ final readonly class ShippedReader
     {
         return ProofManifestData::from(
             json_decode($this->proofFile('manifest.json'), true, 512, JSON_THROW_ON_ERROR),
-        )->samples;
+        )->samples();
     }
 
     /**

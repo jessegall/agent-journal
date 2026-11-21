@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hooks\Relay;
 
-use TypeError;
-use Spatie\LaravelData\Exceptions\CannotCreateData;
-use JsonException;
 use App\Files\Attributes\OutsideThePlaces;
 use App\Files\Enums\PlaceExemption;
 use App\Hooks\Exceptions\OutputGrantsInvalid;
+use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * The exact saved outputs one start may read, as the journal sealed them for its start key and mapping generation: the

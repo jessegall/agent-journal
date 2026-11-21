@@ -27,7 +27,7 @@ final readonly class PublicComments implements PublicCommentResolver
             $query->writtenAfter(CarbonImmutable::parse($writtenAt), $id);
         }
 
-        $rows = $query->excerpts(self::EXCERPT_CHARACTERS)->readLimit($size + 1)->get();
+        $rows = $query->excerpts(self::EXCERPT_CHARACTERS)->readExactly($size + 1)->get();
         $shown = $rows->take($size);
         $last = $shown->last();
 

@@ -103,7 +103,7 @@ final class WorkspaceRead extends Model implements ReadableModel
             ->where('actor_type', 'agent')
             ->whereIn('actor_id', $agentsOnHost)
             ->orderBy('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get();
 
         return array_values($pending->all());

@@ -6,7 +6,7 @@ namespace Tests\Support;
 
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Models\Agent;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;

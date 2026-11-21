@@ -8,7 +8,7 @@ use App\Agents\Contracts\AgentCallContext;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Exceptions\HookIdentityExpired;
 use App\Hooks\Inputs\HookIdentity;
 use Carbon\CarbonImmutable;

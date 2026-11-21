@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Agents\Models\AgentSession;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Assignments\Policies\AssignmentRecipientPolicy;
 use App\Files\Enums\Place;
 use App\Hooks\Contracts\AgentStack;

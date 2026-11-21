@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Models\StartBypass;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Files\Values\FilePath;

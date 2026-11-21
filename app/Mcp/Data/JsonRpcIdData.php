@@ -10,11 +10,12 @@ use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 
 /**
- * The id of a message the relay refuses whole, read only to address the refusal.
+ * The id of a message the relay refuses whole, read only to address the refusal; a message with no id, or a null
+ * one, is no JsonRpcIdData.
  */
 final class JsonRpcIdData extends Data
 {
-    public function __construct(public readonly int|string|null $id = null) {}
+    public function __construct(public readonly int|string $id) {}
 
     /**
      * The id a JSON-RPC message names, or none when it is not JSON or names no id.

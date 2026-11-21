@@ -9,7 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\DatabaseClock;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Engine\Support\EngineAccess;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\EngineStacks;

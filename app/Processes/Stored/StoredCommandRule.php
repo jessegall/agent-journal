@@ -14,12 +14,14 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 /**
  * A command rule as a proposal or an approved revision stores it, the shape CommandRule::toArray writes; the
  * program, arguments and classes stay in the shapes their own values read.
+ *
+ * @method static array<int, static> collect(mixed $items) read only from decoded JSON, so always an array
  */
 #[MapInputName(SnakeCaseMapper::class)]
 final class StoredCommandRule extends Data
 {
     /**
-     * @param  array<string, mixed>  $program
+     * @param  array{family: string, spellings: list<string>}  $program
      * @param  list<string>  $subcommands
      * @param  array<string, mixed>  $arguments
      * @param  list<string>  $classes

@@ -172,7 +172,7 @@ final class StopPreparationTest extends TestCase
 
     private function answerReads(bool $dirty): void
     {
-        foreach (WorkspaceRead::query()->whereNull('sampled_at')->readLimit(10)->get() as $read) {
+        foreach (WorkspaceRead::query()->whereNull('sampled_at')->limit(10)->get() as $read) {
             $this->asSystem(new ReportWorkspaceRead('host-1', $read->reference(), true, $dirty, ! $dirty, 7));
         }
     }

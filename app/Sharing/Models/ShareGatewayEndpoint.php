@@ -126,7 +126,7 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
             self::query()->ofRun($runId)->where(
                 'state',
                 GatewayEndpointState::Open->value,
-            )->orderBy('id')->readLimit(Share::LIVE_LIMIT)->get()->all(),
+            )->orderBy('id')->limit(Share::LIVE_LIMIT)->get()->all(),
         );
     }
 

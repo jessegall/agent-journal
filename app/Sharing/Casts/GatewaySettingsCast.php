@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Casts;
 
+use App\Sharing\Data\StoredGatewaySettings;
 use App\Sharing\Exceptions\StoredShareColumnInvalid;
 use App\Sharing\Support\GatewaySettings;
 use Error;
@@ -27,7 +28,7 @@ final class GatewaySettingsCast implements CastsAttributes
     public function get(Model $model, string $key, mixed $value, array $attributes): GatewaySettings
     {
         try {
-            return GatewaySettings::from(json_decode((string) $value, true, 4, JSON_THROW_ON_ERROR));
+            return StoredGatewaySettings::from(json_decode((string) $value, true, 4, JSON_THROW_ON_ERROR))->settings();
         } catch (JsonException|CannotCreateData|Error $failure) {
             throw StoredShareColumnInvalid::for($model->getTable(), $key, (string) $model->getKey(), $failure);
         }

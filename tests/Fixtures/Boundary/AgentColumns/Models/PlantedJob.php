@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Boundary\AgentColumns\Models;
 
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use Illuminate\Database\Eloquent\Model;
 
 /**

@@ -15,12 +15,12 @@ use TypeError;
 /**
  * What the journal hands back to a program's hook: its standard output, standard error and exit code.
  */
-final class ProgramReply extends Data
+final readonly class ProgramReply
 {
     public function __construct(
-        public readonly string $stdout,
-        public readonly string $stderr,
-        public readonly int $exitCode,
+        public string $stdout,
+        public string $stderr,
+        public int $exitCode,
     ) {}
 
     public static function fromRecorded(RecordedAnswer $answer): self
@@ -37,7 +37,7 @@ final class ProgramReply extends Data
     public static function fromJournal(string $body): self
     {
         try {
-            return ProgramReply::from(json_decode($body, true, 4, JSON_THROW_ON_ERROR));
+            return ProgramReplyData::from(json_decode($body, true, 4, JSON_THROW_ON_ERROR))->reply();
         } catch (CannotCreateData|TypeError $malformed) {
             throw ProgramReplyMalformed::because($malformed);
         }

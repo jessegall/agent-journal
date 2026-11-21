@@ -10,7 +10,7 @@ use App\Records\Support\RecordIdentity;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
-use App\Text\Data\TextVersionInfo;
+use App\Text\Data\TextVersionSummary;
 use App\Text\Exceptions\TargetHasNoText;
 use App\Text\Exceptions\TextSelectionRefused;
 use App\Text\Support\MarkdownText;
@@ -25,11 +25,15 @@ final readonly class TextRecords implements TextResolver
 {
     public function __construct(private RecordResolver $records) {}
 
-    public function version(RecordIdentity $target, string|null $version = null): TextVersionInfo
+    public function version(RecordIdentity $target, string|null $version = null): TextVersionSummary
     {
         $text = $this->textVersion($target, $version);
 
-        return TextVersionInfo::from(['id' => $text->id, 'label' => $text->label, 'lineCount' => $text->lineCount()]);
+        return TextVersionSummary::from([
+            'id' => $text->id,
+            'label' => $text->label,
+            'lineCount' => $text->lineCount(),
+        ]);
     }
 
     public function sections(RecordIdentity $target, string $version, int $afterSection, PageSize $size): TextSections

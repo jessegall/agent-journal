@@ -13,7 +13,6 @@ use App\Processes\Values\ProofSample;
 use App\Processes\Values\ReaderCheckpoint;
 use App\Processes\Values\ShippedReader;
 use App\Processes\Values\ToolVersions;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -23,41 +22,13 @@ use Tests\TestCase;
  */
 final class ShippedReadersTest extends TestCase
 {
-    /**
-     * @return iterable<string, array{ShippedReader, ProofSample}>
-     */
-    public static function samples(): iterable
+    public function test_each_sample_reads_as_the_branch_it_proves(): void
     {
         foreach (new ShippedReaders()->all() as $reader) {
             foreach ($reader->samples() as $sample) {
-                yield "{$reader->tool} {$sample->file}" => [$reader, $sample];
+                $this->assertSampleReadsAsItsBranch($reader, $sample);
             }
         }
-    }
-
-    #[DataProvider('samples')]
-    public function test_each_sample_reads_as_the_branch_it_proves(ShippedReader $reader, ProofSample $sample): void
-    {
-        $read = new DeclarativeReader($reader->reader, $reader->contract, "{$reader->tool}-{$reader->version}");
-        $frame = new OutputFrame(OutputStream::Stdout, 0, $reader->outputOf($sample));
-        $assessment = $read->finish($read->read(new ReaderCheckpoint(), $frame), $sample->end());
-        $outcome = $reader->exits->outcomeOf($sample->exit);
-        $accepted = $assessment->problems === [] && $outcome->acceptsClaim($assessment->claimed)
-            && $outcome !== Outcome::ExecutionError;
-        $name = "{$reader->tool} {$sample->file}";
-
-        if (! $sample->provesABranch()) {
-            $this->assertFalse($accepted, "{$name} was read as a clean or findings run.");
-
-            return;
-        }
-
-        $this->assertSame([], array_map(fn ($problem) => $problem->explanation, $assessment->problems));
-        $this->assertSame($sample->proves, $outcome->value);
-        $this->assertTrue(
-            $outcome->acceptsClaim($assessment->claimed),
-            "{$name} claims {$assessment->claimed->value}.",
-        );
     }
 
     public function test_a_reader_is_bound_to_the_version_it_was_proven_on(): void
@@ -79,5 +50,29 @@ final class ShippedReadersTest extends TestCase
 
             $this->assertTrue($installed->hasInstalled($reader->versionSource, $reader->version), $reader->tool);
         }
+    }
+
+    private function assertSampleReadsAsItsBranch(ShippedReader $reader, ProofSample $sample): void
+    {
+        $read = new DeclarativeReader($reader->reader, $reader->contract, "{$reader->tool}-{$reader->version}");
+        $frame = new OutputFrame(OutputStream::Stdout, 0, $reader->outputOf($sample));
+        $assessment = $read->finish($read->read(new ReaderCheckpoint(), $frame), $sample->end());
+        $outcome = $reader->exits->outcomeOf($sample->exit);
+        $accepted = $assessment->problems === [] && $outcome->acceptsClaim($assessment->claimed)
+            && $outcome !== Outcome::ExecutionError;
+        $name = "{$reader->tool} {$sample->file}";
+
+        if (! $sample->provesABranch()) {
+            $this->assertFalse($accepted, "{$name} was read as a clean or findings run.");
+
+            return;
+        }
+
+        $this->assertSame([], array_map(fn ($problem) => $problem->explanation, $assessment->problems));
+        $this->assertSame($sample->proves, $outcome->value);
+        $this->assertTrue(
+            $outcome->acceptsClaim($assessment->claimed),
+            "{$name} claims {$assessment->claimed->value}.",
+        );
     }
 }

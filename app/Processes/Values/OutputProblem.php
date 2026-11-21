@@ -5,25 +5,23 @@ declare(strict_types=1);
 namespace App\Processes\Values;
 
 use App\Processes\Contracts\StoredValue;
-use Spatie\LaravelData\Attributes\MapName;
-use Spatie\LaravelData\Data;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\ProblemCode;
+use App\Processes\Stored\StoredOutputProblem;
 
 /**
  * Why a reader could not vouch for part of a check's output: the stable code, the stream and byte range, the reader
  * revision, a safe explanation and the next action.
  */
-final class OutputProblem extends Data implements StoredValue
+final readonly class OutputProblem implements StoredValue
 {
     public function __construct(
-        public readonly ProblemCode $code,
-        public readonly OutputStream|null $stream,
-        public readonly int $start,
-        public readonly int $end,
-        #[MapName('reader')]
-        public readonly string $readerRevision,
-        public readonly string $explanation,
+        public ProblemCode $code,
+        public OutputStream|null $stream,
+        public int $start,
+        public int $end,
+        public string $readerRevision,
+        public string $explanation,
     ) {}
 
     /**
@@ -39,13 +37,39 @@ final class OutputProblem extends Data implements StoredValue
         return $this->code->nextAction();
     }
 
+    /**
+     * @return array{code: string, stream: string|null, start: int, end: int, reader: string, explanation: string}
+     */
+    public function toArray(): array
+    {
+        return [
+            'code' => $this->code->value,
+            'stream' => $this->stream?->value,
+            'start' => $this->start,
+            'end' => $this->end,
+            'reader' => $this->readerRevision,
+            'explanation' => $this->explanation,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields  the shape toArray writes
+     */
+    public static function fromArray(array $fields): self
+    {
+        return StoredOutputProblem::from($fields)->problem();
+    }
+
     public static function fromJson(string $json): self
     {
-        return OutputProblem::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR));
+        return StoredOutputProblem::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->problem();
     }
 
     public static function listFromJson(string $json): array
     {
-        return array_values(OutputProblem::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)));
+        return array_values(array_map(
+            fn (StoredOutputProblem $stored) => $stored->problem(),
+            StoredOutputProblem::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
     }
 }

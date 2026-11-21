@@ -6,6 +6,8 @@ namespace App\Agents\Support;
 
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Values\AccessPolicy;
+use App\Agents\Values\ExecutionBudgets;
+use App\Agents\Values\ExecutionPolicy;
 
 /**
  * What the protected host starts a helper container with (doc 14, section 63; doc 61, decision 6): the image by

@@ -66,7 +66,7 @@ final class RevisionFence extends Model implements ReadableModel
      */
     public static function pending(int $limit): array
     {
-        $pending = self::query()->whereNull('reconciled_at')->orderBy('created_at')->readLimit($limit)->get();
+        $pending = self::query()->whereNull('reconciled_at')->orderBy('created_at')->readExactly($limit)->get();
 
         return array_values($pending->all());
     }

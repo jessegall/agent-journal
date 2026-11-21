@@ -6,7 +6,7 @@ namespace App\Agents\Contracts;
 
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\SessionOption;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 
 /**
  * The running agent sessions whoever acts in this request may talk to: every one for the user, only its own for an

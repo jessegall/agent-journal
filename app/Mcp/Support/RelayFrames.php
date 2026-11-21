@@ -231,7 +231,7 @@ final class RelayFrames
                 json_decode($line, true, LimitMcpMessage::MAX_DEPTH, JSON_THROW_ON_ERROR),
             );
         } catch (JsonException $broken) {
-            $broken->getCode() === JSON_ERROR_DEPTH ? $this->refuseTooDeep($line) : $this->refuseUnreadable();
+            $this->refuseBroken($line, $broken);
 
             return;
         } catch (CannotCreateData|TypeError) {
@@ -241,6 +241,20 @@ final class RelayFrames
         }
 
         $this->enqueue(new Frame($line, $message, $admittedAt));
+    }
+
+    /**
+     * Refuses a line that is not JSON, naming the depth limit when that is what it broke.
+     */
+    private function refuseBroken(string $line, JsonException $broken): void
+    {
+        if ($broken->getCode() === JSON_ERROR_DEPTH) {
+            $this->refuseTooDeep($line);
+
+            return;
+        }
+
+        $this->refuseUnreadable();
     }
 
     private function refuseTooDeep(string $line): void
@@ -289,7 +303,7 @@ final class RelayFrames
     }
 
     /**
-     * @param  array<string, mixed>  $answer
+     * Keeps the protocol version a legacy initialize negotiated, for the frames that follow it.
      */
     private function rememberNegotiatedVersion(Frame $frame, JsonRpcReplyData $answer): void
     {
@@ -297,11 +311,7 @@ final class RelayFrames
             return;
         }
 
-        $version = InitializeResultData::from($answer->result)->protocolVersion;
-
-        if ($version !== null) {
-            $this->negotiatedVersion = $version;
-        }
+        $this->negotiatedVersion = InitializeResultData::from($answer->result)->protocolVersion;
     }
 
     /**

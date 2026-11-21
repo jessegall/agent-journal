@@ -11,7 +11,7 @@ use App\Agents\Enums\ProgramFailure;
 use App\Agents\Events\ProgramFailed;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Actions\StartStacks;
 use App\Hooks\Models\FailureReceipt;

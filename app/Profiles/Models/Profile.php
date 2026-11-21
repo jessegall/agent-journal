@@ -111,7 +111,7 @@ final class Profile extends Model implements ReadableModel
      */
     public static function listed(int $limit): array
     {
-        return array_values(self::query()->orderBy('key')->readLimit($limit)->get()->all());
+        return array_values(self::query()->orderBy('key')->readExactly($limit)->get()->all());
     }
 
     // ----------[ Mutations ]----------

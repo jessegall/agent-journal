@@ -7,18 +7,16 @@ namespace App\Profiles\Values;
 use App\Actors\Contracts\Policy;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Exceptions\GrantShapeInvalid;
-use Spatie\LaravelData\Data;
 
 /**
- * One access a profile grants on one policy. The pair is the identity, and a stored grant is exactly its two keys,
- * which ::from() checks through fromArray.
+ * One access a profile grants on one policy. The pair is the identity, and a stored grant is exactly its two keys.
  */
-final class PolicyGrant extends Data
+final readonly class PolicyGrant
 {
     /**
      * @param  class-string<Policy>  $policy
      */
-    public function __construct(public readonly string $policy, public readonly AccessType $access) {}
+    public function __construct(public string $policy, public AccessType $access) {}
 
     /**
      * @param  class-string<Policy>  $policy

@@ -9,7 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Models\Agent;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Hooks\Contracts\CurrentState;
 use Domain\Plans\Api\PlanCard;

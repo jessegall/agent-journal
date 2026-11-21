@@ -11,7 +11,7 @@ use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
-use App\Agents\Support\RuntimeIntent;
+use App\Agents\Values\RuntimeIntent;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;

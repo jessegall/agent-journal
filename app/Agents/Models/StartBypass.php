@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
-use App\Agents\Support\BypassReport;
-use App\Agents\Support\LoggedBypass;
+use App\Agents\Values\BypassReport;
+use App\Agents\Values\LoggedBypass;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;

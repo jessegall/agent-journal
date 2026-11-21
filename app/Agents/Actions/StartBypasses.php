@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Actions;
 
 use App\Agents\Models\StartBypass;
-use App\Agents\Support\BypassReport;
+use App\Agents\Values\BypassReport;
 
 /**
  * Keeps the bypasses a start's host reports after the journal came back; they are facts, never fresh permission.

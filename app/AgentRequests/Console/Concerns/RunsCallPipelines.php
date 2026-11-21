@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\AgentRequests\Console\Concerns;
 
-use App\Contracts\Attributes\DecodesAnyJson;
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Exceptions\CommandStopped;
@@ -12,6 +11,7 @@ use App\AgentRequests\Pipelines\RunSignedCallPipeline;
 use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Values\CallToSend;
 use App\AgentRequests\Values\CommandReport;
+use App\Contracts\Attributes\DecodesAnyJson;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\PipelineRunner;
 use Closure;

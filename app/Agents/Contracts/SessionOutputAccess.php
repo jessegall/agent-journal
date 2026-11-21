@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Contracts;
 
-use App\Agents\Support\SessionOutputPaths;
+use App\Agents\Values\SessionOutputPaths;
 
 /**
  * The saved outputs a journal session may read back: only those its current process start granted in its newest

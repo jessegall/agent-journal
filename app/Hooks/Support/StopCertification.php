@@ -8,7 +8,7 @@ use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Models\CertifiedWork;
 use App\Agents\Models\StartRecord;
 use App\Agents\Models\WorkReservation;
-use App\Agents\Support\StartPolicy;
+use App\Agents\Values\StartPolicy;
 use App\Hooks\Events\HelperCompletionCertified;
 use App\Hooks\Models\StopAttempt;
 use Illuminate\Contracts\Events\Dispatcher;

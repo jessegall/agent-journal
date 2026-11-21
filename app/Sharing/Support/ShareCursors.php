@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Support;
 
+use App\Sharing\Data\ShareCursorData;
 use App\Sharing\Exceptions\ShareReadRefused;
 use Illuminate\Container\Attributes\Config;
 use JsonException;
@@ -23,7 +24,7 @@ final readonly class ShareCursors
 
     public function write(ShareCursor $cursor): string
     {
-        $encodedCursor = self::encode(json_encode($cursor, JSON_THROW_ON_ERROR));
+        $encodedCursor = self::encode(json_encode(get_object_vars($cursor), JSON_THROW_ON_ERROR));
 
         return $encodedCursor.'.'.$this->signatureOf($encodedCursor);
     }
@@ -45,7 +46,9 @@ final readonly class ShareCursors
         }
 
         try {
-            $cursor = ShareCursor::from(json_decode(self::decode($encodedCursor), true, 3, JSON_THROW_ON_ERROR));
+            $cursor = ShareCursorData::from(
+                json_decode(self::decode($encodedCursor), true, 3, JSON_THROW_ON_ERROR),
+            )->cursor();
         } catch (JsonException|CannotCreateData|TypeError $cause) {
             throw ShareReadRefused::staleCursor(previous: $cause);
         }

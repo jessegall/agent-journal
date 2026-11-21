@@ -9,7 +9,7 @@ use App\Agents\Models\Agent;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Settings\Exceptions\SettingsAccessDenied;
 use App\Settings\Providers\SettingsServiceProvider;
-use App\Settings\Support\DenyAllSettingsAccess;
+use App\Settings\Support\ClosedSettingsAccess;
 use App\Web\Support\OwnerSettingsAccess;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -37,7 +37,7 @@ final class SettingsAccessTest extends TestCase
 
         $policy = $application->make(SettingsAccessPolicy::class);
 
-        $this->assertInstanceOf(DenyAllSettingsAccess::class, $policy);
+        $this->assertInstanceOf(ClosedSettingsAccess::class, $policy);
         $this->assertFalse($policy->allows(User::factory()->create()));
     }
 

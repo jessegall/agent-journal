@@ -8,7 +8,7 @@ use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\SessionOpened;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;

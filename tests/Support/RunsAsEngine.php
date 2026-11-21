@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\CommandEntrance;
 use App\Engine\Support\EngineAccess;

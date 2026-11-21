@@ -41,7 +41,7 @@ final readonly class CommentRecords implements CommentResolver
         $card = $this->records->card($target);
         $comments = self::commentsOf($record)
             ->when($page->afterId !== null, fn ($query) => $query->where('id', '>', $page->afterId))
-            ->readLimit($page->limit + 1)
+            ->readExactly($page->limit + 1)
             ->get();
         $shown = $comments->take($page->limit);
 

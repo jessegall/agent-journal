@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Agents;
 
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Support\ExecutionBudgets;
-use App\Agents\Support\ExecutionPolicy;
-use App\Agents\Support\ModelSelection;
-use App\Agents\Support\SelectedProgram;
+use App\Agents\Values\ExecutionBudgets;
+use App\Agents\Values\ExecutionPolicy;
+use App\Agents\Values\ModelSelection;
+use App\Agents\Values\SelectedProgram;
 use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Str;
 
@@ -54,11 +54,11 @@ final class TestSelections
     public static function onHost(): ExecutionPolicy
     {
         return ExecutionPolicy::make(
-ExecutionModeType::ProtectedHost,
- null,
- '/workspaces/test',
- ExecutionBudgets::defaults(),
- [],
-);
+            ExecutionModeType::ProtectedHost,
+            null,
+            '/workspaces/test',
+            ExecutionBudgets::defaults(),
+            [],
+        );
     }
 }

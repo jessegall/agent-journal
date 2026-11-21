@@ -30,7 +30,7 @@ final readonly class AgentWorkStack implements WorkStackProvider
     public function sessionsOf(ActorIdentity $actor): array
     {
         $sessions = AgentSession::query()->runningFor($actor->id)->orderBy('id')
-            ->readLimit(self::RUNNING_SESSIONS_READ)
+            ->limit(self::RUNNING_SESSIONS_READ)
             ->pluck('id')->all();
 
         return array_values(array_map(strval(...), $sessions));

@@ -239,7 +239,7 @@ final class SignInAttempt extends Model implements ReadableModel
             ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->where('expires_at', '<=', $now)
             ->orderBy('expires_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));
@@ -350,7 +350,7 @@ final class SignInAttempt extends Model implements ReadableModel
             ->where('waits_for_uses', true)
             ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));

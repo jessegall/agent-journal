@@ -55,7 +55,7 @@ final readonly class RuleExample implements StoredValue
         ));
     }
 
-    public static function fromStored(StoredRuleExample $stored): self
+    private static function fromStored(StoredRuleExample $stored): self
     {
         return new self($stored->type, $stored->line, CommandClassSet::fromArray($stored->classes));
     }

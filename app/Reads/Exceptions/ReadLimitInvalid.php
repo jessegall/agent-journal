@@ -17,9 +17,9 @@ final class ReadLimitInvalid extends RuntimeException
         return new self("The reads.default_limit {$limit} must be between 1 and reads.page_max {$pageMax}.");
     }
 
-    public static function withinPage(int $rows, int $pageMax): self
+    public static function withinPage(int $rows, int $max): self
     {
-        return new self("A read of {$rows} rows fits a page of {$pageMax}; ask for it with limit({$rows}).");
+        return new self("A read of {$rows} rows fits a page of {$max}; ask for it with limit({$rows}).");
     }
 
     public static function rows(int $rows): self

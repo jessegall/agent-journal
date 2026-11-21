@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Contracts\TargetsAgentStack;
+use App\Agents\Contracts\AgentStackCommand;
 use App\Agents\Handlers\RunKeyScriptHandler;
 use App\Agents\Policies\AgentMaintenancePolicy;
-use App\Agents\Support\DriverReceipt;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\ScriptParameter;
+use App\Agents\Values\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
@@ -23,7 +23,7 @@ use App\Operations\Enums\AccessType;
  */
 #[HandledBy(RunKeyScriptHandler::class)]
 #[Authorize(AgentMaintenancePolicy::class, AccessType::Execute)]
-final readonly class RunKeyScript extends Command implements TargetsAgentStack
+final readonly class RunKeyScript extends Command implements AgentStackCommand
 {
     /**
      * @param  list<ScriptParameter>  $parameters

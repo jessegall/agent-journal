@@ -22,7 +22,7 @@ use App\Processes\Values\ReaderAssessment;
 use App\Processes\Values\ReaderCheckpoint;
 use App\Processes\Values\ReaderDefinition;
 use App\Processes\Values\RecordRule;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 /**
  * A declarative reader accounts for every line of a check's committed output and reports every problem together

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Agents\Contracts\SessionOutputAccess;
-use App\Agents\Support\SessionOutputPaths;
+use App\Agents\Values\SessionOutputPaths;
 use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\ProgramCall;

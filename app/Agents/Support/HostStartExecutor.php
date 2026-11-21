@@ -11,6 +11,8 @@ use App\Agents\Data\HostStopReplyData;
 use App\Agents\Exceptions\HostStartRefused;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * Starts and stops prepared starts through the protected host on this machine: one JSON line to its local socket,
@@ -80,12 +82,12 @@ final readonly class HostStartExecutor implements StartExecutor
             throw HostStartRefused::unreachable($this->socket);
         }
 
-        $refusal = HostRefusalData::from(json_decode($line, true, flags: JSON_THROW_ON_ERROR))->refusal;
-
-        if (is_string($refusal)) {
-            throw HostStartRefused::because($refusal);
+        try {
+            $refusal = HostRefusalData::from(json_decode($line, true, flags: JSON_THROW_ON_ERROR));
+        } catch (CannotCreateData|TypeError) {
+            return $line;
         }
 
-        return $line;
+        throw HostStartRefused::because($refusal->refusal);
     }
 }

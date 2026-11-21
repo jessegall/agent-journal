@@ -8,7 +8,7 @@ use App\Agents\Exceptions\SessionPolicyFrozen;
 use App\Agents\Stored\StoredAccessPolicy;
 use App\Agents\Stored\StoredExecutionPolicy;
 use App\Agents\Stored\StoredStopConditions;
-use App\Agents\Support\StartPolicy;
+use App\Agents\Values\StartPolicy;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -112,7 +112,7 @@ final class SessionPolicy extends Model implements ReadableModel
             $starts[$session->id] = CarbonImmutable::instance($session->created_at);
         }
 
-        $policies = self::query()->whereIn('session_id', array_keys($starts))->readLimit(count($starts))->get();
+        $policies = self::query()->whereIn('session_id', array_keys($starts))->readExactly(count($starts))->get();
         $deadlines = [];
 
         foreach ($policies as $policy) {

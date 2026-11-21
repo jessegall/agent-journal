@@ -103,14 +103,14 @@ final class SkillPublication extends Model implements ReadableModel
         $open = self::query()
             ->whereIn('open_key', $openKeys)
             ->lockForUpdate()
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get()
             ->keyBy('open_key');
         $delivered = self::query()
             ->whereIn('session_id', array_map(fn (PublicationIntent $intent) => $intent->sessionId, $intents))
             ->inState(PublicationState::Delivered)
             ->orderByDesc('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get()
             ->unique(fn (self $publication) => self::openKeyOf($publication->session_id, $publication->target))
             ->keyBy(fn (self $publication) => self::openKeyOf($publication->session_id, $publication->target));
@@ -171,7 +171,7 @@ final class SkillPublication extends Model implements ReadableModel
             ])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->readLimit(max(1, 2 * count($sessionIds)))
+            ->readExactly(max(1, 2 * count($sessionIds)))
             ->get()
             ->unique('session_id');
 
@@ -205,7 +205,7 @@ final class SkillPublication extends Model implements ReadableModel
             ])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get();
 
         return array_values($settled->all());
@@ -221,7 +221,7 @@ final class SkillPublication extends Model implements ReadableModel
         $open = self::query()
             ->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value])
             ->orderBy('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get();
 
         return array_values($open->all());
@@ -238,7 +238,7 @@ final class SkillPublication extends Model implements ReadableModel
         $latest = self::query()
             ->whereIn('session_id', $ids)
             ->orderByDesc('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get()
             ->unique('session_id');
 
@@ -253,7 +253,7 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public static function statesOf(array $ids): array
     {
-        $publications = self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->get();
+        $publications = self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->get();
 
         return $publications->mapWithKeys(fn (self $publication) => [$publication->id => $publication->state])->all();
     }
@@ -305,7 +305,7 @@ final class SkillPublication extends Model implements ReadableModel
     {
         $latest = self::query()
             ->orderByDesc('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get()
             ->unique('session_id');
 

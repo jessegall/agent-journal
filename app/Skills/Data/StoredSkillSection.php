@@ -9,6 +9,8 @@ use Spatie\LaravelData\Data;
 
 /**
  * One section of a stored skill revision as its JSON column keeps it: key, heading and literal Markdown.
+ *
+ * @method static array<int, static> collect(mixed $items) read only from decoded JSON, so always an array
  */
 final class StoredSkillSection extends Data
 {

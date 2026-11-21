@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Exceptions;
 
-use Throwable;
 use RuntimeException;
+use Throwable;
 
 /**
  * A start's output grant snapshot that is not one the journal sealed for it; the relay grants nothing from it.

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Profiles\Casts;
 
+use App\Bus\Contracts\Command;
 use App\Contracts\Attributes\DecodesAnyJson;
+use App\Profiles\Data\StoredPolicyGrant;
+use App\Profiles\Data\StoredScopedRead;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Exceptions\GrantShapeInvalid;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
-use App\Profiles\Values\PolicyGrant;
 use App\Profiles\Values\ProfileAuthorization;
-use App\Profiles\Values\ScopedRead;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 use JsonException;
@@ -35,12 +36,18 @@ final class ProfileAuthorizationCast implements CastsAttributes
         try {
             return new ProfileAuthorization(
                 AuthorizationType::from((string) $attributes['authorization_type']),
-                array_values(PolicyGrant::collect(
-                    json_decode((string) $attributes['policy_grants'], true, 8, JSON_THROW_ON_ERROR),
+                array_values(array_map(
+                    fn (StoredPolicyGrant $stored) => $stored->grant,
+                    StoredPolicyGrant::collect(
+                        json_decode((string) $attributes['policy_grants'], true, 8, JSON_THROW_ON_ERROR),
+                    ),
                 )),
                 self::deniedCommandsOf((string) $attributes['denied_commands']),
-                array_values(ScopedRead::collect(
-                    json_decode((string) $attributes['read_grants'], true, 4, JSON_THROW_ON_ERROR),
+                array_values(array_map(
+                    fn (StoredScopedRead $stored) => $stored->read(),
+                    StoredScopedRead::collect(
+                        json_decode((string) $attributes['read_grants'], true, 4, JSON_THROW_ON_ERROR),
+                    ),
                 )),
             );
         } catch (JsonException|CannotCreateData|TypeError|ValueError|GrantShapeInvalid $failure) {
@@ -64,15 +71,15 @@ final class ProfileAuthorizationCast implements CastsAttributes
     }
 
     /**
-     * The denied commands column: a bare JSON list of command texts, with no keys for a Data class to name.
+     * The denied commands column: a bare JSON list of command classes, with no keys for a Data class to name.
      *
-     * @return list<string>
+     * @return list<class-string<Command<mixed>>>
      *
      * @throws JsonException
      */
     #[DecodesAnyJson]
     private static function deniedCommandsOf(string $json): array
     {
-        return array_values(array_map(strval(...), (array) json_decode($json, true, 4, JSON_THROW_ON_ERROR)));
+        return array_values((array) json_decode($json, true, 4, JSON_THROW_ON_ERROR));
     }
 }

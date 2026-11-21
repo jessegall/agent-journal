@@ -9,6 +9,8 @@ use Spatie\LaravelData\Data;
 
 /**
  * One example of a proposal as it is stored, the shape RuleExample::toArray writes: its type, line and classes.
+ *
+ * @method static array<int, static> collect(mixed $items) read only from decoded JSON, so always an array
  */
 final class StoredRuleExample extends Data
 {

@@ -28,7 +28,7 @@ final readonly class WorkingOnPlanStateFactory implements StateLoader
     public function statesFor(StateReferences $references): StateSet
     {
         $ids = $references->subjectIds();
-        $plans = Plan::query()->whereKey($ids)->readLimit(count($ids))->get()->keyBy('id')->all();
+        $plans = Plan::query()->whereKey($ids)->readExactly(count($ids))->get()->keyBy('id')->all();
 
         return StateSet::build($references, function (StateReference $reference) use ($plans): AgentState {
             $subject = $reference->subject;

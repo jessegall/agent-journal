@@ -42,8 +42,8 @@ final readonly class StartedAgent
     /**
      * What the host needs for this start: the session, its token and its isolated settings.
      */
-    public function material(): StartMaterial
+    public function secrets(): StartSecrets
     {
-        return new StartMaterial($this->session->id, $this->token, $this->settings);
+        return new StartSecrets($this->session->id, $this->token, $this->settings);
     }
 }

@@ -8,7 +8,7 @@ use App\Hooks\Exceptions\OutputGrantsInvalid;
 use App\Hooks\Relay\OutputGrants;
 use App\Hooks\Relay\OutputGrantSeal;
 use Illuminate\Filesystem\Filesystem;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 /**
  * A start's sealed output grants let it read exactly its own transcript, by real path: a link, a parent folder, a

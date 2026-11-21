@@ -94,7 +94,7 @@ final class TickCandidatesTest extends TestCase
             'a-2',
             array_map(
                 fn (FrameRecord $record) => $record->id,
-                AgentStackRow::query()->tickingOpen()->readLimit(1)->sole()->frames->all(),
+                AgentStackRow::query()->tickingOpen()->limit(1)->sole()->frames->all(),
             ),
         );
     }

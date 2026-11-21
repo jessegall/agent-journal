@@ -9,7 +9,7 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Models\ProgramConversation;
 use App\Agents\Models\SessionOutputGrant;
 use App\Agents\Models\StartRecord;
-use App\Agents\Support\SessionOutputPaths;
+use App\Agents\Values\SessionOutputPaths;
 use App\Programs\Enums\HookProgram;
 
 /**

@@ -175,7 +175,7 @@ final readonly class CommandRule implements StoredValue
     /**
      * The rule its stored shape names.
      */
-    public static function fromStored(StoredCommandRule $stored): self
+    private static function fromStored(StoredCommandRule $stored): self
     {
         return new self(
             $stored->id,

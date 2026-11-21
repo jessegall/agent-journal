@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reads;
 
 use App\Reads\Exceptions\ModelReadAllRefused;
+use App\Reads\Exceptions\ReadLimitInvalid;
 use App\Reads\Exceptions\ReadLimitTooLarge;
 use App\Reads\Exceptions\ReadReasonMissing;
 use App\Reads\Exceptions\ReadShapeUnsupported;
@@ -50,9 +51,25 @@ final class BoundedReadsTest extends TestCase
 
     public function test_a_larger_read_is_named(): void
     {
-        $this->assertCount(55, Task::query()->readLimit(55)->get());
+        $this->assertCount(55, Task::query()->limit(55)->get());
+        $this->assertCount(60, Task::query()->readLimit(101)->get());
         $this->assertCount(60, Task::query()->readAll('every task of the test')->get());
-        $this->assertCount(60, Task::query()->whereKey($this->taskIds)->readLimit(count($this->taskIds))->pluck('id'));
+        $this->assertCount(
+            60,
+            Task::query()->whereKey($this->taskIds)->readExactly(count($this->taskIds))->pluck('id'),
+        );
+    }
+
+    public function test_a_read_limit_a_page_holds_is_refused_for_limit(): void
+    {
+        $this->expectExceptionObject(ReadLimitInvalid::withinPage(100, 100));
+
+        Task::query()->readLimit(100);
+    }
+
+    public function test_an_exact_read_of_a_known_set_takes_any_size(): void
+    {
+        $this->assertCount(3, Task::query()->whereKey(array_slice($this->taskIds, 0, 3))->readExactly(3)->get());
     }
 
     public function test_reading_every_row_without_a_name_is_refused(): void

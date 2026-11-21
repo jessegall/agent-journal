@@ -84,8 +84,7 @@ final readonly class CodexSignIn implements SignInProtocol
 
         $process->send(self::message(['method' => 'account/read', 'id' => self::ACCOUNT_REQUEST, 'params' => []]));
         $process->waitFor(fn (string $output) => self::answerIn($output, self::ACCOUNT_REQUEST) !== null);
-        $answer = self::answerIn($process->output(), self::ACCOUNT_REQUEST);
-        $account = CodexAccountReadData::from($answer === null ? [] : $answer->result);
+        $account = self::accountIn($process->output());
         $status = $this->verify($directory);
         $isSignedIn = $account->isChatGpt() && $status->isCertain && $status->isSignedIn;
         $email = $isSignedIn ? $account->account?->email : null;
@@ -113,11 +112,7 @@ final readonly class CodexSignIn implements SignInProtocol
     {
         $start = self::loginStartIn($process->output());
 
-        if ($start->verificationUrl === null || $start->userCode === null) {
-            return null;
-        }
-
-        return ['address' => $start->verificationUrl, 'code' => $start->userCode];
+        return $start === null ? null : ['address' => $start->verificationUrl, 'code' => $start->userCode];
     }
 
     /**
@@ -125,9 +120,9 @@ final readonly class CodexSignIn implements SignInProtocol
      */
     private static function completionIn(string $output): CodexLoginCompletedData|null
     {
-        $loginId = self::loginStartIn($output)->loginId;
+        $start = self::loginStartIn($output);
 
-        if ($loginId === null) {
+        if ($start === null) {
             return null;
         }
 
@@ -138,7 +133,7 @@ final readonly class CodexSignIn implements SignInProtocol
 
             $completion = CodexLoginCompletedData::from($message->params);
 
-            if ($completion->loginId === $loginId) {
+            if ($completion->loginId === $start->loginId) {
                 return $completion;
             }
         }
@@ -147,13 +142,31 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * The program's answer to the login start, empty until it answered.
+     * The program's answer to the login start, none until it answered with a device code.
      */
-    private static function loginStartIn(string $output): CodexLoginStartData
+    private static function loginStartIn(string $output): CodexLoginStartData|null
     {
         $answer = self::answerIn($output, self::LOGIN_REQUEST);
 
-        return CodexLoginStartData::from($answer === null ? [] : $answer->result);
+        try {
+            return $answer === null ? null : CodexLoginStartData::from($answer->result);
+        } catch (CannotCreateData|TypeError) {
+            return null;
+        }
+    }
+
+    /**
+     * The account the program's account/read answered with; signed out when it answered none it could name.
+     */
+    private static function accountIn(string $output): CodexAccountReadData
+    {
+        $answer = self::answerIn($output, self::ACCOUNT_REQUEST);
+
+        try {
+            return CodexAccountReadData::from($answer === null ? [] : $answer->result);
+        } catch (CannotCreateData|TypeError) {
+            return new CodexAccountReadData();
+        }
     }
 
     /**

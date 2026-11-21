@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Resolvers\Support;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Models\SequenceRun;
 
@@ -27,7 +27,7 @@ final readonly class SequenceRecords
      */
     public function many(array $runIds): array
     {
-        return SequenceRun::query()->forActor()->whereKey($runIds)->readLimit(
+        return SequenceRun::query()->forActor()->whereKey($runIds)->readExactly(
             count($runIds),
         )->get()->keyBy('id')->all();
     }

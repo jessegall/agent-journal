@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Agents\Events\StartSettingsRequested;
 use App\Agents\Support\IsolatedHookSettings;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Actions\StartStacks;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
