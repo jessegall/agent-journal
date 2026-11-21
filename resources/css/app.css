@@ -346,3 +346,13 @@
         }
     }
 }
+
+/*
+ * The one look of a text control: an input, a textarea or a select of any domain, and the kit's TextField. A
+ * one-line field is the kit's height; a textarea grows with its rows.
+ */
+@layer components {
+    .input {
+        @apply min-h-7 min-w-0 rounded-control border border-border-2 bg-transparent px-2.5 py-1 text-field text-text transition-colors duration-(--duration-hover) placeholder:text-text-4 focus-visible:border-brand focus-visible:outline-none disabled:opacity-45 aria-invalid:border-danger;
+    }
+}

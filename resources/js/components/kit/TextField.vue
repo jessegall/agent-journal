@@ -62,7 +62,7 @@ const autocompleteValue = computed(() => {
                     :spellcheck="code ? false : undefined"
                     :aria-invalid="field.invalid"
                     :aria-describedby="field.describedBy"
-                    class="h-7 min-w-0 flex-1 rounded-control border border-border-2 bg-transparent px-2.5 text-field text-text transition-colors duration-(--duration-hover) placeholder:text-text-4 focus-visible:border-brand focus-visible:outline-none disabled:opacity-45 aria-invalid:border-danger"
+                    class="input h-7 flex-1"
                     :class="{
                         'font-mono tracking-[0.2em] uppercase': code,
                         'pr-20': $slots.end,

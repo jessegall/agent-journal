@@ -134,7 +134,7 @@ function cancel(): void {
                 <template v-else>
                     <FormField id="join-project" label="Project">
                         <template #default="{ id }">
-                            <select :id="id" v-model="projectId" class="h-7 rounded-control border border-border-2 bg-bg px-2">
+                            <select :id="id" v-model="projectId" class="input">
                                 <template v-for="project in projects" :key="project.id">
                                     <option :value="project.id">{{ project.label }}</option>
                                 </template>
@@ -143,7 +143,7 @@ function cancel(): void {
                     </FormField>
                     <FormField id="join-environment" label="Environment">
                         <template #default="{ id }">
-                            <select :id="id" v-model="environmentId" class="h-7 rounded-control border border-border-2 bg-bg px-2">
+                            <select :id="id" v-model="environmentId" class="input">
                                 <template v-for="environment in environments" :key="environment.id">
                                     <option :value="environment.id">{{ environment.label }}</option>
                                 </template>
