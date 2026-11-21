@@ -10,6 +10,7 @@ use App\Files\Exceptions\FolderMissing;
 use App\Files\Exceptions\LinkLeavesPlace;
 use App\Files\Exceptions\LinkLoop;
 use App\Files\Values\FilePath;
+use SensitiveParameter;
 
 /**
  * The real path of a file path, kept inside its place: no closed folder, no link out of the place, no link loop, and
@@ -123,7 +124,7 @@ final readonly class PathConfinement
      *
      * @return resource
      */
-    public function opened(FilePath $file, string $real, string $mode)
+    public function opened(FilePath $file, #[SensitiveParameter] string $real, string $mode)
     {
         clearstatcache(true, $real);
         $checked = @lstat($real);
@@ -157,7 +158,7 @@ final readonly class PathConfinement
         return $handle;
     }
 
-    private function absolutePath(string $root, FilePath $file): string
+    private function absolutePath(#[SensitiveParameter] string $root, FilePath $file): string
     {
         return $file->relative === '' ? $root : "{$root}/{$file->relative}";
     }
@@ -165,7 +166,7 @@ final readonly class PathConfinement
     /**
      * The real path, read past PHP's realpath and stat caches, so a link re-pointed while the worker runs is seen.
      */
-    private function freshRealPath(string $root, FilePath $file): string|null
+    private function freshRealPath(#[SensitiveParameter] string $root, FilePath $file): string|null
     {
         $path = $this->absolutePath($root, $file);
         clearstatcache(true, $path);
@@ -177,8 +178,13 @@ final readonly class PathConfinement
     /**
      * A real path, refused when it leaves the place root or lies in a closed folder once its links are followed.
      */
-    private function confined(FilePath $file, string $root, string $real): string
-    {
+    private function confined(
+        FilePath $file,
+        #[SensitiveParameter]
+        string $root,
+        #[SensitiveParameter]
+        string $real,
+    ): string {
         if (! $this->roots->isWithin($real, $file->place)) {
             throw LinkLeavesPlace::from($file->label());
         }
@@ -192,7 +198,7 @@ final readonly class PathConfinement
      * Whether a path that does not resolve fails because its links lead round in a loop, rather than because a name
      * on its way is missing. The links are walked by hand, since PHP reports no reason when a path does not resolve.
      */
-    private function isLinkLoop(FilePath $file, string $root): bool
+    private function isLinkLoop(FilePath $file, #[SensitiveParameter] string $root): bool
     {
         $names = explode('/', $file->relative);
         $current = $root;

@@ -10,6 +10,7 @@ use App\Files\Exceptions\FolderTooDeep;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SensitiveParameter;
 
 /**
  * Writes at a real path already confined to its place: a whole file replaced atomically, a file created only when
@@ -21,7 +22,7 @@ final readonly class FileWriter
      * Replaces the whole file: the bytes go to a temporary file beside it, which is then renamed over it, so a reader
      * sees the old file or the new, never half of one. A failure leaves the old file and no temporary file.
      */
-    public function replace(string $real, string $bytes, int $mode, string $label): void
+    public function replace(#[SensitiveParameter] string $real, string $bytes, int $mode, string $label): void
     {
         $temporary = dirname($real).'/.'.basename($real).'.'.bin2hex(random_bytes(6)).'.tmp';
 
@@ -41,7 +42,7 @@ final readonly class FileWriter
     /**
      * Creates the file with the bytes; an existing file is refused and left untouched.
      */
-    public function create(string $real, string $bytes, int $mode, string $label): void
+    public function create(#[SensitiveParameter] string $real, string $bytes, int $mode, string $label): void
     {
         if (file_exists($real) || is_link($real)) {
             throw FileExists::at($label);
@@ -54,7 +55,7 @@ final readonly class FileWriter
      * Adds a line at the end of the file under an exclusive lock, so two writers' lines never interleave; a missing
      * file is made with the mode.
      */
-    public function append(string $real, string $line, int $mode, string $label): void
+    public function append(#[SensitiveParameter] string $real, string $line, int $mode, string $label): void
     {
         $handle = $this->opened($real, 'ab', $mode, $label);
 
@@ -73,7 +74,7 @@ final readonly class FileWriter
      *
      * @return resource
      */
-    public function lockOpened(string $real, int $mode, string $label)
+    public function lockOpened(#[SensitiveParameter] string $real, int $mode, string $label)
     {
         $handle = $this->opened($real, 'cb', $mode, $label);
 
@@ -90,7 +91,7 @@ final readonly class FileWriter
      * Makes a folder and every missing folder above it with the mode, and gives the folder itself exactly that mode
      * even when it was there already.
      */
-    public function makeFolderWithMode(string $real, int $mode, string $label): void
+    public function makeFolderWithMode(#[SensitiveParameter] string $real, int $mode, string $label): void
     {
         $this->makeFolder($real, $mode, $label);
 
@@ -102,7 +103,7 @@ final readonly class FileWriter
     /**
      * Makes a folder and every missing folder above it with the mode.
      */
-    public function makeFolder(string $real, int $mode, string $label): void
+    public function makeFolder(#[SensitiveParameter] string $real, int $mode, string $label): void
     {
         if (is_dir($real)) {
             return;
@@ -116,7 +117,7 @@ final readonly class FileWriter
     /**
      * Removes a file or a link, never following the link; nothing at the path is no failure.
      */
-    public function remove(string $path, string $label): void
+    public function remove(#[SensitiveParameter] string $path, string $label): void
     {
         if (! is_file($path) && ! is_link($path)) {
             return;
@@ -131,7 +132,7 @@ final readonly class FileWriter
      * Removes a folder and everything in it, children first; a tree deeper than the levels is refused before anything
      * is removed, and links inside are removed as links, never followed. A missing folder is no failure.
      */
-    public function removeFolder(string $path, int $levels, string $label): void
+    public function removeFolder(#[SensitiveParameter] string $path, int $levels, string $label): void
     {
         if (! is_dir($path) || is_link($path)) {
             return;
@@ -169,7 +170,7 @@ final readonly class FileWriter
     /**
      * Makes a link at the path to the real target.
      */
-    public function link(string $path, string $target, string $label): void
+    public function link(#[SensitiveParameter] string $path, #[SensitiveParameter] string $target, string $label): void
     {
         if (! @symlink($target, $path)) {
             throw FileUnwritable::at($label);
@@ -179,7 +180,7 @@ final readonly class FileWriter
     /**
      * Renames an entry, replacing what is at the new path in one step, as an atomic swap of a link needs.
      */
-    public function move(string $from, string $to, string $label): void
+    public function move(#[SensitiveParameter] string $from, #[SensitiveParameter] string $to, string $label): void
     {
         if (! @rename($from, $to)) {
             throw FileUnwritable::at($label);
@@ -190,7 +191,7 @@ final readonly class FileWriter
      * Writes the bytes to a file that must not exist yet, with its mode set before the first byte, and waits until the
      * disk holds them.
      */
-    private function writeNew(string $real, string $bytes, int $mode, string $label): void
+    private function writeNew(#[SensitiveParameter] string $real, string $bytes, int $mode, string $label): void
     {
         $handle = $this->opened($real, 'xb', $mode, $label);
 
@@ -209,7 +210,7 @@ final readonly class FileWriter
      *
      * @return resource
      */
-    private function opened(string $real, string $openMode, int $mode, string $label)
+    private function opened(#[SensitiveParameter] string $real, string $openMode, int $mode, string $label)
     {
         $isNew = ! file_exists($real);
         $previous = umask(0o777 & ~$mode);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Exceptions;
 
 use RuntimeException;
+use SensitiveParameter;
 use Throwable;
 
 /**
@@ -13,8 +14,10 @@ use Throwable;
  */
 final class SignInSecretUnwritable extends RuntimeException
 {
-    public static function in(string $directory, Throwable|null $cause = null): self
+    public static function in(#[SensitiveParameter] string $directory, Throwable|null $cause = null): self
     {
-        return new self("The sign-in folder {$directory} could not take a new key or token file.", previous: $cause);
+        $folder = basename($directory);
+
+        return new self("The account folder {$folder} could not take a new key or token file.", previous: $cause);
     }
 }
