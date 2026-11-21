@@ -29,6 +29,7 @@ use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\TaskDetails;
+use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Api\TaskType;
@@ -208,7 +209,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
             return new OrderedRecordIds([]);
         }
 
-        $query = self::query()->where('state', TaskState::Open)->whereNotIn('id', $assignedIds);
+        $query = self::query()->where('state', TaskState::Open)->outsideSelectedIds($assignedIds);
 
         $ordered = match ($members->type) {
             PoolMembersType::All => $query->orderBy('id'),
@@ -338,6 +339,16 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
+     * The task as a list shows it, with the holder and run its list read for the whole page.
+     *
+     * @param  Option<AssignmentHolder>  $holder
+     */
+    public function card(Option $holder, TaskExecution|null $execution): TaskCard
+    {
+        return new TaskCard($this->id, $this->number, $this->title, $this->state, $holder, $execution);
+    }
+
+    /**
      * The task as a read shows it, without its long texts.
      *
      * @param  Option<AssignmentHolder>  $holder
@@ -361,6 +372,28 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     // ----------[ Scopes ]----------
+
+    /**
+     * Tasks whose ids the subquery selects, such as the ids an actor holds.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function amongSelectedIds(Builder $query, QueryBuilder $ids): void
+    {
+        $query->whereIn('id', $ids);
+    }
+
+    /**
+     * Tasks whose ids the subquery does not select, such as the ids anyone holds.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function outsideSelectedIds(Builder $query, QueryBuilder $ids): void
+    {
+        $query->whereNotIn('id', $ids);
+    }
 
     /**
      * Tasks whose work is not over: open, started or blocked.

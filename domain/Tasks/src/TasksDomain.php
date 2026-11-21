@@ -27,6 +27,9 @@ use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
+use App\Ui\Contracts\PageProvider;
+use App\Ui\Declarations\Page;
+use App\Ui\Enums\Icon;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
@@ -35,6 +38,7 @@ use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskFilters;
+use Domain\Tasks\Api\TaskHolderFilter;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskProgress;
 use Domain\Tasks\Api\TaskSummary;
@@ -63,6 +67,7 @@ use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Resolvers\TaskAssignments;
 use Domain\Tasks\Resolvers\TaskRecords;
 use Domain\Tasks\Resolvers\TaskRunAssignments;
+use Domain\Tasks\Resolvers\TasksWindowResolver;
 use Domain\Tasks\Skills\TasksSkill;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
@@ -75,6 +80,7 @@ final class TasksDomain extends Domain implements
     LinkRecordProvider,
     McpToolProvider,
     NumberedModelProvider,
+    PageProvider,
     PolicyProvider,
     SkillProvider,
     StateProvider
@@ -105,6 +111,15 @@ final class TasksDomain extends Domain implements
         return [];
     }
 
+    public function pages(): array
+    {
+        return [
+            Page::make('list', 'Tasks', Icon::Tasks, TasksWindowResolver::class, 'TasksWindow.vue')
+                ->at('')
+                ->onHome(25),
+        ];
+    }
+
     public function exports(): Exports
     {
         return Exports::make()
@@ -128,6 +143,7 @@ final class TasksDomain extends Domain implements
                 TaskAssignmentCompletion::class,
                 TaskCard::class,
                 TaskFilters::class,
+                TaskHolderFilter::class,
                 TaskList::class,
                 TaskState::class,
                 TaskExecution::class,

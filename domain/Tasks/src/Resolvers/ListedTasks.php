@@ -6,16 +6,20 @@ namespace Domain\Tasks\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Assignments\Contracts\AssigneeResolver;
-use Domain\Tasks\Api\TaskCard;
+use App\Assignments\Contracts\AssignmentQuery;
+use App\Assignments\Support\AssigneeIdentity;
 use Domain\Tasks\Api\TaskFilters;
+use Domain\Tasks\Api\TaskHolderFilter;
 use Domain\Tasks\Api\TaskList;
+use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\Support\TaskExecutions;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Lists the tasks every signed-in actor sees, ordered by id: one query for the page, one for its holders and one batch
- * of agent labels for its runs.
+ * Lists the tasks every signed-in actor sees, ordered by id: the holder filter is a subquery of Core's assignments
+ * inside the count and the page, then one query for the page's holders and one batch of agent labels for its runs.
  */
 final readonly class ListedTasks implements TaskListResolver
 {
@@ -23,14 +27,19 @@ final readonly class ListedTasks implements TaskListResolver
         private CurrentActor $actors,
         private AssigneeResolver $assignees,
         private TaskExecutions $executions,
+        private AssignmentQuery $assignments,
     ) {}
 
     public function list(TaskFilters $filters): TaskList
     {
-        $this->actors->actor();
+        $caller = AssigneeIdentity::of($this->actors->actor());
 
-        $matching = Task::query()->matching($filters->search)->inStates($filters->states)
-            ->inEnvironments($filters->environmentIds);
+        $matching = $this->heldAs(
+            Task::query()->matching($filters->search)->inStates($filters->states)
+                ->inEnvironments($filters->environmentIds),
+            $filters->holder,
+            $caller,
+        );
 
         $total = $matching->clone()->count();
         $tasks = $matching->orderBy('id')->forPage($filters->page->number, $filters->page->size)->get();
@@ -44,10 +53,7 @@ final readonly class ListedTasks implements TaskListResolver
         return new TaskList(
             array_values(
                 $tasks->map(
-                    fn (Task $task) => new TaskCard(
-                        $task->id,
-                        $task->title,
-                        $task->state,
+                    fn (Task $task) => $task->card(
                         $holders->forRecord($task->assignmentIdentity()),
                         $executions[$task->id],
                     ),
@@ -56,5 +62,22 @@ final readonly class ListedTasks implements TaskListResolver
             $filters->page,
             $total,
         );
+    }
+
+    /**
+     * @param  Builder<Task>  $tasks
+     * @return Builder<Task>
+     */
+    private function heldAs(Builder $tasks, TaskHolderFilter $holder, AssigneeIdentity $caller): Builder
+    {
+        return match ($holder) {
+            TaskHolderFilter::Any => $tasks,
+            TaskHolderFilter::Unassigned => $tasks->outsideSelectedIds(
+                $this->assignments->assignedIds(TaskType::VALUE),
+            ),
+            TaskHolderFilter::Caller => $tasks->amongSelectedIds(
+                $this->assignments->heldIds(TaskType::VALUE, $caller),
+            ),
+        };
     }
 }

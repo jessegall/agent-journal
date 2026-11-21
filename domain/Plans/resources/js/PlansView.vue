@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
 import { useHostProp } from '@/framework/hostProp';
 import ListReaderLayout from '@kit/ListReaderLayout';
 import PageHeader from '@kit/PageHeader';
+import StaleListNotice from '@kit/StaleListNotice';
+import { useFilteredReads } from '@kit/useFilteredReads';
 import type { PlanFiltersData, PlanListData } from '@generated/types/plans';
 import { rememberOpenedPlan, takeOpenedPlan } from './openedPlans';
 import PlanCard from './PlanCard.vue';
@@ -46,31 +47,10 @@ const emptyTitle = computed(() =>
 const isReaderOpen = computed(
     () => props.plans.selected !== undefined || props.plans.selectionMissing,
 );
-const failedUrl = ref('');
+const { read, retry, isStale } = useFilteredReads();
 
 function urlFor(changes: Partial<PlanFiltersData>): string {
     return props.urlForFilters({ ...filters.value, ...changes });
-}
-
-function markFailed(url: string): boolean {
-    failedUrl.value = url;
-
-    return false;
-}
-
-function read(url: string): void {
-    router.get(
-        url,
-        {},
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                failedUrl.value = '';
-            },
-            onNetworkError: () => markFailed(url),
-            onHttpException: () => markFailed(url),
-        },
-    );
 }
 
 function submitSearch(): void {
@@ -129,22 +109,11 @@ watch(() => filters.value.plan, followSelection);
                     pageText
                 }}</span>
             </form>
-            <template v-if="failedUrl !== ''">
-                <div
-                    role="alert"
-                    class="flex items-center gap-3 border-b border-border px-3 py-2 text-small text-text-2"
-                >
-                    <span class="flex-1"
-                        >Showing earlier results. The plans could not be
-                        read.</span
-                    >
-                    <Button
-                        variant="bordered"
-                        size="small"
-                        @click="read(failedUrl)"
-                        >Retry</Button
-                    >
-                </div>
+            <template v-if="isStale">
+                <StaleListNotice
+                    reason="The plans could not be read."
+                    @retry="retry"
+                />
             </template>
         </template>
         <template #list>
