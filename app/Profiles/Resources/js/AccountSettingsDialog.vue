@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { AccountListData, AccountRowData } from '@generated/types/accounts';
+import type {
+    AccountListData,
+    AccountRowData,
+} from '@generated/types/accounts';
 import type { WindowResult } from '@kit/PageTypes';
 import { accountStart, activate, remove } from '@generated/routes/accounts';
 import { Link, useForm } from '@inertiajs/vue3';
@@ -12,11 +15,7 @@ import AccountFactList from './AccountFactList.vue';
 import AccountUsageDetails from './AccountUsageDetails.vue';
 import { chosenIn } from './accountSelections';
 import { useAccountNaming } from './accountNaming';
-import {
-    accountStateLook,
-    driverName,
-    signInAgainLabel,
-} from './accountLooks';
+import { accountStateLook, driverName, signInAgainLabel } from './accountLooks';
 
 /**
  * Everything about one account in one dialog: its way back when it must sign in again, its name, whether it is the
@@ -30,12 +29,18 @@ const props = defineProps<{
     isOpen: boolean;
     now: Date;
 }>();
-const emit = defineEmits<{ close: []; signInAgain: []; removalRefused: [reason: string] }>();
+const emit = defineEmits<{
+    close: [];
+    signInAgain: [];
+    removalRefused: [reason: string];
+}>();
 
 const isAskingToRemove = ref(false);
 const back = ref<InstanceType<typeof Button> | null>(null);
 const fieldId = computed(() => `account-name-${props.account.id}`);
-const { naming, canSave, saved, revert, save } = useAccountNaming(() => props.account);
+const { naming, canSave, saved, revert, save } = useAccountNaming(
+    () => props.account,
+);
 const choosing = useForm({});
 const removing = useForm({});
 
@@ -93,7 +98,13 @@ const signInFacts = computed(() => [
     { term: 'Signed in as', value: props.account.identity ?? 'Not known' },
     { term: 'Workspace', value: props.account.workspace ?? 'Not known' },
     { term: 'Last checked', value: dateOf(props.account.checkedAt) },
-    { term: 'Expires', value: props.account.expiresAt === null ? 'Never' : dateOf(props.account.expiresAt) },
+    {
+        term: 'Expires',
+        value:
+            props.account.expiresAt === null
+                ? 'Never'
+                : dateOf(props.account.expiresAt),
+    },
 ]);
 
 const isNameChanged = computed(() => naming.label !== props.account.label);
@@ -154,9 +165,19 @@ function makeDefault(): void {
                 return {};
             }
 
-            const selections = chosenIn(shown.page.data.selections, driver, id, changeNumber);
+            const selections = chosenIn(
+                shown.page.data.selections,
+                driver,
+                id,
+                changeNumber,
+            );
 
-            return { page: { ...shown.page, data: { ...shown.page.data, selections } } };
+            return {
+                page: {
+                    ...shown.page,
+                    data: { ...shown.page.data, selections },
+                },
+            };
         })
         .submit(activate({ account: id }), {
             preserveScroll: true,
@@ -187,12 +208,18 @@ function confirmRemove(): void {
                 row.id === id ? { ...row, state: 'removing' as const } : row,
             );
 
-            return { page: { ...shown.page, data: { ...shown.page.data, rows } } };
+            return {
+                page: { ...shown.page, data: { ...shown.page.data, rows } },
+            };
         })
         .submit(remove({ account: id }), {
             preserveScroll: true,
             onSuccess: () => emit('close'),
-            onError: (errors) => emit('removalRefused', Object.values(errors)[0] ?? 'The account was not removed.'),
+            onError: (errors) =>
+                emit(
+                    'removalRefused',
+                    Object.values(errors)[0] ?? 'The account was not removed.',
+                ),
             ...formSendingHooks(),
         });
 }
@@ -213,19 +240,30 @@ function signInAgain(): void {
         <template v-if="isAskingToRemove">
             <div class="flex flex-col gap-3">
                 <div class="rounded border border-line px-3 py-2">
-                    <span class="block truncate text-card text-text">{{ account.label }}</span>
-                    <span class="text-small text-text-3">{{ driverName(account.driver) }}</span>
+                    <span class="block truncate text-card text-text">{{
+                        account.label
+                    }}</span>
+                    <span class="text-small text-text-3">{{
+                        driverName(account.driver)
+                    }}</span>
                 </div>
                 <p class="text-text-2">{{ consequence }}</p>
             </div>
         </template>
         <template v-else>
             <template v-if="needsSignIn">
-                <div class="flex items-center justify-between gap-3 rounded border border-line px-3 py-2">
-                    <span class="text-text-2">This account must sign in again.</span>
-                    <Button variant="bordered" size="small" @click="signInAgain">{{
-                        signInAgainLabel(account)
-                    }}</Button>
+                <div
+                    class="flex items-center justify-between gap-3 rounded border border-line px-3 py-2"
+                >
+                    <span class="text-text-2"
+                        >This account must sign in again.</span
+                    >
+                    <Button
+                        variant="bordered"
+                        size="small"
+                        @click="signInAgain"
+                        >{{ signInAgainLabel(account) }}</Button
+                    >
                 </div>
             </template>
             <form @submit.prevent="canSave && save(() => undefined)">
@@ -235,21 +273,39 @@ function signInAgain(): void {
                     label="Name"
                     :maxlength="80"
                     :error="naming.errors.label"
-                    :hint="naming.label.trim() === '' ? 'A name is needed.' : undefined"
+                    :hint="
+                        naming.label.trim() === ''
+                            ? 'A name is needed.'
+                            : undefined
+                    "
                     @keydown.esc="escapeName"
                 >
                     <template #end>
                         <template v-if="canSave">
-                            <Button type="submit" size="small" :pending="naming.processing">Save</Button>
+                            <Button
+                                type="submit"
+                                size="small"
+                                :pending="naming.processing"
+                                >Save</Button
+                            >
                         </template>
                         <template v-else-if="saved">
-                            <span class="px-2 text-small text-tone-good" aria-live="polite">✓ Saved</span>
+                            <span
+                                class="px-2 text-small text-tone-good"
+                                aria-live="polite"
+                                >✓ Saved</span
+                            >
                         </template>
                     </template>
                 </TextField>
             </form>
             <section class="flex flex-col gap-2" aria-labelledby="account-use">
-                <h4 id="account-use" class="m-0 text-small font-semibold text-text-3">Use</h4>
+                <h4
+                    id="account-use"
+                    class="m-0 text-small font-semibold text-text-3"
+                >
+                    Use
+                </h4>
                 <AccountFactList :facts="useFacts">
                     <template #Default>
                         <span class="flex flex-wrap items-center gap-2">
@@ -270,7 +326,9 @@ function signInAgain(): void {
                                 >
                             </template>
                             <template v-else-if="needsSignIn">
-                                <span class="text-text-2">Sign in first to make it the default</span>
+                                <span class="text-text-2"
+                                    >Sign in first to make it the default</span
+                                >
                             </template>
                             <template v-else>
                                 <span class="text-text-2">No</span>
@@ -279,12 +337,23 @@ function signInAgain(): void {
                     </template>
                     <template #[recentStartsTerm]>
                         <ul class="m-0 flex list-none flex-col gap-1 p-0">
-                            <template v-for="start in account.recentStarts" :key="start.sessionId">
+                            <template
+                                v-for="start in account.recentStarts"
+                                :key="start.sessionId"
+                            >
                                 <li>
                                     <Link
-                                        :href="accountStart({ session: start.sessionId }).url"
+                                        :href="
+                                            accountStart({
+                                                session: start.sessionId,
+                                            }).url
+                                        "
                                         class="text-brand-text underline"
-                                        >{{ start.isRunning ? 'Running since' : 'Started' }}
+                                        >{{
+                                            start.isRunning
+                                                ? 'Running since'
+                                                : 'Started'
+                                        }}
                                         {{ dateOf(start.startedAt) }}</Link
                                     >
                                 </li>
@@ -293,8 +362,16 @@ function signInAgain(): void {
                     </template>
                 </AccountFactList>
             </section>
-            <section class="flex flex-col gap-2" aria-labelledby="account-sign-in">
-                <h4 id="account-sign-in" class="m-0 text-small font-semibold text-text-3">Sign-in</h4>
+            <section
+                class="flex flex-col gap-2"
+                aria-labelledby="account-sign-in"
+            >
+                <h4
+                    id="account-sign-in"
+                    class="m-0 text-small font-semibold text-text-3"
+                >
+                    Sign-in
+                </h4>
                 <AccountFactList :facts="signInFacts" />
             </section>
             <template v-if="account.usage !== undefined">
@@ -307,11 +384,18 @@ function signInAgain(): void {
                 <Button ref="back" @click="isAskingToRemove = false"
                     >Back</Button
                 >
-                <Button variant="danger" :pending="removing.processing" @click="confirmRemove">Remove account</Button>
+                <Button
+                    variant="danger"
+                    :pending="removing.processing"
+                    @click="confirmRemove"
+                    >Remove account</Button
+                >
             </template>
             <template v-else>
                 <template v-if="!isLeaving">
-                    <Button variant="danger" size="small" @click="askToRemove">Remove account</Button>
+                    <Button variant="danger" size="small" @click="askToRemove"
+                        >Remove account</Button
+                    >
                 </template>
                 <span class="flex-1" />
                 <Button @click="emit('close')">Close</Button>

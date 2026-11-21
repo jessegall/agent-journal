@@ -484,6 +484,14 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * Whether the completion itself already ended the attempt in this generation, so a repeated report of the same
      * result changes nothing.
      */
+    /**
+     * Whether a renewal has not started on the host yet because agents still run on the account it renews.
+     */
+    public function isWaitingForAgents(): bool
+    {
+        return $this->waits_for_uses && $this->state === SignInState::Starting;
+    }
+
     public function isPublishedIn(int $generation): bool
     {
         $published = [

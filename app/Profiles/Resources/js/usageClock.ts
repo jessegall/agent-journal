@@ -18,7 +18,9 @@ export function nextUsageChange(rows: AccountRowData[], now: Date): Date {
     );
     const resets = rows
         .flatMap((row) => row.usage?.windows ?? [])
-        .flatMap((window) => (window.resetsAt === null ? [] : [new Date(window.resetsAt)]))
+        .flatMap((window) =>
+            window.resetsAt === null ? [] : [new Date(window.resetsAt)],
+        )
         .filter((reset) => reset > now);
 
     return resets.reduce(
@@ -53,7 +55,8 @@ export function useUsageClock(rows: () => AccountRowData[]): Ref<Date> {
 
     function schedule(): void {
         clearTimeout(timer);
-        const wait = nextUsageChange(rows(), now.value).getTime() - now.value.getTime();
+        const wait =
+            nextUsageChange(rows(), now.value).getTime() - now.value.getTime();
         timer = setTimeout(moveOn, Math.min(Math.max(wait, 0), longestTimer));
     }
 

@@ -6,7 +6,9 @@ import type { SignInAttemptData } from '@generated/types/accounts';
 
 type Options = { onError?: () => void; onSuccess?: () => void };
 
-const challengeAnswers: Array<(challenge: { address: string | null; code: string | null }) => void> = [];
+const challengeAnswers: Array<
+    (challenge: { address: string | null; code: string | null }) => void
+> = [];
 const sent: Options[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
@@ -34,22 +36,34 @@ vi.mock('@generated/routes/accounts', () => ({
     startSignIn: () => ({}),
     submitCode: () => ({}),
 }));
-vi.mock('@kit/usePageChanges', () => ({ formSendingHooks: () => ({ onStart: () => undefined, onFinish: () => undefined }) }));
+vi.mock('@kit/usePageChanges', () => ({
+    formSendingHooks: () => ({
+        onStart: () => undefined,
+        onFinish: () => undefined,
+    }),
+}));
 vi.mock('./signIn', () => ({
-    readChallenge: () => new Promise((resolve) => challengeAnswers.push(resolve)),
+    readChallenge: () =>
+        new Promise((resolve) => challengeAnswers.push(resolve)),
 }));
 
 const { signInActions } = await import('./signInActions');
 
-function mountActions(followed = ref<SignInAttemptData | undefined>({ id: 'attempt-1' } as SignInAttemptData)) {
+function mountActions(
+    followed = ref<SignInAttemptData | undefined>({
+        id: 'attempt-1',
+    } as SignInAttemptData),
+) {
     let actions: ReturnType<typeof signInActions> | undefined;
-    mount(defineComponent({
-        setup: () => {
-            actions = signInActions(followed);
+    mount(
+        defineComponent({
+            setup: () => {
+                actions = signInActions(followed);
 
-            return () => h('div');
-        },
-    }));
+                return () => h('div');
+            },
+        }),
+    );
 
     return { followed, actions: actions as ReturnType<typeof signInActions> };
 }

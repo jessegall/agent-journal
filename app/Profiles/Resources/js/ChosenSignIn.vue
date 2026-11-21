@@ -13,11 +13,7 @@ defineProps<{ driver: string; method: SignInMethodData }>();
     <div
         class="flex items-center gap-2 border-b border-line pb-4 text-small text-text-3"
     >
-        <DriverIcon
-            :driver="driverIcon(driver)"
-            :size="16"
-            class="mr-0.5"
-        />
+        <DriverIcon :driver="driverIcon(driver)" :size="16" class="mr-0.5" />
         {{ driverName(driver) }} ·
         <b class="font-medium text-text">{{ method.title }}</b>
         <span class="ml-auto whitespace-nowrap">{{ method.billingLabel }}</span>

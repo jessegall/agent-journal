@@ -202,12 +202,10 @@ function fullDate(moment: string): string {
  * Each window with its name and value together, its reset or the reset it passed, and when it was observed.
  */
 export function windowFacts(usage: AccountUsageData, now: Date): UsageFact[] {
-    return usage.windows
-        .filter(isMeasured)
-        .map((window) => ({
-            term: windowLabel(window),
-            value: windowValue(window, now),
-        }));
+    return usage.windows.filter(isMeasured).map((window) => ({
+        term: windowLabel(window),
+        value: windowValue(window, now),
+    }));
 }
 
 function windowValue(window: MeasuredWindow, now: Date): string {

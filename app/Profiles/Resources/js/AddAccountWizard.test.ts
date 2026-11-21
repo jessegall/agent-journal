@@ -127,6 +127,7 @@ function attempt(
         accountId: null,
         resultAccountId: null,
         isResultUnmatchable: false,
+        isWaitingForAgents: false,
         state,
         expiresAt: '2026-11-21T12:00:00+00:00',
         refusal: null,
@@ -328,6 +329,80 @@ describe('AddAccountWizard', () => {
         expect(view.text()).not.toContain('This sign-in is already running');
         expect(view.text()).toContain('Starting the sign-in…');
         expect(view.find('input[type="password"]').exists()).toBe(false);
+    });
+
+    it('renews a key with its own words and keeps the field shut while agents finish', async () => {
+        const view = mount(AddAccountWizard, {
+            attachTo: document.body,
+            props: {
+                request: {
+                    kind: 'again',
+                    driver: 'claude-code',
+                    accountId: 'account-1',
+                },
+                methods,
+                attempts: [],
+                rows: [],
+            },
+        });
+        const renewal = {
+            type: 'sign_in_again' as const,
+            accountId: 'account-1',
+            method: 'api_key' as const,
+        };
+        await view.setProps({
+            attempts: [
+                attempt('starting', { ...renewal, isWaitingForAgents: true }),
+            ],
+        });
+        await flushPromises();
+
+        expect(view.text()).toContain('Waiting for running agents to finish…');
+        expect(view.find('input[type="password"]').exists()).toBe(false);
+        expect(
+            button(view, 'Replace key').attributes('disabled'),
+        ).toBeDefined();
+
+        await view.setProps({ attempts: [attempt('waiting', renewal)] });
+        await flushPromises();
+        await view.find('input[type="password"]').setValue('sk-ant-new');
+        expect(
+            button(view, 'Replace key').attributes('disabled'),
+        ).toBeUndefined();
+
+        await view.setProps({
+            attempts: [
+                attempt('complete', {
+                    ...renewal,
+                    resultAccountId: 'account-1',
+                }),
+            ],
+            rows: [accountRow('account-1', 'Work key')],
+        });
+        await flushPromises();
+
+        expect(view.text()).toContain('Key replaced');
+        expect(view.text()).not.toContain('Name this account');
+        view.unmount();
+    });
+
+    it('says a browser renewal reconnected the account', async () => {
+        const view = openWizard();
+        await view.setProps({
+            request: { kind: 'resume', attemptId: 'attempt-1' },
+            attempts: [
+                attempt('complete', {
+                    type: 'sign_in_again',
+                    accountId: 'account-1',
+                    resultAccountId: 'account-1',
+                    method: 'oauth',
+                }),
+            ],
+        });
+        await flushPromises();
+
+        expect(view.text()).toContain('Account reconnected');
+        view.unmount();
     });
 
     it('walks a key sign-in from the choice to the account added', async () => {

@@ -16,7 +16,13 @@ describe('AccountFactList', () => {
             slots: { Default: () => h('button', 'Make default') },
         });
 
-        expect(view.findAll('dt').map((term) => term.text())).toEqual(['Running now', 'Default']);
-        expect(view.findAll('dd').map((value) => value.text())).toEqual(['1 agent', 'Make default']);
+        expect(view.findAll('dt').map((term) => term.text())).toEqual([
+            'Running now',
+            'Default',
+        ]);
+        expect(view.findAll('dd').map((value) => value.text())).toEqual([
+            '1 agent',
+            'Make default',
+        ]);
     });
 });

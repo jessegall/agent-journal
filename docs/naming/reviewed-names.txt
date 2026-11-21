@@ -20222,6 +20222,7 @@ method	SignInAttempt::found()
 method	SignInAttempt::isExpiredAt()
 method	SignInAttempt::isLive()
 method	SignInAttempt::isPublishedIn()
+method	SignInAttempt::isWaitingForAgents()
 method	SignInAttempt::keepFingerprint()
 method	SignInAttempt::liveFor()
 method	SignInAttempt::lockedForJournal()
@@ -24016,6 +24017,7 @@ parameter	$isSupported
 parameter	$isSwitchOver
 parameter	$isTrusted
 parameter	$isUnread
+parameter	$isWaitingForAgents
 parameter	$isWholeText
 parameter	$isWorkRequired
 parameter	$isolation
@@ -33140,6 +33142,7 @@ property	SignInAttemptData::$driver
 property	SignInAttemptData::$expiresAt
 property	SignInAttemptData::$id
 property	SignInAttemptData::$isResultUnmatchable
+property	SignInAttemptData::$isWaitingForAgents
 property	SignInAttemptData::$method
 property	SignInAttemptData::$refusal
 property	SignInAttemptData::$resultAccountId

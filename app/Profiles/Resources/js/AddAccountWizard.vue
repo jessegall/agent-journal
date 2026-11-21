@@ -16,7 +16,7 @@ import NameAccountStep from './NameAccountStep.vue';
 import SignInOutcome from './SignInOutcome.vue';
 import SignInTask from './SignInTask.vue';
 import { driverName } from './accountLooks';
-import { attemptToRejoin, isLive } from './signIn';
+import { attemptToRejoin, isLive, secretSubmitLabel } from './signIn';
 import type { WizardRequest } from './signIn';
 import { signInActions } from './signInActions';
 
@@ -36,7 +36,10 @@ const props = defineProps<{
  * How the wizard was closed: with its sign-in left waiting, with it cancelled, or with nothing running.
  */
 const emit = defineEmits<{
-    close: [ending: 'waiting' | 'cancelled' | 'closed'];
+    close: [
+        ending: 'waiting' | 'cancelled' | 'renewed' | 'closed',
+        accountId?: string,
+    ];
 }>();
 
 const driver = ref('claude-code');
@@ -95,6 +98,7 @@ const accountToName = computed(() => {
 
     if (
         followed.value?.state !== 'complete' ||
+        followed.value.type !== 'new_account' ||
         shownMethod.value?.isSecret !== true ||
         accountId === namedAccountId.value
     ) {
@@ -203,6 +207,21 @@ function cancelAndChooseAgain(): void {
     chooseAnotherWay();
 }
 
+/**
+ * Start again after an ended sign-in: a renewal renews the same account again, a new account starts a new sign-in.
+ */
+function startAgain(ended: SignInAttemptData): void {
+    if (ended.type === 'new_account' || ended.accountId === null) {
+        begin(ended.driver, ended.method);
+
+        return;
+    }
+
+    followedId.value = null;
+    awaited.value = { driver: ended.driver, accountId: ended.accountId };
+    actions.beginAgain(ended.accountId);
+}
+
 function begin(of: string, chosen: SignInMethod): void {
     followedId.value = null;
     driver.value = of;
@@ -249,9 +268,26 @@ function addAnother(): void {
 }
 
 function close(): void {
-    const isWaiting = followed.value !== undefined && isLive(followed.value);
+    const ended = followed.value;
     actions.forget();
-    emit('close', isWaiting ? 'waiting' : 'closed');
+
+    if (ended !== undefined && isLive(ended)) {
+        emit('close', 'waiting');
+
+        return;
+    }
+
+    if (
+        ended?.state === 'complete' &&
+        ended.type === 'sign_in_again' &&
+        ended.accountId !== null
+    ) {
+        emit('close', 'renewed', ended.accountId);
+
+        return;
+    }
+
+    emit('close', 'closed');
 }
 
 /**
@@ -441,10 +477,12 @@ function cancelAndClose(): void {
                         :form="formId"
                         variant="primary"
                         :disabled="
-                            followed === undefined || actions.answer.code === ''
+                            followed?.state !== 'waiting' ||
+                            followed.isWaitingForAgents ||
+                            actions.answer.code === ''
                         "
                         :pending="actions.answer.processing"
-                        >Add account</Button
+                        >{{ secretSubmitLabel(followed) }}</Button
                     >
                 </template>
                 <template v-else-if="shownDriver === 'codex'">
@@ -507,8 +545,10 @@ function cancelAndClose(): void {
                 <span class="flex-1" />
                 <Button
                     variant="primary"
-                    :pending="actions.start.processing"
-                    @click="begin(followed.driver, followed.method)"
+                    :pending="
+                        actions.start.processing || actions.again.processing
+                    "
+                    @click="startAgain(followed)"
                     >Start again</Button
                 >
             </template>

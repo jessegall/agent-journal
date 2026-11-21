@@ -1,20 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { changeNumberOf, chosenIn, isChosen, newestSelections } from './accountSelections';
+import {
+    changeNumberOf,
+    chosenIn,
+    isChosen,
+    newestSelections,
+} from './accountSelections';
 
 describe('newestSelections', () => {
     it('keeps a newer choice when an older page answer arrives late', () => {
-        const shown = [
-            { driver: 'codex', accountId: 'home', changeNumber: 4 },
-        ];
+        const shown = [{ driver: 'codex', accountId: 'home', changeNumber: 4 }];
         const late = [{ driver: 'codex', accountId: 'work', changeNumber: 3 }];
 
         expect(newestSelections(shown, late)).toEqual(shown);
     });
 
     it('takes the arrived choice when it is as new or newer', () => {
-        const shown = [
-            { driver: 'codex', accountId: 'home', changeNumber: 4 },
-        ];
+        const shown = [{ driver: 'codex', accountId: 'home', changeNumber: 4 }];
         const arrived = [
             { driver: 'codex', accountId: 'work', changeNumber: 5 },
         ];
@@ -44,13 +45,25 @@ describe('chosenIn', () => {
             { driver: 'codex', accountId: 'home', changeNumber: 1 },
         ];
 
-        const chosen = chosenIn(shown, 'claude-code', 'home', changeNumberOf(shown, 'claude-code'));
+        const chosen = chosenIn(
+            shown,
+            'claude-code',
+            'home',
+            changeNumberOf(shown, 'claude-code'),
+        );
 
         expect(isChosen(chosen, 'claude-code', 'home')).toBe(true);
         expect(isChosen(chosen, 'claude-code', 'work')).toBe(false);
         expect(isChosen(chosen, 'codex', 'home')).toBe(true);
-        expect(newestSelections(chosen, [{ driver: 'claude-code', accountId: 'work', changeNumber: 3 }]))
-            .toContainEqual({ driver: 'claude-code', accountId: 'work', changeNumber: 3 });
+        expect(
+            newestSelections(chosen, [
+                { driver: 'claude-code', accountId: 'work', changeNumber: 3 },
+            ]),
+        ).toContainEqual({
+            driver: 'claude-code',
+            accountId: 'work',
+            changeNumber: 3,
+        });
         expect(changeNumberOf([], 'codex')).toBe(0);
     });
 });

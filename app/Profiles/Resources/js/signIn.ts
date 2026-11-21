@@ -141,3 +141,31 @@ export async function readReceipt(
 
     return response.ok ? ((await response.json()) as SignInReceiptData) : null;
 }
+
+/**
+ * The words a finished sign-in ends with: a new account is added, a renewal says what it renewed by its method.
+ */
+export function completedTitle(attempt: SignInAttemptData): string {
+    if (attempt.type === 'new_account') {
+        return 'Account added';
+    }
+
+    return {
+        oauth: 'Account reconnected',
+        provider_token: 'Token replaced',
+        api_key: 'Key replaced',
+    }[attempt.method];
+}
+
+/**
+ * The button that sends a token or key: Add account for a new account, Replace token or Replace key for a renewal.
+ */
+export function secretSubmitLabel(
+    attempt: SignInAttemptData | undefined,
+): string {
+    if (attempt?.type !== 'sign_in_again') {
+        return 'Add account';
+    }
+
+    return attempt.method === 'api_key' ? 'Replace key' : 'Replace token';
+}

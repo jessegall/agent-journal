@@ -26,11 +26,20 @@ const props = defineProps<{
 
 const direction = computed(() => codeDirection(props.driver));
 
+/**
+ * The task waits until the host has the sign-in ready: a renewal first waits for the agents running on the account,
+ * a key or token for the attempt to wait for it, and a browser sign-in also for its page.
+ */
+const isWaitingForAgents = computed(
+    () => props.attempt?.isWaitingForAgents === true,
+);
 const isStarting = computed(
     () =>
         props.attempt === undefined ||
-        (!props.method.isSecret &&
-            props.actions.challenge.value.address === null),
+        isWaitingForAgents.value ||
+        (props.method.isSecret
+            ? props.attempt.state !== 'waiting'
+            : props.actions.challenge.value.address === null),
 );
 
 const host = computed(() => {
@@ -104,7 +113,13 @@ const openLink =
             role="status"
         >
             <Spinner large class="text-brand" />
-            <p class="text-field text-text-2">Starting the sign-in…</p>
+            <p class="text-field text-text-2">
+                {{
+                    isWaitingForAgents
+                        ? 'Waiting for running agents to finish…'
+                        : 'Starting the sign-in…'
+                }}
+            </p>
         </div>
     </template>
     <template v-else-if="method.isSecret">

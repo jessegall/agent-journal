@@ -58,12 +58,12 @@ describe('the usage clock', () => {
     it('waits for the nearest reset ahead or the next UTC month, whichever is first', () => {
         const now = new Date('2026-11-21T12:00:00Z');
 
-        expect(nextUsageChange([rowWithReset('2026-11-22T00:00:00Z')], now)).toEqual(
-            new Date('2026-11-22T00:00:00Z'),
-        );
-        expect(nextUsageChange([rowWithReset('2026-11-01T00:00:00Z')], now)).toEqual(
-            new Date('2026-12-01T00:00:00Z'),
-        );
+        expect(
+            nextUsageChange([rowWithReset('2026-11-22T00:00:00Z')], now),
+        ).toEqual(new Date('2026-11-22T00:00:00Z'));
+        expect(
+            nextUsageChange([rowWithReset('2026-11-01T00:00:00Z')], now),
+        ).toEqual(new Date('2026-12-01T00:00:00Z'));
     });
 
     it('moves on at a reset without a reload', () => {

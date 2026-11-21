@@ -62,10 +62,11 @@ const announcement = ref('');
 
 /**
  * Closes the wizard and puts focus where the user goes on: Finish signing in for a sign-in left waiting, Add account
- * after a cancel, which is announced once.
+ * after a cancel, which is announced once, and the renewed account's row after a renewal.
  */
 async function closeWizard(
-    ending: 'waiting' | 'cancelled' | 'closed',
+    ending: 'waiting' | 'cancelled' | 'renewed' | 'closed',
+    accountId?: string,
 ): Promise<void> {
     request.value = null;
     announcement.value = ending === 'cancelled' ? 'Sign-in cancelled.' : '';
@@ -75,8 +76,11 @@ async function closeWizard(
         return;
     }
 
-    const target =
-        ending === 'waiting' ? '[data-sign-in-resume]' : '[data-account-add]';
+    const target = {
+        waiting: '[data-sign-in-resume]',
+        cancelled: '[data-account-add]',
+        renewed: `[data-account-row="${accountId}"]`,
+    }[ending];
     root.value?.querySelector<HTMLElement>(target)?.focus();
 }
 

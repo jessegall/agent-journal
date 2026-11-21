@@ -305,10 +305,14 @@ describe('the settings dialog', () => {
         await button(shown, 'Remove account')!.trigger('click');
         const sent = forms.find((form) => form.submit.mock.calls.length === 1)!;
 
-        sent.submit.mock.calls[0][1].onError({ command: 'The account is still signing in.' });
+        sent.submit.mock.calls[0][1].onError({
+            command: 'The account is still signing in.',
+        });
         await flushPromises();
 
-        expect(shown.find('[role="alert"]').text()).toBe('The account is still signing in.');
+        expect(shown.find('[role="alert"]').text()).toBe(
+            'The account is still signing in.',
+        );
     });
 
     it('offers the way back first for an account that must sign in again', async () => {

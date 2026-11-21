@@ -29,8 +29,8 @@ const drivers = computed(() =>
 
 const cards = computed(() =>
     (
-        props.methods.find((entry) => entry.driver === driver.value)
-            ?.methods ?? []
+        props.methods.find((entry) => entry.driver === driver.value)?.methods ??
+        []
     ).map((option) => ({
         value: option.method,
         title: option.title,

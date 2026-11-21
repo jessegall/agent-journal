@@ -22,7 +22,11 @@ const thread = computed(() =>
         ? []
         : threadFacts(props.usage.latestThread),
 );
-const facts = computed(() => [...windows.value, ...cost.value, ...thread.value]);
+const facts = computed(() => [
+    ...windows.value,
+    ...cost.value,
+    ...thread.value,
+]);
 </script>
 
 <template>

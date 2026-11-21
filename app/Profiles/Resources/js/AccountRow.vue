@@ -68,6 +68,8 @@ function retryAccountCleanup(): void {
 
 <template>
     <li
+        :data-account-row="account.id"
+        tabindex="-1"
         class="flex items-center gap-3 border-b border-line py-[11px] pr-3 pl-4 last:border-b-0 hover:bg-hover"
     >
         <DriverIcon :driver="driverIcon(account.driver)" :size="16" />
@@ -89,7 +91,11 @@ function retryAccountCleanup(): void {
                     >
                 </template>
                 <span class="text-text-4">·</span>
-                <span class="whitespace-nowrap" :class="stateText[state.tone]">{{ state.label }}</span>
+                <span
+                    class="whitespace-nowrap"
+                    :class="stateText[state.tone]"
+                    >{{ state.label }}</span
+                >
                 <template v-if="account.expiresAt !== null">
                     <span class="text-text-4">·</span>
                     <span class="whitespace-nowrap text-text-4">
@@ -117,7 +123,9 @@ function retryAccountCleanup(): void {
                 </div>
             </template>
             <template v-if="removalRefusal !== null">
-                <p class="mt-1 text-small text-danger" role="alert">{{ removalRefusal }}</p>
+                <p class="mt-1 text-small text-danger" role="alert">
+                    {{ removalRefusal }}
+                </p>
             </template>
         </div>
         <div class="flex shrink-0 items-center gap-1.5">

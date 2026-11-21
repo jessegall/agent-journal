@@ -6,7 +6,7 @@ import type {
 import Spinner from '@kit/Spinner';
 import ChosenSignIn from './ChosenSignIn.vue';
 import { driverName } from './accountLooks';
-import { endedMessage } from './signIn';
+import { completedTitle, endedMessage } from './signIn';
 
 /**
  * The wizard's third step: the check while the host proves the sign-in, then the account added, the account that
@@ -42,7 +42,9 @@ defineProps<{
                 data-mark="done"
                 >✓</span
             >
-            <h4 class="mt-1 font-semibold text-card text-text">Account added</h4>
+            <h4 class="mt-1 font-semibold text-card text-text">
+                {{ completedTitle(attempt) }}
+            </h4>
             <p class="max-w-[340px] text-field leading-relaxed text-text-2">
                 <b class="font-medium [overflow-wrap:anywhere] text-text">{{
                     accountName ?? driverName(driver)
@@ -50,7 +52,10 @@ defineProps<{
                 is saved as a {{ driverName(driver) }} account.
             </p>
             <template
-                v-if="attempt.type === 'new_account' && attempt.isResultUnmatchable"
+                v-if="
+                    attempt.type === 'new_account' &&
+                    attempt.isResultUnmatchable
+                "
             >
                 <p class="max-w-[340px] text-small leading-relaxed text-text-3">
                     {{ driverName(driver) }} does not say which provider account

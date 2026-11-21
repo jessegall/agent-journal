@@ -52,12 +52,17 @@ export function useAccountNaming(account: () => { id: string; label: string }) {
         const label = naming.label.trim();
 
         naming
-            .optimistic<{ page: WindowResult<AccountListData> }>((props) => renamedIn(props.page, id, label))
+            .optimistic<{ page: WindowResult<AccountListData> }>((props) =>
+                renamedIn(props.page, id, label),
+            )
             .submit(rename({ account: id }), {
                 preserveScroll: true,
                 onSuccess: () => {
                     saved.value = true;
-                    window.setTimeout(() => (saved.value = false), SAVED_MILLISECONDS);
+                    window.setTimeout(
+                        () => (saved.value = false),
+                        SAVED_MILLISECONDS,
+                    );
                     onSaved();
                 },
                 ...formSendingHooks(),
@@ -79,7 +84,9 @@ function renamedIn(
         return {};
     }
 
-    const rows = page.data.rows.map((row) => (row.id === id ? { ...row, label } : row));
+    const rows = page.data.rows.map((row) =>
+        row.id === id ? { ...row, label } : row,
+    );
 
     return { page: { ...page, data: { ...page.data, rows } } };
 }
