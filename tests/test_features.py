@@ -7832,3 +7832,24 @@ def test_a_released_worker_with_unmerged_commits_loses_its_worktree_after_the_se
     assert not folder.is_dir(), "past them its worktree goes, though its commit was never merged"
     kept = git_run(root / "platform", "for-each-ref", "--format=%(objectname)", f"{TIPS_REF}/").stdout
     assert tip[:7] in kept or git_run(root / "platform", "cat-file", "-e", f"{tip}^{{commit}}").returncode == 0, "its last commit stays"
+
+
+def test_a_wait_on_a_row_that_does_not_exist_is_open_and_broken_and_never_fails_a_stop(app: App):
+    from datetime import datetime, timezone
+    from journal.models.link import Link
+    from journal.models.support.ref import Ref
+    from journal.models.task import Task
+    from journal.repositories.links import Links
+    from journal.repositories.tasks import WAIT_LINK, Tasks
+    from journal.support.actor import Actor
+    with app.container.get(Scope).environment(1):
+        tasks = app.container.get(Tasks)
+        task = tasks.save(Task(environment_id=1, title="waits on a lost question"), USER.actor)
+        app.container.get(Links).save(Link(source=Ref.build(task), target=Ref("questions", 725), link_type=WAIT_LINK), Actor.system())
+        blocked = tasks.save(tasks.find(task.id).blocked("waiting on question 725", datetime.now(timezone.utc)), USER.actor)
+        assert tasks.open_waits(blocked) == [Ref("questions", 725)], "a missing target keeps the wait open"
+        assert tasks.open_wait_refs([blocked]) == {blocked.id: [Ref("questions", 725)]}
+        assert tasks.waiting_ids([blocked]) == {blocked.id}
+        assert [(t.id, ref) for t, ref in tasks.dangling_waits()] == [(blocked.id, Ref("questions", 725))], "the link is reported as broken"
+    answer = hook(app, "Stop")
+    assert "raised" not in str(answer), "the Stop is answered without a guard failure"
