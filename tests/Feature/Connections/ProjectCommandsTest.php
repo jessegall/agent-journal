@@ -92,6 +92,23 @@ final class ProjectCommandsTest extends TestCase
         $this->assertSame(2, ProjectCommandRun::query()->count());
     }
 
+    public function test_a_request_ids_status_answers_its_frames_and_exit_code_and_refuses_another_binding(): void
+    {
+        [$start, $binding] = $this->connectedStart();
+        [, $other] = $this->connectedStart();
+        $run = $this->recordedRun('request-1', $start, $binding, 'live-worker');
+        $run->finish([CommandFrame::output(1, 'stdout', "Tasks\n"), CommandFrame::exit(2, 3)], 3);
+
+        $status = $this->status($start, 'request-1', $binding->id)->assertOk();
+
+        $this->assertSame('failed', $status->json('state'));
+        $this->assertSame("Tasks\n", $status->json('frames.0.text'));
+        $this->assertSame(3, $status->json('frames.1.exitCode'));
+        $this->status($start, 'request-1', $other->id)->assertForbidden();
+        $this->assertSame('unknown', $this->status($start, 'request-9', $binding->id)->assertOk()->json('state'));
+        $this->assertSame(1, ProjectCommandRun::query()->count());
+    }
+
     public function test_a_verb_that_is_no_journal_route_is_refused(): void
     {
         [$start, $binding] = $this->connectedStart();
@@ -183,6 +200,14 @@ final class ProjectCommandsTest extends TestCase
             CommandFingerprint::of($argv, '', $binding->id, $start->agent->id),
             $worker,
         );
+    }
+
+    private function status(TestStart $start, string $requestKey, string $bindingId): TestResponse
+    {
+        return $this->signed($start, '/api/project-commands/status', [
+            'request_key' => $requestKey,
+            'binding' => $bindingId,
+        ]);
     }
 
     /**

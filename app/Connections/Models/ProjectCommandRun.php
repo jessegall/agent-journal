@@ -97,6 +97,18 @@ final class ProjectCommandRun extends Model implements ReadableModel
     }
 
     /**
+     * The run of this request id that this agent asked for on this binding, if there is one; another agent's or
+     * another binding's is none.
+     *
+     * @return list<self>
+     */
+    public static function ofRequestBy(string $requestKey, string $agentId, string $bindingId): array
+    {
+        return array_values(self::query()->where('request_key', $requestKey)->where('agent_id', $agentId)
+            ->where('binding_id', $bindingId)->limit(1)->get()->all());
+    }
+
+    /**
      * The binding's command streams that may still run, locked until the transaction ends; a binding runs a few at
      * once.
      *
@@ -153,15 +165,13 @@ final class ProjectCommandRun extends Model implements ReadableModel
      */
     public function reconcile(CommandRunEvidence $evidence): void
     {
-        if (! $this->isRunning() || $evidence->isWorkerAlive($this->worker)) {
+        $settled = $this->settledStateBy($evidence);
+
+        if ($settled === $this->state) {
             return;
         }
 
-        if ($this->pid !== null && $evidence->isProcessAlive($this->pid)) {
-            return;
-        }
-
-        $this->state = $this->pid === null ? CommandRunState::Unknown : CommandRunState::Interrupted;
+        $this->state = $settled;
         $this->save();
     }
 
@@ -173,6 +183,23 @@ final class ProjectCommandRun extends Model implements ReadableModel
     public function isRunning(): bool
     {
         return $this->state->isActive();
+    }
+
+    /**
+     * Where the run stands by what can be proved now: as recorded while its worker lives or its recorded process
+     * still runs; interrupted once that process ended unrecorded; unknown when it never recorded one.
+     */
+    public function settledStateBy(CommandRunEvidence $evidence): CommandRunState
+    {
+        if (! $this->isRunning() || $evidence->isWorkerAlive($this->worker)) {
+            return $this->state;
+        }
+
+        if ($this->pid !== null && $evidence->isProcessAlive($this->pid)) {
+            return $this->state;
+        }
+
+        return $this->pid === null ? CommandRunState::Unknown : CommandRunState::Interrupted;
     }
 
     /**

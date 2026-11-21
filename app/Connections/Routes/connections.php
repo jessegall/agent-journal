@@ -63,6 +63,7 @@ Route::middleware('journal.agent')->name('connections.commands.')->group(functio
     $calls = Container::getInstance()->make(CallRoutes::class);
     $calls->register(Calls\RunProjectCommandController::class)->name('run');
     $calls->register(Calls\CancelProjectCommandController::class)->name('cancel');
+    $calls->register(Calls\ReadProjectCommandStatusController::class)->name('status');
 });
 
 Route::post('/api/project-commands/device', DeviceCommandController::class)

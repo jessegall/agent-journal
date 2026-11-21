@@ -32,6 +32,7 @@ import (
 // localVerbs are the verbs this machine answers itself; every other verb runs on the server.
 var localVerbs = []string{
 	"status", "claude", "codex", "logout", "service", "disconnect", "attach", "upgrade", "diagnostics", "terminal",
+	"command",
 }
 
 // errBeingDisconnected refuses every verb of a folder whose disconnect began and is not finished.
@@ -185,6 +186,9 @@ func (commands dispatcher) local(
 	}
 	if verb == "terminal" {
 		return openTerminal(arguments[1:], state, stdout, stderr)
+	}
+	if verb == "command" {
+		return commands.commandStatus(arguments[1:], binding, stdout, stderr)
 	}
 	if verb == "codex" {
 		// Local Codex sessions wait for a per-thread callback channel the pinned build does not give.
@@ -429,12 +433,81 @@ func (commands dispatcher) forward(
 	} else {
 		code, err = commands.asShellUser(binding, state, command, write, stderr)
 	}
+	if errors.Is(err, client.ErrUncertain) {
+		fmt.Fprintf(stderr, "journal: Outcome unknown: the answer of request %s was lost (%v). It is not sent again; "+
+			"read what became of it with: journal command status %s\n", requestKey, err, requestKey)
+		return 1
+	}
 	if err != nil {
 		fmt.Fprintf(stderr, "journal: %v (request %s)\n", err, requestKey)
 		return 1
 	}
 
 	return code
+}
+
+// errCommandStatusUsage refuses journal command with anything but status and one request id.
+var errCommandStatusUsage = errors.New("usage: journal command status <request-id>")
+
+// errCommandStatusOutsideSession refuses journal command status where no provider session's start grant is: only the
+// session that ran a command may read what became of it.
+var errCommandStatusOutsideSession = errors.New(
+	"journal command status runs in the provider session that ran the command, under its own start grant")
+
+// commandStatus answers journal command status <request-id>: what became of a command whose answer was lost, read
+// from the journal under the session's own grant and binding, never run again. A settled run prints its frames as
+// they were written and exits with its code; a running one says to wait; an interrupted or unknown one says so.
+func (commands dispatcher) commandStatus(arguments []string, binding host.Binding, stdout, stderr io.Writer) int {
+	if len(arguments) != 2 || arguments[0] != "status" {
+		fmt.Fprintln(stderr, "journal:", errCommandStatusUsage)
+		return 2
+	}
+	grant, found := commands.grant(binding)
+	if !found {
+		fmt.Fprintln(stderr, "journal:", errCommandStatusOutsideSession)
+		return 1
+	}
+	requestKey := arguments[1]
+	status, err := client.ReadProjectCommandStatus(context.Background(), commands.transport, grant, binding.BindingID, requestKey)
+	if err != nil {
+		fmt.Fprintf(stderr, "journal: %v (request %s)\n", err, requestKey)
+		return 1
+	}
+
+	return printCommandStatus(status, requestKey, stdout, stderr)
+}
+
+// printCommandStatus prints a settled run's frames and answers its exit code, or says why there is none yet.
+func printCommandStatus(status client.CommandStatus, requestKey string, stdout, stderr io.Writer) int {
+	if !status.IsSettled() {
+		fmt.Fprintln(stderr, "journal: "+commandStatusText(status.State, requestKey))
+		return 1
+	}
+	write := writeFrameTo(stdout, stderr)
+	for _, frame := range status.Frames {
+		if frame.Stream == "exit" {
+			return frame.ExitCode
+		}
+		if err := write(frame); err != nil {
+			fmt.Fprintln(stderr, "journal:", err)
+			return 1
+		}
+	}
+	fmt.Fprintln(stderr, "journal: request "+requestKey+" ended "+status.State+" with no exit code recorded.")
+
+	return 1
+}
+
+// commandStatusText says what a run with no outcome yet means for its request id.
+func commandStatusText(state string, requestKey string) string {
+	switch state {
+	case client.CommandRunning, client.CommandCancellationRequested:
+		return "request " + requestKey + " is still running; wait, then ask again."
+	case client.CommandInterrupted:
+		return "request " + requestKey + " was interrupted before its outcome was kept; it is not run again."
+	default:
+		return "Outcome unknown: the journal keeps no outcome of request " + requestKey + "; it is not run again."
+	}
 }
 
 // errNoTerminalSignIn is returned in a shell journal terminal open did not start: its sign-in has no place to be kept.

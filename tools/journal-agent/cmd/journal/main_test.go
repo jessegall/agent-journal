@@ -370,3 +370,60 @@ func TestAShellUserOutsideAJournalTerminalIsToldToOpenOneBeforeAnyApproval(t *te
 		t.Fatalf("a shell with no sign-in answered %d, approved %v, printed %q", code, approved, printed)
 	}
 }
+
+// cuttingJournal drops the connection of every command it is sent, after reading its request id, and answers a
+// status lookup of binding-shop with the run's recorded frames; another binding's lookup is refused.
+func cuttingJournal(t *testing.T, asked *string) *httptest.Server {
+	t.Helper()
+
+	return httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path == "/api/project-commands" {
+			var command client.ProjectCommand
+			_ = json.NewDecoder(request.Body).Decode(&command)
+			*asked = command.RequestKey
+			connection, _, err := writer.(http.Hijacker).Hijack()
+			if err == nil {
+				connection.Close()
+			}
+			return
+		}
+		var lookup map[string]string
+		_ = json.NewDecoder(request.Body).Decode(&lookup)
+		if lookup["binding"] != "binding-shop" {
+			writer.WriteHeader(http.StatusForbidden)
+			_, _ = writer.Write([]byte(`{"code":"forbidden","message":"not the binding of the calling agent"}`))
+			return
+		}
+		_ = json.NewEncoder(writer).Encode(client.CommandStatus{State: "failed", Frames: []client.CommandFrame{
+			{Sequence: 1, Stream: "stdout", Text: "Tasks\n"}, {Sequence: 2, Stream: "exit", ExitCode: 3},
+		}})
+	}))
+}
+
+func TestACommandCutOffPrintsItsRequestIDAndItsStatusReadsTheOriginalFramesAndExitCode(t *testing.T) {
+	asked := ""
+	server := cuttingJournal(t, &asked)
+	defer server.Close()
+	state := realTempDir(t)
+	parent := realTempDir(t)
+	shop := connectedFolder(t, state, parent, "shop")
+	blog := connectedFolder(t, state, parent, "blog")
+	commands := forwarding(t, server, state)
+
+	_, refusal, code := answer(commands, []string{"task", "list"}, shop, "")
+
+	if code == 0 || asked == "" || !strings.Contains(refusal, "Outcome unknown") ||
+		!strings.Contains(refusal, "journal command status "+asked) {
+		t.Fatalf("the cut-off command answered %q, %d for request %q", refusal, code, asked)
+	}
+
+	printed, _, code := answer(commands, []string{"command", "status", asked}, shop, "")
+
+	if code != 3 || printed != "Tasks\n" {
+		t.Fatalf("the status printed %q and exited %d", printed, code)
+	}
+	if _, refusal, code := answer(commands, []string{"command", "status", asked}, blog, ""); code == 0 ||
+		!strings.Contains(refusal, "not the binding") {
+		t.Fatalf("another binding's lookup answered %q, %d", refusal, code)
+	}
+}
