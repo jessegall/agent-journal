@@ -24,7 +24,8 @@ import {
  * Starts, resumes or switches the chosen agent's session: the driver, the variant (the profile's default unless one
  * is chosen, kept for the agent when asked), the account among those the driver may run with, and for a resume the
  * conversation it continues. The form makes one request id when it opens, so a second press repeats the same start.
- * A start reads Ready only once the host runs it; a switch shows each stage it passes until it ends.
+ * A start reads Ready only once the host runs it, and shows the host's refusal when its start was refused; a switch
+ * shows each stage it passes until it ends.
  */
 const props = defineProps<{
     agent: AgentOptionData;
@@ -138,6 +139,13 @@ function start(): void {
  */
 function showStart(): boolean {
     const shown = props.agent;
+
+    if (startedSessionId !== null && shown.sessionId === startedSessionId && shown.startRefusal !== null) {
+        progress.value = null;
+        refusal.value = shown.startRefusal;
+
+        return true;
+    }
 
     if (startedSessionId !== null && shown.sessionId === startedSessionId && shown.presence === 'working') {
         progress.value = 'Ready';

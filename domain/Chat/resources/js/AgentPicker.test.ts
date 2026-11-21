@@ -28,6 +28,7 @@ function agent(id: string, name: string, presenceLabel: string): AgentOptionData
         isSwitchOver: true,
         actions: ['start'],
         conversations: [],
+        startRefusal: null,
     };
 }
 

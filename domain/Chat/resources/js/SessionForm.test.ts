@@ -60,6 +60,7 @@ const idle: AgentOptionData = {
     isSwitchOver: true,
     actions: ['start'],
     conversations: [],
+    startRefusal: null,
 };
 
 describe('SessionForm', () => {

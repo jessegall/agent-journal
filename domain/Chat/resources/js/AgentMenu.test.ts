@@ -28,6 +28,7 @@ function agent(id: string, name: string, retired = false): AgentOptionData {
         isSwitchOver: true,
         actions: retired ? [] : ['start'],
         conversations: [],
+        startRefusal: null,
     };
 }
 

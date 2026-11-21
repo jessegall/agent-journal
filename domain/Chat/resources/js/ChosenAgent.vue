@@ -7,8 +7,8 @@ import AgentMenu from './AgentMenu.vue';
 import AgentSessionActions from './AgentSessionActions.vue';
 
 /**
- * Home's agent bar: the chosen agent with its state dot and word, a menu to choose another, and the actions its state
- * offers. Without a designated main agent it says how to create one.
+ * Home's agent bar: the chosen agent with its state dot and word, why its start was refused when it was, a menu to
+ * choose another, and the actions its state offers. Without a designated main agent it says how to create one.
  */
 const props = defineProps<{ data: ChatData }>();
 
@@ -38,6 +38,9 @@ const dots: Record<string, string> = {
                     <span class="text-text-3" aria-live="polite">{{ selected.presenceLabel }}</span>
                 </template>
             </button>
+            <template v-if="selected?.startRefusal">
+                <p class="max-w-[60ch] px-1.5 text-small text-danger" role="alert">{{ selected.startRefusal }}</p>
+            </template>
             <template v-if="isMenuOpen">
                 <AgentMenu
                     :agents="data.agents"
