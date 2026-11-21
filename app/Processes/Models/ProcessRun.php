@@ -289,6 +289,11 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
         $this->markStale('stopped: the run was lost and a user stopped what survived');
     }
 
+    public function isStopped(): bool
+    {
+        return $this->lifecycle === LifecycleState::Stopped;
+    }
+
     public function isStale(): bool
     {
         return $this->stale_reason !== '';

@@ -68,6 +68,11 @@ final readonly class StaleAfterFirstEnd implements RunEvents
         $this->recorded->runStopped($reason);
     }
 
+    public function runFinished(int $rootStatus): void
+    {
+        $this->recorded->runFinished($rootStatus);
+    }
+
     public function staleReason(PartKey $part): string
     {
         return $this->recorded->staleReason($part);

@@ -8,9 +8,12 @@ use App\Processes\Contracts\OutputRecorder;
 use App\Processes\Contracts\RunEvents;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\OutputStream;
+use App\Processes\Enums\RunLogicalResult;
+use App\Processes\Enums\RunResultSource;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessEvent;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Support\RunOutcomes;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
@@ -30,7 +33,11 @@ final class RecordedRunEvents implements RunEvents
 
     private int $sequence = 0;
 
-    public function __construct(private readonly ProcessRun $run, private readonly OutputRecorder $recorder) {}
+    public function __construct(
+        private readonly ProcessRun $run,
+        private readonly OutputRecorder $recorder,
+        private readonly RunOutcomes $outcomes = new RunOutcomes(),
+    ) {}
 
     public function queued(PartKey $part): void
     {
@@ -128,6 +135,20 @@ final class RecordedRunEvents implements RunEvents
         }
 
         $this->run->markStopped($reason);
+        $this->outcomes->record($this->run, RunLogicalResult::Stopped, RunResultSource::Signed);
+    }
+
+    /**
+     * Records the attempt's signed root result once; a replayed event changes nothing, and a run already stopped
+     * keeps Stopped as its result.
+     */
+    public function runFinished(int $rootStatus): void
+    {
+        if (! $this->note(ProcessEventFacts::runFinished($rootStatus)) || $this->run->refresh()->isStopped()) {
+            return;
+        }
+
+        $this->outcomes->record($this->run, RunLogicalResult::ofRootStatus($rootStatus), RunResultSource::Signed);
     }
 
     /**

@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Processes\Enums\RunEventType;
 use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Enums\RunRequestIntent;
 use App\Processes\Enums\RunResultSource;
 use App\Processes\Enums\StepType;
+use App\Processes\Execution\RecordedRunEvents;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\RunOutcome;
 use App\Processes\Models\RunResultConflict;
 use App\Processes\Support\RunOutcomes;
 use App\Processes\Values\ExecutionPlan;
+use App\Processes\Values\RunEvent;
+use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestRunAdmissions;
@@ -82,6 +86,21 @@ final class RunOutcomeTest extends TestCase
         ]);
 
         $this->assertSame('Requested shell plan finished', RunLogicalResult::Succeeded->summaryFor($plan));
+    }
+
+    public function test_a_signed_root_status_is_recorded_once_and_a_replay_adds_nothing(): void
+    {
+        $run = $this->run();
+
+        foreach ([1, 1] as $sequence) {
+            RunEvent::from(['sequence' => $sequence, 'type' => RunEventType::RunFinished, 'code' => 0])
+                ->applyTo(new RecordedRunEvents($run, new CollectedOutput()));
+        }
+
+        $outcome = RunOutcome::query()->sole();
+        $this->assertSame(RunLogicalResult::Succeeded, $outcome->result);
+        $this->assertSame(RunResultSource::Signed, $outcome->source);
+        $this->assertSame(1, $outcome->version);
     }
 
     private function run(): ProcessRun

@@ -36,6 +36,11 @@ interface RunEvents
     public function runStopped(string $reason): void;
 
     /**
+     * The run's root plan ended with this status: the attempt's one logical result, never one part's exit.
+     */
+    public function runFinished(int $rootStatus): void;
+
+    /**
      * Why the part may not start any more because a rule, binding or policy it was admitted under changed, or an
      * empty text while its admission is still current.
      */

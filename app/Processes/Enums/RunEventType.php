@@ -18,6 +18,7 @@ enum RunEventType: string
     case PartStopped = 'part_stopped';
     case PartLost = 'part_lost';
     case RunStopped = 'run_stopped';
+    case RunFinished = 'run_finished';
     case Heartbeat = 'heartbeat';
 
     /**
@@ -32,6 +33,7 @@ enum RunEventType: string
             self::PartStopped,
             self::PartLost,
             self::RunStopped,
+            self::RunFinished,
         ], true);
     }
 }

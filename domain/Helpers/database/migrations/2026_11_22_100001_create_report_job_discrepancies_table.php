@@ -10,16 +10,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('report_job_links', function (Blueprint $table) {
-            $table->ulid('id')->primary();
-            $table->ulid('report_id')->unique();
-            $table->unsignedBigInteger('report_number');
-            $table->foreignUlid('helper_job_id')->constrained('helper_jobs')->restrictOnDelete();
-            $table->string('dispatch_request_id', 64);
-            $table->timestampTz('verified_at');
-            $table->timestampTz('created_at')->nullable();
-        });
-
         Schema::create('report_job_discrepancies', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->ulid('report_id')->index();
@@ -34,6 +24,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('report_job_discrepancies');
-        Schema::dropIfExists('report_job_links');
     }
 };
