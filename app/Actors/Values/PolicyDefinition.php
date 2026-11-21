@@ -4,63 +4,39 @@ declare(strict_types=1);
 
 namespace App\Actors\Values;
 
+use App\Actors\Contracts\OwnerPolicy;
 use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\RecordPolicy;
-use App\Actors\Exceptions\PolicyDefinitionConflict;
+use App\Actors\Contracts\RestrictedPolicy;
+use App\Actors\Contracts\WorkspacePolicy;
 use App\Operations\Enums\AccessType;
 
 /**
- * One policy with the accesses it accepts, and those the journal's built-in agent profiles never get, those only a
- * coordinating profile gets, and those a read-only profile never gets. The policy names its model.
+ * One policy with the accesses it accepts. Which built-in agent profiles are granted each is read from the access type
+ * and from what the policy class says of itself: the owner's, over the workspace, or restricted further.
  */
 final readonly class PolicyDefinition
 {
     /**
      * @param  class-string<Policy>  $policy
      * @param  list<AccessType>  $accesses
-     * @param  list<AccessType>  $ownerOnly
-     * @param  list<AccessType>  $coordinatorOnly
-     * @param  list<AccessType>  $notForReadOnly
-     *
-     * @throws PolicyDefinitionConflict when a restriction names an access the policy does not accept
      */
-    public function __construct(
-        public string $policy,
-        public array $accesses,
-        public array $ownerOnly = [],
-        public array $coordinatorOnly = [],
-        public array $notForReadOnly = [],
-    ) {
-        $restrictions = [
-            'owner-only' => $ownerOnly,
-            'coordinator-only' => $coordinatorOnly,
-            'not-for-read-only' => $notForReadOnly,
-        ];
-
-        foreach ($restrictions as $restriction => $restricted) {
-            if (array_diff(self::values($restricted), self::values($accesses)) !== []) {
-                throw PolicyDefinitionConflict::forRestriction($policy, $restriction);
-            }
-        }
-    }
+    public function __construct(public string $policy, public array $accesses) {}
 
     /**
-     * What a built-in agent profile is granted of this policy: every accepted access but the owner's, the coordinator's only for a
-     * coordinating profile, and none a read-only profile may not have.
+     * What a built-in agent profile is granted of this policy, in the order the policy accepts them.
      *
      * @return list<AccessType>
      */
     public function grantsForAgents(bool $coordinator, bool $readOnly): array
     {
-        $withheld = [
-            ...$this->ownerOnly,
-            ...($coordinator ? [] : $this->coordinatorOnly),
-            ...($readOnly ? $this->notForReadOnly : []),
-        ];
+        if (is_subclass_of($this->policy, OwnerPolicy::class)) {
+            return [];
+        }
 
         return array_values(array_filter(
             $this->accesses,
-            fn (AccessType $access) => ! in_array($access, $withheld, true),
+            fn (AccessType $access) => $this->isGrantedToAgent($access, $coordinator, $readOnly),
         ));
     }
 
@@ -82,12 +58,20 @@ final readonly class PolicyDefinition
         return $this->policy::model();
     }
 
-    /**
-     * @param  list<AccessType>  $accesses
-     * @return list<string>
-     */
-    private static function values(array $accesses): array
+    private function isGrantedToAgent(AccessType $access, bool $coordinator, bool $readOnly): bool
     {
-        return array_map(fn (AccessType $access) => $access->value, $accesses);
+        if (! $access->audience()->admitsAgent($coordinator, $readOnly)) {
+            return false;
+        }
+
+        if ($readOnly && is_subclass_of($this->policy, WorkspacePolicy::class) && $access->changesFiles()) {
+            return false;
+        }
+
+        if (is_subclass_of($this->policy, RestrictedPolicy::class)) {
+            return $this->policy::additionalAudience($access)->admitsAgent($coordinator, $readOnly);
+        }
+
+        return true;
     }
 }

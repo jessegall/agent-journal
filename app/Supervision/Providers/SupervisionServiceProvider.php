@@ -77,7 +77,6 @@ final class SupervisionServiceProvider extends ServiceProvider
         $policies->register('Core', new PolicyDefinition(
             SupervisorPolicy::class,
             [AccessType::Edit],
-            coordinatorOnly: [AccessType::Edit],
         ));
         $policies->register('Core', new PolicyDefinition(
             AskPolicy::class,

@@ -85,7 +85,6 @@ final class DesksServiceProvider extends ServiceProvider
         $policies->register('Core', new PolicyDefinition(
             DeskPolicy::class,
             [AccessType::Create, AccessType::Edit],
-            ownerOnly: [AccessType::Create, AccessType::Edit],
         ));
         $links->register([
             DeskRecord::LINK_TYPE => DeskRecord::class,

@@ -100,7 +100,7 @@ final class WebServiceProvider extends ServiceProvider
     ): void {
         $policies->register(
             'Core',
-            new PolicyDefinition(PresencePolicy::class, [AccessType::Edit], ownerOnly: [AccessType::Edit]),
+            new PolicyDefinition(PresencePolicy::class, [AccessType::Edit]),
         );
         $links->register(['web.layout' => Layout::class]);
         $this->renderRefusals($exceptions);

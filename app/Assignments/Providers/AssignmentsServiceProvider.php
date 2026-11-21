@@ -100,7 +100,6 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $policies->register('Core', new PolicyDefinition(
             AssignmentRecipientPolicy::class,
             [AccessType::Create, AccessType::Delegate, AccessType::Delete],
-            coordinatorOnly: [AccessType::Delegate, AccessType::Delete],
         ));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/assignments.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));

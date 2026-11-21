@@ -50,7 +50,6 @@ final class SharingServiceProvider extends ServiceProvider
         $policies->register('Core', new PolicyDefinition(
             SharingPolicy::class,
             [AccessType::Create, AccessType::Edit],
-            ownerOnly: [AccessType::Create, AccessType::Edit],
         ));
         $policies->register('Core', new PolicyDefinition(
             ShareRequestPolicy::class,

@@ -26,16 +26,19 @@ use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Contracts\MessageRecipient;
 use App\Actors\Contracts\MessageSender;
+use App\Actors\Contracts\OwnerPolicy;
 use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Contracts\RecordPolicy;
 use App\Actors\Contracts\ReplyInboxes;
+use App\Actors\Contracts\RestrictedPolicy;
 use App\Actors\Contracts\SeatedActor;
 use App\Actors\Contracts\SystemEntryPolicies;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
+use App\Actors\Contracts\WorkspacePolicy;
 use App\Actors\Contracts\WorkStackProvider;
 use App\Actors\Contracts\WorkStacks;
 use App\Actors\Enums\ActorType;
@@ -796,6 +799,7 @@ use App\Numbers\Support\HasNumber;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
 use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ProfileAudience;
 use App\Operations\Exceptions\UnknownAccessType;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Commands\IssueEvidencePermit;
@@ -1393,7 +1397,10 @@ final class CoreApi
                 ActorProviderRegistration::class,
                 ActorLabels::class,
                 Policy::class,
+                OwnerPolicy::class,
                 RecordPolicy::class,
+                RestrictedPolicy::class,
+                WorkspacePolicy::class,
                 PolicyCatalogue::class,
                 ActorWorkStacks::class,
                 WorkRecordState::class,
@@ -1685,6 +1692,7 @@ final class CoreApi
                 ConversationModeType::class,
                 StartDisposition::class,
                 AccessType::class,
+                ProfileAudience::class,
                 AccessRuleType::class,
                 ResourceRequest::class,
                 PolicyOperation::class,

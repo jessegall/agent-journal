@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Policies;
 
-use App\Actors\Contracts\Policy;
+use App\Actors\Contracts\OwnerPolicy;
 use Domain\Documents\Models\Document;
 
 /**
  * Who may recover drafts and change records another actor created: only the owner holds the access, so the grants
  * decide.
  */
-final readonly class DocumentAdministrationPolicy implements Policy
+final readonly class DocumentAdministrationPolicy implements OwnerPolicy
 {
     public static function model(): string
     {

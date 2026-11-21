@@ -97,7 +97,6 @@ final class RulesDomain extends Domain implements
             new PolicyDefinition(
                 RulePolicy::class,
                 [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
-                ownerOnly: [AccessType::Edit, AccessType::Delete],
             ),
         ];
     }

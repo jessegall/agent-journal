@@ -40,7 +40,6 @@ final class SettingsServiceProvider extends ServiceProvider
         $policies->register('Core', new PolicyDefinition(
             SettingPolicy::class,
             [AccessType::Edit],
-            ownerOnly: [AccessType::Edit],
         ));
     }
 }

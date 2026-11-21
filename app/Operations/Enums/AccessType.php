@@ -40,4 +40,20 @@ enum AccessType: string
     {
         return in_array($this, [self::Create, self::Edit, self::Delete, self::Test, self::Build], true);
     }
+
+    /**
+     * Which built-in agent profiles this access is for on an ordinary policy: journal work for anyone, running tests
+     * and builds for a profile that may change its workspace, delegating and deleting for a coordinator, and
+     * administration for the owner.
+     */
+    public function audience(): ProfileAudience
+    {
+        return match ($this) {
+            self::Read, self::Search, self::Create, self::Edit,
+            self::Execute, self::Network, self::Publish => ProfileAudience::Anyone,
+            self::Test, self::Build => ProfileAudience::Writable,
+            self::Delegate, self::Delete => ProfileAudience::Coordinator,
+            self::Admin => ProfileAudience::Owner,
+        };
+    }
 }

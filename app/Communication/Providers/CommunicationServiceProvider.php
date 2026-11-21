@@ -83,7 +83,6 @@ final class CommunicationServiceProvider extends ServiceProvider
         $policies->register('Core', new PolicyDefinition(
             MessageAdministrationPolicy::class,
             [AccessType::Read, AccessType::Edit],
-            ownerOnly: [AccessType::Read, AccessType::Edit],
         ));
         $links->register([Message::LINK_TYPE => Message::class]);
         $pendingWork->register(PendingInboxWork::class);

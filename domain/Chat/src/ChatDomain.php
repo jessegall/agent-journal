@@ -87,7 +87,6 @@ final class ChatDomain extends Domain implements
             new PolicyDefinition(
                 ConversationPolicy::class,
                 [AccessType::Edit],
-                notForReadOnly: [AccessType::Edit],
             ),
         ];
     }

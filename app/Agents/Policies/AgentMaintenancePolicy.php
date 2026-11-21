@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Policies;
 
-use App\Actors\Contracts\Policy;
+use App\Actors\Contracts\OwnerPolicy;
 use App\Agents\Models\Agent;
 
 /**
  * The owner's maintenance of agents: inspecting their sessions and runtimes, steering and recovering them, running key
  * scripts and keeping account uses.
  */
-final readonly class AgentMaintenancePolicy implements Policy
+final readonly class AgentMaintenancePolicy implements OwnerPolicy
 {
     public static function model(): string
     {

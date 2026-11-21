@@ -86,7 +86,6 @@ final class SkillsServiceProvider extends ServiceProvider
         $policies->register('Core', new PolicyDefinition(
             SkillAuthoringPolicy::class,
             [AccessType::Create, AccessType::Edit],
-            ownerOnly: [AccessType::Create, AccessType::Edit],
         ));
         $numbers->register(NumberedModel::global(Skill::class));
 

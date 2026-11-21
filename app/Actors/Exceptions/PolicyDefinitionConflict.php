@@ -33,8 +33,4 @@ final class PolicyDefinitionConflict extends RuntimeException
     /**
      * @param  'owner-only'|'coordinator-only'|'not-for-read-only'  $restriction
      */
-    public static function forRestriction(string $policy, string $restriction): self
-    {
-        return new self("The {$restriction} accesses of {$policy} must be accesses it accepts.");
-    }
 }

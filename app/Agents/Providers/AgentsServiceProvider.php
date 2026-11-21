@@ -263,13 +263,10 @@ final class AgentsServiceProvider extends ServiceProvider
         $policies->register('Core', new PolicyDefinition(
             AgentPolicy::class,
             [AccessType::Create, AccessType::Edit, AccessType::Delete],
-            coordinatorOnly: [AccessType::Delete],
         ));
-        $maintenance = [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute];
         $policies->register('Core', new PolicyDefinition(
             AgentMaintenancePolicy::class,
-            $maintenance,
-            ownerOnly: $maintenance,
+            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute],
         ));
         $systemEntries->allow('account reconciliation', AgentMaintenancePolicy::class);
         $systemEntries->allow('main agent install', AgentPolicy::class);

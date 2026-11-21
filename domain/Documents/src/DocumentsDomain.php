@@ -256,12 +256,10 @@ final class DocumentsDomain extends Domain implements
             new PolicyDefinition(
                 DocumentPolicy::class,
                 [AccessType::Create, AccessType::Edit],
-                notForReadOnly: [AccessType::Create, AccessType::Edit],
             ),
             new PolicyDefinition(
                 DocumentAdministrationPolicy::class,
                 [AccessType::Edit],
-                ownerOnly: [AccessType::Edit],
             ),
             new PolicyDefinition(
                 ReportPolicy::class,

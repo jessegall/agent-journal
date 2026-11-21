@@ -700,6 +700,10 @@ case	ProcessStartState::Pending
 case	ProcessStartState::Running
 case	ProcessStartState::Starting
 case	ProcessStartState::Stopped
+case	ProfileAudience::Anyone
+case	ProfileAudience::Coordinator
+case	ProfileAudience::Owner
+case	ProfileAudience::Writable
 case	ProfileChangeType::Added
 case	ProfileChangeType::Changed
 case	ProfileChangeType::Unchanged
@@ -6741,6 +6745,7 @@ enum	PoolMembersType
 enum	PositionPurpose
 enum	ProblemCode
 enum	ProcessStartState
+enum	ProfileAudience
 enum	ProfileChangeType
 enum	ProfileRunState
 enum	ProgressType
@@ -7059,6 +7064,7 @@ interface	OperationResolver
 interface	OptionSetting
 interface	OutputRecorder
 interface	OverviewContribution
+interface	OwnerPolicy
 interface	PageOption
 interface	PageProvider
 interface	PageResolver
@@ -7104,6 +7110,7 @@ interface	ReportResolver
 interface	RequestKey
 interface	RequestSource
 interface	ResponsibilityWriter
+interface	RestrictedPolicy
 interface	ResultReceipts
 interface	RowCapture
 interface	RuleDetailsResolver
@@ -7224,6 +7231,7 @@ interface	WorkRecordState
 interface	WorkRepair
 interface	WorkStackProvider
 interface	WorkStacks
+interface	WorkspacePolicy
 interface	WorkspaceReader
 interface	WorkspaceSource
 method	AbandonNavigation::__construct()
@@ -7265,6 +7273,7 @@ method	AccessSkill::description()
 method	AccessSkill::key()
 method	AccessSkill::name()
 method	AccessSkill::sections()
+method	AccessType::audience()
 method	AccessType::changesFiles()
 method	AccessType::fromKey()
 method	Account::applyCheck()
@@ -15218,15 +15227,14 @@ method	PolicyCatalogue::grantable()
 method	PolicyCatalogue::register()
 method	PolicyDefinition::__construct()
 method	PolicyDefinition::grantsForAgents()
+method	PolicyDefinition::isGrantedToAgent()
 method	PolicyDefinition::isRecord()
 method	PolicyDefinition::model()
 method	PolicyDefinition::supports()
-method	PolicyDefinition::values()
 method	PolicyDefinitionConflict::forGate()
 method	PolicyDefinitionConflict::forModel()
 method	PolicyDefinitionConflict::forPolicy()
 method	PolicyDefinitionConflict::forRecordPolicy()
-method	PolicyDefinitionConflict::forRestriction()
 method	PolicyGrant::__construct()
 method	PolicyGrant::fromArray()
 method	PolicyGrant::isFor()
@@ -15493,6 +15501,7 @@ method	ProfileActivateCommand::describe()
 method	ProfileActivateCommand::handle()
 method	ProfileActivation::__construct()
 method	ProfileAdministrationPolicy::model()
+method	ProfileAudience::admitsAgent()
 method	ProfileAuthorization::__construct()
 method	ProfileAuthorization::admits()
 method	ProfileAuthorization::assertGrantableIn()
@@ -17332,6 +17341,7 @@ method	RestoredCall::walked()
 method	RestoredCaptures::__construct()
 method	RestoredCaptures::states()
 method	RestoredCaptures::toArray()
+method	RestrictedPolicy::additionalAudience()
 method	ResultBudget::fit()
 method	ResultBudget::payloadBytes()
 method	ResultBudget::payloadFits()
@@ -17598,6 +17608,7 @@ method	RuleMissing::withId()
 method	RuleNotProposed::inState()
 method	RuleOrigin::__construct()
 method	RuleOrigin::reference()
+method	RulePolicy::additionalAudience()
 method	RulePolicy::model()
 method	RuleProposal::adopt()
 method	RuleProposal::approve()
@@ -20502,6 +20513,7 @@ method	SupervisorLink::versionFor()
 method	SupervisorOverride::__construct()
 method	SupervisorOwner::__construct()
 method	SupervisorOwner::resolve()
+method	SupervisorPolicy::additionalAudience()
 method	SupervisorPolicy::model()
 method	SupervisorProfile::__construct()
 method	SupervisorRecipients::__construct()
@@ -22178,7 +22190,6 @@ parameter	$conversationRequired
 parameter	$conversationTarget
 parameter	$conversations
 parameter	$coordinator
-parameter	$coordinatorOnly
 parameter	$copiedFrom
 parameter	$core
 parameter	$coreDeclarations
@@ -23064,7 +23075,6 @@ parameter	$node
 parameter	$nodeId
 parameter	$nodes
 parameter	$normalizer
-parameter	$notForReadOnly
 parameter	$note
 parameter	$notice
 parameter	$noticeId
@@ -23167,7 +23177,6 @@ parameter	$owner
 parameter	$ownerClasses
 parameter	$ownerDomainClass
 parameter	$ownerId
-parameter	$ownerOnly
 parameter	$ownerReference
 parameter	$ownerScope
 parameter	$ownerUserId
@@ -23584,7 +23593,6 @@ parameter	$responses
 parameter	$responsibilities
 parameter	$restored
 parameter	$restorer
-parameter	$restriction
 parameter	$result
 parameter	$result	app/Agents/Models/MergeAttempt.php
 parameter	$result	app/Agents/Support/ProtectedMerge.php
@@ -28753,9 +28761,6 @@ property	PolicyAuthorizer::$catalogue
 property	PolicyAuthorizer::$gate
 property	PolicyAuthorizer::$grants
 property	PolicyDefinition::$accesses
-property	PolicyDefinition::$coordinatorOnly
-property	PolicyDefinition::$notForReadOnly
-property	PolicyDefinition::$ownerOnly
 property	PolicyDefinition::$policy
 property	PolicyGrant::$access
 property	PolicyGrant::$policy
@@ -33729,7 +33734,6 @@ variable	$low
 variable	$lowLinks
 variable	$made
 variable	$main
-variable	$maintenance
 variable	$makers
 variable	$makesRow
 variable	$makesRows
@@ -34169,9 +34173,6 @@ variable	$resource
 variable	$response
 variable	$rest
 variable	$restored
-variable	$restricted
-variable	$restriction
-variable	$restrictions
 variable	$result	app/Bus/Support/EventUnit.php
 variable	$result	app/Bus/Support/EventUnitLifecycle.php
 variable	$result	app/Scripts/Models/ProfileRun.php
@@ -34582,7 +34583,6 @@ variable	$window
 variable	$windowContent
 variable	$windows
 variable	$withdrawn
-variable	$withheld
 variable	$withoutKey
 variable	$withoutTrace
 variable	$won
