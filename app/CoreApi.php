@@ -676,11 +676,9 @@ use App\Files\Values\FolderEntries;
 use App\Files\Values\FolderEntry;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Commands\CertifyPassedStops;
-use App\Hooks\Commands\FocusPlan;
-use App\Hooks\Commands\FocusTask;
+use App\Hooks\Commands\FocusInstruction;
 use App\Hooks\Commands\RefreshPlanInstruction;
-use App\Hooks\Commands\ReleasePlanFocus;
-use App\Hooks\Commands\ReleaseTaskFocus;
+use App\Hooks\Commands\ReleaseInstruction;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
@@ -2126,11 +2124,9 @@ final class CoreApi
                 Everyone::class,
             )
             ->commands(
-                FocusPlan::class,
-                FocusTask::class,
+                FocusInstruction::class,
                 RefreshPlanInstruction::class,
-                ReleasePlanFocus::class,
-                ReleaseTaskFocus::class,
+                ReleaseInstruction::class,
                 ActivateProfiles::class,
                 RevokeProfiles::class,
                 StartProfileMain::class,

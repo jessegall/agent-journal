@@ -6,6 +6,8 @@ namespace Tests\Feature\Domains;
 
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Providers\DomainEventServiceProvider;
+use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\States\WorkingOnPlanState;
 use Tests\Support\SetsEventCachePath;
 use Tests\TestCase;
 
@@ -26,6 +28,14 @@ final class EventCacheTest extends TestCase
             $this->cachePath,
             '<?php return '.var_export([DomainEventServiceProvider::class => [
                 DomainEventServiceProvider::LANES => [DomainEventServiceProvider::LANES_VERSION],
+                DomainEventServiceProvider::STATE_EVENTS => [implode('|', [
+                    PlanProgressChanged::class,
+                    WorkingOnPlanState::class,
+                    WorkingOnPlanState::class,
+                    'onPlanProgressChanged',
+                    'Plans',
+                    'wide',
+                ])],
             ]], true).';',
         );
         $this->useEventCachePath($this->cachePath);

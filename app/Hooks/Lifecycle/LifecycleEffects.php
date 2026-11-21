@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Lifecycle;
 
+use App\Actors\Contracts\ActorRunner;
+use App\Actors\Contracts\AuthoritySource;
+use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\GuardedCommandBus;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Enums\CommandEntry;
@@ -28,15 +31,16 @@ final readonly class LifecycleEffects
         private LifecycleOrigins $origins,
         private CommandRegistry $commands,
         private LoggerInterface $log,
+        private ActorRunner $actors,
     ) {}
 
     /**
      * @param  list<LifecycleAnswer>  $answers
      */
-    public function apply(array $answers): void
+    public function apply(array $answers, ActorContext $actor, AuthoritySource $authority): void
     {
         foreach ($answers as $answer) {
-            $status = $this->applyAnswer($answer);
+            $status = $this->actors->within($actor, $authority, fn () => $this->applyAnswer($answer));
 
             if ($status !== CommandOriginStatus::Eligible) {
                 $this->log->info('A lifecycle answer was skipped.', [

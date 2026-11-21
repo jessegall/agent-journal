@@ -422,6 +422,7 @@ case	LaunchCandidateRank::ExactConversation
 case	LaunchCandidateRank::OtherPurpose
 case	LaunchCandidateRank::SamePurpose
 case	LifecycleStage::Enter
+case	LifecycleStage::Event
 case	LifecycleStage::Exit
 case	LifecycleStage::Resume
 case	LifecycleState::Draining
@@ -2166,10 +2167,8 @@ class	FlowEdgeData
 class	FlowGraphData
 class	FlowNodeData
 class	FlowShape
-class	FocusPlan
-class	FocusPlanHandler
-class	FocusTask
-class	FocusTaskHandler
+class	FocusInstruction
+class	FocusInstructionHandler
 class	FolderClasses
 class	FolderClosed
 class	FolderEntries
@@ -3395,21 +3394,19 @@ class	ReleaseAccountRemovalHandler
 class	ReleaseAgentHold
 class	ReleaseAgentHoldCommand
 class	ReleaseAgentHoldHandler
+class	ReleaseInstruction
+class	ReleaseInstructionHandler
 class	ReleaseMessageClaim
 class	ReleaseMessageClaimCall
 class	ReleaseMessageClaimController
 class	ReleaseMessageClaimHandler
 class	ReleaseMessageClaimRequest
-class	ReleasePlanFocus
-class	ReleasePlanFocusHandler
 class	ReleaseRuntimeHoldController
 class	ReleaseSeat
 class	ReleaseSeatHandler
 class	ReleaseSignInAgain
 class	ReleaseSignInAgainHandler
 class	ReleaseSignInWriter
-class	ReleaseTaskFocus
-class	ReleaseTaskFocusHandler
 class	RemindRequiredSkills
 class	RemoveAccount
 class	RemoveAccountController
@@ -5161,6 +5158,7 @@ constant	RequestKey::LONGEST
 constant	RequiredDrain::CAUSAL_DEPTH_LIMIT
 constant	RequiredServices::SERVICES
 constant	ReservedInstructions::ALLOWED
+constant	ReservedInstructions::INSTRUCTION_TYPES
 constant	ReservedWordReader::RESERVED_OUT_OF_PLACE
 constant	ResultBudget::JSON_FLAGS
 constant	ResultBudget::RECOVERY_BYTES
@@ -6750,6 +6748,9 @@ method	AnsweringAskState::__construct()
 method	AnsweringAskState::instructionText()
 method	AnsweringAskState::instructionType()
 method	AnsweringAskState::isFinished()
+method	AnsweringAskState::onEnter()
+method	AnsweringAskState::onExit()
+method	AnsweringAskState::onResume()
 method	AnsweringAskState::reference()
 method	AnsweringAskStates::schemaVersion()
 method	AnsweringAskStates::sessionTransfer()
@@ -6760,7 +6761,10 @@ method	AnsweringMessageState::instruction()
 method	AnsweringMessageState::instructionText()
 method	AnsweringMessageState::instructionType()
 method	AnsweringMessageState::isFinished()
+method	AnsweringMessageState::onEnter()
+method	AnsweringMessageState::onExit()
 method	AnsweringMessageState::onFileEdit()
+method	AnsweringMessageState::onResume()
 method	AnsweringMessageState::onShellCommand()
 method	AnsweringMessageState::onStop()
 method	AnsweringMessageState::workPermission()
@@ -7422,7 +7426,10 @@ method	AwaitingSkillsState::__construct()
 method	AwaitingSkillsState::instructionText()
 method	AwaitingSkillsState::instructionType()
 method	AwaitingSkillsState::isFinished()
+method	AwaitingSkillsState::onEnter()
+method	AwaitingSkillsState::onExit()
 method	AwaitingSkillsState::onFileEdit()
+method	AwaitingSkillsState::onResume()
 method	AwaitingSkillsState::onShellCommand()
 method	AwaitingSkillsState::reason()
 method	AwaitingSkillsState::workPermission()
@@ -10064,10 +10071,8 @@ method	FlowNodeData::placedAt()
 method	FlowShape::__construct()
 method	FlowShape::action()
 method	FlowShape::branch()
-method	FocusPlanHandler::__construct()
-method	FocusPlanHandler::handle()
-method	FocusTaskHandler::__construct()
-method	FocusTaskHandler::handle()
+method	FocusInstructionHandler::__construct()
+method	FocusInstructionHandler::handle()
 method	FolderClasses::in()
 method	FolderClasses::read()
 method	FolderClosed::at()
@@ -13907,6 +13912,8 @@ method	ReleaseAgentHold::target()
 method	ReleaseAgentHoldCommand::handle()
 method	ReleaseAgentHoldHandler::__construct()
 method	ReleaseAgentHoldHandler::handle()
+method	ReleaseInstructionHandler::__construct()
+method	ReleaseInstructionHandler::handle()
 method	ReleaseMessageClaim::__construct()
 method	ReleaseMessageClaimCall::__construct()
 method	ReleaseMessageClaimController::__invoke()
@@ -13915,8 +13922,6 @@ method	ReleaseMessageClaimHandler::handle()
 method	ReleaseMessageClaimRequest::command()
 method	ReleaseMessageClaimRequest::expectedClaim()
 method	ReleaseMessageClaimRequest::rules()
-method	ReleasePlanFocusHandler::__construct()
-method	ReleasePlanFocusHandler::handle()
 method	ReleaseRuntimeHoldController::__invoke()
 method	ReleaseSeat::__construct()
 method	ReleaseSeatHandler::__construct()
@@ -13925,8 +13930,6 @@ method	ReleaseSignInAgain::__construct()
 method	ReleaseSignInAgainHandler::__construct()
 method	ReleaseSignInAgainHandler::handle()
 method	ReleaseSignInWriter::handle()
-method	ReleaseTaskFocusHandler::__construct()
-method	ReleaseTaskFocusHandler::handle()
 method	RemindRequiredSkills::__construct()
 method	RemindRequiredSkills::handle()
 method	ReminderContribution::add()
@@ -16640,6 +16643,7 @@ method	StateEventEffects::withCaller()
 method	StateEventMethodUnregistered::for()
 method	StateEventOrigin::__construct()
 method	StateEventOrigin::commands()
+method	StateEventOrigin::lifecycleOrigin()
 method	StateEventOrigin::logDrop()
 method	StateEventOriginGuard::__construct()
 method	StateEventOriginGuard::check()
@@ -20693,6 +20697,7 @@ property	AskCard::$reply
 property	AskCard::$type
 property	AskClock::$types
 property	AskEscalation::$assignments
+property	AskEscalation::$attention
 property	AskEscalation::$recipients
 property	AskEscalation::$router
 property	AskEscalation::$routes
@@ -22340,8 +22345,7 @@ property	FlowNodeData::$order
 property	FlowNodeData::$rank
 property	FlowNodeData::$type
 property	FlowShape::$ports
-property	FocusPlanHandler::$instructions
-property	FocusTaskHandler::$instructions
+property	FocusInstructionHandler::$instructions
 property	FolderEntries::$entries
 property	FolderEntry::$fingerprint
 property	FolderEntry::$path
@@ -22366,6 +22370,7 @@ property	FrameEditor::$frame
 property	FrameEditor::$walk
 property	FrameGrant::$frameId
 property	FrameGrant::$target
+property	FrameLifecycle::$actors
 property	FrameLifecycle::$eventActivity
 property	FrameLifecycle::$facts
 property	FrameLifecycle::$running
@@ -22836,11 +22841,14 @@ property	LifecycleAnswer::$origin
 property	LifecycleAnswers::$answers
 property	LifecycleAnswers::$target
 property	LifecycleAnswers::$transitionId
+property	LifecycleAnswersSettled::$actor
 property	LifecycleAnswersSettled::$answers
+property	LifecycleAnswersSettled::$authority
 property	LifecycleCommands::$commands
 property	LifecycleContext::$frameId
 property	LifecycleContext::$reference
 property	LifecycleContext::$target
+property	LifecycleEffects::$actors
 property	LifecycleEffects::$admission
 property	LifecycleEffects::$bus
 property	LifecycleEffects::$commands
@@ -24734,6 +24742,7 @@ property	ReleaseAgentHoldCommand::$description
 property	ReleaseAgentHoldCommand::$signature
 property	ReleaseAgentHoldHandler::$facts
 property	ReleaseAgentHoldHandler::$requests
+property	ReleaseInstructionHandler::$instructions
 property	ReleaseMessageClaim::$expectedClaim
 property	ReleaseMessageClaim::$messageId
 property	ReleaseMessageClaim::$reason
@@ -24745,7 +24754,6 @@ property	ReleaseMessageClaimCall::$reason
 property	ReleaseMessageClaimCall::$requestKey
 property	ReleaseMessageClaimHandler::$facts
 property	ReleaseMessageClaimHandler::$responsibilities
-property	ReleasePlanFocusHandler::$instructions
 property	ReleaseSeat::$deskId
 property	ReleaseSeat::$expected
 property	ReleaseSeat::$seatId
@@ -24753,7 +24761,6 @@ property	ReleaseSeatHandler::$seating
 property	ReleaseSignInAgain::$attemptId
 property	ReleaseSignInAgainHandler::$commands
 property	ReleaseSignInAgainHandler::$uses
-property	ReleaseTaskFocusHandler::$instructions
 property	RemindRequiredSkills::$contexts
 property	RemoveAccount::$accountId
 property	RemoveAccountHandler::$facts
@@ -26470,6 +26477,7 @@ property	StateEventEffects::$engine
 property	StateEventEffects::$entrance
 property	StateEventEffects::$guard
 property	StateEventEffects::$log
+property	StateEventEffects::$origins
 property	StateEventEffects::$session
 property	StateEventOrigin::$dispatch
 property	StateEventOrigin::$listenerResult
@@ -27880,6 +27888,7 @@ variable	$installation
 variable	$installed
 variable	$instructing
 variable	$instruction
+variable	$instructionType
 variable	$instructions
 variable	$intent
 variable	$intents
@@ -28130,6 +28139,7 @@ variable	$ordered
 variable	$orderedColumns
 variable	$orders
 variable	$ordersByKey
+variable	$ordinal
 variable	$ordinary
 variable	$orientation
 variable	$origin

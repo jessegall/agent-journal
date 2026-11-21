@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Support;
 
-use App\Hooks\Commands\FocusPlan;
-use App\Hooks\Commands\FocusTask;
+use App\Hooks\Commands\FocusInstruction;
 use App\Hooks\Commands\RefreshPlanInstruction;
-use App\Hooks\Commands\ReleasePlanFocus;
-use App\Hooks\Commands\ReleaseTaskFocus;
+use App\Hooks\Commands\ReleaseInstruction;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\LifecycleStage;
 use App\Hooks\Exceptions\InstructionOriginRefused;
@@ -23,14 +21,24 @@ use App\Hooks\Values\InstructionMarker;
 final readonly class ReservedInstructions
 {
     /**
-     * Each reserved command with the state type it serves and the stages it may come from.
+     * The state types that may mark their instruction, each with the instruction type its marker holds.
+     */
+    public const array INSTRUCTION_TYPES = [
+        'tasks.working' => 'tasks.task',
+        'plans.working' => 'plans.plan',
+        'communication.answering' => 'communication.message',
+        'sequences.following' => 'sequences.step',
+        'skills.awaiting' => 'skills.delivery',
+        'supervision.answering' => 'supervision.ask',
+    ];
+
+    /**
+     * Each reserved command with the callbacks it may come from, and the state types it serves.
      */
     public const array ALLOWED = [
-        FocusTask::class => ['tasks.working', [LifecycleStage::Enter, LifecycleStage::Resume]],
-        ReleaseTaskFocus::class => ['tasks.working', [LifecycleStage::Exit]],
-        FocusPlan::class => ['plans.working', [LifecycleStage::Enter, LifecycleStage::Resume]],
-        ReleasePlanFocus::class => ['plans.working', [LifecycleStage::Exit]],
-        RefreshPlanInstruction::class => ['plans.working', [LifecycleStage::Enter, LifecycleStage::Resume]],
+        FocusInstruction::class => [[LifecycleStage::Enter, LifecycleStage::Resume], self::INSTRUCTION_TYPES],
+        ReleaseInstruction::class => [[LifecycleStage::Exit], self::INSTRUCTION_TYPES],
+        RefreshPlanInstruction::class => [[LifecycleStage::Event], ['plans.working' => 'plans.plan']],
     ];
 
     public function __construct(private LifecycleOrigins $origins, private InstructionMarkers $markers) {}
@@ -40,16 +48,14 @@ final readonly class ReservedInstructions
      *
      * @param  class-string  $command
      */
-    public function focus(string $command, string $instructionType): void
+    public function focus(string $command): void
     {
         $origin = $this->originFor($command);
         $subject = self::subjectOf($origin, $command);
 
-        $this->markers->replace(
-            $origin->target,
-            $origin->frameId,
-            new InstructionMarker($instructionType, $subject->id, $subject->runNumber),
-        );
+        $instructionType = self::ALLOWED[$command][1][$origin->reference->typeKey];
+        $marker = new InstructionMarker($instructionType, $subject->id, $subject->runNumber);
+        $this->markers->replace($origin->target, $origin->frameId, $marker);
     }
 
     /**
@@ -57,7 +63,7 @@ final readonly class ReservedInstructions
      *
      * @param  class-string  $command
      */
-    public function refresh(string $command, string $instructionType, string $planId): void
+    public function refresh(string $command, string $planId): void
     {
         $origin = $this->originFor($command);
         $subject = self::subjectOf($origin, $command);
@@ -66,7 +72,8 @@ final readonly class ReservedInstructions
             throw InstructionOriginRefused::otherSubject($command, $origin->description());
         }
 
-        $this->markers->replace($origin->target, $origin->frameId, new InstructionMarker($instructionType, $planId, 0));
+        $marker = new InstructionMarker(self::ALLOWED[$command][1][$origin->reference->typeKey], $planId, 0);
+        $this->markers->replace($origin->target, $origin->frameId, $marker);
     }
 
     /**
@@ -86,9 +93,9 @@ final readonly class ReservedInstructions
     private function originFor(string $command): LifecycleOrigin
     {
         $origin = $this->origins->current()->getOrThrow(InstructionOriginRefused::missing($command));
-        [$typeKey, $stages] = self::ALLOWED[$command];
+        [$stages, $types] = self::ALLOWED[$command];
 
-        if ($origin->reference->typeKey !== $typeKey || ! in_array($origin->stage, $stages, true)) {
+        if (! array_key_exists($origin->reference->typeKey, $types) || ! in_array($origin->stage, $stages, true)) {
             throw InstructionOriginRefused::notAllowed($command, $origin->description());
         }
 

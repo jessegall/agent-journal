@@ -22,6 +22,7 @@ use App\Profiles\Events\SignInAttemptFinished;
 use App\Profiles\Listeners\ReleaseSignInWriter;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;
+use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Listeners\SamplePlanOfStartedTask;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Tasks\Events\TaskStarted;
@@ -68,6 +69,7 @@ final class RequiredListenerLaneTest extends TestCase
         $this->assertEqualsCanonicalizing(
             [
                 TaskStarted::class,
+                PlanStarted::class,
                 SignInAttemptFinished::class,
                 SequenceStarted::class,
                 LinksRemoved::class,

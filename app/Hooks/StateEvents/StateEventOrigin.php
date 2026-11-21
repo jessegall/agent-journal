@@ -7,6 +7,8 @@ namespace App\Hooks\StateEvents;
 use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandOriginStatus;
+use App\Hooks\Enums\LifecycleStage;
+use App\Hooks\Lifecycle\LifecycleOrigin;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -19,6 +21,23 @@ final readonly class StateEventOrigin
         public StackTarget $target,
         public StateEventResult $listenerResult,
     ) {}
+
+    /**
+     * The origin a reserved command reads while the engine runs the command at this place of the listener's answer.
+     */
+    public function lifecycleOrigin(int $ordinal): LifecycleOrigin
+    {
+        $frame = $this->listenerResult->frame;
+
+        return new LifecycleOrigin(
+            $this->target,
+            $this->dispatch->id,
+            $ordinal,
+            $frame->id,
+            $frame->reference,
+            LifecycleStage::Event,
+        );
+    }
 
     /**
      * @return list<Command<mixed>>

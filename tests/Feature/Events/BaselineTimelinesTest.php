@@ -144,7 +144,8 @@ final class BaselineTimelinesTest extends TestCase
 
     /**
      * Doc 67 section 19: Task save, run and claim, TaskStarted's stack push and plan membership inside the
-     * transaction, commit, then the public TaskStarted and plan progress; the claim sends no AssignmentsChanged.
+     * transaction, commit, then the public TaskStarted and plan progress; the claim sends no AssignmentsChanged. After
+     * the commit, the new frame's instruction marker and the plan frames hearing the progress each commit on their own.
      */
     public function test_a_task_start_saves_the_task_and_run_pushes_the_stack_then_commits_and_publishes(): void
     {
@@ -159,6 +160,8 @@ final class BaselineTimelinesTest extends TestCase
             'commit',
             'TaskStarted',
             'PlanProgressChanged',
+            'commit',
+            'commit',
         ], $this->timeline);
     }
 
@@ -178,6 +181,8 @@ final class BaselineTimelinesTest extends TestCase
             'commit',
             'TaskStarted',
             'PlanProgressChanged',
+            'commit',
+            'commit',
         ], $this->timeline);
     }
 
@@ -193,7 +198,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->start($task);
 
         $this->assertSame(
-            ['saved Task', 'commit', 'TaskStarted', 'PlanProgressChanged'],
+            ['saved Task', 'commit', 'TaskStarted', 'PlanProgressChanged', 'commit'],
             $this->timeline,
         );
     }
@@ -210,7 +215,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->start($task);
 
         $this->assertSame(
-            ['saved Task', 'saved TaskRun', 'saved AgentStackRow', 'commit', 'TaskStarted'],
+            ['saved Task', 'saved TaskRun', 'saved AgentStackRow', 'commit', 'TaskStarted', 'commit'],
             $this->timeline,
         );
     }
@@ -313,7 +318,7 @@ final class BaselineTimelinesTest extends TestCase
         $this->timeline = [];
         $this->asAgent(new StartPlan($plan->id));
 
-        $this->assertSame(['saved Plan', 'saved AgentStackRow', 'commit', 'PlanStarted'], $first);
+        $this->assertSame(['saved Plan', 'saved AgentStackRow', 'commit', 'PlanStarted', 'commit'], $first);
         $this->assertSame(['commit'], $this->timeline);
     }
 

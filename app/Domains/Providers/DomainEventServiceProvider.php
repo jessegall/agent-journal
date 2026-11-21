@@ -28,7 +28,7 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider;
  */
 final class DomainEventServiceProvider extends EventServiceProvider
 {
-    private const string STATE_EVENTS = '@state-events';
+    public const string STATE_EVENTS = '@state-events';
 
     /**
      * The mark of a cache built with the required lane, so a cache from before it fails loudly.

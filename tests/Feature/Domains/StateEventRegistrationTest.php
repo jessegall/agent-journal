@@ -54,7 +54,7 @@ final class StateEventRegistrationTest extends TestCase
         ]);
 
         $this->assertContains($expected, $events['@state-events']);
-        $this->assertCount(4, $events['@state-events']);
+        $this->assertCount(5, $events[DomainEventServiceProvider::STATE_EVENTS]);
         $path = (string) tempnam(sys_get_temp_dir(), 'state-event-cache-');
         $this->useEventCachePath($path);
         $this->app->instance('events.cached', true);

@@ -26,6 +26,7 @@ final readonly class AskEscalation
         private SupervisorRecipients $recipients,
         private AskRouter $router,
         private JournalAssignmentWriter $assignments,
+        private AskAttention $attention,
     ) {}
 
     public function advance(Ask $ask, AskHop $hop, CarbonImmutable $now): void
@@ -59,6 +60,7 @@ final readonly class AskEscalation
 
         $held = AssignmentRecord::query()->forRecord($ask->assignmentIdentity())->firstOrFail()->toAssignment();
         $this->router->reroute($ask, $next, $held->reference);
+        $this->attention->offerNext($hop->actor());
     }
 
     /**

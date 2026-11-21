@@ -17,6 +17,6 @@ final readonly class RunLifecycleAnswers implements Listener
 
     public function handle(LifecycleAnswersSettled $settled): void
     {
-        $this->effects->apply($settled->answers);
+        $this->effects->apply($settled->answers, $settled->actor, $settled->authority);
     }
 }

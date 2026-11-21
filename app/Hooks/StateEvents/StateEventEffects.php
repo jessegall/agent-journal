@@ -13,6 +13,7 @@ use App\Bus\Enums\CommandOriginStatus;
 use App\Bus\Support\CommandEntrance;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\EngineTargetAccess;
+use App\Hooks\Lifecycle\LifecycleOrigins;
 use Closure;
 use Psr\Log\LoggerInterface;
 
@@ -31,6 +32,7 @@ final readonly class StateEventEffects
         private EngineTargetAccess $engine,
         private CommandEntrance $entrance,
         private LoggerInterface $log,
+        private LifecycleOrigins $origins,
     ) {}
 
     public function apply(StateEventDispatch $dispatch, StateEventResults $results): void
@@ -49,8 +51,11 @@ final readonly class StateEventEffects
     {
         $audience = $origin->dispatch->audience->get();
 
-        foreach ($origin->commands() as $command) {
-            $effect = fn () => $this->bus->runGuarded($command, fn () => $this->guard->check($origin));
+        foreach ($origin->commands() as $ordinal => $command) {
+            $effect = fn () => $this->origins->within(
+                $origin->lifecycleOrigin($ordinal + 1),
+                fn () => $this->bus->runGuarded($command, fn () => $this->guard->check($origin)),
+            );
             $status = $this->admission->admit(
                 $origin->target->sessionId,
                 $this->deadline,

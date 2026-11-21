@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Hooks\Commands\RefreshPlanInstruction;
 use App\Hooks\Contracts\InstructsForeground;
+use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\States\WorkingOnPlanState;
@@ -33,5 +35,16 @@ final class ForegroundInstructionsTest extends TestCase
             ['plans.plan', 'Continue plan 7. 2 of 4 tasks are finished.'],
             [$state->instructionType(), $state->instructionText()],
         );
+    }
+
+    public function test_a_plan_frame_refreshes_only_for_its_own_plan(): void
+    {
+        $state = new WorkingOnPlanState(new PlanWork('plan-7', 7, PlanState::Started), PlanProgress::none(...));
+
+        $own = $state->onPlanProgressChanged(new PlanProgressChanged('plan-7'));
+        $other = $state->onPlanProgressChanged(new PlanProgressChanged('plan-8'));
+
+        $this->assertEquals([new RefreshPlanInstruction('plan-7')], $own->all());
+        $this->assertSame([], $other->all());
     }
 }

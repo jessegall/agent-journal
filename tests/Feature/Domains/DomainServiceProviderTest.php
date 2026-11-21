@@ -9,10 +9,13 @@ use App\Domains\Exceptions\RequiredDomainMissing;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Domains\Support\DomainRegistry;
+use App\Hooks\Stack\StateTypes;
+use App\Hooks\States\Support\ReadyStateLoader;
 use App\Sharing\Events\ShareActivated;
 use App\Web\Listeners\BroadcastPageChange;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use ReflectionProperty;
 use Tests\Fixtures\Domains\Books\BooksDomain;
@@ -117,10 +120,17 @@ final class DomainServiceProviderTest extends TestCase
     }
 
     /**
+     * Registers only the named domains, with a state type registry that holds only what Core declares itself, as an
+     * application booted with just these domains has.
+     *
      * @param  list<string>  $classes
      */
     private function registerDomains(array $classes): void
     {
+        $this->app->instance(StateTypes::class, new StateTypes(
+            new Dispatcher($this->app),
+            $this->app->make(ReadyStateLoader::class),
+        ));
         $this->app->register(new class($this->app, $classes) extends DomainServiceProvider
         {
             /**

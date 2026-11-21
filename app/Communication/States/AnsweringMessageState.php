@@ -6,13 +6,17 @@ namespace App\Communication\States;
 
 use App\Bus\Values\RecoveryCall;
 use App\Hooks\Attributes\StackWide;
+use App\Hooks\Commands\FocusInstruction;
+use App\Hooks\Commands\ReleaseInstruction;
 use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\Stack\StackVerdict;
 use App\Hooks\States\AgentState;
+use App\Hooks\Values\LifecycleCommands;
 
 /**
  * An actor answering a message it took up: reading is allowed, changing files and stopping are refused until it
@@ -60,6 +64,21 @@ final class AnsweringMessageState extends AgentState implements InstructsForegro
     private function instruction(): string
     {
         return "You took up message {$this->messageId}, which waits for your answer: reply to it before other work.";
+    }
+
+    public function onEnter(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusInstruction());
+    }
+
+    public function onResume(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusInstruction());
+    }
+
+    public function onExit(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new ReleaseInstruction());
     }
 
     public function instructionType(): string

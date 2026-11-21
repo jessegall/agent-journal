@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Supervision\States;
 
+use App\Hooks\Commands\FocusInstruction;
+use App\Hooks\Commands\ReleaseInstruction;
 use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
+use App\Hooks\Values\LifecycleCommands;
 use App\Supervision\Models\AskHop;
 
 final class AnsweringAskState extends AgentState implements InstructsForeground
@@ -24,6 +28,21 @@ final class AnsweringAskState extends AgentState implements InstructsForeground
     public function isFinished(): bool
     {
         return ! $this->isOpen;
+    }
+
+    public function onEnter(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusInstruction());
+    }
+
+    public function onResume(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusInstruction());
+    }
+
+    public function onExit(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new ReleaseInstruction());
     }
 
     public function instructionType(): string

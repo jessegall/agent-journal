@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\States;
 
 use App\Hooks\Attributes\StackWide;
-use App\Hooks\Commands\FocusTask;
-use App\Hooks\Commands\ReleaseTaskFocus;
+use App\Hooks\Commands\FocusInstruction;
+use App\Hooks\Commands\ReleaseInstruction;
 use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Decisions\Decision;
@@ -36,17 +36,17 @@ final class WorkingOnTaskState extends AgentState implements InstructsForeground
 
     public function onEnter(LifecycleContext $context): LifecycleCommands
     {
-        return LifecycleCommands::of(new FocusTask());
+        return LifecycleCommands::of(new FocusInstruction());
     }
 
     public function onResume(LifecycleContext $context): LifecycleCommands
     {
-        return LifecycleCommands::of(new FocusTask());
+        return LifecycleCommands::of(new FocusInstruction());
     }
 
     public function onExit(LifecycleContext $context): LifecycleCommands
     {
-        return LifecycleCommands::of(new ReleaseTaskFocus());
+        return LifecycleCommands::of(new ReleaseInstruction());
     }
 
     #[StackWide]

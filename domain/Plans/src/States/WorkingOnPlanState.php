@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Plans\States;
 
-use App\Hooks\Commands\FocusPlan;
-use App\Hooks\Commands\ReleasePlanFocus;
+use App\Hooks\Attributes\StackWide;
+use App\Hooks\Commands\FocusInstruction;
+use App\Hooks\Commands\RefreshPlanInstruction;
+use App\Hooks\Commands\ReleaseInstruction;
 use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
+use App\Hooks\Values\EventCommands;
 use App\Hooks\Values\LifecycleCommands;
 use Closure;
+use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanWork;
@@ -39,17 +43,31 @@ final class WorkingOnPlanState extends AgentState implements InstructsForeground
 
     public function onEnter(LifecycleContext $context): LifecycleCommands
     {
-        return LifecycleCommands::of(new FocusPlan());
+        return LifecycleCommands::of(new FocusInstruction());
     }
 
     public function onResume(LifecycleContext $context): LifecycleCommands
     {
-        return LifecycleCommands::of(new FocusPlan());
+        return LifecycleCommands::of(new FocusInstruction());
     }
 
     public function onExit(LifecycleContext $context): LifecycleCommands
     {
-        return LifecycleCommands::of(new ReleasePlanFocus());
+        return LifecycleCommands::of(new ReleaseInstruction());
+    }
+
+    /**
+     * Refreshes this frame's instruction when its own plan's progress moved; the progress of another plan asks
+     * nothing. Stack-wide, so a plan buried under other work still hears its own plan.
+     */
+    #[StackWide]
+    public function onPlanProgressChanged(PlanProgressChanged $event): EventCommands
+    {
+        if ($event->planId !== $this->plan->planId) {
+            return EventCommands::none();
+        }
+
+        return EventCommands::of(new RefreshPlanInstruction($event->planId));
     }
 
     public function instructionType(): string

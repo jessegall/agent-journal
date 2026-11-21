@@ -14,6 +14,6 @@ final readonly class RefreshPlanInstructionHandler implements CommandHandler
 
     public function handle(RefreshPlanInstruction $command): void
     {
-        $this->instructions->refresh(RefreshPlanInstruction::class, 'plans.plan', $command->planId);
+        $this->instructions->refresh(RefreshPlanInstruction::class, $command->planId);
     }
 }

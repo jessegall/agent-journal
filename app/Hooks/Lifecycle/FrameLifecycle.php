@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Lifecycle;
 
+use App\Actors\Contracts\CurrentActor;
 use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandFacts;
 use App\Hooks\Enums\LifecycleStage;
@@ -30,6 +31,7 @@ final class FrameLifecycle
     public function __construct(
         private readonly StateEventActivity $eventActivity,
         private readonly CommandFacts $facts,
+        private readonly CurrentActor $actors,
     ) {}
 
     /**
@@ -70,9 +72,13 @@ final class FrameLifecycle
 
         $collected = $answers->withCommands();
 
-        if ($collected !== []) {
-            $this->facts->publishAfterCommit(new LifecycleAnswersSettled($collected));
+        if ($collected === [] || ! $this->actors->hasActor()) {
+            return;
         }
+
+        $this->facts->publishAfterCommit(
+            new LifecycleAnswersSettled($collected, $this->actors->actor(), $this->actors->authority()),
+        );
     }
 
     /**

@@ -16,8 +16,8 @@ use App\Engine\Support\EngineAccess;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\EngineStacks;
 use App\Hooks\Actions\StartStacks;
-use App\Hooks\Commands\FocusTask;
-use App\Hooks\Commands\ReleaseTaskFocus;
+use App\Hooks\Commands\FocusInstruction;
+use App\Hooks\Commands\ReleaseInstruction;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -179,9 +179,9 @@ final class StateLifecycleTest extends TestCase
         $instructions = $this->app->make(ReservedInstructions::class);
         $markers = $this->app->make(InstructionMarkers::class);
 
-        $this->asOrigin('frame-a', 'A', LifecycleStage::Enter, fn () => $instructions->focus(FocusTask::class, 'tasks.task'));
-        $this->asOrigin('frame-b', 'B', LifecycleStage::Enter, fn () => $instructions->focus(FocusTask::class, 'tasks.task'));
-        $this->asOrigin('frame-a', 'A', LifecycleStage::Exit, fn () => $instructions->release(ReleaseTaskFocus::class));
+        $this->asOrigin('frame-a', 'A', LifecycleStage::Enter, fn () => $instructions->focus(FocusInstruction::class));
+        $this->asOrigin('frame-b', 'B', LifecycleStage::Enter, fn () => $instructions->focus(FocusInstruction::class));
+        $this->asOrigin('frame-a', 'A', LifecycleStage::Exit, fn () => $instructions->release(ReleaseInstruction::class));
 
         $this->assertTrue($markers->lookup($this->target, 'frame-a')->isEmpty());
         $this->assertSame('B', $markers->lookup($this->target, 'frame-b')->get()->subjectId);
@@ -195,9 +195,9 @@ final class StateLifecycleTest extends TestCase
     {
         $instructions = $this->app->make(ReservedInstructions::class);
 
-        $this->assertThrows(fn () => $instructions->focus(FocusTask::class, 'tasks.task'), InstructionOriginRefused::class);
+        $this->assertThrows(fn () => $instructions->focus(FocusInstruction::class), InstructionOriginRefused::class);
         $this->assertThrows(
-            fn () => $this->asOrigin('frame-a', 'A', LifecycleStage::Exit, fn () => $instructions->focus(FocusTask::class, 'tasks.task')),
+            fn () => $this->asOrigin('frame-a', 'A', LifecycleStage::Exit, fn () => $instructions->focus(FocusInstruction::class)),
             InstructionOriginRefused::class,
         );
 

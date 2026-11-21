@@ -6,12 +6,16 @@ namespace App\Skills\States;
 
 use App\Bus\Values\RecoveryCall;
 use App\Hooks\Attributes\StackWide;
+use App\Hooks\Commands\FocusInstruction;
+use App\Hooks\Commands\ReleaseInstruction;
 use App\Hooks\Contracts\InstructsForeground;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\Stack\StackVerdict;
 use App\Hooks\States\AgentState;
+use App\Hooks\Values\LifecycleCommands;
 use App\Skills\Enums\PublicationState;
 
 /**
@@ -57,6 +61,21 @@ final class AwaitingSkillsState extends AgentState implements InstructsForegroun
             .'php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
             $this->publication->value,
         );
+    }
+
+    public function onEnter(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusInstruction());
+    }
+
+    public function onResume(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new FocusInstruction());
+    }
+
+    public function onExit(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::of(new ReleaseInstruction());
     }
 
     public function instructionType(): string
