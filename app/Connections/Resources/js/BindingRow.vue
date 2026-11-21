@@ -10,7 +10,8 @@ import TerminalAccess from './TerminalAccess.vue';
 /**
  * One connected folder, in reading order: its project and environment, the device and reference that tell two
  * folders of one name apart, its outlined state with the words for it, and when its relay was last in contact, as a
- * relative time with the absolute date and zone for a reader. Unless it is revoked already it has a box to choose it
+ * relative time with the absolute date and zone for a reader, then each program with the command that starts it in the
+ * folder, or the reason Start is not offered for it. Unless it is revoked already it has a box to choose it
  * for revoking with others and its own Revoke, named for its device; what came of a revoke shows under it, and its
  * terminal sign-ins under Terminal access.
  */
@@ -65,6 +66,21 @@ const deviceName = computed(() => `${props.binding.machineLabel} ${shortReferenc
                     </time>
                     <span class="sr-only">, {{ dateTimeWithZone(binding.lastContactAt) }}</span>
                 </template>
+            </dd>
+            <dt class="sr-only">Start</dt>
+            <dd>
+                <ul class="flex flex-col gap-0.5 text-small">
+                    <li v-for="provider in binding.capabilities" :key="provider.driver">
+                        <template v-if="provider.canStart">
+                            <span class="font-medium">{{ provider.label }}</span>: start it with
+                            <code>{{ provider.startCommand }}</code> in the folder
+                        </template>
+                        <template v-else>
+                            <span class="font-medium">{{ provider.label }}</span>
+                            <span class="text-muted">unavailable: {{ provider.unavailableReason }}</span>
+                        </template>
+                    </li>
+                </ul>
             </dd>
             <template v-if="outcome">
                 <dd class="text-small text-text-2" aria-live="polite">{{ outcome }}</dd>

@@ -7,6 +7,7 @@ namespace App\Agents\Data;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Values\HostCombination;
 use App\Drivers\Enums\HookDriver;
 use Spatie\LaravelData\Data;
 
@@ -22,4 +23,9 @@ final class HostCombinationData extends Data
         public readonly ExecutionModeType $placement,
         public readonly DriverVariant $variant,
     ) {}
+
+    public function combination(): HostCombination
+    {
+        return new HostCombination($this->driver, $this->build, $this->arrangement, $this->placement, $this->variant);
+    }
 }

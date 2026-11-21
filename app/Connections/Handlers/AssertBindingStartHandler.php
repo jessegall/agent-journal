@@ -12,8 +12,9 @@ use App\Connections\Models\ProjectBinding;
 use App\Contracts\CommandHandler;
 
 /**
- * Checks a binding's start against what the binding registered: its host, root id, root folder and main agent, and
- * a host enrolled to run agents on the machine itself; a contained server's arrangement never unlocks native roots.
+ * Checks a binding's start against what the binding registered: its host, root id, root folder and main agent, a
+ * host enrolled to run agents on the machine itself, and a program the binding may start; a contained server's
+ * arrangement never unlocks native roots.
  */
 final readonly class AssertBindingStartHandler implements CommandHandler
 {
@@ -41,6 +42,12 @@ final readonly class AssertBindingStartHandler implements CommandHandler
 
         if ($command->agentId !== $binding->main_agent_id) {
             throw BindingStartRefused::notTheMainAgent($binding->id);
+        }
+
+        $eligibility = $binding->eligibilityOf($command->driver);
+
+        if (! $eligibility->isEligible()) {
+            throw BindingStartRefused::providerUnavailable($binding->id, $eligibility->unavailableReason);
         }
     }
 }

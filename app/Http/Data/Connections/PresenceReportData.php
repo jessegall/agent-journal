@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Connections;
 
+use App\Agents\Data\HostCombinationData;
 use App\Connections\Values\PresenceReport;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\Validation\In;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -19,7 +21,7 @@ use Spatie\LaravelData\Data;
 final class PresenceReportData extends Data
 {
     /**
-     * @param  list<array<string, string>>  $combinations
+     * @param  list<HostCombinationData>  $combinations
      */
     public function __construct(
         #[Max(128)]
@@ -30,6 +32,7 @@ final class PresenceReportData extends Data
         public readonly string $release,
         public readonly int $protocol,
         #[Present]
+        #[DataCollectionOf(HostCombinationData::class)]
         public readonly array $combinations,
         #[In(['succeeded', 'failed'])]
         public readonly string $provisioning,
@@ -48,6 +51,7 @@ final class PresenceReportData extends Data
             $this->provisioning === 'succeeded',
             $this->takeover,
             $this->setupGeneration,
+            array_map(fn (HostCombinationData $combination) => $combination->combination(), $this->combinations),
         );
     }
 }

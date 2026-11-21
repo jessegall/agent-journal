@@ -11,7 +11,8 @@ use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A binding's start refused before any grant: another host, another root or folder, or another agent.
+ * A binding's start refused before any grant: another host, another root or folder, another agent, or a program
+ * the binding may not start.
  */
 final class BindingStartRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
@@ -45,6 +46,11 @@ final class BindingStartRefused extends RuntimeException implements CodedRefusal
         return new self(
             "Binding {$bindingId} works in no environment yet: assign it one of its project's environments in Settings.",
         );
+    }
+
+    public static function providerUnavailable(string $bindingId, string $reason): self
+    {
+        return new self("Binding {$bindingId} cannot start this program: {$reason}");
     }
 
     public static function otherProjectsEnvironment(string $bindingId): self

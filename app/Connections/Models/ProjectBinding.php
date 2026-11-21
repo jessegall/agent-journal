@@ -8,6 +8,7 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Models\Agent;
 use App\Agents\Models\Host;
+use App\Agents\Values\HostCombination;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Events\ProjectBindingCreated;
 use App\Connections\Events\ProjectBindingEnvironmentAssigned;
@@ -19,8 +20,10 @@ use App\Connections\Exceptions\PresenceRefused;
 use App\Connections\Values\BindingFolder;
 use App\Connections\Values\PresenceReceipt;
 use App\Connections\Values\PresenceReport;
+use App\Connections\Values\ProviderEligibility;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -159,13 +162,13 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
 
     /**
      * One page of the connected folders, PAGE_LIMIT at a time, oldest first by creation time and then id, with the
-     * project and environment each names; the cursor reads the next slice in the same order.
+     * project, environment and host each names; the cursor reads the next slice in the same order.
      *
      * @return CursorPaginator<int, self>
      */
     public static function pageAfter(string|null $cursor): CursorPaginator
     {
-        return self::query()->with(['project', 'environment'])->orderBy('created_at')->orderBy('id')
+        return self::query()->with(['project', 'environment', 'host'])->orderBy('created_at')->orderBy('id')
             ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
 
@@ -222,7 +225,8 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     /**
      * Records a presence report by server time. A sequence of the live boot no higher than the last changes nothing;
      * a new boot replaces a live one only when it takes over, and every new boot raises the boot generation. A
-     * provisioned report on this journal's protocol makes the binding ready until its presence expires.
+     * provisioned report on this journal's protocol makes the binding ready until its presence expires, and the
+     * combinations it reports are what its host can start.
      *
      * @throws PresenceRefused
      */
@@ -257,6 +261,10 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $this->last_contact_at = $now;
         $this->presence_expires_at = $now->addSeconds(self::PRESENCE_SECONDS);
         $this->assertSaved($this->save());
+        $this->host->recordCombinations(
+            $report->protocol,
+            array_map(fn (HostCombination $combination) => $combination->stored(), $report->combinations),
+        );
 
         if ($changed) {
             $this->raise(new ProjectBindingReadinessChanged($this->id, $readiness, $now));
@@ -335,6 +343,29 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         }
 
         return BindingReadiness::Ready;
+    }
+
+    /**
+     * Whether the binding may start the program: one whose hooks run isolated per session, that its relay reported it
+     * can run with isolated hooks, start grants and a lease.
+     */
+    public function eligibilityOf(HookDriver $driver): ProviderEligibility
+    {
+        if (! $driver->isolatesHooksPerSession()) {
+            return ProviderEligibility::unavailable(
+                $driver,
+                "{$driver->displayName()} does not keep its hooks to one session yet, so a connected folder cannot run it isolated.",
+            );
+        }
+
+        if (! $this->host->declaresDriver($driver)) {
+            return ProviderEligibility::unavailable(
+                $driver,
+                "This folder's relay has not reported it can run {$driver->displayName()} with isolated hooks and a lease.",
+            );
+        }
+
+        return ProviderEligibility::eligible($driver);
     }
 
     /**

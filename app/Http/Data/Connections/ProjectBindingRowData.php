@@ -6,6 +6,7 @@ namespace App\Http\Data\Connections;
 
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Models\ProjectBinding;
+use App\Drivers\Enums\HookDriver;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -13,18 +14,15 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One connected folder as the owner sees it, read at one server time: its reference, the project and environment it
- * works in by label and id, the machine it is on, the providers that machine can start, when its relay was last in
- * contact and until when its presence holds, where it stands now with the words for that, and its terminal sign-ins.
- * Its canonical path is never shown.
+ * works in by label and id, the machine it is on, each program and whether Start is offered for it, when its relay
+ * was last in contact and until when its presence holds, where it stands now with the words for that, and its
+ * terminal sign-ins. Its canonical path is never shown.
  */
 #[TypeScript]
 final class ProjectBindingRowData extends Data
 {
     /**
-     * @param  list<TerminalSignInRowData>  $signIns
-     */
-    /**
-     * @param  list<string>  $capabilities
+     * @param  list<BindingProviderData>  $capabilities
      * @param  list<TerminalSignInRowData>  $signIns
      */
     public function __construct(
@@ -36,6 +34,7 @@ final class ProjectBindingRowData extends Data
         public readonly string $projectId = '',
         public readonly string|null $environmentId = null,
         public readonly string $environmentLabel = '',
+        #[DataCollectionOf(BindingProviderData::class)]
         public readonly array $capabilities = [],
         public readonly string|null $presenceExpiresAt = null,
         public readonly string $stateText = '',
@@ -63,11 +62,40 @@ final class ProjectBindingRowData extends Data
             'projectId' => $binding->project_id,
             'environmentId' => $binding->environment_id,
             'environmentLabel' => $binding->environment?->label ?? 'No environment',
-            'capabilities' => [],
+            'capabilities' => self::providersOf($binding, $state),
             'presenceExpiresAt' => $binding->presence_expires_at?->toIso8601String(),
             'stateText' => self::stateTextOf($binding, $state, $currentRelease),
             'signIns' => $signIns,
         ]);
+    }
+
+    /**
+     * Each program the folder could start, offered only when the binding may start it and the folder is ready with an
+     * environment; otherwise the row shows its status alone, with the reason for each program.
+     *
+     * @return list<array<string, bool|string>>
+     */
+    private static function providersOf(ProjectBinding $binding, BindingReadiness $state): array
+    {
+        return array_map(function (HookDriver $driver) use ($binding, $state): array {
+            $reason = $binding->eligibilityOf($driver)->unavailableReason;
+
+            if ($reason === '' && $state !== BindingReadiness::Ready) {
+                $reason = 'Start waits until the folder is ready.';
+            }
+
+            if ($reason === '' && $binding->isEnvironmentUnassigned()) {
+                $reason = 'Start waits until the folder works in an environment.';
+            }
+
+            return [
+                'driver' => $driver->value,
+                'label' => $driver->displayName(),
+                'canStart' => $reason === '',
+                'startCommand' => 'journal '.$driver->hostName(),
+                'unavailableReason' => $reason,
+            ];
+        }, HookDriver::cases());
     }
 
     /**

@@ -321,4 +321,45 @@ describe('ConnectProjectWindow', () => {
 
         expect(wrapper.text()).toContain('No connected projects');
     });
+
+    it('offers Start for an eligible program with its command and names why another is unavailable', () => {
+        const data = windowData(true);
+        const [row] = data.bindings.rows;
+        const wrapper = mount(ConnectProjectWindow, {
+            props: {
+                data: {
+                    ...data,
+                    bindings: {
+                        ...data.bindings,
+                        rows: [
+                            {
+                                ...row,
+                                capabilities: [
+                                    {
+                                        driver: 'claude-code',
+                                        label: 'Claude Code',
+                                        canStart: true,
+                                        startCommand: 'journal claude',
+                                        unavailableReason: '',
+                                    },
+                                    {
+                                        driver: 'codex',
+                                        label: 'Codex',
+                                        canStart: false,
+                                        startCommand: 'journal codex',
+                                        unavailableReason: 'Codex does not keep its hooks to one session yet.',
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                },
+            },
+        });
+        const text = wrapper.find('#binding-binding-1').text();
+
+        expect(text).toContain('journal claude');
+        expect(text).toContain('Codex unavailable: Codex does not keep its hooks to one session yet.');
+        expect(text).not.toContain('journal codex');
+    });
 });

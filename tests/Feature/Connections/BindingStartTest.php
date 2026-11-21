@@ -65,7 +65,37 @@ final class BindingStartTest extends TestCase
         $this->start($binding, ['startId' => 'start-1'])->assertForbidden();
     }
 
+    public function test_a_program_the_binding_may_not_start_is_refused_by_name_before_any_runtime(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $silent = $this->redeemed('other-ticket', 'nonce-bbbbbbbbbbbbbbbb');
+
+        $codex = $this->start($binding, ['driver' => 'codex'])->assertForbidden();
+        $unreported = $this->signedStart('nonce-bbbbbbbbbbbbbbbb', $silent, [])->assertForbidden();
+
+        $this->assertStringContainsString(
+            'Codex does not keep its hooks to one session',
+            (string) $codex->json('message'),
+        );
+        $this->assertStringContainsString(
+            'has not reported it can run Claude Code',
+            (string) $unreported->json('message'),
+        );
+        $this->assertSame(0, AgentRuntime::query()->count());
+    }
+
+    /**
+     * A redeemed binding whose relay reported it can run Claude Code isolated.
+     */
     private function connected(string $ticket, string $nonce): ProjectBinding
+    {
+        $binding = $this->redeemed($ticket, $nonce);
+        $this->reportClaudeCode($nonce, $binding->id);
+
+        return $binding;
+    }
+
+    private function redeemed(string $ticket, string $nonce): ProjectBinding
     {
         $this->issueLine($ticket);
 

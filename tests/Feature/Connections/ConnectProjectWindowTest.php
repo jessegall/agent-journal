@@ -66,6 +66,26 @@ final class ConnectProjectWindowTest extends TestCase
         $this->assertStringNotContainsString('/Users/owner/shop', (string) $page->getContent());
     }
 
+    public function test_a_ready_folder_offers_start_for_claude_code_only_and_names_why_codex_is_unavailable(): void
+    {
+        $this->issueLine('the-ticket');
+        $binding = (string) $this->redeemLine('the-ticket', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
+        $this->reportClaudeCode('nonce-aaaaaaaaaaaaaaaa', $binding);
+
+        $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (
+            AssertableInertia $page,
+        ) => $page
+            ->where('page.data.bindings.rows.0.state', 'ready')
+            ->where('page.data.bindings.rows.0.capabilities.0.driver', 'claude-code')
+            ->where('page.data.bindings.rows.0.capabilities.0.canStart', true)
+            ->where('page.data.bindings.rows.0.capabilities.1.driver', 'codex')
+            ->where('page.data.bindings.rows.0.capabilities.1.canStart', false)
+            ->where(
+                'page.data.bindings.rows.0.capabilities.1.unavailableReason',
+                fn (string $reason) => str_contains($reason, 'Codex does not keep its hooks to one session'),
+            ));
+    }
+
     public function test_thirty_folders_page_as_twenty_five_then_five_and_an_expired_presence_reads_offline(): void
     {
         $project = Project::create('shop', 'Shop');
