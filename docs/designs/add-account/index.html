@@ -154,11 +154,20 @@ code{font-family:var(--font-mono);font-size:11px}
 .list.acting li{transition:background-color .12s}
 .list.acting li:hover,.list.acting li.hov,.list.acting li.foc{background:var(--hover)}
 .list .name-line{display:flex;align-items:flex-start;gap:6px}
-.pencil{flex:none;width:20px;height:20px;margin-top:0;border-radius:var(--r-control);border:0;background:transparent;color:var(--text-3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .12s}
-.pencil svg{width:13px;height:13px}
-.pencil:hover{color:var(--text);background:color-mix(in srgb,var(--border-3) 60%,transparent)}
+/* Icon-only row buttons: flush at rest, a subtle fill on hover, a tooltip and an aria-label. Rows only; modal buttons stay text. */
+.ib{position:relative;flex:none;width:24px;height:24px;margin:-2px 0;border:0;border-radius:var(--r-control);background:transparent;color:var(--text-3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity .12s,background-color .12s,color .12s}
+.ib svg{width:14px;height:14px;display:block}
+.ib:hover,.ib.hv{color:var(--text);background:color-mix(in srgb,var(--border-3) 55%,transparent)}
+.ib.trash:hover,.ib.trash.hv{color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,transparent)}
+.ib.star.on{color:var(--text-2)}
+.ib[data-tip]::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:var(--t-meta);line-height:1;padding:5px 7px;border-radius:5px;background:var(--text);color:var(--bg);pointer-events:none;opacity:0;transition:opacity .12s .25s;z-index:2}
+.ib[data-tip]:hover::after,.ib[data-tip]:focus-visible::after,.ib.tipshow::after{opacity:1}
+.list .name-line .ib{margin-left:-2px}
+.pencil{opacity:0}
 .list.acting li:hover .pencil,.list.acting li.hov .pencil,.list.acting li.foc .pencil{opacity:1}
-.acts-row{display:flex;align-items:center;gap:6px;flex:none;height:20px}
+.acts-row{display:flex;align-items:center;gap:2px;flex:none;height:20px}
+.acts-row .plain{margin-left:8px}
+.acts-row .btn{margin:0 2px}
 .acts-row .hide{opacity:0;transition:opacity .12s}
 .list.acting li:hover .hide,.list.acting li.hov .hide,.list.acting li.foc .hide{opacity:1}
 .ring{outline:2px solid var(--brand);outline-offset:1px}
@@ -189,6 +198,9 @@ ul.todo{color:var(--text-2);font-size:var(--t-small);line-height:1.7;max-width:8
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="m-claude" viewBox="0 0 24 24"><path fill="#D97757" d="M4.7144 15.9555l4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></symbol>
   <symbol id="m-codex" viewBox="0 0 24 24"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" d="M8 1.9l1.85 3.8 4.15.6-3 2.95.7 4.15L8 11.45 4.3 13.4l.7-4.15-3-2.95 4.15-.6Z"/></symbol>
+  <symbol id="i-star-on" viewBox="0 0 16 16"><path fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" d="M8 1.9l1.85 3.8 4.15.6-3 2.95.7 4.15L8 11.45 4.3 13.4l.7-4.15-3-2.95 4.15-.6Z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" d="M2.5 4.5h11M6.3 4.5V3.1a.9.9 0 0 1 .9-.9h1.6a.9.9 0 0 1 .9.9v1.4M3.9 4.5l.65 8.5a1 1 0 0 0 1 .9h4.9a1 1 0 0 0 1-.9l.65-8.5M6.6 7.1v4.3M9.4 7.1v4.3"/></symbol>
   <symbol id="i-pencil" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M10.8 2.7a1.6 1.6 0 0 1 2.3 2.3L5.6 12.5 2.5 13.5l1-3.1 7.3-7.7ZM9.5 4l2.5 2.5"/></symbol>
 </svg>
 <div class="doc">
@@ -219,9 +231,9 @@ addresses wrap rather than being cut short. One header button replaces the two p
       <div class="ph"><h3>Accounts</h3><span class="count">4</span><span class="gap"></span>
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
       <ul class="list">
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div><span class="plain">Signed in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div><div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg><use href="#i-star-on"/></svg></button><span class="plain">Signed in</span></div></li>
         <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">Claude Code API key</span><span class="sub">Claude Code · Pay per use</span></div><span class="plain">Signed in</span></li>
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Codex · Subscription · Default</span></div><span class="plain">Signed in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Codex · Subscription · Default</span></div><div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Codex account"><svg><use href="#i-star-on"/></svg></button><span class="plain">Signed in</span></div></li>
         <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name">Codex API key</span><span class="sub">Codex · Pay per use</span><span class="desc">This key stopped working on 18 Nov. Add a new key to keep using it.</span></div><span class="plain">Expired</span></li>
       </ul>
     </div></div></div>
@@ -238,7 +250,7 @@ addresses wrap rather than being cut short. One header button replaces the two p
         <div class="acts"><button class="btn bordered small"><span class="spin tiny"></span>Finish signing in</button>
         <button class="btn primary small" disabled><span class="plus">+</span>Add account</button></div></div>
       <ul class="list">
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div><span class="plain">Signed in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div><div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg><use href="#i-star-on"/></svg></button><span class="plain">Signed in</span></div></li>
       </ul>
     </div></div></div>
 </div>
@@ -509,29 +521,37 @@ asks once, inside the same frame; in steps one and three the modal just closes. 
 <!-- ============ 6. ROW INTERACTIONS ============ -->
 <h2 class="sec">6 · An account row: hover, focus and its actions</h2>
 <p class="note">The whole row takes the <code>--hover</code> background when the pointer is over it. Its actions sit on the right, level with
-the name, and fade in on hover or when keyboard focus is inside the row. Their room is always kept, so nothing shifts when they appear. A
-pencil appears right after the name and opens the rename dialog; it replaces the Rename text button, so there is one way to rename. The
-actions are <b>Make default</b> (only on a signed-in account not chosen yet) and <b>Remove</b>. <b>Sign in again</b> is
-shown only on an account whose state is <code>needs_sign_in</code>, always visible because it is what the row needs, and opens the wizard at
-step two with the account's program and method. Status stays grey text. The rows here are live: hover them.</p>
+the name, and fade in on hover or when keyboard focus is inside the row. Their room is always kept, so nothing shifts when they appear.
+Every row action is a 24&nbsp;px icon-only button with a 14&nbsp;px icon. It is flush at rest (no border, no fill), takes a subtle fill on
+hover, and shows a tooltip on hover or keyboard focus. Each has an aria-label that says the whole action.</p>
+<ul class="todo" style="margin:-8px 0 20px">
+  <li><b>Star</b>, on the right: filled and always shown on the default account (tooltip “Default”, <code>aria-pressed="true"</code>). Outlined and
+    shown on hover for other signed-in accounts (tooltip “Make default”); a click makes that account the default. Expired and removing accounts have none.</li>
+  <li><b>Pencil</b>, right after the name: tooltip “Rename”. It opens the rename dialog.</li>
+  <li><b>Trash can</b>, on the right: tooltip “Remove”. It turns red on hover and opens the remove dialog.</li>
+  <li><b>Sign in again</b> stays a small text button on an expired row, always shown. A circular-arrow icon would read as “refresh”, and this is the
+    one thing the row needs, so it should not hide behind a tooltip.</li>
+</ul>
+<p class="note">Status stays grey text at the far right. Buttons in the wizard and in the rename and remove dialogs stay text buttons. The rows here
+are live: hover them.</p>
 <div class="grid">
-  <div class="frame"><div class="cap"><b>6a</b>At rest, then hovered (second row), then keyboard focus on the pencil (third row)</div>
+  <div class="frame"><div class="cap"><b>6a</b>At rest (first row), hovered with the star's tooltip (second row), keyboard focus on the pencil (third row)</div>
     <div class="stage win-stage"><div class="win">
       <div class="ph"><h3>Accounts</h3><span class="count">3</span><span class="gap"></span>
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
       <ul class="list acting">
         <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>
-          <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="pencil" aria-label="Rename"><svg><use href="#i-pencil"/></svg></button></div>
+          <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg><use href="#i-pencil"/></svg></button></div>
             <span class="sub">Claude Code · Subscription · Default</span></div>
-          <div class="acts-row"><button class="btn danger small hide">Remove</button><span class="plain">Signed in</span></div></li>
+          <div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Claude Code account"><svg><use href="#i-star-on"/></svg></button><button class="ib trash hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg><use href="#i-trash"/></svg></button><span class="plain">Signed in</span></div></li>
         <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>
-          <div class="who"><div class="name-line"><span class="name">Claude Code API key</span><button class="pencil" aria-label="Rename"><svg><use href="#i-pencil"/></svg></button></div>
+          <div class="who"><div class="name-line"><span class="name">Claude Code API key</span><button class="ib pencil" data-tip="Rename" aria-label="Rename Claude Code API key"><svg><use href="#i-pencil"/></svg></button></div>
             <span class="sub">Claude Code · Pay per use</span></div>
-          <div class="acts-row"><button class="btn bordered small hide">Make default</button><button class="btn danger small hide">Remove</button><span class="plain">Signed in</span></div></li>
+          <div class="acts-row"><button class="ib star hide hv tipshow" data-tip="Make default" aria-pressed="false" aria-label="Make Claude Code API key the default"><svg><use href="#i-star"/></svg></button><button class="ib trash hide" data-tip="Remove" aria-label="Remove Claude Code API key"><svg><use href="#i-trash"/></svg></button><span class="plain">Signed in</span></div></li>
         <li class="foc"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg>
-          <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="pencil ring" aria-label="Rename"><svg><use href="#i-pencil"/></svg></button></div>
+          <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="ib pencil ring tipshow" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg><use href="#i-pencil"/></svg></button></div>
             <span class="sub">Codex · Subscription · Default</span></div>
-          <div class="acts-row"><button class="btn danger small hide">Remove</button><span class="plain">Signed in</span></div></li>
+          <div class="acts-row"><button class="ib star on" data-tip="Default" aria-pressed="true" aria-label="Default Codex account"><svg><use href="#i-star-on"/></svg></button><button class="ib trash hide" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg><use href="#i-trash"/></svg></button><span class="plain">Signed in</span></div></li>
       </ul>
     </div></div></div>
   <div class="frame"><div class="cap"><b>6b</b>Expired (state <code>needs_sign_in</code>), and an account being removed (state <code>removing</code>)</div>
@@ -540,9 +560,9 @@ step two with the account's program and method. Status stays grey text. The rows
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
       <ul class="list acting">
         <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg>
-          <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="pencil" aria-label="Rename"><svg><use href="#i-pencil"/></svg></button></div>
+          <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename jesse.gall@transport-planning.example.com"><svg><use href="#i-pencil"/></svg></button></div>
             <span class="sub">Codex · Subscription</span><span class="desc">Expired on 18 Nov. Sign in again to keep using it.</span></div>
-          <div class="acts-row"><button class="btn danger small hide">Remove</button><button class="btn primary small">Sign in again</button><span class="plain">Expired</span></div></li>
+          <div class="acts-row"><button class="ib trash hide hv tipshow" data-tip="Remove" aria-label="Remove jesse.gall@transport-planning.example.com"><svg><use href="#i-trash"/></svg></button><button class="btn primary small">Sign in again</button><span class="plain">Expired</span></div></li>
         <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>
           <div class="who"><div class="name-line"><span class="name">Claude Code API key</span></div>
             <span class="sub">Claude Code · Pay per use</span><span class="desc">2 agents are still using it. It goes away when they finish.</span></div>
@@ -551,12 +571,12 @@ step two with the account's program and method. Status stays grey text. The rows
     </div></div></div>
 </div>
 <table class="st" style="margin-top:24px">
-  <tr><th>Account state</th><th>Pencil</th><th>On hover or focus</th><th>Always shown</th></tr>
-  <tr><td><code>signed_in</code>, chosen</td><td>yes</td><td>Remove</td><td>Signed in</td></tr>
-  <tr><td><code>signed_in</code>, not chosen</td><td>yes</td><td>Make default · Remove</td><td>Signed in</td></tr>
-  <tr><td><code>needs_sign_in</code></td><td>yes</td><td>Remove</td><td>Sign in again (primary) · Expired, with “Expired on 18 Nov. Sign in again to keep using it.” under the subtext</td></tr>
-  <tr><td><code>removing</code></td><td>no</td><td>nothing</td><td>spinner · Removing, and why it waits in the subtext</td></tr>
-  <tr><td><code>removed</code></td><td>no</td><td>nothing</td><td>the row leaves the list on the next reload</td></tr>
+  <tr><th>Account state</th><th>On hover or focus</th><th>Always shown</th></tr>
+  <tr><td><code>signed_in</code>, default</td><td>pencil · trash</td><td>filled star · Signed in</td></tr>
+  <tr><td><code>signed_in</code>, not default</td><td>pencil · outlined star · trash</td><td>Signed in</td></tr>
+  <tr><td><code>needs_sign_in</code></td><td>pencil · trash</td><td>Sign in again (small text button) · Expired, with “Expired on 18 Nov. Sign in again to keep using it.” under the subtext</td></tr>
+  <tr><td><code>removing</code></td><td>nothing</td><td>spinner · Removing, and why it waits under the subtext</td></tr>
+  <tr><td><code>removed</code></td><td>nothing</td><td>the row leaves the list on the next reload</td></tr>
 </table>
 
 <!-- ============ 7. RENAME ============ -->
@@ -651,7 +671,7 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
   <li>Per-program, per-method texts (card title, how it works, where to get it) and a short billing word (Subscription / Pay per use) on <code>SignInMethodData</code>, next to <code>billingNote</code>.</li>
   <li>AccountsWindow.vue: one list of all rows, with the program in each row's subtext and one header button; SignInForm.vue split into the modal's steps; AccountRow's state shown as grey text.</li>
   <li>The done state reads the new account's name from the reloaded rows by the attempt's account id.</li>
-  <li>AccountRow.vue: whole-row hover background; actions moved to the right, level with the name, with opacity on <code>group-hover</code> and <code>focus-within</code> and always shown under <code>hover: none</code>; a pencil icon button after the name replaces the Rename button and the inline rename form; Sign in again only for <code>needs_sign_in</code>, opening the wizard at step two.</li>
+  <li>AccountRow.vue: whole-row hover background; actions moved to the right, level with the name, with opacity on <code>group-hover</code> and <code>focus-within</code> and always shown under <code>hover: none</code>; every row action becomes a flush icon button (24&nbsp;px, tooltip, aria-label): a pencil after the name replaces the Rename button and the inline rename form, a star replaces Make default (filled on the default), and a trash can replaces Remove. A kit <code>IconButton</code> with a <code>tip</code> prop would serve all three; Sign in again only for <code>needs_sign_in</code>, opening the wizard at step two.</li>
   <li>Rename and remove dialogs built on the kit Modal, replacing the inline <code>ConfirmAction</code> for Remove.</li>
   <li>RenameAccountRequest allows 200 characters (<code>max:200</code>) while AccountLabelInvalid and the field allow 80; the two should agree. An empty name gets Laravel's “The label field is required.”, which should say name.</li>
 </ul>
