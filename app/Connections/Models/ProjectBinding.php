@@ -259,6 +259,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
 
         $readiness = $this->readinessOf($report);
         $changed = $readiness !== $this->readiness;
+
         if ($report->isReconciled) {
             $this->reconciled_boot_id = $report->bootId;
         }

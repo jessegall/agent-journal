@@ -120,8 +120,13 @@ final class ConnectProjectWindowTest extends TestCase
         $host = Host::create('laptop', 'secret-'.bin2hex(random_bytes(4)), [], ArrangementType::Local);
 
         foreach (range(1, 30) as $number) {
-            ProjectBinding::create($host, $project, $environment, Agent::create("Shop agent {$number}", 'main-agent'),
-                new BindingFolder("root-{$number}", "/Users/owner/shop-{$number}", 'Owner laptop', "nonce-{$number}"));
+            ProjectBinding::create(
+                $host,
+                $project,
+                $environment,
+                Agent::create("Shop agent {$number}", 'main-agent'),
+                new BindingFolder("root-{$number}", "/Users/owner/shop-{$number}", 'Owner laptop', "nonce-{$number}")
+            );
         }
 
         $expired = ProjectBinding::query()->orderBy('created_at')->orderBy('id')->firstOrFail();

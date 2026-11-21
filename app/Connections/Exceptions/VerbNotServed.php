@@ -46,7 +46,7 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
     {
         return new self(
             "Binding {$bindingId} runs journal verbs again once its relay has reported what became of its earlier "
-            ."sessions.",
+            .'sessions.',
         );
     }
 
