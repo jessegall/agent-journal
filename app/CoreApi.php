@@ -38,9 +38,9 @@ use App\Actors\Contracts\SeatedActor;
 use App\Actors\Contracts\SystemEntryPolicies;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
+use App\Actors\Contracts\WorkspacePolicy;
 use App\Actors\Contracts\WorkStackProvider;
 use App\Actors\Contracts\WorkStacks;
-use App\Actors\Contracts\WorkspacePolicy;
 use App\Actors\Enums\ActorType;
 use App\Actors\Enums\ReadEntitlementType;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
@@ -488,8 +488,8 @@ use App\Bus\Values\RecoveryCall;
 use App\Comments\Calls\ListCommentsCall;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
-use App\Comments\Contracts\CommentResolver;
 use App\Comments\Contracts\Commentable;
+use App\Comments\Contracts\CommentResolver;
 use App\Comments\Contracts\PublicCommentResolver;
 use App\Comments\Data\CommentDetails;
 use App\Comments\Data\CommentList;
@@ -538,15 +538,15 @@ use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageReadBatch;
-use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageReader;
+use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageView;
 use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
-use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageAnswered;
+use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageClaimReleased;
 use App\Communication\Events\MessageDismissed;
 use App\Communication\Events\MessageRead;
@@ -662,14 +662,14 @@ use App\Docking\Exceptions\DockSourceUnavailable;
 use App\Docking\Exceptions\PartMapInvalid;
 use App\Docking\Sources\Contracts\CardContext;
 use App\Docking\Sources\Contracts\DestinationGate;
-use App\Docking\Sources\Contracts\DockOffers;
-use App\Docking\Sources\Contracts\DockRegistration;
-use App\Docking\Sources\Contracts\DockSourceChanged;
-use App\Docking\Sources\Contracts\DockSourceDeleted;
 use App\Docking\Sources\Contracts\Dockable;
 use App\Docking\Sources\Contracts\DockableProvider;
 use App\Docking\Sources\Contracts\DockableWindow;
 use App\Docking\Sources\Contracts\DockedSources;
+use App\Docking\Sources\Contracts\DockOffers;
+use App\Docking\Sources\Contracts\DockRegistration;
+use App\Docking\Sources\Contracts\DockSourceChanged;
+use App\Docking\Sources\Contracts\DockSourceDeleted;
 use App\Docking\Sources\DockDefinition;
 use App\Docking\Wire\Contracts\CardEncoder;
 use App\Docking\Wire\EncodedCard;
@@ -801,9 +801,9 @@ use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Links\Events\LinksRemoved;
 use App\Links\Exceptions\UnknownLinkType;
+use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
 use App\Links\Support\LinkTypeRegistry;
-use App\Links\Support\Linkable;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\Continuations;
@@ -1011,8 +1011,8 @@ use App\Profiles\Values\SupervisorRoutes;
 use App\Profiles\Values\SupervisorTarget;
 use App\Profiles\Values\WithheldGrant;
 use App\Queries\Support\TextSearch;
-use App\Reads\Contracts\ReadMeter;
 use App\Reads\Contracts\ReadableModel;
+use App\Reads\Contracts\ReadMeter;
 use App\Reads\Enums\ReadMode;
 use App\Reads\Enums\ReadView;
 use App\Reads\Exceptions\LazyLoadRefused;
@@ -1106,9 +1106,9 @@ use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Enums\GroupAvailability;
 use App\Settings\Enums\SettingAvailability;
 use App\Settings\Enums\SettingSource;
+use App\Settings\Enums\SettingsOutcome;
 use App\Settings\Enums\SettingTarget;
 use App\Settings\Enums\SettingType;
-use App\Settings\Enums\SettingsOutcome;
 use App\Settings\Events\SettingsChanged;
 use App\Settings\Exceptions\DecimalInvalid;
 use App\Settings\Exceptions\GroupSnapshotRequired;
@@ -1116,14 +1116,14 @@ use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Exceptions\SettingDisabled;
 use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Exceptions\SettingReferenceInvalid;
-use App\Settings\Exceptions\SettingStorageInvalid;
-use App\Settings\Exceptions\SettingUnavailable;
-use App\Settings\Exceptions\SettingValueInvalid;
 use App\Settings\Exceptions\SettingsAccessDenied;
 use App\Settings\Exceptions\SettingsConflict;
 use App\Settings\Exceptions\SettingsDocumentInvalid;
 use App\Settings\Exceptions\SettingsOwnerUnknown;
+use App\Settings\Exceptions\SettingStorageInvalid;
 use App\Settings\Exceptions\SettingsUnavailable;
+use App\Settings\Exceptions\SettingUnavailable;
+use App\Settings\Exceptions\SettingValueInvalid;
 use App\Settings\Support\CurrentSettingsResolver;
 use App\Settings\Support\DisabledSettingsGroup;
 use App\Settings\Values\Choice;
@@ -1140,6 +1140,7 @@ use App\Sharing\Commands\RequestShare;
 use App\Sharing\Commands\RetryShare;
 use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Commands\SaveSharePreview;
+use App\Sharing\Contracts\Shareable;
 use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Contracts\ShareGatewayProvider;
@@ -1147,7 +1148,6 @@ use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Contracts\ShareRecordProvider;
 use App\Sharing\Contracts\ShareStatusResolver;
-use App\Sharing\Contracts\Shareable;
 use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Events\ShareActivated;
@@ -1170,6 +1170,9 @@ use App\Sharing\Support\GatewaySetupCheck;
 use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
+use App\Sharing\Support\SharedContent;
+use App\Sharing\Support\SharedPage;
+use App\Sharing\Support\SharedPageItem;
 use App\Sharing\Support\ShareFact;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareProposalStatus;
@@ -1183,9 +1186,6 @@ use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareTargetRead;
-use App\Sharing\Support\SharedContent;
-use App\Sharing\Support\SharedPage;
-use App\Sharing\Support\SharedPageItem;
 use App\Skills\Commands\CopySkill;
 use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\RestoreSkill;
@@ -1296,9 +1296,14 @@ use App\Ui\Declarations\SlotContext;
 use App\Ui\Declarations\ToggleOption;
 use App\Ui\Enums\ActionMethod;
 use App\Ui\Enums\Icon;
+use App\Ui\Enums\LayoutTag;
 use App\Ui\Enums\PageDestination;
 use App\Ui\Enums\PageSkeleton;
 use App\Ui\Enums\SlotContextType;
+use App\Ui\Exceptions\LayoutRefused;
+use App\Ui\Layout\DeclaredLayoutData;
+use App\Ui\Layout\LayoutPartData;
+use App\Ui\Layout\LayoutRowData;
 use App\Web\Commands\RecordUserHeartbeat;
 use App\Web\Contracts\CurrentUserResolver;
 
@@ -2020,6 +2025,10 @@ final class CoreApi
                 CommandCall::class,
                 CurrentUser::class,
                 ActionRoute::class,
+                DeclaredLayoutData::class,
+                LayoutPartData::class,
+                LayoutRowData::class,
+                LayoutTag::class,
                 ChoiceOption::class,
                 FloatSize::class,
                 NavigationItem::class,
@@ -2360,6 +2369,7 @@ final class CoreApi
             )
             ->exceptions(
                 ClassMissing::class,
+                LayoutRefused::class,
                 ActivationDeclined::class,
                 DockCardInvalid::class,
                 DockDefinitionInvalid::class,

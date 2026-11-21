@@ -69,12 +69,14 @@ final class HelperJobsWindowTest extends TestCase
     private function jobs(array $briefs): void
     {
         $parent = $this->actAsUser('owner');
+
         $helper = HelperIdentity::create(
             $parent,
             ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'read-only-helper')),
             'read-only-helper',
             'read-only-helper',
         );
+
         $purpose = HelperPurpose::free($parent, 'read-only-helper', 'General review');
 
         array_map(
