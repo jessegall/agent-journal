@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use Domain\Documents\Support\RecordViews;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Links\Support\Linkable;
@@ -100,7 +101,7 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
 
     public function card(): RevisionCard
     {
-        return RevisionCard::fromDocumentRevision($this);
+        return RecordViews::revisionCard($this);
     }
 
     /**
@@ -108,7 +109,7 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
      */
     public function view(Document $document): RevisionView
     {
-        return RevisionView::fromDocumentRevision($this, $document);
+        return RecordViews::revisionView($this, $document);
     }
 
     /**

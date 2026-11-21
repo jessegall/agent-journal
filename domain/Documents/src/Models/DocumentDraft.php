@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use Domain\Documents\Support\RecordViews;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\EventSource;
@@ -131,7 +132,7 @@ final class DocumentDraft extends Model implements EventSource, ReadableModel
 
     public function view(Document $document): DraftView
     {
-        return DraftView::fromDocumentDraft($this, $document);
+        return RecordViews::draftView($this, $document);
     }
 
     /**

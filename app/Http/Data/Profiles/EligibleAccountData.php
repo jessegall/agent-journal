@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Data\Profiles;
 
 use App\Agents\Enums\StartUnavailableReason;
-use App\Profiles\Models\Account;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -25,17 +24,4 @@ final class EligibleAccountData extends Data
         public readonly int $signInRevision,
         public readonly bool $isDefault,
     ) {}
-
-    public static function fromAccount(Account $account, bool $isDefault): self
-    {
-        return new self(
-            $account->id,
-            $account->label,
-            $account->startUnavailableReason(),
-            $account->startUnavailableReason()?->sentence(),
-            $account->expires_at?->toIso8601String(),
-            $account->sign_in_generation,
-            $isDefault,
-        );
-    }
 }

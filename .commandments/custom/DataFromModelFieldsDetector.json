@@ -36,6 +36,34 @@
         ],
         "reject": [
             {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "function"
+                        },
+                        {
+                            "hasModifier": "static"
+                        },
+                        {
+                            "child": {
+                                "all": [
+                                    {
+                                        "is": "parameter"
+                                    },
+                                    {
+                                        "position": "first"
+                                    },
+                                    {
+                                        "of": "parameterType",
+                                        "isA": "Illuminate\\Database\\Eloquent\\Model"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
                 "php": "inDataClass"
             },
             {
@@ -46,7 +74,7 @@
     "sin": {
         "description": "A Data object built field by field from a model's own values, at the place that holds the model.",
         "name": "data-from-model-fields",
-        "rule": "Hand the model itself to the Data class, DockSuggestion::from($this), and let a from<Model> factory on the Data class say once how that model becomes it (user message 13565).",
+        "rule": "Hand the model to one dedicated mapping, a static method whose first parameter is the model (DockSuggestion::from($this) with a from<Model> factory, or a mapping on a non-exported support class when the Data is exported), and let it say once how that model becomes the Data (user message 13565).",
         "skill": "php/spatie-data-hydration"
     }
 }

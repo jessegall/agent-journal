@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Comments\Models;
 
+use App\Comments\Support\CommentViews;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Comments\Data\CommentDetails;
@@ -193,7 +194,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
      */
     public function details(): CommentDetails
     {
-        return CommentDetails::fromComment($this);
+        return CommentViews::details($this);
     }
 
     // ----------[ Internals ]----------

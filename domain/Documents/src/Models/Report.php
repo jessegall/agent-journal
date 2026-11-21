@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use Domain\Documents\Support\RecordViews;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
@@ -138,7 +139,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
 
     public function card(): PublicationCard
     {
-        return PublicationCard::fromReport($this);
+        return RecordViews::reportCard($this);
     }
 
     /**
@@ -155,12 +156,12 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
 
     public function dockCard(): DockSuggestion
     {
-        return DockSuggestion::from($this);
+        return RecordViews::reportSuggestion($this);
     }
 
     public function view(): ReportView
     {
-        return ReportView::fromReport($this);
+        return RecordViews::reportView($this);
     }
 
     /**

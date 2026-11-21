@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use Domain\Documents\Support\RecordViews;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Links\Support\Linkable;
@@ -78,7 +79,7 @@ final class RecordSettlement extends Model implements ReadableModel
 
     public function card(): SettlementCard
     {
-        return SettlementCard::fromRecordSettlement($this);
+        return RecordViews::settlementCard($this);
     }
 
     // ----------[ Scopes ]----------

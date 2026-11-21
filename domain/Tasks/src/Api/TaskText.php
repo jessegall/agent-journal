@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Api;
 
-use Domain\Tasks\Models\Task;
 use Spatie\LaravelData\Data;
 
 /**
@@ -18,17 +17,4 @@ final class TaskText extends Data
         public readonly string|null $blockReason,
         public readonly string|null $cancelReason,
     ) {}
-
-    /**
-     * A task's long texts.
-     */
-    public static function fromTask(Task $task): self
-    {
-        return self::from([
-            'brief' => $task->brief,
-            'resultNote' => $task->result_note,
-            'blockReason' => $task->block_reason,
-            'cancelReason' => $task->cancel_reason,
-        ]);
-    }
 }

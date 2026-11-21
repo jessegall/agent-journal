@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Models;
 
+use App\Profiles\Support\ProfileSnapshots;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
@@ -247,7 +248,7 @@ final class ProfileRevision extends Model implements ReadableModel
 
     public function snapshot(ProfileKey $key): ProfileSnapshot
     {
-        return ProfileSnapshot::fromProfileRevision($this, $key);
+        return ProfileSnapshots::of($this, $key);
     }
 
     // ----------[ Scopes ]----------

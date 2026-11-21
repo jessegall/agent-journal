@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Agents\Support\RuntimeStatuses;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverVariant;
@@ -386,7 +387,7 @@ final class AgentRuntime extends Model implements ReadableModel
      */
     public function status(CarbonImmutable $now): RuntimeStatus
     {
-        return RuntimeStatus::fromAgentRuntime($this, $now);
+        return RuntimeStatuses::ofRuntime($this, $now);
     }
 
     /**

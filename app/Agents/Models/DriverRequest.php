@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Agents\Support\RuntimeStatuses;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\ExpectedTiming;
@@ -416,7 +417,7 @@ final class DriverRequest extends Model implements ReadableModel
      */
     public function status(): DriverRequestStatus
     {
-        return DriverRequestStatus::fromDriverRequest($this);
+        return RuntimeStatuses::ofRequest($this);
     }
 
     /**
