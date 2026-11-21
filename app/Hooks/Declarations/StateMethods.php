@@ -86,7 +86,7 @@ final class StateMethods
 
         if ($parameterClass === null
             || ! $takesEvent
-            || ! Reflector::factory()->isSubclassOf($parameterClass, Event::class)
+            || $parameterClass === Event::class
             || ! $this->hasRequiredArgument($method)
             || ! $this->isPublicInstanceMethod($method)) {
             throw InvalidStateMethod::for($method, 'must be a public instance method with one required concrete Event.');

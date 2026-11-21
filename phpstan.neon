@@ -22,6 +22,8 @@ parameters:
         - domain/*/tests/*
         # The attribute rules' own fixtures break the rules on purpose; their tests analyse them alone.
         - tests/Fixtures/PhpStan/*
+        # The static factory scan's fixture repeats calls and passes loose names on purpose; StaticFactoryScanTest reads it.
+        - tests/Fixtures/StaticFactories/*
 
     level: 7
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Reflection\Support\Reflector;
+use App\Registries\Support\Registry;
+use App\Sharing\Models\Share;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\FunctionLike;
@@ -26,9 +28,19 @@ final readonly class StaticFactoryScan implements FileScan
 
     public const string INJECTABLE = 'injectable';
 
+    /**
+     * Static calls that must run each time: each builds a new mutable store or reads rows, so holding the first answer
+     * would share one store between two owners or keep a stale read.
+     */
+    private const array FRESH_EACH_CALL = [
+        Registry::class.'::once',
+        Registry::class.'::replacing',
+        Share::class.'::liveFor',
+    ];
+
     public function key(): string
     {
-        return 'static-factories-3';
+        return 'static-factories-4';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -53,12 +65,16 @@ final readonly class StaticFactoryScan implements FileScan
                     $findings[] = ['line' => $call->getStartLine(), 'call' => $printed, 'reason' => self::INJECTABLE];
                 }
 
-                if ($call->args === [] || $call->isFirstClassCallable() || self::buildsAFailure($call->class)) {
+                if ($call->args === []
+                    || $call->isFirstClassCallable()
+                    || $call->class->isSpecialClassName()
+                    || self::buildsAFailure($call->class)
+                    || in_array($printed, self::FRESH_EACH_CALL, true)) {
                     continue;
                 }
 
                 $arguments = array_map(
-                    fn (Node\Arg|Node\VariadicPlaceholder $argument) => $argument instanceof Node\Arg
+                    fn (Node\Arg|Node\ArgPlaceholder|Node\VariadicPlaceholder $argument) => $argument instanceof Node\Arg
                         ? ($argument->name === null ? '' : $argument->name->toString().': ')
                             .$printer->prettyPrintExpr($argument->value)
                         : '...',
