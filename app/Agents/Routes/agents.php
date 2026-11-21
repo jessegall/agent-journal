@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\AgentRequests\Support\CallRoutes;
 use App\Agents\Http\Controllers\Calls;
 use App\Http\Controllers\Agents\ContinueStartController;
+use App\Http\Controllers\Agents\DismissLaunchOutcomeController;
 use App\Http\Controllers\Agents\RecheckDriverSwitchController;
 use App\Http\Controllers\Agents\RetireAgentController;
 use App\Http\Controllers\Agents\RetryDriverSwitchController;
@@ -19,6 +20,11 @@ Route::post('/agents/retire', RetireAgentController::class)
 Route::post('/agents/{agent}/start', StartAgentController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->name('agents.start');
+
+Route::post('/agents/{agent}/launch-outcome/dismiss', DismissLaunchOutcomeController::class)
+    ->middleware(['web', 'auth', 'journal.user'])
+    ->whereUlid('agent')
+    ->name('agents.launch-outcome.dismiss');
 
 Route::middleware(['web', 'auth', 'journal.user'])
     ->prefix('/agents/switches/{switch}')

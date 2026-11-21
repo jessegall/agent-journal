@@ -124,6 +124,7 @@ use App\Agents\Commands\CloseTerminalView;
 use App\Agents\Commands\ContinueStart;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
+use App\Agents\Commands\DismissLaunchOutcome;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\HoldAccountUses;
 use App\Agents\Commands\ImportHelperCommits;
@@ -2286,6 +2287,7 @@ final class CoreApi
                 StartAgent::class,
                 StartOwnedAgent::class,
                 CancelLaunch::class,
+                DismissLaunchOutcome::class,
                 ContinueStart::class,
                 CreateAgent::class,
                 RecordHeartbeat::class,

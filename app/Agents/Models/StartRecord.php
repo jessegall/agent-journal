@@ -23,7 +23,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 use PhpOption\Option;
 
@@ -186,6 +188,29 @@ final class StartRecord extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * Each of these agents' latest start request, by agent, ended or not; an agent never started is not in it. An
+     * older start never stands in for a newer one, so it is read in one query, one latest record for each.
+     *
+     * @param  list<string>  $agentIds
+     * @return Collection<string, self>
+     */
+    public static function latestOf(array $agentIds): Collection
+    {
+        return self::query()
+            ->whereIn('agent_id', $agentIds)
+            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('start_records', 'newer')
+                ->whereColumn('newer.agent_id', 'start_records.agent_id')
+                ->where(fn (QueryBuilder $later) => $later
+                    ->whereColumn('newer.created_at', '>', 'start_records.created_at')
+                    ->orWhere(fn (QueryBuilder $sameTime) => $sameTime
+                        ->whereColumn('newer.created_at', 'start_records.created_at')
+                        ->whereColumn('newer.id', '>', 'start_records.id'))))
+            ->readExactly(count($agentIds))
+            ->get()
+            ->keyBy('agent_id');
+    }
 
     /**
      * The variant the start of this session asked to keep for its agent once it runs, none when it asked nothing.

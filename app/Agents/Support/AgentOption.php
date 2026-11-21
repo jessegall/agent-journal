@@ -12,7 +12,8 @@ use App\Assignments\Support\AssigneeIdentity;
 
 /**
  * An agent Home can show, live or idle: its name, whether it is retired, its live session with its process generation and the switch that last
- * moved it, the actions it offers now and the conversations a resume may continue.
+ * moved it, the actions it offers now, the conversations a resume may continue and its latest launch outcome the viewer
+ * has not dismissed.
  */
 final readonly class AgentOption
 {
@@ -35,6 +36,7 @@ final readonly class AgentOption
         public array $actions,
         public array $conversations,
         public string|null $startRefusal,
+        public LaunchOutcome|null $launchOutcome,
     ) {}
 
     /**
