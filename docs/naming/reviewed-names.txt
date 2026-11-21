@@ -14449,6 +14449,7 @@ method	ProgramAdapter::renderShell()
 method	ProgramAdapter::renderStop()
 method	ProgramAdapters::for()
 method	ProgramArrangementUnproven::for()
+method	ProgramArrangementUnproven::inContainer()
 method	ProgramArrangementUnproven::refusalCode()
 method	ProgramArrangementUnproven::status()
 method	ProgramCall::replyWith()
@@ -14465,6 +14466,7 @@ method	ProgramCompatibility::__construct()
 method	ProgramCompatibility::assertStartable()
 method	ProgramCompatibility::isPinnedBinary()
 method	ProgramCompatibility::pinned()
+method	ProgramCompatibility::withContainedShortfall()
 method	ProgramCompatibility::withEvidence()
 method	ProgramConflict::for()
 method	ProgramConflict::reason()
@@ -17824,6 +17826,7 @@ method	SignInAttempt::recentFor()
 method	SignInAttempt::releaseForHost()
 method	SignInAttempt::retryCleanup()
 method	SignInAttempt::runBy()
+method	SignInAttempt::startChecking()
 method	SignInAttempt::type()
 method	SignInAttempt::waitForUser()
 method	SignInAttempt::waitingForUsesIds()
@@ -17857,6 +17860,7 @@ method	SignInCode::oneLine()
 method	SignInCodeInvalid::make()
 method	SignInCodeInvalid::refusalCode()
 method	SignInCodeInvalid::status()
+method	SignInCodeInvalid::withSpace()
 method	SignInCompletion::__construct()
 method	SignInCompletion::complete()
 method	SignInCompletion::endWithout()
@@ -20624,6 +20628,7 @@ parameter	$constraints
 parameter	$construct
 parameter	$constructor
 parameter	$consumed
+parameter	$containedShortfall
 parameter	$container
 parameter	$containerRequired
 parameter	$containers
@@ -22194,6 +22199,7 @@ parameter	$shares
 parameter	$sharing
 parameter	$sharingNotice
 parameter	$shortName
+parameter	$shortfall
 parameter	$shownIds
 parameter	$signal
 parameter	$signature
@@ -26966,6 +26972,7 @@ property	ProgramClassifiers::$classifiers
 property	ProgramCompatibility::$arrangement
 property	ProgramCompatibility::$arrangementEvidence
 property	ProgramCompatibility::$binaryDigest
+property	ProgramCompatibility::$containedShortfall
 property	ProgramCompatibility::$evidenceOwner
 property	ProgramCompatibility::$program
 property	ProgramCompatibility::$settings
