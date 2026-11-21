@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Communication\Handlers;
 
-use App\Links\Models\Link;
 use App\Actors\Contracts\JournalAdmission;
 use App\Communication\Commands\AskQuestion;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Support\MessageSending;
 use App\Contracts\CommandHandler;
+use App\Links\Models\Link;
 use App\Records\Contracts\RecordResolver;
 
 final readonly class AskQuestionHandler implements CommandHandler

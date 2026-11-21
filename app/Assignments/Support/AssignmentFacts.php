@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Assignments\Support;
 
-use App\Bus\Contracts\CommandFacts;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentFactPublisher;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Events\AssignmentsChanged;
+use App\Bus\Contracts\CommandFacts;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 

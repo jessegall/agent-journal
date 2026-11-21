@@ -33,6 +33,7 @@ abstract class MessagingTestCase extends TestCase
     use WritesInboxMessages;
 
     protected const array TABLES = [
+        'settings_records',
         'users',
         'agents',
         'agent_sessions',

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Links\Models\Link;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Hooks\Decisions\StateReference;
@@ -23,6 +22,7 @@ use App\Hooks\Storage\RecordedAnswer;
 use App\Hooks\Storage\RecordedSteps;
 use App\Hooks\Storage\WalkStep;
 use App\Hooks\Ticks\TickingTypes;
+use App\Links\Models\Link;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

@@ -6,9 +6,9 @@ namespace Tests\Architecture;
 
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
+use App\Domains\Registration\ListenerPolicy;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerOwnership;
-use App\Domains\Registration\ListenerPolicy;
 use App\Domains\Support\StateListenerDeclarations;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Stack\StateTypes;

@@ -12,7 +12,7 @@ final readonly class GatedListeners
     /**
      * @param  array<string, list<string|AvailableListener|FailureLoggingListener>>  $events
      * @param  array<string, list<string|AvailableListener>>  $required  for the command's transaction, never the
-     *                                                                  dispatcher
+     *                                                                   dispatcher
      */
     public function __construct(public array $events, public array $required = []) {}
 }

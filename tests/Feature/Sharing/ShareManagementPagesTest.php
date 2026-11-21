@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Links\Models\Link;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
+use App\Links\Models\Link;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;

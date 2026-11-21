@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
-use App\Links\Models\Link;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\RecordedSteps;
 use App\Hooks\Values\Answer\RenderedCall;
+use App\Links\Models\Link;
 use App\Pipelines\Contracts\Pipe;
 
 /**

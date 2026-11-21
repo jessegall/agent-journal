@@ -4908,6 +4908,7 @@ class	StartDenied
 class	StartEnvironment
 class	StartEvidenceRunCall
 class	StartEvidenceRunController
+class	StartExtensionRequests
 class	StartFile
 class	StartFolder
 class	StartGrant
@@ -9373,14 +9374,12 @@ method	CommandReceipt::booted()
 method	CommandReceipt::casts()
 method	CommandReceipt::complete()
 method	CommandReceipt::create()
-method	CommandReceipt::createRefused()
 method	CommandReceipt::isExpired()
 method	CommandReceipt::isFor()
 method	CommandReceipt::keyColumns()
 method	CommandReceipt::lockedFor()
 method	CommandReceipt::pastRetention()
 method	CommandReceipt::pastTombstone()
-method	CommandReceipt::refusalColumns()
 method	CommandReceipt::refuse()
 method	CommandReceipt::replay()
 method	CommandReceipt::toOperation()
@@ -14742,6 +14741,7 @@ method	ProfileRevokeCommand::handle()
 method	ProfileRun::casts()
 method	ProfileRun::finish()
 method	ProfileRun::forTrigger()
+method	ProfileRun::hasRecordedStep()
 method	ProfileRun::lockedForStep()
 method	ProfileRun::outcomeOf()
 method	ProfileRun::previous()
@@ -18867,6 +18867,9 @@ method	StartEvidenceRunCall::__construct()
 method	StartEvidenceRunController::__invoke()
 method	StartExecutor::start()
 method	StartExecutor::stop()
+method	StartExtensionRequests::__construct()
+method	StartExtensionRequests::accountSettings()
+method	StartExtensionRequests::grantAdditions()
 method	StartFile::__construct()
 method	StartFile::toArray()
 method	StartFolder::__construct()
@@ -21456,6 +21459,7 @@ parameter	$exposureChecked
 parameter	$expression
 parameter	$extended
 parameter	$extension
+parameter	$extensions
 parameter	$fact
 parameter	$factLimit
 parameter	$factory
@@ -23396,7 +23400,7 @@ property	AdmitStack::$admission
 property	AdmitStack::$deadline
 property	AdmitStartSkills::$adapters
 property	AdmitStartSkills::$contexts
-property	AdmitStartSkills::$events
+property	AdmitStartSkills::$facts
 property	AdmitStartSkills::$publications
 property	AdmitStartSkills::$selection
 property	AdmitStartSkills::$skills
@@ -24233,10 +24237,10 @@ property	ClaimStart::$sessionId
 property	ClaimStartGrant::$hostId
 property	ClaimStartGrant::$runtimeId
 property	ClaimStartGrantHandler::$containers
-property	ClaimStartGrantHandler::$events
+property	ClaimStartGrantHandler::$extensions
 property	ClaimStartGrantHandler::$runtimes
 property	ClaimStartGrantHandler::$seal
-property	ClaimStartHandler::$events
+property	ClaimStartHandler::$extensions
 property	ClaimedAccountCheck::$accountId
 property	ClaimedAccountCheck::$directory
 property	ClaimedAccountCheck::$generation
@@ -27882,7 +27886,7 @@ property	PublishSignInChallenge::$attemptId
 property	PublishSignInChallenge::$code
 property	PublishSignInChallenge::$hostId
 property	PublishSignInChallengeHandler::$challenges
-property	PublishSignInChallengeHandler::$events
+property	PublishSignInChallengeHandler::$facts
 property	PublishSkills::$holder
 property	PublishSkills::$publicationId
 property	PublishSkillsHandler::$adapters
@@ -28328,7 +28332,7 @@ property	RefreshResult::$reused
 property	RefreshRunActivity::$updates
 property	RefreshSessionSkills::$adapters
 property	RefreshSessionSkills::$contexts
-property	RefreshSessionSkills::$events
+property	RefreshSessionSkills::$facts
 property	RefreshSessionSkills::$publications
 property	RefreshSessionSkills::$selection
 property	RefreshSessionSkills::$skills
@@ -28972,7 +28976,7 @@ property	RevokeCommandPermissions::$patterns
 property	RevokeCommandPermissions::$source
 property	RevokeProfiles::$keys
 property	RevokeProfilesHandler::$commands
-property	RevokeProfilesHandler::$events
+property	RevokeProfilesHandler::$facts
 property	RevokeShare::$requestKey
 property	RevokeShare::$shareId
 property	RevokeShareHandler::$endings
@@ -30255,6 +30259,7 @@ property	StartAgentHandler::$starts
 property	StartEnvironment::$variables
 property	StartEvidenceRunCall::$evidencePermit
 property	StartEvidenceRunCall::$requestKey
+property	StartExtensionRequests::$events
 property	StartFile::$content
 property	StartFile::$path
 property	StartFolder::$arguments

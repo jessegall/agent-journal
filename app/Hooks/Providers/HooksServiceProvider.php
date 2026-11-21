@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Hooks\Providers;
 
-use App\Bus\Contracts\FactStaging;
-use App\Hooks\StateEvents\StateBridgeFactStaging;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Enums\ActorType;
 use App\Agents\Contracts\ActorGuidance;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\PendingWorkSources;
+use App\Bus\Contracts\FactStaging;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\StartTransaction;
@@ -52,6 +51,7 @@ use App\Hooks\Stack\ActiveStackPermission;
 use App\Hooks\Stack\AdvisoryStackAdmission;
 use App\Hooks\Stack\RegisteredStateFactory;
 use App\Hooks\Stack\StateTypes;
+use App\Hooks\StateEvents\StateBridgeFactStaging;
 use App\Hooks\StateEvents\StateEventDispatcher;
 use App\Hooks\StateEvents\StateEventScope;
 use App\Hooks\Support\AgentWorkStack;

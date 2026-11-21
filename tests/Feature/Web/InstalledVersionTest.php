@@ -9,15 +9,23 @@ use App\Web\Contracts\InstalledVersion;
 use App\Web\Support\InstalledVersion as CachedVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Process;
 use Tests\TestCase;
 
 final class InstalledVersionTest extends TestCase
 {
     public function test_a_checkout_shows_the_short_hash_of_its_head(): void
     {
-        $head = trim((string) shell_exec('git -C '.escapeshellarg(base_path()).' rev-parse HEAD'));
+        Process::fake(['*' => Process::result("0123456789abcdef0123456789abcdef01234567\n")]);
 
-        $this->assertSame(substr($head, 0, 9), $this->app->make(InstalledVersion::class)->label());
+        $this->assertSame('012345678', $this->app->make(InstalledVersion::class)->label());
+    }
+
+    public function test_a_checkout_git_cannot_read_shows_unknown(): void
+    {
+        Process::fake(['*' => Process::result('', 'fatal: not a git repository', 128)]);
+
+        $this->assertSame('unknown', $this->app->make(InstalledVersion::class)->label());
     }
 
     public function test_the_version_is_read_once_and_kept_until_the_cache_is_cleared(): void

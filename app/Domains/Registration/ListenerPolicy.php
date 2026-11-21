@@ -8,10 +8,10 @@ use App\Domains\Pipes\CheckListenerPairs;
 use App\Domains\Pipes\ExpandUiUpdaterListeners;
 use App\Domains\Pipes\GateListenersByDomain;
 use App\Domains\Pipes\SeparateRequiredListeners;
-use App\Pipelines\Contracts\PipelineRunner;
 use App\Domains\Support\GatedListeners;
 use App\Domains\Support\ListenerDeclarations;
 use App\Domains\Support\ListenerOwnership;
+use App\Pipelines\Contracts\PipelineRunner;
 
 /**
  * Runs the steps for discovering, checking and registering event listeners: the dispatcher's ordinary ones and the
