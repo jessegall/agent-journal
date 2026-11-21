@@ -158,7 +158,9 @@ final class ChatWindowTest extends TestCase
                 'body' => 'Port 8080.',
                 'agent' => $this->session->agent_id,
             ])
-            ->assertConflict();
+            ->assertRedirect('/')
+            ->assertSessionHasErrors('command')
+            ->assertSessionHas('refusal_code', 'stale-version');
 
         $this->assertSame(2, Message::query()->withoutGlobalScopes()->count());
     }

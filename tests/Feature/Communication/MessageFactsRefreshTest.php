@@ -108,9 +108,12 @@ final class MessageFactsRefreshTest extends MessagingTestCase
         $questionId = $this->takenUpByBuilder('Which port?');
         $before = Event::dispatched(PageChanged::class)->count();
 
+        // The facts a reply raises, inside a transaction that rolls back, as a reply that fails after them would.
         $this->assertThrows(
             fn () => $this->app->make(ConnectionInterface::class)->transaction(function () use ($questionId): void {
-                $this->runOnBus(new ReplyToMessage($questionId, null, 'Port 8080.'));
+                $this->app->make('events')->dispatch(
+                    new MessageAnswered($questionId, $questionId, $this->actorOf($this->builder)),
+                );
 
                 throw SimulatedFailure::of('The reply fails.');
             }),
