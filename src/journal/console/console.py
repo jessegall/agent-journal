@@ -75,7 +75,10 @@ class Console:
         return self.scoped_run(argv, caller, StreamedOutput(output_queue))
 
     def scoped_run(self, argv: list[str], caller: Caller, output: io.StringIO) -> Outcome:
-        environment = self.environments.lookup(caller.environment).row_id
+        try:
+            environment = self.environments.existing(caller.environment).row_id
+        except MissingRow:
+            return Outcome.refused(f"no environment {caller.environment}: journal environment create {caller.environment} makes it\n")
         with self.scope.environment(environment):
             seated = self.seats.caller_seated(caller)
         with self.scope.entered(seated.origin(environment)):

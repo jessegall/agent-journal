@@ -146,7 +146,7 @@ class EnvironmentCommand(Command):
         return 0
 
     def create(self, args: Namespace, caller: Caller) -> int:
-        environment = self.hydration.created(args.name, args.provider, args.session, caller.actor) if args.session else self.environments.lookup(args.name)
+        environment = self.hydration.created(args.name, args.provider, args.session, caller.actor) if args.session else self.environments.ensure(args.name)
         print(f"environment {environment.id}: {environment.name}")
         return 0
 

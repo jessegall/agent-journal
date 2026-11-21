@@ -46,5 +46,5 @@ class TasksNudges:
     TASK_OPENED = Nudge("tasks", "task_opened", "task {{n}} is open", "take it up with `journal task start {{n}}`", repeat=Timeout.seconds(0))
     TASKS_RELEASED = Nudge("tasks", "tasks_released", "worker {{worker}} released {{tasks|cap=50}}", "take them up with `journal task start <n>`", repeat=Timeout.seconds(0))
     TASK_REOPENED = Nudge("tasks", "task_reopened", "task {{n}} is open again: {{reason|cap=51}}", "take it up with `journal task start {{n}}`", repeat=Timeout.seconds(0))
-    BROKEN_WAIT = Nudge("tasks", "fix_the_broken_wait", "{{waits}}", "fix it with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`", repeat=Timeout.seconds(0))
+    BROKEN_WAIT = Nudge("tasks", "fix_the_broken_wait", "{{waits}}", "fix it with `journal task block <n> --until \"<command>\"`, or `journal task unblock <n>`", repeat=Timeout.seconds(0), longest_characters=200, longest_reason="it names each broken wait, a check that cannot run or a row that is gone, before the fix")
     LOOSE_BLOCKS = Nudge("tasks", "blocked_tasks_without_wait", "blocked with no wait: {{tasks|cap=30}}", "unblock what can go on; else `journal task block {{n}} --on task:<m>` or `--until \"<check>\"`", repeat=Timeout.seconds(60), longest_characters=150, longest_reason="a reminder that names both ways to give a block an end")

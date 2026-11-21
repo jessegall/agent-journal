@@ -16,7 +16,7 @@ class RenamedWorktreeFolders(AgentListener[SessionStarted]):
         self.config, self.environments, self.cards = config, environments, cards
 
     def handle(self, event: SessionStarted) -> None:
-        main = self.environments.lookup("main").row_id
+        main = self.environments.existing("main").row_id
         place = self.config.root / LAUNCH_FOLDER
         renamed_folders = sorted(path.name for path in place.iterdir() if RENAMED_TAG in path.name) if place.is_dir() else []
         key = f"moved-aside:{','.join(renamed_folders)}"

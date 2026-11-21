@@ -14,7 +14,7 @@ from journal.support.actor import Actor
 
 
 def planned_reads(app: App, read) -> list[list[str]]:
-    connection, statements, main = app.container.get(Connection), [], app.container.get(Environments).lookup("main").row_id
+    connection, statements, main = app.container.get(Connection), [], app.container.get(Environments).ensure("main").row_id
     raw = connection._local()
     connection.cache.cleared()
     raw.set_trace_callback(statements.append)
@@ -40,7 +40,7 @@ def test_docked_cards_and_scoped_reads_use_indexes_and_sort_nothing(tmp_path: Pa
 
 def test_session_entries_are_found_behind_newer_entries_of_other_sessions(tmp_path: Path):
     app = App(Config(tmp_path, port=0))
-    entries, main = app.container.get(Entries), app.container.get(Environments).lookup("main").row_id
+    entries, main = app.container.get(Entries), app.container.get(Environments).ensure("main").row_id
     with app.container.get(Scope).environment(main):
         older = entries.save(Entry(environment_id=main, entry_type=events.PROMPT_SUBMITTED, actor=Actor.agent("s1"), data={"prompt": "go on"}), Actor.system())
         for n in range(60):
