@@ -96,9 +96,9 @@ interface Files
     public function append(FilePath $file, string $line): void;
 
     /**
-     * Makes the folder and the missing folders above it with the place's mode.
+     * Makes the folder and the missing folders above it, entered by everyone or by the owner alone.
      */
-    public function makeFolder(FilePath $folder): void;
+    public function makeFolder(FilePath $folder, Permissions $permissions): void;
 
     /**
      * Removes a file or a link, never its target; a missing file is no failure.

@@ -20,6 +20,17 @@ enum Permissions: string
         return $place->isPrivate() ? self::OwnerOnly : self::Shared;
     }
 
+    /**
+     * The mode of a folder made for files of these permissions: entered by everyone, or by its owner alone.
+     */
+    public function folderMode(): int
+    {
+        return match ($this) {
+            self::Shared => 0o755,
+            self::OwnerOnly => 0o700,
+        };
+    }
+
     public function mode(): int
     {
         return match ($this) {

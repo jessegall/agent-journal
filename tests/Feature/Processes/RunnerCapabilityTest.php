@@ -9,13 +9,12 @@ use App\Processes\Enums\AdmissionRefusalCode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
-use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\Admission;
 use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\ExecutionContext;
-use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -38,7 +37,7 @@ final class RunnerCapabilityTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
         $this->start = TestStart::start();
         $this->runCommandsAs($this->start);
         $this->folder = sys_get_temp_dir().'/runner-'.bin2hex(random_bytes(4));

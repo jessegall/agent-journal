@@ -174,14 +174,15 @@ final readonly class FileWriter
     }
 
     /**
-     * Writes the bytes to a file that must not exist yet, with its mode set before the first byte.
+     * Writes the bytes to a file that must not exist yet, with its mode set before the first byte, and waits until the
+     * disk holds them.
      */
     private function writeNew(string $real, string $bytes, int $mode, string $label): void
     {
         $handle = $this->opened($real, 'xb', $mode, $label);
 
         try {
-            if (fwrite($handle, $bytes) !== strlen($bytes) || ! fflush($handle)) {
+            if (fwrite($handle, $bytes) !== strlen($bytes) || ! fflush($handle) || ! fsync($handle)) {
                 throw FileUnwritable::at($label);
             }
         } finally {

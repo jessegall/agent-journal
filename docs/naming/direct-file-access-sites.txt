@@ -1,4 +1,4 @@
-# The direct file access sites outside app/Files (plan 39): 96 still waiting to move to App\Files\Contracts\Files,
+# The direct file access sites outside app/Files (plan 39): 85 still waiting to move to App\Files\Contracts\Files,
 # and 9 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
 # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
 # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
@@ -27,19 +27,8 @@ app/Hooks/Support/AccountConfigurationWrite.php rename()
 app/Hooks/Support/AccountConfigurationWrite.php unlink()
 app/Processes/Console/CommandTypeImportCommand.php file_get_contents()
 app/Processes/Console/CommandTypeImportCommand.php is_file()
-app/Processes/Execution/ChannelRunEvents.php file()
-app/Processes/Execution/ChannelRunEvents.php file_put_contents()
-app/Processes/Execution/ChannelRunEvents.php is_dir()
-app/Processes/Execution/ChannelRunEvents.php is_file()
-app/Processes/Execution/ChannelRunEvents.php mkdir()
-app/Processes/Support/ManifestCheck.php hash_file()
-app/Processes/Support/ManifestCheck.php is_file()
 app/Processes/Support/OutputDiskCapacity.php disk_free_space()
 app/Processes/Support/OutputDiskCapacity.php is_dir()
-app/Processes/Support/SpoolRecorder.php fopen()
-app/Processes/Support/SpoolRecorder.php is_dir()
-app/Processes/Support/SpoolRecorder.php is_file()
-app/Processes/Support/SpoolRecorder.php mkdir()
 app/Processes/Values/ShippedReader.php file_get_contents()
 app/Processes/Values/ToolVersions.php file_get_contents()
 app/Profiles/Console/ImportProfileDraftCommand.php file_get_contents()

@@ -17,14 +17,13 @@ use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RunEventType;
 use App\Processes\Enums\ShellDialect;
-use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\RunEvent;
 use Carbon\CarbonImmutable;
 use Domain\Memory\Calls\MemoryCalls;
 use Domain\Memory\Models\Memory;
-use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -45,7 +44,7 @@ final class CallRecoveryTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
         config(['processes.runner' => true]);
         $this->start = TestStart::start();
         $this->runCommandsAs($this->start);

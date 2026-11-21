@@ -155,10 +155,10 @@ final class LocalFiles implements Files
         $this->contents->drop($real);
     }
 
-    public function makeFolder(FilePath $folder): void
+    public function makeFolder(FilePath $folder, Permissions $permissions): void
     {
         $real = $this->confinement->resolvedForWrite($folder);
-        $this->writer->makeFolder($real, $folder->place->folderMode(), $folder->label());
+        $this->writer->makeFolder($real, $permissions->folderMode(), $folder->label());
     }
 
     public function delete(FilePath $file): void

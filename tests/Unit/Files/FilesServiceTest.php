@@ -63,7 +63,8 @@ final class FilesServiceTest extends TestCase
     {
         $folder = $this->placeInTemporaryFolder(Place::Temporary);
         file_put_contents("{$folder}/a.txt", 'a');
-        config(['files.places.host-skills' => "{$folder}/missing"]);
+        file_put_contents("{$folder}/blocker", '');
+        config(['files.places.host-skills' => "{$folder}/blocker/skills"]);
         $files = $this->app->make(Files::class);
 
         $this->assertSame('a', $files->read(FilePath::in(Place::Temporary, 'a.txt')));

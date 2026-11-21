@@ -6,6 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Files\Contracts\Files;
 use App\Processes\Calls\ProcessCalls;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Enums\LifecycleState;
@@ -15,12 +16,11 @@ use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessEvent;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\ExecutionPlanner;
-use App\Processes\Support\SpoolRecorder;
 use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\PartKey;
-use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RecordedCalls;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
@@ -44,7 +44,7 @@ final class ProcessChannelTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
         config(['processes.runner' => true]);
         $this->start = TestStart::start();
         $this->runCommandsAs($this->start);
@@ -86,7 +86,14 @@ final class ProcessChannelTest extends TestCase
             ['request_key' => 'channel-1'],
         )->json('event_key');
         $calls = new RecordedCalls();
-        $events = new ChannelRunEvents(new ProcessCalls($calls), $run->id, $eventKey, $this->folder.'/spool');
+        $files = $this->app->make(Files::class);
+        $events = new ChannelRunEvents(
+            new ProcessCalls($calls),
+            $run->id,
+            $eventKey,
+            $files->filePathOf($this->folder.'/spool'),
+            $files,
+        );
         $part = new PartKey(1, 1, 'echo');
 
         $events->queued($part);

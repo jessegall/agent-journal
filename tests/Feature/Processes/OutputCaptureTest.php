@@ -19,6 +19,7 @@ use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
+use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -36,7 +37,7 @@ final class OutputCaptureTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
     }
 
     #[TimeLimit(20, 'It pipes 50 MiB from a child process through the recorder.')]

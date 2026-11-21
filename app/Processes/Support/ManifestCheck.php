@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Models\OutputChunk;
 use App\Processes\Models\PartRun;
-use Illuminate\Contracts\Filesystem\Factory;
 use Illuminate\Support\Collection;
 
 /**
@@ -17,11 +19,10 @@ use Illuminate\Support\Collection;
  */
 final readonly class ManifestCheck
 {
-    public function __construct(private Factory $disks) {}
+    public function __construct(private Files $files) {}
 
     public function stateOf(PartRun $part): CaptureState
     {
-        $disk = $this->disks->disk(SpoolRecorder::DISK);
         $next = [];
         $state = CaptureState::Complete;
         OutputChunk::query()->where(
@@ -29,14 +30,14 @@ final readonly class ManifestCheck
             $part->id,
         )->orderBy('stream')->orderBy('offset')->readInChunks(500, function (
             Collection $chunks,
-        ) use ($disk, &$next, &$state): void {
+        ) use (&$next, &$state): void {
             foreach ($chunks as $chunk) {
                 $stream = $chunk->stream->value;
-                $path = $disk->path($chunk->storage_path);
+                $stored = FilePath::in(Place::ProcessOutput, $chunk->storage_path);
 
-                if ($chunk->offset !== ($next[$stream] ?? 0) || ! is_file($path)) {
+                if ($chunk->offset !== ($next[$stream] ?? 0) || ! $this->files->exists($stored)) {
                     $state = $state === CaptureState::Corrupt ? $state : CaptureState::Incomplete;
-                } elseif (hash_file('sha256', $path) !== $chunk->checksum) {
+                } elseif ($this->files->digest($stored) !== $chunk->checksum) {
                     $state = CaptureState::Corrupt;
                 }
 

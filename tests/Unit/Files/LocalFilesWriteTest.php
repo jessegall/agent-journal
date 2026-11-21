@@ -98,7 +98,7 @@ final class LocalFilesWriteTest extends TestCase
     public function test_missing_folders_are_made_with_the_place_mode(): void
     {
         $this->files()->write(FilePath::in(Place::SharingSecrets, 'tunnels/ngrok/token'), 'x', Permissions::OwnerOnly);
-        $this->files()->makeFolder($this->path('public/build'));
+        $this->files()->makeFolder($this->path('public/build'), Permissions::Shared);
 
         $this->assertSame(0o700, fileperms("{$this->secrets}/tunnels") & 0o777);
         $this->assertSame(0o755, fileperms("{$this->project}/public/build") & 0o777);

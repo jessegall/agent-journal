@@ -20,9 +20,13 @@ final readonly class PlaceRoots
 {
     public function __construct(private Repository $config) {}
 
+    /**
+     * The real root of the place; a missing root is made with the place's mode when it can be, and only a root that
+     * is not configured or cannot be made is unavailable.
+     */
     public function root(Place $place): string
     {
-        $root = $this->existingRoot($place);
+        $root = $this->existingRoot($place) ?? $this->madeRoot($place);
 
         if ($root === null) {
             throw PlaceUnavailable::for($place);
@@ -105,6 +109,20 @@ final readonly class PlaceRoots
         }
 
         return $folder.'/'.basename($path);
+    }
+
+    /**
+     * The configured root, made now with the place's mode; none when it is not configured or cannot be made.
+     */
+    private function madeRoot(Place $place): string|null
+    {
+        $configured = $this->config->get($place->rootSetting());
+
+        if (! is_string($configured) || $configured === '' || ! @mkdir($configured, $place->folderMode(), true)) {
+            return null;
+        }
+
+        return $this->existingRoot($place);
     }
 
     private function existingRoot(Place $place): string|null

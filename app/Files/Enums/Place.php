@@ -15,6 +15,7 @@ enum Place: string
     case SharingTunnels = 'sharing-tunnels';
     case HostSkills = 'host-skills';
     case Temporary = 'temporary';
+    case ProcessOutput = 'process-output';
 
     /**
      * The places a path given from outside, such as a command's --file, may lie in.
@@ -30,13 +31,13 @@ enum Place: string
     {
         return match ($this) {
             self::Accounts, self::SharingSecrets, self::SharingTunnels => true,
-            self::Project, self::HostSkills, self::Temporary => false,
+            self::Project, self::HostSkills, self::Temporary, self::ProcessOutput => false,
         };
     }
 
     public function folderMode(): int
     {
-        return $this->isPrivate() ? 0o700 : 0o755;
+        return Permissions::of($this)->folderMode();
     }
 
     /**
@@ -49,7 +50,8 @@ enum Place: string
     {
         return match ($this) {
             self::Project => ['.journal/worktrees', '.git', 'vendor', 'node_modules', 'storage/app/private'],
-            self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HostSkills, self::Temporary => [],
+            self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HostSkills, self::Temporary,
+            self::ProcessOutput => [],
         };
     }
 
@@ -61,6 +63,7 @@ enum Place: string
         return match ($this) {
             self::Accounts => 'accounts.root',
             self::SharingSecrets => 'sharing.secrets_dir',
+            self::ProcessOutput => 'filesystems.disks.process-output.root',
             self::Project, self::SharingTunnels, self::HostSkills, self::Temporary => "files.places.{$this->value}",
         };
     }

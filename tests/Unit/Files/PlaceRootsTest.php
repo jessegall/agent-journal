@@ -33,6 +33,8 @@ final class PlaceRootsTest extends TestCase
 
     protected function tearDown(): void
     {
+        @unlink("{$this->folder}/blocker");
+
         foreach (Place::cases() as $place) {
             rmdir("{$this->folder}/{$place->value}");
         }
@@ -53,9 +55,21 @@ final class PlaceRootsTest extends TestCase
         }
     }
 
-    public function test_a_place_with_a_missing_root_fails_only_when_it_is_used(): void
+    public function test_a_missing_root_is_made_with_the_place_mode(): void
     {
-        config(['accounts.root' => "{$this->folder}/missing", 'files.places.host-skills' => null]);
+        config(['accounts.root' => "{$this->folder}/made/accounts"]);
+
+        $this->assertSame(realpath("{$this->folder}/made/accounts"), $this->roots()->root(Place::Accounts));
+        $this->assertSame(0o700, fileperms("{$this->folder}/made/accounts") & 0o777);
+
+        rmdir("{$this->folder}/made/accounts");
+        rmdir("{$this->folder}/made");
+    }
+
+    public function test_a_place_whose_root_cannot_be_made_fails_only_when_it_is_used(): void
+    {
+        touch("{$this->folder}/blocker");
+        config(['accounts.root' => "{$this->folder}/blocker/accounts", 'files.places.host-skills' => null]);
 
         $roots = $this->roots();
 

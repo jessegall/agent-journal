@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Pipes\Run;
 
 use App\AgentRequests\Values\CommandReport;
+use App\Files\Contracts\Files;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Calls\ProcessCalls;
 use App\Processes\Execution\ChannelRunEvents;
@@ -23,7 +24,11 @@ final readonly class SuperviseRun implements Pipe
      */
     private const int PREVIEW_CHARACTER_LIMIT = 4_000;
 
-    public function __construct(private ProcessCalls $processes, private Supervisor $supervisor) {}
+    public function __construct(
+        private ProcessCalls $processes,
+        private Supervisor $supervisor,
+        private Files $files,
+    ) {}
 
     public function handle(FetchedAdmission $admission): SupervisedRun
     {
@@ -32,6 +37,7 @@ final readonly class SuperviseRun implements Pipe
             $admission->runId,
             $admission->eventKey,
             $admission->spoolFolder(),
+            $this->files,
         );
         $outcome = $this->supervisor->run($events, $admission->plan(), $admission->context());
         $events->flush();

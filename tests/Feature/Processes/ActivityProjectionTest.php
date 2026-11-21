@@ -17,7 +17,7 @@ use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Storage;
+use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
@@ -37,7 +37,7 @@ final class ActivityProjectionTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
         Event::fake([RunChanged::class]);
         $run = ProcessRun::create(ActorIdentity::system(), TestRunAdmissions::of());
         $this->part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));

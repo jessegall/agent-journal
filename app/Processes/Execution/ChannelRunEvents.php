@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Processes\Execution;
 
 use App\AgentRequests\Exceptions\CallFailed;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Values\FilePath;
 use App\Processes\Calls\ProcessCalls;
 use App\Processes\Calls\RunChunk;
 use App\Processes\Calls\RunPart;
@@ -41,12 +44,9 @@ final class ChannelRunEvents implements RunEvents
         private readonly ProcessCalls $processes,
         private readonly string $runId,
         private readonly string $eventKey,
-        private readonly string $spoolFolder,
-    ) {
-        if (! is_dir($spoolFolder)) {
-            mkdir($spoolFolder, 0700, true);
-        }
-    }
+        private readonly FilePath $spoolFolder,
+        private readonly Files $files,
+    ) {}
 
     public function queued(PartKey $part): void
     {
@@ -175,7 +175,8 @@ final class ChannelRunEvents implements RunEvents
      */
     private function append(string $file, RunEvent|RunChunk $record): void
     {
-        file_put_contents("{$this->spoolFolder}/{$file}", $record->toJson()."\n", FILE_APPEND | LOCK_EX);
+        $this->files->makeFolder($this->spoolFolder, Permissions::OwnerOnly);
+        $this->files->append($this->spoolFolder->child($file), $record->toJson()."\n");
         $this->flush();
     }
 
@@ -184,9 +185,15 @@ final class ChannelRunEvents implements RunEvents
      */
     private function spooledLines(string $name): array
     {
-        $lines = is_file($this->spoolFolder.'/'.$name) ? file($this->spoolFolder.'/'.$name, FILE_IGNORE_NEW_LINES) : [];
+        $file = $this->spoolFolder->child($name);
 
-        return $lines === false ? [] : $lines;
+        if (! $this->files->exists($file)) {
+            return [];
+        }
+
+        $bytes = $this->files->read($file);
+
+        return $bytes === '' ? [] : explode("\n", rtrim($bytes, "\n"));
     }
 
     /**
@@ -206,7 +213,7 @@ final class ChannelRunEvents implements RunEvents
         foreach (RunChunk::collect($this->spooledRecords('chunks.jsonl')) as $index => $chunk) {
             $this->processes->recordRunChunk($this->runId, $this->eventKey, $chunk);
             $rest = implode('', array_map(fn (string $left) => $left."\n", array_slice($chunks, $index + 1)));
-            file_put_contents($this->spoolFolder.'/chunks.jsonl', $rest, LOCK_EX);
+            $this->files->write($this->spoolFolder->child('chunks.jsonl'), $rest);
         }
     }
 
