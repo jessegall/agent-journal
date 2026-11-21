@@ -12,9 +12,9 @@ use App\Scripts\Exceptions\ScriptDefinitionRefused;
 use App\Scripts\Values\ObjectDefinition;
 use App\Scripts\Values\ObjectMember;
 use App\Scripts\Values\ScriptContext;
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionProperty;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 
 final readonly class ObjectReflection
 {
@@ -29,14 +29,14 @@ final readonly class ObjectReflection
             throw ScriptDefinitionRefused::invalidObject($class);
         }
 
-        $reflection = new ReflectionClass($class);
-        $attributes = $reflection->getAttributes(ScriptObject::class);
+        $declaration = Reflector::of($class);
+        $objects = $declaration->attributes(ScriptObject::class);
 
-        if (! $reflection->isInstantiable() || count($attributes) !== 1) {
+        if (! $declaration->isInstantiable() || count($objects) !== 1) {
             throw ScriptDefinitionRefused::invalidObject($class);
         }
 
-        $key = $attributes[0]->newInstance()->key;
+        $key = $objects->first()->get()->key;
 
         if (preg_match('/^[a-z][a-z0-9_]*$/D', $key) !== 1) {
             throw ScriptDefinitionRefused::invalidObject($class);
@@ -44,18 +44,18 @@ final readonly class ObjectReflection
 
         $members = [];
 
-        foreach ($reflection->getProperties() as $property) {
-            $attributes = $property->getAttributes(ScriptMember::class);
+        foreach ($declaration->properties() as $property) {
+            $marks = $property->attributes(ScriptMember::class);
 
-            if ($attributes === []) {
+            if (count($marks) === 0) {
                 continue;
             }
 
-            if (count($attributes) !== 1) {
-                throw ScriptDefinitionRefused::invalidMember($class, $property->getName());
+            if (count($marks) !== 1) {
+                throw ScriptDefinitionRefused::invalidMember($class, $property->name());
             }
 
-            $member = $this->member($class, $property, $attributes[0]->newInstance());
+            $member = $this->member($class, $property, $marks->first()->get());
             $members[$member->name] = $member;
         }
 
@@ -63,52 +63,52 @@ final readonly class ObjectReflection
             throw ScriptDefinitionRefused::invalidObject($class);
         }
 
-        return new ObjectDefinition($key, $class, $owner, $this->contextParameter($reflection), $members);
+        return new ObjectDefinition($key, $class, $owner, $this->contextParameter($declaration), $members);
     }
 
-    private function member(string $class, ReflectionProperty $property, ScriptMember $member): ObjectMember
+    private function member(string $class, ReflectedProperty $property, ScriptMember $member): ObjectMember
     {
-        $type = $property->getType();
+        $isPlainBool = $property->type()
+            ->filter(fn (DeclaredType $type) => $type->isNamedAs('bool') && ! $type->allowsNull)
+            ->isDefined();
 
-        if (! $property->isPublic() || $property->isStatic() || ! $type instanceof ReflectionNamedType
-            || $type->getName() !== 'bool' || $type->allowsNull() || isset($property->getHooks()['set'])
+        if (! $property->isPublic() || $property->isStatic() || ! $isPlainBool || $property->hasSetHook()
             || ! $this->operations->has($member->read)) {
-            throw ScriptDefinitionRefused::invalidMember($class, $property->getName());
+            throw ScriptDefinitionRefused::invalidMember($class, $property->name());
         }
 
-        return new ObjectMember($property->getName(), new OperationKey($member->read));
+        return new ObjectMember($property->name(), new OperationKey($member->read));
     }
 
     /**
-     * @param  ReflectionClass<object>  $class
+     * @param  Reflector<object>  $class
      */
-    private function contextParameter(ReflectionClass $class): string
+    private function contextParameter(Reflector $class): string
     {
-        $constructor = $class->getConstructor();
-
-        if ($constructor === null) {
-            throw ScriptDefinitionRefused::invalidObject($class->getName());
+        if ($class->constructor()->isEmpty()) {
+            throw ScriptDefinitionRefused::invalidObject($class->name());
         }
 
         $contexts = [];
 
-        foreach ($constructor->getParameters() as $parameter) {
-            $type = $parameter->getType();
+        foreach ($class->constructor()->get()->parameters() as $parameter) {
+            $named = $parameter->type()->filter(fn (DeclaredType $type) => $type->isNamed());
 
-            if ($type instanceof ReflectionNamedType && $type->getName() === ScriptContext::class
-                && ! $type->allowsNull()) {
-                $contexts[] = $parameter->getName();
+            if ($named->filter(fn (DeclaredType $type) => $type->isNamedAs(ScriptContext::class) && ! $type->allowsNull)
+                ->isDefined()) {
+                $contexts[] = $parameter->name();
 
                 continue;
             }
 
-            if (! $parameter->isOptional() && (! $type instanceof ReflectionNamedType || $type->isBuiltin())) {
-                throw ScriptDefinitionRefused::invalidObject($class->getName());
+            if (! $parameter->isOptional()
+                && ($named->isEmpty() || $named->get()->isBuiltin())) {
+                throw ScriptDefinitionRefused::invalidObject($class->name());
             }
         }
 
         if (count($contexts) !== 1) {
-            throw ScriptDefinitionRefused::invalidObject($class->getName());
+            throw ScriptDefinitionRefused::invalidObject($class->name());
         }
 
         return $contexts[0];

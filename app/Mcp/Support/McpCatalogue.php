@@ -21,7 +21,7 @@ use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Records\Support\RecordIdentity;
 use Laravel\Mcp\Server\Attributes\Name;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 
 /**
  * Every MCP tool, resource and overview contribution class Core and the domains offer, checked as each is added: one
@@ -123,7 +123,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
             throw McpClassInvalid::for($className, SearchContribution::class);
         }
 
-        $contribution = new ReflectionClass($className)->newInstanceWithoutConstructor();
+        $contribution = Reflector::of($className)->newInstanceWithoutConstructor();
         $type = $contribution->recordType();
         RecordIdentity::assertKnownType($type);
 
@@ -235,13 +235,13 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     private function toolName(string $className): string
     {
-        $attributes = new ReflectionClass($className)->getAttributes(Name::class);
+        $declaration = Reflector::of($className);
 
-        if ($attributes === []) {
+        if (! $declaration->hasAttribute(Name::class)) {
             throw McpToolNameInvalid::missing($className);
         }
 
-        $name = $attributes[0]->newInstance()->value;
+        $name = $declaration->attribute(Name::class)->value;
 
         if (preg_match(self::SNAKE_CASE, $name) !== 1) {
             throw McpToolNameInvalid::notSnakeCase($className, $name);
@@ -260,6 +260,6 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     private function definitionOf(string $className): JournalTool|JournalResource
     {
-        return new ReflectionClass($className)->newInstanceWithoutConstructor();
+        return Reflector::of($className)->newInstanceWithoutConstructor();
     }
 }

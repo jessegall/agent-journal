@@ -45,6 +45,51 @@ final class ReflectedParameter
     }
 
     /**
+     * Whether null may be passed, by its type or by a null default.
+     */
+    public function allowsNull(): bool
+    {
+        return $this->parameter->allowsNull();
+    }
+
+    public function isVariadic(): bool
+    {
+        return $this->parameter->isVariadic();
+    }
+
+    public function isPassedByReference(): bool
+    {
+        return $this->parameter->isPassedByReference();
+    }
+
+    public function hasDefaultValue(): bool
+    {
+        return $this->parameter->isDefaultValueAvailable();
+    }
+
+    /**
+     * The default value, evaluated as PHP evaluates it; read hasDefaultValue() first.
+     */
+    public function defaultValue(): mixed
+    {
+        return $this->parameter->getDefaultValue();
+    }
+
+    /**
+     * The constant the default names, such as self::LIMIT; none when the default is no constant or there is none.
+     *
+     * @return Option<string>
+     */
+    public function defaultConstantName(): Option
+    {
+        if (! $this->hasDefaultValue() || ! $this->parameter->isDefaultValueConstant()) {
+            return None::create();
+        }
+
+        return Option::fromValue($this->parameter->getDefaultValueConstantName());
+    }
+
+    /**
      * The declared type; none for an untyped parameter.
      *
      * @return Option<DeclaredType>

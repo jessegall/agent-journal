@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Servers;
 
+use App\Reflection\Support\Reflector;
 use App\Mcp\Methods\ListToolsAndRecordDiscovery;
 use App\Mcp\Support\McpCatalogue;
 use Laravel\Mcp\Server;
@@ -11,7 +12,6 @@ use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
 use Laravel\Mcp\Server\Contracts\Transport;
-use ReflectionClass;
 
 /**
  * The journal's one MCP server: tools and resources only, both with a list that never changes during a connection,
@@ -43,7 +43,7 @@ final class JournalServer extends Server
 
     public static function contractVersion(): string
     {
-        return new ReflectionClass(self::class)->getAttributes(Version::class)[0]->newInstance()->value;
+        return Reflector::of(self::class)->attribute(Version::class)->value;
     }
 
     protected function boot(): void

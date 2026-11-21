@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\AgentRequests\Support;
 
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\Reflector;
 use App\AgentRequests\Contracts\CallRegistrar;
 use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
-use ReflectionMethod;
-use ReflectionNamedType;
 
 /**
  * Registers a signed route from its call's declaration: the controller's __invoke takes the call, whose #[Endpoint]
@@ -42,12 +42,16 @@ final readonly class CallRoutes implements CallRegistrar
      */
     private static function callOf(string $controller): string
     {
-        $type = new ReflectionMethod($controller, '__invoke')->getParameters()[0]->getType();
+        $parameters = Reflector::of($controller)->method('__invoke')->parameters();
+        $call = $parameters === [] ? '' : $parameters[0]->type()
+            ->filter(fn (DeclaredType $type) => $type->isNamed())
+            ->map(fn (DeclaredType $type) => $type->name())
+            ->getOrElse('');
 
-        if (! $type instanceof ReflectionNamedType || ! class_exists($type->getName())) {
+        if (! class_exists($call)) {
             throw EndpointDeclarationInvalid::for($controller, 'its __invoke takes the call first');
         }
 
-        return $type->getName();
+        return $call;
     }
 }

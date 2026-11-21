@@ -40,6 +40,19 @@ final class ReflectedProperty
         return $this->property->isPublic();
     }
 
+    public function isStatic(): bool
+    {
+        return $this->property->isStatic();
+    }
+
+    /**
+     * Whether the property declares a set hook.
+     */
+    public function hasSetHook(): bool
+    {
+        return isset($this->property->getHooks()['set']);
+    }
+
     /**
      * Whether the property is declared in the constructor's parameters.
      */

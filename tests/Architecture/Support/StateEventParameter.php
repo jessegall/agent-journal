@@ -7,11 +7,11 @@ namespace Tests\Architecture\Support;
 use App\Contracts\Event;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\States\AgentState;
+use App\Reflection\Support\Reflector;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
-use ReflectionMethod;
 
 /**
  * Identifies a state event parameter from its resolved source name and effective signature.
@@ -42,8 +42,8 @@ final class StateEventParameter
             return false;
         }
 
-        $methodReflection = new ReflectionMethod($name, $method->name->toString());
+        $declared = Reflector::of($name)->method($method->name->toString());
 
-        return new StateMethods()->eventFor($methodReflection) === $parameter->type->toString();
+        return new StateMethods()->eventFor($declared) === $parameter->type->toString();
     }
 }

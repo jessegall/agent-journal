@@ -7,8 +7,7 @@ namespace App\AgentRequests\Support;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Attributes\InPath;
 use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
-use ReflectionClass;
-use ReflectionProperty;
+use App\Reflection\Support\Reflector;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Mappers\NameMapper;
 
@@ -40,23 +39,26 @@ final readonly class CallDeclaration
         $inPath = [];
         $body = [];
 
-        $classMapping = new ReflectionClass($call)->getAttributes(MapName::class);
-        $classInput = $classMapping === [] ? null : $classMapping[0]->newInstance()->input;
+        $declaration = Reflector::of($call);
+        $classInput = $declaration->attributes(MapName::class)->first()
+            ->map(fn (MapName $mapping) => $mapping->input)
+            ->getOrElse(null);
 
-        foreach (new ReflectionClass($call)->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if ($property->isStatic()) {
+        foreach ($declaration->properties() as $property) {
+            if (! $property->isPublic() || $property->isStatic()) {
                 continue;
             }
 
-            if ($property->getAttributes(InPath::class) !== []) {
-                $inPath[] = $property->getName();
+            if ($property->hasAttribute(InPath::class)) {
+                $inPath[] = $property->name();
 
                 continue;
             }
 
-            $mapped = $property->getAttributes(MapName::class);
-            $input = $mapped === [] ? $classInput : $mapped[0]->newInstance()->input;
-            $body[] = $input === null ? $property->getName() : self::inputName($input, $property->getName());
+            $input = $property->attributes(MapName::class)->first()
+                ->map(fn (MapName $mapping) => $mapping->input)
+                ->getOrElse($classInput);
+            $body[] = $input === null ? $property->name() : self::inputName($input, $property->name());
         }
 
         $declaration = new self($call, $endpoint, $inPath, $body);

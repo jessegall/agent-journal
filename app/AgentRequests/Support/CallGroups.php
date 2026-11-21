@@ -8,9 +8,10 @@ use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
 use App\Files\Support\CodeFiles;
 use Illuminate\Support\Str;
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionParameter;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\ReflectedParameter;
+use App\Reflection\Support\Reflector;
 use UnitEnum;
 
 /**
@@ -126,22 +127,24 @@ final class CallGroups
     private static function method(string $call): string
     {
         $endpoint = CallDeclaration::of($call)->endpoint;
-        $short = new ReflectionClass($call)->getShortName();
-        $name = lcfirst(Str::beforeLast($short, 'Call'));
-        $parameters = new ReflectionClass($call)->getConstructor()?->getParameters() ?? [];
+        $declaration = Reflector::of($call);
+        $name = lcfirst(Str::beforeLast($declaration->shortName(), 'Call'));
+        $parameters = $declaration->constructor()
+            ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+            ->getOrElse([]);
         $signature = implode('', array_map(
-            fn (ReflectionParameter $parameter) => "\n        ".self::parameter($parameter).',',
+            fn (ReflectedParameter $parameter) => "\n        ".self::parameter($parameter).',',
             $parameters,
         ));
         $parameterAssignments = implode('', array_map(
-            fn (ReflectionParameter $parameter) => <<<TEXT
+            fn (ReflectedParameter $parameter) => <<<TEXT
 
-                        '{$parameter->getName()}' => \${$parameter->getName()},
+                        '{$parameter->name()}' => \${$parameter->name()},
             TEXT,
             $parameters,
         ));
         $answer = '\\'.$endpoint->answer;
-        $docblock = self::docblock(new ReflectionClass($call));
+        $docblock = self::docblock($declaration);
 
         return <<<PHP
 
@@ -154,36 +157,39 @@ final class CallGroups
         PHP;
     }
 
-    private static function parameter(ReflectionParameter $parameter): string
+    private static function parameter(ReflectedParameter $parameter): string
     {
-        $type = $parameter->getType();
+        $declared = $parameter->type()->filter(fn (DeclaredType $type) => $type->isNamed());
 
-        if (! $type instanceof ReflectionNamedType) {
-            return "mixed \${$parameter->getName()}";
+        if ($declared->isEmpty()) {
+            return "mixed \${$parameter->name()}";
         }
 
-        $nullable = $type->allowsNull() && $type->getName() !== 'mixed' ? '?' : '';
+        $type = $declared->get();
+        $nullable = $type->allowsNull && $type->name() !== 'mixed' ? '?' : '';
         $leading = $type->isBuiltin() ? '' : '\\';
-        $written = $nullable.$leading.$type->getName();
-        $default = $type->getName() === CallKey::class ? ' = new CallKey()' : self::defaultOf($parameter);
+        $written = $nullable.$leading.$type->name();
+        $default = $type->name() === CallKey::class ? ' = new CallKey()' : self::defaultOf($parameter);
 
-        return "{$written} \${$parameter->getName()}{$default}";
+        return "{$written} \${$parameter->name()}{$default}";
     }
 
     /**
      * The default a call's constructor gives the parameter, written as source; none when it has none.
      */
-    private static function defaultOf(ReflectionParameter $parameter): string
+    private static function defaultOf(ReflectedParameter $parameter): string
     {
-        if (! $parameter->isDefaultValueAvailable()) {
+        if (! $parameter->hasDefaultValue()) {
             return '';
         }
 
-        if ($parameter->isDefaultValueConstant()) {
-            return ' = \\'.ltrim((string) $parameter->getDefaultValueConstantName(), '\\');
+        $constant = $parameter->defaultConstantName();
+
+        if ($constant->isDefined()) {
+            return ' = \\'.ltrim($constant->get(), '\\');
         }
 
-        $defaultArgument = $parameter->getDefaultValue();
+        $defaultArgument = $parameter->defaultValue();
 
         return match (true) {
             $defaultArgument instanceof UnitEnum => ' = \\'.$defaultArgument::class.'::'.$defaultArgument->name,
@@ -196,15 +202,17 @@ final class CallGroups
      * The array shapes the call's constructor documents, so the group method types its arrays as the call does; a
      * class named in a shape is written in full, since the group file does not share the call's imports.
      *
-     * @param  ReflectionClass<object>  $call
+     * @param  Reflector<object>  $call
      */
-    private static function docblock(ReflectionClass $call): string
+    private static function docblock(Reflector $call): string
     {
-        $constructorDoc = $call->getConstructor()?->getDocComment();
+        $documented = $call->constructor()->flatMap(fn (ReflectedMethod $constructor) => $constructor->docComment());
 
-        if (! is_string($constructorDoc)) {
+        if ($documented->isEmpty()) {
             return '';
         }
+
+        $constructorDoc = $documented->get();
 
         preg_match_all('/@param\s+(.+?)\s+(\$\w+)\s*$/m', $constructorDoc, $params, PREG_SET_ORDER);
 
@@ -224,15 +232,15 @@ final class CallGroups
     /**
      * The classes the call's file imports, by the short name it uses for each.
      *
-     * @param  ReflectionClass<object>  $call
+     * @param  Reflector<object>  $call
      * @return array<string, string>
      */
-    private static function importsOf(ReflectionClass $call): array
+    private static function importsOf(Reflector $call): array
     {
         $code = CodeFiles::ofProcess();
         preg_match_all(
             '/^use\s+([\w\\\\]+)(?:\s+as\s+(\w+))?;/m',
-            $code->file($code->projectPathOf((string) $call->getFileName())),
+            $code->file($code->projectPathOf($call->fileName()->getOrElse(''))),
             $uses,
             PREG_SET_ORDER,
         );
@@ -250,13 +258,13 @@ final class CallGroups
      * call's own namespace.
      *
      * @param  array<string, string>  $imports
-     * @param  ReflectionClass<object>  $call
+     * @param  Reflector<object>  $call
      */
-    private static function fullyNamed(string $type, array $imports, ReflectionClass $call): string
+    private static function fullyNamed(string $type, array $imports, Reflector $call): string
     {
         return (string) preg_replace_callback(
             '/(?<![\w\\\\])[A-Z]\w*/',
-            fn (array $name) => '\\'.($imports[$name[0]] ?? $call->getNamespaceName().'\\'.$name[0]),
+            fn (array $name) => '\\'.($imports[$name[0]] ?? $call->namespaceName().'\\'.$name[0]),
             $type,
         );
     }

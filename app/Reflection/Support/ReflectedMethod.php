@@ -53,6 +53,11 @@ final class ReflectedMethod
         return $this->method->isStatic();
     }
 
+    public function isAbstract(): bool
+    {
+        return $this->method->isAbstract();
+    }
+
     /**
      * @return list<ReflectedParameter>
      */

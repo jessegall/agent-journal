@@ -14,9 +14,9 @@ use App\Hooks\StateLoading\Contracts\StateLoader;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\Exceptions\InvalidStateClass;
 use App\Hooks\Values\EventCommands;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 
 /**
  * Checks and caches effective hook and event declarations by state class.
@@ -57,13 +57,13 @@ final class StateMethods
     /**
      * @return class-string<Event>|null
      */
-    public function eventFor(ReflectionMethod $method): string|null
+    public function eventFor(ReflectedMethod $method): string|null
     {
-        $name = $method->getName();
+        $name = $method->name();
         $parameterClass = $this->argumentClass($method);
-        $returnType = $method->getReturnType();
-        $returnsCommands = $returnType instanceof ReflectionNamedType
-            && $returnType->getName() === EventCommands::class;
+        $returnType = $method->returnType();
+        $returnsCommands = $returnType->filter(fn (DeclaredType $type) => $type->isNamedAs(EventCommands::class))
+            ->isDefined();
         $takesEvent = $parameterClass !== null && is_a($parameterClass, Event::class, true);
 
         if (method_exists(AgentState::class, $name) || method_exists(TickableState::class, $name)) {
@@ -89,7 +89,7 @@ final class StateMethods
             throw InvalidStateMethod::for($method, 'must be a public instance method with one required concrete Event.');
         }
 
-        $event = new ReflectionClass($parameterClass);
+        $event = Reflector::of($parameterClass);
 
         if ($event->isAbstract()
             || $event->isInterface()
@@ -98,19 +98,19 @@ final class StateMethods
             throw InvalidStateMethod::for($method, 'must receive a concrete application event available to live states.');
         }
 
-        $expected = 'on'.$event->getShortName();
+        $expected = 'on'.$event->shortName();
 
         if ($name !== $expected) {
             throw InvalidStateMethod::for($method, "must be named {$expected}.");
         }
 
-        if (! $returnsCommands || $returnType->allowsNull()) {
+        if (! $returnsCommands || $returnType->get()->allowsNull) {
             throw InvalidStateMethod::for($method, 'must return '.EventCommands::class.'.');
         }
 
         $this->checkMarker($method);
 
-        return $event->getName();
+        return $event->name();
     }
 
     /**
@@ -122,30 +122,30 @@ final class StateMethods
             throw InvalidStateClass::for($class);
         }
 
-        return $this->byClass[$class] ??= $this->discover(new ReflectionClass($class));
+        return $this->byClass[$class] ??= $this->discover(Reflector::of($class));
     }
 
     /**
-     * @param  ReflectionClass<AgentState>  $state
+     * @param  Reflector<AgentState>  $state
      * @return array{methods: array<string, StateMethod>, events: array<class-string<Event>, StateMethod>}
      */
-    private function discover(ReflectionClass $state): array
+    private function discover(Reflector $state): array
     {
         if ($state->isAbstract()) {
-            throw InvalidStateClass::for($state->getName());
+            throw InvalidStateClass::for($state->name());
         }
 
         $this->checkClassMarkers($state);
-        $hooks = new ReflectionClass(HookAnswerer::class);
+        $hooks = Reflector::of(HookAnswerer::class);
         $methods = [];
         $events = [];
 
-        foreach ($state->getMethods() as $method) {
-            $name = $method->getName();
+        foreach ($state->methods() as $method) {
+            $name = $method->name();
 
             if ($hooks->hasMethod($name)) {
-                if ($this->isHookOverride($method, $hooks->getMethod($name))) {
-                    $methods[$name] = StateMethod::fromMethod($state->getName(), $method);
+                if ($this->isHookOverride($method, $hooks->method($name))) {
+                    $methods[$name] = StateMethod::fromMethod($state->name(), $method);
                 }
 
                 continue;
@@ -154,26 +154,26 @@ final class StateMethods
             $event = $this->eventFor($method);
 
             if ($event !== null) {
-                $events[$event] = StateMethod::fromMethod($state->getName(), $method);
+                $events[$event] = StateMethod::fromMethod($state->name(), $method);
             }
         }
 
         return ['methods' => [...$methods, ...$events], 'events' => $events];
     }
 
-    private function isHookOverride(ReflectionMethod $method, ReflectionMethod $hook): bool
+    private function isHookOverride(ReflectedMethod $method, ReflectedMethod $hook): bool
     {
-        if ($method->getDeclaringClass()->getName() === AgentState::class) {
+        if ($method->declaringClass()->name() === AgentState::class) {
             $this->assertUnmarked($method);
 
             return false;
         }
 
-        if ($method->getName() !== $hook->getName()
+        if ($method->name() !== $hook->name()
             || ! $this->isPublicInstanceMethod($method)
             || ! $this->hasRequiredArgument($method)
             || $this->argumentClass($method) !== $this->argumentClass($hook)
-            || (string) $method->getReturnType() !== (string) $hook->getReturnType()) {
+            || self::returnTextOf($method) !== self::returnTextOf($hook)) {
             throw InvalidStateMethod::for($method, 'must match the signature on '.HookAnswerer::class.'.');
         }
 
@@ -187,9 +187,9 @@ final class StateMethods
         return str_starts_with($name, 'on') && ctype_upper(substr($name, 2, 1));
     }
 
-    private function hasRequiredArgument(ReflectionMethod $method): bool
+    private function hasRequiredArgument(ReflectedMethod $method): bool
     {
-        $parameters = $method->getParameters();
+        $parameters = $method->parameters();
 
         if (count($parameters) !== 1) {
             return false;
@@ -203,62 +203,72 @@ final class StateMethods
             && ! $parameter->isPassedByReference();
     }
 
-    private function argumentClass(ReflectionMethod $method): string|null
+    private function argumentClass(ReflectedMethod $method): string|null
     {
-        $parameter = $method->getParameters()[0] ?? null;
-        $type = $parameter?->getType();
+        $parameters = $method->parameters();
 
-        return $type instanceof ReflectionNamedType && ! $type->isBuiltin() ? $type->getName() : null;
+        if ($parameters === []) {
+            return null;
+        }
+
+        return $parameters[0]->type()
+            ->filter(fn (DeclaredType $type) => $type->isNamed() && ! $type->isBuiltin())
+            ->map(fn (DeclaredType $type) => $type->name())
+            ->getOrElse(null);
     }
 
-    private function isPublicInstanceMethod(ReflectionMethod $method): bool
+    private function isPublicInstanceMethod(ReflectedMethod $method): bool
     {
         return $method->isPublic() && ! $method->isStatic() && ! $method->isAbstract();
     }
 
-    private function assertUnmarked(ReflectionMethod $method): void
+    private function assertUnmarked(ReflectedMethod $method): void
     {
-        if ($method->getAttributes(StackWide::class) !== []) {
+        if ($method->hasAttribute(StackWide::class)) {
             throw InvalidStateMethod::for($method, 'may use StackWide only on a hook override or state event method.');
         }
     }
 
-    private function checkMarker(ReflectionMethod $method): void
+    private function checkMarker(ReflectedMethod $method): void
     {
-        $markers = $method->getAttributes(StackWide::class);
+        $markers = $method->attributes(StackWide::class)->entries();
 
-        if (count($markers) > 1 || array_any($markers, fn ($marker) => $marker->getArguments() !== [])) {
+        if (count($markers) > 1 || array_any($markers, fn ($marker) => $marker->arguments() !== [])) {
             throw InvalidStateMethod::for($method, 'may use StackWide once and with no arguments.');
         }
     }
 
     /**
-     * @param  ReflectionClass<covariant object>  $class
+     * @param  Reflector<object>  $class
      */
-    private function checkClassMarkers(ReflectionClass $class): void
+    private function checkClassMarkers(Reflector $class): void
     {
-        if ($class->getAttributes(StackWide::class) !== []) {
-            throw InvalidStateMethod::on($class->getName(), 'class', 'may use StackWide only on a state method.');
+        if ($class->hasAttribute(StackWide::class)) {
+            throw InvalidStateMethod::on($class->name(), 'class', 'may use StackWide only on a state method.');
         }
 
-        foreach ($class->getProperties() as $property) {
-            if ($property->getAttributes(StackWide::class) !== []) {
+        foreach ($class->properties() as $property) {
+            if ($property->hasAttribute(StackWide::class)) {
                 throw InvalidStateMethod::on(
-                    $class->getName(),
-                    $property->getName(),
+                    $class->name(),
+                    $property->name(),
                     'may use StackWide only on a state method.',
                 );
             }
         }
 
-        foreach ($class->getTraits() as $trait) {
+        foreach ($class->traits() as $trait) {
             $this->checkClassMarkers($trait);
         }
 
-        $parent = $class->getParentClass();
+        $class->parent()->forAll(fn (Reflector $parent) => $this->checkClassMarkers($parent));
+    }
 
-        if ($parent !== false) {
-            $this->checkClassMarkers($parent);
-        }
+    /**
+     * The return type as PHP writes it; empty when none is declared.
+     */
+    private static function returnTextOf(ReflectedMethod $method): string
+    {
+        return $method->returnType()->map(fn (DeclaredType $type) => $type->text)->getOrElse('');
     }
 }

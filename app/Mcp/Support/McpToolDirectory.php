@@ -7,7 +7,7 @@ namespace App\Mcp\Support;
 use App\Autoload\Support\Psr4ClassNames;
 use App\Files\Support\CodeFiles;
 use App\Mcp\Tools\JournalTool;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 
 /**
  * Discovers concrete tools in a domain's MCP directory in filename order; a missing directory holds none.
@@ -30,7 +30,7 @@ final readonly class McpToolDirectory
 
             $class = $names->classOf($entry->fingerprint->realPath);
 
-            if (! is_subclass_of($class, JournalTool::class) || new ReflectionClass($class)->isAbstract()) {
+            if (! is_subclass_of($class, JournalTool::class) || Reflector::of($class)->isAbstract()) {
                 continue;
             }
 

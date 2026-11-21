@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\AgentRequests\Support;
 
+use App\Reflection\Support\Reflector;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
-use ReflectionClass;
 
 /**
  * Checks each signed call's declaration: it is a JournalCall with one #[Endpoint], and a keyed write, and only a keyed
@@ -34,19 +34,17 @@ final class EndpointDeclarations
      */
     public static function endpointOf(string $call): Endpoint
     {
-        $class = new ReflectionClass($call);
-
-        if (! $class->implementsInterface(JournalCall::class)) {
+        if (! is_a($call, JournalCall::class, true)) {
             throw EndpointDeclarationInvalid::for($call, 'it does not implement JournalCall');
         }
 
-        $declared = $class->getAttributes(Endpoint::class);
+        $declared = Reflector::of($call)->attributes(Endpoint::class);
 
         if (count($declared) !== 1) {
             throw EndpointDeclarationInvalid::for($call, 'it needs exactly one #[Endpoint]');
         }
 
-        $endpoint = $declared[0]->newInstance();
+        $endpoint = $declared->first()->get();
         $namesReceipt = $endpoint->receipt !== null;
 
         if ($endpoint->effect->needsReceipt() !== $namesReceipt) {
