@@ -1,4 +1,4 @@
-# The direct file access sites still waiting to move to App\Files\Contracts\Files (plan 39): 41 files, 128 sites.
+# The direct file access sites still waiting to move to App\Files\Contracts\Files (plan 39): 39 files, 124 sites.
 # One line per file and form, without line numbers. A task that moves a site removes its own lines here, in the same task;
 # the list only shrinks. tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed
 # site the code no longer has. Regenerate with: php tools/refactoring/direct-file-sites.php --write
@@ -117,10 +117,6 @@ app/Skills/Support/HostSkillPublisher.php rename()
 app/Skills/Support/HostSkillPublisher.php rmdir()
 app/Skills/Support/HostSkillPublisher.php symlink()
 app/Skills/Support/HostSkillPublisher.php unlink()
-app/Skills/Support/MarkdownParts.php file_get_contents()
-app/Skills/Support/MarkdownParts.php is_file()
-app/Skills/Support/MarkdownParts.php realpath()
-app/Ui/Declarations/DomainUi.php realpath()
 app/Web/Support/UiManifest.php file_put_contents()
 app/Web/Support/UiManifest.php glob()
 app/Web/Support/UiManifest.php is_dir()

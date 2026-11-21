@@ -33,6 +33,10 @@ final readonly class FilePath
 
     public function child(string $name): self
     {
+        if (str_starts_with($name, '/')) {
+            throw FilePathInvalid::climbs($name);
+        }
+
         return self::in($this->place, $this->relative === '' ? $name : "{$this->relative}/{$name}");
     }
 

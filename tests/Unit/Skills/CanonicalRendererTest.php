@@ -171,7 +171,7 @@ final class CanonicalRendererTest extends TestCase
 
     private function renderer(): CanonicalRenderer
     {
-        return new CanonicalRenderer(new MarkdownParts());
+        return new CanonicalRenderer($this->app->make(MarkdownParts::class));
     }
 
     private function owner(string $root): SkillOwner

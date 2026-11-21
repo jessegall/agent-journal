@@ -114,6 +114,17 @@ final class CodeFiles
     }
 
     /**
+     * The real path of a file or folder of the project's code, refused as the funnel refuses any path: a climb, a
+     * closed folder or a link out of the project.
+     */
+    public function realPathOf(FilePath $path): string
+    {
+        $this->assertProject($path);
+
+        return $this->confinement->resolved($path);
+    }
+
+    /**
      * How often this process read the pattern or file from the disk: once, however often it was asked.
      */
     public function readCount(FilePath $path): int

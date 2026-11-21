@@ -22,7 +22,7 @@ final class SkillSectionsTest extends TestCase
         $first = SkillSection::text('first', 'First', 'One.');
         $second = SkillSection::text('second', 'Second', 'Two.');
 
-        $resolved = SkillSections::listed($first, $second)->resolve(new MarkdownParts(), SkillOwner::stored(), 'Guide');
+        $resolved = SkillSections::listed($first, $second)->resolve($this->app->make(MarkdownParts::class), SkillOwner::stored(), 'Guide');
 
         $this->assertSame([$first, $second], $resolved);
     }
@@ -44,15 +44,15 @@ final class SkillSectionsTest extends TestCase
         $owner = new SkillOwner('Guide', $root, [], true);
 
         try {
-            $resolved = SkillSections::fromFile('guide.md')->resolve(new MarkdownParts(), $owner, 'Guide');
-            $this->assertEquals(new MarkdownParts()->sectionsOf('guide.md', $owner, 'Guide'), $resolved);
+            $resolved = SkillSections::fromFile('guide.md')->resolve($this->app->make(MarkdownParts::class), $owner, 'Guide');
+            $this->assertEquals($this->app->make(MarkdownParts::class)->sectionsOf('guide.md', $owner, 'Guide'), $resolved);
             $this->assertSame(
                 ['purpose', 'retrying'],
                 array_map(fn (SkillSection $section) => $section->key, $resolved),
             );
 
             $this->expectException(SkillSourceInvalid::class);
-            SkillSections::fromFile('guide.md')->resolve(new MarkdownParts(), $owner, 'Other');
+            SkillSections::fromFile('guide.md')->resolve($this->app->make(MarkdownParts::class), $owner, 'Other');
         } finally {
             File::deleteDirectory($root);
         }

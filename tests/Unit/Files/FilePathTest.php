@@ -57,6 +57,13 @@ final class FilePathTest extends TestCase
         FilePath::in(Place::Project, 'app')->child('..');
     }
 
+    public function test_a_child_name_from_the_root_is_refused(): void
+    {
+        $this->expectExceptionObject(FilePathInvalid::climbs('/etc/passwd'));
+
+        FilePath::in(Place::Project, 'app')->child('/etc/passwd');
+    }
+
     public function test_a_place_holding_secrets_says_it_is_private(): void
     {
         $this->assertTrue(Place::Accounts->isPrivate());
