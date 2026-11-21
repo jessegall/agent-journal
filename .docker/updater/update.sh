@@ -32,7 +32,7 @@ git -C "$mirror" archive "$newest" | tar -x -C "$root"
 tag=$(git -C "$mirror" describe --tags --exact-match "$newest" 2>/dev/null || true)
 printf '%s\n%s\n%s\n' "$newest" "$branch" "$tag" > .installed-version
 if [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/dev/null; then
-    git -C "$mirror" diff --name-only --diff-filter=D "$installed" "$newest" | while read -r gone; do
+    git -C "$mirror" diff --no-renames --name-only --diff-filter=D "$installed" "$newest" | while read -r gone; do
         rm -f "$root/$gone"
     done
 fi
