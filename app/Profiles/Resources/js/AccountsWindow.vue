@@ -65,7 +65,7 @@ const announcement = ref('');
  * after a cancel, which is announced once, and the renewed account's row after a renewal.
  */
 async function closeWizard(
-    ending: 'waiting' | 'cancelled' | 'renewed' | 'closed',
+    ending: 'waiting' | 'cancelled' | 'renewed' | 'shown' | 'closed',
     accountId?: string,
 ): Promise<void> {
     request.value = null;
@@ -80,6 +80,7 @@ async function closeWizard(
         waiting: '[data-sign-in-resume]',
         cancelled: '[data-account-add]',
         renewed: `[data-account-row="${accountId}"]`,
+        shown: `[data-account-row="${accountId}"]`,
     }[ending];
     root.value?.querySelector<HTMLElement>(target)?.focus();
 }

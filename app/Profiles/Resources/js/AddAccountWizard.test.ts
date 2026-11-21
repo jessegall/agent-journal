@@ -406,6 +406,58 @@ describe('AddAccountWizard', () => {
         view.unmount();
     });
 
+    it('names the exact new row of a login with no email once the list has it', async () => {
+        const view = openWizard();
+        const added = attempt('complete', {
+            method: 'oauth',
+            resultAccountId: 'account-2',
+        });
+        await view.setProps({
+            request: { kind: 'resume', attemptId: 'attempt-1' },
+            attempts: [added],
+            rows: [accountRow('account-1', 'First')],
+        });
+        await flushPromises();
+
+        expect(view.text()).not.toContain('Name this account');
+
+        await view.setProps({
+            rows: [
+                accountRow('account-1', 'First'),
+                accountRow('account-2', 'Claude Code subscription'),
+            ],
+        });
+        await flushPromises();
+
+        expect(view.text()).toContain('Name this account');
+        expect((view.find('input').element as HTMLInputElement).value).toBe(
+            'Claude Code subscription',
+        );
+        view.unmount();
+    });
+
+    it('offers only Back to Accounts for a duplicate with no account it may read', async () => {
+        const view = openWizard();
+        await view.setProps({
+            request: { kind: 'resume', attemptId: 'attempt-1' },
+            attempts: [attempt('already_added', { resultAccountId: null })],
+        });
+        await flushPromises();
+
+        expect(button(view, 'Back to Accounts').exists()).toBe(true);
+        expect(view.text()).not.toContain('Show the account');
+        expect(view.text()).not.toContain('Choose another way');
+
+        await view.setProps({
+            attempts: [
+                attempt('already_added', { resultAccountId: 'account-1' }),
+            ],
+        });
+        await button(view, 'Show the account').trigger('click');
+        expect(view.emitted('close')).toEqual([['shown', 'account-1']]);
+        view.unmount();
+    });
+
     it('walks a key sign-in from the choice to the account added', async () => {
         const view = openWizard();
         await flushPromises();

@@ -17,6 +17,7 @@ defineProps<{
     method: SignInMethodData;
     attempt: SignInAttemptData;
     accountName: string | null;
+    accountIdentity: string | null;
 }>();
 </script>
 
@@ -51,6 +52,15 @@ defineProps<{
                 }}</b>
                 is saved as a {{ driverName(driver) }} account.
             </p>
+            <template
+                v-if="
+                    accountIdentity !== null && accountIdentity !== accountName
+                "
+            >
+                <p class="text-small text-text-3">
+                    Signed in as {{ accountIdentity }}.
+                </p>
+            </template>
             <template
                 v-if="
                     attempt.type === 'new_account' &&

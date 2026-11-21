@@ -37,7 +37,7 @@ const props = defineProps<{
  */
 const emit = defineEmits<{
     close: [
-        ending: 'waiting' | 'cancelled' | 'renewed' | 'closed',
+        ending: 'waiting' | 'cancelled' | 'renewed' | 'shown' | 'closed',
         accountId?: string,
     ];
 }>();
@@ -83,29 +83,37 @@ const step = computed<1 | 2 | 3>(() => {
     return 3;
 });
 
-const accountName = computed(() => {
+/**
+ * The row the sign-in made, renewed or matched, found only by the id the server gave the attempt.
+ */
+const resultRow = computed(() => {
     const accountId = followed.value?.resultAccountId ?? null;
 
-    return props.rows.find((row) => row.id === accountId)?.label ?? null;
+    return props.rows.find((row) => row.id === accountId);
 });
+const accountName = computed(() => resultRow.value?.label ?? null);
+const accountIdentity = computed(() => resultRow.value?.identity ?? null);
 
 /**
- * The account a key or token just added, while it still waits for its name: such a sign-in has no email to name it by.
+ * The account a key or token, or a login that named no email, just added, while it still waits for its name: such a
+ * sign-in has no email to name it by.
  */
 const namedAccountId = ref<string | null>(null);
 const accountToName = computed(() => {
-    const accountId = followed.value?.resultAccountId ?? null;
-
     if (
         followed.value?.state !== 'complete' ||
         followed.value.type !== 'new_account' ||
-        shownMethod.value?.isSecret !== true ||
-        accountId === namedAccountId.value
+        resultRow.value === undefined ||
+        resultRow.value.id === namedAccountId.value
     ) {
         return undefined;
     }
 
-    return props.rows.find((row) => row.id === accountId);
+    const hasNoEmail = resultRow.value.identity === null;
+
+    return shownMethod.value?.isSecret === true || hasNoEmail
+        ? resultRow.value
+        : undefined;
 });
 
 function markNamed(): void {
@@ -265,6 +273,14 @@ function chooseAnotherWay(): void {
 function addAnother(): void {
     chooseAnotherWay();
     method.value = null;
+}
+
+/**
+ * Closes on the account a duplicate sign-in matched, so it can be renewed from its own row.
+ */
+function showAccount(accountId: string): void {
+    actions.forget();
+    emit('close', 'shown', accountId);
 }
 
 function close(): void {
@@ -428,6 +444,7 @@ function cancelAndClose(): void {
                 :method="shownMethod"
                 :attempt="followed"
                 :account-name="accountName"
+                :account-identity="accountIdentity"
             />
         </template>
         <template #footer>
@@ -519,11 +536,24 @@ function cancelAndClose(): void {
                 <span class="flex-1" />
                 <Button variant="primary" @click="close">Done</Button>
             </template>
-            <template v-else-if="followed?.state === 'already_added'">
+            <template
+                v-else-if="
+                    followed?.state === 'already_added' &&
+                    followed.resultAccountId !== null
+                "
+            >
                 <Button @click="chooseAnotherWay">Choose another way</Button>
                 <span class="flex-1" />
-                <Button variant="primary" @click="close"
+                <Button
+                    variant="primary"
+                    @click="showAccount(followed.resultAccountId)"
                     >Show the account</Button
+                >
+            </template>
+            <template v-else-if="followed?.state === 'already_added'">
+                <span class="flex-1" />
+                <Button variant="primary" @click="close"
+                    >Back to Accounts</Button
                 >
             </template>
             <template
