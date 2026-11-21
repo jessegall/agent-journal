@@ -1642,6 +1642,7 @@ class	CapabilitiesReadTool
 class	CapabilitiesResolver
 class	CapabilityMatrixInvalid
 class	CapabilityWithoutTrait
+class	CapacityRelease
 class	CapacityReservation
 class	CapacityUnavailable
 class	CaptureJobMessageSource
@@ -1890,7 +1891,6 @@ class	CommentAnchorCorrupt
 class	CommentCalls
 class	CommentDetails
 class	CommentDocumentController
-class	CommentEvents
 class	CommentImmutable
 class	CommentLinkRecords
 class	CommentList
@@ -2095,8 +2095,10 @@ class	DeskAssignees
 class	DeskDestinationProvider
 class	DeskInboxAccess
 class	DeskInboxProvider
+class	DeskOpening
 class	DeskPolicy
 class	DeskPreference
+class	DeskPreferences
 class	DeskRecord
 class	DeskReplyInboxes
 class	DeskRunClaims
@@ -2240,6 +2242,7 @@ class	DriverBudgets
 class	DriverHeartbeatSource
 class	DriverReceipt
 class	DriverRequest
+class	DriverRequestEndings
 class	DriverRequestPayload
 class	DriverRequestRecovered
 class	DriverRequestRecovery
@@ -2373,6 +2376,7 @@ class	ExpireShares
 class	ExpireSharesHandler
 class	ExpireSignInAttempt
 class	ExpireSignInAttemptHandler
+class	ExpiredReceipts
 class	ExplainCommandCall
 class	ExplainCommandController
 class	ExplainCommandTypeCommand
@@ -2802,6 +2806,7 @@ class	LinkRecords
 class	LinkRecordsController
 class	LinkRecordsHandler
 class	LinkRecordsRequest
+class	LinkRemoval
 class	LinkRemoveCommand
 class	LinkTypeRegistry
 class	LinkTypeRepeated
@@ -3349,6 +3354,7 @@ class	PlanShareProvider
 class	PlanSkill
 class	PlanStarted
 class	PlanStep
+class	PlanStructure
 class	PlanTaskPool
 class	PlanTaskPoolFactory
 class	PlanWindowResolver
@@ -3826,10 +3832,14 @@ class	RecordReceipt
 class	RecordReference
 class	RecordRefusalReceipt
 class	RecordRule
+class	RecordRunChunk
 class	RecordRunChunkCall
 class	RecordRunChunkController
+class	RecordRunChunkHandler
+class	RecordRunEvents
 class	RecordRunEventsCall
 class	RecordRunEventsController
+class	RecordRunEventsHandler
 class	RecordRuntime
 class	RecordRuntimeCommand
 class	RecordRuntimeHandler
@@ -4252,6 +4262,7 @@ class	RulePolicy
 class	RuleProposal
 class	RuleProposalRefused
 class	RuleProposalRevision
+class	RuleProposals
 class	RuleReadTool
 class	RuleReaderData
 class	RuleRecords
@@ -4285,6 +4296,7 @@ class	RunClaimRefused
 class	RunContext
 class	RunCurrency
 class	RunEvent
+class	RunEventBatch
 class	RunEventsAccepted
 class	RunInTransaction
 class	RunKeyScript
@@ -4458,6 +4470,7 @@ class	SequencesDomain
 class	SequencesServiceProvider
 class	SequencesSkill
 class	SessionClosed
+class	SessionContainers
 class	SessionEndDetails
 class	SessionEnded
 class	SessionInspection
@@ -4798,6 +4811,7 @@ class	SkillPublication
 class	SkillPublicationFailed
 class	SkillPublicationMissing
 class	SkillPublicationStale
+class	SkillPublications
 class	SkillPublishing
 class	SkillReads
 class	SkillReceipt
@@ -5502,6 +5516,7 @@ constant	AppendUpload::MAX_BYTES
 constant	AreaCycles::CORE_ROOT
 constant	AreaCycles::ENTRY_AREA
 constant	AreaCycles::FOUNDATION_FOLDER
+constant	ArrangementSetting::ENVIRONMENT
 constant	Ask::LIFETIME_HOURS
 constant	Ask::LINK_TYPE
 constant	AskAssignments::ANSWERING_COMMANDS
@@ -5824,6 +5839,7 @@ constant	ModelWriteScan::FACADES
 constant	ModelWriteScan::FILE_FUNCTIONS
 constant	ModelWriteScan::FINDS_OR_CREATES
 constant	ModelWriteScan::INSERTS
+constant	ModelWriteScan::INSERTS_ABSENT_ROWS
 constant	ModelWriteScan::MODEL_EVENTS
 constant	ModelWriteScan::OWN_ROW_WRITES
 constant	ModelWriteScan::PROCESS_CLASSES
@@ -6059,7 +6075,7 @@ constant	ScriptStopPreparation::UNCHANGED_RETURNS_TO_HOLD
 constant	SearchContribution::PAGE_SIZE
 constant	SeatLossRepair::PERSONAL_LABEL
 constant	SecureShareResponse::HEADERS
-constant	SeparateRequiredListeners::DEFERRING
+constant	SeparateRequiredListeners::DEFERRING_INTERFACES
 constant	SessionOutputGrant::MOST_GRANTS
 constant	SessionOutputPaths::DOT_SEGMENT
 constant	SessionProvenance::SESSION
@@ -7093,6 +7109,7 @@ method	ActivateAccountRequest::rules()
 method	ActivateProfiles::__construct()
 method	ActivateProfilesHandler::__construct()
 method	ActivateProfilesHandler::activate()
+method	ActivateProfilesHandler::activateDefinition()
 method	ActivateProfilesHandler::assertContainerSupport()
 method	ActivateProfilesHandler::changeOf()
 method	ActivateProfilesHandler::draftSources()
@@ -7262,6 +7279,7 @@ method	AddMcpInstructions::handle()
 method	AddPhase::__construct()
 method	AddPhaseCall::__construct()
 method	AddPhaseController::__invoke()
+method	AddPhaseHandler::__construct()
 method	AddPhaseHandler::handle()
 method	AddPhaseTasks::__construct()
 method	AddPhaseTasksCall::__construct()
@@ -7420,6 +7438,7 @@ method	AgentMessageDelivery::__construct()
 method	AgentMessageDelivery::deliver()
 method	AgentMessageDelivery::keepAndWake()
 method	AgentMessageDelivery::retainEvent()
+method	AgentMessageDelivery::takeAllFor()
 method	AgentMessageDetails::__construct()
 method	AgentMessageReader::context()
 method	AgentMessageReader::counts()
@@ -7504,7 +7523,6 @@ method	AgentScope::__construct()
 method	AgentScope::apply()
 method	AgentSession::agent()
 method	AgentSession::byId()
-method	AgentSession::captureJobSourceMessage()
 method	AgentSession::casts()
 method	AgentSession::currentConversation()
 method	AgentSession::discoveredAfter()
@@ -7521,9 +7539,7 @@ method	AgentSession::liveOf()
 method	AgentSession::lockRunningTarget()
 method	AgentSession::lockedForHeartbeat()
 method	AgentSession::lockedForUpdate()
-method	AgentSession::markSilentIfNoHeartbeatSince()
 method	AgentSession::present()
-method	AgentSession::recordDiscoveryAt()
 method	AgentSession::recordHeartbeatAt()
 method	AgentSession::recordSkillGeneration()
 method	AgentSession::running()
@@ -7531,7 +7547,6 @@ method	AgentSession::runningFor()
 method	AgentSession::runningForMaintenance()
 method	AgentSession::runningFromRevision()
 method	AgentSession::runningLaunches()
-method	AgentSession::selectMessage()
 method	AgentSession::selectedMessage()
 method	AgentSession::selection()
 method	AgentSession::sharedLockFor()
@@ -7799,6 +7814,7 @@ method	ArrangementSetting::assertFits()
 method	ArrangementSetting::assertRunnerFits()
 method	ArrangementSetting::fromConfig()
 method	ArrangementSetting::mountRules()
+method	ArrangementSetting::sessionContainerName()
 method	ArrangementType::isContained()
 method	ArrangementUnknown::for()
 method	ArrayAssignmentReader::reads()
@@ -7840,6 +7856,7 @@ method	AskAttention::__construct()
 method	AskAttention::finishAnswering()
 method	AskAttention::offerNext()
 method	AskAttention::recover()
+method	AskAttention::recoverEach()
 method	AskAttention::recoverHop()
 method	AskAttention::retainHop()
 method	AskAttention::retainReply()
@@ -7867,7 +7884,6 @@ method	AskHop::lockDelivery()
 method	AskHop::nextFor()
 method	AskHop::recordAttention()
 method	AskHop::recordWake()
-method	AskHop::recoverEach()
 method	AskHop::repliesTo()
 method	AskHop::unansweredCurrent()
 method	AskInbox::__construct()
@@ -8123,6 +8139,7 @@ method	AssignmentRecord::assignedRecordIds()
 method	AssignmentRecord::assignmentsOf()
 method	AssignmentRecord::booted()
 method	AssignmentRecord::casts()
+method	AssignmentRecord::claimsProvedBy()
 method	AssignmentRecord::create()
 method	AssignmentRecord::forRecord()
 method	AssignmentRecord::forRecords()
@@ -8133,7 +8150,6 @@ method	AssignmentRecord::heldRecordIds()
 method	AssignmentRecord::holdersOf()
 method	AssignmentRecord::insertUnlessHeld()
 method	AssignmentRecord::ofRecords()
-method	AssignmentRecord::releaseClaimsFor()
 method	AssignmentRecord::stillExists()
 method	AssignmentRecord::toAssignment()
 method	AssignmentRecords::__construct()
@@ -8515,6 +8531,7 @@ method	BuiltInAskType::requiredCommand()
 method	BuiltInAskType::resolver()
 method	BuiltInAskType::subject()
 method	BuiltInAuthorizations::for()
+method	BuiltInDesks::__construct()
 method	BuiltInDesks::install()
 method	BuiltInProfileMissing::forKey()
 method	BuiltInProfilePins::__construct()
@@ -8613,6 +8630,7 @@ method	CallingSessionProgram::__construct()
 method	CallingSessionProgram::programKey()
 method	CancelAccountUses::__construct()
 method	CancelAccountUsesHandler::__construct()
+method	CancelAccountUsesHandler::cancelPendingOf()
 method	CancelAccountUsesHandler::handle()
 method	CancelDriverRequest::__construct()
 method	CancelDriverRequestCommand::handle()
@@ -8677,12 +8695,13 @@ method	CapabilityMatrixInvalid::row()
 method	CapabilityMatrixInvalid::unreadable()
 method	CapabilityMatrixInvalid::withoutRows()
 method	CapabilityWithoutTrait::for()
+method	CapacityRelease::releaseFor()
 method	CapacityReservation::casts()
 method	CapacityReservation::isHeldFor()
-method	CapacityReservation::releaseFor()
 method	CapacityReservation::reserve()
 method	CapacityUnavailable::because()
 method	CapacityUnavailable::reason()
+method	CaptureJobMessageSource::captureJobSourceMessage()
 method	CaptureJobMessageSource::handle()
 method	CaptureState::isComplete()
 method	CapturedChunk::__construct()
@@ -8898,6 +8917,7 @@ method	ClaimStartGrant::__construct()
 method	ClaimStartGrantHandler::__construct()
 method	ClaimStartGrantHandler::handle()
 method	ClaimStartHandler::__construct()
+method	ClaimStartHandler::claimFor()
 method	ClaimStartHandler::handle()
 method	ClaimedAccountCheck::__construct()
 method	ClaimedCleanup::__construct()
@@ -9214,9 +9234,10 @@ method	CommandAdmissions::__construct()
 method	CommandAdmissions::admits()
 method	CommandAdmissions::admitsDeclared()
 method	CommandAlias::casts()
+method	CommandAlias::forName()
 method	CommandAlias::lookup()
 method	CommandAlias::named()
-method	CommandAlias::record()
+method	CommandAlias::recordLine()
 method	CommandAliases::exists()
 method	CommandAliases::find()
 method	CommandAuthorizationInvalid::grantUnsupported()
@@ -9352,14 +9373,15 @@ method	CommandReceipt::booted()
 method	CommandReceipt::casts()
 method	CommandReceipt::complete()
 method	CommandReceipt::create()
-method	CommandReceipt::expirePastRetention()
+method	CommandReceipt::createRefused()
 method	CommandReceipt::isExpired()
 method	CommandReceipt::isFor()
 method	CommandReceipt::keyColumns()
 method	CommandReceipt::lockedFor()
 method	CommandReceipt::pastRetention()
 method	CommandReceipt::pastTombstone()
-method	CommandReceipt::recordRefusal()
+method	CommandReceipt::refusalColumns()
+method	CommandReceipt::refuse()
 method	CommandReceipt::replay()
 method	CommandReceipt::toOperation()
 method	CommandRefused::because()
@@ -9527,9 +9549,6 @@ method	CommentCalls::locateComment()
 method	CommentCalls::postComment()
 method	CommentDetails::__construct()
 method	CommentDocumentController::__invoke()
-method	CommentEvents::__construct()
-method	CommentEvents::logFailure()
-method	CommentEvents::posted()
 method	CommentImmutable::for()
 method	CommentLinkRecords::__construct()
 method	CommentLinkRecords::card()
@@ -9877,6 +9896,7 @@ method	CreateAgent::__construct()
 method	CreateAgentHandler::__construct()
 method	CreateAgentHandler::handle()
 method	CreateDesk::__construct()
+method	CreateDeskHandler::__construct()
 method	CreateDeskHandler::handle()
 method	CreateDocument::__construct()
 method	CreateDocumentHandler::__construct()
@@ -10152,31 +10172,33 @@ method	DeskInboxAccess::membershipOf()
 method	DeskInboxAccess::seatAssignments()
 method	DeskInboxProvider::inboxFor()
 method	DeskInboxProvider::inboxNamed()
+method	DeskOpening::checkedSeatCount()
+method	DeskOpening::installNamed()
+method	DeskOpening::installSourceDesk()
+method	DeskOpening::open()
+method	DeskOpening::openNamed()
+method	DeskOpening::openPersonal()
+method	DeskOpening::openShared()
+method	DeskOpening::openSourceDesk()
 method	DeskPolicy::model()
 method	DeskPreference::casts()
+method	DeskPreference::create()
 method	DeskPreference::isPreferredBy()
-method	DeskPreference::prefer()
+method	DeskPreference::lockedOf()
 method	DeskPreference::switchTo()
+method	DeskPreferences::prefer()
 method	DeskRecord::advanceSeating()
 method	DeskRecord::assigneeIdentity()
 method	DeskRecord::casts()
-method	DeskRecord::checkedSeatCount()
+method	DeskRecord::create()
 method	DeskRecord::deskId()
 method	DeskRecord::forwarding()
 method	DeskRecord::inboxId()
 method	DeskRecord::inboxLabel()
-method	DeskRecord::installNamed()
-method	DeskRecord::installSourceDesk()
 method	DeskRecord::isPersonal()
 method	DeskRecord::lockedForSeating()
 method	DeskRecord::named()
 method	DeskRecord::occupiedBy()
-method	DeskRecord::openNamed()
-method	DeskRecord::openPersonal()
-method	DeskRecord::openRow()
-method	DeskRecord::openSeats()
-method	DeskRecord::openShared()
-method	DeskRecord::openSourceDesk()
 method	DeskRecord::preferredBy()
 method	DeskRecord::rename()
 method	DeskRecord::seatCount()
@@ -10253,6 +10275,7 @@ method	DisableSettingGroupHandler::handle()
 method	DisableShareGateway::__construct()
 method	DisableShareGatewayController::__invoke()
 method	DisableShareGatewayHandler::__construct()
+method	DisableShareGatewayHandler::cancelOpensOf()
 method	DisableShareGatewayHandler::handle()
 method	DisabledSettingsGroup::__construct()
 method	DiscardUpload::__construct()
@@ -10734,6 +10757,15 @@ method	DriverRequest::settleWithoutWork()
 method	DriverRequest::stage()
 method	DriverRequest::status()
 method	DriverRequest::supersede()
+method	DriverRequestEndings::abandon()
+method	DriverRequestEndings::cancel()
+method	DriverRequestEndings::cancelNavigation()
+method	DriverRequestEndings::cancelNavigationOf()
+method	DriverRequestEndings::cancelQueuedRoundsOf()
+method	DriverRequestEndings::closeAfterExit()
+method	DriverRequestEndings::expire()
+method	DriverRequestEndings::interrupt()
+method	DriverRequestEndings::settleAfterExit()
 method	DriverRequestPayload::__construct()
 method	DriverRequestPayload::digestFor()
 method	DriverRequestPayload::effort()
@@ -10852,7 +10884,10 @@ method	EncodedValue::jsonSerialize()
 method	EncodedValue::of()
 method	EncodedValue::string()
 method	EndTerminalViewsHandler::__construct()
+method	EndTerminalViewsHandler::endForStoppedRuntimes()
+method	EndTerminalViewsHandler::endLapsed()
 method	EndTerminalViewsHandler::handle()
+method	EndTerminalViewsHandler::pruneEndedBefore()
 method	EndTerminalViewsOnTick::__construct()
 method	EndTerminalViewsOnTick::__invoke()
 method	EndTerminalViewsOnTick::maintenanceScope()
@@ -10889,7 +10924,6 @@ method	EngineAuthorizerProvider::forActor()
 method	EngineAuthorizerProvider::forTarget()
 method	EngineConnectionLost::onConnection()
 method	EngineFrameTime::casts()
-method	EngineFrameTime::recordMany()
 method	EngineFrameTime::settledAtFor()
 method	EngineGrant::allowsMaintenance()
 method	EngineGrant::allowsTarget()
@@ -11007,7 +11041,6 @@ method	EventRole::isRowFact()
 method	EventSource::takeRaisedEvents()
 method	EventUnit::__construct()
 method	EventUnit::batch()
-method	EventUnit::deeper()
 method	EventUnit::drain()
 method	EventUnit::erase()
 method	EventUnit::hasFailed()
@@ -11017,7 +11050,8 @@ method	EventUnit::isReady()
 method	EventUnit::markFailed()
 method	EventUnit::markReady()
 method	EventUnit::openSlot()
-method	EventUnit::pump()
+method	EventUnit::runNested()
+method	EventUnit::runUnlessDraining()
 method	EventUnit::seal()
 method	EventUnit::stage()
 method	EventUnit::stagedBatch()
@@ -11137,6 +11171,7 @@ method	ExpireSharesHandler::handle()
 method	ExpireSignInAttempt::__construct()
 method	ExpireSignInAttemptHandler::__construct()
 method	ExpireSignInAttemptHandler::handle()
+method	ExpiredReceipts::expirePastRetention()
 method	ExplainCommandCall::__construct()
 method	ExplainCommandController::__construct()
 method	ExplainCommandController::__invoke()
@@ -11502,6 +11537,8 @@ method	GatewayRunStale::for()
 method	GatewayRunStale::refusalCode()
 method	GatewayRunStale::status()
 method	GatewayRuns::hold()
+method	GatewayRuns::releaseAllButRun()
+method	GatewayRuns::stopAllButRun()
 method	GatewaySecretRefused::forReference()
 method	GatewaySecretRefused::missing()
 method	GatewaySecretRefused::refusalCode()
@@ -12063,6 +12100,7 @@ method	IncompleteTextAnchor::missing()
 method	IncompleteTextAnchor::withoutType()
 method	InitializeResultData::__construct()
 method	InputRefused::fieldMessages()
+method	InsertsAbsentRows::insertIfAbsent()
 method	InspectDocumentCall::__construct()
 method	InspectDocumentController::__invoke()
 method	InspectMergeAttemptsHandler::__construct()
@@ -12198,6 +12236,7 @@ method	InvalidTextRange::otherVersion()
 method	InvalidTextRange::splitCharacter()
 method	InvalidValueData::__construct()
 method	InvalidateRemovedLinkMembers::handle()
+method	InvalidateRemovedLinkMembers::invalidateForLinks()
 method	IsolatedHookSettings::addHook()
 method	IsolatedHookSettings::allowTool()
 method	IsolatedHookSettings::content()
@@ -12407,18 +12446,15 @@ method	LineRefused::details()
 method	LineRefused::for()
 method	LineRefused::refusalCode()
 method	LineRefused::status()
-method	Link::announceRemoved()
 method	Link::between()
 method	Link::connect()
 method	Link::connectKey()
 method	Link::create()
-method	Link::forgetModels()
 method	Link::fromRecordToType()
 method	Link::narrowToLinked()
 method	Link::otherSideFrom()
 method	Link::otherSideFromKey()
-method	Link::removeAll()
-method	Link::removeBetween()
+method	Link::remove()
 method	Link::source()
 method	Link::target()
 method	Link::touching()
@@ -12443,15 +12479,18 @@ method	LinkRecordsRequest::source()
 method	LinkRecordsRequest::sourceReference()
 method	LinkRecordsRequest::target()
 method	LinkRecordsRequest::targetReference()
+method	LinkRemoval::__construct()
+method	LinkRemoval::announce()
+method	LinkRemoval::forgetModels()
+method	LinkRemoval::removeAll()
+method	LinkRemoval::removeBetween()
 method	LinkRemoveCommand::handle()
 method	LinkTypeRegistry::modelFor()
 method	LinkTypeRegistry::register()
 method	LinkTypeRegistry::requireRegistered()
 method	LinkTypeRepeated::for()
 method	Linkable::isLinkedTo()
-method	Linkable::linkTo()
 method	Linkable::links()
-method	Linkable::unlinkFrom()
 method	LinkedAccountUses::__construct()
 method	LinkedAccountUses::accountOf()
 method	LinkedAccountUses::authorizeRead()
@@ -12632,6 +12671,7 @@ method	ManifestMount::volume()
 method	ManifestRefused::because()
 method	MapSessionOutputs::continuedFrom()
 method	MapSessionOutputs::map()
+method	MapSessionOutputs::replaceFor()
 method	MappedRefusal::__construct()
 method	MappedRefusal::toArray()
 method	MarkHelperJobUnfinished::__construct()
@@ -12960,7 +13000,6 @@ method	MessageNamed::__construct()
 method	MessagePage::__construct()
 method	MessagePin::casts()
 method	MessagePin::pinFor()
-method	MessagePin::unpinFor()
 method	MessagePinPolicy::model()
 method	MessagePinRecords::__construct()
 method	MessagePinRecords::pinned()
@@ -13059,22 +13098,22 @@ method	MeteredShareBudget::queries()
 method	MeteredShareBudget::run()
 method	MeteredShareBudget::textBytes()
 method	MethodReceivers::__construct()
-method	MethodReceivers::assigned()
-method	MethodReceivers::chained()
 method	MethodReceivers::isBuiltOnQuery()
 method	MethodReceivers::isLocalFunction()
 method	MethodReceivers::isOwnClass()
 method	MethodReceivers::isPlainQuery()
 method	MethodReceivers::lastValueOf()
-method	MethodReceivers::made()
 method	MethodReceivers::nameOf()
 method	MethodReceivers::of()
-method	MethodReceivers::ownAs()
-method	MethodReceivers::property()
+method	MethodReceivers::ownReceiver()
+method	MethodReceivers::receiverAfterAssignment()
 method	MethodReceivers::receiverOf()
-method	MethodReceivers::static()
+method	MethodReceivers::receiverOfCall()
+method	MethodReceivers::receiverOfNew()
+method	MethodReceivers::receiverOfProperty()
+method	MethodReceivers::receiverOfStaticCall()
+method	MethodReceivers::receiverOfVariable()
 method	MethodReceivers::valueOf()
-method	MethodReceivers::variable()
 method	MiddlewareDeclaration::__construct()
 method	MiddlewareDeclaration::around()
 method	MiddlewareDeclaration::identity()
@@ -13268,6 +13307,7 @@ method	NavigationDispatch::deliver()
 method	NavigationDoneTool::command()
 method	NavigationDoneTool::present()
 method	NavigationDoneTool::writeSchema()
+method	NavigationExpiry::__construct()
 method	NavigationExpiry::expireDue()
 method	NavigationGiveUpTool::command()
 method	NavigationGiveUpTool::present()
@@ -13337,8 +13377,6 @@ method	NavigationRequest::abandon()
 method	NavigationRequest::answer()
 method	NavigationRequest::assignmentIdentity()
 method	NavigationRequest::cancel()
-method	NavigationRequest::cancelOpenFor()
-method	NavigationRequest::cancelQueuedRounds()
 method	NavigationRequest::casts()
 method	NavigationRequest::change()
 method	NavigationRequest::create()
@@ -13526,6 +13564,7 @@ method	OpenHostMainRuntime::__construct()
 method	OpenHostMainRuntime::asAgentRuntime()
 method	OpenHostMainRuntimeHandler::__construct()
 method	OpenHostMainRuntimeHandler::handle()
+method	OpenLaunchCleanup::__construct()
 method	OpenLaunchCleanup::handle()
 method	OpenMainRuntimeController::__invoke()
 method	OpenNavigationRequest::__construct()
@@ -13905,7 +13944,6 @@ method	PendingAgentMessage::casts()
 method	PendingAgentMessage::countAttentionFor()
 method	PendingAgentMessage::countFor()
 method	PendingAgentMessage::create()
-method	PendingAgentMessage::takeAllFor()
 method	PendingAgentMessages::pendingCount()
 method	PendingAttemptCleanupData::__construct()
 method	PendingAttemptCleanupData::fromAttempt()
@@ -13946,10 +13984,11 @@ method	PersonalDeskProvisioning::__construct()
 method	PersonalDeskProvisioning::provision()
 method	PersonalDesks::__construct()
 method	PersonalDesks::provision()
-method	Phase::addTasks()
-method	Phase::addTasksAtRevision()
+method	Phase::advanceRevision()
+method	Phase::assertAtRevision()
 method	Phase::assignmentIdentity()
 method	Phase::casts()
+method	Phase::create()
 method	Phase::details()
 method	Phase::holdingTask()
 method	Phase::numberHolder()
@@ -13994,6 +14033,7 @@ method	PhaseRevisionChanged::refusalCode()
 method	PhaseRevisionChanged::status()
 method	PhaseShowCommand::handle()
 method	PhaseTask::casts()
+method	PhaseTask::create()
 method	PhaseTask::defaultReadOrder()
 method	PhaseTask::inPlanOrder()
 method	PhaseTask::taskIdsByPhase()
@@ -14063,7 +14103,6 @@ method	PlacedInConversation::inConversation()
 method	PlainGroupAvailabilityData::__construct()
 method	PlainValue::fingerprintOf()
 method	PlainValue::of()
-method	Plan::addPhase()
 method	Plan::assignmentIdentity()
 method	Plan::cancel()
 method	Plan::card()
@@ -14225,6 +14264,9 @@ method	PlanStateGroup::states()
 method	PlanStep::__construct()
 method	PlanStep::flatten()
 method	PlanStep::innerShell()
+method	PlanStructure::addPhase()
+method	PlanStructure::addTasks()
+method	PlanStructure::addTasksAtRevision()
 method	PlanTaskPool::__construct()
 method	PlanTaskPool::members()
 method	PlanTaskPoolFactory::describe()
@@ -14508,11 +14550,10 @@ method	ProcessRun::unfinishedIn()
 method	ProcessShowCommand::handle()
 method	ProcessStart::accountIdentity()
 method	ProcessStart::advanceOutputGeneration()
-method	ProcessStart::cancelPendingOf()
-method	ProcessStart::cancelPendingOfAgent()
+method	ProcessStart::cancelPending()
 method	ProcessStart::casts()
 method	ProcessStart::claim()
-method	ProcessStart::claimFor()
+method	ProcessStart::claimOn()
 method	ProcessStart::claimedBy()
 method	ProcessStart::create()
 method	ProcessStart::currentOf()
@@ -14521,7 +14562,6 @@ method	ProcessStart::lockedCurrentOf()
 method	ProcessStart::onAccount()
 method	ProcessStart::recordRunning()
 method	ProcessStart::settingsIdentity()
-method	ProcessStart::stopProven()
 method	ProcessStart::stopWithProof()
 method	ProcessStart::supervised()
 method	ProcessStart::unresolved()
@@ -14539,7 +14579,6 @@ method	ProcessesServiceMissing::for()
 method	ProcessesServiceProvider::boot()
 method	ProcessesServiceProvider::register()
 method	ProcessorTimeUnreadable::forThisProcess()
-method	Profile::activate()
 method	Profile::byKey()
 method	Profile::casts()
 method	Profile::hasCurrent()
@@ -14579,6 +14618,7 @@ method	ProfileBase::defaultAccess()
 method	ProfileBase::defaultExecutionMode()
 method	ProfileBase::defaultStopConditions()
 method	ProfileBase::is()
+method	ProfileBase::isAttachable()
 method	ProfileBase::isContainerRequired()
 method	ProfileBase::isCoordinator()
 method	ProfileBase::isReadOnly()
@@ -14611,7 +14651,6 @@ method	ProfileDraft::casts()
 method	ProfileDraft::currentRevision()
 method	ProfileDraft::lockForProfiles()
 method	ProfileDraft::of()
-method	ProfileDraft::saveFor()
 method	ProfileDraft::sourceAt()
 method	ProfileDraftData::__construct()
 method	ProfileDraftData::fromCheck()
@@ -14701,15 +14740,14 @@ method	ProfileRevisionRevoked::__construct()
 method	ProfileRevisionUnreadable::forRevision()
 method	ProfileRevokeCommand::handle()
 method	ProfileRun::casts()
-method	ProfileRun::completeStep()
 method	ProfileRun::finish()
 method	ProfileRun::forTrigger()
 method	ProfileRun::lockedForStep()
 method	ProfileRun::outcomeOf()
 method	ProfileRun::previous()
-method	ProfileRun::recordStep()
 method	ProfileRun::recordedResult()
 method	ProfileRun::results()
+method	ProfileRun::resumeAfter()
 method	ProfileRun::startOn()
 method	ProfileRun::suspendOn()
 method	ProfileRunData::__construct()
@@ -15046,10 +15084,12 @@ method	ProvisionActorDeskHandler::__construct()
 method	ProvisionActorDeskHandler::handle()
 method	PruneHookHistory::__construct()
 method	PruneHookHistory::deleteInBatches()
+method	PruneHookHistory::forgetOutputBefore()
 method	PruneHookHistory::prune()
 method	PruneHookHistoryCommand::handle()
 method	PruneReceiptsCommand::handle()
 method	PruneShareAuditHandler::handle()
+method	PruneShareAuditHandler::removeAll()
 method	PruneSkillPublicationsHandler::__construct()
 method	PruneSkillPublicationsHandler::handle()
 method	PrunedHistory::__construct()
@@ -15089,9 +15129,9 @@ method	PublicOwner::isCore()
 method	PublicOwner::ownsName()
 method	PublicTypePath::__construct()
 method	Publication::__construct()
-method	Publication::committed()
 method	Publication::deliver()
 method	Publication::release()
+method	Publication::takeCommitted()
 method	PublicationArguments::referenceSchema()
 method	PublicationArguments::source()
 method	PublicationArguments::sources()
@@ -15176,7 +15216,6 @@ method	RaisePlanProgressChanged::handle()
 method	RaisedOutsideUnit::for()
 method	RaisesEvents::assertSaved()
 method	RaisesEvents::bootRaisesEvents()
-method	RaisesEvents::insertIfAbsent()
 method	RaisesEvents::raise()
 method	RaisesEvents::takeRaisedEvents()
 method	RankedLaunchCandidate::__construct()
@@ -15395,9 +15434,11 @@ method	ReaderPosition::advance()
 method	ReaderPosition::casts()
 method	ReaderPosition::checkpoint()
 method	ReaderPosition::hasFailed()
+method	ReaderPosition::madeFor()
 method	ReaderPosition::markFailed()
 method	ReaderPosition::of()
-method	ReaderPosition::replay()
+method	ReaderPosition::replayOf()
+method	ReaderPosition::rewindTo()
 method	ReaderProof::booted()
 method	ReaderProof::casts()
 method	ReaderProof::create()
@@ -15585,6 +15626,7 @@ method	ReconcileStartsController::__invoke()
 method	ReconcileStartsController::index()
 method	ReconcileStartsHandler::__construct()
 method	ReconcileStartsHandler::handle()
+method	ReconcileStartsHandler::stopProven()
 method	RecordAccountFailure::__construct()
 method	RecordAccountFailureHandler::handle()
 method	RecordAccountNotice::__construct()
@@ -15608,6 +15650,7 @@ method	RecordComments::__construct()
 method	RecordComments::post()
 method	RecordConversationVisit::__construct()
 method	RecordConversationVisit::compacted()
+method	RecordConversationVisit::confirmConversation()
 method	RecordConversationVisit::entered()
 method	RecordEvidenceReads::__construct()
 method	RecordEvidenceReadsHandler::handle()
@@ -15690,6 +15733,7 @@ method	RecordRefusalReceipt::__construct()
 method	RecordRefusalReceipt::codeOf()
 method	RecordRefusalReceipt::handle()
 method	RecordRefusalReceipt::isFirstRefusal()
+method	RecordRefusalReceipt::recordRefusal()
 method	RecordResolver::card()
 method	RecordResolver::identify()
 method	RecordResolver::linkedCards()
@@ -15702,10 +15746,16 @@ method	RecordRule::compile()
 method	RecordRule::matches()
 method	RecordRule::of()
 method	RecordRule::placeholder()
+method	RecordRunChunk::__construct()
 method	RecordRunChunkCall::__construct()
 method	RecordRunChunkController::__invoke()
+method	RecordRunChunkHandler::__construct()
+method	RecordRunChunkHandler::handle()
+method	RecordRunEvents::__construct()
 method	RecordRunEventsCall::__construct()
 method	RecordRunEventsController::__invoke()
+method	RecordRunEventsHandler::__construct()
+method	RecordRunEventsHandler::handle()
 method	RecordRuntime::__construct()
 method	RecordRuntime::operation()
 method	RecordRuntime::target()
@@ -16151,6 +16201,7 @@ method	ReportAccountCleanupController::__invoke()
 method	ReportAlreadyStarted::handle()
 method	ReportAnswer::handle()
 method	ReportCleanup::__construct()
+method	ReportCleanupHandler::__construct()
 method	ReportCleanupHandler::handle()
 method	ReportCommentCall::__construct()
 method	ReportCommentsCommand::handle()
@@ -16348,6 +16399,7 @@ method	RequireMessageAnswerRequest::rules()
 method	RequiredDomainMissing::for()
 method	RequiredDomainTwice::for()
 method	RequiredDrain::__construct()
+method	RequiredDrain::applyNow()
 method	RequiredDrain::applyRequired()
 method	RequiredDrain::runListenersOf()
 method	RequiredListenerRegistry::__construct()
@@ -16483,6 +16535,7 @@ method	RetireAgentCommand::handle()
 method	RetireAgentController::__invoke()
 method	RetireAgentHandler::__construct()
 method	RetireAgentHandler::assertRetirable()
+method	RetireAgentHandler::cancelPendingOfAgent()
 method	RetireAgentHandler::endSessionsOf()
 method	RetireAgentHandler::handle()
 method	RetireAgentRequest::agentId()
@@ -16676,19 +16729,20 @@ method	RuleNotProposed::inState()
 method	RuleOrigin::__construct()
 method	RuleOrigin::reference()
 method	RulePolicy::model()
+method	RuleProposal::adopt()
 method	RuleProposal::approve()
+method	RuleProposal::assertAcceptsRevision()
 method	RuleProposal::assertAuthor()
 method	RuleProposal::assertReviewable()
+method	RuleProposal::assertRevisableAt()
 method	RuleProposal::casts()
 method	RuleProposal::commandRequest()
 method	RuleProposal::end()
 method	RuleProposal::isAuthoredBy()
 method	RuleProposal::ofProject()
 method	RuleProposal::open()
-method	RuleProposal::record()
 method	RuleProposal::reject()
 method	RuleProposal::requestedBy()
-method	RuleProposal::revise()
 method	RuleProposal::revisions()
 method	RuleProposal::sameRequest()
 method	RuleProposal::withdraw()
@@ -16705,9 +16759,13 @@ method	RuleProposalRefused::status()
 method	RuleProposalRevision::answering()
 method	RuleProposalRevision::booted()
 method	RuleProposalRevision::casts()
+method	RuleProposalRevision::create()
 method	RuleProposalRevision::ofProject()
 method	RuleProposalRevision::proposal()
 method	RuleProposalRevision::proposedRule()
+method	RuleProposals::open()
+method	RuleProposals::record()
+method	RuleProposals::revise()
 method	RuleReadTool::__construct()
 method	RuleReadTool::read()
 method	RuleReadTool::schema()
@@ -16809,6 +16867,7 @@ method	RunCurrency::__construct()
 method	RunEvent::__construct()
 method	RunEvent::applyTo()
 method	RunEvent::partEnd()
+method	RunEventBatch::__construct()
 method	RunEventType::isTerminal()
 method	RunEvents::ended()
 method	RunEvents::lost()
@@ -16968,6 +17027,7 @@ method	SaveProfileDraftCall::profileKey()
 method	SaveProfileDraftCall::scriptSource()
 method	SaveProfileDraftController::__invoke()
 method	SaveProfileDraftHandler::handle()
+method	SaveProfileDraftHandler::saveFor()
 method	SaveSharePreview::__construct()
 method	SaveSharePreviewHandler::__construct()
 method	SaveSharePreviewHandler::handle()
@@ -17187,6 +17247,7 @@ method	SelectMessageCall::__construct()
 method	SelectMessageController::__invoke()
 method	SelectMessageHandler::__construct()
 method	SelectMessageHandler::handle()
+method	SelectMessageHandler::selectMessage()
 method	SelectMessageTool::command()
 method	SelectMessageTool::present()
 method	SelectMessageTool::writeSchema()
@@ -17268,6 +17329,9 @@ method	SequencesSkill::name()
 method	SequencesSkill::sections()
 method	ServerClock::now()
 method	SessionClosed::__construct()
+method	SessionContainers::__construct()
+method	SessionContainers::accountOf()
+method	SessionContainers::manifestOf()
 method	SessionEndDetails::__construct()
 method	SessionEnded::__construct()
 method	SessionEnded::accepts()
@@ -17291,7 +17355,6 @@ method	SessionOutputGrant::casts()
 method	SessionOutputGrant::currentOf()
 method	SessionOutputGrant::heldBy()
 method	SessionOutputGrant::paths()
-method	SessionOutputGrant::replaceFor()
 method	SessionOutputPaths::__construct()
 method	SessionOutputPaths::contains()
 method	SessionOutputPaths::verified()
@@ -17344,6 +17407,7 @@ method	SessionStatus::running()
 method	SessionToolDiscovery::discoveredSince()
 method	SessionToolDiscovery::isDiscoveredInCurrentGeneration()
 method	SessionToolDiscovery::recordDiscovery()
+method	SessionToolDiscovery::recordDiscoveryAt()
 method	SetBooleanSetting::__construct()
 method	SetBooleanSettingHandler::__construct()
 method	SetBooleanSettingHandler::handle()
@@ -17497,8 +17561,8 @@ method	SettingsDomainAvailability::statusIn()
 method	SettingsOwnerUnknown::for()
 method	SettingsProvider::settings()
 method	SettingsRecord::casts()
-method	SettingsRecord::insertIfAbsent()
 method	SettingsRecord::lockedForOwner()
+method	SettingsRecord::makeEmptyFor()
 method	SettingsRecord::ownedBy()
 method	SettingsRecord::revise()
 method	SettingsRecord::sharedRuntimeForOwner()
@@ -17541,6 +17605,7 @@ method	SettleDocumentPageController::__invoke()
 method	SettleFrameTimes::__construct()
 method	SettleFrameTimesHandler::__construct()
 method	SettleFrameTimesHandler::handle()
+method	SettleFrameTimesHandler::recordMany()
 method	SettleLifecycle::__construct()
 method	SettleLifecycle::handle()
 method	SettleMergeOutcome::__construct()
@@ -17639,7 +17704,6 @@ method	ShareAudit::lockPastRetention()
 method	ShareAudit::ofShare()
 method	ShareAudit::olderThan()
 method	ShareAudit::pageOf()
-method	ShareAudit::removeAll()
 method	ShareAudit::shownActor()
 method	ShareAuditData::__construct()
 method	ShareAuditData::fromPage()
@@ -17750,11 +17814,9 @@ method	ShareGatewayEndpoint::openNextFor()
 method	ShareGatewayEndpoint::openOfRun()
 method	ShareGatewayEndpoint::recordHealthy()
 method	ShareGatewayEndpoint::stillRunning()
-method	ShareGatewayEndpoint::stopAllButRun()
 method	ShareGatewayEndpoint::toGatewayEndpoint()
 method	ShareGatewayInvalid::notAGateway()
 method	ShareGatewayInvalid::repeated()
-method	ShareGatewayOperation::cancelOpensOf()
 method	ShareGatewayOperation::casts()
 method	ShareGatewayOperation::claimFor()
 method	ShareGatewayOperation::claimable()
@@ -17771,7 +17833,6 @@ method	ShareGatewayOperation::nextClaimable()
 method	ShareGatewayOperation::of()
 method	ShareGatewayOperation::ofConfiguration()
 method	ShareGatewayOperation::ofType()
-method	ShareGatewayOperation::releaseAllButRun()
 method	ShareGatewayOperation::unfinished()
 method	ShareGatewayProvider::shareGateways()
 method	ShareGatewayRegistry::__construct()
@@ -17794,6 +17855,7 @@ method	ShareGrants::approve()
 method	ShareGrants::assertLiveSlotFree()
 method	ShareGrants::consume()
 method	ShareGrants::create()
+method	ShareGrants::forgetAllOf()
 method	ShareGrants::publish()
 method	ShareGrants::refresh()
 method	ShareInstallation::casts()
@@ -17827,9 +17889,7 @@ method	ShareMember::approvesOverLiveLink()
 method	ShareMember::casts()
 method	ShareMember::create()
 method	ShareMember::currentOf()
-method	ShareMember::forgetAllOf()
 method	ShareMember::fromSource()
-method	ShareMember::invalidateForLinks()
 method	ShareMember::isApprovedInLiveShare()
 method	ShareMember::ofScope()
 method	ShareMember::ofShare()
@@ -18190,7 +18250,7 @@ method	SignInAttempt::applyCleanup()
 method	SignInAttempt::awaitsCleanupRetry()
 method	SignInAttempt::begin()
 method	SignInAttempt::casts()
-method	SignInAttempt::claimFor()
+method	SignInAttempt::claimOn()
 method	SignInAttempt::create()
 method	SignInAttempt::displace()
 method	SignInAttempt::end()
@@ -18209,6 +18269,7 @@ method	SignInAttempt::lostBy()
 method	SignInAttempt::newFolderIn()
 method	SignInAttempt::nextToClean()
 method	SignInAttempt::ofProgram()
+method	SignInAttempt::oldestWaitingAt()
 method	SignInAttempt::pendingCleanups()
 method	SignInAttempt::programForJournal()
 method	SignInAttempt::recentFor()
@@ -18220,7 +18281,7 @@ method	SignInAttempt::type()
 method	SignInAttempt::waitForUser()
 method	SignInAttempt::waitingForUsesIds()
 method	SignInAttempt::withRequestKey()
-method	SignInAttempt::writeFolderOf()
+method	SignInAttempt::writeInGeneration()
 method	SignInAttemptCleanupRetried::__construct()
 method	SignInAttemptCleanupRetried::program()
 method	SignInAttemptCleanupRetried::subjectId()
@@ -18379,7 +18440,6 @@ method	SimpleTransition::applyTo()
 method	SimpleTransition::type()
 method	Skill::activeIn()
 method	Skill::allForMaintenance()
-method	Skill::appendRevision()
 method	Skill::assertWritableAt()
 method	Skill::casts()
 method	Skill::condition()
@@ -18389,8 +18449,8 @@ method	Skill::isRetired()
 method	Skill::key()
 method	Skill::keyTaken()
 method	Skill::lockVisible()
+method	Skill::makeCurrent()
 method	Skill::name()
-method	Skill::restoreFrom()
 method	Skill::retireBy()
 method	Skill::sections()
 method	Skill::skillKey()
@@ -18434,6 +18494,7 @@ method	SkillContext::__construct()
 method	SkillContextEpoch::advance()
 method	SkillContextEpoch::casts()
 method	SkillContextEpoch::currentOf()
+method	SkillContextEpoch::lockedFor()
 method	SkillContextResolver::__construct()
 method	SkillContextResolver::contextOf()
 method	SkillContextResolver::current()
@@ -18509,6 +18570,7 @@ method	SkillPublication::assertHeldBy()
 method	SkillPublication::awaitsRetry()
 method	SkillPublication::casts()
 method	SkillPublication::claim()
+method	SkillPublication::create()
 method	SkillPublication::currentSelectionsOf()
 method	SkillPublication::deliver()
 method	SkillPublication::endedBefore()
@@ -18517,8 +18579,6 @@ method	SkillPublication::firstOfSession()
 method	SkillPublication::forTarget()
 method	SkillPublication::generation()
 method	SkillPublication::inState()
-method	SkillPublication::intend()
-method	SkillPublication::intendMany()
 method	SkillPublication::isClaimable()
 method	SkillPublication::isHeldBy()
 method	SkillPublication::latestDeliveredOfSession()
@@ -18536,6 +18596,7 @@ method	SkillPublication::settled()
 method	SkillPublication::statesOf()
 method	SkillPublication::status()
 method	SkillPublication::supersede()
+method	SkillPublication::targetKey()
 method	SkillPublication::targetName()
 method	SkillPublication::wasDelivered()
 method	SkillPublicationFailed::changedFile()
@@ -18550,6 +18611,9 @@ method	SkillPublicationMissing::for()
 method	SkillPublicationMissing::refusalCode()
 method	SkillPublicationStale::for()
 method	SkillPublicationStale::refusalCode()
+method	SkillPublications::deliver()
+method	SkillPublications::intend()
+method	SkillPublications::intendMany()
 method	SkillPublisher::activate()
 method	SkillPublisher::activeFolder()
 method	SkillPublisher::clear()
@@ -18790,8 +18854,8 @@ method	StartAgentRequest::command()
 method	StartAgentRequest::rules()
 method	StartAnalysis::handle()
 method	StartBypass::casts()
-method	StartBypass::recordAll()
 method	StartBypasses::record()
+method	StartBypasses::recordAll()
 method	StartClaimRefused::onAnotherHost()
 method	StartClaimRefused::withoutRuntime()
 method	StartDenied::inState()
@@ -18813,6 +18877,7 @@ method	StartGrantController::__invoke()
 method	StartGrantRequested::__construct()
 method	StartHeartbeats::__construct()
 method	StartHeartbeats::markExited()
+method	StartHeartbeats::markSilentSince()
 method	StartHeartbeats::markSilentStarts()
 method	StartHelper::__construct()
 method	StartHelperCall::__construct()
@@ -18869,7 +18934,6 @@ method	StartReceipt::__construct()
 method	StartReceipts::receiptFor()
 method	StartRecord::accept()
 method	StartRecord::casts()
-method	StartRecord::confirmConversation()
 method	StartRecord::conversationTargetOf()
 method	StartRecord::forAgent()
 method	StartRecord::forOwnerReference()
@@ -18970,6 +19034,7 @@ method	StartedAgent::secrets()
 method	StateBelowTopPushed::for()
 method	StateBridgeFactStaging::__construct()
 method	StateBridgeFactStaging::deliver()
+method	StateBridgeFactStaging::dispatcher()
 method	StateBridgeFactStaging::stage()
 method	StateClassMismatch::for()
 method	StateEventActivity::assertNotReentered()
@@ -19237,7 +19302,6 @@ method	StopRequested::recordVisit()
 method	StopResult::attempt()
 method	StopResult::casts()
 method	StopResult::create()
-method	StopResult::forgetOutputBefore()
 method	StopResult::line()
 method	StopResultData::__construct()
 method	StopResultData::report()
@@ -19379,9 +19443,11 @@ method	StoredSkillSection::section()
 method	StoredSkillSource::__construct()
 method	StoredSkillSource::skills()
 method	StoredSkillWrites::__construct()
+method	StoredSkillWrites::appendRevision()
 method	StoredSkillWrites::author()
 method	StoredSkillWrites::checkedCondition()
 method	StoredSkillWrites::once()
+method	StoredSkillWrites::restoreFrom()
 method	StoredSkillWrites::resultOf()
 method	StoredStopCondition::__construct()
 method	StoredStopCondition::fromStopCondition()
@@ -19828,14 +19894,11 @@ method	TerminalFrames::after()
 method	TerminalView::casts()
 method	TerminalView::close()
 method	TerminalView::create()
-method	TerminalView::endLapsed()
-method	TerminalView::endOfStoppedRuntimes()
 method	TerminalView::follow()
 method	TerminalView::isLive()
 method	TerminalView::lapsed()
 method	TerminalView::live()
 method	TerminalView::ofAgent()
-method	TerminalView::pruneEndedBefore()
 method	TerminalView::renew()
 method	TerminalView::runtime()
 method	TerminalView::watchedOnHost()
@@ -20300,6 +20363,7 @@ method	UnpinMessage::__construct()
 method	UnpinMessage::conversation()
 method	UnpinMessageHandler::__construct()
 method	UnpinMessageHandler::handle()
+method	UnpinMessageHandler::unpinFor()
 method	UnreadablePayload::forValue()
 method	UnreadablePayload::missing()
 method	UnresolvedFact::__construct()
@@ -20371,9 +20435,10 @@ method	UserChannel::join()
 method	UserChannel::nameFor()
 method	UserLabels::__construct()
 method	UserLabels::namesOf()
+method	UserPresence::beatAt()
 method	UserPresence::casts()
 method	UserPresence::freshAt()
-method	UserPresence::recordFor()
+method	UserPresence::lockedFor()
 method	UserPresenceRecords::__construct()
 method	UserPresenceRecords::freshCountAmong()
 method	UserPresences::freshCountAmong()
@@ -20777,6 +20842,7 @@ parameter	$at
 parameter	$atFoot
 parameter	$atLeast
 parameter	$atRevision
+parameter	$attachable
 parameter	$attachmentId
 parameter	$attachments
 parameter	$attempt
@@ -21007,6 +21073,7 @@ parameter	$combinedProgress
 parameter	$command
 parameter	$commandBudgetMilliseconds
 parameter	$commandDigest
+parameter	$commandFacts
 parameter	$commandField
 parameter	$commandReply
 parameter	$commandRequest
@@ -21363,6 +21430,7 @@ parameter	$expectedForm
 parameter	$expectedGeneration
 parameter	$expectedHold
 parameter	$expectedKey
+parameter	$expectedPreviousGenerationId
 parameter	$expectedRevision
 parameter	$expectedRoot
 parameter	$expectedRowVersion
@@ -22157,6 +22225,7 @@ parameter	$position
 parameter	$positional
 parameter	$precision
 parameter	$predecessor
+parameter	$preferences
 parameter	$prefix
 parameter	$preparation
 parameter	$prepared
@@ -22373,6 +22442,7 @@ parameter	$release
 parameter	$remember
 parameter	$reminder
 parameter	$reminders
+parameter	$removal
 parameter	$removeOperations
 parameter	$removePaths
 parameter	$removed
@@ -22789,6 +22859,7 @@ parameter	$storedValue
 parameter	$stream
 parameter	$streams
 parameter	$stripsTabs
+parameter	$structure
 parameter	$style
 parameter	$subcommand
 parameter	$subcommands
@@ -23089,6 +23160,7 @@ property	AbandonNavigation::$expectedRowVersion
 property	AbandonNavigation::$navigationId
 property	AbandonNavigation::$reason
 property	AbandonNavigationHandler::$answering
+property	AbandonNavigationHandler::$endings
 property	AcceptedOperation::$receiptId
 property	AcceptedReceipt::$receiptId
 property	AccessDecision::$allowed
@@ -23214,6 +23286,7 @@ property	ActivateProfilesHandler::$supervisors
 property	ActivateSkillPublication::$fence
 property	ActivateSkillPublication::$publicationId
 property	ActivateSkillPublicationHandler::$adapters
+property	ActivateSkillPublicationHandler::$publications
 property	ActivateSkillPublicationHandler::$publisher
 property	ActivateSkillPublicationHandler::$targets
 property	ActivatedProfile::$change
@@ -23264,6 +23337,7 @@ property	AddPhase::$title
 property	AddPhaseCall::$planId
 property	AddPhaseCall::$requestKey
 property	AddPhaseCall::$title
+property	AddPhaseHandler::$structure
 property	AddPhaseTasks::$expectedRevision
 property	AddPhaseTasks::$phaseId
 property	AddPhaseTasks::$taskIds
@@ -23271,6 +23345,7 @@ property	AddPhaseTasksCall::$expectedRevision
 property	AddPhaseTasksCall::$phaseId
 property	AddPhaseTasksCall::$requestKey
 property	AddPhaseTasksCall::$taskIds
+property	AddPhaseTasksHandler::$structure
 property	AddPhaseTasksHandler::$tasks
 property	AddressedStackPush::$eventScope
 property	AddressedStackPush::$restorer
@@ -23322,6 +23397,7 @@ property	AdmitStack::$deadline
 property	AdmitStartSkills::$adapters
 property	AdmitStartSkills::$contexts
 property	AdmitStartSkills::$events
+property	AdmitStartSkills::$publications
 property	AdmitStartSkills::$selection
 property	AdmitStartSkills::$skills
 property	AdmitStartSkills::$targets
@@ -23519,7 +23595,7 @@ property	ApproveRule::$ruleId
 property	ApproveRuleBundle::$digest
 property	ApproveRuleBundle::$module
 property	ApproveRuleBundle::$version
-property	ApproveRuleBundleHandler::$events
+property	ApproveRuleBundleHandler::$facts
 property	ApproveRuleBundleHandler::$projects
 property	ApproveRuleBundleHandler::$rules
 property	ApproveRuleProposal::$approval
@@ -23720,7 +23796,7 @@ property	AssignmentData::$id
 property	AssignmentData::$name
 property	AssignmentData::$reference
 property	AssignmentData::$type
-property	AssignmentFacts::$events
+property	AssignmentFacts::$facts
 property	AssignmentGroup::$finishedRootRecovery
 property	AssignmentGroup::$records
 property	AssignmentGroup::$root
@@ -23925,6 +24001,7 @@ property	BoundaryChecker::$roots
 property	BroadcastPageChange::$events
 property	BroadcastPageChange::$recipients
 property	BuiltInAskType::$subjects
+property	BuiltInDesks::$desks
 property	BuiltInProfilePins::$dispatchers
 property	BuiltInProfilePins::$profiles
 property	BuiltinResult::$context
@@ -23972,12 +24049,13 @@ property	CallbackEnvelopeData::$issuedAt
 property	CallbackEnvelopeData::$program
 property	CallingSessionProgram::$sessions
 property	CancelAccountUses::$account
-property	CancelAccountUsesHandler::$events
+property	CancelAccountUsesHandler::$facts
 property	CancelDriverRequest::$expectedRowVersion
 property	CancelDriverRequest::$reason
 property	CancelDriverRequest::$requestId
 property	CancelDriverRequestCommand::$description
 property	CancelDriverRequestCommand::$signature
+property	CancelDriverRequestHandler::$endings
 property	CancelDriverRequestHandler::$recovery
 property	CancelHelperJob::$idempotencyKey
 property	CancelHelperJob::$jobId
@@ -23992,11 +24070,12 @@ property	CancelKeyScript::$reason
 property	CancelKeyScript::$requestId
 property	CancelKeyScriptCommand::$description
 property	CancelKeyScriptCommand::$signature
+property	CancelKeyScriptHandler::$endings
 property	CancelKeyScriptHandler::$recovery
 property	CancelLaunch::$agentId
 property	CancelLaunch::$idempotencyKey
 property	CancelLaunch::$sessionId
-property	CancelLaunchHandler::$events
+property	CancelLaunchHandler::$facts
 property	CancelLaunchHandler::$requests
 property	CancelLaunchedHelperJob::$jobId
 property	CancelLaunchedJob::$journal
@@ -24153,6 +24232,7 @@ property	ClaimStart::$hostId
 property	ClaimStart::$sessionId
 property	ClaimStartGrant::$hostId
 property	ClaimStartGrant::$runtimeId
+property	ClaimStartGrantHandler::$containers
 property	ClaimStartGrantHandler::$events
 property	ClaimStartGrantHandler::$runtimes
 property	ClaimStartGrantHandler::$seal
@@ -24452,9 +24532,6 @@ property	CommentDetails::$body
 property	CommentDetails::$bodyHtml
 property	CommentDetails::$createdAt
 property	CommentDetails::$id
-property	CommentEvents::$database
-property	CommentEvents::$events
-property	CommentEvents::$log
 property	CommentLinkRecords::$records
 property	CommentList::$comments
 property	CommentList::$nextAfter
@@ -24488,7 +24565,6 @@ property	CommentPosted::$comment
 property	CommentPosted::$commentId
 property	CommentPosted::$target
 property	CommentRecords::$records
-property	CommentWriter::$events
 property	CommentWriter::$records
 property	CommentWriter::$workStacks
 property	CommitUpload::$uploadId
@@ -24564,6 +24640,7 @@ property	ConsumedPreview::$configuration
 property	ConsumedPreview::$root
 property	ConsumedPreview::$selection
 property	ContainerAdmission::$capabilities
+property	ContainerManifest::$attachable
 property	ContainerManifest::$budgets
 property	ContainerManifest::$capabilities
 property	ContainerManifest::$image
@@ -24672,6 +24749,7 @@ property	CreateAgentHandler::$desks
 property	CreateDesk::$forwardsOccupants
 property	CreateDesk::$label
 property	CreateDesk::$seatCount
+property	CreateDeskHandler::$desks
 property	CreateDocument::$abstract
 property	CreateDocument::$body
 property	CreateDocument::$relatedRecords
@@ -24866,7 +24944,6 @@ property	DismissMessageCommand::$description
 property	DismissMessageCommand::$signature
 property	DismissMessageHandler::$authorizer
 property	DismissMessageHandler::$claims
-property	DismissMessageHandler::$events
 property	DismissMessageHandler::$inboxes
 property	DispatchRequest::$identityId
 property	DispatchRequest::$model
@@ -24875,7 +24952,7 @@ property	DispatchRequest::$profileKey
 property	DispatchRequest::$programKey
 property	DispatchRequest::$requestId
 property	DispatchRequest::$work
-property	DispatcherFactStaging::$dispatcher
+property	DispatcherFactStaging::$container
 property	Dispatches::$command
 property	DocCloseCommand::$description
 property	DocCloseCommand::$help
@@ -25110,7 +25187,7 @@ property	DriverRequestRecovered::$actor
 property	DriverRequestRecovered::$reason
 property	DriverRequestRecovered::$requestId
 property	DriverRequestRecovery::$actors
-property	DriverRequestRecovery::$events
+property	DriverRequestRecovery::$facts
 property	DriverRequestStatus::$canCancel
 property	DriverRequestStatus::$canCancelScript
 property	DriverRequestStatus::$canResolve
@@ -25389,6 +25466,7 @@ property	ExecutionContext::$workingFolder
 property	ExecutionPlan::$root
 property	ExecutionPlan::$treeDigest
 property	ExecutionPlanner::$syntax
+property	ExecutionPolicy::$attachable
 property	ExecutionPolicy::$budgets
 property	ExecutionPolicy::$imageReference
 property	ExecutionPolicy::$mode
@@ -25776,7 +25854,7 @@ property	HistoryPageData::$page
 property	HistoryPageResolver::$messages
 property	HistoryPageResolver::$request
 property	HoldAccountUses::$account
-property	HoldAccountUsesHandler::$events
+property	HoldAccountUsesHandler::$facts
 property	HoldFailingJob::$journal
 property	HoldHelperJob::$jobId
 property	HoldHelperJob::$reference
@@ -25882,6 +25960,7 @@ property	ImportRuleProposals::$declarations
 property	ImportRuleProposalsHandler::$checks
 property	ImportRuleProposalsHandler::$declarations
 property	ImportRuleProposalsHandler::$projects
+property	ImportRuleProposalsHandler::$proposals
 property	ImportedProposals::$receipts
 property	InboxAttention::$attention
 property	InboxAttention::$inboxes
@@ -25917,7 +25996,7 @@ property	IncomingWorkList::$workClasses
 property	InitializeResultData::$protocolVersion
 property	InspectDocumentCall::$number
 property	InspectMergeAttemptsHandler::$access
-property	InspectMergeAttemptsHandler::$events
+property	InspectMergeAttemptsHandler::$facts
 property	InspectMergeAttemptsHandler::$merge
 property	InspectMergeAttemptsOnTick::$commands
 property	InspectReportCall::$number
@@ -25971,6 +26050,7 @@ property	InterruptAgent::$sessionId
 property	InterruptAgentHandler::$requests
 property	InterruptNavigation::$hostId
 property	InterruptNavigation::$navigationId
+property	InterruptNavigationHandler::$endings
 property	InterruptNavigationHandler::$runtimes
 property	InvalidScript::$diagnostics
 property	InvalidValueData::$type
@@ -26128,6 +26208,7 @@ property	LinkChanged::$target
 property	LinkRecords::$source
 property	LinkRecords::$target
 property	LinkRecordsHandler::$links
+property	LinkRemoval::$facts
 property	LinkRemoveCommand::$description
 property	LinkRemoveCommand::$help
 property	LinkRemoveCommand::$signature
@@ -26381,7 +26462,7 @@ property	MergeOutcomeRecorded::$attemptId
 property	MergeReviewedWork::$decisionId
 property	MergeReviewedWork::$expectedVersion
 property	MergeReviewedWorkHandler::$admission
-property	MergeReviewedWorkHandler::$events
+property	MergeReviewedWorkHandler::$facts
 property	MergeReviewedWorkHandler::$merge
 property	MergeSettlement::$assignments
 property	MergeSettlement::$attention
@@ -26397,7 +26478,6 @@ property	MessageAnswered::$answeredBy
 property	MessageAnswered::$messageId
 property	MessageAnswered::$replyId
 property	MessageAnswers::$claims
-property	MessageAnswers::$events
 property	MessageBody::$text
 property	MessageClaimHolder::$claimId
 property	MessageClaimHolder::$holderId
@@ -26439,7 +26519,7 @@ property	MessageReadResult::$takenUp
 property	MessageReader::$actorId
 property	MessageReader::$actorType
 property	MessageReader::$readAt
-property	MessageReading::$events
+property	MessageReading::$facts
 property	MessageReading::$inboxes
 property	MessageReading::$proved
 property	MessageReading::$responsibilities
@@ -26455,7 +26535,6 @@ property	MessageResource::$reads
 property	MessageSearch::$messages
 property	MessageSending::$accepted
 property	MessageSending::$attention
-property	MessageSending::$events
 property	MessageSending::$inboxes
 property	MessageSending::$session
 property	MessageSent::$author
@@ -26573,6 +26652,7 @@ property	NavigationData::$current
 property	NavigationData::$navigationLinks
 property	NavigationDispatch::$attention
 property	NavigationDispatch::$mainDesk
+property	NavigationExpiry::$endings
 property	NavigationItem::$atFoot
 property	NavigationItem::$children
 property	NavigationItem::$childrenResolver
@@ -26754,6 +26834,7 @@ property	OpenHostMainRuntime::$program
 property	OpenHostMainRuntime::$programBuild
 property	OpenHostMainRuntimeHandler::$runtimes
 property	OpenHostMainRuntimeHandler::$takeover
+property	OpenLaunchCleanup::$capacity
 property	OpenNavigationRequest::$expireMinutes
 property	OpenPlansCount::$records
 property	OpenReportsOverview::$reports
@@ -26962,7 +27043,7 @@ property	PartActivity::$latestLine
 property	PartActivity::$lifecycle
 property	PartActivity::$name
 property	PartActivity::$partRunId
-property	PartAssessments::$events
+property	PartAssessments::$facts
 property	PartAssessments::$publisher
 property	PartAssessments::$replays
 property	PartAssessments::$rules
@@ -27054,6 +27135,8 @@ property	PermittedLine::$classificationDigest
 property	PermittedLine::$line
 property	PermittedLine::$workingFolder
 property	PersonalDeskProvisioning::$desks
+property	PersonalDesks::$desks
+property	PersonalDesks::$preferences
 property	PersonalDesks::$responsibilities
 property	PhaseAssignmentProvider::$actors
 property	PhaseAssignmentProvider::$tasks
@@ -27391,6 +27474,7 @@ property	ProfileAuthorizerProvider::$catalogue
 property	ProfileAuthorizerProvider::$gate
 property	ProfileAuthorizerProvider::$profiles
 property	ProfileBase::$accesses
+property	ProfileBase::$attachable
 property	ProfileBase::$containedBudgets
 property	ProfileBase::$containerRequired
 property	ProfileBase::$coordinator
@@ -27609,6 +27693,7 @@ property	ProposeCommandRule::$proposed
 property	ProposeCommandRule::$requestId
 property	ProposeCommandRuleHandler::$administration
 property	ProposeCommandRuleHandler::$checks
+property	ProposeCommandRuleHandler::$proposals
 property	ProposeReader::$commandRequestId
 property	ProposeReader::$declarationRevision
 property	ProposeReader::$definition
@@ -27716,6 +27801,7 @@ property	ProvisionActorDesk::$actor
 property	ProvisionActorDesk::$label
 property	ProvisionActorDeskHandler::$provisioning
 property	PruneHookHistory::$periods
+property	PruneHookHistory::$removal
 property	PruneHookHistory::$retryWindow
 property	PruneHookHistoryCommand::$description
 property	PruneHookHistoryCommand::$signature
@@ -27995,7 +28081,7 @@ property	ReassignAgentRuntime::$sessionId
 property	ReassignAgentRuntimeCommand::$description
 property	ReassignAgentRuntimeCommand::$signature
 property	ReassignAgentRuntimeHandler::$credentials
-property	ReassignAgentRuntimeHandler::$events
+property	ReassignAgentRuntimeHandler::$facts
 property	ReassignAgentRuntimeHandler::$requests
 property	ReassignPlanWork::$expectedRoot
 property	ReassignPlanWork::$recipient
@@ -28048,7 +28134,7 @@ property	ReconcileSignIns::$runningAttemptIds
 property	ReconcileSignInsHandler::$facts
 property	ReconcileStarts::$hostId
 property	ReconcileStarts::$stoppedStartKeys
-property	ReconcileStartsHandler::$events
+property	ReconcileStartsHandler::$facts
 property	RecordAccountFailure::$accountId
 property	RecordAccountFailure::$generation
 property	RecordAccountNotice::$program
@@ -28130,7 +28216,7 @@ property	RecordPhaseCheckHandler::$receipts
 property	RecordPhaseCheckHandler::$tasks
 property	RecordPolicyMappings::$gate
 property	RecordPolicyMappings::$policies
-property	RecordProgramFailure::$events
+property	RecordProgramFailure::$facts
 property	RecordProvenSkillReads::$reads
 property	RecordProviders::$providerOfType
 property	RecordReceipt::$accepted
@@ -28146,12 +28232,25 @@ property	RecordRefusalReceipt::$registry
 property	RecordRule::$expression
 property	RecordRule::$pattern
 property	RecordRule::$role
+property	RecordRunChunk::$attempt
+property	RecordRunChunk::$bytes
+property	RecordRunChunk::$node
+property	RecordRunChunk::$offset
+property	RecordRunChunk::$operation
+property	RecordRunChunk::$processRunId
+property	RecordRunChunk::$stream
 property	RecordRunChunkCall::$chunk
 property	RecordRunChunkCall::$eventKey
 property	RecordRunChunkCall::$processRun
+property	RecordRunChunkHandler::$recorder
+property	RecordRunEvents::$events
+property	RecordRunEvents::$processRunId
 property	RecordRunEventsCall::$eventKey
 property	RecordRunEventsCall::$events
 property	RecordRunEventsCall::$processRun
+property	RecordRunEventsHandler::$commands
+property	RecordRunEventsHandler::$recorder
+property	RecordRunEventsHandler::$updates
 property	RecordRuntime::$agentId
 property	RecordRuntime::$idempotencyKey
 property	RecordRuntime::$sessionId
@@ -28230,6 +28329,7 @@ property	RefreshRunActivity::$updates
 property	RefreshSessionSkills::$adapters
 property	RefreshSessionSkills::$contexts
 property	RefreshSessionSkills::$events
+property	RefreshSessionSkills::$publications
 property	RefreshSessionSkills::$selection
 property	RefreshSessionSkills::$skills
 property	RefreshSessionSkills::$stacks
@@ -28243,6 +28343,7 @@ property	RefreshSkillsHandler::$adapters
 property	RefreshSkillsHandler::$conditions
 property	RefreshSkillsHandler::$container
 property	RefreshSkillsHandler::$contexts
+property	RefreshSkillsHandler::$publications
 property	RefreshSkillsHandler::$registry
 property	RefreshSkillsHandler::$renderer
 property	RefreshSkillsHandler::$selection
@@ -28269,7 +28370,7 @@ property	RegisterIncomingWork::$incoming
 property	RegisterLinkRecords::$providers
 property	RegisterNumberedModels::$numbered
 property	RegisterPendingStart::$config
-property	RegisterPendingStart::$events
+property	RegisterPendingStart::$facts
 property	RegisterPendingStart::$links
 property	RegisterScriptDefinitions::$keywords
 property	RegisterScriptDefinitions::$objects
@@ -28344,7 +28445,7 @@ property	RejectProposalCall::$reason
 property	RejectProposalCall::$requestKey
 property	RejectRuleProposal::$proposalId
 property	RejectRuleProposal::$reason
-property	RejectRuleProposalHandler::$events
+property	RejectRuleProposalHandler::$facts
 property	RejectRuleProposalHandler::$projects
 property	RelationRead::$max
 property	RelayFrames::$buffer
@@ -28378,7 +28479,7 @@ property	ReleaseAgentHold::$reason
 property	ReleaseAgentHold::$sessionId
 property	ReleaseAgentHoldCommand::$description
 property	ReleaseAgentHoldCommand::$signature
-property	ReleaseAgentHoldHandler::$events
+property	ReleaseAgentHoldHandler::$facts
 property	ReleaseAgentHoldHandler::$requests
 property	ReleaseMessageClaim::$expectedClaim
 property	ReleaseMessageClaim::$messageId
@@ -28389,7 +28490,7 @@ property	ReleaseMessageClaimCall::$holderType
 property	ReleaseMessageClaimCall::$messageId
 property	ReleaseMessageClaimCall::$reason
 property	ReleaseMessageClaimCall::$requestKey
-property	ReleaseMessageClaimHandler::$events
+property	ReleaseMessageClaimHandler::$facts
 property	ReleaseMessageClaimHandler::$responsibilities
 property	ReleaseSeat::$deskId
 property	ReleaseSeat::$expected
@@ -28487,6 +28588,7 @@ property	Report::$attributes
 property	ReportCleanup::$hostId
 property	ReportCleanup::$report
 property	ReportCleanup::$sessionId
+property	ReportCleanupHandler::$capacity
 property	ReportCommentCall::$body
 property	ReportCommentCall::$reportId
 property	ReportCommentCall::$requestKey
@@ -28513,7 +28615,7 @@ property	ReportEntryReplayedHandler::$runtimes
 property	ReportFailure::$failure
 property	ReportFailure::$hostId
 property	ReportFailure::$startKey
-property	ReportFailureHandler::$events
+property	ReportFailureHandler::$facts
 property	ReportFiled::$actor
 property	ReportFiled::$number
 property	ReportFiled::$reportId
@@ -28596,7 +28698,7 @@ property	ReportSignInHandler::$completion
 property	ReportSignInHandler::$facts
 property	ReportStopped::$hostId
 property	ReportStopped::$startKey
-property	ReportStoppedHandler::$events
+property	ReportStoppedHandler::$facts
 property	ReportView::$abstract
 property	ReportView::$attention
 property	ReportView::$body
@@ -28671,7 +28773,6 @@ property	RequireMessageAnswerCall::$messageId
 property	RequireMessageAnswerCall::$requestKey
 property	RequireMessageAnswerCommand::$description
 property	RequireMessageAnswerCommand::$signature
-property	RequireMessageAnswerHandler::$events
 property	RequireMessageAnswerHandler::$inboxes
 property	RequireMessageAnswerHandler::$responsibilities
 property	RequiredDrain::$container
@@ -28722,6 +28823,7 @@ property	RestoreCommandRule::$expectedRevision
 property	RestoreCommandRule::$fromRevision
 property	RestoreCommandRule::$requestId
 property	RestoreCommandRuleHandler::$projects
+property	RestoreCommandRuleHandler::$proposals
 property	RestoreDockedRecord::$destinationInboxId
 property	RestoreDockedRecord::$record
 property	RestoreDockedRecord::$sourceInboxId
@@ -28777,8 +28879,8 @@ property	RetireAgentCall::$requestKey
 property	RetireAgentCommand::$description
 property	RetireAgentCommand::$signature
 property	RetireAgentHandler::$authorizer
+property	RetireAgentHandler::$commandFacts
 property	RetireAgentHandler::$credentials
-property	RetireAgentHandler::$events
 property	RetireAgentHandler::$facts
 property	RetireAgentHandler::$lifecycle
 property	RetireAgentHandler::$requests
@@ -28787,7 +28889,7 @@ property	RetireAgentHandler::$store
 property	RetireCommandRule::$classificationRuleId
 property	RetireCommandRule::$expectedRevision
 property	RetireCommandRule::$reason
-property	RetireCommandRuleHandler::$events
+property	RetireCommandRuleHandler::$facts
 property	RetireCommandRuleHandler::$projects
 property	RetireMenuEntry::$entryId
 property	RetireMenuEntry::$expectedState
@@ -28836,6 +28938,7 @@ property	ReviseRuleProposal::$expectedRevision
 property	ReviseRuleProposal::$proposalId
 property	ReviseRuleProposal::$proposed
 property	ReviseRuleProposalHandler::$checks
+property	ReviseRuleProposalHandler::$proposals
 property	ReviseSkill::$draft
 property	ReviseSkill::$expectedRevision
 property	ReviseSkill::$requestId
@@ -28893,7 +28996,7 @@ property	RuleActivated::$projectKey
 property	RuleActivated::$reason
 property	RuleActivated::$revision
 property	RuleActivated::$ruleId
-property	RuleApprovals::$events
+property	RuleApprovals::$facts
 property	RuleApprovals::$projectRules
 property	RuleApprovals::$rules
 property	RuleApproved::$digest
@@ -29011,6 +29114,7 @@ property	RunEvent::$pid
 property	RunEvent::$reason
 property	RunEvent::$sequence
 property	RunEvent::$type
+property	RunEventBatch::$events
 property	RunEventsAccepted::$accepted
 property	RunInTransaction::$database
 property	RunInTransaction::$deadline
@@ -29161,6 +29265,7 @@ property	SaveCommandRule::$requestId
 property	SaveCommandRuleHandler::$approvals
 property	SaveCommandRuleHandler::$checks
 property	SaveCommandRuleHandler::$projects
+property	SaveCommandRuleHandler::$proposals
 property	SaveMemory::$text
 property	SaveMemory::$weight
 property	SaveMemoryCall::$requestKey
@@ -29328,6 +29433,7 @@ property	SeatChangeResult::$inboxId
 property	SeatChangeResult::$reference
 property	SeatChangeResult::$seatId
 property	SeatLossRepair::$desks
+property	SeatLossRepair::$preferences
 property	SeatRelease::$deskId
 property	SeatRelease::$expected
 property	SeatRelease::$seatId
@@ -29413,6 +29519,8 @@ property	SequenceWork::$stepInstruction
 property	SequenceWork::$stepNumber
 property	SessionClosed::$agentId
 property	SessionClosed::$sessionId
+property	SessionContainers::$arrangement
+property	SessionContainers::$policies
 property	SessionEndDetails::$reason
 property	SessionEnded::$end
 property	SessionEnded::$hook
@@ -29441,6 +29549,7 @@ property	SessionOutputPaths::$outputDirectory
 property	SessionOutputPaths::$transcriptPath
 property	SessionProvenance::$links
 property	SessionProvenance::$policies
+property	SessionProvenance::$removal
 property	SessionProvenance::$session
 property	SessionRecords::$actors
 property	SessionRecords::$inspection
@@ -29543,12 +29652,12 @@ property	SettingsDomainAvailability::$switches
 property	SettingsSnapshot::$owner
 property	SettingsSnapshot::$revision
 property	SettingsWriter::$codec
-property	SettingsWriter::$events
+property	SettingsWriter::$facts
 property	SettingsWriter::$registry
 property	SettingsWriter::$resolver
 property	SettingsWriter::$transaction
 property	SettleAccountUses::$account
-property	SettleAccountUsesHandler::$events
+property	SettleAccountUsesHandler::$facts
 property	SettleDocument::$documentNumber
 property	SettleDocument::$expectedRevision
 property	SettleDocument::$reason
@@ -30085,7 +30194,7 @@ property	SpawnedProcess::$endStatus
 property	SpawnedProcess::$pid
 property	SpawnedProcess::$pipes
 property	SpawnedProcess::$process
-property	SpoolRecorder::$events
+property	SpoolRecorder::$facts
 property	SpoolRecorder::$files
 property	SpoolRecorder::$manifest
 property	StackAccess::$calls
@@ -30136,7 +30245,7 @@ property	StartAgentHandler::$accounts
 property	StartAgentHandler::$capacity
 property	StartAgentHandler::$capacityLock
 property	StartAgentHandler::$containers
-property	StartAgentHandler::$events
+property	StartAgentHandler::$facts
 property	StartAgentHandler::$images
 property	StartAgentHandler::$pendingSecrets
 property	StartAgentHandler::$pendingStarts
@@ -30151,6 +30260,7 @@ property	StartFile::$path
 property	StartFolder::$arguments
 property	StartFolder::$files
 property	StartFolder::$name
+property	StartGrant::$container
 property	StartGrant::$folders
 property	StartGrant::$offlineReply
 property	StartGrant::$offlineReplySeal
@@ -30162,7 +30272,8 @@ property	StartGrantRequested::$additions
 property	StartGrantRequested::$sessionId
 property	StartHeartbeats::$clock
 property	StartHeartbeats::$credentials
-property	StartHeartbeats::$events
+property	StartHeartbeats::$endings
+property	StartHeartbeats::$facts
 property	StartHeartbeats::$transaction
 property	StartHeartbeats::$window
 property	StartHelper::$model
@@ -30257,6 +30368,7 @@ property	StartSequence::$sessionId
 property	StartSequenceHandler::$sessions
 property	StartSessions::$credentials
 property	StartSessions::$events
+property	StartSessions::$facts
 property	StartSessions::$runtimes
 property	StartSessions::$sessions
 property	StartSessions::$transaction
@@ -30280,7 +30392,7 @@ property	StartedAgent::$runtime
 property	StartedAgent::$session
 property	StartedAgent::$settings
 property	StartedAgent::$token
-property	StateBridgeFactStaging::$dispatcher
+property	StateBridgeFactStaging::$container
 property	StateBridgeFactStaging::$scope
 property	StateEventActivity::$deliveries
 property	StateEventActivity::$evaluating
@@ -30379,15 +30491,15 @@ property	StopAgent::$idempotencyKey
 property	StopAgent::$sessionId
 property	StopAgentHandler::$requests
 property	StopAttemptGate::$certification
-property	StopAttemptGate::$events
 property	StopAttemptGate::$evidence
+property	StopAttemptGate::$facts
 property	StopAttemptGate::$policies
 property	StopAttemptGate::$preparer
 property	StopAttemptReference::$attemptId
 property	StopAttemptResult::$state
 property	StopAttemptResult::$statuses
 property	StopAttemptResult::$summaries
-property	StopCertification::$events
+property	StopCertification::$facts
 property	StopCertification::$policies
 property	StopCondition::$accessTypes
 property	StopCondition::$arguments
@@ -30490,6 +30602,7 @@ property	StoredExecutionBudgets::$processes
 property	StoredExecutionBudgets::$tmpBytes
 property	StoredExecutionBudgets::$wallSeconds
 property	StoredExecutionBudgets::$workspaceBytes
+property	StoredExecutionPolicy::$attachable
 property	StoredExecutionPolicy::$budgets
 property	StoredExecutionPolicy::$image
 property	StoredExecutionPolicy::$mode
@@ -30590,7 +30703,6 @@ property	StoredSkillSection::$markdown
 property	StoredSkillSource::$conditions
 property	StoredSkillWrites::$actors
 property	StoredSkillWrites::$conditions
-property	StoredSkillWrites::$events
 property	StoredSkillWrites::$renderer
 property	StoredStopCondition::$access
 property	StoredStopCondition::$arguments
@@ -30962,6 +31074,7 @@ property	ToolVersions::$versions
 property	TransactionalIdentityLinks::$transaction
 property	TransactionalIdentityLinks::$types
 property	TransactionalRecordLinker::$records
+property	TransactionalRecordLinker::$removal
 property	TransactionalRecordLinker::$transaction
 property	TransitionCallScan::$transitions
 property	TreeClassifier::$aliases
@@ -31241,6 +31354,7 @@ trait	HasNumberedModels
 trait	HasStates
 trait	HasWorkColumns
 trait	HelperWorkArguments
+trait	InsertsAbsentRows
 trait	KeepsCleanupTries
 trait	Linkable
 trait	MeasuresBody
@@ -31729,6 +31843,7 @@ variable	$entries	app/Files/Support/FolderWalker.php
 variable	$entry
 variable	$envelopes
 variable	$environment
+variable	$epoch
 variable	$error
 variable	$errorCode
 variable	$errorText
@@ -32375,6 +32490,7 @@ variable	$prefix
 variable	$prefixes
 variable	$preparation
 variable	$prepared
+variable	$presence
 variable	$preview
 variable	$previous
 variable	$previousDeadline
@@ -32383,6 +32499,7 @@ variable	$privateTypeOwner
 variable	$problem
 variable	$problems
 variable	$process
+variable	$processRun
 variable	$processes
 variable	$producerDone
 variable	$profile
@@ -32509,6 +32626,7 @@ variable	$reminders
 variable	$remote
 variable	$remoteChange
 variable	$removed
+variable	$repair
 variable	$repeated
 variable	$replaced
 variable	$replacement

@@ -52,7 +52,7 @@ profiles=""
 # Each step must pass for the commit to count as installed: set -e does not hold inside an if, so they are chained.
 # Migrations run on the new image before the switch, so they must leave the old code working.
 install() {
-    docker compose --progress=quiet build app share &&
+    docker compose --progress=quiet build app share web &&
         { [ "$arrangement" != contained ] || pin_runner; } &&
         { [ "$migrations_changed" = no ] || docker compose run --rm -T app php artisan migrate --force; } &&
         roll_app &&

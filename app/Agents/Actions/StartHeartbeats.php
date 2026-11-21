@@ -39,7 +39,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     {
         $now = $this->clock->now();
 
-        $this->markSilentIfNoHeartbeatSince($now->subSeconds($this->window->presenceSeconds), $now);
+        $this->markSilentSince($now->subSeconds($this->window->presenceSeconds), $now);
     }
 
     /**
@@ -65,7 +65,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
     /**
      * Marks every running session that has shown no life since the cutoff as silent, in one update.
      */
-    private function markSilentIfNoHeartbeatSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
+    private function markSilentSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {
         AgentSession::query()->where('status', SessionStatus::Active->value)
             ->where(fn (Builder $silent) => $silent->where('last_heartbeat_at', '<=', $cutoff)

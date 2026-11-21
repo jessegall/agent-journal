@@ -30,7 +30,7 @@ final readonly class EndTerminalViewsHandler implements CommandHandler
         $now = $this->clock->now();
 
         $this->endLapsed($now);
-        $this->endOfStoppedRuntimes($now);
+        $this->endForStoppedRuntimes($now);
         $this->pruneEndedBefore($now->subHours(TerminalView::KEEP_ENDED_HOURS));
     }
 
@@ -45,7 +45,7 @@ final readonly class EndTerminalViewsHandler implements CommandHandler
     /**
      * Ends every live view of a runtime that stopped, in one update.
      */
-    private function endOfStoppedRuntimes(CarbonImmutable $now): void
+    private function endForStoppedRuntimes(CarbonImmutable $now): void
     {
         TerminalView::query()->acrossActors()->live()->whereHas(
             'runtime',

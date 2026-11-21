@@ -47,9 +47,10 @@ services:
     # containers, so an install can start the new app beside the old one and stop the old one with no request lost.
     web:
         restart: unless-stopped
-        image: caddy:2.10-alpine
-        volumes:
-            - ./.docker/web/Caddyfile:/etc/caddy/Caddyfile:ro
+        image: ${COMPOSE_PROJECT_NAME}-web
+        build:
+            context: .
+            dockerfile: .docker/web/Dockerfile
         ports:
             - '127.0.0.1:${APP_PORT:-54700}:8000'
         depends_on:
