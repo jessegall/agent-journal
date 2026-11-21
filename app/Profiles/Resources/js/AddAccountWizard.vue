@@ -8,7 +8,7 @@ import type {
 } from '@generated/types/accounts';
 import Button from '@kit/Button';
 import Modal from '@kit/Modal';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useId, watch } from 'vue';
 import ChooseSignIn from './ChooseSignIn.vue';
 import ChosenSignIn from './ChosenSignIn.vue';
 import NameAccountStep from './NameAccountStep.vue';
@@ -41,7 +41,7 @@ const followed = computed(() =>
     props.attempts.find((attempt) => attempt.id === followedId.value),
 );
 const actions = signInActions(followed);
-const formId = 'add-account-step';
+const formId = `add-account-step-${useId()}`;
 
 function methodsOf(of: string): SignInMethodData[] {
     return props.methods.find((entry) => entry.driver === of)?.methods ?? [];
