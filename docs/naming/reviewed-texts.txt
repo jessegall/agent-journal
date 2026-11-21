@@ -286,6 +286,7 @@ Suits a server.
 Switched
 Switching
 System
+Terminal
 Tests and checks
 That conversation belongs to another agent.
 That conversation is not one this agent can continue.
@@ -321,6 +322,7 @@ Waiting
 Waiting for the host to confirm the start
 Waiting for the host to confirm the stop
 Waiting for you to finish on OpenAI's page…
+Watch terminal
 What
 What is still needed
 What the journal is and how to read and write its records.

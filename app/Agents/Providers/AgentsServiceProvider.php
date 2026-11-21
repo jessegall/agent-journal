@@ -219,6 +219,7 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),
             $this->app->make('config')->integer('agents.host_capacity.memory_bytes'),
             $this->app->make('config')->integer('agents.host_capacity.disk_bytes'),
+            $this->app->make('config')->boolean('agents.host_capacity.guarded'),
         ));
         $this->app->scoped(PendingStartSecrets::class);
         $this->app->bind(

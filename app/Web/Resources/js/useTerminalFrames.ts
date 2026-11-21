@@ -1,11 +1,13 @@
 import type { ScreenFrameData, TerminalFrameData } from '@generated/types/core';
-import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
-import { deleteLeaving, pollJson, postJson, putJson } from '@kit/jsonRequests';
-import { close, frame, open, renew } from '@generated/routes/agents/terminal';
+import type { TerminalWindowData } from '@/types/generated';
+import { router } from '@inertiajs/vue3';
+import { openTerminal, renewTerminal } from '@/routes/web';
+import type { Ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import { supersedes } from './terminalFrameOrder';
 
 /**
- * How often the browser asks for a newer frame, and how often it renews its view.
+ * How often the page reloads its frame, and how often it renews its view.
  */
 const POLL_MILLISECONDS = 500;
 const RENEW_MILLISECONDS = 10_000;
@@ -26,10 +28,11 @@ export type TerminalViewState =
     | 'restarted';
 
 /**
- * Holds a viewer's lease on an agent's terminal and polls its frames: opens on mount, renews every 10 seconds,
- * polls every half second and closes on unmount or when the page is hidden. It only reads; nothing reaches the driver.
+ * Holds a viewer's lease on an agent's terminal through the terminal page's own Inertia actions: opens on mount,
+ * renews every 10 seconds and reloads only the page's data every half second with the frame it holds. Leaving the page
+ * or hiding it stops the reloads, and the lease runs out by itself. It only reads; nothing reaches the driver.
  */
-export function useTerminalFrames(agentId: string) {
+export function useTerminalFrames(data: Ref<TerminalWindowData>) {
     const state = ref<TerminalViewState>('opening');
     const refusal = ref('');
     const drawn = shallowRef<ScreenFrameData | null>(null);
@@ -38,6 +41,7 @@ export function useTerminalFrames(agentId: string) {
     const held = { epoch: '', after: 0 };
     const now = ref(Date.now());
     const timers: number[] = [];
+    const actions = { open: openTerminal, renew: renewTerminal };
 
     function refuse(message: string): void {
         state.value = 'refused';
@@ -63,78 +67,68 @@ export function useTerminalFrames(agentId: string) {
         held.after = frame.sequence;
     }
 
-    async function poll(): Promise<void> {
-        now.value = Date.now();
-        const reply = await pollJson<TerminalFrameData>(
-            frame.url({ agent: agentId }, { query: { ...held } }),
-        );
-        if (reply.type === 'refused') {
-            refuse(reply.message);
+    watch(
+        () => data.value.frame,
+        (frame) => {
+            if (frame !== undefined && state.value !== 'opening' && state.value !== 'refused') {
+                receive(frame);
+            }
+        },
+    );
 
-            return;
-        }
-        if (reply.type === 'value') {
-            receive(reply.value);
-        }
+    function send(verb: 'open' | 'renew', onSuccess: () => void = () => undefined): void {
+        router.post(
+            actions[verb].url(data.value.agentId),
+            {},
+            {
+                only: ['page'],
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess,
+                onError: (errors) => refuse(errors.review ?? 'The terminal view was refused.'),
+            },
+        );
     }
 
-    async function keepOpen(): Promise<void> {
-        const reply = await putJson<object>(renew.url({ agent: agentId }));
-        if (!reply.ok) {
-            refuse(reply.message);
-        }
+    function poll(): void {
+        now.value = Date.now();
+        router.reload({ only: ['page'], data: { ...held }, async: true });
     }
 
     function stopTimers(): void {
         timers.splice(0).forEach((timer) => window.clearInterval(timer));
     }
 
-    function leave(): void {
-        stopTimers();
-        void deleteLeaving(close.url({ agent: agentId }));
+    function begin(): void {
+        state.value = 'live';
+        receivedAt.value = Date.now();
+        timers.push(window.setInterval(poll, POLL_MILLISECONDS));
+        timers.push(window.setInterval(() => send('renew'), RENEW_MILLISECONDS));
+        poll();
     }
 
-    function leaveWhenHidden(): void {
+    function pauseWhenHidden(): void {
         if (document.visibilityState === 'hidden') {
-            leave();
+            stopTimers();
 
             return;
         }
         if (timers.length === 0 && state.value !== 'refused') {
-            void start();
+            send('open', begin);
         }
-    }
-
-    async function start(): Promise<void> {
-        const reply = await postJson<object>(open.url({ agent: agentId }));
-        if (!reply.ok) {
-            refuse(reply.message);
-
-            return;
-        }
-        state.value = 'live';
-        receivedAt.value = Date.now();
-        timers.push(window.setInterval(() => void poll(), POLL_MILLISECONDS));
-        timers.push(
-            window.setInterval(() => void keepOpen(), RENEW_MILLISECONDS),
-        );
-        void poll();
     }
 
     onMounted(() => {
-        document.addEventListener('visibilitychange', leaveWhenHidden);
-        void start();
+        document.addEventListener('visibilitychange', pauseWhenHidden);
+        send('open', begin);
     });
     onBeforeUnmount(() => {
-        document.removeEventListener('visibilitychange', leaveWhenHidden);
-        leave();
+        document.removeEventListener('visibilitychange', pauseWhenHidden);
+        stopTimers();
     });
 
     function isSilent(): boolean {
-        return (
-            state.value === 'live' &&
-            now.value - receivedAt.value > SILENT_MILLISECONDS
-        );
+        return state.value === 'live' && now.value - receivedAt.value > SILENT_MILLISECONDS;
     }
 
     function ageSeconds(): number {

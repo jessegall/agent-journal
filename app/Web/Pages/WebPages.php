@@ -17,9 +17,12 @@ use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
 use App\Web\Http\Controllers\Runtimes\ResolveRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
+use App\Web\Http\Controllers\Terminal\OpenTerminalPageController;
+use App\Web\Http\Controllers\Terminal\RenewTerminalPageController;
 use App\Web\Resolvers\AskInboxResolver;
 use App\Web\Resolvers\HomeWindowResolver;
 use App\Web\Resolvers\RuntimeStatusResolver;
+use App\Web\Resolvers\TerminalWindowResolver;
 
 /**
  * The pages Core's Web declares itself, served beside the domains' pages: Home, at /, and the runtime status, at
@@ -67,6 +70,12 @@ final class WebPages implements PageProvider
                         CancelScriptRuntimeRequestController::class,
                         'cancel-runtime-script',
                     ),
+                ),
+            Page::make('terminal', 'Terminal', Icon::Activity, TerminalWindowResolver::class, 'TerminalWindow.vue')
+                ->at('agents/{agent}/terminal')
+                ->actions(
+                    ActionRoute::post('agents/{agent}/terminal/open', OpenTerminalPageController::class, 'open-terminal'),
+                    ActionRoute::post('agents/{agent}/terminal/renew', RenewTerminalPageController::class, 'renew-terminal'),
                 ),
         ];
     }

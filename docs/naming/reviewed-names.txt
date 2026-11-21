@@ -432,6 +432,7 @@ case	HookEvent::SessionStart
 case	HookEvent::Stop
 case	HookEvent::StopFailure
 case	HookEvent::UserPromptSubmit
+case	HostCapabilityType::AccountIsolation
 case	HostCapabilityType::AccountTransport
 case	HostCapabilityType::CallbackSeparation
 case	HostCapabilityType::CompletionFence
@@ -472,6 +473,8 @@ case	LaunchCandidateRank::CompatibleConversation
 case	LaunchCandidateRank::ExactConversation
 case	LaunchCandidateRank::OtherPurpose
 case	LaunchCandidateRank::SamePurpose
+case	LaunchProfileType::ProtectedAccount
+case	LaunchProfileType::Standard
 case	LifecycleStage::Enter
 case	LifecycleStage::Event
 case	LifecycleStage::Exit
@@ -1904,7 +1907,6 @@ class	CloseResult
 class	CloseSimpleCommandNode
 class	CloseStartStack
 class	CloseTerminalView
-class	CloseTerminalViewController
 class	CloseTerminalViewHandler
 class	CloseWorkChain
 class	CloseWorkChainHandler
@@ -3004,6 +3006,7 @@ class	LaunchCandidateQuery
 class	LaunchEnded
 class	LaunchLimits
 class	LaunchProfileKey
+class	LaunchProfiles
 class	Layout
 class	LayoutData
 class	LayoutRequest
@@ -3399,8 +3402,8 @@ class	OpenStartStack
 class	OpenStuckAsk
 class	OpenTaskPool
 class	OpenTaskPoolFactory
+class	OpenTerminalPageController
 class	OpenTerminalView
-class	OpenTerminalViewController
 class	OpenTerminalViewHandler
 class	OpenTiming
 class	OpenedRuntime
@@ -4222,8 +4225,8 @@ class	RenameAccountRequest
 class	RenderReply
 class	RenderedCall
 class	RenderedSkill
+class	RenewTerminalPageController
 class	RenewTerminalView
-class	RenewTerminalViewController
 class	RenewTerminalViewHandler
 class	ReopenSharedGateways
 class	ReopenSharedGatewaysHandler
@@ -5517,7 +5520,6 @@ class	TasksDomain
 class	TasksListTool
 class	TasksServiceProvider
 class	TasksSkill
-class	TerminalFrameController
 class	TerminalFrameData
 class	TerminalFrameRequest
 class	TerminalFrames
@@ -5525,8 +5527,9 @@ class	TerminalView
 class	TerminalViewReceipt
 class	TerminalViewRefused
 class	TerminalViewRequest
-class	TerminalViewResponses
 class	TerminalViews
+class	TerminalWindowData
+class	TerminalWindowResolver
 class	TestDatabaseTraits
 class	TextAnchor
 class	TextCalls
@@ -6747,6 +6750,7 @@ enum	JobState
 enum	JournalRouteType
 enum	KeywordCategory
 enum	LaunchCandidateRank
+enum	LaunchProfileType
 enum	LifecycleStage
 enum	LifecycleState
 enum	MenuEntryState
@@ -9198,6 +9202,7 @@ method	CapabilityMatrixInvalid::unreadable()
 method	CapabilityMatrixInvalid::withoutRows()
 method	CapabilityWithoutTrait::for()
 method	CapacityRelease::releaseFor()
+method	CapacityReservation::assertFits()
 method	CapacityReservation::casts()
 method	CapacityReservation::isHeldFor()
 method	CapacityReservation::reserve()
@@ -9630,7 +9635,6 @@ method	CloseSimpleCommandNode::handle()
 method	CloseStartStack::__construct()
 method	CloseStartStack::handle()
 method	CloseTerminalView::__construct()
-method	CloseTerminalViewController::__invoke()
 method	CloseTerminalViewHandler::__construct()
 method	CloseTerminalViewHandler::handle()
 method	CloseWorkChain::__construct()
@@ -12847,6 +12851,7 @@ method	HostArrangementRefused::unlikeEnrollment()
 method	HostCapabilities::capability()
 method	HostCapability::__construct()
 method	HostCapability::assertSupported()
+method	HostCapability::isSupported()
 method	HostCapabilityQuery::__construct()
 method	HostCapabilityQuery::describe()
 method	HostCapabilityType::refusalFor()
@@ -14179,6 +14184,7 @@ method	MountRules::accountMounts()
 method	MountRules::assertContainedSource()
 method	MountRules::assertLocal()
 method	MountRules::assertPermits()
+method	MountRules::bindsAccount()
 method	MountRules::contained()
 method	MountRules::isDaemonFolder()
 method	MountRules::local()
@@ -14557,8 +14563,8 @@ method	OpenTaskPool::members()
 method	OpenTaskPoolFactory::describe()
 method	OpenTaskPoolFactory::open()
 method	OpenTaskPoolFactory::validate()
+method	OpenTerminalPageController::__invoke()
 method	OpenTerminalView::__construct()
-method	OpenTerminalViewController::__invoke()
 method	OpenTerminalViewHandler::__construct()
 method	OpenTerminalViewHandler::handle()
 method	OpenTiming::forCaller()
@@ -17085,8 +17091,8 @@ method	RendersRefusal::details()
 method	RendersRefusal::refusalCode()
 method	RendersRefusal::render()
 method	RendersRefusal::status()
+method	RenewTerminalPageController::__invoke()
 method	RenewTerminalView::__construct()
-method	RenewTerminalViewController::__invoke()
 method	RenewTerminalViewHandler::__construct()
 method	RenewTerminalViewHandler::handle()
 method	ReopenSharedGateways::__construct()
@@ -20979,7 +20985,6 @@ method	TasksSkill::description()
 method	TasksSkill::key()
 method	TasksSkill::name()
 method	TasksSkill::sections()
-method	TerminalFrameController::__invoke()
 method	TerminalFrameData::__construct()
 method	TerminalFrameRequest::agentId()
 method	TerminalFrameRequest::heldEpoch()
@@ -21017,9 +21022,6 @@ method	TerminalViewRequest::intervalMs()
 method	TerminalViewRequest::openCommand()
 method	TerminalViewRequest::renewCommand()
 method	TerminalViewRequest::rules()
-method	TerminalViewResponses::__construct()
-method	TerminalViewResponses::answer()
-method	TerminalViewResponses::run()
 method	TerminalViews::__construct()
 method	TerminalViews::close()
 method	TerminalViews::closeAllFor()
@@ -21031,6 +21033,9 @@ method	TerminalViews::receiptOf()
 method	TerminalViews::renew()
 method	TerminalViews::runtimeOf()
 method	TerminalViews::watchableRuntime()
+method	TerminalWindowData::__construct()
+method	TerminalWindowResolver::__construct()
+method	TerminalWindowResolver::read()
 method	TestDatabaseTraits::isSkipped()
 method	TestDatabaseTraits::offendersIn()
 method	TextAnchor::__construct()
@@ -22513,6 +22518,7 @@ parameter	$driverName
 parameter	$driverPinned
 parameter	$driverSource
 parameter	$driverVersion
+parameter	$drivers
 parameter	$due
 parameter	$duration
 parameter	$durationMilliseconds
@@ -22912,6 +22918,7 @@ parameter	$isDisabled
 parameter	$isEffectiveTop
 parameter	$isError
 parameter	$isFound
+parameter	$isGuarded
 parameter	$isHealthy
 parameter	$isHeld
 parameter	$isInsideFilter
@@ -23014,6 +23021,8 @@ parameter	$latest
 parameter	$latestLine
 parameter	$latestThread
 parameter	$launch
+parameter	$launchProfile
+parameter	$launchProfiles
 parameter	$launchReference
 parameter	$launches
 parameter	$layout
@@ -24243,6 +24252,7 @@ parameter	$transport
 parameter	$transportProfile
 parameter	$tree
 parameter	$treeDigest
+parameter	$trialDrivers
 parameter	$trigger
 parameter	$truncated
 parameter	$trust
@@ -26016,6 +26026,7 @@ property	ContainerManifest::$attachable
 property	ContainerManifest::$budgets
 property	ContainerManifest::$capabilities
 property	ContainerManifest::$image
+property	ContainerManifest::$launchProfile
 property	ContainerManifest::$mounts
 property	ContainerManifest::$network
 property	ContainerManifest::$noNewPrivileges
@@ -27506,6 +27517,7 @@ property	HostCapabilityQuery::$driver
 property	HostCapabilityQuery::$executionMode
 property	HostCapacity::$cpuCores
 property	HostCapacity::$diskBytes
+property	HostCapacity::$isGuarded
 property	HostCapacity::$memoryBytes
 property	HostCapacityLock::$databases
 property	HostCombination::$arrangement
@@ -27742,6 +27754,9 @@ property	LaunchEnded::$work
 property	LaunchLimits::$clock
 property	LaunchLimits::$requests
 property	LaunchProfileKey::$key
+property	LaunchProfiles::$arrangement
+property	LaunchProfiles::$capabilities
+property	LaunchProfiles::$trialDrivers
 property	LayoutData::$id
 property	LayoutData::$name
 property	LayoutData::$shape
@@ -31162,6 +31177,7 @@ property	SequenceWork::$stepNumber
 property	SessionClosed::$agentId
 property	SessionClosed::$sessionId
 property	SessionContainers::$arrangement
+property	SessionContainers::$launchProfiles
 property	SessionContainers::$policies
 property	SessionEndDetails::$reason
 property	SessionEnded::$end
@@ -31919,6 +31935,7 @@ property	StartGrant::$runtime
 property	StartGrant::$token
 property	StartGrantRequested::$additions
 property	StartGrantRequested::$sessionId
+property	StartHeartbeats::$capacity
 property	StartHeartbeats::$clock
 property	StartHeartbeats::$credentials
 property	StartHeartbeats::$endings
@@ -32618,11 +32635,11 @@ property	TerminalViewReceipt::$intervalMs
 property	TerminalViewReceipt::$runtimeId
 property	TerminalViewReceipt::$viewId
 property	TerminalViewRefused::$refusal
-property	TerminalViewResponses::$actor
-property	TerminalViewResponses::$clock
-property	TerminalViewResponses::$commands
-property	TerminalViewResponses::$views
 property	TerminalViews::$screens
+property	TerminalWindowData::$agentId
+property	TerminalWindowData::$frame
+property	TerminalWindowResolver::$frames
+property	TerminalWindowResolver::$request
 property	TextAnchor::$endOffset
 property	TextAnchor::$firstLine
 property	TextAnchor::$lastLine
@@ -34622,6 +34639,7 @@ variable	$startedEntry
 variable	$starter
 variable	$starting
 variable	$starts
+variable	$startsAsProfile
 variable	$startsExpansion
 variable	$startsOwnQuery
 variable	$startup

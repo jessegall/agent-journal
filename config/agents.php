@@ -87,6 +87,8 @@ return [
         'cpu_cores' => (int) env('AGENTS_HOST_CPU_CORES', 8),
         'memory_bytes' => (int) env('AGENTS_HOST_MEMORY_BYTES', 16 * 1024 * 1024 * 1024),
         'disk_bytes' => (int) env('AGENTS_HOST_DISK_BYTES', 50 * 1024 * 1024 * 1024),
+        // false lets every start through whatever it asks of the host; its reservation is still recorded.
+        'guarded' => (bool) env('AGENTS_HOST_CAPACITY_GUARDED', true),
     ],
 
 ];

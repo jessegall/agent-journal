@@ -22,6 +22,7 @@ use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Exceptions\StartRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\Host;
 use App\Agents\Models\ProcessStart;
@@ -215,8 +216,8 @@ final class StartAgentTest extends TestCase
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
         $start = ProcessStart::query()->withoutGlobalScopes()->where('session_id', $receipt->sessionId)->sole();
         $this->assertSame(
-            [SessionStatus::Ended, ProcessStartState::Cancelled],
-            [$session->status, $start->state],
+            [SessionStatus::Ended, ProcessStartState::Cancelled, false],
+            [$session->status, $start->state, CapacityReservation::isHeldFor($session->start_request_id)],
         );
         $this->assertNotSame($receipt->sessionId, $this->start($this->request())->sessionId);
     }

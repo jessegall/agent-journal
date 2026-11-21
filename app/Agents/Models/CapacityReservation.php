@@ -64,20 +64,8 @@ final class CapacityReservation extends Model implements ReadableModel
             return $existing;
         }
 
-        $held = self::query()->where('state', ReservationState::Reserved);
-
-        if ((int) $held->clone()->sum('cpu_cores') + $budgets->cpuCores > $capacity->cpuCores) {
-            throw CapacityUnavailable::because(
-                "{$budgets->cpuCores} more cores do not fit the host's {$capacity->cpuCores}.",
-            );
-        }
-
-        if ((int) $held->clone()->sum('memory_bytes') + $budgets->memoryBytes > $capacity->memoryBytes) {
-            throw CapacityUnavailable::because('its memory does not fit what the host has left.');
-        }
-
-        if ((int) $held->clone()->sum('disk_bytes') + $budgets->workspaceBytes > $capacity->diskBytes) {
-            throw CapacityUnavailable::because('its workspace does not fit the disk the host has left.');
+        if ($capacity->isGuarded) {
+            self::assertFits($budgets, $capacity);
         }
 
         return self::query()->create(
@@ -99,5 +87,31 @@ final class CapacityReservation extends Model implements ReadableModel
             ->where('start_request_id', $startRequestId)
             ->where('state', ReservationState::Reserved)
             ->exists();
+    }
+
+    // ----------[ Internals ]----------
+
+    /**
+     * Refuses a start whose budgets do not fit beside every reservation still held.
+     *
+     * @throws CapacityUnavailable
+     */
+    private static function assertFits(ExecutionBudgets $budgets, HostCapacity $capacity): void
+    {
+        $held = self::query()->where('state', ReservationState::Reserved);
+
+        if ((int) $held->clone()->sum('cpu_cores') + $budgets->cpuCores > $capacity->cpuCores) {
+            throw CapacityUnavailable::because(
+                "{$budgets->cpuCores} more cores do not fit the host's {$capacity->cpuCores}.",
+            );
+        }
+
+        if ((int) $held->clone()->sum('memory_bytes') + $budgets->memoryBytes > $capacity->memoryBytes) {
+            throw CapacityUnavailable::because('its memory does not fit what the host has left.');
+        }
+
+        if ((int) $held->clone()->sum('disk_bytes') + $budgets->workspaceBytes > $capacity->diskBytes) {
+            throw CapacityUnavailable::because('its workspace does not fit the disk the host has left.');
+        }
     }
 }

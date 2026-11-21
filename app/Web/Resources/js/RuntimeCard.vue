@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { DriverRequestStatus, RuntimeStatus } from '@/types/generated';
-import { ref } from 'vue';
+import { Link } from '@inertiajs/vue3';
+import { terminal } from '@/routes/web';
 import { recover } from './runtimeRecovery';
 import RuntimeSettingDetail from './RuntimeSettingDetail.vue';
 import RuntimeRequestRow from './RuntimeRequestRow.vue';
-import TerminalView from './TerminalView.vue';
 
 /**
  * One agent runtime as stored: its driver, activity, hold, settings and latest driver requests, with a button that
@@ -14,8 +14,6 @@ const props = defineProps<{
     status: RuntimeStatus;
     requests: DriverRequestStatus[];
 }>();
-
-const watching = ref(false);
 
 function releaseHold(): void {
     recover(
@@ -44,17 +42,12 @@ function age(seconds: number | null): string {
                 }}{{ status.isStale ? ', stale' : '' }}
             </span>
             <template v-if="status.variant === 'terminal'">
-                <button type="button" @click="watching = !watching">
-                    {{ watching ? 'Stop watching' : 'Watch terminal' }}
-                </button>
+                <Link :href="terminal.url(status.agentId)">Watch terminal</Link>
             </template>
             <template v-if="status.watchers > 0">
                 <span class="text-text-3">{{ status.watchers }} watching</span>
             </template>
         </header>
-        <template v-if="watching">
-            <TerminalView :agent-id="status.agentId" />
-        </template>
         <dl class="grid grid-cols-[auto_1fr] gap-x-4 text-sm">
             <dt class="text-text-3">model</dt>
             <RuntimeSettingDetail :setting="status.model" />
