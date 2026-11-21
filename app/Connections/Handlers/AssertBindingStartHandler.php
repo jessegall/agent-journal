@@ -6,6 +6,7 @@ namespace App\Connections\Handlers;
 
 use App\Agents\Enums\ArrangementType;
 use App\Connections\Commands\AssertBindingStart;
+use App\Connections\Enums\BindingReadiness;
 use App\Connections\Exceptions\BindingStartRefused;
 use App\Connections\Models\ProjectBinding;
 use App\Contracts\CommandHandler;
@@ -22,6 +23,10 @@ final readonly class AssertBindingStartHandler implements CommandHandler
 
         if (! $binding->isReportableBy($command->hostId)) {
             throw BindingStartRefused::notTheHost($binding->id);
+        }
+
+        if ($binding->readiness === BindingReadiness::Incompatible) {
+            throw BindingStartRefused::incompatible($binding->id);
         }
 
         $binding->host->assertEnrolledAs(ArrangementType::Local);

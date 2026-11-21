@@ -6,11 +6,16 @@ namespace Tests\Feature\Connections;
 
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Models\Host;
+use Domain\Access\Support\AccessSettings;
+use App\Connections\Exceptions\DeviceGrantRefused;
+use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Models\ProjectCommandRun;
 use App\Connections\Values\BindingFolder;
 use App\Connections\Values\CommandFrame;
+use App\Connections\Values\InstallTicket;
+use Domain\Access\Models\User;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -28,8 +33,8 @@ final class ProjectCommandsTest extends TestCase
     use SendsSignedCalls;
 
     private const array TABLES = [
-        'project_command_runs', 'project_bindings', 'projects', 'agent_runtimes', 'agent_sessions', 'start_tokens',
-        'agents', 'hosts',
+        'project_command_runs', 'device_grants', 'connection_audits', 'command_receipts', 'project_bindings', 'projects', 'agent_runtimes', 'agent_sessions', 'start_tokens',
+        'agents', 'hosts', 'settings_records', 'users',
     ];
 
     public function test_a_repeated_request_id_answers_the_first_result_without_running_again(): void
@@ -61,6 +66,30 @@ final class ProjectCommandsTest extends TestCase
         [, $other] = $this->connectedStart();
 
         $this->command($start, 'request-1', $other->id, ['task', 'list'])->assertForbidden();
+    }
+
+    public function test_a_revoke_refuses_the_agents_token_and_device_grant_and_ends_its_streams_only(): void
+    {
+        [$start, $binding] = $this->connectedStart();
+        [$otherStart, $other] = $this->connectedStart();
+        $stream = ProjectCommandRun::start('request-1', $start->agent->id, $binding, ['task', 'list']);
+        $otherStream = ProjectCommandRun::start('request-2', $otherStart->agent->id, $other, ['task', 'list']);
+        $grant = DeviceGrant::start($binding, InstallTicket::digestOf('device-code'), 'ABCD-EFGH');
+        $grant->issue(InstallTicket::digestOf('device-grant'));
+
+        $owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $this->actingAs($owner)->deleteJson("/settings/project-connections/bindings/{$binding->id}")->assertNoContent();
+
+        $this->command($start, 'request-3', $binding->id, ['task', 'list'])->assertUnauthorized();
+        $this->expectException(DeviceGrantRefused::class);
+        try {
+            DeviceGrant::usable(InstallTicket::digestOf('device-grant'));
+        } finally {
+            $this->assertFalse($stream->fresh()?->isRunning());
+            $this->assertTrue($otherStream->fresh()?->isRunning());
+            $this->command($otherStart, 'request-4', $other->id, ['migrate', 'fresh'])->assertForbidden();
+        }
     }
 
     public function test_a_host_credential_alone_is_refused(): void

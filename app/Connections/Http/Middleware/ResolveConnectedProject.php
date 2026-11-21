@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Http\Middleware;
 
 use App\Agents\Support\AgentContext;
+use App\Connections\Exceptions\BindingRevoked;
 use App\Connections\Models\ProjectBinding;
 use App\Processes\Support\ConnectedProject;
 use App\Processes\Support\ProjectKey;
@@ -16,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Makes an authenticated agent call of a connected project serve that project: the agent's binding names the
  * project, and its folder is the only one the call's work may run in. A call of an agent this installation runs for
- * its own project keeps the configured project. The project comes from the authenticated agent, never from the call.
+ * its own project keeps the configured project; an agent of a revoked binding is refused, whatever token it holds. The project comes from the authenticated agent, never from the call.
  */
 final readonly class ResolveConnectedProject
 {
@@ -32,6 +33,10 @@ final readonly class ResolveConnectedProject
         }
 
         $agent = $this->container->make(AgentContext::class);
+
+        if (ProjectBinding::isRevokedMainAgent($agent->agentId)) {
+            throw BindingRevoked::forAgent($agent->agentId);
+        }
 
         foreach (ProjectBinding::ofMainAgent($agent->agentId) as $binding) {
             $this->projects->connect(new ConnectedProject($binding->project->key, $binding->canonical_root));

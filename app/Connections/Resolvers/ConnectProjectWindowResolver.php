@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Resolvers;
 
 use App\Agents\Support\InstallLineAvailability;
+use App\Agents\Support\PublishedReleases;
 use App\Agents\Support\ServerOrigin;
 use App\Connections\Models\ProjectBinding;
 use App\Http\Data\Connections\ConnectProjectWindowData;
@@ -18,7 +19,11 @@ use Carbon\CarbonImmutable;
  */
 final readonly class ConnectProjectWindowResolver implements PageResolver
 {
-    public function __construct(private InstallLineAvailability $availability, private ServerOrigin $origin) {}
+    public function __construct(
+        private InstallLineAvailability $availability,
+        private ServerOrigin $origin,
+        private PublishedReleases $releases,
+    ) {}
 
     public function read(): ConnectProjectWindowData
     {
@@ -27,6 +32,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         return ConnectProjectWindowData::from([
             'serverName' => $this->origin->name(),
             'canIssue' => $this->availability->canIssue(),
+            'release' => $this->releases->offer(),
             'bindings' => array_map(
                 fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding($binding, $now),
                 ProjectBinding::listed(),

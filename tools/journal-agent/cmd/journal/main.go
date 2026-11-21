@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"journal-agent/client"
+	"journal-agent/diagnostics"
 	"journal-agent/hookadapter"
 	"journal-agent/host"
 	"journal-agent/localsession"
@@ -26,7 +27,7 @@ import (
 )
 
 // localVerbs are the verbs this machine answers itself; every other verb runs on the server.
-var localVerbs = []string{"status", "claude", "codex", "logout", "service", "disconnect", "attach", "disconnect", "upgrade"}
+var localVerbs = []string{"status", "claude", "codex", "logout", "service", "disconnect", "attach", "upgrade", "diagnostics"}
 
 // errVerbLater refuses a local verb this connected machine does not run yet.
 var errVerbLater = errors.New("this verb arrives with the next release")
@@ -43,6 +44,10 @@ func main() {
 		grant:       func(host.Binding) (client.StartGrant, bool) { return client.StartGrantFrom(os.LookupEnv) },
 		transport:   &http.Client{},
 		approval:    deviceApproval,
+		disableService: func(binding host.Binding) error {
+			home, _ := os.UserHomeDir()
+			return userservice.Service{Home: home, BindingID: binding.BindingID, StateFolder: host.DefaultStateFolder()}.Disable()
+		},
 	}
 	os.Exit(commands.run(os.Args[1:], folder, standardInput(), os.Stdout, os.Stderr))
 }
@@ -55,6 +60,8 @@ type dispatcher struct {
 	grant       func(binding host.Binding) (client.StartGrant, bool)
 	transport   *http.Client
 	approval    func(binding host.Binding, state host.ConnectionState, stderr io.Writer) (string, error)
+	// disableService stops the user service that keeps the binding's relay running.
+	disableService func(binding host.Binding) error
 }
 
 // run resolves the folder's binding, wakes its relay when none runs and answers the verb with its exit code.
@@ -70,7 +77,7 @@ func (commands dispatcher) run(arguments []string, folder string, stdin []byte, 
 	}
 
 	if len(arguments) > 0 && slices.Contains(localVerbs, arguments[0]) {
-		return commands.local(arguments[0], binding, state, found, stdout, stderr)
+		return commands.local(arguments, binding, state, found, stdout, stderr)
 	}
 
 	return commands.forward(arguments, binding, state, stdin, stdout, stderr)
@@ -108,23 +115,27 @@ func (commands dispatcher) resolve(folder string) (project.Folder, host.Binding,
 
 // local answers a verb this machine handles itself.
 func (commands dispatcher) local(
-	verb string,
+	arguments []string,
 	binding host.Binding,
 	state host.ConnectionState,
 	folder project.Folder,
 	stdout, stderr io.Writer,
 ) int {
+	verb := arguments[0]
 	if verb == "claude" {
 		return commands.claude(binding, folder, stderr)
 	}
 	if verb == "disconnect" {
-		return commands.disconnect(binding, state, folder, stdout, stderr)
+		return commands.disconnect(arguments[1:], binding, state, folder, stdout, stderr)
 	}
 	if verb == "service" {
 		return commands.service(binding, stdout, stderr)
 	}
 	if verb == "logout" {
 		return commands.logout(binding, stdout, stderr)
+	}
+	if verb == "diagnostics" {
+		return diagnose(binding, state, folder, stdout, stderr)
 	}
 	if verb == "codex" {
 		// Local Codex sessions wait for a per-thread callback channel the pinned build does not give.
@@ -206,20 +217,19 @@ func (commands dispatcher) claude(binding host.Binding, folder project.Folder, s
 // private credentials and session state go, dirty worktrees stay with their paths printed, and other connected
 // folders are untouched. The binding reads offline on the journal; its history stays there.
 func (commands dispatcher) disconnect(
+	flags []string,
 	binding host.Binding,
 	state host.ConnectionState,
 	folder project.Folder,
 	stdout, stderr io.Writer,
 ) int {
-	if !slices.Contains(os.Args[2:], "--yes") {
+	if !slices.Contains(flags, "--yes") {
 		fmt.Fprintln(stdout, "This disconnects "+folder.Root+" from "+binding.JournalURL+
 			": its relay stops and this machine forgets its sign-in. Work in progress is kept. Run journal disconnect --yes to go on.")
 		return 1
 	}
 
-	home, _ := os.UserHomeDir()
-	service := userservice.Service{Home: home, BindingID: binding.BindingID, StateFolder: commands.stateFolder}
-	if err := service.Disable(); err != nil && !errors.Is(err, userservice.ErrNoServiceManager) {
+	if err := commands.disableService(binding); err != nil && !errors.Is(err, userservice.ErrNoServiceManager) {
 		fmt.Fprintln(stderr, "journal:", err)
 	}
 	kept, err := folder.Disconnect()
@@ -419,6 +429,23 @@ func status(binding host.Binding, state host.ConnectionState, folder project.Fol
 
 	return fmt.Sprintf("Connected to %s · %s · %s · %s",
 		binding.JournalURL, filepath.Base(folder.Root), host.MachineLabel(), contact)
+}
+
+// diagnose writes the binding's diagnostics bundle into the project folder and names it.
+func diagnose(binding host.Binding, state host.ConnectionState, folder project.Folder, stdout, stderr io.Writer) int {
+	release := "unknown"
+	if installation, err := ownInstallation(); err == nil {
+		release = filepath.Base(installation)
+	}
+	install := diagnostics.Install{Release: release, Protocol: client.RemoteProjectProtocolVersion}
+	path, err := diagnostics.Write(binding, state, install, folder.Root)
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	fmt.Fprintln(stdout, "Wrote "+path+": it names this install and its last failures, and holds no secret.")
+
+	return 0
 }
 
 // standardInput is what was piped into the command; a terminal passes nothing on.

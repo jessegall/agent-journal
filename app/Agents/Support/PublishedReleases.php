@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Data\ReleaseCompatibilityData;
+use App\Agents\Data\ReleaseOfferData;
+use App\Agents\Data\ReleaseTargetData;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Exceptions\ReleaseMissing;
 use App\Agents\Values\ReleaseArtifact;
@@ -68,7 +70,8 @@ final readonly class PublishedReleases
     }
 
     /**
-     * Whether a current release is published whose manifest speaks a protocol this journal speaks.
+     * Whether a current release is published whose manifest speaks a protocol this journal speaks, has every
+     * capability a public install line needs and ships for a platform with its sizes, prerequisites and providers.
      */
     public function hasCompatibleRelease(): bool
     {
@@ -80,7 +83,26 @@ final readonly class PublishedReleases
             return false;
         }
 
-        return $this->manifestOf($this->current)->speaksSpokenProtocol();
+        return $this->manifestOf($this->current)->isPublic();
+    }
+
+    /**
+     * What the window shows beside Copy: each platform of the current release with its size and prerequisites, the
+     * platforms and providers it withholds, and the capabilities it lacks; nothing while no release is published.
+     */
+    public function offer(): ReleaseOfferData
+    {
+        if ($this->current === '' || ! $this->files->exists(FilePath::in(Place::Releases, "{$this->current}/".self::MANIFEST))) {
+            return ReleaseOfferData::from(['release' => null, 'targets' => [], 'withheldCapabilities' => ReleaseManifest::CAPABILITIES]);
+        }
+
+        $manifest = $this->manifestOf($this->current);
+
+        return ReleaseOfferData::from([
+            'release' => $manifest->version,
+            'targets' => array_map(ReleaseTargetData::fromTarget(...), $manifest->targets),
+            'withheldCapabilities' => $manifest->withheldCapabilities(),
+        ]);
     }
 
     /**

@@ -101,6 +101,15 @@ final class ProjectCommandRun extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * Ends every running command stream of a revoked binding: a stream that is cancelled takes no more frames.
+     */
+    public static function cancelEveryRunOf(ProjectBinding $binding): void
+    {
+        self::query()->where('binding_id', $binding->id)->where('state', CommandRunState::Running)
+            ->update(['state' => CommandRunState::Cancelled]);
+    }
+
     public function cancel(): void
     {
         $this->state = CommandRunState::Cancelled;

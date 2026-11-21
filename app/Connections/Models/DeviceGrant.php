@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Connections\Models;
 
+use App\Connections\Enums\BindingReadiness;
 use App\Connections\Enums\DeviceGrantState;
 use App\Connections\Exceptions\DeviceGrantRefused;
 use App\Links\Support\Linkable;
@@ -140,6 +141,7 @@ final class DeviceGrant extends Model implements ReadableModel
     {
         return self::query()->with('binding')->where('grant_digest', $grantDigest)
             ->where('state', DeviceGrantState::Issued)->where('grant_expires_at', '>', CarbonImmutable::now())
+            ->whereHas('binding', fn ($binding) => $binding->where('readiness', '!=', BindingReadiness::Revoked))
             ->firstOr(fn () => throw DeviceGrantRefused::notUsable());
     }
 
@@ -178,6 +180,15 @@ final class DeviceGrant extends Model implements ReadableModel
         $this->grant_expires_at = CarbonImmutable::now()->addHours(self::GRANT_HOURS);
         $this->state = DeviceGrantState::Issued;
         $this->save();
+    }
+
+    /**
+     * Revokes every grant of a revoked binding at once; grants to other bindings keep their own scope.
+     */
+    public static function revokeEveryGrantOf(ProjectBinding $binding): void
+    {
+        self::query()->where('binding_id', $binding->id)->where('state', '!=', DeviceGrantState::Revoked)
+            ->update(['state' => DeviceGrantState::Revoked]);
     }
 
     public function revoke(): void

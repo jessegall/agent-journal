@@ -225,3 +225,59 @@ func TestJournalCodexNamesWhyLocalCodexIsWithheld(t *testing.T) {
 		t.Fatalf("journal codex answered %q, %d", refusal, code)
 	}
 }
+
+func TestDisconnectRemovesOneFolderKeepsItsDirtyWorktreeAndLeavesTheOtherConnected(t *testing.T) {
+	state := realTempDir(t)
+	parent := realTempDir(t)
+	shop := connectedFolder(t, state, parent, "shop")
+	blog := connectedFolder(t, state, parent, "blog")
+	dirty := filepath.Join(shop, ".journal", "worktrees", "feature")
+	if err := os.MkdirAll(dirty, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dirty, "draft.txt"), []byte("work in progress"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	disabled := []string{}
+	commands := dispatcher{
+		stateFolder: state,
+		wake:        func(string, string) error { return nil },
+		grant:       noGrant,
+		disableService: func(binding host.Binding) error {
+			disabled = append(disabled, binding.BindingID)
+			return nil
+		},
+	}
+
+	if _, _, code := answer(commands, []string{"disconnect"}, shop, ""); code == 0 {
+		t.Fatal("disconnect went on without --yes")
+	}
+	printed, refusal, code := answer(commands, []string{"disconnect", "--yes"}, shop, "")
+
+	if code != 0 {
+		t.Fatalf("disconnect answered %q, %d", refusal, code)
+	}
+	if !strings.Contains(printed, "Kept work in progress at "+dirty) || strings.Contains(printed, "No connected project is left") {
+		t.Fatalf("the first disconnect printed %q", printed)
+	}
+	if _, err := os.Stat(filepath.Join(shop, ".journal", "connection.json")); !os.IsNotExist(err) {
+		t.Fatalf("connection.json is still there: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dirty, "draft.txt")); err != nil {
+		t.Fatalf("the dirty worktree was not kept: %v", err)
+	}
+	if _, err := (host.ConnectionState{Folder: state, CanonicalRoot: shop}).Binding(); err == nil {
+		t.Fatal("the binding's private state is still there")
+	}
+	if _, err := (host.ConnectionState{Folder: state, CanonicalRoot: blog}).Binding(); err != nil {
+		t.Fatalf("the other folder's binding went too: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(blog, ".journal", "connection.json")); err != nil {
+		t.Fatalf("the other folder lost its connection: %v", err)
+	}
+
+	printed, _, _ = answer(commands, []string{"disconnect", "--yes"}, blog, "")
+	if !strings.Contains(printed, "No connected project is left") || len(disabled) != 2 {
+		t.Fatalf("the last disconnect printed %q and disabled %v", printed, disabled)
+	}
+}

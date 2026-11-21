@@ -150,6 +150,14 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * Whether this agent is the main agent of a revoked binding, whose every call is refused.
+     */
+    public static function isRevokedMainAgent(string $agentId): bool
+    {
+        return self::query()->where('main_agent_id', $agentId)->where('readiness', BindingReadiness::Revoked)->exists();
+    }
+
+    /**
      * The binding of this id, locked until the transaction ends.
      */
     public static function lockById(string $id): self

@@ -15,10 +15,23 @@ use App\Agents\Exceptions\ReleaseMissing;
 final readonly class ReleaseManifest
 {
     /**
+     * What a release must do before the window offers its install line to the public.
+     */
+    public const array CAPABILITIES = ['enrollment', 'presence', 'commands', 'child-worktrees'];
+
+    /**
      * @param  array<string, array<string, ReleaseFile>>  $files  by target folder (darwin-arm64), each file by the
      *                                                            name it is installed under
+     * @param  list<string>  $capabilities
+     * @param  list<ReleaseTarget>  $targets
      */
-    private function __construct(public string $version, public int $protocolVersion, private array $files) {}
+    private function __construct(
+        public string $version,
+        public int $protocolVersion,
+        private array $files,
+        public array $capabilities,
+        public array $targets,
+    ) {}
 
     /**
      * @param  array<mixed>  $manifest
@@ -32,16 +45,30 @@ final readonly class ReleaseManifest
         }
 
         $files = [];
+        $targets = [];
 
         foreach (self::listAt($version, $manifest, 'targets') as $target) {
             $folder = self::stringAt($version, $target, 'os').'-'.self::stringAt($version, $target, 'arch');
+            $bytes = 0;
+            $isMeasured = true;
 
             foreach (self::listAt($version, $target, 'artifacts') as $artifact) {
                 $files[$folder][self::stringAt($version, $artifact, 'name')] = new ReleaseFile(
                     self::stringAt($version, $artifact, 'source'),
                     self::stringAt($version, $artifact, 'sha256'),
                 );
+                $size = $artifact['size'] ?? 0;
+                $isMeasured = $isMeasured && is_int($size) && $size > 0;
+                $bytes += is_int($size) ? $size : 0;
             }
+
+            $targets[] = new ReleaseTarget(
+                $folder,
+                $bytes,
+                $isMeasured && isset($files[$folder]),
+                self::namesAt($version, $target, 'prerequisites'),
+                self::namesAt($version, $target, 'providers'),
+            );
         }
 
         $protocolVersion = $manifest['hostProtocolVersion'] ?? null;
@@ -50,7 +77,7 @@ final readonly class ReleaseManifest
             throw ReleaseManifestInvalid::for($version, 'it names no protocol version');
         }
 
-        return new self($version, $protocolVersion, $files);
+        return new self($version, $protocolVersion, $files, self::namesAt($version, $manifest, 'capabilities'), $targets);
     }
 
     /**
@@ -92,6 +119,27 @@ final readonly class ReleaseManifest
     }
 
     /**
+     * The capabilities a public install line needs that this release does not have.
+     *
+     * @return list<string>
+     */
+    public function withheldCapabilities(): array
+    {
+        return array_values(array_diff(self::CAPABILITIES, $this->capabilities));
+    }
+
+    /**
+     * Whether the window may offer this release's install line: it speaks this journal's protocol, has every
+     * capability and ships for at least one platform with measured sizes, prerequisites and both providers.
+     */
+    public function isPublic(): bool
+    {
+        $supported = array_filter($this->targets, fn (ReleaseTarget $target) => $target->isSupported());
+
+        return $this->speaksSpokenProtocol() && $this->withheldCapabilities() === [] && $supported !== [];
+    }
+
+    /**
      * @throws ReleaseMissing
      */
     private function fileOf(string $target, string $name): ReleaseFile
@@ -128,6 +176,31 @@ final readonly class ReleaseManifest
         }
 
         return $objects;
+    }
+
+    /**
+     * The names listed under the key; a manifest written before the key existed lists none.
+     *
+     * @param  array<mixed>  $object
+     * @return list<string>
+     *
+     * @throws ReleaseManifestInvalid
+     */
+    private static function namesAt(string $version, array $object, string $key): array
+    {
+        if (! array_key_exists($key, $object)) {
+            return [];
+        }
+
+        $names = $object[$key];
+
+        if (! is_array($names) || ! array_is_list($names)) {
+            throw ReleaseManifestInvalid::for($version, "{$key} is not a list");
+        }
+
+        return array_values(array_map(fn (mixed $name) => is_string($name) && $name !== ''
+            ? $name
+            : throw ReleaseManifestInvalid::for($version, "an entry of {$key} is not a name"), $names));
     }
 
     /**
