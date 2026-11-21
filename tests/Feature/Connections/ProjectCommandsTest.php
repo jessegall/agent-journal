@@ -101,13 +101,13 @@ final class ProjectCommandsTest extends TestCase
         $run = $this->recordedRun('request-1', $start, $binding, 'live-worker');
         $run->finish([CommandFrame::output(1, 'stdout', "Tasks\n"), CommandFrame::exit(2, 3)], 3);
 
-        $status = $this->status($start, 'request-1', $binding->id)->assertOk();
+        $status = $this->readStatus($start, 'request-1', $binding->id)->assertOk();
 
         $this->assertSame('failed', $status->json('state'));
         $this->assertSame("Tasks\n", $status->json('frames.0.text'));
         $this->assertSame(3, $status->json('frames.1.exitCode'));
-        $this->status($start, 'request-1', $other->id)->assertForbidden();
-        $this->assertSame('unknown', $this->status($start, 'request-9', $binding->id)->assertOk()->json('state'));
+        $this->readStatus($start, 'request-1', $other->id)->assertForbidden();
+        $this->assertSame('unknown', $this->readStatus($start, 'request-9', $binding->id)->assertOk()->json('state'));
         $this->assertSame(1, ProjectCommandRun::query()->count());
     }
 
@@ -215,7 +215,7 @@ final class ProjectCommandsTest extends TestCase
         );
     }
 
-    private function status(TestStart $start, string $requestKey, string $bindingId): TestResponse
+    private function readStatus(TestStart $start, string $requestKey, string $bindingId): TestResponse
     {
         return $this->signed($start, '/api/project-commands/status', [
             'request_key' => $requestKey,
