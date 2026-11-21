@@ -1,4 +1,6 @@
 import { rename } from '@generated/routes/accounts';
+import type { AccountListData } from '@generated/types/accounts';
+import type { WindowResult } from '@generated/types/page-props';
 import { useForm } from '@inertiajs/vue3';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed } from 'vue';
@@ -26,13 +28,39 @@ export function useAccountNaming(account: () => { id: string; label: string }) {
         field?.select();
     }
 
+    /**
+     * Saves the name, and shows it in the account list at once: Inertia keeps the new name over reads while the save
+     * is out and puts the old one back when it is refused.
+     */
     function save(onSaved: () => void): void {
-        naming.submit(rename({ account: account().id }), {
-            preserveScroll: true,
-            onSuccess: onSaved,
-            ...formSendingHooks(),
-        });
+        const id = account().id;
+        const label = naming.label.trim();
+
+        naming
+            .optimistic<{ page: WindowResult<AccountListData> }>((props) => renamedIn(props.page, id, label))
+            .submit(rename({ account: id }), {
+                preserveScroll: true,
+                onSuccess: onSaved,
+                ...formSendingHooks(),
+            });
     }
 
     return { naming, canSave, startFrom, save };
+}
+
+/**
+ * The page with the account's row renamed, when the page lists accounts; any other page is left as it is.
+ */
+function renamedIn(
+    page: WindowResult<AccountListData>,
+    id: string,
+    label: string,
+): { page: WindowResult<AccountListData> } | Record<string, never> {
+    if (page.state !== 'ready' || !Array.isArray(page.data.rows)) {
+        return {};
+    }
+
+    const rows = page.data.rows.map((row) => (row.id === id ? { ...row, label } : row));
+
+    return { page: { ...page, data: { ...page.data, rows } } };
 }

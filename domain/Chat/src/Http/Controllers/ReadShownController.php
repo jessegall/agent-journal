@@ -19,8 +19,9 @@ final readonly class ReadShownController
     public function __invoke(ReadShownInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new ReadMessages($input->inboxId, $input->messageIds));
-        $window = ConversationRequest::queryFor($input->agent);
+        $home = $redirect->getUrlGenerator()->route('home', ConversationRequest::queryFor($input->agent), false);
 
-        return $redirect->route('home', $window, 303);
+        // The page that showed the messages, Home or Chat's own, is shown again.
+        return $redirect->back(303, [], $home);
     }
 }

@@ -6,6 +6,7 @@ import FormField from '@kit/FormField';
 import Modal from '@kit/Modal';
 import { getJson, postJson } from '@kit/jsonRequests';
 import { newRequestId } from '@kit/requestId';
+import { useSwitchOperation } from './composables/useSwitchOperation';
 import type { AgentOptionData } from '@generated/types/chat';
 import type { DriverVariant, HookDriver } from '@kit/CoreTypes';
 import {
@@ -13,7 +14,6 @@ import {
     eligibleAccounts,
     startMain,
     switchMethod,
-    switchStage,
     type EligibleAccountData,
     type EligibleAccountsData,
 } from '@kit/sessionStarts';
@@ -42,7 +42,6 @@ type SessionChoice = {
     accountRevision: number | undefined;
     conversationId: string | null;
 };
-type SwitchAnswer = { switchId: string; stage: string; stageLabel: string; isFinal: boolean; failureReason: string | null };
 
 const drivers: { value: HookDriver; label: string }[] = [
     { value: 'claude-code', label: 'Claude Code' },
@@ -56,6 +55,7 @@ const variants: { value: DriverVariant | ''; label: string }[] = [
 const titles = { start: 'Start session', resume: 'Resume a conversation', switch: 'Switch session' };
 
 const requestId = newRequestId();
+const switching = useSwitchOperation(() => props.agent);
 const driver = ref<HookDriver>(props.agent.conversations[0]?.driver ?? 'claude-code');
 const variant = ref<DriverVariant | ''>('');
 const saveVariant = ref(false);
@@ -74,7 +74,13 @@ const review = computed(() => {
 
     return `${driverLabel} as ${variantLabel}, on ${account.value?.label ?? 'no account'}`;
 });
-const canSubmit = computed(() => account.value !== undefined && account.value.unavailableReason === null && !sending.value);
+const isSwitchOpen = computed(() => ['sending', 'following', 'uncertain'].includes(switching.state.value));
+const canSubmit = computed(
+    () => account.value !== undefined && account.value.unavailableReason === null && !sending.value && !isSwitchOpen.value,
+);
+// A switch shows its own stage and refusal; a start or resume shows the form's.
+const shownProgress = computed(() => (props.mode === 'switch' ? switching.progress.value : progress.value));
+const shownRefusal = computed(() => (props.mode === 'switch' ? switching.refusal.value : null) ?? refusal.value);
 
 async function readAccounts(chosen: HookDriver): Promise<void> {
     const reply = await getJson<EligibleAccountsData>(eligibleAccounts.url(chosen));
@@ -114,38 +120,17 @@ async function start(): Promise<void> {
     polling = setInterval(() => router.reload(), 2000);
 }
 
-async function switchSession(): Promise<void> {
-    const reply = await postJson<SwitchAnswer>(switchMethod.url(props.agent.profileKey), {
+/**
+ * Sends the switch once under the form's request id, through Inertia; the dialog then follows its stage from the
+ * page until it is over.
+ */
+function switchSession(): void {
+    switching.begin(requestId, switchMethod.url(props.agent.profileKey), {
         ...sessionChoice(),
         variant: variant.value === '' ? 'terminal' : variant.value,
         expectedSessionId: props.agent.sessionId,
         expectedGeneration: props.agent.sessionGeneration,
     });
-
-    if (!reply.ok) {
-        refusal.value = reply.message;
-
-        return;
-    }
-
-    follow(reply.value);
-    polling = setInterval(async () => {
-        const stage = await getJson<SwitchAnswer>(switchStage.url(requestId));
-
-        if (stage.ok) {
-            follow(stage.value);
-        }
-    }, 2000);
-}
-
-function follow(answer: SwitchAnswer): void {
-    progress.value = answer.stageLabel;
-    refusal.value = answer.failureReason;
-
-    if (answer.isFinal) {
-        clearInterval(polling);
-        router.reload();
-    }
 }
 
 async function submit(): Promise<void> {
@@ -238,11 +223,11 @@ onBeforeUnmount(() => clearInterval(polling));
                 </template>
             </FormField>
             <p class="text-small text-text-2">Starts {{ review }}.</p>
-            <template v-if="progress">
-                <p class="text-small text-text" aria-live="polite">{{ progress }}</p>
+            <template v-if="shownProgress">
+                <p class="text-small text-text" aria-live="polite">{{ shownProgress }}</p>
             </template>
-            <template v-if="refusal">
-                <p class="text-small text-danger" role="alert">{{ refusal }}</p>
+            <template v-if="shownRefusal">
+                <p class="text-small text-danger" role="alert">{{ shownRefusal }}</p>
             </template>
         </form>
         <template #footer>

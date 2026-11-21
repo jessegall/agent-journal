@@ -1,6 +1,6 @@
-import { router } from '@inertiajs/vue3';
 import { reactive, ref } from 'vue';
 import type { MessageView } from '@kit/CoreTypes';
+import { keyedPost } from '@kit/keyedPost';
 import { onPurge } from '@kit/protectedView';
 import { newRequestId } from '@kit/requestId';
 import { appliedReadGeneration, markDirty } from '@kit/usePageChanges';
@@ -163,29 +163,15 @@ function createOwner(draftKey: string) {
     function submit(intent: ConversationIntent, conversationProp: string): void {
         const route = intent.kind === 'send' ? sendRoute() : replyRoute();
 
-        router.post(route.url, intent.body, {
-            async: true,
-            only: [conversationProp],
-            preserveState: true,
-            preserveScroll: true,
-            headers: { 'Idempotency-Key': intent.key },
-            onSuccess: () => confirmBy(intent),
-            onError: (errors) => {
-                intent.refusal = Object.values(errors)[0] ?? null;
+        keyedPost(route.url, intent.body, intent.key, {
+            onAccepted: () => confirmBy(intent),
+            onRefused: (reason) => {
+                intent.refusal = reason;
                 refuse(intent);
             },
-            onHttpException: () => {
-                checkByRead(intent);
-
-                return false;
-            },
-            onNetworkError: () => {
-                checkByRead(intent);
-
-                return false;
-            },
+            onUncertain: () => checkByRead(intent),
             onFinish: () => finishTransport(intent),
-        });
+        }, [conversationProp]);
     }
 
     /**

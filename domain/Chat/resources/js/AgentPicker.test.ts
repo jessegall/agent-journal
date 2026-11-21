@@ -24,6 +24,8 @@ function agent(id: string, name: string, presenceLabel: string): AgentOptionData
         hasTerminal: false,
         switchId: null,
         switchStage: null,
+        switchStageLabel: null,
+        isSwitchOver: true,
         actions: ['start'],
         conversations: [],
     };

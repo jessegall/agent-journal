@@ -8,15 +8,29 @@ use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Profiles\SwitchAgentDriverRequest;
 use App\Profiles\Values\DriverSwitchReceipt;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Redirector;
 
 /**
- * Switches an agent to another driver, variant or account and answers with where the switch stands.
+ * Switches an agent to another driver, variant or account. A page's form returns to that page, which shows the
+ * switch's stage, with the reason as its error when the switch failed at once; a JSON caller reads where it stands.
  */
 final readonly class SwitchAgentDriverController
 {
-    public function __invoke(SwitchAgentDriverRequest $request, CommandBus $commands): JsonResponse
-    {
-        return self::answer($commands->run($request->command()));
+    public function __invoke(
+        SwitchAgentDriverRequest $request,
+        CommandBus $commands,
+        Redirector $redirect,
+    ): JsonResponse|RedirectResponse {
+        $receipt = $commands->run($request->command());
+
+        if ($request->expectsJson()) {
+            return self::answer($receipt);
+        }
+
+        $back = $redirect->back(303);
+
+        return $receipt->failureReason === null ? $back : $back->withErrors(['switch' => $receipt->failureReason]);
     }
 
     public static function answer(DriverSwitchReceipt $receipt): JsonResponse
