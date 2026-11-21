@@ -20,7 +20,7 @@ DROPPED_LINE = "task {task} was blocked while you worked on it and is no longer 
 
 
 class WorkerTaskChanges(Listener[RowEvent]):
-    """What the user does to a worker's task reaches the worker's rows: a task done or cancelled is let go by its worker, which is released once it holds no other task, a task the user or the agent blocked under its worker is let go too and the worker is told in its session to go on with its queue, a task done, cancelled or blocked while it waits in a worker's queue leaves the queue, a blocked one offered again once it opens, and a title or brief written anew marks the proofs of its changed points stale and, for a worker that is not running, is kept on its row to be said with its next job."""
+    """What the user does to a worker's task reaches the worker's rows: a task done or cancelled is let go by its worker, which is released once it holds no other task, a task the user or the agent blocked under its worker is let go too and the worker is told in its session to go on with its queue, a task done, cancelled or blocked while it waits in a worker's queue leaves the queue, a blocked one offered again once it opens, and a title or brief written anew marks the proofs of its changed points that were shown before the edit stale and, for a worker that is not running, is kept on its row to be said with its next job."""
 
     def __init__(self, tasks: Tasks, workers: Workers, proofs: Proofs, actions: WorkerActions) -> None:
         self.tasks, self.workers, self.proofs, self.actions = tasks, workers, proofs, actions
@@ -62,6 +62,8 @@ class WorkerTaskChanges(Listener[RowEvent]):
     def edited(self, event: TaskEdited) -> None:
         task = self.tasks.find(event.task_id)
         for proof in self.proofs.changed_point_proofs(task, event.points):
+            if proof.creation_time.timestamp() > event.time:
+                continue
             self.proofs.save(proof.with_(state=ProofState.STALE), Actor.system())
         holder = self.tasks.holder(task)
         if holder is not None and holder.type == "workers" and not (worker := self.workers.find(holder.id)).is_running():
