@@ -231,7 +231,8 @@ services:
         # the socket's clients join.
         command: ['dockerd', '--host=unix:///run/agent-docker/docker.sock', '--group=0']
         volumes:
-            - agent-docker-data:/home/rootless/.local/share/docker
+            # The daemon's own data: the rootless image keeps it under its user's home, a rootful one in /var/lib/docker.
+            - agent-docker-data:${AGENT_DAEMON_DATA:-/home/rootless/.local/share/docker}
             - agent-docker-socket:/run/agent-docker
             - accounts-data:/srv/journal/accounts
             # The operator's server folders, one per environment, bound as workspaces after daemon-side checks
