@@ -78,6 +78,19 @@ final class AccountSwitchingTest extends TestCase
         $this->assertSame($home->id, $selection->refresh()->account_id);
     }
 
+    public function test_a_refused_choice_leaves_the_other_programs_default_alone(): void
+    {
+        [$work, $home] = [$this->account('Work'), $this->account('Home')];
+        $codex = Account::create(HookDriver::Codex, AccountLabel::from('Codex'), '/journal/accounts/Codex');
+        $this->bus()->run(new SwitchAccount($codex->id, 0));
+        $this->bus()->run(new SwitchAccount($work->id, 0));
+
+        $this->assertRefused(AccountSelectionChanged::class, new SwitchAccount($home->id, 0));
+
+        $chosen = ActiveAccount::query()->withoutGlobalScopes()->pluck('account_id', 'driver')->all();
+        $this->assertSame(['claude-code' => $work->id, 'codex' => $codex->id], $chosen);
+    }
+
     public function test_an_account_that_must_sign_in_again_or_is_removed_cannot_be_chosen(): void
     {
         $held = $this->account('Held');

@@ -272,6 +272,25 @@ describe('the settings dialog', () => {
         expect(naming!.submit).toHaveBeenCalledTimes(1);
     });
 
+    it('shows why a default choice was refused when another was chosen meanwhile', async () => {
+        const shown = row();
+        await openSettings(shown);
+
+        await button(shown, 'Make default')!.trigger('click');
+        const choosing = forms.find((form) =>
+            form.submit.mock.calls.some(
+                ([route]) => route.url === '/accounts/acc-1/activate',
+            ),
+        );
+        choosing!.errors.command =
+            'Another default account was chosen for codex meanwhile; the current one is shown.';
+        await flushPromises();
+
+        expect(shown.text()).toContain(
+            'Another default account was chosen for codex meanwhile',
+        );
+    });
+
     it('puts the saved name back on Escape and keeps the dialog open', async () => {
         const shown = row();
         await openSettings(shown);

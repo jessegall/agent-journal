@@ -42,6 +42,15 @@ const { naming, canSave, saved, revert, save } = useAccountNaming(
     () => props.account,
 );
 const choosing = useForm({});
+
+/**
+ * Why the journal refused the choice, such as another default chosen meanwhile in another tab; the rows already
+ * show the server's choice again, so the owner can choose anew.
+ */
+const choiceRefusal = computed(
+    () =>
+        (choosing.errors as Record<string, string | undefined>).command ?? null,
+);
 const removing = useForm({});
 
 const needsSignIn = computed(() => props.account.state === 'needs_sign_in');
@@ -324,6 +333,13 @@ function signInAgain(): void {
                                     @click="makeDefault"
                                     >Make default</Button
                                 >
+                                <template v-if="choiceRefusal !== null">
+                                    <span
+                                        class="basis-full text-small text-danger"
+                                        role="alert"
+                                        >{{ choiceRefusal }}</span
+                                    >
+                                </template>
                             </template>
                             <template v-else-if="needsSignIn">
                                 <span class="text-text-2"
