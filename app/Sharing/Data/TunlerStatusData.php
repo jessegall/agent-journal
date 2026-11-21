@@ -16,7 +16,8 @@ final class TunlerStatusData extends Data
 {
     public function __construct(
         public readonly bool $loggedIn = false,
-        public readonly bool $authOk = false,
+        #[MapInputName('auth_ok')]
+        public readonly bool $isAuthenticated = false,
         public readonly string|null $host = null,
     ) {}
 }

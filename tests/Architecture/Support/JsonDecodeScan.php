@@ -34,15 +34,15 @@ final readonly class JsonDecodeScan implements FileScan
             }
 
             $argument = $call->getAttribute('parent');
-            $taker = $argument instanceof Node\Arg ? $argument->getAttribute('parent') : null;
-            $isStatic = $taker instanceof Expr\StaticCall
-                && $taker->class instanceof Node\Name
-                && $taker->name instanceof Node\Identifier;
+            $receivingCall = $argument instanceof Node\Arg ? $argument->getAttribute('parent') : null;
+            $isStatic = $receivingCall instanceof Expr\StaticCall
+                && $receivingCall->class instanceof Node\Name
+                && $receivingCall->name instanceof Node\Identifier;
 
             $findings[] = [
                 'line' => $call->getStartLine(),
-                'class' => $isStatic ? $taker->class->toString() : null,
-                'method' => $isStatic ? $taker->name->toString() : null,
+                'class' => $isStatic ? $receivingCall->class->toString() : null,
+                'method' => $isStatic ? $receivingCall->name->toString() : null,
                 'marked' => self::markedMethod($call),
             ];
         }

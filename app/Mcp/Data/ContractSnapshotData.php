@@ -34,7 +34,7 @@ final class ContractSnapshotData extends Data
      *
      * @return array<string, mixed>
      */
-    public function headline(): array
+    public function topLevelFields(): array
     {
         return [
             'contract_version' => $this->contractVersion,

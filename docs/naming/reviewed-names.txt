@@ -9625,7 +9625,7 @@ method	ContractSnapshot::render()
 method	ContractSnapshot::sorted()
 method	ContractSnapshotCommand::handle()
 method	ContractSnapshotData::__construct()
-method	ContractSnapshotData::headline()
+method	ContractSnapshotData::topLevelFields()
 method	ConversationChoice::__construct()
 method	ConversationChoice::reusing()
 method	ConversationData::__construct()
@@ -20364,7 +20364,6 @@ parameter	$auditPruneSeconds
 parameter	$audits
 parameter	$auth
 parameter	$authMethod
-parameter	$authOk
 parameter	$author
 parameter	$authorId
 parameter	$authorLabel
@@ -21170,6 +21169,7 @@ parameter	$inverse
 parameter	$invocation
 parameter	$isActive
 parameter	$isArrayAssignment
+parameter	$isAuthenticated
 parameter	$isAvailable
 parameter	$isBeforeArguments
 parameter	$isBottom
@@ -30404,8 +30404,8 @@ property	TunlerGateway::$starts
 property	TunlerGateway::$subdomain
 property	TunlerStatus::$host
 property	TunlerStatus::$isLoggedIn
-property	TunlerStatusData::$authOk
 property	TunlerStatusData::$host
+property	TunlerStatusData::$isAuthenticated
 property	TunlerStatusData::$loggedIn
 property	TypeOwners::$owners
 property	TypedSecret::$name
@@ -31815,6 +31815,7 @@ variable	$reason
 variable	$reasons
 variable	$receipt
 variable	$receiptFields
+variable	$receivingCall
 variable	$recipient
 variable	$record
 variable	$recordOwner
@@ -32116,7 +32117,6 @@ variable	$tables
 variable	$tail
 variable	$taken
 variable	$takenUp
-variable	$taker
 variable	$takesBoth
 variable	$takesEvent
 variable	$takesOver
