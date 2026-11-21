@@ -25,7 +25,7 @@ useLiveReload();
     <template v-if="page.state === 'ready' && page.dockOffer !== undefined">
         <DockOfferPicker :offer="page.dockOffer" />
     </template>
-    <ResultView :result="page" @retry="router.reload({ only: ['page'] })">
+    <ResultView :result="page" is-window @retry="router.reload({ only: ['page'] })">
         <template #content="{ data }">
             <component :is="component" :data="data" />
         </template>

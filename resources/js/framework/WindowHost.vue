@@ -17,7 +17,7 @@ if (props.pageKey !== undefined) {
 </script>
 
 <template>
-    <ResultView :result="result" :kept-data="keptData" @retry="retry">
+    <ResultView :result="result" :kept-data="keptData" :is-window="pageKey !== undefined" @retry="retry">
         <template #content="{ data }">
             <component :is="component" :data="data" />
         </template>

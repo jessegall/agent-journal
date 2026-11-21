@@ -51,6 +51,7 @@ Checking the new session
 Checking the sign-in with {{ driverName(driver) }}…
 Choose a chat
 Choose a way to sign in to continue.
+Choose all on {{ machine }}
 Choose another way
 Choose exact text in the source
 Chosen: {{ describeRange(chosen) }}.
@@ -146,6 +147,7 @@ Light
 Linked
 Linked records
 Listener port
+Loading
 Make default
 Make it the default once it is ready
 Mermaid
@@ -160,6 +162,7 @@ Needs an update
 Needs sign-in
 Network
 New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
+No
 No agent runtime is open.
 No asks to show.
 No connected host runs agents in this place.
@@ -230,8 +233,7 @@ Record type
 Refused
 Reject
 Release hold
-Remove
-Remove account...
+Remove account
 Remove stored output ({{ storedBytes }} bytes)
 Removed
 Removing
@@ -249,11 +251,13 @@ Reveal address
 Review this proposal
 Revision {{ revision.revision }}: {{ revision.operation }} ({{ revision.owner }})
 Revoke
+Revoke chosen ({{ chosen.size }})
 Revoked
 Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.activeRevision}` }}
 Rules
 Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }}.
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
+Running now
 Runs
 Runtimes
 Samples
@@ -279,10 +283,12 @@ Show or hide the sidebar
 Show the account
 Side by side
 Sign in
+Sign in first to make it the default
 Sign in on Claude's site, then paste the code it gives you.
 Sign in with ChatGPT
 Sign in with Claude
 Sign out
+Sign-in
 Signed in
 Sorting a command into kinds does not allow it to run, and a sample run only shows what the command does.
 Sorting a command into kinds does not allow it to run.
@@ -311,7 +317,6 @@ That conversation is not one this agent can continue.
 That conversation ran on another driver; start a new conversation instead.
 That conversation was for other work; start a new conversation instead.
 The address is not available.
-The change was refused.
 The gateway provider can see the public address and everything a share shows.
 The gateway provider can see the public address and everything this share shows.
 The host has not said it can run this driver this way.
@@ -322,19 +327,20 @@ The project has no rule of its own yet.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
 The version that runs here
 This account must sign in again.
-This is the default account for new {{ driverName(account.driver) }} starts.
 This machine and the share service must keep running for the link to work.
 This page could not be refreshed.
 This profile does not allow that model.
 This profile runs only its own driver.
 This release cannot do {{ release.withheldCapabilities.join(', ') }} yet.
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
+This window could not be refreshed. It shows what it last loaded.
 To renew it, choose Sign in again on the account.
 Turning off traffic inspection does not hide the content from the provider.
 Unfinished sign-ins
 Unknown
 Update share {{ liveShare.number }}
 Usage
+Use
 Use these lines
 Used for {{ revision.purpose }}; its output is {{ revision.outputRequirement }}
 Version control
@@ -362,6 +368,7 @@ Write a comment
 You can approve once the request is ready for review; a check first needs a checked reader.
 You can change it later from the list.
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
+You don't have access to this.
 You pay for what agents use.
 a file the user names on the command line, wherever it lies
 a sharing gateway's program in the host's tool folders
@@ -399,7 +406,6 @@ shapes
 the classified command's own file system: its folder, tools and worktree
 the host's own account folders, written by the host tools without the application
 the host's secret file the sign-in runner is given
-the request failed
 to
 tools
 unresolved
@@ -422,4 +428,5 @@ updated {{ ageSeconds().toFixed(1) }} s ago
 · sign-in page
 ← Back
 ← Stay
+✓ Saved
 ✓ {{ method.title }} works.
