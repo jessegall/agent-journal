@@ -13,13 +13,12 @@ To turn it on, run this in the installation folder:
 cat >> .env <<EOF
 JOURNAL_ROOT=$(pwd)
 JOURNAL_BRANCH=version-6
-JOURNAL_PROFILES=contained
 EOF
 docker compose --profile updater up -d updater
 ```
 
-`JOURNAL_PROFILES` names the compose profiles the installation runs, space-separated; leave it empty for none. Follow
-what it does with `docker compose logs -f updater`, and turn it off with `docker compose stop updater`.
+A contained installation (`AGENTS_ARRANGEMENT=contained` in `.env`) also gets its contained services and runner image
+rebuilt. Follow what it does with `docker compose logs -f updater`, and turn it off with `docker compose stop updater`.
 
 Know what you switch on: the updater holds the Docker socket, which gives it root on the server, and it runs whatever
 the branch holds a minute after each push.

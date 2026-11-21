@@ -8,7 +8,6 @@
 # It reads, from the environment the updater service passes on:
 #   JOURNAL_ROOT       the installation's folder, the same path inside the updater as on the server
 #   JOURNAL_BRANCH     the branch to follow (version-6)
-#   JOURNAL_PROFILES   the compose profiles the installation runs, space-separated (contained)
 #   JOURNAL_REPOSITORY the repository to follow (the public journal repository)
 set -eu
 
@@ -35,21 +34,19 @@ if [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/
     done
 fi
 
+# A contained installation, as its .env says, also runs the contained profile and its pinned runner image.
+arrangement=$(sed -n 's/^AGENTS_ARRANGEMENT=//p' .env | tail -n 1)
 profiles=""
-for profile in ${JOURNAL_PROFILES:-}; do
-    profiles="$profiles --profile $profile"
-done
+[ "$arrangement" = contained ] && profiles="--profile contained"
 
 install() {
     docker compose --progress=quiet build app share
-    case " ${JOURNAL_PROFILES:-} " in
-        *" contained "*)
-            platform=$(docker version --format '{{.Server.Os}}/{{.Server.Arch}}')
-            sh .docker/helper/build.sh "$platform" runner
-            runner=$(python3 -c 'import json; print(json.load(open("docs/accounts/docker-images.json"))["images"][-1]["reference"])')
-            sed -i "s|^RUNNER_IMAGE=.*|RUNNER_IMAGE=$runner|" .env
-            ;;
-    esac
+    if [ "$arrangement" = contained ]; then
+        platform=$(docker version --format '{{.Server.Os}}/{{.Server.Arch}}')
+        sh .docker/helper/build.sh "$platform" runner
+        runner=$(python3 -c 'import json; print(json.load(open("docs/accounts/docker-images.json"))["images"][-1]["reference"])')
+        sed -i "s|^RUNNER_IMAGE=.*|RUNNER_IMAGE=$runner|" .env
+    fi
     # shellcheck disable=SC2086
     docker compose $profiles up -d --wait --wait-timeout 240
     docker compose exec -T app php artisan migrate --force
