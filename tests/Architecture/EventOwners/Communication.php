@@ -88,6 +88,7 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Communication/Handlers/HideUnseatedNotificationsHandler.php',
+            'app/Communication/Support/RecipientNotifications.php',
         ],
     ],
 ];

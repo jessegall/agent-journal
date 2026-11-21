@@ -11,4 +11,5 @@ enum NotificationSourceType: string
 {
     case Question = 'question';
     case Report = 'report';
+    case MergeAsk = 'merge_ask';
 }

@@ -125,6 +125,25 @@ final class NotificationReceipt extends Model implements ReadableModel
     }
 
     /**
+     * The scope's receipts that lead to this target, at most the given number.
+     *
+     * @return list<self>
+     */
+    public static function allForTarget(string $scopeId, string $targetKey, string $targetId, int $limit): array
+    {
+        return array_values(self::query()
+            ->where('scope_id', $scopeId)
+            ->whereIn(
+                'occurrence_id',
+                NotificationOccurrence::query()->where('target_key', $targetKey)->where('target_id', $targetId)
+                    ->select('id'),
+            )
+            ->readLimit($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
      * The scope's receipt of the occurrence that leads to this target, when the scope holds one.
      *
      * @return Option<self>

@@ -31,9 +31,9 @@ use App\Communication\Resolvers\QuestionNotificationTarget;
 use App\Communication\Support\InboxNotices;
 use App\Communication\Support\MessageAnswerActivation;
 use App\Communication\Support\MessageClaimProvider;
-use App\Communication\Support\NotificationDelivery;
 use App\Communication\Support\NotificationTargetRegistry;
 use App\Communication\Support\PendingInboxWork;
+use App\Communication\Support\RecipientNotifications;
 use App\Communication\Support\RegisteredInboxes;
 use App\Communication\Support\SelectedMessages;
 use App\Hooks\Contracts\IncomingWorkRegistration;
@@ -62,7 +62,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->scoped(RequestSource::class, SelectedMessages::class);
         $this->app->singleton(NotificationTargetRegistry::class);
         $this->app->singleton(NotificationTargets::class, NotificationTargetRegistry::class);
-        $this->app->bind(Notifications::class, NotificationDelivery::class);
+        $this->app->bind(Notifications::class, RecipientNotifications::class);
     }
 
     public function boot(

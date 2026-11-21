@@ -9,8 +9,9 @@ use App\Communication\Data\NotificationTarget;
 use App\Communication\Enums\NotificationSourceType;
 
 /**
- * Notifies recipients of one committed business event, inside the caller's transaction: one occurrence per key and
- * one receipt per distinct recipient; a replay of the key changes nothing.
+ * Notifies recipients of committed business events inside the caller's transaction: one occurrence per key and one
+ * receipt per distinct recipient, a replay of the key changing nothing; and takes a target's receipts from a
+ * recipient that lost it, or settles them as read history once the work behind them ended.
  */
 interface Notifications
 {
@@ -23,4 +24,15 @@ interface Notifications
         NotificationTarget $target,
         array $recipients,
     ): void;
+
+    /**
+     * Hides the recipient's receipts that lead to the target, so they leave its list and count, and tells its open
+     * views to drop what they show.
+     */
+    public function withdraw(NotificationTarget $target, ActorIdentity $recipient): void;
+
+    /**
+     * Marks the recipient's receipts that lead to the target read, keeping them as history with no outstanding count.
+     */
+    public function settle(NotificationTarget $target, ActorIdentity $recipient): void;
 }
