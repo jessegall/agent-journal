@@ -9,9 +9,12 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use PhpOption\Option;
 
 /**
  * One recipient's copy of one notification occurrence: its place in the scope's sequence, and when the recipient
@@ -25,6 +28,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $read_at
  * @property CarbonImmutable|null $hidden_at
  * @property CarbonImmutable|null $created_at
+ * @property-read NotificationOccurrence $occurrence
  */
 #[Table('notification_receipts')]
 #[Fillable(['occurrence_id', 'scope_id', 'sequence'])]
@@ -70,6 +74,48 @@ final class NotificationReceipt extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The scope's visible receipts newest first by sequence, older than the given sequence when one is given, with
+     * their occurrences; at most the given number.
+     *
+     * @return list<self>
+     */
+    public static function visibleInScope(string $scopeId, int|null $beforeSequence, int $limit): array
+    {
+        return array_values(self::query()
+            ->where('scope_id', $scopeId)
+            ->whereNull('hidden_at')
+            ->when($beforeSequence !== null, fn (Builder $older) => $older->where('sequence', '<', $beforeSequence))
+            ->orderByDesc('sequence')
+            ->with('occurrence')
+            ->readLimit($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
+     * The receipt of this id, only when it belongs to the scope.
+     *
+     * @return Option<self>
+     */
+    public static function findInScope(string $scopeId, string $id): Option
+    {
+        return Option::fromValue(self::query()->where('scope_id', $scopeId)->whereKey($id)->first());
+    }
+
+    /**
+     * The scope's receipt of the occurrence with this key, when the scope holds one.
+     *
+     * @return Option<self>
+     */
+    public static function findForOccurrence(string $scopeId, string $occurrenceKey): Option
+    {
+        return Option::fromValue(self::query()
+            ->where('scope_id', $scopeId)
+            ->whereIn('occurrence_id', NotificationOccurrence::query()->keyed($occurrenceKey)->select('id'))
+            ->first());
+    }
 
     /**
      * The receipt under its row lock, taken after its scope's lock.
@@ -139,5 +185,15 @@ final class NotificationReceipt extends Model implements ReadableModel
     public function isCounted(): bool
     {
         return $this->read_at === null && $this->hidden_at === null;
+    }
+
+    // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<NotificationOccurrence, $this>
+     */
+    public function occurrence(): BelongsTo
+    {
+        return $this->belongsTo(NotificationOccurrence::class, 'occurrence_id');
     }
 }

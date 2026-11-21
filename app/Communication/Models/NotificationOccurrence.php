@@ -11,6 +11,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -75,5 +77,16 @@ final class NotificationOccurrence extends Model implements ReadableModel
     public function isNew(): bool
     {
         return $this->wasRecentlyCreated;
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function keyed(Builder $query, string $key): void
+    {
+        $query->where('occurrence_key', $key);
     }
 }

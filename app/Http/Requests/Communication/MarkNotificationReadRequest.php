@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Requests\Communication;
+
+use App\Communication\Commands\MarkNotificationRead;
+use Illuminate\Foundation\Http\FormRequest;
+
+final class MarkNotificationReadRequest extends FormRequest
+{
+    /**
+     * @return array<string, list<mixed>>
+     */
+    public function rules(): array
+    {
+        return [
+            'receiptId' => ['required', 'string', 'size:26'],
+        ];
+    }
+
+    public function command(): MarkNotificationRead
+    {
+        return new MarkNotificationRead($this->string('receiptId')->toString());
+    }
+}

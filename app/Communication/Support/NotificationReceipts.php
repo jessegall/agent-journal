@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
+use App\Actors\Support\ActorIdentity;
+use App\Communication\Exceptions\NotificationUnavailable;
 use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
 use Carbon\CarbonImmutable;
+use Closure;
+use PhpOption\Option;
 
 /**
  * Reads, hides and reveals one receipt under its scope's lock, so the scope's unread count and version follow every
@@ -14,6 +18,23 @@ use Carbon\CarbonImmutable;
  */
 final readonly class NotificationReceipts
 {
+    public function __construct(private NotificationScopes $scopes) {}
+
+    /**
+     * The actor's own receipt that the finder picks from its scope; a receipt of another scope, or none, is refused
+     * as unavailable either way.
+     *
+     * @param  Closure(string): Option<NotificationReceipt>  $find  given the actor's scope id
+     *
+     * @throws NotificationUnavailable
+     */
+    public function ownedBy(ActorIdentity $actor, Closure $find): NotificationReceipt
+    {
+        return NotificationScope::findFor($this->scopes->keyFor($actor), $actor)
+            ->flatMap(fn (NotificationScope $scope) => $find($scope->id))
+            ->getOrThrow(NotificationUnavailable::create());
+    }
+
     /**
      * Marks the receipt read; a second mark changes nothing and keeps the first read time.
      */

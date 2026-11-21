@@ -11,6 +11,7 @@ use App\Communication\Enums\NotificationSourceType;
 use App\Communication\Events\MessageAnswerRequired;
 use App\Communication\Events\MessageSent;
 use App\Communication\Models\Message;
+use App\Communication\Resolvers\QuestionNotificationTarget;
 use App\Communication\Support\NotificationDelivery;
 use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
@@ -23,8 +24,6 @@ use App\Contracts\Listener;
 #[InCommandTransaction]
 final readonly class IssueQuestionNotifications implements Listener
 {
-    public const string TARGET_KEY = 'chat.question';
-
     public function __construct(
         private InboxResolver $inboxes,
         private NotificationDelivery $delivery,
@@ -39,9 +38,9 @@ final readonly class IssueQuestionNotifications implements Listener
         }
 
         $this->delivery->deliver(
-            "question:{$message->id}",
+            QuestionNotificationTarget::occurrenceKey($message->id),
             NotificationSourceType::Question,
-            new NotificationTarget(self::TARGET_KEY, $message->id),
+            new NotificationTarget(QuestionNotificationTarget::KEY, $message->id),
             $this->recipientsOf($message),
         );
     }

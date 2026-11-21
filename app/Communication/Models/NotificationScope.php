@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use PhpOption\Option;
 
 /**
  * One recipient's notifications in one scope: the sequence its next receipt gets, the version every change raises
@@ -78,6 +79,16 @@ final class NotificationScope extends Model implements EventSource, ReadableMode
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The recipient's scope, when it has ever received a notification.
+     *
+     * @return Option<self>
+     */
+    public static function findFor(string $key, ActorIdentity $recipient): Option
+    {
+        return Option::fromValue(self::query()->ofRecipient($key, $recipient)->first());
+    }
 
     /**
      * The recipient's scope under its row lock, for a change of its receipts or its count.
