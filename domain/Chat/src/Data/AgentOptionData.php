@@ -44,6 +44,8 @@ final class AgentOptionData extends Data
         public readonly array $conversations,
         // Why the host could not start the agent's session, such as a program that cannot start in a container.
         public readonly string|null $startRefusal,
+        // What the agent is doing now, the words for it and what may be done, decided from all its evidence at once.
+        public readonly AgentStatusData $status,
     ) {}
 
     public static function fromAgentOption(AgentOption $agent): self
@@ -65,6 +67,7 @@ final class AgentOptionData extends Data
             'actions' => $agent->actions,
             'conversations' => $agent->conversations,
             'startRefusal' => $agent->startRefusal,
+            'status' => $agent->status,
         ]);
     }
 }

@@ -1,0 +1,345 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Support;
+
+use App\Agents\Data\DriverRequestStatus;
+use App\Agents\Enums\DriverOperation;
+use App\Agents\Enums\DriverSwitchStage;
+use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\ProcessStartState;
+use App\Agents\Enums\RequestProgress;
+use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Enums\SessionState;
+use App\Agents\Enums\SessionStatus;
+use App\Agents\Enums\StartDisposition;
+use App\Agents\Enums\StartRefusalType;
+use App\Agents\Enums\StartRemedyType;
+use App\Agents\Enums\StartUnavailableReason;
+use App\Agents\Enums\StatusActionType;
+
+/**
+ * One agent's status as the bar, the picker, the chat and the session dialog all show it, decided from its evidence
+ * in a fixed order: retirement, then an accepted stop or unresolved delivery, then a fresh blocking hold of the current
+ * process, then launch progress and fresh activity. Session existence alone proves neither idle nor working; a
+ * refused or failed command stays beside the current session until a newer one replaces it or the viewer dismisses it.
+ */
+final readonly class AgentStatus
+{
+    /**
+     * @param  list<StatusAction>  $actions
+     */
+    private function __construct(
+        public SessionState $sessionState,
+        public string $label,
+        public string|null $reason,
+        public string|null $remedy,
+        public StatusOperation|null $operation,
+        public string|null $commandOutcome,
+        public int|null $observationAgeSeconds,
+        public array $actions,
+    ) {}
+
+    public static function of(AgentEvidence $evidence, StartRemedyWords $words): self
+    {
+        if ($evidence->retired) {
+            return new self(SessionState::Retired, SessionState::Retired->label(), null, null, null, null, null, []);
+        }
+
+        return self::underWay($evidence)
+            ?? self::held($evidence)
+            ?? ($evidence->hasLiveSession() ? self::live($evidence) : self::withoutSession($evidence, $words));
+    }
+
+    // An accepted stop, an open switch or a delivery whose result is unknown decides the status before anything else.
+    private static function underWay(AgentEvidence $evidence): self|null
+    {
+        if ($evidence->switch?->isUnderWay() === true) {
+            return self::switching($evidence, $evidence->switch);
+        }
+
+        $request = $evidence->request;
+
+        if ($request?->progress === RequestProgress::DeliveryUncertain) {
+            return self::unknown($evidence, self::operationOf($request));
+        }
+
+        $isOpenStop = $request?->operation === DriverOperation::Stop
+            && in_array($request->progress, RequestProgress::open(), true);
+
+        if ($isOpenStop) {
+            return self::plain(SessionState::Stopping, $evidence, [], self::operationOf($request));
+        }
+
+        return null;
+    }
+
+    private static function switching(AgentEvidence $evidence, SwitchEvidence $switch): self
+    {
+        $stage = $switch->stage;
+        $operation = $switch->operation();
+
+        return match ($stage) {
+            DriverSwitchStage::Stopping => self::plain(SessionState::Stopping, $evidence, [], $operation),
+            DriverSwitchStage::StopUnconfirmed => self::labelled(
+                SessionState::Unknown,
+                'Stop could not be confirmed',
+                $evidence,
+                [StatusAction::of(StatusActionType::RecheckSwitch)],
+                $operation,
+            ),
+            DriverSwitchStage::StartUnconfirmed => self::labelled(
+                SessionState::Unknown,
+                'Start could not be confirmed',
+                $evidence,
+                [StatusAction::of(StatusActionType::RecheckSwitch)],
+                $operation,
+            ),
+            DriverSwitchStage::LaunchFailed => self::labelled(
+                SessionState::Failed,
+                $stage->label(),
+                $evidence,
+                [StatusAction::retry('switch')],
+                $operation,
+            ),
+            default => self::labelled(SessionState::Starting, $stage->label(), $evidence, [], $operation),
+        };
+    }
+
+    // A fresh hold of the current process that waits for someone takes over the display.
+    private static function held(AgentEvidence $evidence): self|null
+    {
+        $runtime = $evidence->runtime;
+
+        if (! $evidence->hasLiveSession() || $runtime === null || ! $runtime->isFresh()) {
+            return null;
+        }
+
+        return match ($runtime->hold) {
+            HoldReason::None, HoldReason::Interrupted => null,
+            HoldReason::LoginRequired => self::plain(
+                SessionState::WaitingForSignIn,
+                $evidence,
+                [StatusAction::of(StatusActionType::SignIn)],
+            ),
+            HoldReason::Compacting => self::labelled(SessionState::Working, 'Compacting', $evidence, []),
+            default => self::labelled(SessionState::Idle, self::holdLabel($runtime->hold), $evidence, []),
+        };
+    }
+
+    private static function holdLabel(HoldReason $hold): string
+    {
+        return match ($hold) {
+            HoldReason::OnboardingRequired => 'Finish setup',
+            HoldReason::TrustRequired => 'Waiting for trust',
+            HoldReason::PermissionRequired => 'Waiting for permission',
+            HoldReason::UserInput, HoldReason::DriverInput => 'Waiting for input',
+            HoldReason::UpdateRequired => 'Update required',
+            HoldReason::UnknownScreen => 'Unknown screen',
+            HoldReason::ScreenUnreadable => 'Screen unreadable',
+            HoldReason::NavigationNeeded => 'Waiting for the main desk',
+            HoldReason::UsageLimited => 'Usage limit reached',
+            HoldReason::NeedsAttention => 'Needs attention',
+            HoldReason::None, HoldReason::Interrupted, HoldReason::Compacting, HoldReason::LoginRequired => 'Held',
+        };
+    }
+
+    // A live session: its supervised start, its runtime's fresh activity, or unknown when neither can say.
+    private static function live(AgentEvidence $evidence): self
+    {
+        $runtime = $evidence->runtime;
+        $switch = [StatusAction::of(StatusActionType::Switch)];
+
+        if (in_array($evidence->processStart, ProcessStartState::unresolved(), true)) {
+            return self::starting($evidence);
+        }
+
+        if ($evidence->sessionStatus === SessionStatus::Silent) {
+            return self::unknown($evidence);
+        }
+
+        if ($runtime === null) {
+            return $evidence->expectsRuntime ? self::unknown($evidence) : self::plain(
+                SessionState::Working,
+                $evidence,
+                $switch,
+            );
+        }
+
+        if (! $runtime->isFresh()) {
+            return self::unknown($evidence);
+        }
+
+        if ($evidence->request?->progress === RequestProgress::Failed && $evidence->request->canRetry) {
+            return self::failedRequest($evidence, $evidence->request);
+        }
+
+        return match ($runtime->activity) {
+            RuntimeActivity::Running => self::plain(SessionState::Working, $evidence, $switch),
+            RuntimeActivity::Idle => self::plain(SessionState::Idle, $evidence, $switch),
+            RuntimeActivity::Starting => self::plain(SessionState::Starting, $evidence, []),
+            RuntimeActivity::Interrupting => self::plain(SessionState::Interrupting, $evidence, []),
+            RuntimeActivity::Stopping => self::plain(SessionState::Stopping, $evidence, []),
+            RuntimeActivity::Stopped, RuntimeActivity::HostUnavailable => self::unknown($evidence),
+        };
+    }
+
+    private static function failedRequest(AgentEvidence $evidence, DriverRequestStatus $request): self
+    {
+        $name = str_replace('_', ' ', $request->operation->value);
+
+        return self::plain(
+            SessionState::Failed,
+            $evidence,
+            [StatusAction::retry($name)],
+            self::operationOf($request),
+        );
+    }
+
+    // No live session: the latest launch decides, else the agent is stopped and may start.
+    private static function withoutSession(AgentEvidence $evidence, StartRemedyWords $words): self
+    {
+        $launch = $evidence->launch;
+
+        if ($launch?->disposition === StartDisposition::Accepted) {
+            return self::starting($evidence);
+        }
+
+        if ($launch?->disposition === StartDisposition::Refused) {
+            return self::refused($evidence, $launch, $words);
+        }
+
+        $actions = [StatusAction::of(StatusActionType::Start)];
+
+        if ($evidence->resumable) {
+            $actions[] = StatusAction::of(StatusActionType::Resume);
+        }
+
+        return self::plain(SessionState::Stopped, $evidence, $actions);
+    }
+
+    private static function starting(AgentEvidence $evidence): self
+    {
+        $launch = $evidence->launch;
+        $actions = $evidence->canCancelLaunch ? [StatusAction::of(StatusActionType::CancelStart)] : [];
+        $operation = $launch === null ? null : new StatusOperation(
+            $launch->requestId,
+            'start',
+            $launch->version(),
+            1,
+        );
+
+        return self::plain(SessionState::Starting, $evidence, $actions, $operation);
+    }
+
+    private static function refused(AgentEvidence $evidence, LaunchOutcome $launch, StartRemedyWords $words): self
+    {
+        $reason = StartRefusalCodes::reasonOf((string) $launch->refusalReason);
+        $remedy = $reason->remedy();
+        $state = match ($reason) {
+            StartRefusalType::CapacityUnavailable => SessionState::NoCapacity,
+            StartUnavailableReason::NeedsSignIn => SessionState::WaitingForSignIn,
+            default => SessionState::Refused,
+        };
+        $primary = match ($remedy->type) {
+            StartRemedyType::CheckCapacity => [StatusAction::of(StatusActionType::CheckCapacity)],
+            StartRemedyType::OperatorInstruction, StartRemedyType::ConnectHost, StartRemedyType::UpdateHost => [],
+            default => [new StatusAction(StatusActionType::Start, $remedy->operatorText())],
+        };
+
+        if ($reason === StartUnavailableReason::NeedsSignIn) {
+            $primary = [StatusAction::of(StatusActionType::SignIn)];
+        }
+
+        return new self(
+            $state,
+            $state->label(),
+            $reason->explanation(),
+            $words->textOf($remedy),
+            new StatusOperation($launch->requestId, 'start', $launch->version(), 1),
+            null,
+            null,
+            [...$primary, StatusAction::of(StatusActionType::Dismiss)],
+        );
+    }
+
+    private static function unknown(AgentEvidence $evidence, StatusOperation|null $operation = null): self
+    {
+        return self::plain(
+            SessionState::Unknown,
+            $evidence,
+            [StatusAction::of(StatusActionType::CheckStatus)],
+            $operation,
+        );
+    }
+
+    private static function operationOf(DriverRequestStatus $request): StatusOperation
+    {
+        return new StatusOperation(
+            $request->requestId,
+            $request->operation->value,
+            $request->progress->value,
+            $request->rowVersion,
+        );
+    }
+
+    /**
+     * @param  list<StatusAction>  $actions
+     */
+    private static function plain(
+        SessionState $state,
+        AgentEvidence $evidence,
+        array $actions,
+        StatusOperation|null $operation = null,
+    ): self {
+        return self::labelled($state, $state->label(), $evidence, $actions, $operation);
+    }
+
+    /**
+     * A status beside the current session, with the refused command that stays shown until it is replaced or
+     * dismissed; only a launch refusal is the viewer's to dismiss.
+     *
+     * @param  list<StatusAction>  $actions
+     */
+    private static function labelled(
+        SessionState $state,
+        string $label,
+        AgentEvidence $evidence,
+        array $actions,
+        StatusOperation|null $operation = null,
+    ): self {
+        $commandOutcome = self::commandOutcomeOf($evidence);
+        $dismiss = $commandOutcome !== null && $evidence->showsLaunchRefusal()
+            ? [StatusAction::of(StatusActionType::Dismiss)]
+            : [];
+
+        return new self(
+            $state,
+            $commandOutcome === null ? $label : "{$label} · {$commandOutcome}",
+            null,
+            null,
+            $operation,
+            $commandOutcome,
+            $evidence->runtime?->observationAgeSeconds,
+            [...$actions, ...$dismiss],
+        );
+    }
+
+    /**
+     * The refused command shown beside a live session: a refused switch, or a refused launch the viewer has not
+     * dismissed.
+     */
+    private static function commandOutcomeOf(AgentEvidence $evidence): string|null
+    {
+        if (! $evidence->hasLiveSession()) {
+            return null;
+        }
+
+        if ($evidence->switch?->stage === DriverSwitchStage::Refused) {
+            return 'Switch refused';
+        }
+
+        return $evidence->showsLaunchRefusal() ? 'Start refused' : null;
+    }
+}

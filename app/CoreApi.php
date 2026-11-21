@@ -222,10 +222,12 @@ use App\Agents\Enums\ReservationState;
 use App\Agents\Enums\ResourceType;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Enums\ScreenReportRefusal;
+use App\Agents\Enums\SessionState;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Enums\StartRefusalType;
 use App\Agents\Enums\StartUnavailableReason;
+use App\Agents\Enums\StatusActionType;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
@@ -274,6 +276,7 @@ use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AccountUseCounts;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\AgentOption;
+use App\Agents\Support\AgentStatus;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\ContainerManifest;
 use App\Agents\Support\DriverConversationSummary;
@@ -286,6 +289,7 @@ use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\LaunchCandidateFacts;
 use App\Agents\Support\LaunchCandidateQuery;
+use App\Agents\Support\LaunchOutcome;
 use App\Agents\Support\LaunchProfileKey;
 use App\Agents\Support\ManifestMount;
 use App\Agents\Support\MountRules;
@@ -301,6 +305,8 @@ use App\Agents\Support\SecurityOptions;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Support\StartRecordDetails;
+use App\Agents\Support\StatusAction;
+use App\Agents\Support\StatusOperation;
 use App\Agents\Support\TerminalViewReceipt;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
@@ -1745,6 +1751,8 @@ final class CoreApi
                 AgentAction::class,
                 AgentPresence::class,
                 DriverSwitchStage::class,
+                SessionState::class,
+                StatusActionType::class,
                 HostCapabilityType::class,
                 SelectedDriver::class,
                 SelectedAccount::class,
@@ -1828,6 +1836,10 @@ final class CoreApi
                 AgentLabel::class,
                 SessionOption::class,
                 AgentOption::class,
+                AgentStatus::class,
+                StatusAction::class,
+                StatusOperation::class,
+                LaunchOutcome::class,
                 ResumableConversation::class,
                 StackTarget::class,
                 Decision::class,

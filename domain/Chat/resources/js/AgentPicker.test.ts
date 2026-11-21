@@ -29,6 +29,16 @@ function agent(id: string, name: string, presenceLabel: string): AgentOptionData
         actions: ['start'],
         conversations: [],
         startRefusal: null,
+        status: {
+            sessionState: 'stopped',
+            label: 'Stopped',
+            reason: null,
+            remedy: null,
+            operation: null,
+            commandOutcome: null,
+            observationAgeSeconds: null,
+            actions: [{ type: 'start', label: 'Start session' }],
+        },
     };
 }
 

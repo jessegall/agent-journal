@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Enums\AgentAction;
@@ -15,15 +16,19 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverConversation;
+use App\Agents\Models\DriverRequest;
 use App\Agents\Models\DriverSwitch;
 use App\Agents\Models\LaunchOutcomeDismissal;
 use App\Agents\Models\MainAgentDesignation;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\StartRecord;
+use App\Agents\Support\AgentFacts;
 use App\Agents\Support\AgentInspection;
 use App\Agents\Support\AgentOption;
+use App\Agents\Support\AgentStatus;
 use App\Agents\Support\LaunchOutcome;
 use App\Agents\Support\ResumableConversation;
+use App\Agents\Support\StartRemedyWords;
 use App\Drivers\Enums\HookDriver;
 use Illuminate\Support\Collection;
 use PhpOption\Option;
@@ -45,7 +50,12 @@ final readonly class AgentRecords implements AgentDirectory
      */
     public const int CONVERSATIONS_SHOWN = 5;
 
-    public function __construct(private CurrentActor $actors, private AgentInspection $inspection) {}
+    public function __construct(
+        private CurrentActor $actors,
+        private AgentInspection $inspection,
+        private StartRemedyWords $remedyWords,
+        private ServerClock $clock,
+    ) {}
 
     public function visible(): array
     {
@@ -63,6 +73,14 @@ final readonly class AgentRecords implements AgentDirectory
         $runtimes = AgentRuntime::query()->whereIn('agent_session_id', $sessions->pluck('id')->all())
             ->limit(self::AGENTS_SHOWN)->get()->keyBy('agent_session_id');
 
+        $starts = ProcessStart::supervised()->whereIn('session_id', $sessions->pluck('id')->all())
+            ->orderByDesc('created_at')->limit(self::AGENTS_SHOWN * 2)->get()->unique('session_id')
+            ->keyBy('session_id');
+
+        $requests = DriverRequest::query()->whereIn('agent_runtime_id', $runtimes->pluck('id')->all())
+            ->orderByDesc('sequence')->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_runtime_id')
+            ->keyBy('agent_runtime_id');
+
         $switches = DriverSwitch::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
 
@@ -73,15 +91,33 @@ final readonly class AgentRecords implements AgentDirectory
         $conversations = DriverConversation::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->readLimit(self::AGENTS_SHOWN * self::CONVERSATIONS_SHOWN)->get()->groupBy('agent_id');
 
-        return array_values($agents->map(fn (Agent $agent) => self::optionOf(
-            $agent,
-            $sessions->get($agent->id),
-            $runtimes->get((string) $sessions->get($agent->id)?->id),
-            $switches->get($agent->id),
-            $conversations->get($agent->id, new Collection()),
-            $refusals[$agent->id] ?? null,
-            $launches[$agent->id] ?? null,
-        ))->all());
+        return array_values($agents->map(function (Agent $agent) use (
+            $sessions,
+            $runtimes,
+            $starts,
+            $requests,
+            $switches,
+            $conversations,
+            $refusals,
+            $launches,
+        ): AgentOption {
+            $session = $sessions->get($agent->id);
+            $runtime = $runtimes->get((string) $session?->id);
+
+            return $this->optionOf(
+                $agent,
+                new AgentFacts(
+                    $session,
+                    $runtime,
+                    $starts->get((string) $session?->id),
+                    $requests->get((string) $runtime?->id),
+                    $switches->get($agent->id),
+                    $launches[$agent->id] ?? null,
+                ),
+                $conversations->get($agent->id, new Collection()),
+                $refusals[$agent->id] ?? null,
+            );
+        })->all());
     }
 
     public function visibleAgent(string $agentId): AgentOption
@@ -121,15 +157,15 @@ final readonly class AgentRecords implements AgentDirectory
     /**
      * @param  Collection<int, DriverConversation>  $conversations
      */
-    private static function optionOf(
+    private function optionOf(
         Agent $agent,
-        AgentSession|null $session,
-        AgentRuntime|null $runtime,
-        DriverSwitch|null $switch,
+        AgentFacts $facts,
         Collection $conversations,
         string|null $startRefusal,
-        LaunchOutcome|null $launch,
     ): AgentOption {
+        $session = $facts->session;
+        $runtime = $facts->runtime;
+        $switch = $facts->switch;
         $resumable = array_values($conversations->take(self::CONVERSATIONS_SHOWN)->map(
             fn (DriverConversation $conversation) => new ResumableConversation(
                 $conversation->id,
@@ -159,7 +195,11 @@ final readonly class AgentRecords implements AgentDirectory
             ),
             $resumable,
             $startRefusal,
-            $launch,
+            $facts->launch,
+            AgentStatus::of(
+                $facts->evidence($agent->isRetired(), $resumable !== [], $this->clock->now()),
+                $this->remedyWords,
+            ),
         );
     }
 }
