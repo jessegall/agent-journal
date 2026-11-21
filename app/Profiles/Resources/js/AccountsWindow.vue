@@ -9,6 +9,7 @@ import Icon from '@kit/Icon';
 import PageHeader from '@kit/PageHeader';
 import Spinner from '@kit/Spinner';
 import { computed, ref, watch } from 'vue';
+import { useScrollAnchor } from '@/composables/useScrollAnchor';
 import { useIsStale } from '@/framework/windowFreshness';
 import AccountRecovery from './AccountRecovery.vue';
 import AccountRow from './AccountRow.vue';
@@ -24,7 +25,8 @@ import { useUsageClock } from './usageClock';
  * or renaming one, and adding one through the add-account wizard. A sign-in still waiting on the host is resumed from
  * the header. The page reloads on every change; a reload that answers an older choice never takes back a newer one,
  * by each driver's change number. Each row's usage line is chosen again when a window resets, a UTC month begins
- * or the window gets focus. While the list is the last read kept after a failed refresh, nothing can be added.
+ * or the window gets focus. A live update keeps the list where it was scrolled, and while the list is the last read
+ * kept after a failed refresh, nothing can be added.
  */
 const props = defineProps<{ data: AccountListData }>();
 
@@ -32,6 +34,9 @@ const selections = ref(props.data.selections);
 const now = useUsageClock(() => props.data.rows);
 const request = ref<WizardRequest | null>(null);
 const isStale = useIsStale();
+const list = ref<HTMLElement | null>(null);
+
+useScrollAnchor(list, () => props.data.rows);
 
 watch(
     () => props.data.selections,
@@ -102,7 +107,8 @@ function resumeOrAgain(row: AccountRowData): void {
         </template>
         <template v-else>
             <ul
-                class="border-t border-line sm:overflow-hidden sm:rounded-card sm:border sm:bg-bg"
+                ref="list"
+                class="border-t border-line [overflow-anchor:none] sm:overflow-hidden sm:rounded-card sm:border sm:bg-bg"
             >
                 <template v-for="row in data.rows" :key="row.id">
                     <AccountRow
