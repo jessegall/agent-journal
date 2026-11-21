@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Http\Data\Profiles\SignInMethodData;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Support\ClaudeSignIn;
 use App\Profiles\Support\CodexSignIn;
 use App\Profiles\Support\SignInProtocols;
+use App\Programs\Enums\HookProgram;
 use Tests\TestCase;
 
 /**
@@ -44,5 +46,71 @@ final class SignInMethodsTest extends TestCase
 
         $this->assertSame([SignInMethod::ProviderToken, SignInMethod::ApiKey], array_values($secrets));
         $this->assertSame('Uses your subscription.', SignInMethod::OAuth->billingNote());
+    }
+
+    public function test_each_method_card_says_how_it_works_what_it_bills_and_where_to_get_its_secret(): void
+    {
+        $cards = array_map(
+            fn (array $pair) => SignInMethodData::fromMethod(...$pair)->toArray(),
+            [
+                [HookProgram::ClaudeCode, SignInMethod::OAuth],
+                [HookProgram::ClaudeCode, SignInMethod::ProviderToken],
+                [HookProgram::ClaudeCode, SignInMethod::ApiKey],
+                [HookProgram::Codex, SignInMethod::OAuth],
+                [HookProgram::Codex, SignInMethod::ApiKey],
+            ],
+        );
+        $shown = array_map(
+            fn (array $card) => [
+                $card['cardTitle'],
+                $card['billingWord'],
+                $card['howItWorks'],
+                $card['whereToGetIt'] ?? null,
+            ],
+            $cards,
+        );
+
+        $this->assertSame([
+            [
+                'Sign in with Claude',
+                'Subscription',
+                "Opens Claude's sign-in page. You sign in there and paste back the code it shows.",
+                null,
+            ],
+            [
+                'Provider token',
+                'Subscription',
+                'Paste a long-lived token made with claude setup-token. Suits a server.',
+                'On a computer where you are signed in to Claude Code, run claude setup-token in a terminal and copy '
+                    .'the token it prints.',
+            ],
+            [
+                'API key',
+                'API usage',
+                'Paste a key from the Anthropic Console. Every request is billed to that API account.',
+                'In the Anthropic Console, open API keys and create a key. Copy it right away: the Console shows it '
+                    .'only once.',
+            ],
+            [
+                'Sign in with ChatGPT',
+                'Subscription',
+                "Shows a short code. You enter it on OpenAI's page, and the account appears here by itself.",
+                null,
+            ],
+            [
+                'API key',
+                'API usage',
+                'Paste a key from the OpenAI platform. Every request is billed to that API account.',
+                'On the OpenAI platform, open API keys and create a secret key.',
+            ],
+        ], $shown);
+        $this->assertSame('Uses your subscription.', $cards[0]['billingNote']);
+    }
+
+    public function test_a_card_for_a_sign_in_the_program_lacks_is_refused(): void
+    {
+        $this->expectException(SignInMethodMissing::class);
+
+        SignInMethod::ProviderToken->cardTitle(HookProgram::Codex);
     }
 }

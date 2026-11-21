@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Enums;
 
+use App\Profiles\Exceptions\SignInMethodMissing;
+use App\Programs\Enums\HookProgram;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -47,6 +49,70 @@ enum SignInMethod: string
             self::OAuth => 'Uses your subscription.',
             self::ApiKey => 'Billed to your API account.',
             self::ProviderToken => 'Uses your subscription, through a long-lived token provided by Anthropic.',
+        };
+    }
+
+    /**
+     * The short word the method's card shows on its right about what it bills.
+     */
+    public function billingWord(): string
+    {
+        return $this === self::ApiKey ? 'API usage' : 'Subscription';
+    }
+
+    /**
+     * The title of the method's card for a program, such as 'Sign in with Claude'.
+     *
+     * @throws SignInMethodMissing when the program has no such sign-in
+     */
+    public function cardTitle(HookProgram $program): string
+    {
+        return match ([$program, $this]) {
+            [HookProgram::ClaudeCode, self::OAuth] => 'Sign in with Claude',
+            [HookProgram::Codex, self::OAuth] => 'Sign in with ChatGPT',
+            [HookProgram::ClaudeCode, self::ProviderToken] => 'Provider token',
+            [HookProgram::ClaudeCode, self::ApiKey], [HookProgram::Codex, self::ApiKey] => 'API key',
+            default => throw SignInMethodMissing::for($program->value, $this->value),
+        };
+    }
+
+    /**
+     * The one sentence the method's card shows on how it works for the user.
+     *
+     * @throws SignInMethodMissing when the program has no such sign-in
+     */
+    public function howItWorks(HookProgram $program): string
+    {
+        return match ([$program, $this]) {
+            [HookProgram::ClaudeCode, self::OAuth] => "Opens Claude's sign-in page. You sign in there and paste back "
+                .'the code it shows.',
+            [HookProgram::ClaudeCode, self::ProviderToken] => 'Paste a long-lived token made with claude '
+                .'setup-token. Suits a server.',
+            [HookProgram::ClaudeCode, self::ApiKey] => 'Paste a key from the Anthropic Console. Every request is '
+                .'billed to that API account.',
+            [HookProgram::Codex, self::OAuth] => "Shows a short code. You enter it on OpenAI's page, and the account "
+                .'appears here by itself.',
+            [HookProgram::Codex, self::ApiKey] => 'Paste a key from the OpenAI platform. Every request is billed to '
+                .'that API account.',
+            default => throw SignInMethodMissing::for($program->value, $this->value),
+        };
+    }
+
+    /**
+     * Where the user gets the token or key a secret method asks for; a sign-in that is not secret asks for none.
+     *
+     * @throws SignInMethodMissing when the program has no such sign-in
+     */
+    public function whereToGetIt(HookProgram $program): string|null
+    {
+        return match ([$program, $this]) {
+            [HookProgram::ClaudeCode, self::OAuth], [HookProgram::Codex, self::OAuth] => null,
+            [HookProgram::ClaudeCode, self::ProviderToken] => 'On a computer where you are signed in to Claude '
+                .'Code, run claude setup-token in a terminal and copy the token it prints.',
+            [HookProgram::ClaudeCode, self::ApiKey] => 'In the Anthropic Console, open API keys and create a key. Copy '
+                .'it right away: the Console shows it only once.',
+            [HookProgram::Codex, self::ApiKey] => 'On the OpenAI platform, open API keys and create a secret key.',
+            default => throw SignInMethodMissing::for($program->value, $this->value),
         };
     }
 }
