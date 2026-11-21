@@ -2791,6 +2791,28 @@ def test_a_journal_standing_by_serves_the_moment_the_one_holding_the_project_is_
     assert Config.rooted(linked).home.resolve() == app.config.home.resolve(), "a journal reached through another spelling of its path is the same journal"
 
 
+def test_a_hook_and_a_command_inside_a_worker_worktree_without_journal_env_make_no_environment(app: App):
+    import subprocess
+    from journal.repositories.environments import Environments
+    root = app.config.root
+    git = lambda *argv: subprocess.run(["git", *argv], cwd=root, capture_output=True, text=True, timeout=30)
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
+        git(*argv)
+    folder = app.config.home / "worktrees" / "12-Ada-Lovelace,-keeper-of-the-loom"
+    git("worktree", "add", "-q", "-b", "worker/12", str(folder))
+    (folder / "deep").mkdir()
+    script = Path(__file__).resolve().parents[1] / "src" / "journal" / "hooks" / "environment.sh"
+    named = subprocess.run(["sh", "-c", f". '{script}'; journal_environment"], cwd=folder / "deep", env={key: value for key, value in os.environ.items() if key != "JOURNAL_ENV"}, capture_output=True, text=True, timeout=30).stdout
+    assert named == "main", "a worker's worktree folder names a worker, never an environment, so a hook or a command there works main"
+    environments = app.container.get(Environments)
+    before = sorted(row.name for row in environments.rows())
+    status, _ = posted(app, "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s-stray"}, {"X-Journal-Env": folder.name})
+    refused = app.console().run(["task", "list"], Caller.user(folder.name))
+    assert status == 200, "a hook naming an environment with no row is let through, never answered 404 as a journal that did not answer"
+    assert refused.code == 1 and f"no environment {folder.name}" in refused.error, "a command naming one is refused with a line, never a 404"
+    assert sorted(row.name for row in environments.rows()) == before and folder.name not in before, "and neither makes an environment"
+
+
 def test_hooks_from_two_worktrees_at_once_each_land_in_their_own_environment(app: App):
     import subprocess
     import threading
