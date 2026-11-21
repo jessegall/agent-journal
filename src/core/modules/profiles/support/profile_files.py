@@ -179,8 +179,8 @@ class ProfileFiles:
         for folder in (self.folder(CLAUDE_FOLDER), self.folder(CODEX_FOLDER)):
             for path in (*FileAccess.glob(folder, f"{SHIPPED_PREFIX}*.md"), *FileAccess.glob(folder, f"{SHIPPED_PREFIX}*.toml")):
                 FileAccess.unlink(path)
-        for profile in self.module_profiles:
-            profile = self.defaults(profile)
+        for registered in self.module_profiles:
+            profile = self.published(registered)
             path = self.folder(CLAUDE_FOLDER) / f"{profile.name}.md"
             FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
             if path not in preserved:
@@ -190,6 +190,11 @@ class ProfileFiles:
                 FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
                 if path not in preserved:
                     FileAccess.write(path, self.codex_text(profile))
+
+    def published(self, registered: AgentProfile) -> AgentProfile:
+        """The profile as the project changed it in its profile folder, or the module's own when that change cannot be read."""
+        profile = self.row(registered.name)
+        return self.defaults(profile if isinstance(profile, AgentProfile) and not profile.problem else registered)
 
     @staticmethod
     def claude_text(profile: AgentProfile) -> str:

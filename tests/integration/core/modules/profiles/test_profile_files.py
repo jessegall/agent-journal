@@ -77,6 +77,13 @@ def test_a_persons_text_survives_changed_module_text_and_reset_brings_the_module
     assert files(tmp_path, upgraded).row("module-reader").body == "Read the new files."
 
 
+def test_the_program_copy_of_a_module_profile_carries_the_projects_own_text(tmp_path):
+    profiles = files(tmp_path, MODULE_READER)
+    profiles.save_changes(MODULE_READER, replace(MODULE_READER, body="Read the files.\n\nTest a plan only at the end of each phase."))
+    profiles.publish()
+    assert "Test a plan only at the end of each phase." in (tmp_path / ".claude/agents/module-reader.md").read_text()
+
+
 def test_a_module_profile_whose_type_changed_follows_its_module(tmp_path):
     files(tmp_path, MODULE_READER).save_changes(MODULE_READER, replace(MODULE_READER, model="opus"))
     assert files(tmp_path, replace(MODULE_READER, agent_type="worker")).row("module-reader").agent_type == "worker"
