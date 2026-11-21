@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import Button from '@kit/Button';
 import FactsList from '@kit/FactsList';
 import Reader from '@kit/Reader';
@@ -8,19 +8,28 @@ import StateBadge from '@kit/StateBadge';
 import Tabs from '@kit/Tabs';
 import { list as tasksRoute } from '@generated/routes/tasks';
 import type { TaskReaderData } from '@generated/types/tasks';
+import TaskLogsTab from './TaskLogsTab.vue';
+import TaskProofsTab from './TaskProofsTab.vue';
 import { taskStateLook } from './taskLooks';
 
 /**
  * One task, on its own page or in the inspector: Task 31 and its title first, the state below, then its facts each
  * labelled apart (the holder, the latest run and who runs it now, then what other domains add, such as Plans' plan of
  * the task), and its sections as
- * tabs, Brief alone for now: the brief's paragraphs in order as text, or No brief yet, never the result note instead.
+ * tabs: Brief, the brief's paragraphs in order as text, or No brief yet, never the result note instead; Logs and Proofs,
+ * each read only once its tab is chosen.
  * Back returns to the tasks list it was opened from, with its query, or to the tasks list.
  */
 const props = defineProps<{ data: TaskReaderData }>();
 
 const section = ref('brief');
-const tabs = [{ key: 'brief', label: 'Brief' }];
+const opened = reactive(new Set(['brief']));
+watch(section, (chosen) => opened.add(chosen));
+const tabs = [
+    { key: 'brief', label: 'Brief' },
+    { key: 'logs', label: 'Logs' },
+    { key: 'proofs', label: 'Proofs' },
+];
 
 const facts = computed(() => [
     {
@@ -94,6 +103,16 @@ function back(): void {
                                 />
                             </template>
                         </div>
+                    </template>
+                    <template #logs>
+                        <template v-if="opened.has('logs')">
+                            <TaskLogsTab :logs="data.logs" />
+                        </template>
+                    </template>
+                    <template #proofs>
+                        <template v-if="opened.has('proofs')">
+                            <TaskProofsTab :proofs="data.proofs" />
+                        </template>
                     </template>
                 </Tabs>
             </div>

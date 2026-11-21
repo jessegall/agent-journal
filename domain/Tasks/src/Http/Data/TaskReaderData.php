@@ -17,7 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * One task's reader: its number, title, state and revision, and three separate facts: the standing holder, the latest
  * run's number, and who runs it now, each absent when there is none; the sections other domains add beside the facts,
- * such as Plans' plan of the task; then its brief, never its result note in its place.
+ * such as Plans' plan of the task; then its brief, never its result note in its place, and the Logs and Proofs the
+ * reader asked for.
  */
 #[TypeScript]
 final class TaskReaderData extends Data
@@ -36,15 +37,22 @@ final class TaskReaderData extends Data
         public readonly AssignmentData|Optional $holder = new Optional(),
         public readonly int|Optional $latestRun = new Optional(),
         public readonly TaskRunnerData|Optional $runningNow = new Optional(),
+        public readonly TaskLogsData|Optional $logs = new Optional(),
+        public readonly TaskProofsData|Optional $proofs = new Optional(),
     ) {}
 
+
     /**
-     * The reader of a task read with its texts, with the sections other domains add.
+     * The reader of a task read with its texts, with the sections other domains add and the tabs it was asked for.
      *
      * @param  list<SlotSectionData>  $sections
      */
-    public static function fromDetails(TaskDetails $details, array $sections): self
-    {
+    public static function fromDetails(
+        TaskDetails $details,
+        array $sections,
+        TaskLogsData|Optional $logs,
+        TaskProofsData|Optional $proofs,
+    ): self {
         $execution = $details->execution;
 
         return self::from(array_filter([
@@ -59,6 +67,8 @@ final class TaskReaderData extends Data
             'runningNow' => $execution !== null && $execution->isRunningNow
                 ? TaskRunnerData::fromExecution($execution)
                 : null,
+            'logs' => $logs instanceof Optional ? null : $logs,
+            'proofs' => $proofs instanceof Optional ? null : $proofs,
         ], fn (mixed $readerValue) => $readerValue !== null));
     }
 }

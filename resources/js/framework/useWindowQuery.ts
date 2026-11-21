@@ -79,7 +79,10 @@ export function useWindowQueryChange(): (
  */
 export function useWindowReload(): (
     values: Record<string, string>,
-    callbacks: { onNetworkError: () => boolean; onHttpException: () => boolean },
+    callbacks: {
+        onNetworkError: () => boolean;
+        onHttpException: (response: { status: number }) => boolean;
+    },
 ) => void {
     const key = inject<string | null>(WINDOW_KEY, null);
     const prop = useHostProp();
