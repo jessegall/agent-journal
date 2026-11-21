@@ -26,6 +26,7 @@ final readonly class RecordBindingPresenceHandler implements CommandHandler
         }
 
         $receipt = $binding->recordPresence($command->report);
+
         $binding->host->recordCombinations(
             $command->report->protocol,
             array_map(fn (HostCombination $combination) => $combination->stored(), $command->report->combinations),

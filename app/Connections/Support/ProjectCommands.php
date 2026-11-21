@@ -48,6 +48,7 @@ final readonly class ProjectCommands
     {
         $this->assertServed($call, $agentId);
         $requestKey = $call->requestKey->value;
+
         $start = new StartProjectCommandRun(
             $requestKey,
             $agentId,
@@ -56,6 +57,7 @@ final readonly class ProjectCommands
             $call->fingerprintFor($agentId),
             $this->evidence->currentWorker(),
         );
+
         $started = $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $start);
 
         if ($started->isNew) {

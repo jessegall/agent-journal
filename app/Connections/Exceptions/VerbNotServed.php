@@ -72,6 +72,7 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
             "Request {$requestKey} was interrupted when the server stopped running it, before its outcome was kept; "
             .'it is not run again.',
         );
+
         $refusal->status = 409;
 
         return $refusal;
@@ -83,6 +84,7 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
             "The outcome of request {$requestKey} is unknown: the server stopped before it recorded the process; it is "
             .'not run again.',
         );
+
         $refusal->status = 409;
 
         return $refusal;

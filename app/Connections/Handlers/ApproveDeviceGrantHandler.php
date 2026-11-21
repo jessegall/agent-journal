@@ -18,6 +18,7 @@ final readonly class ApproveDeviceGrantHandler implements CommandHandler
         $grant = DeviceGrant::lockPendingByUserCode($command->userCode);
         $userId = $command->dispatchedBy()->actorId();
         $grant->approveBy($userId);
+
         ConnectionAudit::ofBinding(
             ConnectionAuditType::DeviceApproved,
             ConnectionAuditActor::User,

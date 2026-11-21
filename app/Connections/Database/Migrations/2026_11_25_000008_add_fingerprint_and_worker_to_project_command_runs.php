@@ -21,6 +21,7 @@ return new class extends Migration
         // A finished run is completed when it exited 0 and failed otherwise.
         DB::table('project_command_runs')->where('state', 'finished')->where('exit_code', 0)
             ->update(['state' => 'completed']);
+
         DB::table('project_command_runs')->where('state', 'finished')->update(['state' => 'failed']);
     }
 
