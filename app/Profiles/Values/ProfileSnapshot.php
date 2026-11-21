@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
-use App\Profiles\Models\ProfileRevision;
 use App\Actors\Contracts\Policy;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\Operation;
@@ -13,6 +12,7 @@ use App\Bus\Contracts\Command;
 use App\Operations\Enums\AccessType;
 use App\Processes\Values\ProcessGrants;
 use App\Profiles\Enums\InstancePolicy;
+use App\Profiles\Models\ProfileRevision;
 use Spatie\LaravelData\Data;
 
 /**

@@ -16,8 +16,8 @@ use App\Agents\Events\SessionClosed;
 use App\Agents\Events\SessionOpened;
 use App\Agents\Events\StartAccepted;
 use App\Agents\Events\StartGrantRequested;
-use App\Agents\Events\StartSettingsRequested;
 use App\Agents\Events\StartRefused;
+use App\Agents\Events\StartSettingsRequested;
 use App\Agents\Events\StartUnavailable;
 use Tests\Architecture\Support\EventRole;
 

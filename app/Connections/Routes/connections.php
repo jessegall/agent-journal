@@ -7,6 +7,7 @@ use App\Agents\Enums\HostProtocolVersion;
 use App\Connections\Http\Controllers\ApproveDeviceGrantController;
 use App\Connections\Http\Controllers\BindingPresenceController;
 use App\Connections\Http\Controllers\BindingRuntimeController;
+use App\Connections\Http\Controllers\Calls;
 use App\Connections\Http\Controllers\DeviceCommandController;
 use App\Connections\Http\Controllers\DeviceGrantController;
 use App\Connections\Http\Controllers\InstallScriptController;
@@ -19,7 +20,6 @@ use App\Connections\Http\Controllers\RevokeProjectBindingsController;
 use App\Connections\Http\Controllers\RevokeProjectInvitationController;
 use App\Connections\Http\Controllers\RuntimeLeaseController;
 use App\Connections\Http\Controllers\WorktreeDeliveryController;
-use App\Connections\Http\Controllers\Calls;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 

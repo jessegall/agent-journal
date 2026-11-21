@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -151,15 +152,22 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
 
     /**
      * Why each of these agents' latest start was refused, by agent; an agent whose latest start was not refused is not
-     * in it. Home reads the agents it shows at once.
+     * in it. Home reads the agents it shows at once, one latest start for each.
      *
      * @param  list<string>  $agentIds
      * @return array<string, string>
      */
     public static function refusalsOf(array $agentIds): array
     {
-        $latest = self::supervised()->whereIn('agent_id', $agentIds)->orderByDesc('created_at')
-            ->readLimit(count($agentIds) * 4)->get()->unique('agent_id');
+        $latest = self::supervised()
+            ->whereIn('agent_id', $agentIds)
+            ->whereNotExists(fn (QueryBuilder $newer) => $newer->from('process_starts', 'newer')
+                ->whereColumn('newer.agent_id', 'process_starts.agent_id')
+                ->where(fn (QueryBuilder $later) => $later->whereColumn('newer.created_at', '>', 'process_starts.created_at')
+                    ->orWhere(fn (QueryBuilder $tied) => $tied->whereColumn('newer.created_at', 'process_starts.created_at')
+                        ->whereColumn('newer.id', '>', 'process_starts.id'))))
+            ->readExactly(count($agentIds))
+            ->get();
 
         return $latest->filter(fn (self $start) => $start->refusal !== null)->mapWithKeys(
             fn (self $start) => [$start->agent_id => (string) $start->refusal],
@@ -327,6 +335,7 @@ final class ProcessStart extends Model implements EventSource, ReadableModel
 
     /**
      * A pending start that will never run ends cancelled now.
+     */
     public function cancelPending(): void
     {
         $this->state = ProcessStartState::Cancelled;

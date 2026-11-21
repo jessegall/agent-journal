@@ -8,6 +8,7 @@ use App\Agents\Calls\AgentCalls;
 use App\Assignments\Calls\AssignmentCalls;
 use App\Comments\Calls\CommentCalls;
 use App\Communication\Calls\CommunicationCalls;
+use App\Connections\Calls\ConnectionCalls;
 use App\Processes\Calls\ProcessCalls;
 use App\Records\Calls\RecordCalls;
 use App\Scripts\Calls\ScriptCalls;
@@ -25,6 +26,7 @@ final readonly class JournalClient
         public AssignmentCalls $assignments,
         public CommentCalls $comments,
         public CommunicationCalls $communication,
+        public ConnectionCalls $connections,
         public ProcessCalls $processes,
         public RecordCalls $records,
         public ScriptCalls $scripts,

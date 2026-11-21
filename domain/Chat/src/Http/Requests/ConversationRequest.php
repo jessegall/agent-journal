@@ -7,6 +7,7 @@ namespace Domain\Chat\Http\Requests;
 use App\Drivers\Enums\HookDriver;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -17,7 +18,7 @@ use PhpOption\Some;
 final class ConversationRequest extends FormRequest
 {
     /**
-     * @return array<string, list<string>>
+     * @return array<string, list<string|Enum>>
      */
     public function rules(): array
     {

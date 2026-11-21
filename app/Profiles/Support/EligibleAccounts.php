@@ -9,9 +9,9 @@ use App\Drivers\Enums\HookDriver;
 use App\Http\Data\Profiles\EligibleAccountData;
 use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Operations\Enums\AccessType;
+use App\Profiles\Contracts\StartAccounts;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
-use App\Profiles\Contracts\StartAccounts;
 use App\Profiles\Models\Profile;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
 

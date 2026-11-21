@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Api;
 
-use Domain\Tasks\Models\Task;
 use App\Assignments\Support\AssignmentHolder;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Models\Task;
 use PhpOption\Option;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

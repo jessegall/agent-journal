@@ -8,21 +8,20 @@ use App\Processes\Enums\AnalysisLimit;
 use App\Processes\Exceptions\ProcessorTimeUnreadable;
 
 /**
- * The time one analysis may take, counted from when the budget is made in the processor time this process spends,
- * so a line costs the same whether or not the machine is busy with other work.
+ * The time one analysis may take, in the processor time this process spends, so a line costs the same whether or not
+ * the machine is busy with other work. It counts from its first check, once the analysis is under way, so the classes
+ * a process compiles for its first analysis are never charged to that line.
  */
-final readonly class TimeBudget
+final class TimeBudget
 {
-    private float $startedAt;
-
-    public function __construct()
-    {
-        $this->startedAt = self::processorMilliseconds();
-    }
+    private ?float $startedAt = null;
 
     public function isSpent(): bool
     {
-        return AnalysisLimit::Milliseconds->isPassedBy(self::processorMilliseconds() - $this->startedAt);
+        $now = self::processorMilliseconds();
+        $this->startedAt ??= $now;
+
+        return AnalysisLimit::Milliseconds->isPassedBy($now - $this->startedAt);
     }
 
     /**

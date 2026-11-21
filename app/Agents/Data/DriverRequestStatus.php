@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Data;
 
-use App\Agents\Models\DriverRequest;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
+use App\Agents\Models\DriverRequest;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
+use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Ui\Data\SlotSectionData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
-use App\Http\Data\Profiles\EligibleAccountsData;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

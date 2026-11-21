@@ -27,6 +27,9 @@ vi.mock('@inertiajs/vue3', () => ({
 
                 return form;
             },
+            optimistic() {
+                return form;
+            },
             reset() {
                 Object.assign(form, fields);
             },

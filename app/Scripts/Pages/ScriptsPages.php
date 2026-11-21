@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Scripts\Pages;
 
+use App\Profiles\Support\AccountOwnerCheck;
 use App\Scripts\Http\Controllers\Pages\CheckDraftPageController;
 use App\Scripts\Http\Controllers\Pages\SaveDraftPageController;
-use App\Ui\Declarations\ActionRoute;
-use App\Profiles\Support\AccountOwnerCheck;
 use App\Scripts\Resolvers\ProfileScriptWindowResolver;
 use App\Ui\Contracts\PageProvider;
+use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\Page;
 use App\Ui\Enums\Icon;

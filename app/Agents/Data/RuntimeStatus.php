@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Agents\Data;
 
 use App\Agents\Enums\DriverVariant;
-use App\Agents\Models\AgentRuntime;
-use Carbon\CarbonImmutable;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Models\AgentRuntime;
+use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

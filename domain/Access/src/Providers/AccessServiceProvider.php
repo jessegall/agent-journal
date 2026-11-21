@@ -49,11 +49,11 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->singleton(AccessSettings::class, fn (): AccessSettings => $this->app->make(ReflectorFactory::class)
             ->make(AccessSettings::class)
             ->newLazyGhost(function (
-            AccessSettings $settings,
-        ): void {
-            $ownerEmail = $this->app->make('config')->get('access.owner_email');
-            $settings->__construct(is_string($ownerEmail) ? User::ownerIdFor($ownerEmail) : null);
-        }));
+                AccessSettings $settings,
+            ): void {
+                $ownerEmail = $this->app->make('config')->get('access.owner_email');
+                $settings->__construct(is_string($ownerEmail) ? User::ownerIdFor($ownerEmail) : null);
+            }));
 
         $this->app->scoped(UserAssignees::class);
     }

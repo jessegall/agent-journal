@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Comments\Data;
 
-use App\Text\Support\MarkdownText;
-use App\Comments\Models\Comment;
 use App\Actors\Enums\ActorType;
+use App\Comments\Models\Comment;
+use App\Text\Support\MarkdownText;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

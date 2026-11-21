@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
+use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Enums\AttentionState;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

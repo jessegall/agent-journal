@@ -122,7 +122,7 @@ final class LexerCursor
      */
     public function assertWithinBudget(): void
     {
-        if (++$this->steps % 256 === 0 && $this->budget->isSpent()) {
+        if ($this->steps++ % 256 === 0 && $this->budget->isSpent()) {
             throw ShellLineUnreadable::pastLimit(AnalysisLimit::Milliseconds, $this->position);
         }
     }
