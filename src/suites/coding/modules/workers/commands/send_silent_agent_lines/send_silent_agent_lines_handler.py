@@ -76,15 +76,18 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         if connection.status is not ConnectionStatus.ONLINE:
             return
         lines: dict[int, list[AgentLine]] = defaultdict(list)
-        # only a line sent since an agent's last sign of life counts as an attempt, so none older than the oldest of
-        # those is read: the lines of every agent build up for as long as the journal runs
-        oldest_activity = min((activities[agent_id].activity_at for agent_id in agent_ids), default=None)
-        if oldest_activity is not None:
-            recent = self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).matching(Greater("created_at", oldest_activity.text))
-            for line in recent.every_row(SILENT_AGENTS_REASON):
-                lines[line.session_agent_id].append(line)
         span = self.settings.minutes(SILENT_AGENT_MINUTES)
         attempt_limit = self.settings.number(SILENT_RECOVERY_ATTEMPTS)
+        # only a line sent since an agent's last sign of life counts as an attempt, and every attempt of one silent
+        # stretch falls within its backoff, so no line older than either is read: this runs while the step holds the
+        # write turn, and the lines of every agent build up for as long as the journal runs
+        oldest_activity = min((activities[agent_id].activity_at for agent_id in agent_ids), default=None)
+        if oldest_activity is not None:
+            backoff_start = context.timestamp.plus_seconds(-span.count * 2 ** (attempt_limit + 1))
+            since = max(oldest_activity, backoff_start, key=lambda moment: moment.value)
+            recent = self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).matching(Greater("created_at", since.text))
+            for line in recent.every_row(SILENT_AGENTS_REASON):
+                lines[line.session_agent_id].append(line)
         resumes = self.settings.flag(RESUME_SILENT_AGENTS)
         for agent in agents:
             if not resumes and not agent.is_main:
