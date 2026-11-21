@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
+use App\Communication\Events\MessageAnswerRequired;
+use App\Communication\Events\MessageAnswered;
+use App\Communication\Events\MessageDismissed;
+use App\Communication\Events\MessageRead;
+use App\Communication\Events\MessageSent;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
@@ -84,12 +91,13 @@ use Spatie\LaravelData\Optional;
     'origin_receipt_id',
     'reply_to_id',
 ])]
-final class Message extends Model implements Assignable, Numbered, ReadableModel
+final class Message extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {
     use BoundedReads;
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'communication.message';
 
@@ -147,7 +155,13 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         $message->conversation_id = $envelope->replyToId === null
             ? $message->id
             : self::query()->acrossInboxes()->findOrFail($envelope->replyToId)->conversation_id;
-        $message->save();
+        $message->assertSaved($message->save());
+        $message->raise(new MessageSent(
+            $message->id,
+            $author,
+            $message->source_inbox_id,
+            $message->destination_inbox_id,
+        ));
 
         return $message;
     }
@@ -196,7 +210,8 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         $this->read_by_type = $reader->type->value;
         $this->read_by_id = $reader->id;
         $this->read_participation_assignment_id = $membership->seatReference->id;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MessageRead($this->id, $this->destination_inbox_id, $reader));
 
         return true;
     }
@@ -216,7 +231,8 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         $this->state = MessageState::WaitingForAnswer;
         $this->is_question = true;
         $this->state_version++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MessageAnswerRequired($this->id, $this->destination_inbox_id));
     }
 
     /**
@@ -232,7 +248,8 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         $this->state_version++;
         $this->answer_message_id = $reply->id;
         $this->closeBy($actor, $at);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MessageAnswered($this->id, $reply->id, $actor));
     }
 
     /**
@@ -246,7 +263,8 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         $this->dismissal_type = $type;
         $this->dismissal_reason = $reason;
         $this->closeBy($actor, $at);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new MessageDismissed($this->id, $actor, $type));
     }
 
     // ----------[ Answers ]----------
