@@ -242,8 +242,8 @@ func TestDisconnectRemovesOneFolderKeepsItsDirtyWorktreeAndLeavesTheOtherConnect
 		stateFolder: state,
 		wake:        func(string, string) error { return nil },
 		grant:       noGrant,
-		disableService: func(binding host.Binding) error {
-			disabled = append(disabled, binding.BindingID)
+		disableService: func(bindingID string) error {
+			disabled = append(disabled, bindingID)
 			return nil
 		},
 	}

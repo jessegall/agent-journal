@@ -34,8 +34,24 @@ var localVerbs = []string{
 	"status", "claude", "codex", "logout", "service", "disconnect", "attach", "upgrade", "diagnostics", "terminal",
 }
 
+// errBeingDisconnected refuses every verb of a folder whose disconnect began and is not finished.
+var errBeingDisconnected = errors.New("this folder is being disconnected")
+
+// relayStopWait is how long a disconnect waits for the fenced relay to stop.
+const relayStopWait = 15 * time.Second
+
 // errVerbLater refuses a local verb this connected machine does not run yet.
 var errVerbLater = errors.New("this verb arrives with the next release")
+
+// ownCommandPath is the absolute path of this installed journal command; its plain name when the system cannot say.
+func ownCommandPath() string {
+	path, err := os.Executable()
+	if err != nil {
+		return "journal"
+	}
+
+	return path
+}
 
 func main() {
 	folder, err := os.Getwd()
@@ -50,10 +66,12 @@ func main() {
 		transport:   &http.Client{},
 		approval:    deviceApproval,
 		terminal:    os.Getenv(host.TerminalSelectorVariable),
-		disableService: func(binding host.Binding) error {
+		disableService: func(bindingID string) error {
 			home, _ := os.UserHomeDir()
-			return userservice.Service{Home: home, BindingID: binding.BindingID, StateFolder: host.DefaultStateFolder()}.Disable()
+			return userservice.Service{Home: home, BindingID: bindingID, StateFolder: host.DefaultStateFolder()}.Disable()
 		},
+		commandPath:   ownCommandPath(),
+		relayStopWait: relayStopWait,
 	}
 	os.Exit(commands.run(os.Args[1:], folder, standardInput(), os.Stdout, os.Stderr))
 }
@@ -69,11 +87,19 @@ type dispatcher struct {
 	// terminal is the selector of this shell's sign-in, from journal terminal open; none outside such a shell.
 	terminal string
 	// disableService stops the user service that keeps the binding's relay running.
-	disableService func(binding host.Binding) error
+	disableService func(bindingID string) error
+	// commandPath is the absolute path of this installed journal command, which journal disconnect --resume runs.
+	commandPath string
+	// relayStopWait is how long a disconnect waits for the fenced relay to stop before it keeps everything.
+	relayStopWait time.Duration
 }
 
 // run resolves the folder's binding, wakes its relay when none runs and answers the verb with its exit code.
 func (commands dispatcher) run(arguments []string, folder string, stdin []byte, stdout, stderr io.Writer) int {
+	// A disconnect runs before any relay is woken, and finishes with no connection.json left.
+	if len(arguments) > 0 && arguments[0] == "disconnect" {
+		return commands.disconnect(arguments[1:], folder, stdout, stderr)
+	}
 	found, binding, state, err := commands.resolve(folder)
 	if errors.Is(err, project.ErrNotConnected) {
 		fmt.Fprintln(stdout, "Not connected: no connected project folder holds "+folder+".")
@@ -92,8 +118,29 @@ func (commands dispatcher) run(arguments []string, folder string, stdin []byte, 
 }
 
 // resolve finds the connected folder at or above the folder, its binding on this machine and its private state, and
-// wakes the binding's relay when none runs.
+// wakes the binding's relay when none runs; a folder a disconnect fenced runs nothing more.
 func (commands dispatcher) resolve(folder string) (project.Folder, host.Binding, host.ConnectionState, error) {
+	found, binding, state, err := commands.connected(folder)
+	if err != nil {
+		return project.Folder{}, host.Binding{}, host.ConnectionState{}, err
+	}
+	if state.IsFenced() {
+		return project.Folder{}, host.Binding{}, host.ConnectionState{}, fmt.Errorf(
+			"%w: finish it with journal disconnect --resume %s", errBeingDisconnected, binding.BindingID)
+	}
+
+	if !state.RelayIsRunning() {
+		if err := commands.wake(commands.stateFolder, binding.BindingID); err != nil {
+			return project.Folder{}, host.Binding{}, host.ConnectionState{}, err
+		}
+	}
+
+	return found, binding, state, nil
+}
+
+// connected finds the connected folder at or above the folder, its binding on this machine and its private state,
+// without waking anything.
+func (commands dispatcher) connected(folder string) (project.Folder, host.Binding, host.ConnectionState, error) {
 	found, connection, err := project.Find(folder)
 	if err != nil {
 		return project.Folder{}, host.Binding{}, host.ConnectionState{}, err
@@ -112,12 +159,6 @@ func (commands dispatcher) resolve(folder string) (project.Folder, host.Binding,
 			project.ErrRootMoved, binding.CanonicalRoot, found.Root)
 	}
 
-	if !state.RelayIsRunning() {
-		if err := commands.wake(commands.stateFolder, binding.BindingID); err != nil {
-			return project.Folder{}, host.Binding{}, host.ConnectionState{}, err
-		}
-	}
-
 	return found, binding, state, nil
 }
 
@@ -132,9 +173,6 @@ func (commands dispatcher) local(
 	verb := arguments[0]
 	if verb == "claude" {
 		return commands.claude(binding, folder, stderr)
-	}
-	if verb == "disconnect" {
-		return commands.disconnect(arguments[1:], binding, state, folder, stdout, stderr)
 	}
 	if verb == "service" {
 		return commands.service(binding, stdout, stderr)
@@ -295,57 +333,6 @@ func superviseSession(
 
 		return answer.ServerTime, answer.ExpiresAt, err
 	}, lease.RenewEvery)
-}
-
-// disconnect removes this folder's connection from this machine once confirmed: its relay and service stop, its
-// private credentials and session state go, dirty worktrees stay with their paths printed, and other connected
-// folders are untouched. The binding reads offline on the journal; its history stays there.
-func (commands dispatcher) disconnect(
-	flags []string,
-	binding host.Binding,
-	state host.ConnectionState,
-	folder project.Folder,
-	stdout, stderr io.Writer,
-) int {
-	if !slices.Contains(flags, "--yes") {
-		fmt.Fprintln(stdout, "This disconnects "+folder.Root+" from "+binding.JournalURL+
-			": its relay stops and this machine forgets its sign-in. Work in progress is kept. Run journal disconnect --yes to go on.")
-		return 1
-	}
-
-	if err := commands.disableService(binding); err != nil && !errors.Is(err, userservice.ErrNoServiceManager) {
-		fmt.Fprintln(stderr, "journal:", err)
-	}
-	kept, err := folder.Disconnect()
-	for _, path := range kept {
-		fmt.Fprintln(stdout, "Kept work in progress at "+path)
-	}
-	if err != nil {
-		fmt.Fprintln(stderr, "journal:", err)
-		return 1
-	}
-	if err := state.Remove(); err != nil {
-		fmt.Fprintln(stderr, "journal:", err)
-		return 1
-	}
-
-	fmt.Fprintln(stdout, "Disconnected "+folder.Root+".")
-	if host.RemainingBindings(commands.stateFolder) > 0 {
-		return 0
-	}
-
-	kept, err = host.MachineChanges{StateFolder: commands.stateFolder}.Undo()
-	if err != nil {
-		fmt.Fprintln(stderr, "journal:", err)
-		return 1
-	}
-	fmt.Fprintln(stdout, "No connected project is left on this machine; the journal's releases and the changes it made to "+
-		"your shell are removed.")
-	for _, path := range kept {
-		fmt.Fprintln(stdout, "Kept "+path+": it changed since the journal set it up, so the journal line in it is yours to remove.")
-	}
-
-	return 0
 }
 
 // service enables or disables the user service that keeps the binding's relay running.

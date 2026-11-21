@@ -301,34 +301,22 @@ func writeJSON(path string, value any) error {
 }
 
 // Disconnect removes what setup owns in the folder: connection.json, the hook entry points, the session state, the
-// setup record and the .gitignore rule it added, when that rule is still as written. Every linked worktree under .journal/worktrees with uncommitted work is kept, and its path is
-// answered so the work can be recovered; a clean one is removed by Git first.
-func (folder Folder) Disconnect() ([]string, error) {
-	kept := []string{}
+// setup record and the .gitignore rule it added, when that rule is still as written. Worktrees and their receipts
+// are left to the worktree retirement that runs before it.
+func (folder Folder) Disconnect() error {
 	if err := folder.removeIgnoreRule(folder.progress().IgnoreAddition); err != nil {
-		return kept, err
+		return err
 	}
-	worktrees, err := os.ReadDir(filepath.Join(folder.journalFolder(), "worktrees"))
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return nil, err
-	}
-	for _, entry := range worktrees {
-		path := filepath.Join(folder.journalFolder(), "worktrees", entry.Name())
-		status, err := exec.Command("git", "-C", path, "status", "--porcelain").Output()
-		if err != nil || len(bytes.TrimSpace(status)) > 0 {
-			kept = append(kept, path)
-			continue
-		}
-		if exec.Command("git", "-C", folder.Root, "worktree", "remove", path).Run() != nil {
-			kept = append(kept, path)
-		}
-	}
-
-	for _, owned := range []string{connectionName, setupName, hooksFolderName, "sessions", "receipts"} {
+	for _, owned := range []string{connectionName, setupName, hooksFolderName, "sessions"} {
 		if err := os.RemoveAll(folder.path(owned)); err != nil {
-			return kept, err
+			return err
 		}
 	}
 
-	return kept, nil
+	return nil
+}
+
+// ForgetReceipts removes the worktree receipts once no kept worktree needs them to prove whose it is.
+func (folder Folder) ForgetReceipts() error {
+	return os.RemoveAll(folder.path("receipts"))
 }

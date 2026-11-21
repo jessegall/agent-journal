@@ -129,6 +129,11 @@ func (state ConnectionState) ClearSignIn(selector string, generation int) error 
 	return removePrivateFile(path)
 }
 
+// RemoveSignIns forgets every terminal sign-in of this binding, and no other binding's.
+func (state ConnectionState) RemoveSignIns() error {
+	return os.RemoveAll(filepath.Join(state.folder(), terminalsFolderName))
+}
+
 func (state ConnectionState) signInPath(selector string) (string, error) {
 	if !selectorShape.MatchString(selector) {
 		return "", ErrSelectorMalformed

@@ -79,6 +79,11 @@ func (account ClaudeAccount) Logout() error {
 	return host.WritePrivateFile(account.generationFile(), []byte(strconv.Itoa(account.Generation()+1)+"\n"))
 }
 
+// Forget removes every generation of the binding's Claude Code sign-in, when its folder is disconnected.
+func (account ClaudeAccount) Forget() error {
+	return os.RemoveAll(account.folder())
+}
+
 func (account ClaudeAccount) folder() string {
 	return filepath.Join(account.StateFolder, account.BindingID, "accounts", "claude-code")
 }

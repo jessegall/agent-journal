@@ -173,7 +173,7 @@ func TestDisconnectTakesOutTheIgnoreRuleOnlyWhileItIsUnchanged(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := folder.Disconnect(); err != nil {
+	if err := folder.Disconnect(); err != nil {
 		t.Fatal(err)
 	}
 

@@ -74,6 +74,15 @@ func (reports *StartReports) Send(ctx context.Context, reporter StartReporter) e
 	return errors.Join(append(failures, reports.save(kept))...)
 }
 
+// Count is how many reports the journal has not acknowledged yet.
+func (reports *StartReports) Count() (int, error) {
+	reports.mutex.Lock()
+	defer reports.mutex.Unlock()
+	pending, err := reports.pending()
+
+	return len(pending), err
+}
+
 // isRetried is whether a report's failure keeps it for the next round: a refusal and a grant the journal already
 // holds are settled answers, every other failure is not.
 func isRetried(err error) bool {
