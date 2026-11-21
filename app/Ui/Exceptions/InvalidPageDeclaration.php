@@ -20,6 +20,17 @@ final class InvalidPageDeclaration extends UiDeclarationError
         );
     }
 
+    public static function readerReturnsNoLayout(string $page, string $resolver): self
+    {
+        return new self(
+            sprintf(
+                'Page %s is declared as a layout, but its resolver %s does not return DeclaredLayoutData from its read method.',
+                $page,
+                $resolver,
+            ),
+        );
+    }
+
     public static function recordSlotWithoutParameter(string $slot): self
     {
         return new self(

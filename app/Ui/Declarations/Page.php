@@ -11,6 +11,7 @@ use App\Ui\Enums\Icon;
 use App\Ui\Enums\PageDestination;
 use App\Ui\Enums\PageSkeleton;
 use App\Ui\Exceptions\InvalidPageDeclaration;
+use App\Ui\Layout\DeclaredLayoutData;
 use Spatie\LaravelData\Data;
 
 /**
@@ -44,6 +45,7 @@ final class Page
         public readonly array $slots = [],
         public readonly array $actions = [],
         public readonly string|null $visibility = null,
+        public readonly bool $isDeclared = false,
     ) {}
 
     /**
@@ -61,6 +63,31 @@ final class Page
         }
 
         return new self($key, $title, $icon, $key, $resolver, $dataClass, $component, FloatSize::standard());
+    }
+
+    /**
+     * A page whose reader builds a declared layout of catalogue parts, drawn by the one shared renderer instead of a
+     * component of its own; its key, routes and placement work as any page's.
+     *
+     * @param  class-string<PageResolver>  $resolver
+     */
+    public static function layout(string $key, string $title, Icon $icon, string $resolver): self
+    {
+        if (ResolverDataClass::of($resolver) !== DeclaredLayoutData::class) {
+            throw InvalidPageDeclaration::readerReturnsNoLayout($key, $resolver);
+        }
+
+        return new self(
+            $key,
+            $title,
+            $icon,
+            $key,
+            $resolver,
+            DeclaredLayoutData::class,
+            DomainUi::DECLARED_LAYOUT,
+            FloatSize::standard(),
+            isDeclared: true,
+        );
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Ui\Contracts\SectionResolver;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Enums\SlotContextType;
 use App\Ui\Exceptions\InvalidSectionDeclaration;
+use App\Ui\Layout\DeclaredLayoutData;
 use Spatie\LaravelData\Data;
 
 /**
@@ -34,6 +35,7 @@ final class Section
         public readonly int $position = 0,
         public readonly array $actions = [],
         public readonly string|null $visibility = null,
+        public readonly bool $isDeclared = false,
     ) {}
 
     /**
@@ -59,6 +61,28 @@ final class Section
         }
 
         return new self($key, $title, $slot, $takes, $resolver, $dataClass, $component);
+    }
+
+    /**
+     * A section whose reader builds a declared layout of catalogue parts, drawn by the one shared renderer.
+     *
+     * @param  string  $slot  the slot's full key, such as plans.inspector
+     * @param  class-string<SectionResolver>  $resolver
+     */
+    public static function layout(
+        string $key,
+        string $title,
+        string $slot,
+        SlotContextType $takes,
+        string $resolver,
+    ): self {
+        $section = self::make($key, $title, $slot, $takes, $resolver, DomainUi::DECLARED_LAYOUT);
+
+        if ($section->dataClass !== DeclaredLayoutData::class) {
+            throw InvalidSectionDeclaration::readerReturnsNoLayout($key, $resolver);
+        }
+
+        return clone ($section, ['isDeclared' => true]);
     }
 
     public function at(int $position): self

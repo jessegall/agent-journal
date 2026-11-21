@@ -30,4 +30,15 @@ final class InvalidSectionDeclaration extends UiDeclarationError
             ),
         );
     }
+
+    public static function readerReturnsNoLayout(string $section, string $resolver): self
+    {
+        return new self(
+            sprintf(
+                'Section %s is declared as a layout, but its resolver %s does not return DeclaredLayoutData from its read method.',
+                $section,
+                $resolver,
+            ),
+        );
+    }
 }

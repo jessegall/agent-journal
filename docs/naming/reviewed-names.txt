@@ -512,6 +512,10 @@ case	LaunchCandidateRank::OtherPurpose
 case	LaunchCandidateRank::SamePurpose
 case	LaunchProfileType::ProtectedAccount
 case	LaunchProfileType::Standard
+case	LayoutTag::Box
+case	LayoutTag::Collection
+case	LayoutTag::Notice
+case	LayoutTag::Text
 case	LifecycleStage::Enter
 case	LifecycleStage::Event
 case	LifecycleStage::Exit
@@ -2314,6 +2318,7 @@ class	DeclarationInvalid
 class	DeclarationRules
 class	DeclarativeReader
 class	DeclaredCommand
+class	DeclaredLayoutData
 class	DeclaredPageGate
 class	DeclaredPageRequest
 class	DeclaredPageRoutes
@@ -3175,7 +3180,11 @@ class	LaunchProfileKey
 class	LaunchProfiles
 class	Layout
 class	LayoutData
+class	LayoutLimits
+class	LayoutPartData
+class	LayoutRefused
 class	LayoutRequest
+class	LayoutRowData
 class	LayoutsController
 class	LayoutsView
 class	LazyLoadRefused
@@ -6321,6 +6330,7 @@ constant	DomainEventServiceProvider::LANES
 constant	DomainEventServiceProvider::LANES_VERSION
 constant	DomainEventServiceProvider::STATE_EVENTS
 constant	DomainTypeWriter::COMPATIBILITY_FILE
+constant	DomainUi::DECLARED_LAYOUT
 constant	DraftTokens::FILE
 constant	DriverConversationResolver::MOST_CONVERSATIONS
 constant	DriverReplies::PROTECTED_REASON
@@ -6454,6 +6464,9 @@ constant	JournalTools::SERVER
 constant	JournalTools::TOOL_PREFIX
 constant	JournalUnavailable::CODE
 constant	LaunchLimits::PASS_LIMIT
+constant	LayoutLimits::MOST_DEPTH
+constant	LayoutLimits::MOST_PARTS
+constant	LayoutLimits::MOST_ROWS
 constant	LibraryWindowResolver::SHARING_NOTICE
 constant	LifecycleCommands::MAXIMUM
 constant	LimitMcpMessage::BYTE_LIMIT
@@ -7102,6 +7115,7 @@ enum	JournalRouteType
 enum	KeywordCategory
 enum	LaunchCandidateRank
 enum	LaunchProfileType
+enum	LayoutTag
 enum	LifecycleStage
 enum	LifecycleState
 enum	MenuEntryState
@@ -11200,6 +11214,8 @@ method	DeclaredCommand::isRequestKeyRequired()
 method	DeclaredCommand::needsRepeatableRead()
 method	DeclaredCommand::read()
 method	DeclaredCommand::retention()
+method	DeclaredLayoutData::__construct()
+method	DeclaredLayoutData::of()
 method	DeclaredPageGate::__construct()
 method	DeclaredPageGate::contextFor()
 method	DeclaredPageGate::permits()
@@ -11915,6 +11931,7 @@ method	DomainUi::__construct()
 method	DomainUi::assertImplements()
 method	DomainUi::assertInvokableController()
 method	DomainUi::componentFile()
+method	DomainUi::declaredLayoutFile()
 method	DomainUi::declaring()
 method	DomainUi::fullKey()
 method	DomainUi::of()
@@ -13637,6 +13654,7 @@ method	InstallAttempt::replace()
 method	InstallAttempt::spendOn()
 method	InstallAttempt::stateAt()
 method	InstallAttempt::targetLabel()
+method	InstallAttempt::targetText()
 method	InstallAttemptCancelled::__construct()
 method	InstallAttemptList::__construct()
 method	InstallAttemptList::page()
@@ -13785,6 +13803,7 @@ method	InvalidNavigationDeclaration::valuesNotStrings()
 method	InvalidObservationAnswer::forAnswer()
 method	InvalidPageDeclaration::floatSizeNotPositive()
 method	InvalidPageDeclaration::optionWithoutChoices()
+method	InvalidPageDeclaration::readerReturnsNoLayout()
 method	InvalidPageDeclaration::recordSlotWithoutParameter()
 method	InvalidPageDeclaration::resolverReturnsNoData()
 method	InvalidPageDeclaration::unknownChoice()
@@ -13999,9 +14018,28 @@ method	Layout::casts()
 method	Layout::create()
 method	Layout::saveNameAndShape()
 method	LayoutData::__construct()
+method	LayoutPartData::__construct()
+method	LayoutPartData::assertTagAccepts()
+method	LayoutPartData::assertWithinCatalogue()
+method	LayoutPartData::box()
+method	LayoutPartData::collection()
+method	LayoutPartData::notice()
+method	LayoutPartData::text()
+method	LayoutRefused::childrenNotAllowed()
+method	LayoutRefused::emptyKey()
+method	LayoutRefused::siblingKeyRepeated()
+method	LayoutRefused::tooDeep()
+method	LayoutRefused::tooManyParts()
+method	LayoutRefused::tooManyRows()
+method	LayoutRefused::unknownSize()
+method	LayoutRefused::unknownVariant()
 method	LayoutRequest::layoutName()
 method	LayoutRequest::rules()
 method	LayoutRequest::shape()
+method	LayoutRowData::__construct()
+method	LayoutTag::holdsChildren()
+method	LayoutTag::sizes()
+method	LayoutTag::variants()
 method	LayoutsController::__construct()
 method	LayoutsController::destroy()
 method	LayoutsController::store()
@@ -15466,6 +15504,7 @@ method	Page::actions()
 method	Page::at()
 method	Page::floating()
 method	Page::inInspector()
+method	Page::layout()
 method	Page::loadingAs()
 method	Page::make()
 method	Page::onHome()
@@ -24093,6 +24132,7 @@ parameter	$isClean
 parameter	$isContinuation
 parameter	$isCredentialWriteInProgress
 parameter	$isCurrentRun
+parameter	$isDeclared
 parameter	$isDefault
 parameter	$isDirectoryRemoved
 parameter	$isDirty
@@ -25599,6 +25639,8 @@ parameter	$value	app/Settings/Casts/SettingsDocumentCast.php
 parameter	$value	app/Sharing/Casts/GatewaySettingsCast.php
 parameter	$value	app/Sharing/Casts/SelectedTargetsCast.php
 parameter	$value	app/Skills/Casts/SkillSectionsCast.php
+parameter	$value	app/Ui/Layout/LayoutPartData.php
+parameter	$value	app/Ui/Layout/LayoutRowData.php
 parameter	$valueClass
 parameter	$valueClasses
 parameter	$variable
@@ -27620,6 +27662,7 @@ property	DeclaredCommand::$command
 property	DeclaredCommand::$entry
 property	DeclaredCommand::$handler
 property	DeclaredCommand::$owner
+property	DeclaredLayoutData::$root
 property	DeclaredPageGate::$pages
 property	DeclaredPageRoutes::$declarations
 property	DeclaredPageRoutes::$router
@@ -29221,6 +29264,17 @@ property	LaunchProfiles::$trialDrivers
 property	LayoutData::$id
 property	LayoutData::$name
 property	LayoutData::$shape
+property	LayoutPartData::$children
+property	LayoutPartData::$detail
+property	LayoutPartData::$key
+property	LayoutPartData::$rows
+property	LayoutPartData::$size
+property	LayoutPartData::$tag
+property	LayoutPartData::$text
+property	LayoutPartData::$variant
+property	LayoutRowData::$key
+property	LayoutRowData::$label
+property	LayoutRowData::$value
 property	LayoutsController::$redirect
 property	LayoutsController::$users
 property	LegacyDockable::$page
@@ -30118,6 +30172,7 @@ property	Page::$dataClass
 property	Page::$floatSize
 property	Page::$homePosition
 property	Page::$icon
+property	Page::$isDeclared
 property	Page::$key
 property	Page::$limit
 property	Page::$opensIn
@@ -36401,6 +36456,7 @@ variable	$since
 variable	$site
 variable	$sites
 variable	$size
+variable	$sizes
 variable	$skill
 variable	$skillEntries
 variable	$skillId

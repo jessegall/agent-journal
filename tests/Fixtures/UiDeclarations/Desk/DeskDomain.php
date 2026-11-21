@@ -35,21 +35,21 @@ final class DeskDomain extends Domain implements SectionProvider
     {
         return [
             Section::make(
-'notes',
- 'Notes',
- 'library.book-inspector',
- SlotContextType::Record,
- NotesResolver::class,
- 'Notes.vue',
-),
+                'notes',
+                'Notes',
+                'library.book-inspector',
+                SlotContextType::Record,
+                NotesResolver::class,
+                'Notes.vue',
+            ),
             Section::make(
-'draft',
- 'Draft',
- 'library.aside',
- SlotContextType::Session,
- NotesResolver::class,
- 'Notes.vue',
-),
+                'draft',
+                'Draft',
+                'library.aside',
+                SlotContextType::Session,
+                NotesResolver::class,
+                'Notes.vue',
+            ),
         ];
     }
 }

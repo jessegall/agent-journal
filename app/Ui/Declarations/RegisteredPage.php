@@ -50,7 +50,7 @@ final readonly class RegisteredPage
             path: $path,
             uri: $owner->uri($path),
             resolver: ResolverDefinition::of($owner, $key, $page->resolver, PageResolver::class, $page->dataClass),
-            componentFile: $owner->componentFile($key, $page->component),
+            componentFile: $owner->presentationFile($key, $page->component, $page->isDeclared),
             propName: 'window_'.str_replace(['.', '-'], '_', $key),
             slots: self::checkedSlots($owner, $key, $path, $page->slots),
         );
@@ -101,7 +101,7 @@ final readonly class RegisteredPage
      */
     public function componentName(): string
     {
-        return $this->owner->key.'/'.preg_replace('/\.vue$/', '', $this->page->component);
+        return $this->owner->presentationName($this->page->component, $this->page->isDeclared);
     }
 
     public function isHome(): bool

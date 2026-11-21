@@ -51,7 +51,7 @@ final readonly class RegisteredSection
                 SectionResolver::class,
                 $section->dataClass,
             ),
-            componentFile: $owner->componentFile($key, $section->component),
+            componentFile: $owner->presentationFile($key, $section->component, $section->isDeclared),
             propName: 'section_'.str_replace(['.', '-'], '_', "{$section->slot}.{$key}"),
         );
     }
@@ -82,6 +82,6 @@ final readonly class RegisteredSection
      */
     public function componentName(): string
     {
-        return $this->owner->key.'/'.preg_replace('/\.vue$/', '', $this->section->component);
+        return $this->owner->presentationName($this->section->component, $this->section->isDeclared);
     }
 }

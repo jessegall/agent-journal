@@ -27,6 +27,11 @@ use Illuminate\Support\Str;
 final readonly class DomainUi
 {
     /**
+     * The file name of the shared renderer of declared layouts.
+     */
+    public const string DECLARED_LAYOUT = 'DeclaredLayout.vue';
+
+    /**
      * @param  list<Page>  $pages
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
@@ -99,6 +104,31 @@ final readonly class DomainUi
     public function uri(RoutePath $path): string
     {
         return rtrim("{$this->key}/{$path->path}", '/');
+    }
+
+    /**
+     * The file that draws a page or section: its own component in the domain's script folder, or for a declared
+     * layout the one shared renderer of the project's script folder.
+     */
+    public function presentationFile(string $declaration, string $component, bool $isDeclared): string
+    {
+        if (! $isDeclared) {
+            return $this->componentFile($declaration, $component);
+        }
+
+        $code = CodeFiles::ofProcess();
+
+        return $code->realPathOf($code->projectPathOf('resources/js/components/layout')->child(self::DECLARED_LAYOUT));
+    }
+
+    /**
+     * The entry of a page or section in the browser's component list: every declared layout shares the renderer's.
+     */
+    public function presentationName(string $component, bool $isDeclared): string
+    {
+        $owner = $isDeclared ? 'layout' : $this->key;
+
+        return $owner.'/'.preg_replace('/\.vue$/', '', $component);
     }
 
     /**
