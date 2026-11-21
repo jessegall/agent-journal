@@ -7,6 +7,7 @@ namespace App\Connections\Exceptions;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
+use App\Connections\Models\DeviceGrant;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 use Throwable;
@@ -23,6 +24,13 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
 
     private RefusalCode $refusalCode = RefusalCode::RecordUnavailable;
 
+    /**
+     * The machine word a terminal acts on, and what it needs with it: the interval to wait, or the grant's reference.
+     *
+     * @var array<string, string|int>
+     */
+    private array $outcome = [];
+
     public static function unknownCode(): self
     {
         return new self('This device code is unknown or expired. Run the journal command again for a new one.');
@@ -33,6 +41,7 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
         $refusal = new self('The owner has not approved this device yet.');
         $refusal->status = 428;
         $refusal->refusalCode = RefusalCode::StateBlocked;
+        $refusal->outcome = ['outcome' => 'authorization_pending'];
 
         return $refusal;
     }
@@ -42,6 +51,7 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
         $refusal = new self('Poll this device code at most once every five seconds.');
         $refusal->status = 429;
         $refusal->refusalCode = RefusalCode::Busy;
+        $refusal->outcome = ['outcome' => 'slow_down', 'interval' => DeviceGrant::POLL_SECONDS_MINIMUM];
 
         return $refusal;
     }
@@ -68,9 +78,48 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
         return $refusal;
     }
 
+    public static function expired(): self
+    {
+        $refusal = new self('This device code expired before the owner approved it. Run the journal command again for a new one.');
+        $refusal->status = 410;
+        $refusal->outcome = ['outcome' => 'expired_token'];
+
+        return $refusal;
+    }
+
+    public static function alreadyIssued(string $reference): self
+    {
+        $refusal = new self(
+            "Terminal sign-in {$reference} was already handed out once. Withdraw it in Settings if this terminal never got it.",
+        );
+        $refusal->status = 409;
+        $refusal->refusalCode = RefusalCode::StateBlocked;
+        $refusal->outcome = ['outcome' => 'already_issued', 'reference' => $reference];
+
+        return $refusal;
+    }
+
+    public static function revoked(string $reference): self
+    {
+        $refusal = new self("Terminal sign-in {$reference} was revoked. Run the journal command again to approve a new one.");
+        $refusal->status = 410;
+        $refusal->refusalCode = RefusalCode::Forbidden;
+        $refusal->outcome = ['outcome' => 'revoked', 'reference' => $reference];
+
+        return $refusal;
+    }
+
     public function refusalCode(): RefusalCode
     {
         return $this->refusalCode;
+    }
+
+    /**
+     * @return array<string, string|int>
+     */
+    protected function details(): array
+    {
+        return $this->outcome;
     }
 
     protected function status(): int

@@ -76,7 +76,7 @@ final class ProjectInvitation extends Model implements EventSource, ReadableMode
      * The attempt's line, kept by the digest of its ticket and expiring LIFETIME_MINUTES from now: for a new project,
      * or to join the attempt's project, issued by the attempt's owner.
      */
-    public static function issueFor(InstallAttempt $attempt, string $ticketDigest): self
+    public static function create(InstallAttempt $attempt, string $ticketDigest): self
     {
         $invitation = new self();
         $invitation->ticket_digest = $ticketDigest;

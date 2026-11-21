@@ -7,17 +7,18 @@ declare(strict_types=1);
  * listener or a model (ModelRaiseCallerTest).
  */
 return [
-    'Environment::open',
+    'Environment::create',
     'Environment::openDefaultOf',
     'InstallAttempt::cancel',
     'InstallAttempt::openFor',
     'InstallAttempt::replace',
     'InstallAttempt::spendOn',
     'Project::create',
+    'ProjectBinding::assignEnvironment',
     'ProjectBinding::create',
     'ProjectBinding::recordPresence',
     'ProjectBinding::revoke',
-    'ProjectInvitation::issueFor',
+    'ProjectInvitation::create',
     'ProjectInvitation::revoke',
     'ProjectInvitation::spendOn',
 ];

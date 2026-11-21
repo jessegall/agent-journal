@@ -10,17 +10,24 @@ use App\Connections\Models\DeviceGrant;
 use App\Contracts\CommandHandler;
 
 /**
- * Refuses a code of another host's binding, an expired one and a poll sooner than allowed; issues the grant once the
- * owner approved, else answers that approval is awaited.
+ * Answers a terminal's poll with one outcome: a code of another host's binding is unknown; a grant past its approval
+ * is already issued or revoked; an expired code is expired; a poll sooner than allowed slows down without moving the
+ * last one; an unapproved one awaits approval; an approved one is issued once and answers its reference.
  */
 final readonly class PollDeviceGrantHandler implements CommandHandler
 {
-    public function handle(PollDeviceGrant $command): void
+    public function handle(PollDeviceGrant $command): string
     {
         $grant = DeviceGrant::lockByDeviceCode($command->deviceCodeDigest);
 
-        if ($grant->binding->host_id !== $command->hostId || $grant->isCodeExpired()) {
+        if ($grant->binding->host_id !== $command->hostId) {
             throw DeviceGrantRefused::unknownCode();
+        }
+
+        $grant->assertNotCollected();
+
+        if ($grant->isCodeExpired()) {
+            throw DeviceGrantRefused::expired();
         }
 
         $grant->recordPoll();
@@ -30,5 +37,7 @@ final readonly class PollDeviceGrantHandler implements CommandHandler
         }
 
         $grant->issue($command->grantDigest);
+
+        return (string) $grant->reference;
     }
 }

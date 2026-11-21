@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strings"
 	"syscall"
 	"time"
 
@@ -29,7 +30,9 @@ import (
 )
 
 // localVerbs are the verbs this machine answers itself; every other verb runs on the server.
-var localVerbs = []string{"status", "claude", "codex", "logout", "service", "disconnect", "attach", "upgrade", "diagnostics"}
+var localVerbs = []string{
+	"status", "claude", "codex", "logout", "service", "disconnect", "attach", "upgrade", "diagnostics", "terminal",
+}
 
 // errVerbLater refuses a local verb this connected machine does not run yet.
 var errVerbLater = errors.New("this verb arrives with the next release")
@@ -46,6 +49,7 @@ func main() {
 		grant:       func(host.Binding) (client.StartGrant, bool) { return client.StartGrantFrom(os.LookupEnv) },
 		transport:   &http.Client{},
 		approval:    deviceApproval,
+		terminal:    os.Getenv(host.TerminalSelectorVariable),
 		disableService: func(binding host.Binding) error {
 			home, _ := os.UserHomeDir()
 			return userservice.Service{Home: home, BindingID: binding.BindingID, StateFolder: host.DefaultStateFolder()}.Disable()
@@ -61,7 +65,9 @@ type dispatcher struct {
 	wake        func(stateFolder string, bindingID string) error
 	grant       func(binding host.Binding) (client.StartGrant, bool)
 	transport   *http.Client
-	approval    func(binding host.Binding, state host.ConnectionState, stderr io.Writer) (string, error)
+	approval    func(binding host.Binding, state host.ConnectionState, selector string, stderr io.Writer) (host.TerminalSignIn, error)
+	// terminal is the selector of this shell's sign-in, from journal terminal open; none outside such a shell.
+	terminal string
 	// disableService stops the user service that keeps the binding's relay running.
 	disableService func(binding host.Binding) error
 }
@@ -138,6 +144,9 @@ func (commands dispatcher) local(
 	}
 	if verb == "diagnostics" {
 		return diagnose(binding, state, folder, stdout, stderr)
+	}
+	if verb == "terminal" {
+		return openTerminal(arguments[1:], state, stdout, stderr)
 	}
 	if verb == "codex" {
 		// Local Codex sessions wait for a per-thread callback channel the pinned build does not give.
@@ -408,7 +417,12 @@ func (commands dispatcher) forward(
 	return code
 }
 
-// asShellUser runs the verb under the shell user's device grant, approved in the owner's browser when none is kept.
+// errNoTerminalSignIn is returned in a shell journal terminal open did not start: its sign-in has no place to be kept.
+var errNoTerminalSignIn = errors.New("this shell is no terminal sign-in: run journal terminal open, then the command in the shell it opens")
+
+// asShellUser runs the verb under this terminal's own sign-in, approved in the owner's browser when none is kept. A
+// grant the journal refuses is forgotten for its generation alone and approved again; a journal that could not be
+// reached keeps the sign-in and says so.
 func (commands dispatcher) asShellUser(
 	binding host.Binding,
 	state host.ConnectionState,
@@ -416,41 +430,198 @@ func (commands dispatcher) asShellUser(
 	write func(client.CommandFrame) error,
 	stderr io.Writer,
 ) (int, error) {
-	grant, err := state.DeviceGrant()
-	if errors.Is(err, host.ErrNotConnected) {
-		grant, err = commands.approval(binding, state, stderr)
+	if commands.terminal == "" {
+		return 0, errNoTerminalSignIn
 	}
+	signIn, err := commands.signedIn(binding, state, stderr)
 	if err != nil {
 		return 0, err
 	}
 
-	return client.RunDeviceCommand(context.Background(), commands.transport, binding.JournalURL, grant, command, write)
+	run := func(grant string) (int, error) {
+		if isOverview(command) {
+			return showOverview(context.Background(), commands.transport, binding.JournalURL, grant, command, write)
+		}
+
+		return client.RunDeviceCommand(context.Background(), commands.transport, binding.JournalURL, grant, command, write)
+	}
+	code, err := run(signIn.Grant)
+	if errors.Is(err, client.ErrUnauthenticated) {
+		if err := state.ClearSignIn(commands.terminal, signIn.Generation); err != nil {
+			return 0, err
+		}
+		fmt.Fprintf(stderr, "journal: terminal sign-in %s no longer works; approve this terminal again.\n", signIn.Reference)
+		if signIn, err = commands.signedIn(binding, state, stderr); err != nil {
+			return 0, err
+		}
+
+		return run(signIn.Grant)
+	}
+	if errors.Is(err, client.ErrUncertain) {
+		fmt.Fprintf(stderr, "journal: the journal could not be reached, so this terminal's access could not be checked; its sign-in %s is kept.\n", signIn.Reference)
+	}
+
+	return code, err
+}
+
+// isOverview is whether the command is the one-word journal overview, with nothing piped in.
+func isOverview(command client.ProjectCommand) bool {
+	return len(command.Argv) == 1 && command.Argv[0] == "overview" && command.Stdin == ""
+}
+
+// showOverview prints this terminal's overview: its project and environment, how many tasks of it the approving
+// user holds, and each by number and title.
+func showOverview(
+	ctx context.Context,
+	transport *http.Client,
+	journalURL string,
+	grant string,
+	command client.ProjectCommand,
+	write func(client.CommandFrame) error,
+) (int, error) {
+	overview, err := client.RunDeviceOverview(ctx, transport, journalURL, grant, command)
+	if err != nil {
+		return 0, err
+	}
+	noun := "tasks"
+	if overview.Count == 1 {
+		noun = "task"
+	}
+	lines := []string{overview.Project + " / " + overview.Environment, fmt.Sprintf("%d %s assigned to you", overview.Count, noun)}
+	for _, task := range overview.Tasks {
+		lines = append(lines, fmt.Sprintf("#%d %s", task.Number, task.Title))
+	}
+
+	return 0, write(client.CommandFrame{Sequence: 1, Stream: "stdout", Text: strings.Join(lines, "\n") + "\n"})
+}
+
+// signedIn is this terminal's kept sign-in with its bearer, approved now when it has none yet.
+func (commands dispatcher) signedIn(binding host.Binding, state host.ConnectionState, stderr io.Writer) (host.TerminalSignIn, error) {
+	signIn, err := state.SignIn(commands.terminal)
+	if err == nil && signIn.Grant != "" {
+		return signIn, nil
+	}
+	if err != nil && !errors.Is(err, host.ErrNoSignIn) {
+		return host.TerminalSignIn{}, err
+	}
+
+	return commands.approval(binding, state, commands.terminal, stderr)
+}
+
+// openTerminal starts a shell whose journal commands run under a terminal sign-in of their own: a fresh one, or with
+// --resume the kept sign-in of that reference. The selector in the shell is only a lookup key, never a bearer.
+func openTerminal(arguments []string, state host.ConnectionState, stdout, stderr io.Writer) int {
+	if len(arguments) == 0 || arguments[0] != "open" {
+		fmt.Fprintln(stderr, "usage: journal terminal open [--resume <reference>]")
+		return 2
+	}
+	selector, err := host.NewTerminalSelector()
+	if len(arguments) == 3 && arguments[1] == "--resume" {
+		var signIn host.TerminalSignIn
+		signIn, err = state.SignInOf(arguments[2])
+		selector = signIn.Selector
+	}
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+
+	shell := os.Getenv("SHELL")
+	if shell == "" {
+		shell = "/bin/zsh"
+	}
+	fmt.Fprintln(stdout, "journal: this shell keeps its own terminal sign-in; exit it to leave.")
+	command := exec.Command(shell)
+	command.Env = append(os.Environ(), host.TerminalSelectorVariable+"="+selector)
+	command.Stdin, command.Stdout, command.Stderr = os.Stdin, os.Stdout, os.Stderr
+	if err := command.Run(); err != nil {
+		var exited *exec.ExitError
+		if errors.As(err, &exited) {
+			return exited.ExitCode()
+		}
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+
+	return 0
 }
 
 // deviceApproval asks the journal for a device code, shows its approval URL and code, polls until the owner
 // approved it or it expired, and keeps the grant.
-func deviceApproval(binding host.Binding, state host.ConnectionState, stderr io.Writer) (string, error) {
+func deviceApproval(binding host.Binding, state host.ConnectionState, selector string, stderr io.Writer) (host.TerminalSignIn, error) {
 	transport := &http.Client{Timeout: 30 * time.Second}
 	journal := client.ForRemoteProject(binding.Enrollment, transport)
 	ctx := context.Background()
-	start, err := journal.StartDeviceGrant(ctx, binding.BindingID)
+	startKey, err := newRequestKey()
 	if err != nil {
-		return "", err
+		return host.TerminalSignIn{}, err
 	}
-	fmt.Fprintf(stderr, "journal: open %s and approve the code %s\n", start.ApprovalURL, start.UserCode)
+	start, err := journal.StartDeviceGrant(ctx, binding.BindingID, startKey)
+	if errors.Is(err, client.ErrUncertain) {
+		// The start's reply was lost: the same key finds the grant it made.
+		start, err = journal.StartDeviceGrant(ctx, binding.BindingID, startKey)
+	}
+	if err != nil {
+		return host.TerminalSignIn{}, err
+	}
+	// The reference and the selector are kept before the first poll, so a lost reply still names the sign-in.
+	signIn := host.TerminalSignIn{Selector: selector, Reference: start.Reference, Generation: start.Generation}
+	if err := state.SaveSignIn(signIn); err != nil {
+		return host.TerminalSignIn{}, err
+	}
+	fmt.Fprintf(stderr, "journal: to sign in this terminal on %s, open %s and approve the code %s.\n",
+		binding.JournalURL, start.ApprovalURL, start.UserCode)
+	fmt.Fprintf(stderr, "journal: this is terminal sign-in %s; the code works until %s.\n", start.Reference,
+		localDeadline(start.ExpiresAt))
 
+	interval := max(start.Interval, 1)
 	for {
-		time.Sleep(time.Duration(max(start.Interval, 1)) * time.Second)
-		grant, err := journal.PollDeviceGrant(ctx, start.DeviceCode)
-		if errors.Is(err, client.ErrAwaitingApproval) {
-			continue
-		}
+		time.Sleep(time.Duration(interval) * time.Second)
+		poll, err := journal.PollDeviceGrant(ctx, start.DeviceCode)
 		if err != nil {
-			return "", err
+			return host.TerminalSignIn{}, err
+		}
+		switch poll.Outcome {
+		case client.PollPending:
+			continue
+		case client.PollSlowDown:
+			interval = max(poll.Interval, interval+1)
+			continue
+		case client.PollIssued:
+			signIn.Grant = poll.Grant
+			return signIn, state.SaveSignIn(signIn)
+		case client.PollAlreadyIssued:
+			return host.TerminalSignIn{}, endedApproval(state, signIn, fmt.Errorf(
+				"sign-in %s was handed out once and its answer was lost: withdraw it in Settings, then run the command again for a fresh one", poll.Reference))
+		case client.PollExpired:
+			return host.TerminalSignIn{}, endedApproval(state, signIn, errors.New(
+				"the code expired before it was approved: run the command again for a new one"))
+		case client.PollRevoked:
+			return host.TerminalSignIn{}, endedApproval(state, signIn, fmt.Errorf(
+				"sign-in %s was revoked: run the command again to approve a new one", poll.Reference))
 		}
 
-		return grant, state.SaveDeviceGrant(grant)
+		return host.TerminalSignIn{}, fmt.Errorf("the journal answered the poll with %q, which this journal command does not know", poll.Outcome)
 	}
+}
+
+// endedApproval forgets the sign-in an approval kept before it polled, once its request ended without a bearer.
+func endedApproval(state host.ConnectionState, signIn host.TerminalSignIn, ended error) error {
+	if err := state.ClearSignIn(signIn.Selector, signIn.Generation); err != nil {
+		return errors.Join(ended, err)
+	}
+
+	return ended
+}
+
+// localDeadline is an ISO 8601 moment in this computer's own time zone, in full.
+func localDeadline(moment string) string {
+	at, err := time.Parse(time.RFC3339, moment)
+	if err != nil {
+		return moment
+	}
+
+	return at.Local().Format("15:04 MST on Mon 2 Jan 2006")
 }
 
 // writeFrameTo writes each frame's output to standard output or error, as the verb wrote it.

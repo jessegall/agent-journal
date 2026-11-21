@@ -20,7 +20,7 @@ final class ProjectCommandRequest extends FormRequest
         return [
             'request_key' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
             'binding' => ['required', 'string', 'ulid'],
-            'argv' => ['required', 'array', 'min:2', 'max:200'],
+            'argv' => ['required', 'array', 'min:1', 'max:200'],
             'argv.*' => ['string', 'max:8192'],
             'stdin' => ['present', 'nullable', 'string', 'max:1048576'],
         ];
@@ -54,8 +54,14 @@ final class ProjectCommandRequest extends FormRequest
      */
     public function verbName(): string
     {
-        $argv = $this->argv();
+        return implode(':', array_slice($this->argv(), 0, 2));
+    }
 
-        return "{$argv[0]}:{$argv[1]}";
+    /**
+     * Whether the terminal asks for its overview: the one word overview, nothing piped in.
+     */
+    public function isOverview(): bool
+    {
+        return $this->argv() === ['overview'] && ! $this->filled('stdin');
     }
 }

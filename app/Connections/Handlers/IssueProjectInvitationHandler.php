@@ -40,7 +40,7 @@ final readonly class IssueProjectInvitationHandler implements CommandHandler
             $pending->revoke();
         }
 
-        $invitation = ProjectInvitation::issueFor($attempt, $command->ticketDigest);
+        $invitation = ProjectInvitation::create($attempt, $command->ticketDigest);
         $type = $isFirstLine ? ConnectionAuditType::Issued : ConnectionAuditType::Replaced;
         ConnectionAudit::ofInvitation($type, $owner, $invitation);
 

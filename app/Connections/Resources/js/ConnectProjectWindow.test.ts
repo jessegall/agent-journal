@@ -105,6 +105,7 @@ function windowData(
                 projectLabel: 'Shop',
                 lastContactAt: null,
                 state: 'ready',
+                signIns: [],
             },
         ],
     };

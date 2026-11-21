@@ -35,7 +35,9 @@ final readonly class ResolveConnectedProject
         }
 
         foreach (ProjectBinding::ofMainAgent($agentId) as $binding) {
-            $this->projects->connect(new ConnectedProject($binding->project->key, $binding->canonical_root));
+            $this->projects->connect(
+                new ConnectedProject($binding->project->key, $binding->canonical_root, $binding->environment_id),
+            );
         }
 
         return $next($request);

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -277,5 +278,26 @@ func TestDisconnectRemovesOneFolderKeepsItsDirtyWorktreeAndLeavesTheOtherConnect
 	printed, _, _ = answer(commands, []string{"disconnect", "--yes"}, blog, "")
 	if !strings.Contains(printed, "No connected project is left") || len(disabled) != 2 {
 		t.Fatalf("the last disconnect printed %q and disabled %v", printed, disabled)
+	}
+}
+
+func TestAShellUserOutsideAJournalTerminalIsToldToOpenOneBeforeAnyApproval(t *testing.T) {
+	state := realTempDir(t)
+	root := connectedFolder(t, state, realTempDir(t), "shop")
+	approved := false
+	commands := dispatcher{
+		stateFolder: state,
+		wake:        func(string, string) error { return nil },
+		grant:       noGrant,
+		approval: func(host.Binding, host.ConnectionState, string, io.Writer) (host.TerminalSignIn, error) {
+			approved = true
+			return host.TerminalSignIn{}, nil
+		},
+	}
+
+	_, printed, code := answer(commands, []string{"overview"}, root, "")
+
+	if code == 0 || approved || !strings.Contains(printed, "journal terminal open") {
+		t.Fatalf("a shell with no sign-in answered %d, approved %v, printed %q", code, approved, printed)
 	}
 }

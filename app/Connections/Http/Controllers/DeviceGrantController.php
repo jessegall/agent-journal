@@ -32,10 +32,13 @@ final readonly class DeviceGrantController
         $deviceCode = InstallTicket::generate();
         $userCode = implode('-', str_split(Str::upper(Str::random(8)), 4));
         $binding = $request->string('binding')->toString();
-        $start = new StartDeviceGrant($host->hostId, $binding, $deviceCode->digest(), $userCode);
+        $startKey = $request->filled('startKey') ? $request->string('startKey')->toString() : (string) Str::uuid();
+        $start = new StartDeviceGrant($host->hostId, $binding, $deviceCode->digest(), $userCode, $startKey);
         $started = $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $start);
 
         return new JsonResponse([
+            'reference' => $started->reference,
+            'generation' => $started->generation,
             'deviceCode' => $deviceCode->secret,
             'userCode' => $started->userCode,
             'approvalUrl' => $this->origin->canonical().'/connections/devices/'.$started->userCode,
@@ -50,8 +53,12 @@ final readonly class DeviceGrantController
         $grant = InstallTicket::generate();
         $deviceCode = InstallTicket::digestOf($request->string('deviceCode')->toString());
         $poll = new PollDeviceGrant($host->hostId, $deviceCode, $grant->digest());
-        $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $poll);
+        $reference = $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $poll);
 
-        return new JsonResponse(['grant' => $grant->secret], JsonResponse::HTTP_OK, ['Cache-Control' => 'no-store']);
+        return new JsonResponse(
+            ['outcome' => 'issued', 'grant' => $grant->secret, 'reference' => $reference],
+            JsonResponse::HTTP_OK,
+            ['Cache-Control' => 'no-store'],
+        );
     }
 }

@@ -28,7 +28,8 @@ final readonly class ListedTasks implements TaskListResolver
     public function list(TaskFilters $filters): TaskList
     {
         $this->actors->actor();
-        $matching = Task::query()->matching($filters->search)->inStates($filters->states);
+        $matching = Task::query()->matching($filters->search)->inStates($filters->states)
+            ->inEnvironments($filters->environmentIds);
         $total = $matching->clone()->count();
         $tasks = $matching->orderBy('id')->forPage($filters->page->number, $filters->page->size)->get();
 

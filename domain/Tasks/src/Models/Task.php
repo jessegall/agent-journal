@@ -73,6 +73,7 @@ use PhpOption\Some;
  * @property string|null $result_note
  * @property string|null $block_reason
  * @property string|null $cancel_reason
+ * @property string|null $environment_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -88,6 +89,7 @@ use PhpOption\Some;
     'result_note',
     'block_reason',
     'cancel_reason',
+    'environment_id',
 ])]
 final class Task extends Model implements Assignable, EventSource, Numbered, ReadableModel
 {
@@ -140,15 +142,19 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
-     * A new open task an actor files, with its title and brief.
+     * A new open task an actor files, with its title and brief, in the environment of the connected binding it was
+     * made through: none or one.
+     *
+     * @param  list<string>  $environmentIds
      */
-    public static function create(string $title, string $brief, Actor $creator): self
+    public static function create(string $title, string $brief, Actor $creator, array $environmentIds = []): self
     {
         return self::query()->create([
             'title' => $title,
             'brief' => $brief,
             'creator_type' => $creator->actorType(),
             'creator_id' => $creator->actorId(),
+            'environment_id' => $environmentIds[0] ?? null,
         ]);
     }
 
@@ -361,6 +367,23 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     protected function unfinished(Builder $query): void
     {
         $query->whereIn('state', TaskState::unfinished());
+    }
+
+    /**
+     * Tasks made through a binding of one of these environments; no environment named leaves every task, those made
+     * here as well.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $environmentIds
+     */
+    #[Scope]
+    protected function inEnvironments(Builder $query, array $environmentIds): void
+    {
+        if ($environmentIds === []) {
+            return;
+        }
+
+        $query->whereIn('environment_id', $environmentIds);
     }
 
     /**

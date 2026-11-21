@@ -17,7 +17,9 @@ func TestTheBundleOfAFailedStartNamesItsIdsAndSideAndHoldsNoSecret(t *testing.T)
 	if err := state.SaveBinding(binding); err != nil {
 		t.Fatal(err)
 	}
-	if err := state.SaveDeviceGrant("device-grant-0123456789"); err != nil {
+	signIn := host.TerminalSignIn{Selector: strings.Repeat("a", 32), Reference: "TS-ABCDEFGH", Generation: 1,
+		Grant: "device-grant-0123456789"}
+	if err := state.SaveSignIn(signIn); err != nil {
 		t.Fatal(err)
 	}
 	log := Log{State: state}

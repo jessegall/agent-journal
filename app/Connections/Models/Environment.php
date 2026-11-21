@@ -8,6 +8,7 @@ use App\Connections\Events\EnvironmentOpened;
 use App\Connections\Exceptions\InvitationUnusable;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -31,6 +32,7 @@ final class Environment extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     /**
@@ -62,13 +64,13 @@ final class Environment extends Model implements EventSource, ReadableModel
      */
     public static function openDefaultOf(Project $project): self
     {
-        return self::open($project, self::DEFAULT_LABEL);
+        return self::create($project, self::DEFAULT_LABEL);
     }
 
     /**
      * A new environment of the project under a label no other environment of it has.
      */
-    public static function open(Project $project, string $label): self
+    public static function create(Project $project, string $label): self
     {
         $environment = new self();
         $environment->project_id = $project->id;
@@ -115,13 +117,13 @@ final class Environment extends Model implements EventSource, ReadableModel
     /**
      * The environments of these projects, by label, in one read.
      *
-     * @param  list<string>  $projectIds
+     * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function listedOfProjects(array $projectIds): array
+    public static function listedOfProjects(array $ids): array
     {
-        return array_values(self::query()->whereIn('project_id', $projectIds)->orderBy('label')
-            ->limit(self::LISTED_LIMIT * max(count($projectIds), 1))->get()->all());
+        return array_values(self::query()->whereIn('project_id', $ids)->orderBy('label')
+            ->limit(self::LISTED_LIMIT * max(count($ids), 1))->get()->all());
     }
 
     // ----------[ Scopes ]----------

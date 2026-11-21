@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Connections\Resolvers;
 
+use App\Actors\Contracts\ActorLabels;
+use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
+use App\Actors\Support\ActorLabelSet;
 use App\Agents\Support\InstallLineAvailability;
 use App\Agents\Support\PublishedReleases;
 use App\Agents\Support\ServerOrigin;
+use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\Environment;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
@@ -16,6 +21,7 @@ use App\Http\Data\Connections\InstallAttemptListData;
 use App\Http\Data\Connections\JoinTargetData;
 use App\Http\Data\Connections\ProjectBindingRowData;
 use App\Http\Data\Connections\ReleaseOfferData;
+use App\Http\Data\Connections\TerminalSignInRowData;
 use App\Ui\Contracts\PageResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -31,6 +37,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         private ServerOrigin $origin,
         private PublishedReleases $releases,
         private InstallAttemptList $attempts,
+        private ActorLabels $labels,
         private Request $request,
     ) {}
 
@@ -50,11 +57,46 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
                 fn (Project $project) => JoinTargetData::fromProject($project, $environments),
                 $projects,
             ),
-            'bindings' => array_map(
-                fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding($binding, $now),
-                ProjectBinding::listed(),
-            ),
+            'bindings' => $this->bindingRows(ProjectBinding::listed(), $now),
         ]);
+    }
+
+    /**
+     * Every connected folder with its terminal sign-ins, read for all of them at once, and each approving account by
+     * its name.
+     *
+     * @param  list<ProjectBinding>  $bindings
+     * @return list<ProjectBindingRowData>
+     */
+    private function bindingRows(array $bindings, CarbonImmutable $now): array
+    {
+        $grants = DeviceGrant::listedOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
+        $approvers = array_values(array_filter(array_map(
+            fn (DeviceGrant $grant) => $grant->approved_by_user_id,
+            $grants,
+        )));
+        $labels = $this->labels->labelsFor(array_map(
+            fn (string $userId) => ActorIdentity::of(ActorContext::forUser($userId)),
+            array_values(array_unique($approvers)),
+        ));
+        return array_map(fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding($binding, $now, array_map(
+            fn (DeviceGrant $grant) => TerminalSignInRowData::fromGrant($grant, $this->approverOf($grant, $labels), $now),
+            array_values(array_filter($grants, fn (DeviceGrant $grant) => $grant->binding_id === $binding->id)),
+        )), $bindings);
+    }
+
+    /**
+     * The name of the account that approved the grant, as the owner reads it.
+     */
+    private function approverOf(DeviceGrant $grant, ActorLabelSet $labels): string
+    {
+        if ($grant->approved_by_user_id === null) {
+            return 'Not approved yet';
+        }
+
+        $name = $labels->nameOf(ActorIdentity::of(ActorContext::forUser($grant->approved_by_user_id)));
+
+        return $name ?? 'An account that is gone';
     }
 
     /**
