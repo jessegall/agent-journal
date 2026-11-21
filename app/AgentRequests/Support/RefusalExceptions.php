@@ -23,6 +23,7 @@ use App\AgentRequests\Exceptions\ProfilesUnavailable;
 use App\AgentRequests\Exceptions\RecordNotFound;
 use App\AgentRequests\Exceptions\StaleContinuation;
 use App\AgentRequests\Exceptions\StateBlocked;
+use App\Reflection\Support\Reflector;
 
 /**
  * Picks the exception a refusal code is thrown as: the call's own declared refusal of that code first, then the shared
@@ -62,7 +63,8 @@ final class RefusalExceptions
     public static function classOf(string $code, array $declared): string
     {
         foreach ($declared as $refusal) {
-            if (is_subclass_of($refusal, CallRefusal::class) && is_subclass_of($refusal, CallRefused::class)
+            if (Reflector::of($refusal)->isSubclassOf(CallRefusal::class)
+                && Reflector::of($refusal)->isSubclassOf(CallRefused::class)
                 && $refusal::code() === $code) {
                 return $refusal;
             }

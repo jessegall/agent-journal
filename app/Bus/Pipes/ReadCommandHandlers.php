@@ -72,7 +72,7 @@ final readonly class ReadCommandHandlers implements Pipe
             throw CommandDeclarationInvalid::for($command, "it is not in {$owner->name}'s Commands folder");
         }
 
-        if (! class_exists($command) || ! is_subclass_of($command, Command::class)) {
+        if (! Reflector::exists($command) || ! Reflector::of($command)->isSubclassOf(Command::class)) {
             throw CommandDeclarationInvalid::for($command, 'it is no class implementing Command');
         }
 
@@ -82,11 +82,11 @@ final readonly class ReadCommandHandlers implements Pipe
             throw CommandDeclarationInvalid::for($command, 'a command is a final readonly class');
         }
 
-        if (! is_subclass_of($command, BaseCommand::class)) {
+        if (! $declaration->isSubclassOf(BaseCommand::class)) {
             throw CommandDeclarationInvalid::for($command, 'a command extends App\\Bus\\Support\\Command');
         }
 
-        if (is_a($command, ShouldQueue::class, true)) {
+        if ($declaration->implements(ShouldQueue::class)) {
             throw CommandDeclarationInvalid::for(
                 $command,
                 'queueing a command is not supported yet; take ShouldQueue off',
@@ -107,7 +107,7 @@ final readonly class ReadCommandHandlers implements Pipe
 
         $handler = self::handlerNamedFor($command);
 
-        if (! class_exists($handler)) {
+        if (! Reflector::exists($handler)) {
             throw CommandHandlerMissing::for($command, $handler);
         }
 

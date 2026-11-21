@@ -6,15 +6,15 @@ namespace App\Scripts\Support;
 
 use App\Agents\Values\OperationKey;
 use App\Profiles\Contracts\OperationNames;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 use App\Scripts\Attributes\ScriptMember;
 use App\Scripts\Attributes\ScriptObject;
 use App\Scripts\Exceptions\ScriptDefinitionRefused;
 use App\Scripts\Values\ObjectDefinition;
 use App\Scripts\Values\ObjectMember;
 use App\Scripts\Values\ScriptContext;
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\ReflectedProperty;
-use App\Reflection\Support\Reflector;
 
 final readonly class ObjectReflection
 {
@@ -25,7 +25,7 @@ final readonly class ObjectReflection
      */
     public function describe(string $class, string $owner): ObjectDefinition
     {
-        if (! class_exists($class)) {
+        if (! Reflector::exists($class) || ! Reflector::of($class)->isClass()) {
             throw ScriptDefinitionRefused::invalidObject($class);
         }
 

@@ -9,11 +9,11 @@ use App\Docking\Sources\Contracts\DockSourceChanged;
 use App\Docking\Sources\Contracts\DockSourceDeleted;
 use App\Domains\Exceptions\InvalidListener;
 use App\Exports\Support\Exports;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use Illuminate\Support\Str;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
+use PhpOption\Option;
 
 /**
  * Finds the owners of listener and event declarations and checks their event permissions.
@@ -62,7 +62,7 @@ final readonly class ListenerOwnership
         if ($domain === null) {
             $isExpanded = array_filter(
                 self::EXPANDED_INTERFACES,
-                fn (string $interface) => is_subclass_of($event, $interface),
+                fn (string $interface) => Reflector::exists($event) && Reflector::of($event)->isSubclassOf($interface),
             ) !== [];
             $isExportedUiEvent = $owner->exportsEvent($event) && $isExpanded;
 
@@ -95,8 +95,7 @@ final readonly class ListenerOwnership
      */
     public function stateDomain(string $class, string $listener, string $event): DomainEntry|null
     {
-        $file = new ReflectionClass($class)->getFileName();
-        $domain = $this->stateSource($file, $listener, $event);
+        $domain = $this->stateSource(Reflector::of($class)->fileName(), $listener, $event);
         $ownsClass = $domain === null ? str_starts_with($class, 'App\\') : $domain->ownsName($class);
 
         if (! $ownsClass) {
@@ -106,13 +105,20 @@ final readonly class ListenerOwnership
         return $domain;
     }
 
-    public function stateSource(string|false $file, string $listener, string $event): DomainEntry|null
+    /**
+     * The domain that holds the file of a state's listener method; a method with no file has no owner.
+     *
+     * @param  Option<string>  $file
+     *
+     * @throws InvalidListener
+     */
+    public function stateSource(Option $file, string $listener, string $event): DomainEntry|null
     {
-        if ($file === false) {
+        if ($file->isEmpty()) {
             throw InvalidListener::unknownOwner($listener, $event);
         }
 
-        $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsFile($file));
+        $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsFile($file->get()));
 
         if ($domain === null && ! str_starts_with($file, dirname(__DIR__, 2).DIRECTORY_SEPARATOR)) {
             throw InvalidListener::unknownOwner($listener, $event);
@@ -130,7 +136,7 @@ final readonly class ListenerOwnership
      */
     public function listenerDomain(string $class, string $listener, string $event): DomainEntry|null
     {
-        $file = (string) new ReflectionClass($class)->getFileName();
+        $file = Reflector::of($class)->fileName()->getOrElse('');
         $domain = $this->domainHoldingListener($file);
         $isCoreListener = array_any(
             $this->coreListenerFolders,
@@ -185,11 +191,14 @@ final readonly class ListenerOwnership
      */
     private static function listensThroughCoreContract(string $event, string $listener, string $method): bool
     {
-        $parameters = new ReflectionMethod(Str::before($listener, '@'), $method)->getParameters();
-        $type = $parameters === [] ? null : $parameters[0]->getType();
+        $parameters = Reflector::of(Str::before($listener, '@'))->method($method)->parameters();
+        $type = $parameters === [] ? '' : $parameters[0]->type()
+            ->filter(fn (DeclaredType $declared) => $declared->isNamed())
+            ->map(fn (DeclaredType $declared) => $declared->name())
+            ->getOrElse('');
 
-        return $type instanceof ReflectionNamedType
-            && in_array($type->getName(), self::EXPANDED_INTERFACES, true)
-            && is_subclass_of($event, $type->getName());
+        return in_array($type, self::EXPANDED_INTERFACES, true)
+            && Reflector::exists($event)
+            && Reflector::of($event)->isSubclassOf($type);
     }
 }

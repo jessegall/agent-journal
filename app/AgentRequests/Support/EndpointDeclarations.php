@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\AgentRequests\Support;
 
-use App\Reflection\Support\Reflector;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
+use App\Reflection\Support\Reflector;
 
 /**
  * Checks each signed call's declaration: it is a JournalCall with one #[Endpoint], and a keyed write, and only a keyed
@@ -34,7 +34,7 @@ final class EndpointDeclarations
      */
     public static function endpointOf(string $call): Endpoint
     {
-        if (! is_a($call, JournalCall::class, true)) {
+        if (! Reflector::of($call)->implements(JournalCall::class)) {
             throw EndpointDeclarationInvalid::for($call, 'it does not implement JournalCall');
         }
 

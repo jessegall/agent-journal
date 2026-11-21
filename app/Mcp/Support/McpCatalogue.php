@@ -20,8 +20,8 @@ use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Records\Support\RecordIdentity;
-use Laravel\Mcp\Server\Attributes\Name;
 use App\Reflection\Support\Reflector;
+use Laravel\Mcp\Server\Attributes\Name;
 
 /**
  * Every MCP tool, resource and overview contribution class Core and the domains offer, checked as each is added: one
@@ -62,7 +62,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     public function registerTool(string $className): void
     {
-        if (! is_subclass_of($className, JournalTool::class)) {
+        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(JournalTool::class)) {
             throw McpClassInvalid::for($className, JournalTool::class);
         }
 
@@ -92,7 +92,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     public function registerResource(string $className): void
     {
-        if (! is_subclass_of($className, JournalResource::class)) {
+        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(JournalResource::class)) {
             throw McpClassInvalid::for($className, JournalResource::class);
         }
 
@@ -110,7 +110,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     public function registerOverviewContribution(string $className): void
     {
-        if (! is_subclass_of($className, OverviewContribution::class)) {
+        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(OverviewContribution::class)) {
             throw McpClassInvalid::for($className, OverviewContribution::class);
         }
 
@@ -119,7 +119,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
 
     public function registerSearchContribution(string $className): void
     {
-        if (! is_subclass_of($className, SearchContribution::class)) {
+        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(SearchContribution::class)) {
             throw McpClassInvalid::for($className, SearchContribution::class);
         }
 

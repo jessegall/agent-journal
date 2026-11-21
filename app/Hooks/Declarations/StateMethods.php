@@ -64,9 +64,12 @@ final class StateMethods
         $returnType = $method->returnType();
         $returnsCommands = $returnType->filter(fn (DeclaredType $type) => $type->isNamedAs(EventCommands::class))
             ->isDefined();
-        $takesEvent = $parameterClass !== null && is_a($parameterClass, Event::class, true);
+        $takesEvent = $parameterClass !== null
+            && Reflector::exists($parameterClass)
+            && Reflector::of($parameterClass)->is(Event::class);
 
-        if (method_exists(AgentState::class, $name) || method_exists(TickableState::class, $name)) {
+        if (Reflector::of(AgentState::class)->hasMethod($name)
+            || Reflector::of(TickableState::class)->hasMethod($name)) {
             if ($takesEvent || $returnsCommands) {
                 throw InvalidStateMethod::for($method, 'uses a reserved state method name for an event listener.');
             }
@@ -83,7 +86,8 @@ final class StateMethods
         }
 
         if ($parameterClass === null
-            || ! is_subclass_of($parameterClass, Event::class)
+            || ! $takesEvent
+            || ! Reflector::of($parameterClass)->isSubclassOf(Event::class)
             || ! $this->hasRequiredArgument($method)
             || ! $this->isPublicInstanceMethod($method)) {
             throw InvalidStateMethod::for($method, 'must be a public instance method with one required concrete Event.');
@@ -118,7 +122,7 @@ final class StateMethods
      */
     private function declarationsFor(string $class): array
     {
-        if (! is_subclass_of($class, AgentState::class)) {
+        if (! Reflector::exists($class) || ! Reflector::of($class)->isSubclassOf(AgentState::class)) {
             throw InvalidStateClass::for($class);
         }
 

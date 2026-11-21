@@ -81,6 +81,14 @@ final readonly class DeclaredType
     }
 
     /**
+     * Whether it is one of PHP's scalar types: int, float, string or bool.
+     */
+    public function isScalar(): bool
+    {
+        return $this->isNamed() && in_array($this->name, ['int', 'float', 'string', 'bool'], true);
+    }
+
+    /**
      * Whether it is exactly this one name, as a named type.
      */
     public function isNamedAs(string $name): bool

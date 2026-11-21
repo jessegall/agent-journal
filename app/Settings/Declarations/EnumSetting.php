@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Declarations;
 
+use App\Reflection\Support\Reflector;
 use App\Settings\Contracts\CatalogueConstraints;
 use App\Settings\Contracts\CatalogueValue;
 use App\Settings\Contracts\ChoiceLabel;
@@ -16,7 +17,6 @@ use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
 use BackedEnum;
 use Illuminate\Support\Str;
-use ReflectionEnum;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -54,7 +54,9 @@ final readonly class EnumSetting implements OptionSetting
     {
         SettingKey::require($key, $label);
 
-        if (! enum_exists($enum) || ! new ReflectionEnum($enum)->isBacked()) {
+        if (! Reflector::exists($enum)
+            || ! Reflector::of($enum)->isEnum()
+            || Reflector::of($enum)->backingType()->isEmpty()) {
             throw SettingDeclarationInvalid::notABackedEnum($key);
         }
 
@@ -62,7 +64,7 @@ final readonly class EnumSetting implements OptionSetting
             throw SettingDeclarationInvalid::defaultNotAnOption($key);
         }
 
-        $backing = (string) new ReflectionEnum($enum)->getBackingType() === 'int'
+        $backing = Reflector::of($enum)->backingType()->get() === 'int'
             ? SettingType::Integer
             : SettingType::String;
         $options = array_map(fn (BackedEnum $case) => self::choiceOf($case), $enum::cases());

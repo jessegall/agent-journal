@@ -64,7 +64,7 @@ final readonly class SeparateRequiredListeners implements Pipe
     {
         $class = explode('@', $listener, 2)[0];
 
-        if (! class_exists($class)) {
+        if (! Reflector::exists($class) || ! Reflector::of($class)->isClass()) {
             return null;
         }
 
@@ -87,7 +87,7 @@ final readonly class SeparateRequiredListeners implements Pipe
         array $earlier,
     ): void {
         foreach (self::DEFERRING_INTERFACES as $interface) {
-            if (is_a($class->name(), $interface, true)) {
+            if ($class->implements($interface)) {
                 throw InvalidListener::requiredButDeferred($listener, $event, $interface);
             }
         }
@@ -110,7 +110,7 @@ final readonly class SeparateRequiredListeners implements Pipe
 
     private static function isDeclaredBy(string $event, string $listener): bool
     {
-        if (! class_exists($event)) {
+        if (! Reflector::exists($event) || ! Reflector::of($event)->isClass()) {
             return false;
         }
 

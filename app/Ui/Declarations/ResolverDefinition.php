@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Ui\Declarations;
 
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\ReflectedParameter;
+use App\Reflection\Support\Reflector;
 use App\Ui\Exceptions\UiResolverInvalid;
 use Illuminate\Foundation\Http\FormRequest;
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionParameter;
 use Spatie\LaravelData\Data;
 
 /**
@@ -42,8 +43,9 @@ final readonly class ResolverDefinition
     ): self {
         $owner->assertImplements($declaration, $resolver, $interface);
 
-        $constructor = new ReflectionClass($resolver)->getConstructor();
-        $parameters = $constructor === null ? [] : $constructor->getParameters();
+        $parameters = Reflector::of($resolver)->constructor()
+            ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+            ->getOrElse([]);
         $requests = array_values(array_filter(array_map(self::requestOf(...), $parameters)));
 
         if (count($requests) > 1) {
@@ -56,14 +58,17 @@ final readonly class ResolverDefinition
     /**
      * @return class-string<FormRequest>|null
      */
-    private static function requestOf(ReflectionParameter $parameter): string|null
+    private static function requestOf(ReflectedParameter $parameter): string|null
     {
-        $type = $parameter->getType();
+        $type = $parameter->type()
+            ->filter(fn (DeclaredType $declared) => $declared->isNamed())
+            ->filter(fn (DeclaredType $declared) => Reflector::exists($declared->name()))
+            ->filter(fn (DeclaredType $declared) => Reflector::of($declared->name())->isSubclassOf(FormRequest::class));
 
-        if (! $type instanceof ReflectionNamedType || ! is_subclass_of($type->getName(), FormRequest::class)) {
+        if ($type->isEmpty()) {
             return null;
         }
 
-        return $type->getName();
+        return $type->get()->name();
     }
 }

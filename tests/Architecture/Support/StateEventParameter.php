@@ -20,7 +20,9 @@ final class StateEventParameter
 {
     public static function matches(Param $parameter): bool
     {
-        if (! $parameter->type instanceof Name || ! is_subclass_of($parameter->type->toString(), Event::class)) {
+        if (! $parameter->type instanceof Name
+            || ! Reflector::exists($parameter->type->toString())
+            || ! Reflector::of($parameter->type->toString())->isSubclassOf(Event::class)) {
             return false;
         }
 
@@ -38,12 +40,14 @@ final class StateEventParameter
 
         $name = $class->namespacedName->toString();
 
-        if (! is_subclass_of($name, AgentState::class) && ! trait_exists($name)) {
+        $declared = Reflector::exists($name) ? Reflector::of($name) : null;
+
+        if ($declared === null || (! $declared->isSubclassOf(AgentState::class) && ! $declared->isTrait())) {
             return false;
         }
 
-        $declared = Reflector::of($name)->method($method->name->toString());
+        $event = new StateMethods()->eventFor($declared->method($method->name->toString()));
 
-        return new StateMethods()->eventFor($declared) === $parameter->type->toString();
+        return $event === $parameter->type->toString();
     }
 }

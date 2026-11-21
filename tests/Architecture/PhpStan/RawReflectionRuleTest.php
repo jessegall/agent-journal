@@ -42,6 +42,13 @@ final class RawReflectionRuleTest extends RuleTestCase
                 57,
             ],
             ["new ReflectionProperty\n".self::CONSTRUCTION, 65],
+            ["class_exists()\nUse Reflector::exists(\$name) and Reflector::of(\$name)->isClass().", 70],
+            [
+                "is_subclass_of()\nUse Reflector::of(\$target)->isSubclassOf(X::class) or ->implements(X::class).",
+                71,
+            ],
+            ["method_exists()\nUse Reflector::of(\$target)->hasMethod(\$name).", 72],
+            ["instanceof on a type held as a name\nUse Reflector::of(\$type)->isInstance(\$value).", 73],
         ]);
     }
 

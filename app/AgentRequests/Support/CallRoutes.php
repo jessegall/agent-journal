@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\AgentRequests\Support;
 
-use App\Reflection\Support\DeclaredType;
-use App\Reflection\Support\Reflector;
 use App\AgentRequests\Contracts\CallRegistrar;
 use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\Reflector;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 
@@ -48,7 +48,7 @@ final readonly class CallRoutes implements CallRegistrar
             ->map(fn (DeclaredType $type) => $type->name())
             ->getOrElse('');
 
-        if (! class_exists($call)) {
+        if (! Reflector::exists($call)) {
             throw EndpointDeclarationInvalid::for($controller, 'its __invoke takes the call first');
         }
 

@@ -86,8 +86,10 @@ final readonly class CommandGrammar
             return $this->problemWithList($property, $seen);
         }
 
-        if (enum_exists($name)) {
-            return is_subclass_of($name, BackedEnum::class) ? null : "is the enum {$name}, which has no values";
+        if (Reflector::exists($name) && Reflector::of($name)->isEnum()) {
+            return Reflector::of($name)->implements(BackedEnum::class)
+                ? null
+                : "is the enum {$name}, which has no values";
         }
 
         return $this->problemWithValue($name, $seen);
@@ -119,14 +121,13 @@ final readonly class CommandGrammar
 
         $class = $this->classNamed($elementType, $property);
 
-        if (enum_exists($class)) {
-            return is_subclass_of(
-                $class,
-                BackedEnum::class,
-            ) ? null : "is a list of the enum {$class}, which has no values";
+        if (Reflector::exists($class) && Reflector::of($class)->isEnum()) {
+            return Reflector::of($class)->implements(BackedEnum::class)
+                ? null
+                : "is a list of the enum {$class}, which has no values";
         }
 
-        $problem = class_exists($class) ? $this->problemWithValue(
+        $problem = Reflector::exists($class) && Reflector::of($class)->isClass() ? $this->problemWithValue(
             $class,
             $seen,
         ) : "is typed {$class}, which is no class, enum or allowed type";
@@ -179,7 +180,7 @@ final readonly class CommandGrammar
      */
     private function problemWithValue(string $name, array $seen): string|null
     {
-        if (! class_exists($name)) {
+        if (! Reflector::exists($name) || ! Reflector::of($name)->isClass()) {
             return "is typed {$name}, which is no class, enum or allowed type";
         }
 

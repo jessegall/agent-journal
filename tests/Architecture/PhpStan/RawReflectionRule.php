@@ -7,6 +7,7 @@ namespace Tests\Architecture\PhpStan;
 use PhpParser\Node;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
@@ -41,12 +42,15 @@ final class RawReflectionRule implements Rule
      * The files that implement the wrapper on native reflection, relative to the project root.
      */
     public const array WRAPPER_FILES = [
+        'app/Reflection/Enums/AttributeMatch.php',
         'app/Reflection/Support/DeclarationAttributes.php',
         'app/Reflection/Support/DeclaredType.php',
+        'app/Reflection/Support/ReflectedEnumCase.php',
         'app/Reflection/Support/ReflectedMethod.php',
         'app/Reflection/Support/ReflectedParameter.php',
         'app/Reflection/Support/ReflectedProperty.php',
         'app/Reflection/Support/ReflectionCatalogue.php',
+        'app/Reflection/Support/SourceNodeAttributes.php',
         'app/Reflection/Support/Reflector.php',
     ];
 
@@ -113,9 +117,35 @@ final class RawReflectionRule implements Rule
         'newinstance' => 'Reflector::attribute(X::class), which builds the attribute',
     ];
 
+    /**
+     * The TypeScript transformer's source nodes, which read attributes from native or source reflection.
+     */
+    private const array SOURCE_NODES = [
+        'spatie\\typescripttransformer\\phpnodes\\phpclassnode',
+        'spatie\\typescripttransformer\\phpnodes\\phppropertynode',
+    ];
+
+    /**
+     * PHP's functions that ask about a type by its name, each with the Reflector question that answers it.
+     */
+    private const array TYPE_FUNCTIONS = [
+        'class_exists' => 'Reflector::exists($name) and Reflector::of($name)->isClass()',
+        'class_implements' => 'Reflector::of($target)->interfaces()',
+        'class_uses' => 'Reflector::of($target)->traits() or ->uses(X::class)',
+        'enum_exists' => 'Reflector::exists($name) and Reflector::of($name)->isEnum()',
+        'get_parent_class' => 'Reflector::of($target)->parent()',
+        'interface_exists' => 'Reflector::exists($name) and Reflector::of($name)->isInterface()',
+        'is_a' => 'Reflector::of($target)->is(X::class), or ->isInstance($value)',
+        'is_subclass_of' => 'Reflector::of($target)->isSubclassOf(X::class) or ->implements(X::class)',
+        'method_exists' => 'Reflector::of($target)->hasMethod($name)',
+        'property_exists' => 'Reflector::of($target)->hasProperty($name)',
+        'trait_exists' => 'Reflector::exists($name) and Reflector::of($name)->isTrait()',
+    ];
+
     private const string CONSTRUCTION_HINT = 'Reflector::of($target), or reflect() of the Reflects trait';
 
-    private const string METHOD_HINT = 'the Reflector answer for it; add that answer in app/Reflection when it has none';
+    private const string METHOD_HINT = 'the Reflector answer for it; add that answer in app/Reflection when it has '
+        .'none';
 
     private readonly string $root;
 
@@ -146,6 +176,7 @@ final class RawReflectionRule implements Rule
         return match (true) {
             $node instanceof New_ => $this->constructionErrors($node, $scope),
             $node instanceof StaticCall => $this->staticCallErrors($node, $scope),
+            $node instanceof FuncCall => $this->typeFunctionErrors($node, $scope),
             $node instanceof Instanceof_ => $this->instanceofErrors($node, $scope),
             // PHPStan hands a nullsafe call to rules as a MethodCall as well
             $node instanceof MethodCall => $this->methodCallErrors($node, $scope),
@@ -182,7 +213,12 @@ final class RawReflectionRule implements Rule
         }
 
         return array_map(
-            fn (string $name) => $this->error("{$name}::{$node->name->toString()}()", self::CONSTRUCTION_HINT, $node, $scope),
+            fn (string $name) => $this->error(
+                "{$name}::{$node->name->toString()}()",
+                self::CONSTRUCTION_HINT,
+                $node,
+                $scope,
+            ),
             $this->nativeReflectorsAmong([$scope->resolveName($node->class)]),
         );
     }
@@ -192,6 +228,15 @@ final class RawReflectionRule implements Rule
      */
     private function instanceofErrors(Instanceof_ $node, Scope $scope): array
     {
+        if ($node->class instanceof Expr && $scope->getType($node->class)->isString()->yes()) {
+            return [$this->error(
+                'instanceof on a type held as a name',
+                'Reflector::of($type)->isInstance($value)',
+                $node,
+                $scope,
+            )];
+        }
+
         $names = $node->class instanceof Name ? [$scope->resolveName($node->class)] : [];
 
         return array_map(
@@ -217,6 +262,20 @@ final class RawReflectionRule implements Rule
             $hint = self::WRAPPER_METHODS[strtolower($method)] ?? self::METHOD_HINT;
 
             return [$this->error(implode('|', $natives)."::{$method}()", $hint, $node, $scope)];
+        }
+
+        $sourceNodes = array_values(array_filter(
+            $receiver->getObjectClassNames(),
+            fn (string $name) => in_array(strtolower($name), self::SOURCE_NODES, true),
+        ));
+
+        if ($sourceNodes !== [] && strtolower($method) === 'getattributes') {
+            return [$this->error(
+                implode('|', $sourceNodes).'::getAttributes()',
+                'SourceNodeAttributes::current()->carries($node, X::class)',
+                $node,
+                $scope,
+            )];
         }
 
         if ($receiver->isObject()->maybe() && in_array(strtolower($method), self::REFLECTION_METHODS, true)) {
@@ -256,6 +315,26 @@ final class RawReflectionRule implements Rule
             fn (string $name) => $this->error("a class extending {$name}", self::CONSTRUCTION_HINT, $node, $scope),
             $this->nativeReflectorsAmong($names),
         );
+    }
+
+    /**
+     * A call of one of PHP's functions that ask about a type by its name.
+     *
+     * @return list<IdentifierRuleError>
+     */
+    private function typeFunctionErrors(FuncCall $node, Scope $scope): array
+    {
+        if (! $node->name instanceof Name) {
+            return [];
+        }
+
+        $function = strtolower(ltrim($node->name->toString(), '\\'));
+
+        if (! isset(self::TYPE_FUNCTIONS[$function])) {
+            return [];
+        }
+
+        return [$this->error("{$function}()", self::TYPE_FUNCTIONS[$function], $node, $scope)];
     }
 
     /**

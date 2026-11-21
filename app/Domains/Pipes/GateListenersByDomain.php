@@ -11,7 +11,7 @@ use App\Domains\Support\FailureLoggingListener;
 use App\Domains\Support\GatedListeners;
 use App\Domains\Support\ListenerDeclarations;
 use App\Pipelines\Contracts\Pipe;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 
 /**
  * Wraps domain listeners for availability, in both lanes, and adds failure logging to the dispatcher's listeners
@@ -27,7 +27,9 @@ final readonly class GateListenersByDomain implements Pipe
         foreach ($declarations->events as $event => $listeners) {
             foreach ($listeners as $listener) {
                 $available = $this->available($declarations, $event, $listener);
-                $gated[$event][] = is_subclass_of($event, ListenerFailureLog::class)
+                $logsFailures = Reflector::exists($event)
+                    && Reflector::of($event)->isSubclassOf(ListenerFailureLog::class);
+                $gated[$event][] = $logsFailures
                     ? new FailureLoggingListener($event, $available)
                     : $available;
             }
@@ -54,11 +56,11 @@ final readonly class GateListenersByDomain implements Pipe
     ): string|AvailableListener {
         $class = explode('@', $listener, 2)[0];
 
-        if (! class_exists($class)) {
+        if (! Reflector::exists($class) || ! Reflector::of($class)->isClass()) {
             throw InvalidListener::staleCache($listener, $event);
         }
 
-        $file = (string) new ReflectionClass($class)->getFileName();
+        $file = Reflector::of($class)->fileName()->getOrElse('');
         $domain = $declarations->ownership->domainHoldingListener($file);
 
         return $domain === null ? $listener : new AvailableListener($domain->name, $listener);

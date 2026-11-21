@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Types;
 
+use App\Reflection\Support\SourceNodeAttributes;
 use Spatie\LaravelData\Attributes\Hidden as DataHidden;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\Transformers\DataClassTransformer;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -19,7 +20,8 @@ final class HiddenAwareDataTransformer extends DataClassTransformer
 {
     protected function shouldTransform(PhpClassNode $phpClassNode): bool
     {
-        return parent::shouldTransform($phpClassNode) && $phpClassNode->getAttributes(TypeScript::class) !== [];
+        return parent::shouldTransform($phpClassNode)
+            && SourceNodeAttributes::current()->carries($phpClassNode, TypeScript::class);
     }
 
     protected function isPropertyHidden(
@@ -31,6 +33,6 @@ final class HiddenAwareDataTransformer extends DataClassTransformer
             $phpPropertyNode,
             $phpClassNode,
             $property,
-        ) || $phpPropertyNode->getAttributes(DataHidden::class) !== [];
+        ) || SourceNodeAttributes::current()->carries($phpPropertyNode, DataHidden::class);
     }
 }

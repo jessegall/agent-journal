@@ -7,6 +7,7 @@ namespace App\Domains\Pipes;
 use App\Domains\Support\ListenerDeclarations;
 use App\Domains\Support\ListenerOwnership;
 use App\Pipelines\Contracts\Pipe;
+use App\Reflection\Support\Reflector;
 
 /**
  * Expands interface listeners into listeners for the exported events that implement the interface: the facts that
@@ -23,7 +24,7 @@ final readonly class ExpandUiUpdaterListeners implements Pipe
             unset($events[$interface]);
 
             foreach ($declarations->ownership->exportedEvents() as $event) {
-                if ($listeners !== [] && is_subclass_of($event, $interface)) {
+                if ($listeners !== [] && Reflector::of($event)->isSubclassOf($interface)) {
                     $events[$event] = array_values(array_unique([...$events[$event] ?? [], ...$listeners]));
                 }
             }

@@ -10,10 +10,10 @@ use App\Domains\Support\ListenerDeclarations;
 use App\Domains\Support\ListenerOwnership;
 use App\Hooks\States\AgentState;
 use App\Pipelines\Contracts\Pipe;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
-use ReflectionUnionType;
+use App\Reflection\Enums\TypeShape;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 
 /**
  * Checks each listener declaration against its callable, concrete event and owner.
@@ -35,19 +35,20 @@ final readonly class CheckListenerPairs implements Pipe
     {
         [$class, $method] = array_pad(explode('@', $listener, 2), 2, 'handle');
 
-        if (is_subclass_of($class, AgentState::class)) {
+        if (Reflector::exists($class) && Reflector::of($class)->isSubclassOf(AgentState::class)) {
             throw InvalidListener::stateRegisteredByHand($listener, $event);
         }
 
-        if (! class_exists($class)
-            || ! method_exists($class, $method)
-            || ! $this->firstParameterAccepts(new ReflectionMethod($class, $method), $event)) {
+        if (! Reflector::exists($class)
+            || ! Reflector::of($class)->isClass()
+            || ! Reflector::of($class)->hasMethod($method)
+            || ! $this->firstParameterAccepts(Reflector::of($class)->method($method), $event)) {
             throw InvalidListener::staleCache($listener, $event);
         }
 
-        if (! class_exists($event)
-            || ! is_subclass_of($event, Event::class)
-            || new ReflectionClass($event)->isAbstract()) {
+        if (! Reflector::exists($event)
+            || ! Reflector::of($event)->isSubclassOf(Event::class)
+            || Reflector::of($event)->isAbstract()) {
             throw InvalidListener::notAConcreteEvent($listener, $event);
         }
 
@@ -55,14 +56,20 @@ final readonly class CheckListenerPairs implements Pipe
         $ownership->assertOwnership($event, $listener, $method, $listenerDomain);
     }
 
-    private function firstParameterAccepts(ReflectionMethod $method, string $event): bool
+    private function firstParameterAccepts(ReflectedMethod $method, string $event): bool
     {
-        $type = ($method->getParameters()[0] ?? null)?->getType();
-        $arms = $type instanceof ReflectionUnionType ? $type->getTypes() : [$type];
+        $parameters = $method->parameters();
+
+        if ($parameters === [] || $parameters[0]->type()->isEmpty()) {
+            return false;
+        }
+
+        $type = $parameters[0]->type()->get();
+        $arms = $type->shape === TypeShape::Union ? $type->members : [$type];
 
         return array_any(
             $arms,
-            fn (mixed $arm) => $arm instanceof ReflectionNamedType && is_a($event, $arm->getName(), true),
+            fn (DeclaredType $arm) => $arm->isNamed() && Reflector::of($event)->is($arm->name()),
         );
     }
 }

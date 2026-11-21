@@ -10,6 +10,7 @@ use App\Actors\Contracts\AdmittedRecipients;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Enums\ActorType;
+use App\Reflection\Support\Reflector;
 use App\Web\Contracts\CurrentUserResolver;
 use Domain\Access\Actions\CreateNewUser;
 use Domain\Access\Actions\ResetUserPassword;
@@ -32,7 +33,6 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
 use Laravel\Passkeys\Passkeys;
-use ReflectionClass;
 
 class AccessServiceProvider extends ServiceProvider
 {
@@ -45,7 +45,7 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(JournalAdmission::class, OwnerAdmission::class);
         $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
-        $this->app->singleton(AccessSettings::class, fn (): AccessSettings => new ReflectionClass(
+        $this->app->singleton(AccessSettings::class, fn (): AccessSettings => Reflector::of(
             AccessSettings::class,
         )->newLazyGhost(function (
             AccessSettings $settings,

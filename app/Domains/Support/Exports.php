@@ -8,8 +8,8 @@ use App\Bus\Contracts\Command;
 use App\Contracts\Event;
 use App\Domains\Exceptions\InvalidExports;
 use App\Exports\Support\Exports as DeclaredExports;
+use App\Reflection\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
-use ReflectionClass;
 use Throwable;
 
 /**
@@ -52,6 +52,7 @@ final class Exports
         'App\Assignments\Calls\Concerns\NamesRecipient',
         'App\Assignments\Calls\Concerns\NamesExpectedAssignment',
         'App\Bus\Support\Command',
+        'App\Reflection\Support\Reflector',
     ];
 
     /**
@@ -81,15 +82,15 @@ final class Exports
     private function event(string $name): string
     {
         $type = $this->ownType('events', $name);
-        $className = $type->getName();
+        $className = $type->name();
 
         $isConcreteEvent = ! $type->isInterface() && ! $type->isAbstract() && $type->isFinal();
 
-        if (! $isConcreteEvent || ! is_a($className, Event::class, true)) {
+        if (! $isConcreteEvent || ! $type->is(Event::class)) {
             throw InvalidExports::notAnEvent($this->owner, $className);
         }
 
-        if ($type->implementsInterface(Command::class)) {
+        if ($type->is(Command::class)) {
             throw InvalidExports::eventIsACommand($this->owner, $className);
         }
 
@@ -104,10 +105,10 @@ final class Exports
         $type = $this->ownType('contracts', $name);
 
         if (! $type->isInterface()) {
-            throw InvalidExports::notAnInterface($this->owner, $type->getName());
+            throw InvalidExports::notAnInterface($this->owner, $type->name());
         }
 
-        return $type->getName();
+        return $type->name();
     }
 
     /**
@@ -117,13 +118,13 @@ final class Exports
     {
         $type = $this->ownType('commands', $name);
         $isConcreteCommand = ! $type->isInterface() && ! $type->isAbstract() && $type->isFinal()
-            && $type->implementsInterface(Command::class);
+            && $type->is(Command::class);
 
-        if (! $isConcreteCommand || $type->implementsInterface(Event::class)) {
-            throw InvalidExports::notACommand($this->owner, $type->getName());
+        if (! $isConcreteCommand || $type->is(Event::class)) {
+            throw InvalidExports::notACommand($this->owner, $type->name());
         }
 
-        return $type->getName();
+        return $type->name();
     }
 
     /**
@@ -131,9 +132,10 @@ final class Exports
      */
     private function exception(string $name): string
     {
-        $className = $this->ownType('exceptions', $name)->getName();
+        $type = $this->ownType('exceptions', $name);
+        $className = $type->name();
 
-        if (! is_a($className, Throwable::class, true) || ! str_contains($className, '\\Exceptions\\')) {
+        if (! $type->is(Throwable::class) || ! str_contains($className, '\\Exceptions\\')) {
             throw InvalidExports::notAnException($this->owner, $className);
         }
 
@@ -149,24 +151,24 @@ final class Exports
         $reason = $this->reasonNotAValue($type);
 
         if ($reason !== null) {
-            throw InvalidExports::notAValue($this->owner, $type->getName(), $reason);
+            throw InvalidExports::notAValue($this->owner, $type->name(), $reason);
         }
 
-        return $type->getName();
+        return $type->name();
     }
 
     /**
-     * @param  ReflectionClass<object>  $type
+     * @param  Reflector<object>  $type
      */
-    private function reasonNotAValue(ReflectionClass $type): string|null
+    private function reasonNotAValue(Reflector $type): string|null
     {
         return match (true) {
             $type->isEnum() => null,
             $type->isInterface() => 'it is an interface; export it under contracts',
             $type->isTrait() => 'it is a trait, which only Core may export, under support',
-            $type->implementsInterface(Event::class) => 'it is an event; export it under events',
-            $type->implementsInterface(Command::class) => 'it is a command; export it under commands',
-            $type->implementsInterface(Throwable::class) => 'it is an exception; export it under exceptions',
+            $type->is(Event::class) => 'it is an event; export it under events',
+            $type->is(Command::class) => 'it is a command; export it under commands',
+            $type->is(Throwable::class) => 'it is an exception; export it under exceptions',
             $type->isSubclassOf(Model::class) => 'it is a model, which stays private to its owner',
             ! $type->isFinal() => 'it is not final; a public value is a final class or an enum',
             default => null,
@@ -181,29 +183,26 @@ final class Exports
         $type = $this->ownType('support', $name);
 
         if ($this->owner !== 'Core') {
-            throw InvalidExports::supportOutsideCore($this->owner, $type->getName());
+            throw InvalidExports::supportOutsideCore($this->owner, $type->name());
         }
 
-        if (! in_array($type->getName(), self::CORE_SUPPORT, true)) {
-            throw InvalidExports::unknownSupport($type->getName());
+        if (! in_array($type->name(), self::CORE_SUPPORT, true)) {
+            throw InvalidExports::unknownSupport($type->name());
         }
 
-        return $type->getName();
+        return $type->name();
     }
 
     /**
      * The exported type as PHP knows it, after it is found and seen to sit in the owner's namespace.
      *
-     * @return ReflectionClass<object>
+     * @return Reflector<object>
      */
-    private function ownType(string $group, string $name): ReflectionClass
+    private function ownType(string $group, string $name): Reflector
     {
         $className = ltrim($name, '\\');
 
-        $declared = class_exists($className) || interface_exists($className) || enum_exists($className)
-            || trait_exists($className);
-
-        if (! $declared) {
+        if (! Reflector::exists($className)) {
             throw InvalidExports::missing($this->owner, $group, $className);
         }
 
@@ -211,6 +210,6 @@ final class Exports
             throw InvalidExports::outsideOwner($this->owner, $className, $this->namespace);
         }
 
-        return new ReflectionClass($className);
+        return Reflector::of($className);
     }
 }

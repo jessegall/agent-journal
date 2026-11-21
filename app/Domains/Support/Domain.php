@@ -22,7 +22,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Support\McpToolDirectory;
 use App\Mcp\Tools\JournalTool;
 use App\Numbers\Contracts\NumberedModelProvider;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 
 /**
  * One domain of the application: what it owns, the domains it may use, and the steps its boot runs. Every domain loads
@@ -80,7 +80,7 @@ abstract class Domain
      */
     public function mcpTools(): array
     {
-        $domainFile = (string) new ReflectionClass($this)->getFileName();
+        $domainFile = Reflector::of($this)->fileName()->getOrElse('');
 
         return McpToolDirectory::classesIn(dirname($domainFile).'/Mcp');
     }
@@ -106,7 +106,7 @@ abstract class Domain
         foreach ($traits as $trait) {
             $method = 'bootstrappers'.class_basename($trait);
 
-            if (method_exists($this, $method)) {
+            if (Reflector::of($this)->hasMethod($method)) {
                 array_push($fromTraits, ...$this->{$method}());
             }
         }

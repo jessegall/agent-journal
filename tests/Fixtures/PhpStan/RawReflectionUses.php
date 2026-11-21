@@ -64,4 +64,12 @@ final class RawReflectionUses
     {
         return new \ReflectionProperty(self::class, 'label');
     }
+
+    public function typeQuestions(string $class, object $value): bool
+    {
+        return class_exists($class)
+            && is_subclass_of($class, self::class)
+            && method_exists($class, 'label')
+            && $value instanceof $class;
+    }
 }

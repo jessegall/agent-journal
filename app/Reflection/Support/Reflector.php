@@ -10,6 +10,8 @@ use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
 use ReflectionClass;
+use ReflectionEnum;
+use ReflectionEnumUnitCase;
 use ReflectionMethod;
 use ReflectionProperty;
 
@@ -57,6 +59,21 @@ final class Reflector
     private Option $parent;
 
     /**
+     * @var Option<string>
+     */
+    private Option $fileName;
+
+    /**
+     * @var list<ReflectedEnumCase>
+     */
+    private array $cases;
+
+    /**
+     * @var Option<string>
+     */
+    private Option $backingType;
+
+    /**
      * @param  class-string<T>  $name
      */
     private function __construct(string $name)
@@ -92,6 +109,15 @@ final class Reflector
     }
 
     /**
+     * Whether any autoloader can load a class, interface, trait or enum of this name; nothing is kept for a name that
+     * does not load.
+     */
+    public static function exists(string $name): bool
+    {
+        return class_exists($name) || interface_exists($name) || trait_exists($name) || enum_exists($name);
+    }
+
+    /**
      * The type's name as PHP declared it.
      *
      * @return class-string<T>
@@ -121,9 +147,77 @@ final class Reflector
      */
     public function fileName(): Option
     {
+        if (isset($this->fileName)) {
+            return $this->fileName;
+        }
+
         $file = $this->type->getFileName();
 
-        return $file === false ? None::create() : new Some($file);
+        return $this->fileName = $file === false ? None::create() : new Some($file);
+    }
+
+    /**
+     * Whether it is a class: not an interface, a trait or an enum.
+     */
+    public function isClass(): bool
+    {
+        return ! $this->isInterface() && ! $this->isTrait() && ! $this->isEnum();
+    }
+
+    /**
+     * Whether it is this type or a subtype of it: the same class, a class that extends it, or one that implements it.
+     *
+     * @param  class-string  $type
+     */
+    public function is(string $type): bool
+    {
+        return is_a($this->name(), $type, true);
+    }
+
+    /**
+     * Whether the value is an object of this type or of a subtype of it.
+     *
+     * @phpstan-assert-if-true T $value
+     */
+    public function isInstance(mixed $value): bool
+    {
+        return $value instanceof $this->type->name;
+    }
+
+    /**
+     * Whether it extends or implements this type, as a strict subtype: the type itself is not its own subclass.
+     *
+     * @param  class-string  $type
+     */
+    public function isSubclassOf(string $type): bool
+    {
+        return is_subclass_of($this->name(), $type);
+    }
+
+    /**
+     * Whether it implements this interface, itself or through a parent or another interface.
+     *
+     * @param  class-string  $interface
+     */
+    public function implements(string $interface): bool
+    {
+        return interface_exists($interface) && $this->type->implementsInterface($interface);
+    }
+
+    /**
+     * Whether it, a class it extends or a trait any of them uses uses this trait.
+     *
+     * @param  class-string  $trait
+     */
+    public function uses(string $trait): bool
+    {
+        return array_any(
+            $this->lineage(),
+            fn (self $class) => array_any(
+                $class->traits(),
+                fn (self $used) => strcasecmp($used->name(), $trait) === 0 || $used->uses($trait),
+            ),
+        );
     }
 
     public function isAbstract(): bool
@@ -139,6 +233,42 @@ final class Reflector
     public function isEnum(): bool
     {
         return $this->type->isEnum();
+    }
+
+    public function isTrait(): bool
+    {
+        return $this->type->isTrait();
+    }
+
+    /**
+     * The scalar type a backed enum's cases carry, int or string; none for a pure enum or a class.
+     *
+     * @return Option<string>
+     */
+    public function backingType(): Option
+    {
+        if (isset($this->backingType)) {
+            return $this->backingType;
+        }
+
+        $backing = $this->isEnum() ? new ReflectionEnum($this->name())->getBackingType() : null;
+
+        return $this->backingType = $backing === null ? None::create() : new Some((string) $backing);
+    }
+
+    /**
+     * An enum's cases in declaration order, each with its attributes; none for a class.
+     *
+     * @return list<ReflectedEnumCase>
+     */
+    public function cases(): array
+    {
+        return $this->cases ??= $this->isEnum()
+            ? array_map(
+                fn (ReflectionEnumUnitCase $case) => new ReflectedEnumCase($case),
+                new ReflectionEnum($this->name())->getCases(),
+            )
+            : [];
     }
 
     public function isFinal(): bool
@@ -168,6 +298,28 @@ final class Reflector
     public function newInstanceWithoutConstructor(): object
     {
         return $this->type->newInstanceWithoutConstructor();
+    }
+
+    /**
+     * A new object of the class built through its constructor with these arguments, on every call and never kept.
+     *
+     * @return T
+     */
+    public function newInstance(mixed ...$arguments): object
+    {
+        return $this->type->newInstance(...$arguments);
+    }
+
+    /**
+     * A new lazy ghost of the class that runs the initializer on first use, built on every call; neither the ghost
+     * nor the initializer is kept.
+     *
+     * @param  callable(T): void  $initializer
+     * @return T
+     */
+    public function newLazyGhost(callable $initializer): object
+    {
+        return $this->type->newLazyGhost($initializer);
     }
 
     /**
@@ -232,6 +384,19 @@ final class Reflector
     public function lineage(): array
     {
         return [$this, ...$this->parent()->map(fn (self $parent) => $parent->lineage())->getOrElse([])];
+    }
+
+    /**
+     * Every interface it implements, itself or through a parent or another interface.
+     *
+     * @return list<Reflector<object>>
+     */
+    public function interfaces(): array
+    {
+        return array_values(array_map(
+            fn (string $interface) => self::of($interface),
+            $this->type->getInterfaceNames(),
+        ));
     }
 
     /**

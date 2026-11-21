@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Autoload\Support;
 
 use App\Files\Support\CodeFiles;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 
 /**
  * The classes of one type a folder declares, read through Composer's PSR-4 roots, so a list that mirrors a folder is
@@ -27,7 +27,10 @@ final readonly class FolderClasses
     {
         $found = KnownFolderClasses::in($folders, $type, fn () => self::read($folders, $type));
 
-        return array_values(array_filter($found, fn (string $class) => is_a($class, $type, true)));
+        return array_values(array_filter(
+            $found,
+            fn (string $class) => Reflector::exists($class) && Reflector::of($class)->is($type),
+        ));
     }
 
     /**
@@ -47,7 +50,9 @@ final readonly class FolderClasses
         foreach ($code->folder($code->projectPathOf("{$folders}/*.php")) as $entry) {
             $class = $names->classOf($entry->fingerprint->realPath);
 
-            if (is_a($class, $type, true) && new ReflectionClass($class)->isInstantiable()) {
+            if (Reflector::exists($class)
+                && Reflector::of($class)->is($type)
+                && Reflector::of($class)->isInstantiable()) {
                 $classes[] = $class;
             }
         }

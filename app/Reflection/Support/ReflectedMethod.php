@@ -101,6 +101,18 @@ final class ReflectedMethod
     }
 
     /**
+     * The file that declares the method, which for a trait method is the trait's file; none for one PHP declares.
+     *
+     * @return Option<string>
+     */
+    public function fileName(): Option
+    {
+        $file = $this->method->getFileName();
+
+        return $file === false ? None::create() : new Some($file);
+    }
+
+    /**
      * The class that declares the method, which may be a parent of the class it was read from.
      *
      * @return Reflector<object>

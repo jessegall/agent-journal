@@ -110,8 +110,8 @@ final readonly class CheckCommandHandlers implements Pipe
             throw CommandAuthorizationInvalid::grantUnsupported($command, $unsupported);
         }
 
-        $isRecordPolicy = is_subclass_of($policy, RecordPolicy::class);
-        $isRecordCommand = is_subclass_of($command, RecordCommand::class);
+        $isRecordPolicy = Reflector::of($policy)->isSubclassOf(RecordPolicy::class);
+        $isRecordCommand = Reflector::of($command)->isSubclassOf(RecordCommand::class);
 
         if ($isRecordPolicy && ! $isRecordCommand) {
             throw CommandAuthorizationInvalid::recordPolicyWithoutRecord($command, $policy);
@@ -157,7 +157,7 @@ final readonly class CheckCommandHandlers implements Pipe
      */
     private static function assertPermits(string $command, string $policy, string $model): void
     {
-        if (! method_exists($policy, 'permits')) {
+        if (! Reflector::of($policy)->hasMethod('permits')) {
             throw CommandAuthorizationInvalid::permitsMissing($command, $policy, $model);
         }
 
