@@ -3,16 +3,27 @@ import { reactive } from 'vue';
 
 type Projection = (props: { page: unknown }) => unknown;
 
-const submitted: Array<{ projection: Projection; route: unknown }> = [];
+const submitted: Array<{
+    projection: Projection;
+    route: unknown;
+    body: unknown;
+}> = [];
 
 vi.mock('@inertiajs/vue3', () => ({
     useForm: (fields: Record<string, unknown>) => {
+        let sent: () => unknown = () => fields;
         const form = reactive({
             ...fields,
+            errors: {} as Record<string, string>,
             clearErrors: () => undefined,
+            transform: (shape: () => unknown) => {
+                sent = shape;
+
+                return form;
+            },
             optimistic: (projection: Projection) => ({
                 submit: (route: unknown) =>
-                    submitted.push({ projection, route }),
+                    submitted.push({ projection, route, body: sent() }),
             }),
         });
 
@@ -41,11 +52,13 @@ describe('useAccountNaming', () => {
         const { naming, save } = useAccountNaming(() => ({
             id: 'account-1',
             label: 'Work',
+            nameRevision: 3,
         }));
         naming.label = '  Office  ';
 
         save(() => undefined);
 
+        expect(submitted[0].body).toEqual({ label: 'Office', seenRevision: 3 });
         expect(submitted[0].projection({ page })).toEqual({
             page: {
                 state: 'ready',
@@ -63,6 +76,7 @@ describe('useAccountNaming', () => {
         const { naming, save } = useAccountNaming(() => ({
             id: 'account-1',
             label: 'Work',
+            nameRevision: 3,
         }));
         naming.label = 'Office';
 

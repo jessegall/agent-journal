@@ -24,6 +24,7 @@ use App\Profiles\Events\AccountSignedIn;
 use App\Profiles\Events\AccountSignedOut;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
+use App\Profiles\Exceptions\AccountNameChanged;
 use App\Profiles\Exceptions\AccountRecheckRefused;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Models\Support\KeepsCleanupTries;
@@ -52,6 +53,7 @@ use Illuminate\Support\Str;
  * @property string $driver
  * @property string $label
  * @property string $label_key
+ * @property int $name_revision
  * @property AccountState $state
  * @property string|null $directory
  * @property string|null $identity
@@ -484,12 +486,23 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Gives the account a new name, which no other account of its program in use may share, ignoring case.
+     * Gives the account a new name, which no other account of its program in use may share, ignoring case, and advances
+     * its name revision; a name saved against an older revision is refused, so a rename made meanwhile is never
+     * overwritten unseen. The same name again changes nothing.
      *
      * @throws AccountLabelTaken
+     * @throws AccountNameChanged
      */
-    public function rename(AccountLabel $label): void
+    public function rename(AccountLabel $label, int|null $seenRevision = null): void
     {
+        if ($seenRevision !== null && $seenRevision !== $this->name_revision) {
+            throw AccountNameChanged::meanwhile($this->label);
+        }
+
+        if ($label->label === $this->label) {
+            return;
+        }
+
         $taken = self::query()
             ->where('driver', $this->driver)
             ->where('label_key', $label->key())
@@ -502,6 +515,7 @@ final class Account extends Model implements EventSource, ReadableModel
         }
 
         $this->name($label);
+        $this->name_revision++;
         $this->assertSaved($this->save());
         $this->raise(new AccountRenamed($this->driver, $this->id));
     }

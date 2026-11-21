@@ -15,7 +15,7 @@ final readonly class RenameAccountHandler implements CommandHandler
     {
         $label = AccountLabel::from($command->label);
         $account = Account::lockedForChange($command->accountId);
-        $account->rename($label);
+        $account->rename($label, $command->seenRevision);
 
     }
 }

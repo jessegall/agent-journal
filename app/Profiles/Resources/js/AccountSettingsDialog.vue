@@ -38,7 +38,7 @@ const emit = defineEmits<{
 const isAskingToRemove = ref(false);
 const back = ref<InstanceType<typeof Button> | null>(null);
 const fieldId = computed(() => `account-name-${props.account.id}`);
-const { naming, canSave, saved, revert, save } = useAccountNaming(
+const { naming, refusal, canSave, saved, revert, save } = useAccountNaming(
     () => props.account,
 );
 const choosing = useForm({});
@@ -281,7 +281,7 @@ function signInAgain(): void {
                     v-model="naming.label"
                     label="Name"
                     :maxlength="80"
-                    :error="naming.errors.label"
+                    :error="refusal"
                     :hint="
                         naming.label.trim() === ''
                             ? 'A name is needed.'

@@ -1299,6 +1299,7 @@ class	AccountListData
 class	AccountMaintenance
 class	AccountMissing
 class	AccountMonthCostData
+class	AccountNameChanged
 class	AccountNotice
 class	AccountNoticeData
 class	AccountNoticeRecorded
@@ -7794,6 +7795,9 @@ method	AccountMissing::refusalCode()
 method	AccountMissing::status()
 method	AccountMonthCostData::__construct()
 method	AccountMonthCostData::fromCost()
+method	AccountNameChanged::meanwhile()
+method	AccountNameChanged::refusalCode()
+method	AccountNameChanged::status()
 method	AccountNotice::casts()
 method	AccountNotice::countAgain()
 method	AccountNotice::create()
@@ -18087,6 +18091,7 @@ method	RenameAccountRequest::accountId()
 method	RenameAccountRequest::attributes()
 method	RenameAccountRequest::label()
 method	RenameAccountRequest::rules()
+method	RenameAccountRequest::seenRevision()
 method	RenderReply::handle()
 method	RenderedCall::__construct()
 method	RenderedSkill::__construct()
@@ -24393,6 +24398,7 @@ parameter	$ms
 parameter	$mustExist
 parameter	$name
 parameter	$nameContext
+parameter	$nameRevision
 parameter	$named
 parameter	$namedPaths
 parameter	$names
@@ -25093,6 +25099,7 @@ parameter	$samples
 parameter	$saveVariant
 parameter	$saved
 parameter	$savedAt
+parameter	$savedLabel
 parameter	$savedPreview
 parameter	$savedRevision
 parameter	$savesVariant
@@ -25152,6 +25159,7 @@ parameter	$sectionTakes
 parameter	$sections
 parameter	$securityOptions
 parameter	$seen
+parameter	$seenRevision
 parameter	$seenSession
 parameter	$seenVersion
 parameter	$segment
@@ -25756,6 +25764,7 @@ property	AccountRowData::$isActive
 property	AccountRowData::$isCheckInconclusive
 property	AccountRowData::$isHeldForCheck
 property	AccountRowData::$label
+property	AccountRowData::$nameRevision
 property	AccountRowData::$recentStarts
 property	AccountRowData::$runningCount
 property	AccountRowData::$signIn
@@ -31789,6 +31798,7 @@ property	RemoveMemoryCall::$requestKey
 property	RemoveRule::$ruleId
 property	RenameAccount::$accountId
 property	RenameAccount::$label
+property	RenameAccount::$seenRevision
 property	RenderedCall::$answer
 property	RenderedCall::$call
 property	RenderedCall::$reply

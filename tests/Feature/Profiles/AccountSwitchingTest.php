@@ -17,6 +17,7 @@ use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Exceptions\AccountLabelInvalid;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
+use App\Profiles\Exceptions\AccountNameChanged;
 use App\Profiles\Exceptions\AccountSelectionChanged;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
@@ -112,6 +113,23 @@ final class AccountSwitchingTest extends TestCase
         $this->assertSame('Office', $work->refresh()->label);
         $this->assertRefused(AccountLabelTaken::class, new RenameAccount($home->id, 'OFFICE'));
         $this->assertRefused(AccountLabelInvalid::class, new RenameAccount($home->id, '../etc'));
+    }
+
+    public function test_two_tabs_renaming_one_account_refuse_the_second_until_it_saves_again(): void
+    {
+        $work = $this->account('Work');
+
+        $this->bus()->run(new RenameAccount($work->id, 'Office', 0));
+        $this->assertRefused(AccountNameChanged::class, new RenameAccount($work->id, 'Desk', 0));
+
+        $work->refresh();
+        $this->assertSame(['Office', 1], [$work->label, $work->name_revision]);
+        $this->bus()->run(new RenameAccount($work->id, 'Desk', 1));
+        $this->assertSame(['Desk', 2], [$work->refresh()->label, $work->name_revision]);
+
+        $work->forceFill(['checked_at' => now()])->save();
+        $this->bus()->run(new RenameAccount($work->id, 'Desk', 2));
+        $this->assertSame(2, $work->refresh()->name_revision);
     }
 
     public function test_an_agent_can_neither_switch_nor_rename(): void

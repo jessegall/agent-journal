@@ -17,7 +17,10 @@ final class RenameAccountRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['label' => ['required', 'string', 'max:'.AccountLabel::LENGTH_LIMIT]];
+        return [
+            'label' => ['required', 'string', 'max:'.AccountLabel::LENGTH_LIMIT],
+            'seenRevision' => ['nullable', 'integer', 'min:0'],
+        ];
     }
 
     /**
@@ -33,6 +36,14 @@ final class RenameAccountRequest extends FormRequest
     public function accountId(): string
     {
         return (string) $this->route('account');
+    }
+
+    /**
+     * The name revision the page showed, so a name renamed meanwhile is not overwritten unseen.
+     */
+    public function seenRevision(): int|null
+    {
+        return $this->filled('seenRevision') ? $this->integer('seenRevision') : null;
     }
 
     public function label(): string

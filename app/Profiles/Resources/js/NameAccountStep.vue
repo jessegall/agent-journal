@@ -20,7 +20,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ named: [] }>();
 
-const { naming, canSave, startFrom, save } = useAccountNaming(
+const { naming, refusal, canSave, startFrom, save } = useAccountNaming(
     () => props.account,
 );
 const fieldId = computed(() => `new-account-name-${props.account.id}`);
@@ -61,7 +61,7 @@ function saveOrSkip(): void {
             v-model="naming.label"
             label="Name"
             :maxlength="80"
-            :error="naming.errors.label"
+            :error="refusal"
             hint="You can change it later from the list."
         />
     </form>

@@ -153,6 +153,7 @@ function accountRow(id: string, label: string): AccountRowData {
         awaitsCleanupRetry: false,
         isHeldForCheck: false,
         isCheckInconclusive: false,
+        nameRevision: 0,
         recentStarts: [],
     };
 }

@@ -101,6 +101,7 @@ function account(overrides: Partial<AccountRowData> = {}): AccountRowData {
         awaitsCleanupRetry: false,
         isHeldForCheck: false,
         isCheckInconclusive: false,
+        nameRevision: 0,
         recentStarts: [],
         ...overrides,
     };

@@ -3,7 +3,7 @@ import type { AccountListData } from '@generated/types/accounts';
 import type { WindowResult } from '@kit/PageTypes';
 import { useForm } from '@inertiajs/vue3';
 import { formSendingHooks } from '@kit/usePageChanges';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 /**
  * How long Saved shows after a name was saved.
@@ -12,10 +12,28 @@ const SAVED_MILLISECONDS = 2000;
 
 /**
  * The form that names an account, shared by the rename dialog and the wizard's naming step: it holds the name, can
- * save only a changed name that is not empty, and keeps the host's refusal under the field.
+ * save only a changed name that is not empty, sends the name revision it was shown so a rename made meanwhile is not
+ * overwritten, and keeps the host's refusal under the field.
  */
-export function useAccountNaming(account: () => { id: string; label: string }) {
+export function useAccountNaming(
+    account: () => { id: string; label: string; nameRevision: number },
+) {
     const naming = useForm({ label: account().label });
+
+    /**
+     * Why the name was not saved, under the field: the name itself, or a rename made meanwhile, which keeps the draft
+     * and names the name now saved; an edit clears it.
+     */
+    const refusal = computed(
+        () =>
+            naming.errors.label ??
+            (naming.errors as Record<string, string | undefined>).command,
+    );
+
+    watch(
+        () => naming.label,
+        () => naming.clearErrors(),
+    );
     // Whether the name was just saved, shown at the field's end for a moment.
     const saved = ref(false);
 
@@ -48,10 +66,11 @@ export function useAccountNaming(account: () => { id: string; label: string }) {
      * is out and puts the old one back when it is refused.
      */
     function save(onSaved: () => void): void {
-        const id = account().id;
+        const { id, nameRevision } = account();
         const label = naming.label.trim();
 
         naming
+            .transform(() => ({ label, seenRevision: nameRevision }))
             .optimistic<{ page: WindowResult<AccountListData> }>((props) =>
                 renamedIn(props.page, id, label),
             )
@@ -69,7 +88,7 @@ export function useAccountNaming(account: () => { id: string; label: string }) {
             });
     }
 
-    return { naming, canSave, saved, revert, startFrom, save };
+    return { naming, refusal, canSave, saved, revert, startFrom, save };
 }
 
 /**

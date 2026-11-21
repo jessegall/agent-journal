@@ -20,7 +20,7 @@ final readonly class RenameAccountController
         CommandBus $commands,
         Redirector $redirect,
     ): RedirectResponse {
-        $commands->run(new RenameAccount($request->accountId(), $request->label()));
+        $commands->run(new RenameAccount($request->accountId(), $request->label(), $request->seenRevision()));
 
         return $redirect->back(303);
     }
