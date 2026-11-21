@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -120,6 +121,24 @@ final class HelperJob extends Model implements Assignable, ReadableModel
             ->where('helper_identity_id', $identity->id)
             ->whereIn('helper_purpose_id', HelperPurpose::sameAs($purpose)->select('id'))
             ->exists();
+    }
+
+    /**
+     * The newest jobs of every helper, at most the limit, newest first.
+     *
+     * @return Collection<int, self>
+     */
+    public static function newest(int $limit): Collection
+    {
+        return self::query()->acrossActors()->latest()->orderByDesc('id')->limit($limit)->get();
+    }
+
+    /**
+     * How many jobs of every helper are not yet finished, cancelled or failed.
+     */
+    public static function openCount(): int
+    {
+        return self::query()->acrossActors()->open()->count();
     }
 
     // ----------[ Mutations ]----------

@@ -2910,6 +2910,7 @@ class	HelperJobAssignments
 class	HelperJobFinished
 class	HelperJobNamed
 class	HelperJobUnfinished
+class	HelperJobsLayoutResolver
 class	HelperLaunchUncertain
 class	HelperLifecycleEntry
 class	HelperMessage
@@ -6428,6 +6429,7 @@ constant	HelperDispatch::NEW_HELPER_REASON
 constant	HelperDispatch::OWN_HELPER_REASON
 constant	HelperIdentity::FIXED_COLUMNS
 constant	HelperJob::LINK_TYPE
+constant	HelperJobsLayoutResolver::JOB_LIMIT
 constant	HelperLifecycleEntry::NAME
 constant	HelperNotice::DELIVERED_LIMIT
 constant	HelperNotices::NOTICE_LIMIT
@@ -13245,8 +13247,10 @@ method	HelperJob::isFinished()
 method	HelperJob::launch()
 method	HelperJob::markUnfinished()
 method	HelperJob::moveTo()
+method	HelperJob::newest()
 method	HelperJob::ofIdentities()
 method	HelperJob::open()
+method	HelperJob::openCount()
 method	HelperJob::receipt()
 method	HelperJob::reopenForAttempt()
 method	HelperJob::reopenForRepair()
@@ -13259,6 +13263,7 @@ method	HelperJobAssignments::visibleRecords()
 method	HelperJobFinished::forJob()
 method	HelperJobNamed::__construct()
 method	HelperJobUnfinished::onJob()
+method	HelperJobsLayoutResolver::read()
 method	HelperLaunchUncertain::forIdentity()
 method	HelperMessage::create()
 method	HelperNotice::casts()
@@ -13322,6 +13327,7 @@ method	HelpersDomain::exports()
 method	HelpersDomain::internalAssignables()
 method	HelpersDomain::mcpResources()
 method	HelpersDomain::overviewContributions()
+method	HelpersDomain::pages()
 method	HelpersDomain::policies()
 method	HelpersDomain::requires()
 method	HelpersDomain::searchContributions()
@@ -13917,6 +13923,7 @@ method	JobPermissionReader::isVisible()
 method	JobPermissionReader::profileKey()
 method	JobState::isFinal()
 method	JobState::isLive()
+method	JobState::label()
 method	JobStopEvidence::openJob()
 method	JobStopEvidence::referenceOf()
 method	JoinTargetData::__construct()
@@ -35852,6 +35859,7 @@ variable	$issuerIsOwner
 variable	$item
 variable	$item	app/Bus/Support/CommandGrammar.php
 variable	$job
+variable	$jobs
 variable	$join
 variable	$joined
 variable	$joins
@@ -36081,6 +36089,7 @@ variable	$oldest
 variable	$omitted
 variable	$oneLine
 variable	$open
+variable	$openCount
 variable	$openField
 variable	$openKey
 variable	$openKeys

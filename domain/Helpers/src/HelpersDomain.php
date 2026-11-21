@@ -15,6 +15,9 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Operations\Enums\AccessType;
+use App\Ui\Contracts\PageProvider;
+use App\Ui\Declarations\Page;
+use App\Ui\Enums\Icon;
 use Domain\Helpers\Commands\CancelHelperJob;
 use Domain\Helpers\Commands\ContinueHelper;
 use Domain\Helpers\Commands\SendHelper;
@@ -35,6 +38,7 @@ use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Resolvers\HelperJobAssignments;
+use Domain\Helpers\Resolvers\HelperJobsLayoutResolver;
 use Domain\Helpers\Support\HelperReceipt;
 use Domain\Helpers\Support\HelperWork;
 use Domain\Helpers\Support\JobLaunch;
@@ -44,9 +48,18 @@ final class HelpersDomain extends Domain implements
     CommandProvider,
     InternalAssignableContributor,
     McpToolProvider,
+    PageProvider,
     PolicyProvider
 {
     use HasAssignables;
+
+    /**
+     * @return list<Page>
+     */
+    public function pages(): array
+    {
+        return [Page::layout('jobs', 'Helper jobs', Icon::Activity, HelperJobsLayoutResolver::class)->at('jobs')];
+    }
 
     public function description(): string
     {
