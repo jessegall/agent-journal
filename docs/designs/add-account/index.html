@@ -144,6 +144,7 @@ code{font-family:var(--font-mono);font-size:11px}
 .list .who{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .list .who .name{font-size:var(--t-card);line-height:20px;color:var(--text);overflow-wrap:anywhere}
 .list .who .sub{font-size:var(--t-small);color:var(--text-3)}
+.list .who .desc{font-size:var(--t-small);color:var(--text-2);line-height:1.5}
 .empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 24px;text-align:center;border-top:1px solid var(--line)}
 .empty .t{font-size:var(--t-card);color:var(--text-2)}
 .empty .s{font-size:var(--t-small);color:var(--text-3);max-width:42ch}
@@ -219,22 +220,22 @@ addresses wrap rather than being cut short. One header button replaces the two p
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
       <ul class="list">
         <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div><span class="plain">Signed in</span></li>
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">Claude Code API key</span><span class="sub">Claude Code · Billed to your API account</span></div><span class="plain">Signed in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">Claude Code API key</span><span class="sub">Claude Code · Pay per use</span></div><span class="plain">Signed in</span></li>
         <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Codex · Subscription · Default</span></div><span class="plain">Signed in</span></li>
-        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name">Codex API key</span><span class="sub">Codex · Billed to your API account</span></div><span class="plain">Needs sign-in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name">Codex API key</span><span class="sub">Codex · Pay per use</span><span class="desc">This key stopped working on 18 Nov. Add a new key to keep using it.</span></div><span class="plain">Expired</span></li>
       </ul>
     </div></div></div>
   <div class="frame"><div class="cap"><b>1b</b>No accounts yet</div>
     <div class="stage win-stage"><div class="win">
       <div class="ph"><h3>Accounts</h3><span class="count">0</span><span class="gap"></span>
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
-      <div class="empty"><span class="t">No saved accounts yet</span><span class="s">Add a Claude Code or Codex account to let agents start with it.</span>
+      <div class="empty"><span class="t">No accounts yet</span><span class="s">Add a Claude Code or Codex account so agents can use it.</span>
         <button class="btn primary normal"><span class="plus">+</span>Add account</button></div>
     </div></div></div>
   <div class="frame"><div class="cap"><b>1c</b>A sign-in still waits (the modal was closed or the page reloaded)</div>
     <div class="stage win-stage"><div class="win">
       <div class="ph"><h3>Accounts</h3><span class="count">1</span><span class="gap"></span>
-        <div class="acts"><button class="btn bordered small"><span class="spin tiny"></span>Sign-in waiting · Resume</button>
+        <div class="acts"><button class="btn bordered small"><span class="spin tiny"></span>Finish signing in</button>
         <button class="btn primary small" disabled><span class="plus">+</span>Add account</button></div></div>
       <ul class="list">
         <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div><span class="plain">Signed in</span></li>
@@ -256,11 +257,11 @@ user, and what it bills in grey text on the right.</p>
         <div class="seg"><span class="on"><svg class="mk s14" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code</span><span><svg class="mk s14" aria-hidden="true"><use href="#m-codex"/></svg>Codex</span></div>
         <div class="cards">
           <div class="card on"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Sign in with Claude</span><span class="plain">Subscription</span></div>
-            <span class="d">Opens Claude's sign-in page. You sign in there and paste back the code it shows.</span></div>
-          <div class="card"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Provider token</span><span class="plain">Subscription</span></div>
-            <span class="d">Paste a long-lived token made with <code>claude setup-token</code>. Suits a server.</span></div>
+            <span class="d">Sign in on Claude's site, then paste the code it gives you.</span></div>
+          <div class="card"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Setup token</span><span class="plain">Subscription</span></div>
+            <span class="d">Paste a token from <code>claude setup-token</code>. Good for servers; it lasts a long time.</span></div>
           <div class="card"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">API key</span><span class="plain">Pay per use</span></div>
-            <span class="d">Paste a key from the Anthropic Console. Every request is billed to that API account.</span></div>
+            <span class="d">Paste a key from the Anthropic Console. You pay for what agents use.</span></div>
         </div>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal">Cancel</button><button class="btn primary normal">Continue</button></div>
@@ -272,12 +273,12 @@ user, and what it bills in grey text on the right.</p>
         <div class="seg"><span><svg class="mk s14" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code</span><span class="on"><svg class="mk s14" aria-hidden="true"><use href="#m-codex"/></svg>Codex</span></div>
         <div class="cards">
           <div class="card"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">Sign in with ChatGPT</span><span class="plain">Subscription</span></div>
-            <span class="d">Shows a short code. You enter it on OpenAI's page, and the account appears here by itself.</span></div>
+            <span class="d">Enter a short code on OpenAI's site. The rest happens by itself.</span></div>
           <div class="card"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">API key</span><span class="plain">Pay per use</span></div>
-            <span class="d">Paste a key from the OpenAI platform. Every request is billed to that API account.</span></div>
+            <span class="d">Paste a key from the OpenAI platform. You pay for what agents use.</span></div>
         </div>
         <div class="spacer"></div>
-        <p class="foot-note">Choose a way to sign in to continue.</p>
+        <p class="foot-note">Pick one to continue.</p>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal">Cancel</button><button class="btn primary normal" disabled>Continue</button></div>
     </div></div></div>
@@ -286,11 +287,11 @@ user, and what it bills in grey text on the right.</p>
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body compact">
         <div class="group"><svg class="mk s12 dim" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code</div>
-        <div class="card on"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Sign in with Claude</span><span class="plain">Subscription</span></div><span class="d">Sign in on Claude's page and paste back its code.</span></div>
-        <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Provider token</span><span class="plain">Subscription</span></div><span class="d">Paste a token made with <code>claude setup-token</code>.</span></div>
+        <div class="card on"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Sign in with Claude</span><span class="plain">Subscription</span></div><span class="d">Sign in on Claude's site and paste the code.</span></div>
+        <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Setup token</span><span class="plain">Subscription</span></div><span class="d">Paste a token from <code>claude setup-token</code>.</span></div>
         <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">API key</span><span class="plain">Pay per use</span></div><span class="d">Paste a key from the Anthropic Console.</span></div>
         <div class="group"><svg class="mk s12 dim" aria-hidden="true"><use href="#m-codex"/></svg>Codex</div>
-        <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">Sign in with ChatGPT</span><span class="plain">Subscription</span></div><span class="d">Enter a short code on OpenAI's page.</span></div>
+        <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">Sign in with ChatGPT</span><span class="plain">Subscription</span></div><span class="d">Enter a short code on OpenAI's site.</span></div>
         <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">API key</span><span class="plain">Pay per use</span></div><span class="d">Paste a key from the OpenAI platform.</span></div>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal">Cancel</button><button class="btn primary normal">Continue</button></div>
@@ -309,7 +310,7 @@ moves the button.</p>
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
-        <div class="center"><span class="spin big"></span><p>Starting the sign-in…</p></div>
+        <div class="center"><span class="spin big"></span><p>Getting the sign-in page…</p></div>
       </div>
       <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal" disabled>Send code</button></div>
     </div></div></div>
@@ -318,11 +319,11 @@ moves the button.</p>
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
-        <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code the page shows when you are done.</li><li>Paste it below and send it.</li></ol>
+        <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code it shows at the end.</li><li>Paste it here.</li></ol>
         <div class="linkbox"><span class="host">claude.ai <span>· sign-in page</span></span><button class="btn small">Copy link</button><button class="btn bordered small">Open ↗</button></div>
-        <div class="field"><label>Code from the sign-in page</label><input class="code focus" value="QF7KX2"><span class="under">One piece of text, without spaces.</span></div>
+        <div class="field"><label>Code from the sign-in page</label><input class="code focus" value="QF7KX2"><span class="under">The code has no spaces.</span></div>
         <div class="spacer"></div>
-        <p class="foot-note">You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.</p>
+        <p class="foot-note">You can close this and come back with Finish signing in.</p>
       </div>
       <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal">Send code</button></div>
     </div></div></div>
@@ -331,11 +332,11 @@ moves the button.</p>
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
-        <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code the page shows when you are done.</li><li>Paste it below and send it.</li></ol>
+        <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code it shows at the end.</li><li>Paste it here.</li></ol>
         <div class="linkbox"><span class="host">claude.ai <span>· sign-in page</span></span><button class="btn small">Copy link</button><button class="btn bordered small">Open ↗</button></div>
-        <div class="field"><label>Code from the sign-in page</label><input class="code bad" value="UNABLE TO CONNECT"><span class="under err">This is not a sign-in code: it has spaces. Paste the sign-in code again.</span></div>
+        <div class="field"><label>Code from the sign-in page</label><input class="code bad" value="UNABLE TO CONNECT"><span class="under err">That isn't the code: it has spaces. Copy it again and paste it.</span></div>
         <div class="spacer"></div>
-        <p class="foot-note">You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.</p>
+        <p class="foot-note">You can close this and come back with Finish signing in.</p>
       </div>
       <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal">Send code</button></div>
     </div></div></div>
@@ -344,11 +345,11 @@ moves the button.</p>
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg>Codex ·<b>Sign in with ChatGPT</b><span class="plain">Subscription</span></div>
-        <ol class="ol"><li>Open OpenAI's page and sign in with ChatGPT.</li><li>Enter this code there when it asks.</li></ol>
+        <ol class="ol"><li>Open OpenAI's page and sign in with ChatGPT.</li><li>Enter this code when it asks.</li></ol>
         <div class="devcode">K7QD-3XMP</div>
         <div class="linkbox"><span class="host">auth.openai.com <span>· device sign-in</span></span><button class="btn small">Copy code</button><button class="btn bordered small">Open ↗</button></div>
         <div class="spacer"></div>
-        <div class="status"><span class="spin"></span>Waiting for you to finish on OpenAI's page…</div>
+        <div class="status"><span class="spin"></span>Waiting for you on OpenAI's site…</div>
       </div>
       <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><span class="plain" style="padding-right:8px">Moves on by itself</span></div>
     </div></div></div>
@@ -356,11 +357,11 @@ moves the button.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>Provider token</b><span class="plain">Subscription</span></div>
-        <div class="where"><b>Where to get it.</b> On a computer where you are signed in to Claude Code, run <code>claude setup-token</code> in a terminal and copy the token it prints.</div>
-        <div class="field"><label>Provider token</label><input type="password" class="focus" value="••••••••••••••••••••••••"><span class="under">Kept on the host only and never shown again.</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>Setup token</b><span class="plain">Subscription</span></div>
+        <div class="where"><b>Where to get it.</b> On a computer that's signed in to Claude Code, run <code>claude setup-token</code> and copy the token it prints.</div>
+        <div class="field"><label>Setup token</label><input type="password" class="focus" value="••••••••••••••••••••••••"><span class="under">Saved on this server only. You won't see it again.</span></div>
         <div class="spacer"></div>
-        <p class="foot-note">Uses your subscription, through a long-lived token provided by Anthropic.</p>
+        <p class="foot-note">Uses your Claude subscription.</p>
       </div>
       <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal">Add account</button></div>
     </div></div></div>
@@ -369,11 +370,11 @@ moves the button.</p>
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>API key</b><span class="plain">Pay per use</span></div>
-        <div class="where"><b>Where to get it.</b> In the Anthropic Console, open API keys and create a key. Copy it right away: the Console shows it only once.
-          <br><span style="color:var(--text-3)">Codex: on the OpenAI platform, open API keys and create a secret key.</span></div>
-        <div class="field"><label>API key</label><input type="password" value=""><span class="under">Kept on the host only and never shown again.</span></div>
+        <div class="where"><b>Where to get it.</b> In the Anthropic Console, go to API keys and make a new one. Copy it right away; you only see it once.
+          <br><span style="color:var(--text-3)">Codex: on the OpenAI platform, go to API keys and make a new one.</span></div>
+        <div class="field"><label>API key</label><input type="password" value=""><span class="under">Saved on this server only. You won't see it again.</span></div>
         <div class="spacer"></div>
-        <p class="foot-note">Billed to your API account: every request an agent makes is paid as API usage.</p>
+        <p class="foot-note">You pay for what agents use.</p>
       </div>
       <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal" disabled>Add account</button></div>
     </div></div></div>
@@ -391,7 +392,7 @@ The done mark is blue; the other marks are grey.</p>
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
-        <div class="center" role="status"><span class="spin big"></span><h4>Checking the sign-in with Claude Code…</h4><p>This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.</p></div>
+        <div class="center" role="status"><span class="spin big"></span><h4>Checking the sign-in with Claude Code…</h4><p>This takes a few seconds. You can close this; the account shows up in your list.</p></div>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal">Close</button></div>
     </div></div></div>
@@ -400,7 +401,7 @@ The done mark is blue; the other marks are grey.</p>
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
-        <div class="center"><span class="mark done">✓</span><h4>Account added</h4><p><b style="color:var(--text);font-weight:500;overflow-wrap:anywhere">jesse.gall@transport-planning.example.com</b> is saved as a Claude Code account. New Claude Code starts use it, since it is the only one.</p></div>
+        <div class="center"><span class="mark done">✓</span><h4>Account added</h4><p><b style="color:var(--text);font-weight:500;overflow-wrap:anywhere">jesse.gall@transport-planning.example.com</b> is ready. It's your default for Claude Code.</p></div>
       </div>
       <div class="m-foot"><button class="btn normal">Add another</button><span class="gap"></span><button class="btn primary normal">Done</button></div>
     </div></div></div>
@@ -409,18 +410,18 @@ The done mark is blue; the other marks are grey.</p>
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
-        <div class="center"><span class="mark grey">!</span><h4>The sign-in did not finish.</h4><p>Nothing was saved. Start again for a new sign-in page, or choose another way to sign in.</p></div>
+        <div class="center"><span class="mark grey">!</span><h4>Sign-in didn't finish</h4><p>Nothing was saved. Try again, or pick another way to sign in.</p></div>
       </div>
-      <div class="m-foot"><button class="btn normal">Choose another way</button><span class="gap"></span><button class="btn primary normal">Start again</button></div>
+      <div class="m-foot"><button class="btn normal">Another way</button><span class="gap"></span><button class="btn primary normal">Try again</button></div>
     </div></div></div>
   <div class="frame"><div class="cap"><b>4d</b>Already added (state <code>already_added</code>)</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg>Codex ·<b>Sign in with ChatGPT</b><span class="plain">Subscription</span></div>
-        <div class="center"><span class="mark grey">=</span><h4>This account is already added.</h4><p>It is <b style="color:var(--text);font-weight:500;overflow-wrap:anywhere">jesse.gall@transport-planning.example.com</b> in the list. To renew its login, use Sign in again on its row.</p></div>
+        <div class="center"><span class="mark grey">=</span><h4>Already added</h4><p>It's<b style="color:var(--text);font-weight:500;overflow-wrap:anywhere">jesse.gall@transport-planning.example.com</b> in your list.</p></div>
       </div>
-      <div class="m-foot"><button class="btn normal">Choose another way</button><span class="gap"></span><button class="btn primary normal">Show the account</button></div>
+      <div class="m-foot"><button class="btn normal">Another way</button><span class="gap"></span><button class="btn primary normal">Show it</button></div>
     </div></div></div>
 </div>
 <table class="st" style="margin-top:24px">
@@ -448,9 +449,9 @@ asks once, inside the same frame; in steps one and three the modal just closes. 
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
         <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
-        <div class="center"><span class="mark grey">?</span><h4>Keep the sign-in waiting?</h4><p>It waits on the host until it expires. Resume it from the Accounts header, or cancel it now.</p></div>
+        <div class="center"><span class="mark grey">?</span><h4>Finish later?</h4><p>You can come back with Finish signing in for a while, or stop now.</p></div>
       </div>
-      <div class="m-foot"><button class="btn normal">← Stay</button><span class="gap"></span><button class="btn bordered normal">Cancel sign-in</button><button class="btn primary normal">Keep waiting</button></div>
+      <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn bordered normal">Stop</button><button class="btn primary normal">Finish later</button></div>
     </div></div></div>
 </div>
 
@@ -459,7 +460,7 @@ asks once, inside the same frame; in steps one and three the modal just closes. 
 <p class="note">The whole row takes the <code>--hover</code> background when the pointer is over it. Its actions sit on the right, level with
 the name, and fade in on hover or when keyboard focus is inside the row. Their room is always kept, so nothing shifts when they appear. A
 pencil appears right after the name and opens the rename dialog; it replaces the Rename text button, so there is one way to rename. The
-actions are <b>Use for new starts</b> (only on a signed-in account not chosen yet) and <b>Remove</b>. <b>Sign in again</b> is
+actions are <b>Make default</b> (only on a signed-in account not chosen yet) and <b>Remove</b>. <b>Sign in again</b> is
 shown only on an account whose state is <code>needs_sign_in</code>, always visible because it is what the row needs, and opens the wizard at
 step two with the account's program and method. Status stays grey text. The rows here are live: hover them.</p>
 <div class="grid">
@@ -474,8 +475,8 @@ step two with the account's program and method. Status stays grey text. The rows
           <div class="acts-row"><button class="btn danger small hide">Remove</button><span class="plain">Signed in</span></div></li>
         <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>
           <div class="who"><div class="name-line"><span class="name">Claude Code API key</span><button class="pencil" aria-label="Rename"><svg><use href="#i-pencil"/></svg></button></div>
-            <span class="sub">Claude Code · Billed to your API account</span></div>
-          <div class="acts-row"><button class="btn bordered small hide">Use for new starts</button><button class="btn danger small hide">Remove</button><span class="plain">Signed in</span></div></li>
+            <span class="sub">Claude Code · Pay per use</span></div>
+          <div class="acts-row"><button class="btn bordered small hide">Make default</button><button class="btn danger small hide">Remove</button><span class="plain">Signed in</span></div></li>
         <li class="foc"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg>
           <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="pencil ring" aria-label="Rename"><svg><use href="#i-pencil"/></svg></button></div>
             <span class="sub">Codex · Subscription · Default</span></div>
@@ -489,11 +490,11 @@ step two with the account's program and method. Status stays grey text. The rows
       <ul class="list acting">
         <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg>
           <div class="who"><div class="name-line"><span class="name">jesse.gall@transport-planning.example.com</span><button class="pencil" aria-label="Rename"><svg><use href="#i-pencil"/></svg></button></div>
-            <span class="sub">Codex · Uses your subscription · Its login expired on 18 Nov 2026</span></div>
-          <div class="acts-row"><button class="btn danger small hide">Remove</button><button class="btn primary small">Sign in again</button><span class="plain">Needs sign-in</span></div></li>
+            <span class="sub">Codex · Subscription</span><span class="desc">Expired on 18 Nov. Sign in again to keep using it.</span></div>
+          <div class="acts-row"><button class="btn danger small hide">Remove</button><button class="btn primary small">Sign in again</button><span class="plain">Expired</span></div></li>
         <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>
           <div class="who"><div class="name-line"><span class="name">Claude Code API key</span></div>
-            <span class="sub">Claude Code · Removed once its 2 running starts end, then its folder is deleted</span></div>
+            <span class="sub">Claude Code · Pay per use</span><span class="desc">2 agents are still using it. It goes away when they finish.</span></div>
           <div class="acts-row"><span class="spin tiny"></span><span class="plain">Removing</span></div></li>
       </ul>
     </div></div></div>
@@ -501,7 +502,7 @@ step two with the account's program and method. Status stays grey text. The rows
 <table class="st" style="margin-top:24px">
   <tr><th>Account state</th><th>Pencil</th><th>On hover or focus</th><th>Always shown</th></tr>
   <tr><td><code>signed_in</code>, chosen</td><td>yes</td><td>Remove</td><td>Signed in</td></tr>
-  <tr><td><code>signed_in</code>, not chosen</td><td>yes</td><td>Use for new starts · Remove</td><td>Signed in</td></tr>
+  <tr><td><code>signed_in</code>, not chosen</td><td>yes</td><td>Make default · Remove</td><td>Signed in</td></tr>
   <tr><td><code>needs_sign_in</code></td><td>yes</td><td>Remove</td><td>Sign in again (primary) · Needs sign-in</td></tr>
   <tr><td><code>removing</code></td><td>no</td><td>nothing</td><td>spinner · Removing, and why it waits in the subtext</td></tr>
   <tr><td><code>removed</code></td><td>no</td><td>nothing</td><td>the row leaves the list on the next reload</td></tr>
@@ -518,7 +519,7 @@ dialog closes and the row shows the new name.</p>
     <div class="stage" style="min-height:0"><div class="modal sm">
       <div class="m-head"><h3>Rename account</h3><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="field"><label>Name</label><input class="focus" value="Claude Code API key" style="background:color-mix(in srgb,var(--brand-dim) 70%,transparent)"><span class="under">Shown in the list and wherever a start names its account.</span></div>
+        <div class="field"><label>Name</label><input class="focus" value="Claude Code API key" style="background:color-mix(in srgb,var(--brand-dim) 70%,transparent)"><span class="under">This is the name you see everywhere.</span></div>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal">Cancel</button><button class="btn primary normal" disabled>Save</button></div>
     </div></div></div>
@@ -526,7 +527,7 @@ dialog closes and the row shows the new name.</p>
     <div class="stage" style="min-height:0"><div class="modal sm">
       <div class="m-head"><h3>Rename account</h3><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="field"><label>Name</label><input class="bad" value="Team / shared key"><span class="under err">An account name is 1 to 80 characters with no control character or slash; "Team / shared key" is not.</span></div>
+        <div class="field"><label>Name</label><input class="bad" value="Team / shared key"><span class="under err">A name can't have a slash in it.</span></div>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal">Cancel</button><button class="btn primary normal">Save</button></div>
     </div></div></div>
@@ -534,7 +535,7 @@ dialog closes and the row shows the new name.</p>
     <div class="stage" style="min-height:0"><div class="modal sm">
       <div class="m-head"><h3>Rename account</h3><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="field"><label>Name</label><input value="Team API key" disabled style="opacity:.6"><span class="under">Shown in the list and wherever a start names its account.</span></div>
+        <div class="field"><label>Name</label><input value="Team API key" disabled style="opacity:.6"><span class="under">This is the name you see everywhere.</span></div>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal" disabled>Cancel</button><button class="btn primary normal" disabled><span class="spin tiny"></span>Saving</button></div>
     </div></div></div>
@@ -550,8 +551,8 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
     <div class="stage" style="min-height:0"><div class="modal sm">
       <div class="m-head"><h3>Remove account</h3><button class="btn icon">✕</button></div>
       <div class="m-body tall">
-        <div class="who-line"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div><div class="n">jesse.gall@transport-planning.example.com</div><div class="s">Codex · Uses your subscription</div></div></div>
-        <p class="dialog-text">It signs out and its folder is deleted once its work has ended. New starts can no longer use it.</p>
+        <div class="who-line"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div><div class="n">jesse.gall@transport-planning.example.com</div><div class="s">Codex · Subscription</div></div></div>
+        <p class="dialog-text">This signs it out. Agents can't use it anymore, and its files are deleted.</p>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal ring">Cancel</button><button class="btn danger normal">Remove</button></div>
     </div></div></div>
@@ -559,8 +560,8 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
     <div class="stage" style="min-height:0"><div class="modal sm">
       <div class="m-head"><h3>Remove account</h3><button class="btn icon">✕</button></div>
       <div class="m-body tall">
-        <div class="who-line"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div><div class="n">Claude Code API key</div><div class="s">Claude Code · Billed to your API account</div></div></div>
-        <p class="dialog-text">It signs out and its folder is deleted once its work has ended. <b>2 starts</b> are running on it now; they finish first, and new starts can no longer use it.</p>
+        <div class="who-line"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div><div class="n">Claude Code API key</div><div class="s">Claude Code · Pay per use</div></div></div>
+        <p class="dialog-text">This signs it out and deletes its files. <b>2 agents</b> are still using it; it goes away when they finish.</p>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal ring">Cancel</button><button class="btn danger normal">Remove</button></div>
     </div></div></div>
@@ -568,8 +569,8 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
     <div class="stage" style="min-height:0"><div class="modal sm">
       <div class="m-head"><h3>Remove account</h3><button class="btn icon">✕</button></div>
       <div class="m-body tall">
-        <div class="who-line"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div><div class="n">Claude Code API key</div><div class="s">Claude Code · Billed to your API account</div></div></div>
-        <p class="dialog-text">It signs out and its folder is deleted once its work has ended. <b>2 starts</b> are running on it now; they finish first, and new starts can no longer use it.</p>
+        <div class="who-line"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div><div class="n">Claude Code API key</div><div class="s">Claude Code · Pay per use</div></div></div>
+        <p class="dialog-text">This signs it out and deletes its files. <b>2 agents</b> are still using it; it goes away when they finish.</p>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal" disabled>Cancel</button><button class="btn danger normal" disabled><span class="spin tiny"></span>Removing</button></div>
     </div></div></div>
@@ -581,7 +582,7 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
   <tr><td>Steps of different length make the modal jump</td><td>Fixed 480&nbsp;px width; a 52&nbsp;px header, 420&nbsp;px body and 52&nbsp;px footer on every step; room under each field is held for its hint or error.</td></tr>
   <tr><td>A browser error page or a sentence is pasted as the code</td><td>Refused before it reaches the program, the attempt stays live, and the field says why (3c).</td></tr>
   <tr><td>The sign-in page is slow to arrive</td><td>3a spinner while <code>readChallenge</code> polls every 2&nbsp;s; Back stays usable.</td></tr>
-  <tr><td>The modal is closed or the page reloaded mid sign-in</td><td>The attempt keeps running; “Sign-in waiting · Resume” (1c) reopens it at the right step; Add account is inactive meanwhile.</td></tr>
+  <tr><td>The modal is closed or the page reloaded mid sign-in</td><td>The attempt keeps running; “Finish signing in” (1c) reopens it at the right step; Add account is inactive meanwhile.</td></tr>
   <tr><td>The user does not see what costs money</td><td>Every card names its billing; the chosen line repeats it on every later step; the list's subtext keeps it.</td></tr>
   <tr><td>A secret shows on screen</td><td>Token and key use <code>TextField secret</code> (password input, <code>new-password</code>) and are never shown again.</td></tr>
   <tr><td>The check never ends</td><td>The attempt's expiry turns it into <code>expired</code>, shown as 4c with Start again.</td></tr>
