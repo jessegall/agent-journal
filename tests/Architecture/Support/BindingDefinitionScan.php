@@ -9,17 +9,17 @@ use Tests\Support\ScanCache\FileScan;
 /**
  * The container bindings a file registers, through an attribute or a provider call.
  *
- * @implements FileScan<BindingRegistration>
+ * @implements FileScan<BindingDefinition>
  */
-final readonly class BindingRegistrationScan implements FileScan
+final readonly class BindingDefinitionScan implements FileScan
 {
     public function key(): string
     {
-        return 'binding-registrations-2';
+        return 'binding-definitions-1';
     }
 
     public function findingsIn(ParsedFile $file): array
     {
-        return BindingRules::registrationsIn($file);
+        return BindingRules::definitionsIn($file);
     }
 }

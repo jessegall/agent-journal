@@ -6,8 +6,8 @@ namespace App\Actors\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Exceptions\GrantNotRegistered;
-use App\Actors\Exceptions\PolicyRegistrationConflict;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Exceptions\PolicyDefinitionConflict;
+use App\Actors\Values\PolicyDefinition;
 use App\Contracts\DomainAvailability;
 use App\Operations\Enums\AccessType;
 use App\Registries\Support\Registry;
@@ -20,7 +20,7 @@ use Illuminate\Container\Container;
 final class RegisteredPolicies implements PolicyCatalogue
 {
     /**
-     * @var Registry<array{string, PolicyRegistration}>
+     * @var Registry<array{string, PolicyDefinition}>
      */
     private readonly Registry $byPolicy;
 
@@ -41,32 +41,32 @@ final class RegisteredPolicies implements PolicyCatalogue
         $this->recordPolicies = Registry::replacing(GrantNotRegistered::forModel(...));
     }
 
-    public function register(string $owner, PolicyRegistration $registration): void
+    public function register(string $owner, PolicyDefinition $definition): void
     {
-        $model = $registration->model();
+        $model = $definition->model();
         $modelOwner = $this->modelOwners->find($model)->getOrElse($owner);
 
         if ($modelOwner !== $owner) {
-            throw PolicyRegistrationConflict::forModel($model, $modelOwner, $owner);
+            throw PolicyDefinitionConflict::forModel($model, $modelOwner, $owner);
         }
 
-        if ($this->byPolicy->has($registration->policy)) {
-            [$policyOwner] = $this->byPolicy->get($registration->policy);
+        if ($this->byPolicy->has($definition->policy)) {
+            [$policyOwner] = $this->byPolicy->get($definition->policy);
 
-            throw PolicyRegistrationConflict::forPolicy($registration->policy, $policyOwner, $owner);
+            throw PolicyDefinitionConflict::forPolicy($definition->policy, $policyOwner, $owner);
         }
 
-        if ($registration->isRecord() && $this->recordPolicies->has($model)) {
+        if ($definition->isRecord() && $this->recordPolicies->has($model)) {
             $recordPolicy = $this->recordPolicies->get($model);
 
-            throw PolicyRegistrationConflict::forRecordPolicy($model, $recordPolicy, $registration->policy);
+            throw PolicyDefinitionConflict::forRecordPolicy($model, $recordPolicy, $definition->policy);
         }
 
         $this->modelOwners->put($model, $owner);
-        $this->byPolicy->put($registration->policy, [$owner, $registration]);
+        $this->byPolicy->put($definition->policy, [$owner, $definition]);
 
-        if ($registration->isRecord()) {
-            $this->recordPolicies->put($model, $registration->policy);
+        if ($definition->isRecord()) {
+            $this->recordPolicies->put($model, $definition->policy);
         }
     }
 
@@ -84,14 +84,14 @@ final class RegisteredPolicies implements PolicyCatalogue
         }
     }
 
-    public function registrationOf(string $policy): PolicyRegistration
+    public function definitionOf(string $policy): PolicyDefinition
     {
         return $this->byPolicy->get($policy)[1];
     }
 
-    public function registrations(): array
+    public function definitions(): array
     {
-        return array_values(array_map(fn (array $entry): PolicyRegistration => $entry[1], $this->byPolicy->all()));
+        return array_values(array_map(fn (array $entry): PolicyDefinition => $entry[1], $this->byPolicy->all()));
     }
 
     public function grantable(): array
@@ -102,11 +102,11 @@ final class RegisteredPolicies implements PolicyCatalogue
             fn (array $entry): bool => $availability->isEnabled($entry[0]),
         );
 
-        return array_values(array_map(fn (array $entry): PolicyRegistration => $entry[1], $grantable));
+        return array_values(array_map(fn (array $entry): PolicyDefinition => $entry[1], $grantable));
     }
 
     /**
-     * @return array{string, PolicyRegistration}
+     * @return array{string, PolicyDefinition}
      *
      * @throws GrantNotRegistered
      */

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences;
 
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
@@ -41,7 +41,7 @@ final class SequencesDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(
+            new PolicyDefinition(
                 SequencePolicy::class,
                 [AccessType::Create],
             ),

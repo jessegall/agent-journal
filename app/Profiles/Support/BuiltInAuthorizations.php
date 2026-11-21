@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Values\PolicyGrant;
 use App\Profiles\Values\ProfileAuthorization;
@@ -23,17 +23,17 @@ final class BuiltInAuthorizations
     public const array ORIENTATION_READS = ['overview_read', 'capabilities_read', 'operations_read'];
 
     /**
-     * @param  list<PolicyRegistration>  $registrations
+     * @param  list<PolicyDefinition>  $definitions
      */
-    public static function for(ProfileBase $type, array $registrations = []): ProfileAuthorization
+    public static function for(ProfileBase $type, array $definitions = []): ProfileAuthorization
     {
         $grants = [];
 
-        foreach ($registrations as $registration) {
-            $accesses = $registration->accessesForAgents($type->isCoordinator(), $type->isReadOnly());
+        foreach ($definitions as $definition) {
+            $accesses = $definition->accessesForAgents($type->isCoordinator(), $type->isReadOnly());
 
             foreach (array_filter($accesses, $type->allows(...)) as $access) {
-                $grants[] = new PolicyGrant($registration->policy, $access);
+                $grants[] = new PolicyGrant($definition->policy, $access);
             }
         }
 

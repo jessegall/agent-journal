@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Actors\Contracts;
 
 use App\Actors\Exceptions\GrantNotRegistered;
-use App\Actors\Exceptions\PolicyRegistrationConflict;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Exceptions\PolicyDefinitionConflict;
+use App\Actors\Values\PolicyDefinition;
 use App\Operations\Enums\AccessType;
 
 /**
@@ -15,9 +15,9 @@ use App\Operations\Enums\AccessType;
 interface PolicyCatalogue
 {
     /**
-     * @throws PolicyRegistrationConflict
+     * @throws PolicyDefinitionConflict
      */
-    public function register(string $owner, PolicyRegistration $registration): void;
+    public function register(string $owner, PolicyDefinition $definition): void;
 
     /**
      * Refuses a pair no registered policy accepts, whether or not its owner is enabled now.
@@ -42,19 +42,19 @@ interface PolicyCatalogue
      *
      * @throws GrantNotRegistered
      */
-    public function registrationOf(string $policy): PolicyRegistration;
+    public function definitionOf(string $policy): PolicyDefinition;
 
     /**
      * Every registration, enabled owner or not, in the order they were registered.
      *
-     * @return list<PolicyRegistration>
+     * @return list<PolicyDefinition>
      */
-    public function registrations(): array;
+    public function definitions(): array;
 
     /**
      * Every registration whose owner is available now, in the order they were registered.
      *
-     * @return list<PolicyRegistration>
+     * @return list<PolicyDefinition>
      */
     public function grantable(): array;
 }

@@ -13,7 +13,7 @@ use App\Sharing\Exceptions\UnknownShareGateway;
 use App\Sharing\Exceptions\UnknownShareRecordType;
 use App\Sharing\Exceptions\UnknownShareRelation;
 use App\Sharing\Support\ShareGatewayRegistry;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use App\Sharing\Support\ShareRecordRegistry;
 use Tests\Fixtures\Domains\Flyers\FlyersDomain;
 use Tests\Fixtures\Domains\Leaflets\LeafletsDomain;
@@ -71,7 +71,7 @@ final class ShareRegistriesTest extends TestCase
 
         $this->assertThrows(
             fn () => $records->register(
-                new ShareRecordRegistration(
+                new ShareRecordDefinition(
                     'tests.thing',
                     PamphletShareProvider::class,
                     PamphletShareProvider::class,
@@ -83,14 +83,14 @@ final class ShareRegistriesTest extends TestCase
         );
         $this->assertThrows(
             fn () => $records->register(
-                new ShareRecordRegistration('tests.thing', Pamphlet::class, Pamphlet::class, []),
+                new ShareRecordDefinition('tests.thing', Pamphlet::class, Pamphlet::class, []),
             ),
             ShareRecordInvalid::class,
             'is no share record provider',
         );
         $this->assertThrows(
             fn () => $records->register(
-                new ShareRecordRegistration('Tests\\Thing', Pamphlet::class, PamphletShareProvider::class, []),
+                new ShareRecordDefinition('Tests\\Thing', Pamphlet::class, PamphletShareProvider::class, []),
             ),
             InvalidRecordIdentity::class,
         );

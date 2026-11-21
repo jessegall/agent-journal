@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Web\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Contracts\CommandRefusal;
 use App\CorePages;
@@ -100,7 +100,7 @@ final class WebServiceProvider extends ServiceProvider
     ): void {
         $policies->register(
             'Core',
-            new PolicyRegistration(PresencePolicy::class, [AccessType::Edit], ownerOnly: [AccessType::Edit]),
+            new PolicyDefinition(PresencePolicy::class, [AccessType::Edit], ownerOnly: [AccessType::Edit]),
         );
         $links->register(['web.layout' => Layout::class]);
         $this->renderRefusals($exceptions);

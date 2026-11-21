@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents;
 
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
@@ -21,7 +21,7 @@ use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareRecordContributor;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
@@ -235,13 +235,13 @@ final class DocumentsDomain extends Domain implements
     public function shareRecords(): array
     {
         return [
-            new ShareRecordRegistration(
+            new ShareRecordDefinition(
                 Document::LINK_TYPE,
                 Document::class,
                 DocumentShareProvider::class,
                 [self::SHARE_LINKED_RECORD],
             ),
-            new ShareRecordRegistration(
+            new ShareRecordDefinition(
                 Report::LINK_TYPE,
                 Report::class,
                 ReportShareProvider::class,
@@ -253,21 +253,21 @@ final class DocumentsDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(
+            new PolicyDefinition(
                 DocumentPolicy::class,
                 [AccessType::Create, AccessType::Edit],
                 notForReadOnly: [AccessType::Create, AccessType::Edit],
             ),
-            new PolicyRegistration(
+            new PolicyDefinition(
                 DocumentAdministrationPolicy::class,
                 [AccessType::Edit],
                 ownerOnly: [AccessType::Edit],
             ),
-            new PolicyRegistration(
+            new PolicyDefinition(
                 ReportPolicy::class,
                 [AccessType::Create, AccessType::Edit],
             ),
-            new PolicyRegistration(
+            new PolicyDefinition(
                 UploadPolicy::class,
                 [AccessType::Create, AccessType::Edit],
             ),

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Agents\Commands\RetireAgent;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Enums\CommandEntry;
@@ -269,10 +269,10 @@ final class CommandRegistryTest extends TestCase
     private function registryOf(array $owners): CommandRegistry
     {
         $catalogue = $this->app->make(PolicyCatalogue::class);
-        $registered = array_map(fn (PolicyRegistration $registration) => $registration->policy, $catalogue->registrations());
+        $registered = array_map(fn (PolicyDefinition $definition) => $definition->policy, $catalogue->definitions());
 
         if (! in_array(FixturePolicy::class, $registered, true)) {
-            $catalogue->register('Shop', new PolicyRegistration(FixturePolicy::class, [
+            $catalogue->register('Shop', new PolicyDefinition(FixturePolicy::class, [
                 AccessType::Read,
                 AccessType::Create,
                 AccessType::Edit,

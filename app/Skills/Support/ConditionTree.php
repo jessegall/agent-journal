@@ -6,7 +6,7 @@ namespace App\Skills\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\AccessRequirement;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Contracts\Attributes\DecodesAnyJson;
 use App\Drivers\Values\DriverKey;
 use App\Drivers\Values\ProviderKey;
@@ -194,18 +194,18 @@ final readonly class ConditionTree
     {
         [$policy, $access] = str_contains($key, ':') ? explode(':', $key, 2) : [$key, ''];
         $accessType = AccessType::tryFrom($access);
-        $registration = array_find(
+        $definition = array_find(
             $this->policies->grantable(),
-            fn (PolicyRegistration $registration) => $registration->policy === $policy
+            fn (PolicyDefinition $definition) => $definition->policy === $policy
                 && $accessType !== null
-                && $registration->supports($accessType),
+                && $definition->supports($accessType),
         );
 
-        if ($registration === null || $accessType === null) {
+        if ($definition === null || $accessType === null) {
             throw SkillConditionInvalid::field($node->at('keys'), "names no grant an available policy accepts: {$key}");
         }
 
-        return new AccessRequirement($registration->policy, $accessType);
+        return new AccessRequirement($definition->policy, $accessType);
     }
 
     /**
@@ -270,16 +270,16 @@ final readonly class ConditionTree
             return new Named($key, $node->version, $parameters);
         }
 
-        $registration = $this->registry->registration($key);
+        $definition = $this->registry->definition($key);
 
-        if ($node->version !== $registration->version) {
-            $problem = "is {$node->version}, but {$key} is at version {$registration->version}";
+        if ($node->version !== $definition->version) {
+            $problem = "is {$node->version}, but {$key} is at version {$definition->version}";
 
             throw SkillConditionInvalid::field($node->at('version'), $problem);
         }
 
         try {
-            $conditionParameters = $registration->parameters::validateAndCreate($parameters);
+            $conditionParameters = $definition->parameters::validateAndCreate($parameters);
         } catch (ValidationException|CannotCreateData $refusal) {
             $problem = 'does not fit '.$key.': '.$refusal->getMessage();
 
@@ -288,10 +288,10 @@ final readonly class ConditionTree
 
         return new RegisteredCondition(
             $key,
-            $registration->version,
+            $definition->version,
             $parameters,
             $conditionParameters,
-            $this->container->make($registration->evaluator),
+            $this->container->make($definition->evaluator),
             $this->guard,
             $this->failures,
         );

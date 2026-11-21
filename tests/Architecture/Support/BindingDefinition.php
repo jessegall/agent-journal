@@ -7,7 +7,7 @@ namespace Tests\Architecture\Support;
 /**
  * One binding the code states: what is bound, to which class when a class-string names it, and its lifetime.
  */
-final readonly class BindingRegistration
+final readonly class BindingDefinition
 {
     public function __construct(
         public string $file,

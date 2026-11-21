@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domains\Support;
 
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Assignments\Contracts\AssignableProvider;
 use App\Assignments\Contracts\AutoAssignmentProvider;
-use App\Assignments\Support\ActivityRegistration;
-use App\Assignments\Support\AssigneeRegistration;
+use App\Assignments\Support\ActivityDefinition;
+use App\Assignments\Support\AssigneeDefinition;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 use App\Bus\Contracts\CommandMiddlewareProvider;
@@ -45,12 +45,12 @@ use App\Settings\Support\EmptySettingsDefinition;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Contracts\ShareGatewayProvider;
 use App\Sharing\Contracts\ShareRecordContributor;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillConditionEvaluator;
 use App\Skills\Contracts\SkillConditionProvider;
 use App\Skills\Contracts\SkillProvider;
-use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillConditionDefinition;
 use App\Skills\Values\SkillOwner;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
@@ -72,7 +72,7 @@ final readonly class DomainEntry
     /**
      * @param  list<class-string<Domain>>  $requires
      * @param  list<class-string<Skill>>  $skills
-     * @param  list<SkillConditionRegistration>  $skillConditions
+     * @param  list<SkillConditionDefinition>  $skillConditions
      */
     private function __construct(
         public string $name,
@@ -302,16 +302,16 @@ final readonly class DomainEntry
      * Refuses a condition registration whose key lacks the domain's prefix or comes twice, or whose parameter or
      * evaluator class is not what the contract asks.
      *
-     * @param  list<SkillConditionRegistration>  $registrations
-     * @return list<SkillConditionRegistration>
+     * @param  list<SkillConditionDefinition>  $definitions
+     * @return list<SkillConditionDefinition>
      */
-    private static function checkedSkillConditions(string $name, array $registrations): array
+    private static function checkedSkillConditions(string $name, array $definitions): array
     {
         $prefix = Str::kebab($name).'.';
         $seen = [];
 
-        foreach ($registrations as $registration) {
-            $key = $registration->key;
+        foreach ($definitions as $definition) {
+            $key = $definition->key;
             $reason = match (true) {
                 ! str_starts_with($key, $prefix) || preg_match(
                     '/^[a-z0-9]+(-[a-z0-9]+)*\.[a-z0-9]+(-[a-z0-9]+)*$/D',
@@ -319,14 +319,14 @@ final readonly class DomainEntry
                 ) !== 1 => "its key does not start with {$prefix}",
                 in_array($key, $seen, true) => 'it registers that key twice',
                 ! is_subclass_of(
-                    $registration->parameters,
+                    $definition->parameters,
                     Data::class,
                 ) => 'its parameters class is no Spatie Data class',
                 ! is_subclass_of(
-                    $registration->evaluator,
+                    $definition->evaluator,
                     SkillConditionEvaluator::class,
                 ) => 'its evaluator does not implement App\\Skills\\Contracts\\SkillConditionEvaluator',
-                $registration->version < 1 => 'its version is below 1',
+                $definition->version < 1 => 'its version is below 1',
                 default => null,
             };
 
@@ -337,14 +337,14 @@ final readonly class DomainEntry
             $seen[] = $key;
         }
 
-        return $registrations;
+        return $definitions;
     }
 
     /**
      * The named condition types this domain registers, checked when it was registered; none without
      * SkillConditionProvider.
      *
-     * @return list<SkillConditionRegistration>
+     * @return list<SkillConditionDefinition>
      */
     public function skillConditions(): array
     {
@@ -480,7 +480,7 @@ final readonly class DomainEntry
     /**
      * The records this domain lets owners share, each with its provider; none without ShareRecordContributor.
      *
-     * @return list<ShareRecordRegistration>
+     * @return list<ShareRecordDefinition>
      */
     public function shareRecords(): array
     {
@@ -492,7 +492,7 @@ final readonly class DomainEntry
     /**
      * The policies this domain registers; none without PolicyProvider.
      *
-     * @return list<PolicyRegistration>
+     * @return list<PolicyDefinition>
      */
     public function policies(): array
     {
@@ -588,7 +588,7 @@ final readonly class DomainEntry
     /**
      * The holders of records this domain adds; none when it declares no AssigneeContributor.
      *
-     * @return list<AssigneeRegistration>
+     * @return list<AssigneeDefinition>
      */
     public function assignees(): array
     {
@@ -600,7 +600,7 @@ final readonly class DomainEntry
     /**
      * Whether this domain's actors may take automatically assigned work now; none without AssigneeContributor.
      *
-     * @return list<ActivityRegistration>
+     * @return list<ActivityDefinition>
      */
     public function activities(): array
     {

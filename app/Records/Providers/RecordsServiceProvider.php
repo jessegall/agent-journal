@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Records\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Docking\Sources\Contracts\FallbackDocks;
 use App\Links\Models\Link;
 use App\Operations\Enums\AccessType;
@@ -40,7 +40,7 @@ final class RecordsServiceProvider extends ServiceProvider
     {
         $policies->register(
             'Core',
-            new PolicyRegistration(RecordLinkPolicy::class, [AccessType::Create, AccessType::Edit]),
+            new PolicyDefinition(RecordLinkPolicy::class, [AccessType::Create, AccessType::Edit]),
         );
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/links.php');
 

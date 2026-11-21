@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Docking\Sources\Contracts\DockRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
@@ -115,11 +115,11 @@ final class ProcessesServiceProvider extends ServiceProvider
     {
         $docks->offerDockFor($docks->register(ProcessRun::DOCK_TYPE, ProcessRun::class, RunDocking::class));
         $docks->offerDockFor($docks->register(OutputDocking::DOCK_TYPE, DockedOutput::class, OutputDocking::class));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             ProcessPolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute, AccessType::Test],
         ));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             ProcessAdministrationPolicy::class,
             [AccessType::Create, AccessType::Edit, AccessType::Test],
             ownerOnly: [AccessType::Create, AccessType::Edit, AccessType::Test],

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Modules\Cards;
 
 use App\Operations\Enums\AccessType;
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Bus\Contracts\CommandMiddlewareProvider;
 use App\Bus\Contracts\CommandProvider;
 use App\Bus\Support\CommandScope;
@@ -53,6 +53,6 @@ final class CardsDomain extends Domain implements CommandMiddlewareProvider, Com
 
     public function policies(): array
     {
-        return [new PolicyRegistration(DeckPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete])];
+        return [new PolicyDefinition(DeckPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete])];
     }
 }

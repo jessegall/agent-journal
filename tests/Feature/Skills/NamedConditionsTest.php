@@ -15,7 +15,7 @@ use App\Skills\Exceptions\ConditionWriteRefused;
 use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Support\ConditionRegistry;
 use App\Skills\Support\ConditionTree;
-use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillConditionDefinition;
 use App\Skills\Values\SkillContext;
 use App\Skills\Values\StartProfile;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -101,7 +101,7 @@ final class NamedConditionsTest extends TestCase
             ConditionRegistry::of(
                 [
                     'Notes' => [
-                        new SkillConditionRegistration(
+                        new SkillConditionDefinition(
                             'notes.writes',
                             1,
                             NoParameters::class,

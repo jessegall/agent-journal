@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Access;
 
 use App\Actors\Enums\ActorType;
-use App\Assignments\Support\ActivityRegistration;
-use App\Assignments\Support\AssigneeRegistration;
+use App\Assignments\Support\ActivityDefinition;
+use App\Assignments\Support\AssigneeDefinition;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Contracts\AssigneeContributor;
 use App\Domains\Support\Domain;
@@ -48,19 +48,19 @@ final class AccessDomain extends Domain implements AssigneeContributor, SkillPro
     }
 
     /**
-     * @return list<AssigneeRegistration>
+     * @return list<AssigneeDefinition>
      */
     public function assignees(): array
     {
-        return [new AssigneeRegistration(ActorType::User->value, UserAssignees::class)];
+        return [new AssigneeDefinition(ActorType::User->value, UserAssignees::class)];
     }
 
     /**
-     * @return list<ActivityRegistration>
+     * @return list<ActivityDefinition>
      */
     public function activities(): array
     {
-        return [new ActivityRegistration(ActorType::User, UserActivity::class)];
+        return [new ActivityDefinition(ActorType::User, UserActivity::class)];
     }
 
     public function skills(): array

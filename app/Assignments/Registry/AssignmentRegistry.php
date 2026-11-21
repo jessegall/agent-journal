@@ -22,8 +22,8 @@ use App\Assignments\Exceptions\AssignmentTypeInternal;
 use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\AutoAssignmentDeclarationRefused;
-use App\Assignments\Support\ActivityRegistration;
-use App\Assignments\Support\AssigneeRegistration;
+use App\Assignments\Support\ActivityDefinition;
+use App\Assignments\Support\AssigneeDefinition;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 use App\Links\Support\LinkTypeRegistry;
@@ -206,28 +206,28 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      * @throws AssigneeTypeRepeated
      * @throws AssignmentProviderInvalid
      */
-    public function registerAssignees(AssigneeRegistration $registration): void
+    public function registerAssignees(AssigneeDefinition $definition): void
     {
-        if (! is_subclass_of($registration->providerClass, AssigneeProvider::class)) {
-            throw AssignmentProviderInvalid::forAssignees($registration->type, $registration->providerClass);
+        if (! is_subclass_of($definition->providerClass, AssigneeProvider::class)) {
+            throw AssignmentProviderInvalid::forAssignees($definition->type, $definition->providerClass);
         }
 
-        $this->assigneeProviders->put($registration->type, $registration->providerClass);
+        $this->assigneeProviders->put($definition->type, $definition->providerClass);
     }
 
     /**
      * @throws AssigneeTypeRepeated
      * @throws AssignmentProviderInvalid
      */
-    public function registerActivity(ActivityRegistration $registration): void
+    public function registerActivity(ActivityDefinition $definition): void
     {
-        $type = $registration->type->value;
+        $type = $definition->type->value;
 
-        if (! is_subclass_of($registration->activityClass, AutoAssignmentActivity::class)) {
-            throw AssignmentProviderInvalid::forActivity($type, $registration->activityClass);
+        if (! is_subclass_of($definition->activityClass, AutoAssignmentActivity::class)) {
+            throw AssignmentProviderInvalid::forActivity($type, $definition->activityClass);
         }
 
-        $this->activities->put($type, $registration->activityClass);
+        $this->activities->put($type, $definition->activityClass);
     }
 
     public function assertPublic(string $type): void

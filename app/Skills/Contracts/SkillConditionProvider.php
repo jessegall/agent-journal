@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Contracts;
 
-use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillConditionDefinition;
 
 /**
  * A domain or module that supplies named condition types, such as plans.active-plan, for skills to use.
@@ -12,7 +12,7 @@ use App\Skills\Values\SkillConditionRegistration;
 interface SkillConditionProvider
 {
     /**
-     * @return list<SkillConditionRegistration>
+     * @return list<SkillConditionDefinition>
      */
     public function skillConditions(): array;
 }

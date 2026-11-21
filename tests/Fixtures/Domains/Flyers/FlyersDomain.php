@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Domains\Flyers;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Sharing\Contracts\ShareRecordContributor;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
 
 /**
@@ -32,6 +32,6 @@ final class FlyersDomain extends Domain implements ShareRecordContributor
 
     public function shareRecords(): array
     {
-        return [new ShareRecordRegistration('flyers.flyer', Flyer::class, PamphletShareProvider::class, [])];
+        return [new ShareRecordDefinition('flyers.flyer', Flyer::class, PamphletShareProvider::class, [])];
     }
 }

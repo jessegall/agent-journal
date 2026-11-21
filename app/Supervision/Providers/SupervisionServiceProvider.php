@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Supervision\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Agents\Contracts\MergeAdmission;
 use App\Autoload\Support\FolderClasses;
 use App\Engine\Support\EngineListenerSet;
@@ -74,12 +74,12 @@ final class SupervisionServiceProvider extends ServiceProvider
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('asks:recover-delivery')->everyMinute()->withoutOverlapping(),
         );
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             SupervisorPolicy::class,
             [AccessType::Edit],
             coordinatorOnly: [AccessType::Edit],
         ));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             AskPolicy::class,
             [AccessType::Edit],
         ));

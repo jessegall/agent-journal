@@ -12,7 +12,7 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Support\SystemEntryPolicies;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\AgentRequests\Console\GenerateCallsCommand;
 use App\AgentRequests\Contracts\AgentRequestClient as AgentRequestClientContract;
 use App\AgentRequests\Contracts\CallRegistrar;
@@ -113,8 +113,8 @@ use App\Agents\Values\HostCapacity;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Enums\AssignmentPurpose;
-use App\Assignments\Support\ActivityRegistration;
-use App\Assignments\Support\AssigneeRegistration;
+use App\Assignments\Support\ActivityDefinition;
+use App\Assignments\Support\AssigneeDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Contracts\StartTransaction;
 use App\Files\Contracts\Files;
@@ -260,13 +260,13 @@ final class AgentsServiceProvider extends ServiceProvider
     ): void {
         $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
         $events->listen('eloquent.booted: '.ProcessStart::class, fn () => ProcessStart::addGlobalScope($starts));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             AgentPolicy::class,
             [AccessType::Create, AccessType::Edit, AccessType::Delete],
             coordinatorOnly: [AccessType::Delete],
         ));
         $maintenance = [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute];
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             AgentMaintenancePolicy::class,
             $maintenance,
             ownerOnly: $maintenance,
@@ -283,7 +283,7 @@ final class AgentsServiceProvider extends ServiceProvider
             ...FolderClasses::in(dirname(__DIR__).'/Console', Command::class),
             GenerateCallsCommand::class,
         ]);
-        $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent->value, AgentAssignees::class));
+        $assignments->registerAssignees(new AssigneeDefinition(ActorType::Agent->value, AgentAssignees::class));
         $links->register([NavigationRequest::LINK_TYPE => NavigationRequest::class]);
         $assignments->registerOwner(self::OWNER, []);
         $assignments->registerRecord(
@@ -293,7 +293,7 @@ final class AgentsServiceProvider extends ServiceProvider
             AssignmentPurpose::InternalResponsibility,
         );
         $pendingWork->register(PendingNavigationWork::class);
-        $assignments->registerActivity(new ActivityRegistration(ActorType::Agent, AgentActivity::class));
+        $assignments->registerActivity(new ActivityDefinition(ActorType::Agent, AgentActivity::class));
         $presentActors->register(AgentSessionCounter::class);
     }
 }

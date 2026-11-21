@@ -6,7 +6,7 @@ namespace App\Actors\Exceptions;
 
 use RuntimeException;
 
-final class PolicyRegistrationConflict extends RuntimeException
+final class PolicyDefinitionConflict extends RuntimeException
 {
     public static function forModel(string $model, string $firstOwner, string $secondOwner): self
     {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans;
 
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Support\PoolDefinition;
 use App\Autoload\Support\FolderClasses;
@@ -25,7 +25,7 @@ use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
 use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareRecordContributor;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use App\Skills\Contracts\SkillProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
@@ -179,7 +179,7 @@ final class PlansDomain extends Domain implements
      */
     public function shareRecords(): array
     {
-        return [new ShareRecordRegistration(Plan::LINK_TYPE, Plan::class, PlanShareProvider::class, [])];
+        return [new ShareRecordDefinition(Plan::LINK_TYPE, Plan::class, PlanShareProvider::class, [])];
     }
 
     public function linkRecords(): array
@@ -193,7 +193,7 @@ final class PlansDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(
+            new PolicyDefinition(
                 PlanPolicy::class,
                 [AccessType::Read, AccessType::Create, AccessType::Edit],
             ),

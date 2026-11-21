@@ -15,7 +15,7 @@ use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\ShareRecordCard;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use App\Sharing\Support\ShareRelationRead;
 use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareTargetRead;
@@ -103,7 +103,7 @@ final class SharingTest extends TestCase
     public function test_both_record_types_are_registered_with_the_linked_capability_and_owned_comments(): void
     {
         $aliases = array_map(
-            fn (ShareRecordRegistration $registration) => [$registration->alias, $registration->capabilities],
+            fn (ShareRecordDefinition $definition) => [$definition->alias, $definition->capabilities],
             new DocumentsDomain()->shareRecords(),
         );
 

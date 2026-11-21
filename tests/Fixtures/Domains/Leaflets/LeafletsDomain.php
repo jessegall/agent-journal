@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Domains\Leaflets;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Sharing\Contracts\ShareRecordContributor;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use Tests\Fixtures\Domains\Pamphlets\Pamphlet;
 use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
 
@@ -33,6 +33,6 @@ final class LeafletsDomain extends Domain implements ShareRecordContributor
 
     public function shareRecords(): array
     {
-        return [new ShareRecordRegistration('pamphlets.pamphlet', Pamphlet::class, PamphletShareProvider::class, [])];
+        return [new ShareRecordDefinition('pamphlets.pamphlet', Pamphlet::class, PamphletShareProvider::class, [])];
     }
 }

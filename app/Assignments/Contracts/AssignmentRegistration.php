@@ -7,8 +7,8 @@ namespace App\Assignments\Contracts;
 use App\Assignments\Enums\AssignmentPurpose;
 use App\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
-use App\Assignments\Support\ActivityRegistration;
-use App\Assignments\Support\AssigneeRegistration;
+use App\Assignments\Support\ActivityDefinition;
+use App\Assignments\Support\AssigneeDefinition;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 
@@ -40,11 +40,11 @@ interface AssignmentRegistration
 
     public function registerPool(PoolDefinition $pool, string $owner): void;
 
-    public function registerAssignees(AssigneeRegistration $registration): void;
+    public function registerAssignees(AssigneeDefinition $definition): void;
 
     /**
      * @throws AssigneeTypeRepeated
      * @throws AssignmentProviderInvalid
      */
-    public function registerActivity(ActivityRegistration $registration): void;
+    public function registerActivity(ActivityDefinition $definition): void;
 }

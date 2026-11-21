@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Files\Enums\Place;
 use App\Hooks\Contracts\FileAccessPolicy;
@@ -79,11 +79,11 @@ final class SkillsServiceProvider extends ServiceProvider
 
     public function boot(NumberedModelRegistration $numbers, PolicyCatalogue $policies): void
     {
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             SkillPolicy::class,
             [AccessType::Read],
         ));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             SkillAuthoringPolicy::class,
             [AccessType::Create, AccessType::Edit],
             ownerOnly: [AccessType::Create, AccessType::Edit],

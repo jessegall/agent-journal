@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
@@ -47,12 +47,12 @@ final class SharingServiceProvider extends ServiceProvider
         NumberedModelRegistration $numbers,
         PolicyCatalogue $policies,
     ): void {
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             SharingPolicy::class,
             [AccessType::Create, AccessType::Edit],
             ownerOnly: [AccessType::Create, AccessType::Edit],
         ));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             ShareRequestPolicy::class,
             [AccessType::Create],
         ));

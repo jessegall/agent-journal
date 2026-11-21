@@ -6,7 +6,7 @@ namespace App\Assignments\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ReadEntitlements;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Actors\Values\ReadEntitlement;
 use App\Assignments\Actions\AdmitPublicAssignments;
 use App\Assignments\Actions\AssignmentTurns;
@@ -93,11 +93,11 @@ final class AssignmentsServiceProvider extends ServiceProvider
     {
         $reads->declare('assignees_list', ReadEntitlement::grant(AssignmentPolicy::class));
         $reads->declare('assignments_read', ReadEntitlement::grant(AssignmentPolicy::class));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             AssignmentPolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit],
         ));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             AssignmentRecipientPolicy::class,
             [AccessType::Create, AccessType::Delegate, AccessType::Delete],
             coordinatorOnly: [AccessType::Delegate, AccessType::Delete],

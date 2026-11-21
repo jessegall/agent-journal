@@ -36,8 +36,8 @@ journal's built-in agent profiles never get, get only when they coordinate, or n
 public function policies(): array
 {
     return [
-        new PolicyRegistration(NotePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit]),
-        new PolicyRegistration(
+        new PolicyDefinition(NotePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit]),
+        new PolicyDefinition(
             NoteWorkPolicy::class,
             [AccessType::Create, AccessType::Edit],
             ownerOnly: [AccessType::Edit],

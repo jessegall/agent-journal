@@ -9,7 +9,7 @@ use App\Assignments\Contracts\AssigneeProvider;
 /**
  * Which provider answers for one registered type of assignee, an actor type or a desk, by its type text.
  */
-final readonly class AssigneeRegistration
+final readonly class AssigneeDefinition
 {
     /**
      * @param  class-string<AssigneeProvider>  $providerClass

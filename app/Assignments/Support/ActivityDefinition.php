@@ -10,7 +10,7 @@ use App\Assignments\Contracts\AutoAssignmentActivity;
 /**
  * Which activity says whether an actor of one type may take automatically assigned work now.
  */
-final readonly class ActivityRegistration
+final readonly class ActivityDefinition
 {
     /**
      * @param  class-string<AutoAssignmentActivity>  $activityClass

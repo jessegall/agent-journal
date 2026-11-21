@@ -52,7 +52,7 @@ use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Actors\Exceptions\EngineActorRequired;
 use App\Actors\Exceptions\GrantNotRegistered;
 use App\Actors\Exceptions\InvalidActorText;
-use App\Actors\Exceptions\PolicyRegistrationConflict;
+use App\Actors\Exceptions\PolicyDefinitionConflict;
 use App\Actors\Exceptions\SystemActorRequired;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Models\Support\BelongsToOneActor;
@@ -63,7 +63,7 @@ use App\Actors\Support\CurrentUser;
 use App\Actors\Support\UnrestrictedAuthorizer;
 use App\Actors\Values\AccessRequirement;
 use App\Actors\Values\OwnerAuthority;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Actors\Values\ReadEntitlement;
 use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Attributes\Endpoint;
@@ -391,11 +391,11 @@ use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Exceptions\InvalidRecordIds;
 use App\Assignments\Models\Support\AssignableListing;
-use App\Assignments\Support\ActivityRegistration;
+use App\Assignments\Support\ActivityDefinition;
+use App\Assignments\Support\AssigneeDefinition;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
-use App\Assignments\Support\AssigneeRegistration;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentChange;
 use App\Assignments\Support\AssignmentData;
@@ -1124,7 +1124,7 @@ use App\Sharing\Support\ShareFact;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareRecordCard;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use App\Sharing\Support\ShareRecords;
 use App\Sharing\Support\ShareRelation;
 use App\Sharing\Support\ShareRelationRead;
@@ -1173,7 +1173,7 @@ use App\Skills\Values\ConditionResult;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\RenderedSkill;
 use App\Skills\Values\SectionDraft;
-use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillConditionDefinition;
 use App\Skills\Values\SkillContext;
 use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillEntry;
@@ -1882,7 +1882,7 @@ final class CoreApi
                 ToolOutcome::class,
                 ActorIdentity::class,
                 AccessRequirement::class,
-                PolicyRegistration::class,
+                PolicyDefinition::class,
                 AssigneeIdentity::class,
                 AssignmentRequest::class,
                 AssignmentPurpose::class,
@@ -1896,8 +1896,8 @@ final class CoreApi
                 TrustedEntryAuthority::class,
                 RecordIdentity::class,
                 StopAttemptReference::class,
-                AssigneeRegistration::class,
-                ActivityRegistration::class,
+                AssigneeDefinition::class,
+                ActivityDefinition::class,
                 Assignment::class,
                 AssignmentReference::class,
                 AssignmentSet::class,
@@ -1974,7 +1974,7 @@ final class CoreApi
                 SettingType::class,
                 ShareRelationSet::class,
                 ShareRelation::class,
-                ShareRecordRegistration::class,
+                ShareRecordDefinition::class,
                 ShareSelection::class,
                 ShareCandidates::class,
                 ShareLinkedCandidate::class,
@@ -2109,7 +2109,7 @@ final class CoreApi
                 StartProfile::class,
                 ConditionResult::class,
                 ConditionOutcome::class,
-                SkillConditionRegistration::class,
+                SkillConditionDefinition::class,
                 SkillEntry::class,
                 RenderedSkill::class,
                 SkillDraft::class,
@@ -2376,7 +2376,7 @@ final class CoreApi
                 SeatConflict::class,
                 RunClaimRefused::class,
                 InboxProviderInvalid::class,
-                PolicyRegistrationConflict::class,
+                PolicyDefinitionConflict::class,
                 AuthorizerProviderRepeated::class,
                 StateTypeRepeated::class,
                 StateTypesFrozen::class,

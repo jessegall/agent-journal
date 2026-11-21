@@ -20,7 +20,7 @@ use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordCard;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use App\Sharing\Support\ShareRecords;
 use App\Sharing\Support\ShareRelation;
 use App\Sharing\Support\ShareRelationRead;
@@ -88,7 +88,7 @@ final class SharingValuesTest extends TestCase
     public static function values(): iterable
     {
         foreach ([
-            ShareRelation::class, ShareRelationSet::class, ShareRecordRegistration::class, ShareRecordCard::class,
+            ShareRelation::class, ShareRelationSet::class, ShareRecordDefinition::class, ShareRecordCard::class,
             ShareRecords::class,
             ShareCandidates::class,
             ShareLinkedCandidate::class,

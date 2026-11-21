@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Modules\Notes;
 use Tests\Fixtures\Modules\Notes\Events\NoteRemoved;
 use App\Operations\Enums\AccessType;
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Bus\Contracts\CommandMiddlewareProvider;
 use App\Bus\Contracts\CommandProvider;
 use App\Bus\Support\CommandScope;
@@ -31,7 +31,7 @@ use App\Processes\Values\CommandRule;
 use App\Processes\Values\ProgramSpellings;
 use App\Skills\Contracts\SkillConditionProvider;
 use App\Skills\Contracts\SkillProvider;
-use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillConditionDefinition;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
@@ -147,8 +147,8 @@ final class NotesDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(NotePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
-            new PolicyRegistration(NoteWorkPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
+            new PolicyDefinition(NotePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
+            new PolicyDefinition(NoteWorkPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
         ];
     }
 
@@ -227,7 +227,7 @@ final class NotesDomain extends Domain implements
     public function skillConditions(): array
     {
         return [
-            new SkillConditionRegistration('notes.has-notes', 1, HasNotesParameters::class, HasNotesCondition::class),
+            new SkillConditionDefinition('notes.has-notes', 1, HasNotesParameters::class, HasNotesCondition::class),
         ];
     }
 

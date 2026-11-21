@@ -8,7 +8,7 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Sharing\Contracts\ShareGatewayProvider;
 use App\Sharing\Contracts\ShareRecordContributor;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 
 final class PamphletsDomain extends Domain implements ShareGatewayProvider, ShareRecordContributor
 {
@@ -30,13 +30,13 @@ final class PamphletsDomain extends Domain implements ShareGatewayProvider, Shar
     public function shareRecords(): array
     {
         return [
-            new ShareRecordRegistration(
+            new ShareRecordDefinition(
 'pamphlets.pamphlet',
  Pamphlet::class,
  PamphletShareProvider::class,
  ['share-linked-record'],
 ),
-            new ShareRecordRegistration(
+            new ShareRecordDefinition(
 'pamphlets.note',
  PamphletNote::class,
  PamphletShareProvider::class,

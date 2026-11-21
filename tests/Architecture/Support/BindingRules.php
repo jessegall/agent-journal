@@ -53,16 +53,16 @@ final readonly class BindingRules
      */
     public function violations(): array
     {
-        $registrations = $this->registrations();
+        $definitions = $this->definitions();
         $violations = [];
 
-        foreach ($registrations as $registration) {
-            array_push($violations, ...$this->violationsOf($registration));
+        foreach ($definitions as $definition) {
+            array_push($violations, ...$this->violationsOf($definition));
         }
 
-        foreach ($registrations as $registration) {
-            if ($registration->isSingleton) {
-                array_push($violations, ...$this->capturedScopedServices($registration, $registrations));
+        foreach ($definitions as $definition) {
+            if ($definition->isSingleton) {
+                array_push($violations, ...$this->capturedScopedServices($definition, $definitions));
             }
         }
 
@@ -72,19 +72,19 @@ final readonly class BindingRules
     /**
      * @return list<Violation>
      */
-    private function violationsOf(BindingRegistration $registration): array
+    private function violationsOf(BindingDefinition $definition): array
     {
-        if ($registration->concrete === null) {
+        if ($definition->concrete === null) {
             return [];
         }
 
-        $userOwner = $this->ownerNameOf($registration->file);
-        $abstractOwner = $this->ownerNameOfClass($registration->abstract);
-        $concreteOwner = $this->ownerNameOfClass($registration->concrete);
+        $userOwner = $this->ownerNameOf($definition->file);
+        $abstractOwner = $this->ownerNameOfClass($definition->abstract);
+        $concreteOwner = $this->ownerNameOfClass($definition->concrete);
 
-        if (! str_ends_with($registration->file, 'ServiceProvider.php') && interface_exists($registration->abstract)) {
+        if (! str_ends_with($definition->file, 'ServiceProvider.php') && interface_exists($definition->abstract)) {
             return [
-                $registration->violation(
+                $definition->violation(
                     $userOwner,
                     $abstractOwner,
                     "an interface names no implementation; its area's service provider binds it",
@@ -92,26 +92,26 @@ final readonly class BindingRules
             ];
         }
 
-        if (! self::exists($registration->concrete) || ! is_a($registration->concrete, $registration->abstract, true)) {
+        if (! self::exists($definition->concrete) || ! is_a($definition->concrete, $definition->abstract, true)) {
             return [
-                $registration->violation($userOwner, $abstractOwner, "{$registration->concrete} does not implement it"),
+                $definition->violation($userOwner, $abstractOwner, "{$definition->concrete} does not implement it"),
             ];
         }
 
         if ($concreteOwner !== $userOwner) {
             return [
-                $registration->violation(
+                $definition->violation(
                     $userOwner,
                     $concreteOwner,
-                    "the target {$registration->concrete} belongs to {$concreteOwner}",
+                    "the target {$definition->concrete} belongs to {$concreteOwner}",
                 ),
             ];
         }
 
         if ($abstractOwner !== $userOwner
-            && ! ($abstractOwner === 'Core' && $this->isCoreExport($registration->abstract))) {
+            && ! ($abstractOwner === 'Core' && $this->isCoreExport($definition->abstract))) {
             return [
-                $registration->violation(
+                $definition->violation(
                     $userOwner,
                     $abstractOwner,
                     "{$abstractOwner} owns it; only Core's public contracts are filled by another owner",
@@ -125,17 +125,17 @@ final readonly class BindingRules
     /**
      * The per-request services a singleton reaches through its constructor, following #[Bind] targets.
      *
-     * @param  list<BindingRegistration>  $registrations
+     * @param  list<BindingDefinition>  $definitions
      * @return list<Violation>
      */
-    private function capturedScopedServices(BindingRegistration $singleton, array $registrations): array
+    private function capturedScopedServices(BindingDefinition $singleton, array $definitions): array
     {
         $scoped = [
             ...self::PER_REQUEST_VALUES,
             ...array_map(
-                fn (BindingRegistration $registration) => $registration->abstract,
+                fn (BindingDefinition $definition) => $definition->abstract,
                 array_values(
-                    array_filter($registrations, fn (BindingRegistration $registration) => $registration->isScoped),
+                    array_filter($definitions, fn (BindingDefinition $definition) => $definition->isScoped),
                 ),
             ),
         ];
@@ -195,35 +195,35 @@ final readonly class BindingRules
      * Every binding the owners state: #[Bind], #[Scoped] and #[Singleton] attributes, and class-string calls in
      * providers.
      *
-     * @return list<BindingRegistration>
+     * @return list<BindingDefinition>
      */
-    private function registrations(): array
+    private function definitions(): array
     {
-        $registrations = [];
+        $definitions = [];
 
-        foreach (ScanCache::findings(new BindingRegistrationScan(), $this->files) as $registration) {
-            $registrations[] = $registration;
+        foreach (ScanCache::findings(new BindingDefinitionScan(), $this->files) as $definition) {
+            $definitions[] = $definition;
         }
 
-        return $registrations;
+        return $definitions;
     }
 
     /**
      * The bindings one file registers, through an attribute or a provider call.
      *
-     * @return list<BindingRegistration>
+     * @return list<BindingDefinition>
      */
-    public static function registrationsIn(ParsedFile $file): array
+    public static function definitionsIn(ParsedFile $file): array
     {
-        return [...self::attributeRegistrations($file), ...self::providerRegistrations($file)];
+        return [...self::attributeDefinitions($file), ...self::providerDefinitions($file)];
     }
 
     /**
-     * @return list<BindingRegistration>
+     * @return list<BindingDefinition>
      */
-    private static function attributeRegistrations(ParsedFile $file): array
+    private static function attributeDefinitions(ParsedFile $file): array
     {
-        $registrations = [];
+        $definitions = [];
 
         foreach (new NodeFinder()->findInstanceOf($file->statements, ClassLike::class) as $type) {
             $name = $type->namespacedName?->toString();
@@ -239,7 +239,7 @@ final readonly class BindingRules
             $target = self::bindTargetOf($name);
 
             if ($target !== null || $isScoped || $isSingleton) {
-                $registrations[] = new BindingRegistration(
+                $definitions[] = new BindingDefinition(
                     $file->path,
                     $line,
                     $name,
@@ -250,19 +250,19 @@ final readonly class BindingRules
             }
         }
 
-        return $registrations;
+        return $definitions;
     }
 
     /**
-     * @return list<BindingRegistration>
+     * @return list<BindingDefinition>
      */
-    private static function providerRegistrations(ParsedFile $file): array
+    private static function providerDefinitions(ParsedFile $file): array
     {
         if (! str_ends_with($file->path, 'ServiceProvider.php')) {
             return [];
         }
 
-        $registrations = [];
+        $definitions = [];
 
         foreach (new NodeFinder()->findInstanceOf($file->statements, MethodCall::class) as $call) {
             $method = $call->name instanceof Node\Identifier ? $call->name->toString() : '';
@@ -278,7 +278,7 @@ final readonly class BindingRules
             }
 
             $concrete = self::classStringOf($call->getArgs()[1]->value ?? null);
-            $registrations[] = new BindingRegistration(
+            $definitions[] = new BindingDefinition(
                 $file->path,
                 $call->getStartLine(),
                 $abstract,
@@ -288,7 +288,7 @@ final readonly class BindingRules
             );
         }
 
-        return $registrations;
+        return $definitions;
     }
 
     private static function classStringOf(Node|null $argument): string|null

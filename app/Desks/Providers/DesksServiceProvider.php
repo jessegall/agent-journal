@@ -8,14 +8,14 @@ use App\Actors\Contracts\ActorProvisioning;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Enums\ActorType;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Agents\Contracts\MainDesk;
 use App\Agents\Contracts\MainSeatTakeover;
 use App\Assignments\Contracts\AssignmentDestinationResolver;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\SharedHolders;
 use App\Assignments\Enums\AssignmentPurpose;
-use App\Assignments\Support\AssigneeRegistration;
+use App\Assignments\Support\AssigneeDefinition;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Contracts\InboxRegistration;
@@ -82,7 +82,7 @@ final class DesksServiceProvider extends ServiceProvider
         InboxRegistration $inboxes,
         AssignmentRegistration $assignments,
     ): void {
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             DeskPolicy::class,
             [AccessType::Create, AccessType::Edit],
             ownerOnly: [AccessType::Create, AccessType::Edit],
@@ -107,6 +107,6 @@ final class DesksServiceProvider extends ServiceProvider
             $destinations->register($actorType->value, ActorDestinationProvider::class);
         }
 
-        $assignments->registerAssignees(new AssigneeRegistration(DeskRecord::ASSIGNEE_TYPE, DeskAssignees::class));
+        $assignments->registerAssignees(new AssigneeDefinition(DeskRecord::ASSIGNEE_TYPE, DeskAssignees::class));
     }
 }

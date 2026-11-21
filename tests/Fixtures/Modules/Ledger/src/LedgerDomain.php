@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Modules\Ledger;
 
 use App\Operations\Enums\AccessType;
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
@@ -60,6 +60,6 @@ final class LedgerDomain extends Domain implements CommandProvider, NumberedMode
 
     public function policies(): array
     {
-        return [new PolicyRegistration(LedgerPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete])];
+        return [new PolicyDefinition(LedgerPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete])];
     }
 }

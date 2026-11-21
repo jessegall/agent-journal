@@ -21,7 +21,7 @@ use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\SettingRegistry;
-use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillConditionDefinition;
 use App\Skills\Values\SkillOwner;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Support\UiDeclarations;
@@ -133,7 +133,7 @@ final readonly class DomainRegistry
     /**
      * Every domain's named skill condition types, by domain name, in bootstrap/domains.php order.
      *
-     * @return array<string, list<SkillConditionRegistration>>
+     * @return array<string, list<SkillConditionDefinition>>
      */
     public function skillConditionDeclarations(): array
     {

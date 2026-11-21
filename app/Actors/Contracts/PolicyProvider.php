@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actors\Contracts;
 
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 
 /**
  * A domain whose models are decided on by its own policies, registered with Core before commands are checked.
@@ -12,7 +12,7 @@ use App\Actors\Values\PolicyRegistration;
 interface PolicyProvider
 {
     /**
-     * @return list<PolicyRegistration>
+     * @return list<PolicyDefinition>
      */
     public function policies(): array;
 }

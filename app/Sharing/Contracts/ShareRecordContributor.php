@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Contracts;
 
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 
 /**
  * A domain whose records can be shared: each record type's alias with its model, provider and capabilities.
@@ -12,7 +12,7 @@ use App\Sharing\Support\ShareRecordRegistration;
 interface ShareRecordContributor
 {
     /**
-     * @return list<ShareRecordRegistration>
+     * @return list<ShareRecordDefinition>
      */
     public function shareRecords(): array;
 }

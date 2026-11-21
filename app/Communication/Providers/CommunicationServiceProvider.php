@@ -7,7 +7,7 @@ namespace App\Communication\Providers;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Support\SystemEntryPolicies;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\RequestSource;
 use App\Agents\Support\PendingWorkSources;
@@ -76,11 +76,11 @@ final class CommunicationServiceProvider extends ServiceProvider
         $reads->declare('inbox_counts', ReadEntitlement::grant(MessagePolicy::class));
         $reads->declare('attachments_read', ReadEntitlement::grant(MessagePolicy::class));
         $system->allow(InboxNotices::SYSTEM_ENTRY, MessagePolicy::class);
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             MessagePolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit],
         ));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             MessageAdministrationPolicy::class,
             [AccessType::Read, AccessType::Edit],
             ownerOnly: [AccessType::Read, AccessType::Edit],

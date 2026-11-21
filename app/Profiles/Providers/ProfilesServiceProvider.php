@@ -11,7 +11,7 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\SystemEntryPolicies;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\BuiltInStartProfiles;
@@ -111,7 +111,7 @@ final class ProfilesServiceProvider extends ServiceProvider
             $reads->declare($read, ReadEntitlement::named());
         }
 
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             ProfileAdministrationPolicy::class,
             [AccessType::Create, AccessType::Edit],
             ownerOnly: [AccessType::Create, AccessType::Edit],
@@ -123,11 +123,11 @@ final class ProfilesServiceProvider extends ServiceProvider
             $systemEntries->allow('driver switch', $policy);
         }
 
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             ProfileDraftPolicy::class,
             [AccessType::Edit],
         ));
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             AccountPolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
             ownerOnly: [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],

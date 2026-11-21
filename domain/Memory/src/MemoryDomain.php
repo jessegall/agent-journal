@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Memory;
 
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Bus\Contracts\CommandProvider;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
@@ -67,7 +67,7 @@ final class MemoryDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(
+            new PolicyDefinition(
                 MemoryPolicy::class,
                 [AccessType::Read, AccessType::Create, AccessType::Edit],
             ),

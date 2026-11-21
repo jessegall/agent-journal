@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers;
 
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\CommandProvider;
 use App\Bus\Support\Command;
@@ -105,7 +105,7 @@ final class HelpersDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(
+            new PolicyDefinition(
                 HelperPolicy::class,
                 [AccessType::Create, AccessType::Edit, AccessType::Delegate],
             ),

@@ -6,14 +6,14 @@ namespace App\Actors\Values;
 
 use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\RecordPolicy;
-use App\Actors\Exceptions\PolicyRegistrationConflict;
+use App\Actors\Exceptions\PolicyDefinitionConflict;
 use App\Operations\Enums\AccessType;
 
 /**
  * One policy with the accesses it accepts, and those the journal's built-in agent profiles never get, those only a
  * coordinating profile gets, and those a read-only profile never gets. The policy names its model.
  */
-final readonly class PolicyRegistration
+final readonly class PolicyDefinition
 {
     /**
      * @param  class-string<Policy>  $policy
@@ -22,7 +22,7 @@ final readonly class PolicyRegistration
      * @param  list<AccessType>  $coordinatorOnly
      * @param  list<AccessType>  $notForReadOnly
      *
-     * @throws PolicyRegistrationConflict when a restriction names an access the policy does not accept
+     * @throws PolicyDefinitionConflict when a restriction names an access the policy does not accept
      */
     public function __construct(
         public string $policy,
@@ -39,7 +39,7 @@ final readonly class PolicyRegistration
 
         foreach ($restrictions as $restriction => $restricted) {
             if (array_diff(self::values($restricted), self::values($accesses)) !== []) {
-                throw PolicyRegistrationConflict::forRestriction($policy, $restriction);
+                throw PolicyDefinitionConflict::forRestriction($policy, $restriction);
             }
         }
     }

@@ -22,9 +22,9 @@ use Illuminate\Container\Container;
 final class ShareRecordRegistry
 {
     /**
-     * @var Registry<ShareRecordRegistration>
+     * @var Registry<ShareRecordDefinition>
      */
-    private readonly Registry $registrations;
+    private readonly Registry $definitions;
 
     /**
      * @var Registry<ShareRelationSet>
@@ -33,7 +33,7 @@ final class ShareRecordRegistry
 
     public function __construct()
     {
-        $this->registrations = Registry::once(UnknownShareRecordType::forAlias(...), ShareRecordInvalid::repeated(...));
+        $this->definitions = Registry::once(UnknownShareRecordType::forAlias(...), ShareRecordInvalid::repeated(...));
         $this->relationSets = Registry::replacing(UnknownShareRecordType::forAlias(...));
     }
 
@@ -41,20 +41,20 @@ final class ShareRecordRegistry
      * @throws InvalidRecordIdentity
      * @throws ShareRecordInvalid
      */
-    public function register(ShareRecordRegistration $registration): void
+    public function register(ShareRecordDefinition $definition): void
     {
-        $alias = $registration->alias;
+        $alias = $definition->alias;
         RecordIdentity::assertKnownType($alias);
 
-        if (! is_subclass_of($registration->modelClass, Shareable::class)) {
-            throw ShareRecordInvalid::notShareable($alias, $registration->modelClass);
+        if (! is_subclass_of($definition->modelClass, Shareable::class)) {
+            throw ShareRecordInvalid::notShareable($alias, $definition->modelClass);
         }
 
-        if (! is_subclass_of($registration->providerClass, ShareRecordProvider::class)) {
-            throw ShareRecordInvalid::notAProvider($alias, $registration->providerClass);
+        if (! is_subclass_of($definition->providerClass, ShareRecordProvider::class)) {
+            throw ShareRecordInvalid::notAProvider($alias, $definition->providerClass);
         }
 
-        $this->registrations->put($alias, $registration);
+        $this->definitions->put($alias, $definition);
     }
 
     /**
@@ -66,12 +66,12 @@ final class ShareRecordRegistry
     public function checkRelations(): void
     {
         $capabilities = array_merge(...array_map(
-            fn (ShareRecordRegistration $registration) => $registration->capabilities,
-            array_values($this->registrations->all()),
+            fn (ShareRecordDefinition $definition) => $definition->capabilities,
+            array_values($this->definitions->all()),
         ));
 
-        foreach ($this->registrations->all() as $alias => $registration) {
-            $relations = $registration->modelClass::shareRelations();
+        foreach ($this->definitions->all() as $alias => $definition) {
+            $relations = $definition->modelClass::shareRelations();
             $names = [];
 
             foreach ($relations->relations as $relation) {
@@ -92,7 +92,7 @@ final class ShareRecordRegistry
 
     public function has(string $alias): bool
     {
-        return $this->registrations->has($alias);
+        return $this->definitions->has($alias);
     }
 
     /**
@@ -106,9 +106,9 @@ final class ShareRecordRegistry
     /**
      * @throws UnknownShareRecordType
      */
-    public function get(string $alias): ShareRecordRegistration
+    public function get(string $alias): ShareRecordDefinition
     {
-        return $this->registrations->get($alias);
+        return $this->definitions->get($alias);
     }
 
     /**

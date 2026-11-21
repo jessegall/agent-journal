@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks;
 
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Assignments\Contracts\AutoAssignmentProvider;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
@@ -142,11 +142,11 @@ final class TasksDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(
+            new PolicyDefinition(
                 TaskPolicy::class,
                 [AccessType::Read, AccessType::Create, AccessType::Edit],
             ),
-            new PolicyRegistration(
+            new PolicyDefinition(
                 TaskRunPolicy::class,
                 [AccessType::Create, AccessType::Edit],
             ),

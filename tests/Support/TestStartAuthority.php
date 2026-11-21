@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Agents\Models\Agent;
 use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Values\ProfileBase;
@@ -45,9 +45,9 @@ final class TestStartAuthority
     /**
      * The authority of a profile of the kind granting only the given policies' abilities; none grants nothing.
      *
-     * @param  list<PolicyRegistration>  $registrations
+     * @param  list<PolicyDefinition>  $definitions
      */
-    public static function granting(ProfileBase $type, array $registrations): StartProfileAuthority
+    public static function granting(ProfileBase $type, array $definitions): StartProfileAuthority
     {
 
         return new StartProfileAuthority(ProfileSnapshot::from([
@@ -59,7 +59,7 @@ final class TestStartAuthority
             'skillAllowlist' => null,
             'requiredSkills' => [],
             'start' => TestStartPolicies::for($type),
-            'authorization' => BuiltInAuthorizations::for($type, $registrations),
+            'authorization' => BuiltInAuthorizations::for($type, $definitions),
         ]));
     }
 }

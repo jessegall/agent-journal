@@ -11,7 +11,7 @@ use App\Sharing\Contracts\ShareRecordProvider;
  * One shareable record type a domain registers: its link alias, its model, the provider that reads it and the
  * capabilities it advertises to relations that reach it.
  */
-final readonly class ShareRecordRegistration
+final readonly class ShareRecordDefinition
 {
     /**
      * @param  class-string<Shareable>  $modelClass

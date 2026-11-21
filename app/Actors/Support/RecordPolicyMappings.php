@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Actors\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Exceptions\PolicyRegistrationConflict;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Exceptions\PolicyDefinitionConflict;
+use App\Actors\Values\PolicyDefinition;
 use Illuminate\Contracts\Auth\Access\Gate;
 
 /**
@@ -18,23 +18,23 @@ final readonly class RecordPolicyMappings
     public function __construct(private Gate $gate, private PolicyCatalogue $policies) {}
 
     /**
-     * @throws PolicyRegistrationConflict
+     * @throws PolicyDefinitionConflict
      */
     public function assertResolved(): void
     {
         $records = array_filter(
-            $this->policies->registrations(),
-            fn (PolicyRegistration $registration) => $registration->isRecord(),
+            $this->policies->definitions(),
+            fn (PolicyDefinition $definition) => $definition->isRecord(),
         );
 
-        foreach ($records as $registration) {
-            $resolved = $this->gate->getPolicyFor($registration->model());
+        foreach ($records as $definition) {
+            $resolved = $this->gate->getPolicyFor($definition->model());
             $resolvedClass = $resolved === null ? 'no policy' : $resolved::class;
 
-            if ($resolvedClass !== $registration->policy) {
-                throw PolicyRegistrationConflict::forGate(
-                    $registration->model(),
-                    $registration->policy,
+            if ($resolvedClass !== $definition->policy) {
+                throw PolicyDefinitionConflict::forGate(
+                    $definition->model(),
+                    $definition->policy,
                     $resolvedClass,
                 );
             }

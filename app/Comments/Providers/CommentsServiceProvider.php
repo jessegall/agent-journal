@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Comments\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Comments\Console\CommentListCommand;
 use App\Comments\Console\CommentLocationCommand;
 use App\Comments\Console\CommentPostCommand;
@@ -19,7 +19,7 @@ use App\Comments\Resolvers\PublicComments;
 use App\Comments\Support\CommentShareProvider;
 use App\Operations\Enums\AccessType;
 use App\Records\Contracts\RecordProviderRegistration;
-use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordDefinition;
 use App\Sharing\Support\ShareRecordRegistry;
 use Illuminate\Support\ServiceProvider;
 
@@ -43,11 +43,11 @@ final class CommentsServiceProvider extends ServiceProvider
     ): void {
         $policies->register(
             'Core',
-            new PolicyRegistration(CommentPolicy::class, [AccessType::Create]),
+            new PolicyDefinition(CommentPolicy::class, [AccessType::Create]),
         );
         $records->register(Comment::LINK_TYPE, CommentLinkRecords::class);
         $shares->register(
-            new ShareRecordRegistration(
+            new ShareRecordDefinition(
                 Comment::LINK_TYPE,
                 Comment::class,
                 CommentShareProvider::class,

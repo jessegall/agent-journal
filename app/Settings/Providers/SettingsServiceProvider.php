@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Settings\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Operations\Enums\AccessType;
 use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsAccessPolicy;
@@ -37,7 +37,7 @@ final class SettingsServiceProvider extends ServiceProvider
 
     public function boot(PolicyCatalogue $policies): void
     {
-        $policies->register('Core', new PolicyRegistration(
+        $policies->register('Core', new PolicyDefinition(
             SettingPolicy::class,
             [AccessType::Edit],
             ownerOnly: [AccessType::Edit],

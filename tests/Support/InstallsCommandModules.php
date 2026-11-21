@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\MiddlewareDeclaration;
@@ -97,12 +97,12 @@ trait InstallsCommandModules
     private function registerPoliciesOf(DomainRegistry $domains, array $moduleClasses): void
     {
         $catalogue = $this->app->make(PolicyCatalogue::class);
-        $registered = array_map(fn (PolicyRegistration $policy) => $policy->policy, $catalogue->registrations());
+        $registered = array_map(fn (PolicyDefinition $policy) => $policy->policy, $catalogue->definitions());
 
         if (! in_array(FixturePolicy::class, $registered, true)) {
             $catalogue->register(
                 'Core',
-                new PolicyRegistration(FixturePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
+                new PolicyDefinition(FixturePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
             );
         }
 

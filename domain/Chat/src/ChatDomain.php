@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat;
 
 use App\Actors\Contracts\PolicyProvider;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\PolicyDefinition;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
@@ -78,11 +78,11 @@ final class ChatDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(
+            new PolicyDefinition(
                 MessagePinPolicy::class,
                 [AccessType::Edit],
             ),
-            new PolicyRegistration(
+            new PolicyDefinition(
                 ConversationPolicy::class,
                 [AccessType::Edit],
                 notForReadOnly: [AccessType::Edit],

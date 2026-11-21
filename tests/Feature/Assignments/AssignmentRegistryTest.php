@@ -13,7 +13,7 @@ use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Registry\AssignmentRegistry;
-use App\Assignments\Support\AssigneeRegistration;
+use App\Assignments\Support\AssigneeDefinition;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\LinkTypeRegistry;
 use App\Records\Exceptions\InvalidRecordIdentity;
@@ -71,7 +71,7 @@ final class AssignmentRegistryTest extends TestCase
         );
         $this->assertThrows(
             fn () => $this->registry->registerAssignees(
-                new AssigneeRegistration(
+                new AssigneeDefinition(
                     ActorType::User->value,
                     self::class, // @phpstan-ignore argument.type
                 ),
@@ -85,14 +85,14 @@ final class AssignmentRegistryTest extends TestCase
         $provider = $this->createStub(AssigneeProvider::class);
         $this->app->instance($provider::class, $provider);
         $this->registry->registerAssignees(
-            new AssigneeRegistration(ActorType::User->value, $provider::class),
+            new AssigneeDefinition(ActorType::User->value, $provider::class),
         );
 
         $this->assertSame($provider, $this->registry->assigneeProvider(ActorType::User->value));
         $this->expectException(AssigneeTypeRepeated::class);
 
         $this->registry->registerAssignees(
-            new AssigneeRegistration(ActorType::User->value, $provider::class),
+            new AssigneeDefinition(ActorType::User->value, $provider::class),
         );
     }
 

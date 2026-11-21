@@ -7,8 +7,8 @@ namespace Tests\Feature\Actors;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Exceptions\GrantNotRegistered;
-use App\Actors\Exceptions\PolicyRegistrationConflict;
-use App\Actors\Values\PolicyRegistration;
+use App\Actors\Exceptions\PolicyDefinitionConflict;
+use App\Actors\Values\PolicyDefinition;
 use App\Contracts\DomainAvailability;
 use App\Domains\Support\DomainEntry;
 use App\Operations\Enums\AccessType;
@@ -47,19 +47,19 @@ final class PolicyCatalogueTest extends TestCase
         $this->registerNotes();
 
         $this->app->make(PolicyCatalogue::class)->assertGrantable(NotePolicy::class, AccessType::Edit);
-        $this->assertSame(Note::class, $this->app->make(PolicyCatalogue::class)->registrationOf(NotePolicy::class)->model());
+        $this->assertSame(Note::class, $this->app->make(PolicyCatalogue::class)->definitionOf(NotePolicy::class)->model());
     }
 
     public function test_two_owners_registering_the_same_model_fail_naming_both(): void
     {
         $this->registerNotes();
 
-        $this->expectException(PolicyRegistrationConflict::class);
+        $this->expectException(PolicyDefinitionConflict::class);
         $this->expectExceptionMessage('Notes and Cards both register a policy for '.Note::class.'; one owner guards one model.');
 
         $this->app->make(PolicyCatalogue::class)->register(
             'Cards',
-            new PolicyRegistration(OtherNotePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
+            new PolicyDefinition(OtherNotePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
         );
     }
 
@@ -92,8 +92,8 @@ final class PolicyCatalogueTest extends TestCase
 
     private function registerNotes(): void
     {
-        foreach (DomainEntry::fromClass(NotesDomain::class)->policies() as $registration) {
-            $this->app->make(PolicyCatalogue::class)->register('Notes', $registration);
+        foreach (DomainEntry::fromClass(NotesDomain::class)->policies() as $definition) {
+            $this->app->make(PolicyCatalogue::class)->register('Notes', $definition);
         }
     }
 }
