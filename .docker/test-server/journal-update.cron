@@ -1,0 +1,2 @@
+# The test server deploys the newest version-6 commit from GitHub within a minute of its push.
+* * * * * root /bin/sh /srv/journal-test/.docker/test-server/update.sh >> /var/log/journal-update.log 2>&1
