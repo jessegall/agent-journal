@@ -7,8 +7,8 @@ import { start as startRoute } from '@generated/routes/plans';
 import type { StartPlanData } from '@generated/types/plans';
 
 /**
- * Starts the selected plan. The server decides whether it may start; this form only asks and shows what came back.
- * Its parent keys it by plan, so switching selection never shows another plan's error.
+ * Starts a plan the server offers to start; this form only asks and shows what came back. Its parent keys it by plan,
+ * so switching plans never shows another plan's error. A parent may give its own submit control, such as a menu item.
  */
 const props = defineProps<{ start: StartPlanData }>();
 
@@ -23,10 +23,12 @@ function submit(): void {
 </script>
 
 <template>
-    <form class="flex flex-col items-end gap-2" @submit.prevent="submit">
-        <Button type="submit" variant="primary" :pending="form.processing"
-            >Start plan</Button
-        >
+    <form class="flex flex-col gap-2" @submit.prevent="submit">
+        <slot :pending="form.processing">
+            <Button type="submit" variant="primary" :pending="form.processing"
+                >Start plan</Button
+            >
+        </slot>
         <FormErrors :errors="form.errors" />
     </form>
 </template>

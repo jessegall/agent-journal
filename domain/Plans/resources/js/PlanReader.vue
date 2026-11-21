@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Reader from '@kit/Reader';
+import StateBadge from '@kit/StateBadge';
 import type { PlanReaderData } from '@generated/types/plans';
 import { progressText, stateLook } from './planLooks';
 import StartPlanForm from './StartPlanForm.vue';
@@ -18,9 +19,7 @@ defineProps<{
         <Reader :title="reader.card.title">
             <template #meta>
                 <span class="tabular-nums">Plan {{ reader.card.number }}</span>
-                <span :class="stateLook[reader.card.state].tone">{{
-                    stateLook[reader.card.state].label
-                }}</span>
+                <StateBadge v-bind="stateLook[reader.card.state]" outlined />
                 <template v-if="reader.card.holder">
                     <span
                         >Held by {{ reader.card.holder.name }} ({{
@@ -30,10 +29,11 @@ defineProps<{
                 </template>
             </template>
             <template #actions>
-                <template v-if="reader.start">
+                <template v-if="reader.card.start">
                     <StartPlanForm
-                        :key="reader.start.planId"
-                        :start="reader.start"
+                        :key="reader.card.start.planId"
+                        :start="reader.card.start"
+                        class="items-end"
                     />
                 </template>
             </template>

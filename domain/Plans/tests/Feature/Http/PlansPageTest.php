@@ -73,15 +73,16 @@ final class PlansPageTest extends TestCase
             ->where('page.data.filters.q', 'release')
             ->where('page.data.filters.plan', (string) $this->release->number)
             ->count('page.data.rows', 1)
+            ->where('page.data.rows.0.start.planNumber', (string) $this->release->number)
             ->where('page.data.selected.card.title', 'Build the release page')
             ->where('page.data.selected.insideResults', true)
-            ->where('page.data.selected.start.planId', (string) $this->release->id));
+            ->where('page.data.selected.card.start.planId', (string) $this->release->id));
 
         $this->actingAs($this->owner)->get(
             "/plans?q=release&plan={$this->paused->number}",
         )->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.selected.insideResults', false)
-            ->missing('page.data.selected.start'));
+            ->missing('page.data.selected.card.start'));
     }
 
     public function test_a_selection_that_cannot_be_read_shows_no_title(): void

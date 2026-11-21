@@ -1,4 +1,5 @@
 import type { IconName } from '@kit/Icon';
+import type { StateTone } from '@kit/StateBadge';
 import type { PlanCardData, PlanType, PlanState } from '@generated/types/plans';
 
 /**
@@ -11,13 +12,20 @@ export const typeIcon: Record<PlanType, IconName> = {
     cleanup: 'rules',
 };
 
-export const stateLook: Record<PlanState, { label: string; tone: string }> = {
-    planned: { label: 'Planned', tone: 'text-text-3' },
-    reviewing: { label: 'Reviewing', tone: 'text-tone-sequence' },
-    started: { label: 'Started', tone: 'text-tone-work' },
-    paused: { label: 'Paused', tone: 'text-tone-paused' },
-    cancelled: { label: 'Cancelled', tone: 'text-text-4' },
-    done: { label: 'Done', tone: 'text-tone-good' },
+export const typeLabel: Record<PlanType, string> = {
+    build: 'Build',
+    fix: 'Fix',
+    research: 'Research',
+    cleanup: 'Cleanup',
+};
+
+export const stateLook: Record<PlanState, { label: string; tone: StateTone; icon: IconName }> = {
+    planned: { label: 'Planned', tone: 'quiet', icon: 'list' },
+    reviewing: { label: 'Reviewing', tone: 'sequence', icon: 'search' },
+    started: { label: 'Started', tone: 'busy', icon: 'start' },
+    paused: { label: 'Paused', tone: 'paused', icon: 'minimize' },
+    cancelled: { label: 'Cancelled', tone: 'quiet', icon: 'close' },
+    done: { label: 'Done', tone: 'good', icon: 'tick' },
 };
 
 /**
@@ -27,4 +35,18 @@ export function progressText(card: PlanCardData): string {
     const phase = card.phase === undefined ? '' : ` · phase ${card.phase}`;
 
     return `${card.doneTasks} of ${card.totalTasks} tasks done${phase}`;
+}
+
+/**
+ * The plan's number and type as a row heads them, such as Plan 12 · Build.
+ */
+export function planHeading(card: PlanCardData): string {
+    return `Plan ${card.number} · ${typeLabel[card.type]}`;
+}
+
+/**
+ * The plan in one spoken phrase, such as build plan 12, for the names of its link and its actions.
+ */
+export function planName(card: PlanCardData): string {
+    return `${typeLabel[card.type].toLowerCase()} plan ${card.number}`;
 }

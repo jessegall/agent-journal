@@ -10,8 +10,8 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The selected plan in the resolver: its card, the start when it is offered, and whether it is among the listed
- * results.
+ * The selected plan in the resolver: its card, which carries the start when it is offered, and whether it is among
+ * the listed results.
  */
 #[TypeScript]
 final class PlanReaderData extends Data
@@ -19,7 +19,6 @@ final class PlanReaderData extends Data
     public function __construct(
         public readonly PlanCardData $card,
         public readonly bool $insideResults,
-        public readonly StartPlanData|Optional $start = new Optional(),
     ) {}
 
     /**
@@ -36,9 +35,6 @@ final class PlanReaderData extends Data
         return self::from([
             'card' => PlanCardData::fromPlanCard($card),
             'insideResults' => $selection->isInsideFilter,
-            'start' => $card->canStart ? StartPlanData::from(
-                ['planId' => (string) $card->id, 'planNumber' => (string) $card->number],
-            ) : Optional::create(),
         ]);
     }
 }
