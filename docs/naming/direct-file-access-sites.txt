@@ -1,4 +1,4 @@
-# The direct file access sites outside app/Files (plan 39): 73 still waiting to move to App\Files\Contracts\Files,
+# The direct file access sites outside app/Files (plan 39): 60 still waiting to move to App\Files\Contracts\Files,
 # and 11 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
 # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
 # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
@@ -23,18 +23,6 @@ app/Processes/Values/ToolVersions.php file_get_contents()
 app/Profiles/Console/ImportProfileDraftCommand.php file_get_contents()
 app/Profiles/Console/ImportProfileDraftCommand.php is_file()
 app/Profiles/Console/ImportProfileDraftCommand.php is_readable()
-app/Profiles/Support/ClaudeKeySignIn.php file_get_contents()
-app/Profiles/Support/ClaudeKeySignIn.php file_put_contents()
-app/Profiles/Support/ClaudeKeySignIn.php is_file()
-app/Profiles/Support/ClaudeSecretSignIn.php chmod()
-app/Profiles/Support/ClaudeSecretSignIn.php fopen()
-app/Profiles/Support/ClaudeSecretSignIn.php is_file()
-app/Profiles/Support/ClaudeSecretSignIn.php unlink()
-app/Profiles/Support/CodexProgram.php chmod()
-app/Profiles/Support/CodexProgram.php file_get_contents()
-app/Profiles/Support/CodexProgram.php file_put_contents()
-app/Profiles/Support/CodexProgram.php is_file()
-app/Profiles/Support/CodexProgram.php unlink()
 app/Profiles/Support/HostSecret.php file_get_contents()
 app/Profiles/Support/HostSecret.php fileperms()
 app/Profiles/Support/HostSecret.php is_file()
@@ -44,7 +32,6 @@ app/Profiles/Support/PrivateSignInProcesses.php file_exists()
 app/Profiles/Support/PrivateSignInProcesses.php is_dir()
 app/Profiles/Support/PrivateSignInProcesses.php is_link()
 app/Profiles/Support/PrivateSignInProcesses.php mkdir()
-app/Profiles/Values/ClaudeStatus.php realpath()
 app/Sharing/Gateways/Ngrok/NgrokGateway.php chmod()
 app/Sharing/Gateways/Ngrok/NgrokGateway.php file_put_contents()
 app/Sharing/Gateways/Ngrok/NgrokGateway.php is_dir()

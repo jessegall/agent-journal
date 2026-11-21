@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
+use App\Files\Exceptions\FileJsonInvalid;
+use App\Files\Values\FilePath;
 use stdClass;
 
 /**
@@ -24,16 +28,16 @@ final readonly class ClaudeKeySignIn extends ClaudeSecretSignIn
 
     protected function install(string $directory): void
     {
-        $settings = self::settingsOf($directory);
+        $settings = $this->settingsOf($directory);
         $settings['apiKeyHelper'] = 'cat '.escapeshellarg($this->secretFile($directory));
-        self::saveSettings($directory, $settings);
+        $this->saveSettings($directory, $settings);
     }
 
     protected function uninstall(string $directory): void
     {
-        $settings = self::settingsOf($directory);
+        $settings = $this->settingsOf($directory);
         unset($settings['apiKeyHelper']);
-        self::saveSettings($directory, $settings);
+        $this->saveSettings($directory, $settings);
     }
 
     protected function variables(string $directory): array
@@ -49,21 +53,33 @@ final readonly class ClaudeKeySignIn extends ClaudeSecretSignIn
     /**
      * @return array<string, mixed>
      */
-    private static function settingsOf(string $directory): array
+    private function settingsOf(string $directory): array
     {
-        $file = $directory.'/settings.json';
-        $settings = is_file($file) ? json_decode((string) file_get_contents($file), true) : [];
+        $file = $this->settingsFile($directory);
 
-        return is_array($settings) ? $settings : [];
+        if (! $this->files->exists($file)) {
+            return [];
+        }
+
+        try {
+            return $this->files->readJson($file);
+        } catch (FileJsonInvalid) {
+            return [];
+        }
     }
 
     /**
      * @param  array<string, mixed>  $settings
      */
-    private static function saveSettings(string $directory, array $settings): void
+    private function saveSettings(string $directory, array $settings): void
     {
         $content = $settings === [] ? new stdClass() : $settings;
         $encoded = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-        file_put_contents($directory.'/settings.json', $encoded);
+        $this->files->write($this->settingsFile($directory), $encoded, Permissions::OwnerOnly);
+    }
+
+    private function settingsFile(string $directory): FilePath
+    {
+        return $this->files->pathIn(Place::Accounts, $directory)->child('settings.json');
     }
 }

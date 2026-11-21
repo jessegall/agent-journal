@@ -25,6 +25,12 @@ interface Files
     public function filePathOf(string $absolutePath): FilePath;
 
     /**
+     * The file path of an absolute path in the place the caller names, a private place included, as the owner of an
+     * account folder hands it over; FileOutsidePlaces when the path does not lie in that place.
+     */
+    public function pathIn(Place $place, string $absolutePath): FilePath;
+
+    /**
      * The real path of a file or folder inside its place; a link out of the place or a closed folder is refused.
      */
     public function realPath(FilePath $path): string;

@@ -46,6 +46,21 @@ final readonly class PlaceRoots
     }
 
     /**
+     * The file path of an absolute path in a place the caller names, a private one included, as an account folder
+     * handed over by its owner; FileOutsidePlaces when the path does not lie in that place.
+     */
+    public function pathIn(Place $place, string $absolutePath): FilePath
+    {
+        $real = $this->realPathOf($absolutePath);
+
+        if (! $this->isWithin($real, $place)) {
+            throw FileOutsidePlaces::given();
+        }
+
+        return FilePath::in($place, ltrim(substr($real, strlen($this->root($place))), '/'));
+    }
+
+    /**
      * The file path of an absolute path given from outside, such as a command's --file, in the open place that holds
      * it; a private place's file is never reached this way.
      */

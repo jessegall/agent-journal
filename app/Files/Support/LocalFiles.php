@@ -44,6 +44,11 @@ final class LocalFiles implements Files
         return $this->roots->filePathOf($absolutePath);
     }
 
+    public function pathIn(Place $place, string $absolutePath): FilePath
+    {
+        return $this->roots->pathIn($place, $absolutePath);
+    }
+
     public function realPath(FilePath $path): string
     {
         return $this->confinement->resolved($path);

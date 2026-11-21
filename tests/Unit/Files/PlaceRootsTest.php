@@ -59,7 +59,9 @@ final class PlaceRootsTest extends TestCase
     {
         config(['accounts.root' => "{$this->folder}/made/accounts"]);
 
-        $this->assertSame(realpath("{$this->folder}/made/accounts"), $this->roots()->root(Place::Accounts));
+        $root = $this->roots()->root(Place::Accounts);
+
+        $this->assertSame(realpath("{$this->folder}/made/accounts"), $root);
         $this->assertSame(0o700, fileperms("{$this->folder}/made/accounts") & 0o777);
 
         rmdir("{$this->folder}/made/accounts");

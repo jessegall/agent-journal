@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 use App\Profiles\Values\SignInChallenge;
@@ -19,7 +21,7 @@ use App\Profiles\Values\SignInVerification;
  */
 final readonly class ClaudeSignIn implements SignInProtocol
 {
-    public function __construct(private ClaudeProgram $claude) {}
+    public function __construct(private ClaudeProgram $claude, private Files $files) {}
 
     public function begin(string $directory): PrivateAccountProcess
     {
@@ -61,7 +63,8 @@ final readonly class ClaudeSignIn implements SignInProtocol
     public function verify(string $directory): SignInVerification
     {
         $status = $this->claude->status($directory);
-        $isSignedIn = $status->isSignedInBy('claude.ai', $directory);
+        $realDirectory = $this->files->realPath($this->files->pathIn(Place::Accounts, $directory));
+        $isSignedIn = $status->isSignedInBy('claude.ai', $directory, $realDirectory);
         $identity = $isSignedIn
             ? new SignInIdentity($status->email, null, null, $status->expiresAt)
             : SignInIdentity::unproved();
