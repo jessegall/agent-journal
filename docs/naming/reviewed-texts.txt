@@ -33,6 +33,7 @@ Approve proposal {{ proposal.number }}
 Approve revision {{ proposal.currentRevision }}
 Asks
 Audit
+Back
 Before you choose a gateway
 Before you share
 Breadcrumb
@@ -209,12 +210,11 @@ Record type
 Reject
 Release hold
 Remove
-Remove account
+Remove account...
 Remove stored output ({{ storedBytes }} bytes)
 Removed
 Removing
 Rename
-Rename account
 Reply
 Requests
 Reset layout
@@ -281,7 +281,8 @@ The place this comment points at is not available: {{ unavailable.message }}
 The project has no rule of its own yet.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
 The version that runs here
-This is the name you see everywhere.
+This account must sign in again.
+This is the default account for new {{ programName(account.program) }} starts.
 This machine and the share service must keep running for the link to work.
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 To renew it, choose Sign in again on the account.

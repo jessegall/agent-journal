@@ -32,7 +32,19 @@ export function programIcon(program: string): 'claude' | 'codex' {
  */
 export const cleanupProblemText: Record<CleanupProblem, string> = {
     sign_in_not_verified: 'Unable to verify the sign-in was removed.',
-    still_bound: 'A running session still uses the old sign-in; it is removed when that session ends.',
+    still_bound:
+        'A running session still uses the old sign-in; it is removed when that session ends.',
     folder_not_deleted:
         'The sign-in was removed, but its folder could not be deleted.',
 };
+
+/**
+ * The words on the button that brings back an account that must sign in again: a key is replaced, a sign-in redone.
+ */
+export function signInAgainLabel(account: {
+    signIn: { method: string };
+}): string {
+    return account.signIn.method === 'api_key'
+        ? 'Replace key'
+        : 'Sign in again';
+}

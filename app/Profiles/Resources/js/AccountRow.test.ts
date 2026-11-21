@@ -102,30 +102,27 @@ function row(props: { account?: AccountRowData; isChosen?: boolean } = {}) {
     });
 }
 
+async function openSettings(shown: ReturnType<typeof row>): Promise<void> {
+    await shown
+        .find('[aria-label="Settings of jesse@example.com"]')
+        .trigger('click');
+    await flushPromises();
+}
+
+function button(shown: ReturnType<typeof row>, text: string) {
+    return shown.findAll('button').find((found) => found.text() === text);
+}
+
 afterEach(() => {
     forms.length = 0;
     document.body.innerHTML = '';
 });
 
 describe('an account row', () => {
-    it('reads its program and what it bills in one plain line', () => {
+    it('reads its program and what it bills in one plain line, and says when it is the default', () => {
         expect(row().text()).toContain('Codex subscription');
-    });
-
-    it('marks the default account with a filled star and offers the star to make another the default', async () => {
-        expect(
-            row({ isChosen: true })
-                .find('[aria-label="jesse@example.com is the default"]')
-                .attributes('aria-pressed'),
-        ).toBe('true');
-
-        const other = row({ isChosen: false });
-        await other
-            .find('[aria-label="Make jesse@example.com the default"]')
-            .trigger('click');
-
-        expect(forms.some((form) => form.submit.mock.calls.length === 1)).toBe(
-            true,
+        expect(row({ isChosen: true }).text()).toContain(
+            'Codex subscription · Default',
         );
     });
 
@@ -139,7 +136,26 @@ describe('an account row', () => {
         );
     });
 
-    it('shows the rest in its details dialog', async () => {
+    it('shows the expiry under its state, so an expiring row is no taller', () => {
+        const shown = row({
+            account: account({ expiresAt: '2026-12-01T00:00:00Z' }),
+        });
+
+        expect(shown.text()).toContain('Expires');
+    });
+
+    it('has one settings button and no other icon actions', () => {
+        const labels = row()
+            .findAll('li [aria-label]')
+            .filter((found) => found.element.closest('dialog') === null)
+            .map((found) => found.attributes('aria-label'));
+
+        expect(labels).toEqual(['Settings of jesse@example.com']);
+    });
+});
+
+describe('the settings dialog', () => {
+    it('shows the facts the row leaves out', async () => {
         const shown = row({
             account: account({
                 identity: 'jesse@example.com',
@@ -147,10 +163,7 @@ describe('an account row', () => {
                 runningCount: 3,
             }),
         });
-        await shown
-            .find('[aria-label="Details of jesse@example.com"]')
-            .trigger('click');
-        await flushPromises();
+        await openSettings(shown);
 
         expect(shown.text()).toContain('Sign in with ChatGPT');
         expect(shown.text()).toContain('Signed in as');
@@ -158,71 +171,77 @@ describe('an account row', () => {
         expect(shown.text()).toContain('Running now3');
     });
 
-    it('shows the expiry under its state, so an expiring row is no taller', () => {
-        const shown = row({
-            account: account({ expiresAt: '2026-12-01T00:00:00Z' }),
-        });
-
-        expect(shown.text()).toContain('Expires');
-        expect(shown.text()).not.toContain('Its login');
-    });
-});
-
-describe('the rename dialog', () => {
-    it('opens from the pencil, holds the current name, and saves only a changed name', async () => {
+    it('renames: it holds the current name and saves only a changed name', async () => {
         const shown = row();
-        await shown
-            .find('[aria-label="Rename jesse@example.com"]')
-            .trigger('click');
-        await flushPromises();
+        await openSettings(shown);
 
-        const save = shown
-            .findAll('button')
-            .find((button) => button.text() === 'Save');
-        expect(save?.attributes('disabled')).toBeDefined();
+        expect(button(shown, 'Save')?.attributes('disabled')).toBeDefined();
 
         const naming = forms.find((form) => form.label === 'jesse@example.com');
         naming!.label = 'Work account';
         await flushPromises();
 
-        expect(save?.attributes('disabled')).toBeUndefined();
+        expect(button(shown, 'Save')?.attributes('disabled')).toBeUndefined();
+
+        await shown.find('form').trigger('submit');
+
+        expect(naming!.submit).toHaveBeenCalledTimes(1);
     });
 
-    it('keeps the host refusal under the field', async () => {
+    it('keeps the host refusal under the name field', async () => {
         const shown = row();
-        await shown
-            .find('[aria-label="Rename jesse@example.com"]')
-            .trigger('click');
+        await openSettings(shown);
         const naming = forms.find((form) => form.label === 'jesse@example.com');
         naming!.errors = { label: "A name can't have a slash in it." };
         await flushPromises();
 
         expect(shown.text()).toContain("A name can't have a slash in it.");
     });
-});
 
-describe('the remove dialog', () => {
-    it('names the account and says what removal does, and removes only on confirm', async () => {
+    it('makes another account the default, and says so for the default one', async () => {
+        const other = row();
+        await openSettings(other);
+        await button(other, 'Make default')!.trigger('click');
+
+        expect(forms.some((form) => form.submit.mock.calls.length === 1)).toBe(
+            true,
+        );
+
+        const chosen = row({ isChosen: true });
+        await openSettings(chosen);
+
+        expect(chosen.text()).toContain(
+            'This is the default account for new Codex starts.',
+        );
+        expect(button(chosen, 'Make default')).toBeUndefined();
+    });
+
+    it('asks inside the same dialog before it removes, with Back focused', async () => {
         const shown = row({ account: account({ runningCount: 2 }) });
-        await shown
-            .find('[aria-label="Remove jesse@example.com"]')
-            .trigger('click');
+        await openSettings(shown);
+        await button(shown, 'Remove account...')!.trigger('click');
         await flushPromises();
 
         expect(shown.text()).toContain(
             '2 agents are still using it; it goes away when they finish.',
         );
+        expect(document.activeElement?.textContent?.trim()).toBe('Back');
         expect(forms.every((form) => form.submit.mock.calls.length === 0)).toBe(
             true,
         );
 
-        await shown
-            .findAll('button')
-            .find((button) => button.text() === 'Remove')!
-            .trigger('click');
+        await button(shown, 'Remove')!.trigger('click');
 
         expect(forms.some((form) => form.submit.mock.calls.length === 1)).toBe(
             true,
         );
+    });
+
+    it('offers the way back first for an account that must sign in again', async () => {
+        const shown = row({ account: account({ state: 'needs_sign_in' }) });
+        await openSettings(shown);
+        await button(shown, 'Sign in again')!.trigger('click');
+
+        expect(shown.emitted('signInAgain')).toHaveLength(1);
     });
 });

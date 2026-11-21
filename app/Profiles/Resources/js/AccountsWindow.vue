@@ -12,6 +12,7 @@ import { computed, ref, watch } from 'vue';
 import AccountRecovery from './AccountRecovery.vue';
 import AccountRow from './AccountRow.vue';
 import AddAccountWizard from './AddAccountWizard.vue';
+import { signInAgainLabel } from './accountLooks';
 import { isChosen, newestSelections } from './accountSelections';
 import { attemptToRejoin, isLive } from './signIn';
 import type { WizardRequest } from './signIn';
@@ -41,10 +42,6 @@ const waitingSignIn = computed(() =>
         (attempt) => isLive(attempt) && attempt.accountId === null,
     ),
 );
-
-function againLabel(row: AccountRowData): string {
-    return row.signIn.method === 'api_key' ? 'Replace key' : 'Sign in again';
-}
 
 function resumeOrAgain(row: AccountRowData): void {
     const running = attemptToRejoin(props.data.attempts, row.program, row.id);
@@ -104,6 +101,7 @@ function resumeOrAgain(row: AccountRowData): void {
                     <AccountRow
                         :account="row"
                         :is-chosen="isChosen(selections, row.program, row.id)"
+                        @sign-in-again="resumeOrAgain(row)"
                     >
                         <template
                             v-if="
@@ -126,7 +124,7 @@ function resumeOrAgain(row: AccountRowData): void {
                                 variant="bordered"
                                 size="small"
                                 @click="resumeOrAgain(row)"
-                                >{{ againLabel(row) }}</Button
+                                >{{ signInAgainLabel(row) }}</Button
                             >
                         </template>
                     </AccountRow>
