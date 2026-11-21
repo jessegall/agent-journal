@@ -68,3 +68,24 @@ func realFolder(t *testing.T) string {
 
 	return folder
 }
+
+func TestTheInstallerStopsAtARedirectedReleaseFileAndInstallsNothing(t *testing.T) {
+	folder, content, signature, publicKey := signedRelease(t)
+	direct := releaseServer(t, folder)
+	defer direct.Close()
+	redirecting := httptest.NewTLSServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		http.Redirect(writer, request, direct.URL+request.URL.Path, http.StatusFound)
+	}))
+	defer redirecting.Close()
+	installer := Installer{Origin: redirecting.URL, Target: Targets[0], Transport: redirecting.Client(), PublicKey: publicKey}
+	into := filepath.Join(realFolder(t), "installation")
+
+	err := installer.Install(context.Background(), content, signature, into)
+
+	if !errors.Is(err, ErrRedirected) {
+		t.Fatalf("Install = %v, want ErrRedirected", err)
+	}
+	if _, statErr := os.Stat(filepath.Join(into, ProgramName)); !errors.Is(statErr, os.ErrNotExist) {
+		t.Fatalf("a redirected release left %s installed: %v", ProgramName, statErr)
+	}
+}

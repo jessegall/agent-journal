@@ -17,6 +17,14 @@ refuse() {
     exit 1
 }
 
+# Downloads one file from the journal's exact origin: no redirect is followed, and any answer but 200 stops the
+# install before the file is used.
+fetch() {
+    status=$(curl -sS --proto '=https' --max-redirs 0 -o "$2" -w '%{http_code}' "$1") || return 1
+    [ "$status" = 200 ] ||
+        refuse "$1 answered $status instead of the file itself; the journal must serve it directly, with no redirect. Nothing was installed."
+}
+
 platform="$(uname -s) $(uname -m)"
 builds=$(grep -o '"source":"[a-z0-9]*-[a-z0-9]*/bin/journal-agent"' "$downloads/manifest.json" 2>/dev/null |
     sed 's/"source":"//; s/\/bin\/journal-agent"//' | sort -u | tr '\n' ' ')
@@ -118,7 +126,7 @@ program_sha256=$(grep -o "$program_line[0-9a-f]*" "$downloads/manifest.json" | s
 [ -n "$program_sha256" ] ||
     refuse "this release has no build for this computer ($target). It has builds for: ${builds:-none}. The install line was not used."
 
-if ! curl -fsSL --proto '=https' -o "$program" "$origin/releases/$version/$target/bin/journal-agent"; then
+if ! fetch "$origin/releases/$version/$target/bin/journal-agent" "$program"; then
     refuse "journal-agent could not be downloaded from $origin."
 fi
 [ "$(digest_of "$program")" = "$program_sha256" ] || refuse "journal-agent was damaged on the way. Run the install line again."

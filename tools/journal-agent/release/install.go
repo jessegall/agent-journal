@@ -17,6 +17,10 @@ import (
 // ErrDownloadFailed is returned when a release file could not be fetched from the journal.
 var ErrDownloadFailed = errors.New("a release file could not be downloaded")
 
+// ErrRedirected refuses a release file the origin answered with a redirect: the journal must serve every release
+// file directly, so nothing is verified or installed from elsewhere.
+var ErrRedirected = errors.New("a release file was redirected, not served by the journal itself; nothing was installed")
+
 // Installer installs one target of a release from the journal that publishes it.
 type Installer struct {
 	Origin    string
@@ -75,12 +79,19 @@ func (installer Installer) download(ctx context.Context, version string, artifac
 		return err
 	}
 
-	response, err := installer.Transport.Do(request)
+	// The release is served from the exact origin: a redirect is never followed, so its target is never trusted.
+	direct := *installer.Transport
+	direct.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	response, err := direct.Do(request)
 	if err != nil {
 		return errors.Join(ErrDownloadFailed, err)
 	}
 	defer response.Body.Close()
 
+	if response.StatusCode >= 300 && response.StatusCode < 400 {
+		return fmt.Errorf("%w: %s answered %d towards %s", ErrRedirected, artifact.Name, response.StatusCode,
+			response.Header.Get("Location"))
+	}
 	if response.StatusCode != http.StatusOK {
 		return fmt.Errorf("%w: %s answered %d", ErrDownloadFailed, artifact.Name, response.StatusCode)
 	}
