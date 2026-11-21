@@ -63,7 +63,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         )));
 
         foreach ($control as $request) {
-            if ($this->waitsOnHelpers($request, $runtimes->get($request->agent_runtime_id), $waitingOnHelpers)) {
+            if ($this->isStopWaitingOnHelpers($request, $runtimes->get($request->agent_runtime_id), $waitingOnHelpers)) {
                 continue;
             }
 
@@ -102,7 +102,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
      *
      * @param  list<string>  $waitingOnHelpers
      */
-    private function waitsOnHelpers(DriverRequest $request, AgentRuntime $runtime, array $waitingOnHelpers): bool
+    private function isStopWaitingOnHelpers(DriverRequest $request, AgentRuntime $runtime, array $waitingOnHelpers): bool
     {
         return $request->operation === DriverOperation::Stop
             && in_array($runtime->agent_session_id, $waitingOnHelpers, true);

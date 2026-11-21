@@ -1115,6 +1115,9 @@ case	WorkChainEnding::Merged
 case	WorkChainEnding::Withdrawn
 case	WorkRepairOutcome::Reopened
 case	WorkRepairOutcome::Unavailable
+case	WorkspaceUse::OwnCheckout
+case	WorkspaceUse::ReadOnly
+case	WorkspaceUse::Shared
 class	AbandonNavigation
 class	AbandonNavigationHandler
 class	AcceptedOperation
@@ -5467,8 +5470,10 @@ class	WorkingOnPlanStateReference
 class	WorkingOnTaskState
 class	WorkingOnTaskStateFactory
 class	WorkingOnTaskStateReference
+class	WorkspaceClone
 class	WorkspaceFacts
 class	WorkspaceObject
+class	WorkspacePreparation
 class	WorkspaceRead
 class	WorkspaceReadController
 class	WorkspaceReadPending
@@ -6528,6 +6533,7 @@ enum	WordPlace
 enum	WordSegmentType
 enum	WorkChainEnding
 enum	WorkRepairOutcome
+enum	WorkspaceUse
 interface	AccountOwnerDrain
 interface	AccountUses
 interface	ActiveAccountReader
@@ -7510,9 +7516,11 @@ method	AgentRuntime::releaseHold()
 method	AgentRuntime::requestEffort()
 method	AgentRuntime::requestModel()
 method	AgentRuntime::requests()
+method	AgentRuntime::runningHelpersOf()
 method	AgentRuntime::secondsSince()
 method	AgentRuntime::session()
 method	AgentRuntime::sessionOfHostRuntime()
+method	AgentRuntime::sessionsWaitingOnHelpers()
 method	AgentRuntime::setting()
 method	AgentRuntime::status()
 method	AgentRuntime::terminalViews()
@@ -7557,6 +7565,7 @@ method	AgentSession::target()
 method	AgentSession::useOf()
 method	AgentSession::useSelection()
 method	AgentSession::visits()
+method	AgentSession::workspaceUse()
 method	AgentSessionCounter::__construct()
 method	AgentSessionCounter::count()
 method	AgentSessionCounter::type()
@@ -8902,6 +8911,7 @@ method	ClaimCleanupHandler::handle()
 method	ClaimDriverRequests::__construct()
 method	ClaimDriverRequestsHandler::__construct()
 method	ClaimDriverRequestsHandler::handle()
+method	ClaimDriverRequestsHandler::isStopWaitingOnHelpers()
 method	ClaimDriverRequestsHandler::settledWithoutWork()
 method	ClaimGatewayOperation::__construct()
 method	ClaimGatewayOperationHandler::__construct()
@@ -11431,6 +11441,7 @@ method	FolderWalker::namesMatching()
 method	FolderWalker::walk()
 method	FolderWorkspace::__construct()
 method	FolderWorkspace::mount()
+method	FolderWorkspace::preparation()
 method	FollowingSequenceState::__construct()
 method	FollowingSequenceState::isFinished()
 method	FollowingSequenceState::onCompaction()
@@ -11574,6 +11585,7 @@ method	GitRules::rule()
 method	GitRules::valued()
 method	GitWorkspace::__construct()
 method	GitWorkspace::mount()
+method	GitWorkspace::preparation()
 method	GlobalGroup::installJournal()
 method	GlobalGroup::journal()
 method	GlobalGroupMissing::named()
@@ -12664,6 +12676,7 @@ method	ManifestCheck::__construct()
 method	ManifestCheck::stateOf()
 method	ManifestMount::__construct()
 method	ManifestMount::bind()
+method	ManifestMount::checkoutOf()
 method	ManifestMount::daemonBind()
 method	ManifestMount::existingVolume()
 method	ManifestMount::volume()
@@ -13220,6 +13233,7 @@ method	MountRules::isDaemonFolder()
 method	MountRules::local()
 method	MountRules::sessionMounts()
 method	MountRules::workspaceMount()
+method	MountRules::workspacePreparation()
 method	NameAdmission::handle()
 method	NameOutsideEveryDomain::for()
 method	NameScan::classConstantType()
@@ -20633,9 +20647,13 @@ method	WorkingOnTaskStateFactory::sessionTransfer()
 method	WorkingOnTaskStateFactory::stateClass()
 method	WorkingOnTaskStateFactory::statesFor()
 method	WorkingOnTaskStateReference::forTask()
+method	WorkspaceClone::__construct()
 method	WorkspaceFacts::__construct()
 method	WorkspaceObject::__construct()
 method	WorkspaceObject::facts()
+method	WorkspacePreparation::__construct()
+method	WorkspacePreparation::ofClone()
+method	WorkspacePreparation::ofFolder()
 method	WorkspaceRead::answer()
 method	WorkspaceRead::byReference()
 method	WorkspaceRead::casts()
@@ -20652,6 +20670,7 @@ method	WorkspaceReadReportRequest::reference()
 method	WorkspaceReadReportRequest::rules()
 method	WorkspaceReader::read()
 method	WorkspaceSource::mount()
+method	WorkspaceSource::preparation()
 method	WorkspaceSourceMissing::for()
 method	WorkspaceSourceMissing::refusalCode()
 method	WorkspaceSourceMissing::status()
@@ -20662,6 +20681,8 @@ method	WorkspaceSources::sourceOf()
 method	WorkspaceSourcesInvalid::gitAndFolder()
 method	WorkspaceSourcesInvalid::incomplete()
 method	WorkspaceSourcesInvalid::malformed()
+method	WorkspaceUse::isOwnCheckout()
+method	WorkspaceUse::isWritable()
 method	WrapperRule::__construct()
 method	WrapperRule::optionFor()
 method	WrapperRules::byFamily()
@@ -21016,6 +21037,7 @@ parameter	$checkAddress
 parameter	$checkId
 parameter	$checkedAt
 parameter	$checker
+parameter	$checkout
 parameter	$checkpoint
 parameter	$checkpoints
 parameter	$checks
@@ -21055,6 +21077,7 @@ parameter	$cleanup
 parameter	$cleanupProblem
 parameter	$client
 parameter	$clock
+parameter	$clone
 parameter	$close
 parameter	$closed
 parameter	$closedAt
@@ -23097,6 +23120,7 @@ parameter	$visits
 parameter	$volume
 parameter	$wait
 parameter	$waiting
+parameter	$waitingOnHelpers
 parameter	$wake
 parameter	$wakes
 parameter	$walk
@@ -23145,6 +23169,7 @@ parameter	$workingFolder
 parameter	$workspace
 parameter	$workspaceBytes
 parameter	$workspaceGeneration
+parameter	$workspacePreparation
 parameter	$workspaceSource
 parameter	$workspaceSources
 parameter	$workspaces
@@ -24657,6 +24682,7 @@ property	ContainerManifest::$readOnlyRoot
 property	ContainerManifest::$securityOptions
 property	ContainerManifest::$user
 property	ContainerManifest::$workdir
+property	ContainerManifest::$workspacePreparation
 property	ContextBody::$hookSpecificOutput
 property	ContextBudget::$characters
 property	ContextCollection::$budget
@@ -26363,6 +26389,7 @@ property	MakeReportCall::$requestKey
 property	MakeReportCall::$title
 property	MakeReportCall::$uploadId
 property	ManifestCheck::$files
+property	ManifestMount::$checkout
 property	ManifestMount::$mustExist
 property	ManifestMount::$source
 property	ManifestMount::$target
@@ -31310,6 +31337,10 @@ property	WorkStackPushes::$workStacks
 property	WorkingOnPlanState::$plan
 property	WorkingOnTaskState::$task
 property	WorkingOnTaskStateFactory::$tasks
+property	WorkspaceClone::$deployKeySecret
+property	WorkspaceClone::$repository
+property	WorkspaceClone::$revision
+property	WorkspaceClone::$volume
 property	WorkspaceFacts::$generation
 property	WorkspaceFacts::$isAvailable
 property	WorkspaceFacts::$isClean
@@ -31321,6 +31352,8 @@ property	WorkspaceObject::$context
 property	WorkspaceObject::$dirty
 property	WorkspaceObject::$generation
 property	WorkspaceObject::$workspaces
+property	WorkspacePreparation::$clone
+property	WorkspacePreparation::$folder
 property	WorkspaceReadPending::$reference
 property	WorkspaceReadReference::$key
 property	WorkspaceSources::$sources
@@ -32779,6 +32812,7 @@ variable	$session
 variable	$sessionId
 variable	$sessionIds
 variable	$sessions
+variable	$sessionsWithRunningHelpers
 variable	$setext
 variable	$setting
 variable	$settingKeys
