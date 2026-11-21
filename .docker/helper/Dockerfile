@@ -23,5 +23,7 @@ COPY --chown=root:root tools/journal-check/journal-check /opt/journal/bin/journa
 RUN chmod 0555 /opt/journal/bin/*
 
 RUN groupadd --gid 10001 journal && useradd --uid 10001 --gid 10001 --home-dir /home/journal --no-create-home journal
+# A new workspace volume takes this folder's owner, so the agent's user can clone into it.
+RUN mkdir -p /workspace && chown 10001:10001 /workspace
 USER 10001:10001
 WORKDIR /workspace

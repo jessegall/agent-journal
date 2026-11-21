@@ -25,6 +25,9 @@ var (
 	ErrWorkspaceQuotaUnavailable = errors.New("workspace-quota-unavailable: this host has no bounded workspace volume")
 )
 
+// reachingGitPaths are the paths under .git that make a checkout reach outside its own folder.
+var reachingGitPaths = []string{"objects/info/alternates", "commondir", "hooks"}
+
 // WorkspaceOwner is who holds a checkout: the helper identity and the purpose it works for.
 type WorkspaceOwner struct {
 	Identity string `json:"identity"`
@@ -43,14 +46,10 @@ func (workspaces Workspaces) Prepare(ctx context.Context, repository, revision, 
 	if err := workspaces.RequireMountSource(folder); err != nil {
 		return err
 	}
-	if err := workspaces.git(ctx, "", "clone", "--quiet", "--no-local", "--no-hardlinks", "--no-checkout",
-		"--config", "core.hooksPath=/dev/null", repository, folder); err != nil {
+	if err := workspaces.git(ctx, "", cloneArguments(repository, folder)...); err != nil {
 		return err
 	}
-	for _, step := range [][]string{
-		{"checkout", "--quiet", "-B", WorkspaceBranch, revision},
-		{"remote", "remove", "origin"},
-	} {
+	for _, step := range checkoutSteps(revision) {
 		if err := workspaces.git(ctx, folder, step...); err != nil {
 			return err
 		}
@@ -61,6 +60,21 @@ func (workspaces Workspaces) Prepare(ctx context.Context, repository, revision, 
 	return workspaces.Check(ctx, folder)
 }
 
+// cloneArguments clone the repository into the folder with its own objects: no hardlinks, no alternates, no hooks
+// and nothing checked out yet.
+func cloneArguments(repository, folder string) []string {
+	return []string{"clone", "--quiet", "--no-local", "--no-hardlinks", "--no-checkout",
+		"--config", "core.hooksPath=/dev/null", repository, folder}
+}
+
+// checkoutSteps put a fresh clone on the workspace branch at the revision and cut it from its remote.
+func checkoutSteps(revision string) [][]string {
+	return [][]string{
+		{"checkout", "--quiet", "-B", WorkspaceBranch, revision},
+		{"remote", "remove", "origin"},
+	}
+}
+
 // Check refuses a checkout that is not self-contained.
 func (workspaces Workspaces) Check(ctx context.Context, folder string) error {
 	gitDirectory := filepath.Join(folder, ".git")
@@ -68,7 +82,7 @@ func (workspaces Workspaces) Check(ctx context.Context, folder string) error {
 	if err != nil || !info.IsDir() {
 		return fmt.Errorf("%w: %s has no .git folder of its own", ErrWorkspaceUnsafe, folder)
 	}
-	for _, reaching := range []string{"objects/info/alternates", "commondir", "hooks"} {
+	for _, reaching := range reachingGitPaths {
 		if _, err := os.Lstat(filepath.Join(gitDirectory, reaching)); err == nil {
 			return fmt.Errorf("%w: %s has .git/%s", ErrWorkspaceUnsafe, folder, reaching)
 		}

@@ -46,8 +46,8 @@ final readonly class ContainerManifest
     ) {}
 
     /**
-     * The manifest of one prepared start: its workspace mounted at /workspace, writable only when the start's access
-     * declaration grants changing workspace files, whatever the profile is called.
+     * The manifest of one prepared start: its workspace mounted at /workspace as its arrangement places it, writable
+     * only when the start's access declaration grants changing workspace files, whatever the profile is called.
      *
      * @throws ManifestRefused
      */
@@ -59,8 +59,7 @@ final readonly class ContainerManifest
         MountRules $rules,
         string|null $resumedSessionId,
     ): self {
-        $writable = $access->changesFiles();
-        $mount = ManifestMount::bind($start->workspace, self::WORKDIR, $writable);
+        $mount = $rules->workspaceMount($start->workspace, $access->changesFiles());
 
         return self::make(
             (string) $policy->imageReference,

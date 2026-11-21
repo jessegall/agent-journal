@@ -286,6 +286,7 @@ use App\Agents\Support\SessionOption;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Support\StartRecordDetails;
 use App\Agents\Support\TerminalViewReceipt;
+use App\Agents\Support\WorkspaceSource;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\AccountUse;
@@ -1271,6 +1272,7 @@ final class CoreApi
                 SessionResolver::class,
                 ToolDiscovery::class,
                 StartExecutor::class,
+                WorkspaceSource::class,
                 HostCapabilities::class,
                 StartRecordResolver::class,
                 ProgramConversationResolver::class,

@@ -54,6 +54,8 @@ type ContainerBudgets struct {
 	OpenFiles       int `json:"openFiles"`
 	TmpBytes        int `json:"tmpBytes"`
 	HomeBytes       int `json:"homeBytes"`
+	// WorkspaceBytes bounds a writer's own checkout volume.
+	WorkspaceBytes int `json:"workspaceBytes"`
 }
 
 // SecurityOptions are the seccomp and AppArmor profiles a container runs under, each a profile path or name, both
@@ -363,17 +365,28 @@ func (containers Containers) Create(
 // agentUser is the unprivileged user agent containers run as, mirroring ContainerManifest::USER.
 const agentUser = "10001:10001"
 
+// agentUID is the agent's user id, the owner every folder it works in must have.
+const agentUID = 10001
+
 // RunCheck runs one program of the agent image in a throwaway container, as the agent's user, with no account, no
 // network, every capability dropped and the seccomp profile agent containers run under, and answers what it printed.
 // The container is removed with its anonymous volumes when the program ends.
 func (containers Containers) RunCheck(ctx context.Context, seccomp, program string, arguments ...string) (string, error) {
+	var options []string
+	if seccomp != "" {
+		options = []string{"--security-opt", "seccomp=" + seccomp}
+	}
+
+	return containers.runCheckWith(ctx, options, program, arguments...)
+}
+
+// runCheckWith runs a check as RunCheck does, with the extra docker options given, such as a read-only mount.
+func (containers Containers) runCheckWith(ctx context.Context, options []string, program string, arguments ...string) (string, error) {
 	run := []string{
 		"run", "--rm", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
 		"--user", agentUser, "--label", installationLabel + "=" + string(containers.Rules.InstallationName),
 	}
-	if seccomp != "" {
-		run = append(run, "--security-opt", "seccomp="+seccomp)
-	}
+	run = append(run, options...)
 
 	run = append(run, "--entrypoint", program, containers.Rules.AgentImage)
 	output, err := containers.command(ctx, append(run, arguments...)...).CombinedOutput()

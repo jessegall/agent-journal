@@ -18,6 +18,7 @@ use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Support\ContainerManifest;
+use App\Agents\Support\FolderWorkspace;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\ManifestMount;
@@ -350,7 +351,7 @@ final class ContainerManifestTest extends TestCase
             $this->containedMounts(),
             [],
             ExecutionBudgets::defaults(),
-            MountRules::contained('acme', '/srv/journal/accounts/a1'),
+            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main')),
             SecurityOptions::none(),
         );
 
@@ -359,7 +360,7 @@ final class ContainerManifestTest extends TestCase
 
     public function test_a_contained_session_gets_its_own_history_and_a_resume_the_history_it_resumes(): void
     {
-        $contained = MountRules::contained('acme', null);
+        $contained = MountRules::contained('acme', null, new FolderWorkspace('main'));
 
         $this->assertSame([], MountRules::local()->sessionMounts('s1', null));
         $this->assertEquals(
@@ -420,7 +421,7 @@ final class ContainerManifestTest extends TestCase
             $mounts,
             [],
             ExecutionBudgets::defaults(),
-            MountRules::contained('acme', '/srv/journal/accounts/a1'),
+            MountRules::contained('acme', '/srv/journal/accounts/a1', new FolderWorkspace('main')),
             $securityOptions,
         );
     }

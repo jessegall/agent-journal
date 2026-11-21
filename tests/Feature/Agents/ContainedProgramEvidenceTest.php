@@ -91,7 +91,7 @@ final class ContainedProgramEvidenceTest extends TestCase
 
     private function useArrangement(ArrangementType $arrangement): void
     {
-        $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig($arrangement->value, 'journal'));
+        $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig($arrangement->value, 'journal', '{}'));
     }
 
     private function containedHost(): EnrolledHost

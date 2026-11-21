@@ -202,6 +202,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->singleton(ArrangementSetting::class, fn () => ArrangementSetting::fromConfig(
             $this->app->make('config')->string('agents.arrangement'),
             $this->app->make('config')->string('agents.installation_name'),
+            $this->app->make('config')->string('agents.workspaces'),
         ));
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
             $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),

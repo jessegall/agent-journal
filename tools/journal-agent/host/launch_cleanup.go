@@ -184,5 +184,5 @@ func absentIsDone(output []byte, err error) error {
 
 func isAbsentOutput(output string) bool {
 	return strings.Contains(output, "No such container") || strings.Contains(output, "No such network") ||
-		strings.Contains(output, "not found")
+		strings.Contains(output, "No such volume") || strings.Contains(output, "not found")
 }

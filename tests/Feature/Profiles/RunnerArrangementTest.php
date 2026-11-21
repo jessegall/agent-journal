@@ -36,7 +36,7 @@ final class RunnerArrangementTest extends TestCase
 
     public function test_a_contained_journal_refuses_a_local_runner_on_every_claim(): void
     {
-        $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig('contained', 'journal'));
+        $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig('contained', 'journal', '{}'));
         $host = $this->enrolledHost();
         $refusal = RunnerArrangementRefused::between(ArrangementType::Contained, ArrangementType::Local);
 

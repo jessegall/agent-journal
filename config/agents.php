@@ -19,6 +19,13 @@ return [
     'security_profiles' => (string) env('AGENTS_SECURITY_PROFILES', ''),
 
     /*
+    | Contained only: where each environment's workspace comes from, as JSON keyed by environment name, either
+    | {"git": <repository>, "revision": <ref>, "deploy_key_secret": <secret>} or {"folder": <name under
+    | /srv/journal/workspaces>}. Read once, by WorkspaceSources.
+    */
+    'workspaces' => (string) env('AGENTS_WORKSPACES', '{}'),
+
+    /*
     | The protected host's local start socket on this machine (journal-agent's state folder, start.sock): the one
     | way PHP on the host starts or stops a prepared start (doc 57, steps 04 and 24).
     */

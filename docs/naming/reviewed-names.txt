@@ -2402,6 +2402,7 @@ class	FolderMissing
 class	FolderTooDeep
 class	FolderTrustRefused
 class	FolderWalker
+class	FolderWorkspace
 class	FollowingSequenceState
 class	FollowingSequenceStateFactory
 class	FollowingSequenceStateReference
@@ -2444,6 +2445,7 @@ class	GenerateCallsCommand
 class	GenerateUiManifest
 class	GenerationStatus
 class	GitRules
+class	GitWorkspace
 class	GlobalGroup
 class	GlobalGroupMissing
 class	GrammarContext
@@ -5376,6 +5378,9 @@ class	WorkspaceReadController
 class	WorkspaceReadPending
 class	WorkspaceReadReference
 class	WorkspaceReadReportRequest
+class	WorkspaceSourceMissing
+class	WorkspaceSources
+class	WorkspaceSourcesInvalid
 class	WrapperRule
 class	WrapperRules
 class	WriteAssignments
@@ -5626,6 +5631,7 @@ constant	FileFunctionScan::EXEMPTION_MARK
 constant	FileFunctionScan::FUNCTIONS
 constant	FileFunctionScan::ITERATORS
 constant	FlowGraphData::MERMAID_ESCAPES
+constant	FolderWorkspace::ROOT
 constant	FollowingSequenceStateReference::TYPE_KEY
 constant	Frame::BUDGET_SECONDS
 constant	Frame::CANCELLED
@@ -6736,6 +6742,7 @@ interface	WorkRepair
 interface	WorkStackProvider
 interface	WorkStacks
 interface	WorkspaceReader
+interface	WorkspaceSource
 method	AbandonNavigation::__construct()
 method	AbandonNavigationHandler::__construct()
 method	AbandonNavigationHandler::handle()
@@ -11147,6 +11154,8 @@ method	FolderWalker::expand()
 method	FolderWalker::namesIn()
 method	FolderWalker::namesMatching()
 method	FolderWalker::walk()
+method	FolderWorkspace::__construct()
+method	FolderWorkspace::mount()
 method	FollowingSequenceState::__construct()
 method	FollowingSequenceState::isFinished()
 method	FollowingSequenceState::onCompaction()
@@ -11285,6 +11294,8 @@ method	GitRules::flags()
 method	GitRules::namedRule()
 method	GitRules::rule()
 method	GitRules::valued()
+method	GitWorkspace::__construct()
+method	GitWorkspace::mount()
 method	GlobalGroup::installJournal()
 method	GlobalGroup::journal()
 method	GlobalGroupMissing::named()
@@ -12845,6 +12856,7 @@ method	MountRules::contained()
 method	MountRules::isDaemonFolder()
 method	MountRules::local()
 method	MountRules::sessionMounts()
+method	MountRules::workspaceMount()
 method	NameAdmission::handle()
 method	NameOutsideEveryDomain::for()
 method	NameScan::classConstantType()
@@ -20162,6 +20174,17 @@ method	WorkspaceReadReference::__construct()
 method	WorkspaceReadReportRequest::reference()
 method	WorkspaceReadReportRequest::rules()
 method	WorkspaceReader::read()
+method	WorkspaceSource::mount()
+method	WorkspaceSourceMissing::for()
+method	WorkspaceSourceMissing::refusalCode()
+method	WorkspaceSourceMissing::status()
+method	WorkspaceSources::__construct()
+method	WorkspaceSources::for()
+method	WorkspaceSources::fromJson()
+method	WorkspaceSources::sourceOf()
+method	WorkspaceSourcesInvalid::gitAndFolder()
+method	WorkspaceSourcesInvalid::incomplete()
+method	WorkspaceSourcesInvalid::malformed()
 method	WrapperRule::__construct()
 method	WrapperRule::optionFor()
 method	WrapperRules::byFamily()
@@ -20746,6 +20769,7 @@ parameter	$deniedTools
 parameter	$denormalizer
 parameter	$denyOperations
 parameter	$dependentShares
+parameter	$deployKeySecret
 parameter	$depth
 parameter	$description
 parameter	$descriptor
@@ -21332,6 +21356,7 @@ parameter	$liveShare
 parameter	$liveness
 parameter	$loaded
 parameter	$loader
+parameter	$localFolder
 parameter	$locations
 parameter	$lock
 parameter	$lockKey
@@ -22551,6 +22576,7 @@ parameter	$visitCount
 parameter	$visited
 parameter	$visitedFrames
 parameter	$visits
+parameter	$volume
 parameter	$wait
 parameter	$waiting
 parameter	$wake
@@ -22601,6 +22627,8 @@ parameter	$workingFolder
 parameter	$workspace
 parameter	$workspaceBytes
 parameter	$workspaceGeneration
+parameter	$workspaceSource
+parameter	$workspaceSources
 parameter	$workspaces
 parameter	$worktree
 parameter	$wrapper
@@ -23068,6 +23096,7 @@ property	ArgumentGrammar::$options
 property	ArgumentGrammar::$repeatsLastOperand
 property	ArrangementSetting::$arrangement
 property	ArrangementSetting::$installationName
+property	ArrangementSetting::$workspaceSources
 property	AskAssignments::$actors
 property	AskAssignments::$asks
 property	AskAssignments::$graph
@@ -25021,6 +25050,7 @@ property	FolderEntry::$type
 property	FolderWalker::$closed
 property	FolderWalker::$confinement
 property	FolderWalker::$roots
+property	FolderWorkspace::$folder
 property	FollowingSequenceState::$sequence
 property	FollowingSequenceStateFactory::$runs
 property	Frame::$admittedAt
@@ -25102,6 +25132,10 @@ property	GenerationStatus::$catalogueDigest
 property	GenerationStatus::$error
 property	GenerationStatus::$generationId
 property	GenerationStatus::$state
+property	GitWorkspace::$deployKeySecret
+property	GitWorkspace::$repository
+property	GitWorkspace::$revision
+property	GitWorkspace::$volume
 property	GrammarContext::$cursor
 property	GrammarContext::$draft
 property	GrammarContext::$source
@@ -25987,6 +26021,7 @@ property	MonotonicStop::$stopNanoseconds
 property	MonotonicStopTimes::$clock
 property	MountRules::$accountSource
 property	MountRules::$installationName
+property	MountRules::$workspaceSource
 property	NameUse::$file
 property	NameUse::$line
 property	NameUse::$name
@@ -30611,6 +30646,7 @@ property	WorkspaceObject::$generation
 property	WorkspaceObject::$workspaces
 property	WorkspaceReadPending::$reference
 property	WorkspaceReadReference::$key
+property	WorkspaceSources::$sources
 property	WrapperRule::$classes
 property	WrapperRule::$family
 property	WrapperRule::$leadingOperands
@@ -31116,6 +31152,7 @@ variable	$enrolled
 variable	$entered
 variable	$entitlement
 variable	$entries
+variable	$entries	app/Agents/Support/WorkspaceSources.php
 variable	$entries	app/Bus/Support/DeclaredCommand.php
 variable	$entries	app/Files/Support/FileWriter.php
 variable	$entries	app/Files/Support/FolderWalker.php
@@ -31315,6 +31352,7 @@ variable	$inboxIds
 variable	$inboxLabels
 variable	$include
 variable	$incoming
+variable	$incomplete
 variable	$index
 variable	$indexes
 variable	$ineligible
@@ -32270,7 +32308,6 @@ variable	$workHolds
 variable	$workProviderClass
 variable	$worker
 variable	$wrapped
-variable	$writable
 variable	$write
 variable	$writes
 variable	$written

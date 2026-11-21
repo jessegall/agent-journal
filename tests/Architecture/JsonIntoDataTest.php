@@ -25,7 +25,8 @@ final class JsonIntoDataTest extends TestCase
     /**
      * The only methods allowed #[DecodesAnyJson], each because its JSON has no shape of ours to name: a value of any
      * type kept as stored, a tool's own JSON line, a user's option or file sent on for the journal to check, a tree
-     * checked node by node against its limits, or a bare list of texts.
+     * checked node by node against its limits, a bare list of texts, or a map keyed by the operator's own environment
+     * names whose entries each go into their own Data class.
      */
     private const array ANY_JSON_METHODS = [
         'App\\Settings\\Storage\\EncodedValue::jsonSerialize',
@@ -35,6 +36,7 @@ final class JsonIntoDataTest extends TestCase
         'App\\Profiles\\Console\\ImportProfileDraftCommand::readCommands',
         'App\\Skills\\Support\\ConditionTree::fromJson',
         'App\\Profiles\\Casts\\ProfileAuthorizationCast::deniedCommandsOf',
+        'App\\Agents\\Support\\WorkspaceSources::fromJson',
     ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void

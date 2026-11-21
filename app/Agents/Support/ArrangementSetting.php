@@ -10,6 +10,8 @@ use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\InstallationNameMissing;
 use App\Agents\Exceptions\ProgramNotContainable;
 use App\Agents\Exceptions\RunnerArrangementRefused;
+use App\Agents\Exceptions\WorkspaceSourceMissing;
+use App\Agents\Exceptions\WorkspaceSourcesInvalid;
 use App\Agents\Models\Host;
 use App\Programs\Enums\HookProgram;
 
@@ -22,13 +24,15 @@ final readonly class ArrangementSetting
     private function __construct(
         public ArrangementType $arrangement,
         private string $installationName,
+        private WorkspaceSources $workspaceSources,
     ) {}
 
     /**
      * @throws ArrangementUnknown
      * @throws InstallationNameMissing
+     * @throws WorkspaceSourcesInvalid
      */
-    public static function fromConfig(string $value, string $installationName): self
+    public static function fromConfig(string $value, string $installationName, string $workspaces): self
     {
         $arrangement = ArrangementType::tryFrom($value) ?? throw ArrangementUnknown::for($value);
 
@@ -36,18 +40,27 @@ final readonly class ArrangementSetting
             throw InstallationNameMissing::whenContained();
         }
 
-        return new self($arrangement, $installationName);
+        return new self($arrangement, $installationName, WorkspaceSources::fromJson($workspaces, $installationName));
     }
 
     /**
-     * The mounts a helper container may have here; contained, the one account folder it may mount is the session's
-     * own, when it has an account.
+     * The mounts a helper container may have here; contained, its workspace is its environment's declared source and
+     * the one account folder it may mount is the session's own, when it has an account. A contained start for an
+     * environment without a source is refused before any container exists.
+     *
+     * @throws WorkspaceSourceMissing
      */
-    public function mountRules(string|null $accountSource): MountRules
+    public function mountRules(string|null $accountSource, string $environment): MountRules
     {
-        return $this->arrangement->isContained()
-            ? MountRules::contained($this->installationName, $accountSource)
-            : MountRules::local();
+        if (! $this->arrangement->isContained()) {
+            return MountRules::local();
+        }
+
+        return MountRules::contained(
+            $this->installationName,
+            $accountSource,
+            $this->workspaceSources->for($environment),
+        );
     }
 
     /**

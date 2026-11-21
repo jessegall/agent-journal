@@ -41,20 +41,37 @@ final readonly class MountRules
     private function __construct(
         public string|null $installationName,
         public string|null $accountSource,
+        public WorkspaceSource|null $workspaceSource,
     ) {}
 
     public static function local(): self
     {
-        return new self(null, null);
+        return new self(null, null, null);
     }
 
     /**
-     * The rules of a contained session: its volumes open with the installation name, and the one account folder it
-     * may mount, when it has an account, is its own.
+     * The rules of a contained session: its volumes open with the installation name, its workspace comes from its
+     * environment's declared source, and the one account folder it may mount, when it has an account, is its own.
      */
-    public static function contained(string $installationName, string|null $accountSource): self
+    public static function contained(
+        string $installationName,
+        string|null $accountSource,
+        WorkspaceSource $workspaceSource,
+    ): self {
+        return new self($installationName, $accountSource, $workspaceSource);
+    }
+
+    /**
+     * The mount that puts the start's workspace at /workspace: locally the start's own folder on this machine;
+     * contained, its environment's volume or server folder, which the host fills or checks before the container.
+     */
+    public function workspaceMount(string $localFolder, bool $writable): ManifestMount
     {
-        return new self($installationName, $accountSource);
+        if ($this->workspaceSource === null) {
+            return ManifestMount::bind($localFolder, ContainerManifest::WORKDIR, $writable);
+        }
+
+        return $this->workspaceSource->mount($writable);
     }
 
     /**

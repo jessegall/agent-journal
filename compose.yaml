@@ -215,6 +215,9 @@ services:
             - agent-docker-data:/home/rootless/.local/share/docker
             - agent-docker-socket:/run/agent-docker
             - accounts-data:/srv/journal/accounts
+            # The operator's server folders, one per environment, bound as workspaces after daemon-side checks
+            # (AGENTS_WORKSPACES_FOLDER in .env; unset leaves an empty folder, so no operator folder exists).
+            - ${AGENTS_WORKSPACES_FOLDER:-./.docker/helper/no-workspaces}:/srv/journal/workspaces
         networks:
             - agent-egress
         healthcheck:
@@ -315,6 +318,9 @@ services:
             - --agent-image=${AGENT_IMAGE:-}
             - --runner-image=${RUNNER_IMAGE:-}
             - --seccomp-profile=/etc/journal/security/seccomp-agent.json
+        # Each environment's deploy key, for its workspace clone (secrets below); only agent-host mounts them.
+        # secrets:
+        #     - deploy_key_main
         volumes:
             - host-state:/var/lib/journal-host
             - host-start-socket:/run/journal-start
@@ -413,6 +419,10 @@ secrets:
     # The host secret agents:host-enroll printed, in a file only the operator writes (secrets/README.md).
     journal_host_secret:
         file: ./secrets/journal_host_secret
+    # An environment's deploy key, read only by agent-host, which hands it to the one-shot clone container on standard
+    # input; it never reaches app or an agent container. Add one per environment and name it in agent-host's secrets.
+    # deploy_key_main:
+    #     file: ./secrets/deploy_key_main
 
 networks:
     # The agent daemon's own network, shared with no app, database or cache container.

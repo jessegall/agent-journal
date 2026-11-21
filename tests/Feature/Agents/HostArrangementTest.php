@@ -103,14 +103,14 @@ final class HostArrangementTest extends TestCase
     {
         $this->expectExceptionObject(ArrangementUnknown::for('sideways'));
 
-        ArrangementSetting::fromConfig('sideways', 'journal');
+        ArrangementSetting::fromConfig('sideways', 'journal', '{}');
     }
 
     public function test_a_contained_journal_without_an_installation_name_is_refused(): void
     {
         $this->expectExceptionObject(InstallationNameMissing::whenContained());
 
-        ArrangementSetting::fromConfig('contained', '');
+        ArrangementSetting::fromConfig('contained', '', '{}');
     }
 
     public function test_a_claim_reports_the_host_arrangement_and_one_unlike_its_enrolment_is_refused(): void
@@ -150,7 +150,7 @@ final class HostArrangementTest extends TestCase
 
     private function useArrangement(ArrangementType $arrangement): void
     {
-        $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig($arrangement->value, 'journal'));
+        $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig($arrangement->value, 'journal', '{}'));
     }
 
     private function openOn(ArrangementType $arrangement, string $program = 'claude-code'): OpenedRuntime
