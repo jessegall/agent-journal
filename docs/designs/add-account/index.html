@@ -196,6 +196,31 @@ code{font-family:var(--font-mono);font-size:11px}
 .list .who .name{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
 .list .who .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list.touch .pencil,.list.touch .hide{opacity:1}
+/* ---------- section 9: two options for the row's actions ---------- */
+.optA .acts-row .ib+.ib{margin-left:8px}
+.optA .acts-row{height:auto;align-items:flex-start}
+.state-col{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:2px;margin-left:24px;width:120px;padding-top:2px}
+.state-col .plain{margin:0;min-width:0;line-height:16px}
+.state-col .exp{font-size:var(--t-meta);color:var(--text-4);white-space:nowrap;line-height:14px}
+.optB .acts-row{height:auto;align-items:flex-start;gap:16px}
+.optB .state-col{margin-left:0;width:auto}
+.modal.set{width:480px}
+.modal.set .m-body{height:auto;gap:18px}
+.m-head .ttl{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.m-head .ttl b{font-size:var(--t-title);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sect{display:flex;flex-direction:column;gap:8px}
+.sect .sl{font-size:var(--t-group);font-weight:600;letter-spacing:.06em;color:var(--text-3);text-transform:uppercase}
+.inline-edit{display:flex;gap:8px;align-items:center}
+.inline-edit input{flex:1;height:28px;border-radius:var(--r-control);border:1px solid var(--border-2);background:transparent;padding:0 10px;font:inherit;font-size:var(--t-field);color:var(--text)}
+.defrow{display:flex;align-items:center;gap:10px;border:1px solid var(--border-2);border-radius:var(--r-field);padding:8px 10px 8px 12px;font-size:var(--t-field);color:var(--text-2)}
+.defrow .gap{flex:1}
+.defrow svg{color:var(--text-3)}
+dl.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:var(--t-small)}
+dl.facts dt{color:var(--text-3)}
+dl.facts dd{margin:0;color:var(--text);min-width:0;overflow-wrap:anywhere}
+.starts{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:var(--t-small)}
+.starts a{color:var(--brand-text);text-decoration:underline}
+.m-foot .left{display:flex;gap:8px}
 .btn.danger{border-color:color-mix(in srgb,var(--danger) 55%,var(--border-2));color:var(--danger)}
 .btn.danger:hover{background:color-mix(in srgb,var(--danger) 12%,transparent)}
 .modal.sm{width:400px}
@@ -714,6 +739,124 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
         <p class="dialog-text">This signs it out and deletes its files. <b>2 agents</b> are still using it; it goes away when they finish.</p>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal" disabled>Cancel</button><button class="btn danger normal" disabled><span class="spin tiny"></span>Removing</button></div>
+    </div></div></div>
+</div>
+
+<!-- ============ 9. ROW ACTIONS: TWO OPTIONS ============ -->
+<h2 class="sec">9 · The row's actions: two options (user messages 12292, 12297)</h2>
+<p class="note">As built (commit 8c09c9e47, AccountRow.vue), each row has info, star and trash icons 12&nbsp;px apart, left of an 80&nbsp;px state column
+(<code>w-20</code>). The column holds “Signed in” and, under it, “Expires 12/18/2026”. That date is wider than 80&nbsp;px, so it runs left under the trash
+can and nearly touches it. Two ways out:</p>
+<ul class="todo" style="margin:-8px 0 20px">
+  <li><b>A — the same icons, with room.</b> The icons sit 8&nbsp;px apart as one group. A 24&nbsp;px gap separates them from a state column that is
+    120&nbsp;px wide, so “Expires 18 Dec 2026” fits under the state word and never reaches the icons. They still appear on hover or focus.</li>
+  <li><b>B — one settings button per row.</b> The row shows the name, the subtext, the state with its expiry, and a single settings button that is
+    always shown. The button opens the account's dialog: rename, make default, every detail, recent starts, and Remove with its confirmation in
+    the same dialog. Default stays readable in the subtext and as the filled star in the dialog.</li>
+</ul>
+<p class="note"><b>Recommendation: B.</b> One always-visible button can be found by mouse, keyboard and touch alike; nothing hides behind hover. The
+row is quiet and lines up at any width, the phone included, because only one 24&nbsp;px button has to fit. The details already needed a dialog, so
+renaming, the default and removal belong there with them. Each of these is rare, and removal is the one that must not happen by accident, so a
+second step suits it. What B costs: making an account the default takes two clicks instead of one. That's a rare action, and the row still shows
+which account is the default.</p>
+<div class="grid">
+  <div class="frame full"><div class="cap"><b>9a</b>Option A at full width: icons grouped 8&nbsp;px apart, 24&nbsp;px from a 120&nbsp;px state column; the second row is hovered</div>
+    <div class="stage shell-stage"><div class="browser"><div class="chrome"><i></i><i></i><i></i></div><div class="shell" style="min-height:0">
+      <nav class="rail"><span>Home</span><span>Plans</span><span>Rules</span><span class="on">Accounts</span></nav>
+      <main class="content">
+      <div class="ph"><h3>Accounts</h3><span class="count">3</span><span class="gap"></span><div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
+      <ul class="list acting optA">
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Subscription · Default</span></div>
+          <div class="acts-row"><button class="ib hide" data-tip="Details" aria-label="Details"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></svg></button><button class="ib" data-tip="Default" aria-pressed="true" aria-label="Default"><svg viewBox="0 0 16 16" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.9l1.85 3.8 4.15.6-3 2.95.7 4.15L8 11.45 4.3 13.4l.7-4.15-3-2.95 4.15-.6Z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button>
+            <span class="state-col"><span class="plain">Signed in</span><span class="exp">Expires 18 Dec 2026</span></span></div></li>
+        <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><div class="name-line"><span class="name" title="Claude Code API key">Claude Code API key</span><button class="ib pencil" data-tip="Rename" aria-label="Rename"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Claude Code · Pay per use</span></div>
+          <div class="acts-row"><button class="ib hide" data-tip="Details" aria-label="Details"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></svg></button><button class="ib hide hv" data-tip="Make default" aria-pressed="false" aria-label="Make default"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.9l1.85 3.8 4.15.6-3 2.95.7 4.15L8 11.45 4.3 13.4l.7-4.15-3-2.95 4.15-.6Z"/></svg></button><button class="ib hide" data-tip="Remove" aria-label="Remove"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button>
+            <span class="state-col"><span class="plain">Signed in</span></span></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><div class="name-line"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><button class="ib pencil" data-tip="Rename" aria-label="Rename"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/></svg></button></div><span class="sub">Codex · Subscription</span><span class="desc">Expired on 18 Nov. Sign in again to keep using it.</span></div>
+          <div class="right"><div class="acts-row"><button class="ib hide" data-tip="Details" aria-label="Details"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></svg></button><span class="ib-slot" style="margin-left:8px"></span><button class="ib hide" data-tip="Remove" aria-label="Remove"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg></button>
+            <span class="state-col"><span class="plain">Expired</span><span class="exp">since 18 Nov 2026</span></span></div><button class="btn primary small">Sign in again</button></div></li>
+      </ul>
+      </main>
+    </div></div></div></div>
+
+  <div class="frame full"><div class="cap"><b>9b</b>Option B at full width (recommended): one settings button per row, always shown; the state and its expiry sit in a column just before it</div>
+    <div class="stage shell-stage"><div class="browser"><div class="chrome"><i></i><i></i><i></i></div><div class="shell" style="min-height:0">
+      <nav class="rail"><span>Home</span><span>Plans</span><span>Rules</span><span class="on">Accounts</span></nav>
+      <main class="content">
+      <div class="ph"><h3>Accounts</h3><span class="count">3</span><span class="gap"></span><div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
+      <ul class="list acting optB">
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div>
+          <div class="acts-row"><span class="state-col"><span class="plain">Signed in</span><span class="exp">Expires 18 Dec 2026</span></span><button class="ib" data-tip="Account settings" aria-label="Settings for jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></svg></button></div></li>
+        <li class="hov"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name" title="Claude Code API key">Claude Code API key</span><span class="sub">Claude Code · Pay per use</span></div>
+          <div class="acts-row"><span class="state-col"><span class="plain">Signed in</span></span><button class="ib hv" data-tip="Account settings" aria-label="Settings for Claude Code API key"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></svg></button></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name" title="jesse.gall@transport-planning.example.com">jesse.gall@transport-planning.example.com</span><span class="sub">Codex · Subscription</span><span class="desc">Expired on 18 Nov. Sign in again to keep using it.</span></div>
+          <div class="right"><div class="acts-row"><span class="state-col"><span class="plain">Expired</span><span class="exp">since 18 Nov 2026</span></span><button class="ib" data-tip="Account settings" aria-label="Settings for jesse.gall@transport-planning.example.com"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></svg></button></div><button class="btn primary small">Sign in again</button></div></li>
+      </ul>
+      </main>
+    </div></div></div></div>
+
+  <div class="frame"><div class="cap"><b>9c</b>Option B on a phone: the same single button, so names keep their room</div>
+    <div class="stage phone-stage"><div class="phone">
+      <div class="ph"><h3>Accounts</h3><span class="count">3</span><span class="gap"></span><div class="acts"><button class="btn primary small"><span class="plus">+</span>Add</button></div></div>
+      <ul class="list acting optB">
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Subscription · Default</span></div>
+          <div class="acts-row"><span class="state-col"><span class="plain">Signed in</span><span class="exp">Expires 18 Dec 2026</span></span><button class="ib" aria-label="Settings"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></svg></button></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div class="who"><span class="name">Claude Code API key</span><span class="sub">Claude Code · Pay per use</span></div>
+          <div class="acts-row"><span class="state-col"><span class="plain">Signed in</span></span><button class="ib" aria-label="Settings"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></svg></button></div></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Codex · Subscription</span><span class="desc">Expired on 18 Nov. Sign in again to keep using it.</span></div>
+          <div class="right"><div class="acts-row"><span class="state-col"><span class="plain">Expired</span></span><button class="ib" aria-label="Settings"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05"/></svg></button></div><button class="btn primary small">Sign in again</button></div></li>
+      </ul>
+    </div></div></div>
+
+  <div class="frame"><div class="cap"><b>9d</b>Option B's dialog: rename, make default, the details and recent starts; Remove sits at the bottom left</div>
+    <div class="stage"><div class="modal set">
+      <div class="m-head"><span class="ttl"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><b>Claude Code API key</b></span><button class="btn icon">✕</button></div>
+      <div class="m-body">
+        <div class="sect"><span class="sl">Name</span><div class="inline-edit"><input value="Claude Code API key"><button class="btn bordered normal" disabled>Save</button></div></div>
+        <div class="sect"><span class="sl">Default</span>
+          <div class="defrow"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.9l1.85 3.8 4.15.6-3 2.95.7 4.15L8 11.45 4.3 13.4l.7-4.15-3-2.95 4.15-.6Z"/></svg><span>New Claude Code starts use jesse.gall@… now.</span><span class="gap"></span><button class="btn bordered small">Make default</button></div></div>
+        <div class="sect"><span class="sl">Details</span>
+          <dl class="facts">
+            <dt>Program</dt><dd>Claude Code</dd>
+            <dt>Sign-in</dt><dd>API key</dd>
+            <dt>Billing</dt><dd>Pay per use</dd>
+            <dt>Signed in as</dt><dd>Not known</dd>
+            <dt>Workspace</dt><dd>Transport Planning</dd>
+            <dt>State</dt><dd>Signed in</dd>
+            <dt>Last checked</dt><dd>21 Nov 2026, 09:02</dd>
+            <dt>Expires</dt><dd>Never</dd>
+            <dt>Running now</dt><dd>2 agents</dd>
+          </dl></div>
+        <div class="sect"><span class="sl">Recent starts</span><div class="starts"><a>Running since 09:12</a><a>Running since 08:55</a><a>Started 20 Nov, 16:40</a></div></div>
+      </div>
+      <div class="m-foot"><button class="btn bordered normal"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg>Remove account…</button><span class="gap"></span><button class="btn primary normal">Close</button></div>
+    </div></div></div>
+
+  <div class="frame"><div class="cap"><b>9e</b>Option B: Remove asks inside the same dialog. Focus opens on Back, and Remove is the danger button.</div>
+    <div class="stage"><div class="modal set">
+      <div class="m-head"><span class="ttl"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><b>Remove Claude Code API key?</b></span><button class="btn icon">✕</button></div>
+      <div class="m-body">
+        <div class="who-line"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><div><div class="n">Claude Code API key</div><div class="s">Claude Code · Pay per use</div></div></div>
+        <p class="dialog-text">This signs it out and deletes its files. <b>2 agents</b> are still using it; it goes away when they finish.</p>
+      </div>
+      <div class="m-foot"><button class="btn normal ring">← Back</button><span class="gap"></span><button class="btn danger normal">Remove</button></div>
+    </div></div></div>
+
+  <div class="frame"><div class="cap"><b>9f</b>Option B's dialog for an expired, default account: Sign in again in the dialog too, and Default shown as it is</div>
+    <div class="stage"><div class="modal set">
+      <div class="m-head"><span class="ttl"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><b>jesse.gall@transport-planning.example.com</b></span><button class="btn icon">✕</button></div>
+      <div class="m-body">
+        <div class="defrow"><span>Expired on 18 Nov. Sign in again to keep using it.</span><span class="gap"></span><button class="btn primary small">Sign in again</button></div>
+        <div class="sect"><span class="sl">Name</span><div class="inline-edit"><input value="jesse.gall@transport-planning.example.com"><button class="btn bordered normal" disabled>Save</button></div></div>
+        <div class="sect"><span class="sl">Default</span>
+          <div class="defrow"><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.9l1.85 3.8 4.15.6-3 2.95.7 4.15L8 11.45 4.3 13.4l.7-4.15-3-2.95 4.15-.6Z"/></svg><span>Default for new Codex starts. They wait until it's signed in again.</span></div></div>
+        <div class="sect"><span class="sl">Details</span>
+          <dl class="facts">
+            <dt>Program</dt><dd>Codex</dd><dt>Sign-in</dt><dd>Sign in with ChatGPT</dd><dt>Billing</dt><dd>Subscription</dd>
+            <dt>Signed in as</dt><dd>jesse.gall@transport-planning.example.com</dd><dt>State</dt><dd>Expired</dd><dt>Expires</dt><dd>18 Nov 2026</dd><dt>Running now</dt><dd>0</dd>
+          </dl></div>
+      </div>
+      <div class="m-foot"><button class="btn bordered normal"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/></svg>Remove account…</button><span class="gap"></span><button class="btn primary normal">Close</button></div>
     </div></div></div>
 </div>
 

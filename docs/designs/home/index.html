@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home — one agent across driver sessions (doc 72)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* Version 6 tokens (resources/css/app.css :root and .dark) */
+:root{
+  --font-sans:'Geist',-apple-system,'Segoe UI',system-ui,sans-serif;
+  --font-mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --side:#f5f5f7;--bg:#fff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--code-bg:#f5f6f8;--term:#16171a;
+  --border:#e8e9ec;--border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--line:#e8e9ec;
+  --text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;
+  --brand:#5e64c9;--brand-text:#4a50b5;--brand-dim:#e5e6fa;--danger:#bf4f3d;--tone-warn:#a4731a;--tone-good:#2e8a4e;
+  --tip-bg:#fff;--tip-edge:#d9dbe0;
+  --t-title:16px;--t-card:13.5px;--t-body:13px;--t-field:12.5px;--t-small:12px;--t-badge:11.5px;--t-meta:11px;--t-group:10.5px;
+  --r-control:6px;--r-button:7px;--r-field:8px;--r-menu:9px;--r-card:12px;
+}
+.dark{
+  --side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--code-bg:#121316;
+  --border:#22252b;--border-inner:#1d1f24;--border-2:#2f3136;--border-3:#3a3d44;--line:#22252b;
+  --text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;
+  --brand-text:#a3a8f0;--brand-dim:#2a2d5a;--danger:#df8b7e;--tone-warn:#d8a94a;--tone-good:#63b37c;
+  --tip-bg:#212329;--tip-edge:#3a3d44;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font-sans);font-size:var(--t-body);color:var(--text);background:var(--side);-webkit-font-smoothing:antialiased}
+p{margin:0}
+code{font-family:var(--font-mono);font-size:11px}
+svg.i{width:14px;height:14px;flex:none;display:block;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+svg.i.s12{width:12px;height:12px}svg.i.s13{width:13px;height:13px}svg.i.s16{width:16px;height:16px}
+.mk{flex:none;display:block;fill:currentColor;color:var(--text);width:14px;height:14px}
+.mk.s16{width:16px;height:16px}.mk.s18{width:18px;height:18px}
+
+/* ---------- page around the frames ---------- */
+.doc{max-width:1280px;margin:0 auto;padding:40px 32px 96px}
+.top{display:flex;align-items:flex-start;gap:24px}
+.top h1{font-size:22px;font-weight:600;margin:0 0 8px;letter-spacing:-.01em}
+.top .gap{flex:1}
+.lead{color:var(--text-2);max-width:820px;line-height:1.6}
+.lead+.lead{margin-top:8px}
+.toggle{font:inherit;font-size:var(--t-small);border:1px solid var(--border-2);background:var(--bg);color:var(--text-2);border-radius:var(--r-button);height:28px;padding:0 12px;cursor:pointer}
+h2.sec{font-size:15px;font-weight:600;margin:56px 0 6px}
+p.note{color:var(--text-3);font-size:var(--t-small);margin:0 0 20px;max-width:860px;line-height:1.6}
+ul.note{color:var(--text-3);font-size:var(--t-small);margin:-8px 0 20px;max-width:860px;line-height:1.7;padding-left:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:32px 24px}
+.frame{display:flex;flex-direction:column;gap:10px;min-width:0}
+.frame.full{grid-column:1/-1}
+.cap{font-size:var(--t-small);color:var(--text-2);line-height:1.5}
+.cap b{color:var(--text);font-weight:600;margin-right:4px}
+.stage{background:color-mix(in srgb,var(--text) 18%,var(--side));border-radius:var(--r-card);padding:24px;display:flex;justify-content:center;align-items:flex-start;min-width:0}
+.dark .stage{background:#08090a}
+.stage.dim{position:relative}
+
+/* ---------- kit look-alikes ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;border:1px solid transparent;border-radius:var(--r-button);background:transparent;cursor:pointer;white-space:nowrap;color:var(--text-2)}
+.btn.small{height:24px;padding:0 9px;font-size:var(--t-small)}
+.btn.normal{height:28px;padding:0 11px;font-size:var(--t-field)}
+.btn.bordered{border-color:var(--border-2)}
+.btn.primary{border-color:var(--brand);background:var(--brand-dim);color:var(--brand-text)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.icon{width:24px;height:24px;padding:0;color:var(--text-3)}
+.btn.icon:hover,.btn.hv{background:color-mix(in srgb,var(--border-3) 70%,transparent);color:var(--text)}
+.spin{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--border-3);border-top-color:var(--brand);animation:sp .8s linear infinite;flex:none}
+.spin.big{width:24px;height:24px;border-width:2.5px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--text-4)}
+.dot.live{background:var(--brand)}
+.dot.warn{background:var(--tone-warn)}
+.dot.bad{background:var(--danger)}
+.dot.ring{background:transparent;border:1.5px solid var(--text-4)}
+.plain{font-size:var(--t-small);color:var(--text-3);white-space:nowrap}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:var(--t-small);color:var(--text-2)}
+.field input{height:28px;border-radius:var(--r-control);border:1px solid var(--border-2);background:transparent;padding:0 10px;font:inherit;font-size:var(--t-field);color:var(--text);width:100%}
+.kbd{font-family:var(--font-mono);font-size:10.5px;padding:1px 5px;border:1px solid var(--border-2);border-bottom-width:2px;border-radius:4px;color:var(--text-3)}
+
+/* ---------- the app: browser, topbar 40, sidebar 220, Home ---------- */
+.browser{width:100%;min-width:0;background:var(--bg);border:1px solid var(--border-2);border-radius:10px;overflow:hidden;box-shadow:0 10px 32px rgba(0,0,0,.12);position:relative}
+.chrome{height:28px;display:flex;align-items:center;gap:6px;padding:0 12px;background:var(--bg-2);border-bottom:1px solid var(--line)}
+.chrome i{width:9px;height:9px;border-radius:50%;background:var(--border-3);display:block}
+.app{display:flex;height:620px;min-width:0}
+.app.short{height:auto}
+.sidebar{width:220px;flex:none;background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.sb-head{display:flex;align-items:center;gap:10px;padding:14px 18px}
+.sb-logo{width:20px;height:20px;border-radius:6px;background:var(--brand);color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center}
+.sb-head b{font-size:14px;font-weight:600}
+.sb-nav{flex:1;display:flex;flex-direction:column;gap:2px;padding:6px 10px}
+.sb-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--r-button);color:var(--text);font-size:var(--t-body)}
+.sb-row svg{color:var(--text-3)}
+.sb-row.on{background:var(--raised)}
+.sb-group{margin-top:14px;padding:4px 8px;font-size:var(--t-meta);font-weight:600;letter-spacing:.06em;color:var(--text-3);text-transform:uppercase}
+.sb-foot{display:flex;justify-content:space-between;border-top:1px solid var(--border);padding:10px 18px;font-size:var(--t-small);color:var(--text-3)}
+.sb-foot span:last-child{font-family:var(--font-mono)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{min-height:40px;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--border);color:var(--text-2);font-size:var(--t-body)}
+.topbar .sw{width:8px;height:8px;border-radius:2px;background:var(--brand)}
+.topbar .sl{color:var(--text-4)}
+.topbar .pg{font-weight:500;color:var(--text)}
+.topbar .gap{flex:1}
+.topbar .user{font-size:var(--t-small);color:var(--text-3)}
+
+/* agent bar (54 px) — now the place where an agent is chosen, and its session started, opened or switched */
+.agentbar{min-height:54px;flex:none;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--border);font-size:var(--t-body);position:relative}
+.picker{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 8px 0 6px;margin-left:-6px;border-radius:var(--r-button);border:1px solid transparent;background:transparent;font:inherit;color:var(--text);cursor:pointer}
+.picker:hover,.picker.open{background:var(--hover)}
+.picker .num{font-family:var(--font-mono);font-size:11px;color:var(--text-3);background:var(--chip);border-radius:4px;padding:1px 5px}
+.picker .nm{font-weight:600}
+.picker .role{color:var(--text-3)}
+.picker svg.i{color:var(--text-3)}
+.vsep{width:1px;height:20px;background:var(--border-2);flex:none}
+.state{display:flex;align-items:center;gap:8px;min-width:0}
+.state .w{font-weight:600}
+.state .w.quiet{color:var(--text-3)}
+.state .s{color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agentbar .gap{flex:1}
+.agentbar .acts{display:flex;align-items:center;gap:6px}
+
+/* information bar (30 px): the chosen session's facts */
+.infobar{min-height:30px;flex:none;display:flex;align-items:center;gap:16px;padding:0 5px 0 16px;border-bottom:1px solid var(--border);font-size:var(--t-small);color:var(--text-3);white-space:nowrap;overflow:hidden}
+.infobar .lead{display:inline-flex;align-items:center;gap:5px;color:var(--text)}
+.infobar .f{display:inline-flex;align-items:center;gap:5px}
+.infobar .gap{flex:1}
+
+/* pane grid with window tabs (34 px on the sidebar colour) and the 1 px splitter */
+.panes{flex:1;min-height:0;display:flex}
+.pane{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+.pane.w58{flex:0 0 58%}
+.splitter{width:1px;background:var(--border);position:relative;flex:none}
+.splitter::after{content:"";position:absolute;inset:0 -3px}
+.tabs{height:34px;flex:none;display:flex;align-items:stretch;gap:12px;padding:0 5px 0 14px;border-bottom:1px solid var(--border);background:var(--side)}
+.tab{display:inline-flex;align-items:center;gap:6px;font-size:var(--t-badge);letter-spacing:.03em;color:var(--text-3);white-space:nowrap}
+.tab.on{color:var(--text);box-shadow:inset 0 -1px 0 var(--brand)}
+.tab .x{width:16px;height:16px;display:grid;place-items:center;color:var(--text-4)}
+.tab .cnt{font-size:var(--t-meta);color:var(--text-3)}
+.tab.on .cnt{color:var(--brand-text)}
+.tabs .gap{flex:1}
+.tabs .pbtns{display:flex;align-items:center;gap:2px}
+.pbody{flex:1;min-height:0;overflow:hidden;position:relative}
+
+/* chat window */
+.chat{height:100%;display:flex;flex-direction:column;padding:0 12px 8px}
+.msgs{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding:14px 4px;overflow:hidden;justify-content:flex-end}
+.msg{display:flex;flex-direction:column;gap:3px;max-width:86%}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.msg .who{font-size:var(--t-meta);color:var(--text-3);display:flex;gap:6px;align-items:center}
+.msg .who .src{font-family:var(--font-mono);font-size:10.5px;color:var(--text-4)}
+.msg .b{background:var(--raised);border:1px solid var(--border);border-radius:10px;padding:8px 11px;font-size:var(--t-body);line-height:1.5;color:var(--text)}
+.msg.me .b{background:var(--brand-dim);border-color:transparent}
+.divider{display:flex;align-items:center;gap:10px;font-size:var(--t-meta);color:var(--text-3)}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.divider span{display:inline-flex;align-items:center;gap:6px}
+.composer{border:1px solid var(--border-2);border-radius:12px;background:var(--bg);padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.composer .to{display:flex;align-items:center;gap:6px;font-size:var(--t-meta);color:var(--text-3)}
+.composer .to b{color:var(--text-2);font-weight:500}
+.composer .ta{min-height:34px;font-size:var(--t-body);color:var(--text-4);line-height:1.5}
+.composer .row{display:flex;align-items:center;gap:8px}
+.composer .row .gap{flex:1}
+.composer.off .ta{color:var(--text-4)}
+.notice{display:flex;align-items:flex-start;gap:8px;border:1px solid var(--border-2);background:var(--raised);border-radius:var(--r-field);padding:8px 10px;font-size:var(--t-small);color:var(--text-2);line-height:1.5}
+.notice .gap{flex:1}
+.notice svg{margin-top:2px;color:var(--text-3)}
+
+/* terminal window and the idle start card */
+.term{height:100%;background:var(--term);color:#c9ccd3;font-family:var(--font-mono);font-size:11.5px;line-height:1.55;padding:10px 12px;overflow:hidden}
+.term .g{color:#8fd49a}.term .d{color:#6b6e77}.term .b{color:#a3a8f0}
+.empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px}
+.empty h4{margin:0;font-size:var(--t-card);font-weight:600}
+.empty p{max-width:360px;font-size:var(--t-field);color:var(--text-2);line-height:1.6}
+.choice{display:flex;align-items:center;gap:8px;font-size:var(--t-small);color:var(--text-3)}
+.choice b{color:var(--text);font-weight:500}
+
+/* picker menu */
+.menu{position:absolute;z-index:5;width:360px;background:var(--raised);border:1px solid var(--border-2);border-radius:var(--r-menu);box-shadow:0 14px 36px rgba(0,0,0,.22);padding:6px;display:flex;flex-direction:column;gap:2px}
+.dark .menu{box-shadow:0 14px 36px rgba(0,0,0,.45)}
+.menu .env{display:flex;align-items:center;gap:8px;padding:6px 8px 8px;border-bottom:1px solid var(--border);margin-bottom:4px;font-size:var(--t-small);color:var(--text-3)}
+.menu .env b{color:var(--text);font-weight:500}
+.menu .env .gap{flex:1}
+.menu .search{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border:1px solid var(--brand);border-radius:var(--r-control);margin:2px 2px 6px;font-size:var(--t-field);color:var(--text-4)}
+.menu .grp{padding:8px 8px 4px;font-size:var(--t-group);font-weight:600;letter-spacing:.06em;color:var(--text-4);text-transform:uppercase}
+.mi{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:var(--r-control);font-size:var(--t-small);color:var(--text-2)}
+.mi.on{background:color-mix(in srgb,var(--brand) 16%,transparent);color:var(--text)}
+.mi.kb{outline:2px solid var(--brand);outline-offset:-2px}
+.mi .n{font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);width:22px}
+.mi .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mi .t b{color:var(--text);font-weight:500;font-size:var(--t-field)}
+.mi .t span{color:var(--text-3);font-size:var(--t-meta);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi .st{display:flex;align-items:center;gap:6px;color:var(--text-3);font-size:var(--t-meta)}
+.mi.muted{opacity:.7}
+
+/* modal (the accounts wizard's kit Modal) */
+.backdrop{position:absolute;inset:0;background:color-mix(in srgb,#000 32%,transparent);display:flex;align-items:center;justify-content:center;z-index:6}
+.modal{width:520px;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--r-card);box-shadow:0 16px 48px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.06);display:flex;flex-direction:column;overflow:hidden}
+.m-head{height:52px;display:flex;align-items:center;gap:12px;padding:0 12px 0 20px;border-bottom:1px solid var(--line)}
+.m-head h3{margin:0;font-size:var(--t-title);font-weight:600;flex:1}
+.m-head .for{font-size:var(--t-small);color:var(--text-3);display:flex;align-items:center;gap:6px}
+.m-body{height:500px;padding:18px 20px;display:flex;flex-direction:column;gap:16px;overflow:hidden}
+.m-foot{min-height:56px;display:flex;align-items:center;gap:8px;padding:0 12px;border-top:1px solid var(--line);background:var(--bg-2)}
+.m-foot .sum{flex:1;min-width:0;padding-left:8px;font-size:var(--t-small);color:var(--text-3);line-height:1.4}
+.m-foot .sum b{color:var(--text);font-weight:500}
+.lbl{font-size:var(--t-group);font-weight:600;letter-spacing:.06em;color:var(--text-3);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.lbl .hint{text-transform:none;letter-spacing:0;font-weight:400;font-size:var(--t-meta);color:var(--text-4)}
+.blk{display:flex;flex-direction:column;gap:8px}
+.cards2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{border:1px solid var(--border-2);border-radius:var(--r-field);padding:10px 12px;display:flex;align-items:center;gap:10px;background:var(--bg);font-size:var(--t-field)}
+.card.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset}
+.card.off{opacity:.5}
+.card .t{flex:1;font-weight:500}
+.card .lock{color:var(--text-3)}
+.seg{display:flex;padding:2px;border-radius:var(--r-button);background:var(--chip);gap:2px}
+.seg span{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:28px;border-radius:5px;font-size:var(--t-field);color:var(--text-2)}
+.seg span.on{background:var(--bg);color:var(--text);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg span small{font-size:var(--t-meta);color:var(--text-4);font-weight:400}
+.opts{display:flex;flex-direction:column;border:1px solid var(--border-2);border-radius:var(--r-field);overflow:hidden}
+.opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border-top:1px solid var(--line);font-size:var(--t-field)}
+.opt:first-child{border-top:0}
+.opt .rd{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--border-3);flex:none}
+.opt.on .rd{border:4px solid var(--brand)}
+.opt.on{background:color-mix(in srgb,var(--brand-dim) 40%,transparent)}
+.opt .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.opt .t b{font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opt .t span{font-size:var(--t-meta);color:var(--text-3)}
+.opt.off{color:var(--text-4)}
+.opt.off .t b{color:var(--text-3)}
+.opt .why{font-size:var(--t-meta);color:var(--text-3)}
+.check{display:flex;align-items:center;gap:8px;font-size:var(--t-small);color:var(--text-2)}
+.check i{width:14px;height:14px;border:1.5px solid var(--border-3);border-radius:4px;display:block}
+.check i.on{background:var(--brand);border-color:var(--brand)}
+.reason{font-size:var(--t-small);color:var(--text-2);line-height:1.5;background:var(--raised);border-radius:var(--r-field);padding:10px 12px;display:flex;gap:8px}
+.reason svg{margin-top:2px;color:var(--text-3)}
+.cmp{display:grid;grid-template-columns:1fr 24px 1fr;align-items:stretch;gap:8px}
+.cmp .col{border:1px solid var(--border-2);border-radius:var(--r-field);padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:var(--t-small);color:var(--text-2)}
+.cmp .col.new{border-color:var(--brand)}
+.cmp .col .h{font-size:var(--t-group);font-weight:600;letter-spacing:.06em;color:var(--text-3);text-transform:uppercase}
+.cmp .col .r{display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmp .col .chg{color:var(--text);font-weight:500}
+.cmp .ar{display:grid;place-items:center;color:var(--text-3)}
+
+/* phone */
+.phone{width:375px;flex:none;height:720px;background:var(--bg);border:1px solid var(--border-2);border-radius:30px;overflow:hidden;box-shadow:0 10px 32px rgba(0,0,0,.12);display:flex;flex-direction:column;position:relative}
+.ph-top{height:44px;flex:none;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:1px solid var(--border);margin-top:14px}
+.ph-top b{font-weight:500}
+.ph-top .gap{flex:1}
+.phone .agentbar{flex-wrap:wrap;padding:8px 12px;gap:8px}
+.phone .agentbar .acts{width:100%}
+.phone .agentbar .acts .btn{flex:1}
+.ph-tabs{height:36px;flex:none;display:flex;border-bottom:1px solid var(--border);background:var(--side)}
+.ph-tabs span{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:var(--t-small);color:var(--text-3)}
+.ph-tabs span.on{color:var(--text);box-shadow:inset 0 -2px 0 var(--brand)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--border-2);border-radius:18px 18px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.18);padding:10px 16px 16px;display:flex;flex-direction:column;gap:12px;z-index:6}
+.sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--border-3);align-self:center}
+.sheet h3{margin:0;font-size:var(--t-title);font-weight:600}
+
+/* strips of the agent bar, for the state list */
+.strip{width:100%;background:var(--bg);border:1px solid var(--border-2);border-radius:10px;overflow:hidden}
+.strip .agentbar{border-bottom:0}
+.strip .under{border-top:1px solid var(--border);padding:8px 16px;font-size:var(--t-small);color:var(--text-2);display:flex;gap:8px;align-items:center}
+.strips{display:flex;flex-direction:column;gap:10px;width:100%}
+.strips .lab{font-size:var(--t-meta);color:var(--text-3);margin:6px 0 -4px 2px}
+
+table.st{border-collapse:separate;border-spacing:0;width:100%;font-size:var(--t-small);background:var(--bg);border:1px solid var(--border-2);border-radius:var(--r-card);overflow:hidden}
+table.st th,table.st td{text-align:left;padding:9px 14px;border-top:1px solid var(--line);vertical-align:top;line-height:1.5}
+table.st th{color:var(--text-3);font-weight:500;border-top:0;background:var(--bg-2)}
+ul.todo{color:var(--text-2);font-size:var(--t-small);line-height:1.7;max-width:880px;padding-left:18px;margin:0}
+</style>
+</head>
+<body>
+<!-- Program marks (from the accounts design): Claude spark in Claude's orange, OpenAI knot in currentColor. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="m-claude" viewBox="0 0 24 24"><path fill="#D97757" d="M4.7144 15.9555l4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></symbol>
+  <symbol id="m-codex" viewBox="0 0 24 24"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></symbol>
+</svg>
+<div class="doc">
+<div class="top">
+  <div>
+    <h1>Home — one agent across driver sessions</h1>
+    <p class="lead">The visual design for doc 72 (revision 2). Home is where an owner chooses a lasting agent, reads its chat, and starts,
+    opens, resumes or switches its driver session: the driver (Claude Code or Codex), the variant (Terminal or Headless) and the account. It is built
+    on the current shell. The topbar (40&nbsp;px) and sidebar (220&nbsp;px) are unchanged. Home keeps its agent bar (54&nbsp;px), its information bar
+    (30&nbsp;px) and the pane grid with draggable, resizable windows and window tabs.</p>
+    <p class="lead">What changes: the agent bar becomes the place to choose the agent and its session. It now resolves agents, not only running
+    sessions, so an idle agent 1 is always there. The session buttons go from the top of the Chat window, sessions show up in the chat as
+    dividers, and the composer names its destination. Starting and switching use the accounts wizard's Modal. Blue is the only accent; billing and
+    status words are plain grey text.</p>
+  </div>
+  <span class="gap"></span>
+  <button class="toggle" onclick="document.documentElement.classList.toggle('dark')">Light / dark</button>
+</div>
+
+<!-- ======================= 1. HOME ======================= -->
+<h2 class="sec">1 · Home at full width</h2>
+<p class="note">The agent bar now leads with the <b>agent picker</b>: the agent's number, its name and its role. Next to it are the state dot and
+word, and on the right the one action that fits the state. Idle: <b>Start session</b> (and <b>Resume…</b> when an earlier thread qualifies). Live:
+<b>Switch…</b> and a <b>Stop</b> icon. Opening a live session is simply choosing the agent; its chat and terminal are already there. The information bar
+lists the session's facts: number, driver, variant, account and start time. The pane grid is unchanged: Chat, Inbox and History on the left; Terminal,
+Runtimes and Asks on the right. Panes resize at the splitter and windows drag between them by their tabs.</p>
+<div class="grid">
+  <div class="frame full"><div class="cap"><b>1a</b>First visit or returning, agent 1 idle (stories 1, 2, 9). The main agent is chosen by itself, its chat is readable, and the start card shows what Start will use before anything runs.</div>
+    <div class="stage"><div class="browser"><div class="chrome"><i></i><i></i><i></i></div><div class="app">
+      <aside class="sidebar">
+        <div class="sb-head"><span class="sb-logo">A</span><b>agent-journal</b></div>
+        <nav class="sb-nav">
+          <span class="sb-row on"><svg class="i" viewBox="0 0 16 16"><path d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/></svg>Home</span>
+          <span class="sb-group">Work</span>
+          <span class="sb-row"><svg class="i s13" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/></svg>Plans</span>
+          <span class="sb-group">Agents</span>
+          <span class="sb-row"><svg class="i s13" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></svg>Rules</span>
+          <span class="sb-row"><svg class="i s13" viewBox="0 0 16 16"><circle cx="6.5" cy="6" r="2.25"/><path d="M2.5 13a4 4 0 0 1 8 0"/><path d="M11 5.5h2.5M11 8h2.5"/></svg>Accounts</span>
+        </nav>
+        <div class="sb-foot"><span>Agent journal</span><span>6.0.0</span></div>
+      </aside>
+      <div class="main">
+        <nav class="topbar"><span class="sw"></span><span>agent-journal</span><span class="sl">/</span><span class="pg">Home</span><span class="gap"></span>
+          <button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></svg></button>
+          <button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/></svg></button>
+          <button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M6.2 2.6H2.6v3.6M9.8 2.6h3.6v3.6M6.2 13.4H2.6V9.8M9.8 13.4h3.6V9.8"/></svg></button>
+          <span class="user">Jesse</span>
+          <button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M8 2v6"/><path d="M4.5 4.2a5 5 0 1 0 7 0"/></svg></button></nav>
+        <div class="agentbar">
+          <button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span><svg class="i s12" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></svg></button>
+          <span class="vsep"></span>
+          <span class="state"><span class="dot"></span><span class="w quiet">Idle</span><span class="s">No session running</span></span>
+          <span class="gap"></span>
+          <div class="acts"><button class="btn bordered normal">Resume…</button><button class="btn primary normal"><svg class="i s12" viewBox="0 0 16 16"><path d="M5.5 3.8v8.4L12 8z"/></svg>Start session</button></div>
+        </div>
+        <div class="infobar"><span class="lead"><svg class="i s12" viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/></svg>Agent 1</span><span class="f">Last session 14 · Codex · Terminal · ended 08:40</span><span class="gap"></span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9 3v10M9 8h4.5"/></svg></button></div>
+        <div class="panes">
+          <section class="pane w58">
+            <div class="tabs"><span class="tab on"><svg class="i s13" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></svg>Chat<span class="x"><svg class="i s12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span><span class="tab"><svg class="i s13" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></svg>Inbox<span class="cnt">2</span></span><span class="tab"><svg class="i s13" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></svg>History</span><span class="gap"></span><span class="pbtns"><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></svg></button><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M8 3.5h.01M8 8h.01M8 12.5h.01"/></svg></button></span></div>
+            <div class="pbody"><div class="chat">
+              <div class="msgs">
+                <div class="divider"><span><svg class="mk" aria-hidden="true"><use href="#m-codex"/></svg>Session 14 · Codex · Terminal · 07:55–08:40</span></div>
+                <div class="msg me"><span class="who">You · 08:12</span><div class="b">Run the account tests and tell me which fail.</div></div>
+                <div class="msg"><span class="who">Agent 1 <span class="src">session 14</span> · 08:31</span><div class="b">Two fail, both in the sign-in refusal. I filed report 44 with the cause.</div></div>
+                <div class="divider"><span>Session 14 ended at 08:40 — stopped by you</span></div>
+              </div>
+              <div class="composer off"><div class="to"><svg class="i s12" viewBox="0 0 16 16"><path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/></svg>To <b>Agent 1</b> · no session is running — it waits in Agent 1's inbox</div><div class="ta">Write to Agent 1…</div><div class="row"><span class="gap"></span><button class="btn small primary" disabled>Send</button></div></div>
+            </div></div>
+          </section>
+          <span class="splitter"></span>
+          <section class="pane">
+            <div class="tabs"><span class="tab on"><svg class="i s13" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M5 6.5l2 1.5-2 1.5M8.5 10h2.5"/></svg>Terminal<span class="x"><svg class="i s12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span><span class="tab"><svg class="i s13" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></svg>Runtimes</span><span class="tab"><svg class="i s13" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></svg>Asks</span><span class="gap"></span></div>
+            <div class="pbody"><div class="empty">
+              <h4>Agent 1 has no session</h4>
+              <p>Start one to talk to it live. Its memories, tasks and this chat carry over to every session.</p>
+              <div class="choice"><svg class="mk" aria-hidden="true"><use href="#m-claude"/></svg><b>Claude Code</b> · Terminal · jesse.gall@transport-planning.example.com</div>
+              <div style="display:flex;gap:8px"><button class="btn bordered normal">Change…</button><button class="btn primary normal"><svg class="i s12" viewBox="0 0 16 16"><path d="M5.5 3.8v8.4L12 8z"/></svg>Start session</button></div>
+            </div></div>
+          </section>
+        </div>
+      </div>
+    </div></div></div></div>
+
+  <div class="frame full"><div class="cap"><b>1b</b>Agent 1 live (stories 20, 29). Ready shows only after the host confirms. Another tab that opens Home joins the same terminal, and no second start happens.</div>
+    <div class="stage"><div class="browser"><div class="chrome"><i></i><i></i><i></i></div><div class="app">
+      <aside class="sidebar">
+        <div class="sb-head"><span class="sb-logo">A</span><b>agent-journal</b></div>
+        <nav class="sb-nav">
+          <span class="sb-row on"><svg class="i" viewBox="0 0 16 16"><path d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/></svg>Home</span>
+          <span class="sb-group">Work</span>
+          <span class="sb-row"><svg class="i s13" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/></svg>Plans</span>
+          <span class="sb-group">Agents</span>
+          <span class="sb-row"><svg class="i s13" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></svg>Rules</span>
+          <span class="sb-row"><svg class="i s13" viewBox="0 0 16 16"><circle cx="6.5" cy="6" r="2.25"/><path d="M2.5 13a4 4 0 0 1 8 0"/><path d="M11 5.5h2.5M11 8h2.5"/></svg>Accounts</span>
+        </nav>
+        <div class="sb-foot"><span>Agent journal</span><span>6.0.0</span></div>
+      </aside>
+      <div class="main">
+        <nav class="topbar"><span class="sw"></span><span>agent-journal</span><span class="sl">/</span><span class="pg">Home</span><span class="gap"></span>
+          <button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></svg></button>
+          <button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/></svg></button>
+          <button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M6.2 2.6H2.6v3.6M9.8 2.6h3.6v3.6M6.2 13.4H2.6V9.8M9.8 13.4h3.6V9.8"/></svg></button>
+          <span class="user">Jesse</span>
+          <button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M8 2v6"/><path d="M4.5 4.2a5 5 0 1 0 7 0"/></svg></button></nav>
+        <div class="agentbar">
+          <button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span><svg class="i s12" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></svg></button>
+          <span class="vsep"></span>
+          <span class="state"><span class="dot live"></span><span class="w">Working</span><span class="s">Session 15 · answering you</span></span>
+          <span class="gap"></span>
+          <div class="acts"><button class="btn bordered normal">Switch…</button><button class="btn icon" title="Stop session" aria-label="Stop session"><svg class="i" viewBox="0 0 16 16"><rect x="4.5" y="4.5" width="7" height="7" rx="1"/></svg></button></div>
+        </div>
+        <div class="infobar"><span class="lead"><svg class="i s12" viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/></svg>Agent 1</span><span class="f">Session 15</span><span class="f"><svg class="mk s12" style="width:12px;height:12px" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code · Terminal</span><span class="f">jesse.gall@transport-planning.example.com · Subscription</span><span class="f">Started 09:12 · fresh thread</span><span class="gap"></span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9 3v10M9 8h4.5"/></svg></button></div>
+        <div class="panes">
+          <section class="pane w58">
+            <div class="tabs"><span class="tab on"><svg class="i s13" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></svg>Chat<span class="x"><svg class="i s12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span><span class="tab"><svg class="i s13" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></svg>Inbox</span><span class="tab"><svg class="i s13" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></svg>History</span><span class="gap"></span><span class="pbtns"><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></svg></button><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M8 3.5h.01M8 8h.01M8 12.5h.01"/></svg></button></span></div>
+            <div class="pbody"><div class="chat">
+              <div class="msgs">
+                <div class="msg"><span class="who">Agent 1 <span class="src">session 14</span> · 08:31</span><div class="b">Two fail, both in the sign-in refusal. I filed report 44 with the cause.</div></div>
+                <div class="divider"><span><svg class="mk" aria-hidden="true"><use href="#m-claude"/></svg>Session 15 · Claude Code · Terminal · fresh thread · 09:12</span></div>
+                <div class="msg me"><span class="who">You · 09:13</span><div class="b">Pick up report 44 and fix the refusal.</div></div>
+                <div class="msg"><span class="who">Agent 1 <span class="src">session 15</span> · 09:14</span><div class="b">I have report 44 and task 1631 from before the switch. Working on the fix now.</div></div>
+              </div>
+              <div class="composer"><div class="to"><svg class="i s12" viewBox="0 0 16 16"><path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/></svg>To <b>Agent 1</b> · session 15</div><div class="ta">Write to Agent 1…</div><div class="row"><span class="gap"></span><button class="btn small primary">Send</button></div></div>
+            </div></div>
+          </section>
+          <span class="splitter"></span>
+          <section class="pane">
+            <div class="tabs"><span class="tab on"><svg class="i s13" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M5 6.5l2 1.5-2 1.5M8.5 10h2.5"/></svg>Terminal<span class="x"><svg class="i s12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></span></span><span class="tab"><svg class="i s13" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></svg>Runtimes<span class="cnt">1</span></span><span class="tab"><svg class="i s13" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></svg>Asks</span><span class="gap"></span></div>
+            <div class="pbody"><div class="term">
+              <div><span class="b">✻</span> Claude Code</div>
+              <div class="d">  cwd: /srv/agent-journal</div><br>
+              <div>&gt; Pick up report 44 and fix the refusal.</div><br>
+              <div><span class="g">●</span> Reading report 44 and task 1631…</div>
+              <div><span class="g">●</span> Read app/Profiles/Exceptions/SignInCodeInvalid.php</div>
+              <div><span class="g">●</span> Editing withSpace()…</div><br>
+              <div class="d">  esc to interrupt</div>
+            </div></div>
+          </section>
+        </div>
+      </div>
+    </div></div></div></div>
+</div>
+
+<!-- ======================= 2. CHOOSE AN AGENT ======================= -->
+<h2 class="sec">2 · Choosing an agent</h2>
+<p class="note">The picker lists the agents of the chosen environment, live or idle, by number and name, grouped as Main, Helpers and Retired. Each row
+says its state and its current or last driver. The environment sits at the top of the menu, and changing it chooses that environment's main agent.
+The search field has focus when the menu opens: type a name, move with the arrow keys, and press Enter to land on the agent with its state announced.
+Choosing an agent changes only which agent Home shows; the other agents keep running. The choice is kept in the URL, so a refresh or a shared link
+lands on the same agent with its latest state.</p>
+<div class="grid">
+  <div class="frame"><div class="cap"><b>2a</b>Picker open, by keyboard: the search narrows the list, and the highlighted row has the focus ring (stories 3, 4, 8)</div>
+    <div class="stage" style="min-height:560px"><div class="browser" style="max-width:620px;overflow:visible"><div class="chrome"><i></i><i></i><i></i></div>
+      <div class="agentbar">
+        <button class="picker open"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span><svg class="i s12" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></svg></button>
+        <span class="vsep"></span><span class="state"><span class="dot live"></span><span class="w">Working</span></span>
+        <div class="menu" style="top:46px;left:10px">
+          <div class="env"><svg class="i s12" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9.5 3v10M11 6h1M11 8.5h1"/></svg>Environment <b>Workstation</b><span class="gap"></span><button class="btn small">Change</button></div>
+          <div class="search"><svg class="i s13" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/></svg>Find an agent by name or number</div>
+          <div class="grp">Main</div>
+          <div class="mi on"><span class="n">1</span><span class="t"><b>Agent 1</b><span>Claude Code · Terminal · session 15</span></span><span class="st"><span class="dot live"></span>Working</span></div>
+          <div class="grp">Helpers</div>
+          <div class="mi kb"><span class="n">7</span><span class="t"><b>Reviewer</b><span>Codex · Headless · session 31</span></span><span class="st"><span class="dot live"></span>Working</span></div>
+          <div class="mi"><span class="n">9</span><span class="t"><b>Writer</b><span>Last: Claude Code · Headless · ended 08:02</span></span><span class="st"><span class="dot"></span>Idle</span></div>
+          <div class="mi"><span class="n">12</span><span class="t"><b>Researcher</b><span>Starting · Claude Code · Headless</span></span><span class="st"><span class="spin"></span>Starting</span></div>
+          <div class="grp">Retired</div>
+          <div class="mi muted"><span class="n">4</span><span class="t"><b>Old migrator</b><span>Retired 12 Nov · history only</span></span><span class="st"><span class="dot ring"></span>Retired</span></div>
+          <div style="display:flex;gap:12px;padding:8px 8px 4px;font-size:var(--t-meta);color:var(--text-4)"><span><span class="kbd">↑</span> <span class="kbd">↓</span> move</span><span><span class="kbd">Enter</span> choose</span><span><span class="kbd">Esc</span> close</span></div>
+        </div>
+      </div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>2b</b>A retired helper (story 7): its history is readable and its disposition is shown. It can't be started again, and the composer is off.</div>
+    <div class="stage" style="min-height:560px"><div class="browser" style="max-width:620px"><div class="chrome"><i></i><i></i><i></i></div>
+      <div class="agentbar">
+        <button class="picker"><span class="num">4</span><span class="nm">Old migrator</span><span class="role">Helper</span><svg class="i s12" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></svg></button>
+        <span class="vsep"></span><span class="state"><span class="dot ring"></span><span class="w quiet">Retired</span><span class="s">12 Nov · its work was handed back</span></span>
+      </div>
+      <div class="infobar"><span class="lead">Old migrator</span><span class="f">Last session 22 · Codex · Headless</span></div>
+      <div class="chat" style="height:420px">
+        <div class="msgs">
+          <div class="divider"><span><svg class="mk" aria-hidden="true"><use href="#m-codex"/></svg>Session 22 · Codex · Headless · 11 Nov</span></div>
+          <div class="msg"><span class="who">Old migrator <span class="src">session 22</span></span><div class="b">Moved the last 40 rows; plan 31 phase 4 is done.</div></div>
+          <div class="msg"><span class="who">Old migrator <span class="src">session unknown</span></span><div class="b">Handing task 1201 back to the main agent.</div></div>
+          <div class="notice"><svg class="i s13" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></svg><span>This helper is retired. You can read its history; it can't be started again. Its tasks went back to Agent 1.</span></div>
+        </div>
+        <div class="composer off"><div class="to">Retired agents don't take messages</div><div class="ta">—</div></div>
+      </div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>2c</b>The environment has no main agent (story 5): setup is needed, and recovery runs once</div>
+    <div class="stage"><div class="browser" style="max-width:620px"><div class="chrome"><i></i><i></i><i></i></div>
+      <div class="agentbar"><button class="picker"><span class="nm">No main agent</span><svg class="i s12" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></svg></button><span class="vsep"></span><span class="state"><span class="dot warn"></span><span class="w">Setup needed</span></span></div>
+      <div class="empty" style="height:300px">
+        <h4>This environment has no main agent</h4>
+        <p>Server · staging was set up, but its main agent was never made. Set it up once to get the ordinary Agent 1 for this environment.</p>
+        <div style="display:flex;gap:8px"><button class="btn bordered normal">Other environment</button><button class="btn primary normal">Set up main agent</button></div>
+      </div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>2d</b>A shared or refreshed link to an agent this owner may not see: it isn't shown, and Home falls back to the main agent (story 6)</div>
+    <div class="stage"><div class="browser" style="max-width:620px"><div class="chrome"><i></i><i></i><i></i></div>
+      <div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span><svg class="i s12" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></svg></button><span class="vsep"></span><span class="state"><span class="dot"></span><span class="w quiet">Idle</span></span><span class="gap"></span><div class="acts"><button class="btn primary normal">Start session</button></div></div>
+      <div style="padding:12px 16px"><div class="notice"><svg class="i s13" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></svg><span>That link pointed to an agent you can't open here, so Home shows the main agent.</span><span class="gap"></span><button class="btn icon"><svg class="i s12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div></div>
+      <div style="height:180px"></div>
+    </div></div></div>
+</div>
+
+<!-- ======================= 3. START ======================= -->
+<h2 class="sec">3 · Start a session: driver, variant, account</h2>
+<p class="note">Start session opens the accounts wizard's Modal: 520&nbsp;px wide, a fixed 500&nbsp;px body, and a footer that always shows what will run.
+The form settles the agent's profile limits, what the host supports and which accounts may be used together. Every option that can't be chosen says why.
+The variant opens on this agent's own default: Terminal for the main agent, Headless for helpers. The account list shows only the chosen driver's
+accounts. One account is chosen for you, and expired ones say so and offer Reconnect. Picking an account here applies to this session only and never
+changes the installation's default. <b>Use as default for this agent</b> takes effect only once the start succeeds.</p>
+<div class="grid">
+  <div class="frame"><div class="cap"><b>3a</b>Default main agent (stories 9, 14, 15): Terminal is chosen, the real driver and account show before submitting, and the second account is picked</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Start a session</h3><span class="for"><span class="num" style="font-family:var(--font-mono);font-size:11px;background:var(--chip);border-radius:4px;padding:1px 5px">1</span>Agent 1</span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+      <div class="m-body">
+        <div class="blk"><span class="lbl">Driver</span>
+          <div class="cards2"><div class="card on"><svg class="mk s18" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Claude Code</span><span class="plain">2 accounts</span></div><div class="card"><svg class="mk s18" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">Codex</span><span class="plain">1 account</span></div></div></div>
+        <div class="blk"><span class="lbl">Variant <span class="hint">Agent 1's default is Terminal</span></span>
+          <div class="seg"><span class="on">Terminal <small>default</small></span><span>Headless</span></div></div>
+        <div class="blk"><span class="lbl">Account <span class="hint">for this session only</span></span>
+          <div class="opts">
+            <div class="opt"><span class="rd"></span><span class="t"><b>jesse.gall@transport-planning.example.com</b><span>Subscription · Default</span></span><span class="plain">Signed in</span></div>
+            <div class="opt on"><span class="rd"></span><span class="t"><b>Claude Code API key</b><span>Pay per use</span></span><span class="plain">Signed in</span></div>
+          </div>
+          <span class="plain" style="white-space:normal">Choosing this account here doesn't change your default. <a style="color:var(--brand-text)">Add account</a></span></div>
+        <div class="blk"><span class="lbl">Conversation</span>
+          <div class="opts">
+            <div class="opt on"><span class="rd"></span><span class="t"><b>Fresh start</b><span>A new Claude Code thread. Chat, memories and tasks carry over.</span></span></div>
+            <div class="opt off"><span class="rd"></span><span class="t"><b>Resume a Claude Code thread</b><span>None on this account yet</span></span></div>
+          </div></div>
+        <span class="check"><i></i>Use Terminal as default for this agent</span>
+      </div>
+      <div class="m-foot"><span class="sum">Starts <b>Agent 1</b> with <b>Claude Code · Terminal</b> on <b>Claude Code API key</b>, fresh thread</span><button class="btn normal">Cancel</button><button class="btn primary normal">Start</button></div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>3b</b>A helper whose profile pins its driver (stories 10, 12, 18). Codex is locked with its reason; Terminal is chosen for this helper, and its siblings keep their defaults.</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Start a session</h3><span class="for"><span style="font-family:var(--font-mono);font-size:11px;background:var(--chip);border-radius:4px;padding:1px 5px">7</span>Reviewer</span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+      <div class="m-body">
+        <div class="blk"><span class="lbl">Driver <span class="hint">set by the Reviewer profile</span></span>
+          <div class="cards2"><div class="card off"><svg class="mk s18" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Claude Code</span></div><div class="card on"><svg class="mk s18" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">Codex</span><svg class="i s13 lock" viewBox="0 0 16 16"><rect x="3.5" y="7" width="9" height="6.5" rx="1.2"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg></div></div>
+          <span class="plain" style="white-space:normal">The Reviewer profile always uses Codex. Change the profile to use another driver.</span></div>
+        <div class="blk"><span class="lbl">Variant <span class="hint">helpers default to Headless</span></span>
+          <div class="seg"><span>Headless <small>default</small></span><span class="on">Terminal</span></div>
+          <span class="plain" style="white-space:normal">Reviewer gets its own terminal. Other helpers stay Headless.</span></div>
+        <div class="blk"><span class="lbl">Account</span>
+          <div class="opts"><div class="opt on"><span class="rd"></span><span class="t"><b>jesse.gall@transport-planning.example.com</b><span>Subscription · Default</span></span><span class="plain">Signed in</span></div></div></div>
+        <span class="check"><i></i>Use Terminal as default for Reviewer</span>
+      </div>
+      <div class="m-foot"><span class="sum">Starts <b>Reviewer</b> with <b>Codex · Terminal</b>, fresh thread</span><button class="btn normal">Cancel</button><button class="btn primary normal">Start</button></div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>3c</b>No usable account for the chosen driver (stories 16, 17). Add account opens the accounts wizard and comes back to this same form; the expired one offers Reconnect.</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Start a session</h3><span class="for">Agent 1</span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+      <div class="m-body">
+        <div class="blk"><span class="lbl">Driver</span>
+          <div class="cards2"><div class="card"><svg class="mk s18" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Claude Code</span><span class="plain">2 accounts</span></div><div class="card on"><svg class="mk s18" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">Codex</span><span class="plain">none ready</span></div></div></div>
+        <div class="blk"><span class="lbl">Variant</span><div class="seg"><span class="on">Terminal <small>default</small></span><span>Headless</span></div></div>
+        <div class="blk"><span class="lbl">Account</span>
+          <div class="opts">
+            <div class="opt off"><span class="rd"></span><span class="t"><b>jesse.gall@transport-planning.example.com</b><span>Expired on 18 Nov. Sign in again to use it.</span></span><button class="btn small bordered">Reconnect</button></div>
+          </div>
+          <div class="reason"><svg class="i s13" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></svg><span>No Codex account is ready. Reconnect the expired one or add another; this form waits with your choices.</span></div>
+          <div><button class="btn bordered normal"><span style="font-size:14px;line-height:1">+</span>Add a Codex account</button></div></div>
+      </div>
+      <div class="m-foot"><span class="sum">Choose a ready account to start</span><button class="btn normal">Cancel</button><button class="btn primary normal" disabled>Start</button></div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>3d</b>Refused before anything stops (stories 19, 31). The host can't run this combination; the reason shows, and the choice can be changed.</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Start a session</h3><span class="for">Agent 1</span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+      <div class="m-body">
+        <div class="blk"><span class="lbl">Driver</span>
+          <div class="cards2"><div class="card on"><svg class="mk s18" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Claude Code</span></div><div class="card"><svg class="mk s18" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">Codex</span></div></div></div>
+        <div class="blk"><span class="lbl">Variant</span><div class="seg"><span class="on">Terminal <small>default</small></span><span>Headless</span></div></div>
+        <div class="blk"><span class="lbl">Account</span><div class="opts"><div class="opt on"><span class="rd"></span><span class="t"><b>jesse.gall@transport-planning.example.com</b><span>Subscription · Default</span></span><span class="plain">Signed in</span></div></div></div>
+        <div class="reason" style="border:1px solid var(--border-2)"><svg class="i s13" viewBox="0 0 16 16"><path d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/></svg><span><b style="color:var(--text);font-weight:500">Can't start this here.</b> The server that runs Agent 1 has no terminal for Claude Code yet. Choose Headless, or Codex, which it can run. Nothing was stopped.</span></div>
+      </div>
+      <div class="m-foot"><span class="sum">Starts <b>Agent 1</b> with <b>Claude Code · Terminal</b></span><button class="btn normal">Cancel</button><button class="btn primary normal" disabled>Start</button></div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>3e</b>Resume (stories 26, 28): earlier threads that pass every check can be chosen. The others say why, and a fresh start is always there.</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Resume a conversation</h3><span class="for">Agent 1</span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+      <div class="m-body">
+        <p class="plain" style="white-space:normal;font-size:var(--t-field);color:var(--text-2)">A thread continues with its own driver and account. The newest isn't picked for you; choose the one you mean.</p>
+        <div class="opts">
+          <div class="opt on"><span class="rd"></span><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><span class="t"><b>Session 14 · “Run the account tests…”</b><span>Codex · Terminal · jesse.gall@… · today 07:55–08:40</span></span></div>
+          <div class="opt"><span class="rd"></span><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><span class="t"><b>Session 12 · “Plan the contained stack”</b><span>Claude Code · Terminal · Claude Code API key · yesterday</span></span></div>
+          <div class="opt off"><span class="rd"></span><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><span class="t"><b>Session 9 · “Sign-in refusal”</b><span>Its transcript is gone from the host. Start fresh; the chat and tasks are still here.</span></span></div>
+          <div class="opt off"><span class="rd"></span><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><span class="t"><b>Session 6 · “Shell corpus”</b><span>Made on an account that's been removed.</span></span></div>
+        </div>
+        <div><button class="btn normal">Start fresh instead</button></div>
+      </div>
+      <div class="m-foot"><span class="sum">Resumes <b>session 14's thread</b> with <b>Codex · Terminal</b> on <b>jesse.gall@…</b> as session 16</span><button class="btn normal">Cancel</button><button class="btn primary normal">Resume</button></div>
+    </div></div></div>
+</div>
+
+<!-- ======================= 4. STATES ======================= -->
+<h2 class="sec">4 · The agent bar through every state</h2>
+<p class="note">The agent bar always shows where the agent is: a state word plus a plain sentence under it when something needs attention. One
+action fits each state. A start or switch is shown while it runs and is never repeated: a second click joins the same operation. Unconfirmed steps
+are reconciled before anything else can start, and a failure leaves the agent idle with its history and a Retry.</p>
+<div class="strips">
+  <span class="lab">Starting (story 20) — ready is shown only after the host confirms</span>
+  <div class="strip"><div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span></button><span class="vsep"></span><span class="state"><span class="spin"></span><span class="w">Starting</span><span class="s">Claude Code · Terminal · waiting for the server to confirm</span></span><span class="gap"></span><div class="acts"><button class="btn normal" disabled>Starting…</button></div></div></div>
+  <span class="lab">Switching (stories 21, 33) — the old session is stopping; a second click lands on this same switch</span>
+  <div class="strip"><div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span></button><span class="vsep"></span><span class="state"><span class="spin"></span><span class="w">Switching</span><span class="s">Stopping session 14 (Codex) · then starting Claude Code</span></span><span class="gap"></span></div></div>
+  <span class="lab">Stop unconfirmed (story 35) — nothing new can start until the old session is known to be stopped</span>
+  <div class="strip"><div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span></button><span class="vsep"></span><span class="state"><span class="dot warn"></span><span class="w">Stop not confirmed</span><span class="s">Session 14</span></span><span class="gap"></span><div class="acts"><button class="btn bordered normal">Check again</button></div></div>
+    <div class="under">The server stopped answering before session 14 was confirmed stopped. Nothing new starts until it is, so two sessions never write at once.</div></div>
+  <span class="lab">Start failed (story 36) — idle, with its history, and a retry of the same choice</span>
+  <div class="strip"><div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span></button><span class="vsep"></span><span class="state"><span class="dot bad"></span><span class="w">Start failed</span><span class="s">Claude Code · Terminal</span></span><span class="gap"></span><div class="acts"><button class="btn bordered normal">Change…</button><button class="btn primary normal">Retry</button></div></div>
+    <div class="under">Session 14 stopped, but Claude Code didn't start: the sign-in was refused. Agent 1's chat, memories and tasks are all here.</div></div>
+  <span class="lab">Start unknown (stories 38) — the same attempt is checked before any retry</span>
+  <div class="strip"><div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span></button><span class="vsep"></span><span class="state"><span class="spin"></span><span class="w">Checking</span><span class="s">Did session 15 start? Asking the server</span></span><span class="gap"></span></div></div>
+  <span class="lab">Live, with outstanding work (story 32) — shown before a switch, so it isn't a surprise</span>
+  <div class="strip"><div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span></button><span class="vsep"></span><span class="state"><span class="dot live"></span><span class="w">Working</span><span class="s">Session 15 · 1 turn running · 2 helpers working</span></span><span class="gap"></span><div class="acts"><button class="btn bordered normal">Switch…</button><button class="btn icon"><svg class="i" viewBox="0 0 16 16"><rect x="4.5" y="4.5" width="7" height="7" rx="1"/></svg></button></div></div></div>
+</div>
+
+<!-- ======================= 5. SWITCH ======================= -->
+<h2 class="sec">5 · Switch driver, account or variant</h2>
+<p class="note">Switch… opens the same Modal, with the current session beside the new one, the parts that change named, and the work that would be
+cut off. Nothing stops until Switch is pressed. The target is checked first; a refusal leaves the current session running. Closing the dialog goes
+back to the current session with your text intact. Changing driver or account starts a fresh thread; an earlier thread of the target can be resumed
+on purpose. A variant-only switch continues the same thread only when both variants support it.</p>
+<div class="grid">
+  <div class="frame"><div class="cap"><b>5a</b>Switch summary (stories 21, 30, 32): Codex → Claude Code, with the work in progress and what happens to it</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Switch session</h3><span class="for">Agent 1</span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+      <div class="m-body">
+        <div class="cmp">
+          <div class="col"><span class="h">Now · session 14</span><span class="r"><svg class="mk" aria-hidden="true"><use href="#m-codex"/></svg>Codex</span><span class="r">Terminal</span><span class="r">jesse.gall@transport-planning…</span></div>
+          <span class="ar"><svg class="i" viewBox="0 0 16 16"><path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/></svg></span>
+          <div class="col new"><span class="h">New · session 15</span><span class="r chg"><svg class="mk" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code</span><span class="r">Terminal</span><span class="r chg">Claude Code API key</span></div>
+        </div>
+        <div class="blk"><span class="lbl">Conversation</span>
+          <div class="opts">
+            <div class="opt on"><span class="rd"></span><span class="t"><b>Fresh Claude Code thread</b><span>Chat, memories and tasks carry over; Codex's own transcript stays with Codex.</span></span></div>
+            <div class="opt"><span class="rd"></span><span class="t"><b>Resume session 12's thread</b><span>Claude Code · Claude Code API key · yesterday</span></span></div>
+          </div></div>
+        <div class="blk"><span class="lbl">Work in progress</span>
+          <div class="opts">
+            <div class="opt"><span class="t"><b>1 turn running</b><span>“Fix the refusal” — it stops with the session</span></span></div>
+            <div class="opt"><span class="t"><b>Reviewer (7) and Writer (9) are working</b><span>They're helpers with their own sessions</span></span><div class="seg" style="width:220px"><span class="on">Let them finish</span><span>Cancel them</span></div></div>
+          </div></div>
+      </div>
+      <div class="m-foot"><span class="sum">Stops <b>session 14</b>, then starts <b>Claude Code · Terminal</b> as session 15</span><button class="btn normal">Keep session 14</button><button class="btn primary normal">Switch</button></div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>5b</b>Refused at the check (story 31): nothing was stopped, the current session keeps running, and the choice can be fixed</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Switch session</h3><span class="for">Agent 1</span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+      <div class="m-body">
+        <div class="cmp">
+          <div class="col"><span class="h">Now · session 14</span><span class="r"><svg class="mk" aria-hidden="true"><use href="#m-codex"/></svg>Codex</span><span class="r">Terminal</span><span class="r">jesse.gall@transport-planning…</span></div>
+          <span class="ar"><svg class="i" viewBox="0 0 16 16"><path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/></svg></span>
+          <div class="col new"><span class="h">New</span><span class="r chg"><svg class="mk" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code</span><span class="r">Terminal</span><span class="r chg">Team key</span></div>
+        </div>
+        <div class="reason" style="border:1px solid var(--border-2)"><svg class="i s13" viewBox="0 0 16 16"><path d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/></svg><span><b style="color:var(--text);font-weight:500">Can't switch to Team key.</b> It expired on 18 Nov. Session 14 is still running. Pick another account, or reconnect this one in Accounts.</span></div>
+        <div class="blk"><span class="lbl">Account</span>
+          <div class="opts">
+            <div class="opt off"><span class="rd"></span><span class="t"><b>Team key</b><span>Expired on 18 Nov</span></span><button class="btn small bordered">Reconnect</button></div>
+            <div class="opt"><span class="rd"></span><span class="t"><b>jesse.gall@transport-planning.example.com</b><span>Subscription · Default</span></span><span class="plain">Signed in</span></div>
+          </div></div>
+      </div>
+      <div class="m-foot"><span class="sum">Session 14 keeps running</span><button class="btn normal">Keep session 14</button><button class="btn primary normal" disabled>Switch</button></div>
+    </div></div></div>
+</div>
+
+<!-- ======================= 6. CHAT ======================= -->
+<h2 class="sec">6 · The chat across sessions</h2>
+<p class="note">The chat belongs to the agent, not to a session. A divider marks each session with its driver, variant and whether it was a fresh
+thread or a continuation. Every reply names the session it came from, or says “session unknown” when that isn't recorded. The composer always names
+its destination before sending. A draft belongs to its agent: choosing another agent keeps it for when you come back. A message written against a
+session that has since ended keeps its text and asks where it should go.</p>
+<div class="grid">
+  <div class="frame"><div class="cap"><b>6a</b>History across a switch (stories 21, 24, 25): same agent number, a new session number, a fresh thread named as such</div>
+    <div class="stage"><div class="browser" style="max-width:620px"><div class="chrome"><i></i><i></i><i></i></div>
+      <div class="chat" style="height:440px">
+        <div class="msgs">
+          <div class="divider"><span><svg class="mk" aria-hidden="true"><use href="#m-codex"/></svg>Session 14 · Codex · Terminal</span></div>
+          <div class="msg"><span class="who">Agent 1 <span class="src">session 14</span> · 08:31</span><div class="b">Two fail, both in the sign-in refusal.</div></div>
+          <div class="msg"><span class="who">Agent 1 <span class="src">session unknown</span> · 08:36</span><div class="b">I'll hand the fix to a helper.</div></div>
+          <div class="divider"><span>Switched by you at 09:12 · Codex → Claude Code</span></div>
+          <div class="divider"><span><svg class="mk" aria-hidden="true"><use href="#m-claude"/></svg>Session 15 · Claude Code · Terminal · fresh thread</span></div>
+          <div class="msg me"><span class="who">You · 09:13</span><div class="b">Pick up report 44 and fix the refusal.</div></div>
+          <div class="msg"><span class="who">Agent 1 <span class="src">session 15</span> · 09:14</span><div class="b">I remember the refusal from my memories; task 1631 is still mine.</div></div>
+        </div>
+        <div class="composer"><div class="to"><svg class="i s12" viewBox="0 0 16 16"><path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/></svg>To <b>Agent 1</b> · session 15</div><div class="ta">Write to Agent 1…</div><div class="row"><span class="gap"></span><button class="btn small primary">Send</button></div></div>
+      </div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>6b</b>A message sent to a session that just ended (stories 34, 39): the text is kept, and the owner chooses where it goes</div>
+    <div class="stage"><div class="browser" style="max-width:620px"><div class="chrome"><i></i><i></i><i></i></div>
+      <div class="chat" style="height:440px">
+        <div class="msgs">
+          <div class="notice"><svg class="i s13" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/></svg><span>Agent 1 switched to session 15 in another tab. This page now shows session 15.</span></div>
+          <div class="divider"><span><svg class="mk" aria-hidden="true"><use href="#m-claude"/></svg>Session 15 · Claude Code · Terminal · fresh thread</span></div>
+          <div class="msg"><span class="who">Agent 1 <span class="src">session 15</span> · 09:14</span><div class="b">Working on the fix now.</div></div>
+        </div>
+        <div class="notice" style="margin-bottom:8px"><svg class="i s13" viewBox="0 0 16 16"><path d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/></svg><span>Not sent: this was for session 14, which has ended. Your text is still here.</span><span class="gap"></span><button class="btn small primary">Send to session 15</button></div>
+        <div class="composer"><div class="to"><svg class="i s12" viewBox="0 0 16 16"><path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/></svg>To <b>Agent 1</b> · session 15</div><div class="ta" style="color:var(--text)">Also check the Codex side of the refusal before you push.</div><div class="row"><span class="gap"></span><button class="btn small primary">Send</button></div></div>
+      </div>
+    </div></div></div>
+</div>
+
+<!-- ======================= 7. PHONE ======================= -->
+<h2 class="sec">7 · Phone width</h2>
+<p class="note">At phone width the sidebar folds behind the menu button, and the pane grid becomes one window at a time, chosen by tabs under the agent
+bar. The agent bar wraps: picker and state on the first line, the full-width action on the second. Start and switch open as a bottom sheet with the
+same fields and the same summary line.</p>
+<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(400px,1fr))">
+  <div class="frame"><div class="cap"><b>7a</b>Idle main agent on a phone</div>
+    <div class="stage"><div class="phone">
+      <div class="ph-top"><button class="btn icon"><svg class="i" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h10"/></svg></button><b>Home</b><span class="gap"></span><button class="btn icon"><svg class="i s13" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/></svg></button></div>
+      <div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span><svg class="i s12" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></svg></button><span class="state"><span class="dot"></span><span class="w quiet">Idle</span></span>
+        <div class="acts"><button class="btn bordered normal">Resume…</button><button class="btn primary normal">Start session</button></div></div>
+      <div class="ph-tabs"><span class="on">Chat</span><span>Terminal</span><span>Inbox <span style="color:var(--brand-text)">2</span></span><span>More</span></div>
+      <div class="chat" style="flex:1;min-height:0">
+        <div class="msgs">
+          <div class="divider"><span><svg class="mk" aria-hidden="true"><use href="#m-codex"/></svg>Session 14 · Codex</span></div>
+          <div class="msg me"><span class="who">You · 08:12</span><div class="b">Run the account tests and tell me which fail.</div></div>
+          <div class="msg"><span class="who">Agent 1 <span class="src">session 14</span></span><div class="b">Two fail, both in the sign-in refusal. Report 44 has the cause.</div></div>
+          <div class="divider"><span>Session 14 ended at 08:40</span></div>
+        </div>
+        <div class="composer off"><div class="to">To <b>Agent 1</b> · waits in its inbox</div><div class="ta">Write to Agent 1…</div></div>
+      </div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>7b</b>Start as a bottom sheet on a phone</div>
+    <div class="stage"><div class="phone">
+      <div class="ph-top"><button class="btn icon"><svg class="i" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h10"/></svg></button><b>Home</b><span class="gap"></span></div>
+      <div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span></button><span class="state"><span class="dot"></span><span class="w quiet">Idle</span></span></div>
+      <div style="flex:1;background:color-mix(in srgb,#000 30%,transparent)"></div>
+      <div class="sheet">
+        <span class="grab"></span>
+        <h3>Start a session</h3>
+        <div class="blk"><span class="lbl">Driver</span><div class="cards2"><div class="card on"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg><span class="t">Claude Code</span></div><div class="card"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg><span class="t">Codex</span></div></div></div>
+        <div class="blk"><span class="lbl">Variant</span><div class="seg"><span class="on">Terminal <small>default</small></span><span>Headless</span></div></div>
+        <div class="blk"><span class="lbl">Account</span><div class="opts"><div class="opt on"><span class="rd"></span><span class="t"><b>jesse.gall@transport-planning.example.com</b><span>Subscription · Default</span></span></div><div class="opt"><span class="rd"></span><span class="t"><b>Claude Code API key</b><span>Pay per use</span></span></div></div></div>
+        <div class="blk"><span class="lbl">Conversation</span><div class="seg"><span class="on">Fresh start</span><span>Resume…</span></div></div>
+        <p class="plain" style="white-space:normal">Starts <b style="color:var(--text);font-weight:500">Agent 1</b> with Claude Code · Terminal on jesse.gall@…</p>
+        <div style="display:flex;gap:8px"><button class="btn normal" style="flex:1">Cancel</button><button class="btn primary normal" style="flex:2">Start</button></div>
+      </div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>7c</b>Live on a phone, with the terminal tab chosen (read-only on touch)</div>
+    <div class="stage"><div class="phone">
+      <div class="ph-top"><button class="btn icon"><svg class="i" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h10"/></svg></button><b>Home</b><span class="gap"></span></div>
+      <div class="agentbar"><button class="picker"><span class="num">1</span><span class="nm">Agent 1</span><span class="role">Main</span><svg class="i s12" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></svg></button><span class="state"><span class="dot live"></span><span class="w">Working</span><span class="s">Session 15</span></span>
+        <div class="acts"><button class="btn bordered normal">Switch…</button><button class="btn bordered normal">Stop</button></div></div>
+      <div class="ph-tabs"><span>Chat</span><span class="on">Terminal</span><span>Inbox</span><span>More</span></div>
+      <div class="term" style="flex:1"><div><span class="b">✻</span> Claude Code</div><br><div>&gt; Pick up report 44 and fix the refusal.</div><br><div><span class="g">●</span> Reading report 44…</div><div><span class="g">●</span> Editing withSpace()…</div><br><div class="d">  view only on this device</div></div>
+    </div></div></div>
+</div>
+
+<!-- ======================= RISKS & CHANGES ======================= -->
+<h2 class="sec">What could go wrong, and how the design answers</h2>
+<table class="st">
+  <tr><th>Risk</th><th>Answer</th></tr>
+  <tr><td>An owner with accounts but no session gets stuck (doc 72 §2)</td><td>Home resolves agents, not sessions: agent 1 is always chosen, with Start session in the bar and in the terminal pane (1a).</td></tr>
+  <tr><td>Starting with the wrong driver or account</td><td>The start card and the dialog's footer name the driver, variant and account before Start; the information bar repeats them while it runs.</td></tr>
+  <tr><td>An explicit account quietly changes the default</td><td>The account list says “for this session only”; the default stays (doc 72 §12).</td></tr>
+  <tr><td>A switch stops work the owner didn't mean to stop</td><td>The summary lists the running turn and the helpers, and asks about the helpers; nothing stops before Switch (5a).</td></tr>
+  <tr><td>Two sessions write at once</td><td>An unconfirmed stop blocks the new start with Check again (state strip); a second click joins the same operation.</td></tr>
+  <tr><td>A reply is credited to the wrong session</td><td>Each reply names its source session, or “session unknown”; dividers mark switches.</td></tr>
+  <tr><td>A message lands in the wrong session after a switch</td><td>The composer names the session; a stale send is held with its text and offered to the current one (6b).</td></tr>
+  <tr><td>Resume picks the wrong thread</td><td>Threads are chosen explicitly, never the newest by default; unusable ones say why (3e).</td></tr>
+  <tr><td>A retired helper is started by accident</td><td>Retired agents are grouped apart, show their disposition, and have no start action (2b).</td></tr>
+  <tr><td>The picker is mouse-only</td><td>Search has focus on open; arrows, Enter and Esc; the chosen agent's state is announced (2a).</td></tr>
+</table>
+
+<h2 class="sec">What changes in the frontend (no project code changed here)</h2>
+<ul class="todo">
+  <li><code>resources/js/components/home/AgentBar.vue</code>: from “running session only” (its line 4) to the agent picker, the state word, a plain sentence when needed, and one action per state (Start session, Resume…, Switch…, Stop, Retry, Check again).</li>
+  <li><code>resources/js/components/home/InformationBar.vue</code>: the lead stays the agent; add the session number, driver · variant, account and start or end time. The layouts button stays.</li>
+  <li><code>domain/Chat/resources/js/ChatPane.vue</code>: remove the session button row (lines 77–103); add session dividers, the source session on each reply, the composer's destination line, and the held-message notice. Drafts are keyed by user, environment and agent (doc 72 §12).</li>
+  <li>The terminal window shows the start card when the agent is idle, and joins the existing runtime when it's live.</li>
+  <li>New: an agent picker menu (kit <code>MenuList</code> look), and Start, Resume and Switch dialogs on the kit Modal from the accounts design; on phones, a bottom sheet.</li>
+  <li>Home's data: <code>HomeData</code> returns the agents (idle included), the chosen agent, its live session, eligible actions with reasons, accounts by driver and resumable threads (doc 72 §12).</li>
+  <li>Topbar, sidebar, the pane grid, window tabs, dragging and resizing are unchanged. At phone width the pane grid shows one window at a time behind tabs.</li>
+</ul>
+</div>
+</body>
+</html>
