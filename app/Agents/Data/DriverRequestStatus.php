@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Data;
 
+use App\Agents\Models\DriverRequest;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
@@ -40,4 +41,29 @@ final class DriverRequestStatus extends Data
         public readonly bool $canCancelScript = false,
     ) {}
 
+    /**
+     * A driver request as stored, for readers.
+     */
+    public static function fromDriverRequest(DriverRequest $request): self
+    {
+        return self::from([
+            'requestId' => $request->id,
+            'sequence' => $request->sequence,
+            'operation' => $request->operation,
+            'progress' => $request->progress,
+            'outcome' => $request->outcome,
+            'expectedTiming' => $request->expected_timing,
+            'changedAt' => $request->updated_at?->toIso8601String(),
+            'hold' => $request->hold_reason,
+            'script' => $request->script_id,
+            'scriptStep' => $request->script_step,
+            'scriptEvidence' => $request->script_evidence,
+            'rowVersion' => $request->row_version,
+            'canRetry' => $request->canRetry(),
+            'canCancel' => $request->canCancel(),
+            'canResolve' => $request->canResolve(),
+            'canResumeScript' => $request->canResumeScript(),
+            'canCancelScript' => $request->isStoppedKeyScript(),
+        ]);
+    }
 }

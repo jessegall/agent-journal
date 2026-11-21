@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
+use App\Profiles\Models\ProfileRevision;
 use App\Actors\Contracts\Policy;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\Operation;
@@ -83,5 +84,25 @@ final class ProfileSnapshot extends Data
     public function grants(string $policy, AccessType $access): bool
     {
         return $this->authorization->grants($policy, $access);
+    }
+
+    /**
+     * A profile revision as the snapshot of the profile it belongs to.
+     */
+    public static function fromProfileRevision(ProfileRevision $revision, ProfileKey $key): self
+    {
+        return self::from([
+            'key' => $key,
+            'revision' => $revision->revision,
+            'base' => $revision->base,
+            'instructions' => $revision->instructions,
+            'model' => $revision->model,
+            'skillAllowlist' => $revision->skill_allowlist,
+            'requiredSkills' => $revision->required_skills,
+            'start' => $revision->start_policy,
+            'authorization' => $revision->authorization,
+            'supervisor' => $revision->supervisor,
+            'instances' => $revision->instances,
+        ]);
     }
 }

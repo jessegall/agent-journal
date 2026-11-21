@@ -3,9 +3,9 @@ import type { ConnectProjectWindowData } from '@generated/types/connections';
 import { revoke } from '@generated/routes/connections/bindings';
 import { issue } from '@generated/routes/connections/invitations';
 import Button from '@kit/Button';
-import { deleteJson, postJson } from '@kit/jsonRequests';
 import PageHeader from '@kit/PageHeader';
 import { router } from '@inertiajs/vue3';
+import { keyedPost } from '@kit/keyedPost';
 import { ref } from 'vue';
 import BindingRow from './BindingRow.vue';
 import InstallLineField from './InstallLineField.vue';
@@ -26,29 +26,30 @@ const issued = ref<IssuedLine | null>(null);
 const pending = ref(false);
 const refusal = ref<string | null>(null);
 
-async function generate(): Promise<void> {
+/**
+ * Issues a line through the page's own action, under a fresh request key each time, since Replace is meant to issue a
+ * new one; the line arrives as the answer's one-time flash and lives in this component alone.
+ */
+function generate(): void {
     pending.value = true;
     refusal.value = null;
-    const reply = await postJson<IssuedLine>(issue().url, { issuanceKey });
-    pending.value = false;
-
-    if (!reply.ok) {
-        refusal.value = reply.message;
-        return;
-    }
-
-    issued.value = reply.value;
+    keyedPost(issue().url, { issuanceKey }, crypto.randomUUID(), {
+        onAccepted: (flash) => {
+            const line = flash.issuedLine as IssuedLine | undefined;
+            issued.value = line ?? null;
+        },
+        onRefused: (reason) => (refusal.value = reason),
+        onUncertain: () => (refusal.value = 'The journal did not answer; generate the line again.'),
+        onFinish: () => (pending.value = false),
+    });
 }
 
-async function revokeBinding(bindingId: string): Promise<void> {
-    const reply = await deleteJson(revoke({ binding: bindingId }).url);
-
-    if (!reply.ok) {
-        refusal.value = reply.message;
-        return;
-    }
-
-    router.reload({ only: ['page'] });
+function revokeBinding(bindingId: string): void {
+    router.delete(revoke({ binding: bindingId }).url, {
+        only: ['page'],
+        preserveState: true,
+        onError: (errors) => (refusal.value = Object.values(errors)[0] ?? null),
+    });
 }
 </script>
 

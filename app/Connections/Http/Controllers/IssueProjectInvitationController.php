@@ -9,25 +9,43 @@ use App\Connections\Support\InstallLine;
 use App\Connections\Values\InstallTicket;
 use App\Http\Requests\Connections\IssueProjectInvitationRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Redirector;
+use Inertia\ResponseFactory;
 
 /**
  * Issues an install line through the bus and answers it once. The ticket is made here, so the command, its receipt
- * and every log hold only its digest; the answer is never cached.
+ * and every log hold only its digest. The window's form gets it as a one-time flash beside the page, never in the
+ * page's props or history; a JSON caller reads it from an answer that is never cached.
  */
 final readonly class IssueProjectInvitationController
 {
+    /**
+     * The flash key the window reads the issued line, its expiry and its invitation from.
+     */
+    public const string ISSUED_LINE = 'issuedLine';
+
     public function __invoke(
         IssueProjectInvitationRequest $request,
         CommandBus $commands,
         InstallLine $line,
-    ): JsonResponse {
+        ResponseFactory $inertia,
+        Redirector $redirect,
+    ): JsonResponse|RedirectResponse {
         $ticket = InstallTicket::generate();
         $issued = $commands->run($request->commandFor($ticket));
-
-        return new JsonResponse([
+        $answer = [
             'installLine' => $line->for($ticket),
             'expiresAt' => $issued->expiresAt,
             'invitationId' => $issued->invitationId,
-        ], JsonResponse::HTTP_CREATED, ['Cache-Control' => 'no-store, private']);
+        ];
+
+        if (! $request->expectsJson()) {
+            $inertia->flash(self::ISSUED_LINE, $answer);
+
+            return $redirect->back(303);
+        }
+
+        return new JsonResponse($answer, JsonResponse::HTTP_CREATED, ['Cache-Control' => 'no-store, private']);
     }
 }

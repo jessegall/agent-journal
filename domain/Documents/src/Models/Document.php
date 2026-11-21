@@ -238,15 +238,7 @@ final class Document extends Model implements Commentable, Dockable, EventSource
 
     public function dockCard(): DockSuggestion
     {
-        $revision = $this->currentRevisionOrFail();
-
-        return DockSuggestion::from([
-            'type' => 'doc',
-            'number' => (string) $this->number,
-            'title' => $revision->title,
-            'abstract' => $revision->abstract,
-            'route' => "/documents/docs/{$this->number}",
-        ]);
+        return DockSuggestion::from($this);
     }
 
     public function view(): DocumentView

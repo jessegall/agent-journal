@@ -5,8 +5,8 @@ import { EditorView, basicSetup } from 'codemirror';
 import type { ProfileDraftData, ProfileScriptPageData } from '@generated/types/scripts';
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';
-import { postJson } from '@kit/jsonRequests';
-import { check as checkDraft, save as saveDraft } from '@generated/routes/scripts/draft';
+import { keyedPost } from '@kit/keyedPost';
+import { checkDraft, saveDraft } from '@/routes/scripts';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { editorDiagnostics, scriptCompletion, scriptHighlighting, type ScriptVocabulary } from './scriptLanguage';
 import ScriptFlowchart from './ScriptFlowchart.vue';
@@ -38,43 +38,69 @@ function text(): string {
     return editor.value?.state.doc.toString() ?? draft.value.source;
 }
 
-async function check(): Promise<void> {
+/**
+ * Checks the text through the page's own action; the answer's one-time flash holds what checking found, and one
+ * answered for older text is dropped.
+ */
+function check(): Promise<void> {
     const source = text();
-    const reply = await postJson<ProfileDraftData>(checkDraft().url, {
-        profile: draft.value.profile,
-        source,
-        commands: draft.value.commands,
+
+    return new Promise((done) => {
+        keyedPost(
+            checkDraft.url(draft.value.profile),
+            { profile: draft.value.profile, source, commands: draft.value.commands },
+            crypto.randomUUID(),
+            {
+                onAccepted: (flash) => {
+                    const checked = flash.checkedDraft as ProfileDraftData | undefined;
+
+                    if (checked === undefined || source !== text()) {
+                        return;
+                    }
+
+                    if (checked.catalogueDigest !== props.data.language.catalogueDigest) {
+                        notice.value = 'The script language changed; reload the page to edit with it. Your text stays.';
+                    }
+
+                    draft.value = { ...checked, source };
+                },
+                onRefused: () => undefined,
+                onUncertain: () => undefined,
+                onFinish: () => done(),
+            },
+        );
     });
-
-    if (!reply.ok || source !== text()) {
-        return;
-    }
-
-    if (reply.value.catalogueDigest !== props.data.language.catalogueDigest) {
-        notice.value = 'The script language changed; reload the page to edit with it. Your text stays.';
-    }
-
-    draft.value = { ...reply.value, source };
 }
 
-async function save(): Promise<void> {
-    const reply = await postJson<ProfileDraftData>(saveDraft().url, {
-        request_key: crypto.randomUUID(),
-        profile: draft.value.profile,
-        expectedRevision: revision.value,
-        source: text(),
-        commands: draft.value.commands,
-    });
+function save(): void {
+    const requestKey = crypto.randomUUID();
 
-    if (!reply.ok) {
-        notice.value = reply.message;
+    keyedPost(
+        saveDraft.url(draft.value.profile),
+        {
+            request_key: requestKey,
+            profile: draft.value.profile,
+            expectedRevision: revision.value,
+            source: text(),
+            commands: draft.value.commands,
+        },
+        requestKey,
+        {
+            onAccepted: (flash) => {
+                const saved = flash.savedDraft as ProfileDraftData | undefined;
 
-        return;
-    }
+                if (saved === undefined) {
+                    return;
+                }
 
-    draft.value = reply.value;
-    revision.value = reply.value.revision;
-    notice.value = `Saved as revision ${reply.value.revision}.`;
+                draft.value = saved;
+                revision.value = saved.revision;
+                notice.value = `Saved as revision ${saved.revision}.`;
+            },
+            onRefused: (reason) => (notice.value = reason ?? 'The draft was not saved.'),
+            onUncertain: () => (notice.value = 'The journal did not answer; save again to be sure.'),
+        },
+    );
 }
 
 onMounted(() => {

@@ -172,13 +172,7 @@ final class Report extends Model implements Commentable, Dockable, EventSource, 
 
     public function dockCard(): DockSuggestion
     {
-        return DockSuggestion::from([
-            'type' => 'report',
-            'number' => (string) $this->number,
-            'title' => $this->title,
-            'abstract' => $this->abstract,
-            'route' => "/documents/reports/{$this->number}",
-        ]);
+        return DockSuggestion::from($this);
     }
 
     public function view(): ReportView

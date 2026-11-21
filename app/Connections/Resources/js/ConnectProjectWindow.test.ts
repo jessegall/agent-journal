@@ -3,11 +3,17 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const reload = vi.fn();
-const postJson = vi.fn();
-const deleteJson = vi.fn();
+const destroy = vi.fn();
+// The page's issue action answers with the line as its one-time flash.
+const keyedPost = vi.fn((_url: string, _body: Record<string, unknown>, _key: string, outcome: KeyedOutcome) => {
+    outcome.onAccepted({ issuedLine: { installLine: LINE, expiresAt: '2026-11-21T12:10:00Z', invitationId: 'one' } });
+    outcome.onFinish?.();
+});
 
-vi.mock('@inertiajs/vue3', () => ({ router: { reload } }));
-vi.mock('@kit/jsonRequests', () => ({ postJson, deleteJson }));
+type KeyedOutcome = { onAccepted: (flash: Record<string, unknown>) => void; onFinish?: () => void };
+
+vi.mock('@inertiajs/vue3', () => ({ router: { reload, delete: destroy } }));
+vi.mock('@kit/keyedPost', () => ({ keyedPost }));
 vi.mock('@generated/routes/connections/invitations', () => ({
     issue: () => ({ url: '/settings/project-connections/invitations' }),
 }));
@@ -90,10 +96,6 @@ describe('ConnectProjectWindow', () => {
     it('generates a line, copies exactly its bytes and replaces it under the same action', async () => {
         const writeText = vi.fn();
         Object.assign(navigator, { clipboard: { writeText } });
-        postJson.mockResolvedValue({
-            ok: true,
-            value: { installLine: LINE, expiresAt: '2026-11-21T12:10:00Z', invitationId: 'one' },
-        });
         const wrapper = windowWith(true);
 
         await button(wrapper, 'Generate install line').trigger('click');
@@ -106,7 +108,7 @@ describe('ConnectProjectWindow', () => {
         expect(
             (wrapper.find('input').element as HTMLInputElement).value,
         ).toBe(LINE);
-        const keys = postJson.mock.calls.map((call) => call[1].issuanceKey);
+        const keys = keyedPost.mock.calls.map((call) => call[1].issuanceKey);
         expect(keys).toHaveLength(2);
         expect(keys[0]).toBe(keys[1]);
     });
@@ -121,10 +123,6 @@ describe('ConnectProjectWindow', () => {
     });
 
     it('opens again with no line and a new action', async () => {
-        postJson.mockResolvedValue({
-            ok: true,
-            value: { installLine: LINE, expiresAt: '2026-11-21T12:10:00Z', invitationId: 'one' },
-        });
         const first = windowWith(true);
         await button(first, 'Generate install line').trigger('click');
         await flushPromises();
@@ -136,21 +134,20 @@ describe('ConnectProjectWindow', () => {
         await flushPromises();
 
         expect(again.find('input').exists()).toBe(true);
-        expect(postJson.mock.calls[0][1].issuanceKey).not.toBe(
-            postJson.mock.calls[1][1].issuanceKey,
+        expect(keyedPost.mock.calls[0][1].issuanceKey).not.toBe(
+            keyedPost.mock.calls[1][1].issuanceKey,
         );
     });
 
-    it('revokes a connected folder and reloads only the page', async () => {
-        deleteJson.mockResolvedValue({ ok: true, value: null });
+    it('revokes a connected folder through the page, answering only the page', async () => {
         const wrapper = windowWith(true);
 
         await button(wrapper, 'Revoke').trigger('click');
         await flushPromises();
 
-        expect(deleteJson).toHaveBeenCalledWith(
+        expect(destroy).toHaveBeenCalledWith(
             '/settings/project-connections/bindings/binding-1',
+            expect.objectContaining({ only: ['page'], preserveState: true }),
         );
-        expect(reload).toHaveBeenCalledWith({ only: ['page'] });
     });
 });

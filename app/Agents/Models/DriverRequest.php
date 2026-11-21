@@ -416,25 +416,7 @@ final class DriverRequest extends Model implements ReadableModel
      */
     public function status(): DriverRequestStatus
     {
-        return DriverRequestStatus::from([
-            'requestId' => $this->id,
-            'sequence' => $this->sequence,
-            'operation' => $this->operation,
-            'progress' => $this->progress,
-            'outcome' => $this->outcome,
-            'expectedTiming' => $this->expected_timing,
-            'changedAt' => $this->updated_at?->toIso8601String(),
-            'hold' => $this->hold_reason,
-            'script' => $this->script_id,
-            'scriptStep' => $this->script_step,
-            'scriptEvidence' => $this->script_evidence,
-            'rowVersion' => $this->row_version,
-            'canRetry' => $this->canRetry(),
-            'canCancel' => $this->canCancel(),
-            'canResolve' => $this->canResolve(),
-            'canResumeScript' => $this->canResumeScript(),
-            'canCancelScript' => $this->isStoppedKeyScript(),
-        ]);
+        return DriverRequestStatus::fromDriverRequest($this);
     }
 
     /**

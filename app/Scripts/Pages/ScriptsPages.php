@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Scripts\Pages;
 
+use App\Scripts\Http\Controllers\Pages\CheckDraftPageController;
+use App\Scripts\Http\Controllers\Pages\SaveDraftPageController;
+use App\Ui\Declarations\ActionRoute;
 use App\Profiles\Support\AccountOwnerCheck;
 use App\Scripts\Resolvers\ProfileScriptWindowResolver;
 use App\Ui\Contracts\PageProvider;
@@ -27,7 +30,11 @@ final class ScriptsPages implements PageProvider
                 'ProfileScriptWindow.vue',
             )
                 ->at('{profile}')
-                ->visibleWhen(AccountOwnerCheck::class),
+                ->visibleWhen(AccountOwnerCheck::class)
+                ->actions(
+                    ActionRoute::post('{profile}/draft/check', CheckDraftPageController::class, 'check-draft'),
+                    ActionRoute::post('{profile}/draft/save', SaveDraftPageController::class, 'save-draft'),
+                ),
         ];
     }
 

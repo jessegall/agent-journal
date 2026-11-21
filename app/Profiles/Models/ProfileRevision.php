@@ -247,19 +247,7 @@ final class ProfileRevision extends Model implements ReadableModel
 
     public function snapshot(ProfileKey $key): ProfileSnapshot
     {
-        return ProfileSnapshot::from([
-            'key' => $key,
-            'revision' => $this->revision,
-            'base' => $this->base,
-            'instructions' => $this->instructions,
-            'model' => $this->model,
-            'skillAllowlist' => $this->skill_allowlist,
-            'requiredSkills' => $this->required_skills,
-            'start' => $this->start_policy,
-            'authorization' => $this->authorization,
-            'supervisor' => $this->supervisor,
-            'instances' => $this->instances,
-        ]);
+        return ProfileSnapshot::fromProfileRevision($this, $key);
     }
 
     // ----------[ Scopes ]----------

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ShareDetailData, ShareLinkData } from '@generated/types/sharing';
-import { postJson } from '@kit/jsonRequests';
+import type { ShareDetailData } from '@generated/types/sharing';
+import { keyedPost } from '@kit/keyedPost';
 import { revealShareLink } from '@generated/routes/sharing';
 import { router, usePage } from '@inertiajs/vue3';
 import FormErrors from '@kit/FormErrors';
@@ -32,17 +32,21 @@ const copied = ref(false);
 // A refused retry or revoke comes back as the page's errors, shown under the header.
 const page = usePage<{ errors: Record<string, string> }>();
 
-async function reveal(): Promise<void> {
+/**
+ * Reveals the address through the share's own action; it arrives as the answer's one-time flash, kept in this
+ * component alone.
+ */
+function reveal(): void {
     revealFailed.value = false;
-    const reply = await postJson<ShareLinkData>(revealShareLink(props.data.id).url);
-
-    if (!reply.ok) {
-        revealFailed.value = true;
-
-        return;
-    }
-
-    revealed.value = reply.value.url;
+    keyedPost(revealShareLink(props.data.id).url, {}, crypto.randomUUID(), {
+        onAccepted: (flash) => {
+            const url = flash.revealedLink;
+            revealed.value = typeof url === 'string' ? url : null;
+            revealFailed.value = revealed.value === null;
+        },
+        onRefused: () => (revealFailed.value = true),
+        onUncertain: () => (revealFailed.value = true),
+    });
 }
 
 async function copy(): Promise<void> {
