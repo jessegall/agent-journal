@@ -129,6 +129,15 @@ pin_runner() {
         sed -i "s|^RUNNER_IMAGE=.*|RUNNER_IMAGE=$runner|" .env
 }
 
+# The new updater is put in place by a short-lived container of its own image: compose run inside this container would
+# stop this container, and itself with it, before the new one starts.
+replace_updater() {
+    docker compose --profile updater build updater &&
+        image=$(docker compose --profile updater config --images updater) &&
+        docker run -d --rm --entrypoint sh -v /var/run/docker.sock:/var/run/docker.sock -v "$root:$root" -w "$root" \
+            "$image" -c 'sleep 2; docker compose --profile updater up -d --no-deps updater' >/dev/null
+}
+
 # The updater rebuilds itself, as the last step, when the loop it runs is not the installed commit's: the new container
 # takes over from this one. Comparing the files, not the commits, also catches a change an earlier install missed.
 updater_changed=no
@@ -138,7 +147,7 @@ if install; then
     echo "$newest" > .installed-commit
     rm -f .failed-commit
     echo "$(date -u +%FT%TZ) installed $newest"
-    [ "$updater_changed" = no ] || docker compose --profile updater up -d --build --no-deps updater
+    [ "$updater_changed" = no ] || replace_updater
 else
     echo "$newest" > .failed-commit
     echo "$(date -u +%FT%TZ) $newest failed to install; the next commit is tried"
