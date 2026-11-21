@@ -1,4 +1,5 @@
-// Command journal-release builds journal-agent for every release target and signs the manifest of what it built.
+// Command journal-release builds the remote-project installation for every release target and signs the manifest
+// of what it built.
 package main
 
 import (
@@ -43,7 +44,8 @@ func run(arguments []string) error {
 		return err
 	}
 
-	manifest, err := release.Build(*module, *folder, *version, key)
+	sources := release.Sources{Repository: repository, Module: *module}
+	manifest, err := release.Build(release.RemoteProject, sources, *folder, *version, key)
 	if err != nil {
 		return err
 	}

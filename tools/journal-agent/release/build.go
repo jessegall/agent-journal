@@ -4,22 +4,19 @@ import (
 	"crypto/ed25519"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"journal-agent/client"
 	"journal-agent/host"
 )
 
-const (
-	// ProgramName is the name of the journal-agent binary, in the release and in the installation.
-	ProgramName    = "journal-agent"
-	programPackage = "./cmd/journal-agent"
-)
+// ProgramName is the name of the journal-agent binary, in the release and in the installation's bin folder.
+const ProgramName = "journal-agent"
 
-// Build cross-compiles journal-agent from the module folder for every target into the new release folder, records
-// the SHA-256 and byte size it measures of each binary, and writes the manifest and its signature beside them.
-func Build(module string, folder string, version string, key ed25519.PrivateKey) (Manifest, error) {
+// Build writes every file of the profile for every target into the new release folder, cross-compiling the
+// programs from the sources, records the SHA-256 and byte size it measures of each file, and writes the manifest
+// and its signature beside them.
+func Build(profile Profile, sources Sources, folder string, version string, key ed25519.PrivateKey) (Manifest, error) {
 	if version == "" {
 		return Manifest{}, fmt.Errorf("a release needs a version")
 	}
@@ -28,14 +25,24 @@ func Build(module string, folder string, version string, key ed25519.PrivateKey)
 		return Manifest{}, err
 	}
 
-	manifest := Manifest{Version: version, HostProtocolVersion: client.HostProtocolVersion}
+	manifest := Manifest{
+		Version:             version,
+		HostProtocolVersion: client.HostProtocolVersion,
+		Profile:             profile.Name,
+		Providers:           profile.Providers,
+	}
 	for _, target := range Targets {
-		artifact, err := buildProgram(module, folder, target)
-		if err != nil {
-			return Manifest{}, err
+		targetArtifacts := TargetArtifacts{Target: target}
+		for _, file := range profile.Files {
+			artifact, err := buildFile(file, sources, folder, target)
+			if err != nil {
+				return Manifest{}, err
+			}
+
+			targetArtifacts.Artifacts = append(targetArtifacts.Artifacts, artifact)
 		}
 
-		manifest.Targets = append(manifest.Targets, TargetArtifacts{Target: target, Artifacts: []host.Artifact{artifact}})
+		manifest.Targets = append(manifest.Targets, targetArtifacts)
 	}
 
 	if err := writeSigned(manifest, folder, key); err != nil {
@@ -45,19 +52,20 @@ func Build(module string, folder string, version string, key ed25519.PrivateKey)
 	return manifest, nil
 }
 
-// buildProgram compiles journal-agent for one target with cgo off and measures the binary it wrote.
-func buildProgram(module string, folder string, target Target) (host.Artifact, error) {
-	source := filepath.Join(target.Folder(), ProgramName)
+// buildFile writes one profile file for one target under the target's folder and measures what it wrote.
+func buildFile(file ProfileFile, sources Sources, folder string, target Target) (host.Artifact, error) {
+	source := filepath.Join(target.Folder(), file.Name)
 	path, err := filepath.Abs(filepath.Join(folder, source))
 	if err != nil {
 		return host.Artifact{}, err
 	}
 
-	build := exec.Command("go", "build", "-trimpath", "-o", path, programPackage)
-	build.Dir = module
-	build.Env = append(os.Environ(), "GOOS="+target.OS, "GOARCH="+target.Arch, "CGO_ENABLED=0")
-	if printed, err := build.CombinedOutput(); err != nil {
-		return host.Artifact{}, fmt.Errorf("building %s for %s failed: %w\n%s", ProgramName, target, err, printed)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return host.Artifact{}, err
+	}
+
+	if err := file.Source.write(sources, target, path); err != nil {
+		return host.Artifact{}, err
 	}
 
 	measured, err := measure(path)
@@ -66,7 +74,7 @@ func buildProgram(module string, folder string, target Target) (host.Artifact, e
 	}
 
 	return host.Artifact{
-		Name: ProgramName, Source: source, SHA256: measured.SHA256, Size: measured.Size, Executable: true,
+		Name: file.Name, Source: source, SHA256: measured.SHA256, Size: measured.Size, Executable: file.Executable,
 	}, nil
 }
 

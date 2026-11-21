@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -19,6 +20,8 @@ var (
 	ErrSignatureInvalid = errors.New("the release manifest is not signed by the pinned key")
 	// ErrTargetMissing is returned when the release has no files for the machine's target.
 	ErrTargetMissing = errors.New("the release has no files for this target")
+	// ErrArtifactMissing is returned when a file the manifest records for the target is not in the release folder.
+	ErrArtifactMissing = errors.New("a release file the manifest records is missing")
 	// ErrArtifactChanged is returned when a release file has another SHA-256 or byte size than the manifest's.
 	ErrArtifactChanged = errors.New("a release file is not the one the manifest records")
 )
@@ -68,6 +71,10 @@ func verifyArtifact(artifact host.Artifact, folder string) (host.Artifact, error
 
 	path := filepath.Join(folder, artifact.Source)
 	measured, err := measure(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return host.Artifact{}, fmt.Errorf("%w: %s", ErrArtifactMissing, artifact.Source)
+	}
+
 	if err != nil {
 		return host.Artifact{}, err
 	}
