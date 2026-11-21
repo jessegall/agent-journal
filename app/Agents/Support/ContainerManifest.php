@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
-use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
+use App\Agents\Values\WorkspacePreparation;
 
 /**
  * What the protected host starts a helper container with (doc 14, section 63; doc 61, decision 6): the image by
  * digest, an unprivileged user, a read-only root without capabilities, the mounts its arrangement allows, its
- * security profiles, rotated logs and the start's budgets, which size its tmpfs folders. It is validated when built;
- * anything else is refused by name.
+ * security profiles, rotated logs and the start's budgets, which size its tmpfs folders, and where a contained
+ * workspace comes from. It is validated when built; anything else is refused by name.
  */
 final readonly class ContainerManifest
 {
@@ -44,25 +45,27 @@ final readonly class ContainerManifest
         public array $publishedPorts,
         public ExecutionBudgets $budgets,
         public bool $attachable,
+        // What the host fills or checks before the container mounts the workspace; none locally.
+        public WorkspacePreparation|null $workspacePreparation,
     ) {}
 
     /**
-     * The manifest of one session's start: its workspace mounted at /workspace as its arrangement places it, writable
-     * only when the start's access declaration grants changing workspace files, whatever the profile is called; its
-     * program its own terminal process when the execution policy makes it attachable.
+     * The manifest of one session's start: its workspace mounted at /workspace as its arrangement places it and as the
+     * session uses it, read-only, shared or its own clone; its program its own terminal process when the execution
+     * policy makes it attachable.
      *
      * @throws ManifestRefused
      */
     public static function compile(
         string $sessionId,
         string $workspace,
-        AccessPolicy $access,
+        WorkspaceUse $use,
         ExecutionPolicy $policy,
         string $network,
         MountRules $rules,
         string|null $resumedSessionId,
     ): self {
-        $mount = $rules->workspaceMount($workspace, $access->changesFiles());
+        $mount = $rules->workspaceMount($workspace, $use);
 
         return self::make(
             (string) $policy->imageReference,
@@ -133,6 +136,7 @@ final readonly class ContainerManifest
             [],
             $budgets,
             $attachable,
+            $rules->workspacePreparation(),
         );
     }
 }

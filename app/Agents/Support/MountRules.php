@@ -6,7 +6,9 @@ namespace App\Agents\Support;
 
 use App\Agents\Contracts\WorkspaceSource;
 use App\Agents\Enums\MountType;
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\ManifestRefused;
+use App\Agents\Values\WorkspacePreparation;
 
 /**
  * Which mounts a helper container may have: in the local arrangement exactly one folder of this machine at
@@ -66,15 +68,29 @@ final readonly class MountRules
 
     /**
      * The mount that puts the start's workspace at /workspace: locally the start's own folder on this machine;
-     * contained, its environment's volume or server folder, which the host fills or checks before the container.
+     * contained, its environment's volume or server folder, which the host fills or checks before the container, or
+     * for a writing helper its own clone of it.
      */
-    public function workspaceMount(string $localFolder, bool $writable): ManifestMount
+    public function workspaceMount(string $localFolder, WorkspaceUse $use): ManifestMount
     {
         if ($this->workspaceSource === null) {
-            return ManifestMount::bind($localFolder, ContainerManifest::WORKDIR, $writable);
+            return ManifestMount::bind($localFolder, ContainerManifest::WORKDIR, $use->isWritable());
         }
 
-        return $this->workspaceSource->mount($writable);
+        if ($use->isOwnCheckout()) {
+            return ManifestMount::checkoutOf($this->workspaceSource->mount(false));
+        }
+
+        return $this->workspaceSource->mount($use->isWritable());
+    }
+
+    /**
+     * What the host makes ready before a contained container mounts the workspace; none locally, where the start's
+     * own folder is bound as it is.
+     */
+    public function workspacePreparation(): WorkspacePreparation|null
+    {
+        return $this->workspaceSource?->preparation();
     }
 
     /**

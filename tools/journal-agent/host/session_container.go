@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 // SessionContainer is the one container a contained session's program runs in, as its own process, under the name
@@ -53,6 +55,50 @@ func (container SessionContainer) Open(
 	}
 
 	return container.attachCommand(ctx), nil
+}
+
+// ErrSessionContainerAttachable refuses a terminal manifest for a program run one turn at a time without a terminal.
+var ErrSessionContainerAttachable = errors.New("a program without a terminal needs a container without one")
+
+// Turn creates the session's container for one turn of a program without a terminal, the program its own process,
+// and answers the command that starts it and stays on its output until it ends. The container of the turn before is
+// removed first; the session's network and volumes, a writer's checkout too, stay.
+func (container SessionContainer) Turn(
+	ctx context.Context,
+	manifest ContainerManifest,
+	process ContainerProcess,
+) (*exec.Cmd, error) {
+	if manifest.Attachable {
+		return nil, ErrSessionContainerAttachable
+	}
+
+	if err := container.Containers.Remove(ctx, container.Name, StopSeconds); err != nil {
+		return nil, fmt.Errorf("the session container %s of the turn before could not be removed: %w", container.Name, err)
+	}
+
+	if err := container.Containers.EnsureNetwork(ctx, manifest.Network, container.Labels); err != nil {
+		return nil, err
+	}
+
+	if _, err := container.Containers.Create(ctx, manifest, container.Name, container.Labels, process); err != nil {
+		return nil, fmt.Errorf("creating the session container %s failed: %w", container.Name, err)
+	}
+
+	start := container.Containers.command(context.Background(), "start", "--attach", container.Name)
+	start.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+	return start, nil
+}
+
+// RemoveCheckout removes a writer's checkout once the main's workspace holds its work, and answers the volume it
+// kept otherwise, the place to recover the work from; a session without a checkout has nothing to remove.
+func (container SessionContainer) RemoveCheckout(ctx context.Context, manifest ContainerManifest) (string, error) {
+	source, found := manifest.CheckoutSource()
+	if !found {
+		return "", nil
+	}
+
+	return container.Containers.RemoveCheckout(ctx, container.Labels.Session, source)
 }
 
 // attachCommand is the attach as the host's terminal runs it, the docker client first.

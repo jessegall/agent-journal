@@ -86,10 +86,15 @@ final readonly class DriverRequests
     }
 
     /**
-     * Asks the runtime to stop: a stop request, after which it takes no more requests.
+     * Asks the runtime to stop: a stop request, after which it takes no more requests. The session's running helpers
+     * are asked first, and the host is handed this stop only once each of them is proven stopped (doc 61, story 46).
      */
     public function stop(StackTarget $target, string $idempotencyKey): DriverRequest
     {
+        foreach (AgentRuntime::runningHelpersOf($target->sessionId) as $helper) {
+            $this->stop($helper->session->target(), "{$idempotencyKey}:helper:{$helper->agent_session_id}");
+        }
+
         $request = $this->append($target, DriverOperation::Stop, $idempotencyKey, DriverRequestPayload::nothing());
         $this->lockedRuntime($target)->markStopping();
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Contracts\WorkspaceSource;
+use App\Agents\Values\WorkspaceClone;
+use App\Agents\Values\WorkspacePreparation;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 
@@ -26,5 +28,12 @@ final class GitWorkspace extends Data implements WorkspaceSource
     public function mount(bool $writable): ManifestMount
     {
         return ManifestMount::volume($this->volume, ContainerManifest::WORKDIR, $writable);
+    }
+
+    public function preparation(): WorkspacePreparation
+    {
+        return WorkspacePreparation::ofClone(
+            new WorkspaceClone($this->volume, $this->repository, $this->revision, $this->deployKeySecret),
+        );
     }
 }

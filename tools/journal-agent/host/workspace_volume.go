@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -39,14 +40,67 @@ var cloneFailures = []struct {
 	{[]string{"Repository not found", "does not appear to be a git repository", "not found"}, ErrRepositoryNotFound},
 }
 
-// ReadDeployKey reads the deploy key of the environment from its compose secret, deploy_key_<environment>.
-func ReadDeployKey(environment string) ([]byte, error) {
-	key, err := os.ReadFile(filepath.Join(DeployKeyFolder, "deploy_key_"+environment))
+// secretName is a compose secret's name as the operator writes it: letters, digits, dashes and underscores.
+var secretName = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+
+// ReadDeployKey reads an environment's deploy key from the compose secret of that name, such as deploy_key_main.
+func ReadDeployKey(secret string) ([]byte, error) {
+	if !secretName.MatchString(secret) {
+		return nil, fmt.Errorf("%w: %q", ErrDeployKeyMissing, secret)
+	}
+
+	key, err := os.ReadFile(filepath.Join(DeployKeyFolder, secret))
 	if err != nil {
-		return nil, fmt.Errorf("%w: deploy_key_%s", ErrDeployKeyMissing, environment)
+		return nil, fmt.Errorf("%w: %s", ErrDeployKeyMissing, secret)
 	}
 
 	return key, nil
+}
+
+// WorkspacePreparation mirrors App\Agents\Values\WorkspacePreparation: what the host makes ready before a contained
+// container mounts the workspace, a Git workspace's volume to fill or an operator's folder to check.
+type WorkspacePreparation struct {
+	Clone  *WorkspaceClone `json:"clone"`
+	Folder string          `json:"folder"`
+}
+
+// WorkspaceClone mirrors App\Agents\Values\WorkspaceClone: the environment's volume, the repository and revision
+// cloned into it, and the name of the compose secret holding its deploy key.
+type WorkspaceClone struct {
+	Volume          string `json:"volume"`
+	Repository      string `json:"repository"`
+	Revision        string `json:"revision"`
+	DeployKeySecret string `json:"deployKeySecret"`
+}
+
+// PrepareWorkspace makes the workspace ready before a container mounts it: an operator's folder is checked at every
+// start, a Git workspace's volume is filled the first time and left as it is once it exists. A refusal is named and
+// nothing is created; a manifest without a preparation, as a local one, needs nothing.
+func (containers Containers) PrepareWorkspace(ctx context.Context, preparation *WorkspacePreparation) error {
+	if preparation == nil {
+		return nil
+	}
+
+	if preparation.Clone == nil {
+		_, err := containers.CheckFolder(ctx, preparation.Folder)
+		return err
+	}
+
+	clone := preparation.Clone
+	if !containers.Rules.permitsSource(ContainerMount{Type: MountVolume, Source: clone.Volume}) {
+		return ErrManifestUnsafe
+	}
+
+	if containers.command(ctx, "volume", "inspect", clone.Volume).Run() == nil {
+		return nil
+	}
+
+	key, err := ReadDeployKey(clone.DeployKeySecret)
+	if err != nil {
+		return err
+	}
+
+	return containers.FillWorkspace(ctx, clone.Volume, clone.Repository, clone.Revision, key)
 }
 
 // FillWorkspace fills the named workspace volume with a self-contained clone of the repository at the revision, the

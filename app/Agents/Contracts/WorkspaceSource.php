@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Contracts;
 
 use App\Agents\Support\ManifestMount;
+use App\Agents\Values\WorkspacePreparation;
 
 /**
  * Where a contained environment's workspace comes from, and the mount that puts it at /workspace.
@@ -12,4 +13,9 @@ use App\Agents\Support\ManifestMount;
 interface WorkspaceSource
 {
     public function mount(bool $writable): ManifestMount;
+
+    /**
+     * What the host makes ready before a container mounts it.
+     */
+    public function preparation(): WorkspacePreparation;
 }

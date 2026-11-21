@@ -255,11 +255,7 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 		return nil, err
 	}
 	if contained {
-		if grant.Runtime.DriverType != drivers.TerminalDriverType || opener.installation == "" {
-			return nil, fmt.Errorf("runtime %s runs contained under the %s driver, which this host runs in no container",
-				runtimeID, grant.Runtime.DriverType)
-		}
-		return opener.containedTerminalRuntime(runtimeID, prepared, profile, manifest)
+		return opener.containedRuntime(runtimeID, prepared, profile, manifest)
 	}
 	if profile.Program() == "codex" {
 		return opener.codexRuntime(runtimeID, prepared, environment)
@@ -273,6 +269,31 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 
 	return nil, fmt.Errorf("runtime %s runs under the %s driver, which this host has no driver for", runtimeID,
 		grant.Runtime.DriverType)
+}
+
+// containedRuntime opens a contained runtime in its session's own container by its driver type: a terminal runtime's
+// program is the container's terminal process, a process runtime's runs one container per turn.
+func (opener runtimeOpener) containedRuntime(
+	runtimeID string,
+	prepared host.PreparedStart,
+	profile contracts.ProgramProfile,
+	manifest host.ContainerManifest,
+) (serving.Runtime, error) {
+	driverType := prepared.Grant.Runtime.DriverType
+	if opener.installation == "" {
+		return nil, fmt.Errorf("runtime %s runs contained under the %s driver, which this host runs in no container",
+			runtimeID, driverType)
+	}
+
+	switch driverType {
+	case drivers.TerminalDriverType:
+		return opener.containedTerminalRuntime(runtimeID, prepared, profile, manifest)
+	case drivers.ProcessDriverType:
+		return opener.containedProcessRuntime(runtimeID, prepared, profile, manifest)
+	}
+
+	return nil, fmt.Errorf("runtime %s runs contained under the %s driver, which this host runs in no container",
+		runtimeID, driverType)
 }
 
 // codexRuntime opens a Codex runtime as one thread on its account generation's shared app-server, in an empty root

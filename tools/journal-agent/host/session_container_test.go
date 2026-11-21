@@ -145,3 +145,77 @@ func TestAnOutOfMemoryKillIsTheRuntimesExit(t *testing.T) {
 		t.Fatalf("the ended container's network stayed: %v", calls(t, log))
 	}
 }
+
+func headlessManifest() ContainerManifest {
+	headless := containedManifest()
+	headless.Network = "journal-session-7"
+
+	return headless
+}
+
+func TestAHeadlessTurnRunsItsProgramInAFreshSessionContainerWithoutATerminal(t *testing.T) {
+	container, log := sessionDocker(t, false, "0")
+	process := ContainerProcess{Command: []string{"claude", "--print", "Check your pending journal work."}}
+
+	turn, err := container.Turn(context.Background(), headlessManifest(), process)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	made := calls(t, log)
+	removed := slices.Index(made, "rm --volumes journal-session-7")
+	created := slices.IndexFunc(made, func(call string) bool { return strings.HasPrefix(call, "create ") })
+	if removed < 0 || created < removed {
+		t.Fatalf("the turn before was not removed before the create: %v", made)
+	}
+	if strings.Contains(made[created], "--tty") || !strings.HasSuffix(made[created], "claude --print Check your pending journal work.") {
+		t.Fatalf("the create is not the turn's own program without a terminal: %s", made[created])
+	}
+	if strings.Join(turn.Args[1:], " ") != "--host unix:///run/agent-docker/docker.sock start --attach journal-session-7" {
+		t.Fatalf("the turn runs %v", turn.Args)
+	}
+	if !turn.SysProcAttr.Setpgid {
+		t.Fatal("the turn's docker client is not its own process group")
+	}
+}
+
+func TestATerminalManifestRunsNoHeadlessTurn(t *testing.T) {
+	container, _ := sessionDocker(t, false, "0")
+
+	if _, err := container.Turn(context.Background(), attachableManifest(), ContainerProcess{}); !errors.Is(err, ErrSessionContainerAttachable) {
+		t.Fatalf("a terminal manifest gave %v", err)
+	}
+}
+
+func TestAWritersCheckoutIsMountedReadWriteInsteadOfTheMainsWorkspace(t *testing.T) {
+	container, log := sessionDocker(t, false, "0")
+	writer := headlessManifest()
+	writer.Mounts[0] = ContainerMount{Type: MountVolume, Source: "journal-workspace-main", Target: "/workspace", Writable: true, Checkout: true}
+
+	if _, err := container.Turn(context.Background(), writer, ContainerProcess{Command: []string{"claude"}}); err != nil {
+		t.Fatal(err)
+	}
+
+	made := calls(t, log)
+	create := made[slices.IndexFunc(made, func(call string) bool { return strings.HasPrefix(call, "create ") })]
+	if !strings.Contains(create, "type=volume,source=journal-checkout-session-7,target=/workspace ") ||
+		strings.Contains(create, "journal-workspace-main") {
+		t.Fatalf("the writer does not work in its own checkout: %s", create)
+	}
+	if !slices.Contains(made, "volume inspect journal-checkout-session-7") {
+		t.Fatalf("the checkout was not looked for before it was used: %v", made)
+	}
+}
+
+func TestACheckoutOfAnotherInstallationIsRefusedBeforeAnyClone(t *testing.T) {
+	container, log := sessionDocker(t, false, "0")
+	writer := headlessManifest()
+	writer.Mounts[0] = ContainerMount{Type: MountVolume, Source: "other-workspace-main", Target: "/workspace", Writable: true, Checkout: true}
+
+	if _, err := container.Turn(context.Background(), writer, ContainerProcess{Command: []string{"claude"}}); !errors.Is(err, ErrManifestUnsafe) {
+		t.Fatalf("a checkout of another installation's workspace gave %v", err)
+	}
+	if slices.ContainsFunc(calls(t, log), func(call string) bool { return strings.Contains(call, "checkout") }) {
+		t.Fatalf("a checkout was made: %v", calls(t, log))
+	}
+}

@@ -217,6 +217,7 @@ use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Enums\StartRefusalType;
 use App\Agents\Enums\StartUnavailableReason;
+use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
@@ -325,6 +326,8 @@ use App\Agents\Values\StartRequest;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Agents\Values\WorkReference;
+use App\Agents\Values\WorkspaceClone;
+use App\Agents\Values\WorkspacePreparation;
 use App\Agents\Values\WorkspaceReadReference;
 use App\Assignments\Calls\Concerns\NamesExpectedAssignment;
 use App\Assignments\Calls\Concerns\NamesRecipient;
@@ -1553,6 +1556,9 @@ final class CoreApi
                 ManifestMount::class,
                 MountType::class,
                 MountRules::class,
+                WorkspaceUse::class,
+                WorkspacePreparation::class,
+                WorkspaceClone::class,
                 SecurityOptions::class,
                 HostCapacity::class,
                 ReservationState::class,

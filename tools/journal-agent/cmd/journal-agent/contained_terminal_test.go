@@ -9,6 +9,7 @@ import (
 	"journal-agent/host"
 	"journal-agent/profiles"
 	"journal-agent/profiles/contracts"
+	"journal-agent/recording"
 )
 
 func containedStart() host.PreparedStart {
@@ -36,7 +37,8 @@ func containedStart() host.PreparedStart {
 func TestAContainedProgramIsTheProfilesCommandWithItsSettingsInlineAndNoHostPath(t *testing.T) {
 	inherited := []string{"HTTPS_PROXY=http://egress:3128", "SECRET_OF_THE_HOST=x", "HOME=/root"}
 
-	process, err := containedProcessOf(profiles.ClaudeCode{}, "http://journal:8000", containedStart(), "runtime-7", inherited)
+	process, err := containedProcessOf(profiles.ClaudeCode{}, "http://journal:8000", containedStart(), "runtime-7",
+		contracts.Start{Mode: recording.TerminalMode, SessionID: "conversation-7"}, 2, inherited)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,6 +65,32 @@ func TestAContainedProgramIsTheProfilesCommandWithItsSettingsInlineAndNoHostPath
 		if strings.Contains(entry, "/var/lib/journal-agent") || strings.Contains(entry, "SECRET_OF_THE_HOST") ||
 			strings.Contains(entry, "/root") || strings.Contains(entry, "/srv/journal/accounts") {
 			t.Fatalf("a path or variable of the host reached the container: %s", entry)
+		}
+	}
+}
+
+func TestAHeadlessTurnInItsContainerRunsThePromptAtItsGenerationWithNoHostPath(t *testing.T) {
+	hostStart := contracts.Start{
+		Mode: recording.ProcessMode, SessionID: "conversation-7", Prompt: "Check your pending journal work.",
+		SettingsFolder: "/var/lib/journal-agent/runtimes/r7", HookCommand: "/var/lib/journal-agent/bin/journal-hook",
+		WorkFolder: "/var/lib/journal-agent/work",
+	}
+
+	process, err := containedProcessOf(profiles.ClaudeCode{}, "http://journal:8000", containedStart(), "runtime-7",
+		hostStart, 5, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !slices.Contains(process.Command, "--print") || process.Command[len(process.Command)-1] != hostStart.Prompt {
+		t.Fatalf("the turn is not the prompt in print mode: %v", process.Command)
+	}
+	if !slices.Contains(process.Environment, "JOURNAL_PROCESS_GENERATION=5") {
+		t.Fatalf("the turn's generation is missing: %v", process.Environment)
+	}
+	for _, entry := range append(append([]string{}, process.Environment...), process.Command...) {
+		if strings.Contains(entry, "/var/lib/journal-agent") {
+			t.Fatalf("a path of the host reached the container: %s", entry)
 		}
 	}
 }

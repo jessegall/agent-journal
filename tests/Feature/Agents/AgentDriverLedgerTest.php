@@ -830,6 +830,36 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame([DriverOperation::StartRecording, DriverOperation::StopRecording], $operations);
     }
 
+    public function test_ending_the_main_stops_its_helpers_first_and_hands_its_own_stop_over_once_they_are_proven(): void
+    {
+        [$mainHost, $main] = $this->openRuntime();
+        [$helperHost, $helper] = $this->openRuntime();
+        AgentSession::query()->whereKey($helper->sessionId)->update(['parent_session_id' => $main->sessionId]);
+        $stopOf = fn (OpenedRuntime $opened) => DriverRequest::query()->where('agent_runtime_id', $opened->runtimeId)
+            ->where('operation', DriverOperation::Stop)->sole();
+
+        $this->asOwner(new StopAgent($this->agentIdOf($main), $main->sessionId, 'stop-main'));
+
+        $this->assertSame(RuntimeActivity::Stopping, AgentRuntime::query()->findOrFail($helper->runtimeId)->activity);
+        $this->assertSame([], $this->asSystem(new ClaimDriverRequests($mainHost->hostId, 10))->requests);
+        $this->assertSame(RequestProgress::Accepted, $stopOf($main)->progress);
+
+        $helperClaim = $this->asSystem(new ClaimDriverRequests($helperHost->hostId, 10));
+        $this->assertSame(
+            [DriverOperation::Stop->value],
+            array_map(fn ($request) => $request->operation, $helperClaim->requests),
+        );
+        $this->reportExit($helperHost, $helper);
+
+        $mainClaim = $this->asSystem(new ClaimDriverRequests($mainHost->hostId, 10));
+        $this->assertSame(
+            [DriverOperation::Stop->value],
+            array_map(fn ($request) => $request->operation, $mainClaim->requests),
+        );
+        $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($main->sessionId)->status);
+        $this->assertSame(RequestProgress::Applied, $stopOf($helper)->progress);
+    }
+
     public function test_a_stop_and_an_interrupt_are_claimed_past_a_full_batch_of_normal_work(): void
     {
         [$host, $opened] = $this->openRuntime();

@@ -55,6 +55,14 @@ type ProcessRuntime struct {
 	// Executable is the absolute path of the program in the protected installation; an account start runs nothing
 	// else.
 	Executable string
+	// Container runs each turn's program as its session container's own process; nil runs it as a child of the host.
+	Container TurnContainer
+}
+
+// TurnContainer gives the command that runs one turn of the program, at the process generation given, as its session
+// container's own process, with the start's settings, credential and environment inside the container.
+type TurnContainer interface {
+	TurnCommand(start profilecontracts.Start, generation int) (*exec.Cmd, error)
 }
 
 // ProcessDriver runs one child of the program per turn, each with a new process generation. Settings asked for between
@@ -155,21 +163,14 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 		WorkFolder:     driver.runtime.WorkingFolder,
 		Account:        driver.runtime.Account,
 	}
-	command, err := driver.command(start)
+	driver.generation++
+	command, err := driver.turnCommand(start)
 	if err != nil {
+		driver.generation--
 		return contracts.OperationResult{}, err
 	}
 	defer host.CloseFiles(command.ExtraFiles)
 
-	driver.generation++
-	command.Env = append(command.Env,
-		"JOURNAL_URL="+driver.runtime.JournalURL,
-		"JOURNAL_START_TOKEN="+driver.runtime.Credential,
-		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(driver.generation),
-		"JOURNAL_BYPASS_LOG="+filepath.Join(driver.runtime.SettingsFolder, BypassLogName),
-	)
-	command.Env = append(command.Env, driver.runtime.ProfilePin...)
-	command.Env = append(command.Env, driver.runtime.RelayVariables...)
 	if err := driver.checkSignIn(command); err != nil {
 		driver.generation--
 		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}, err
@@ -191,6 +192,30 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 	go driver.wait(command, result, driver.finished)
 
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying, Hold: contracts.HoldNone}, nil
+}
+
+// turnCommand is the command of the turn at the driver's current generation: in the session's container when the
+// runtime has one, otherwise a child of the host with the journal's variables for its hook relay.
+func (driver *ProcessDriver) turnCommand(start profilecontracts.Start) (*exec.Cmd, error) {
+	if driver.runtime.Container != nil {
+		return driver.runtime.Container.TurnCommand(start, driver.generation)
+	}
+
+	command, err := driver.command(start)
+	if err != nil {
+		return nil, err
+	}
+
+	command.Env = append(command.Env,
+		"JOURNAL_URL="+driver.runtime.JournalURL,
+		"JOURNAL_START_TOKEN="+driver.runtime.Credential,
+		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(driver.generation),
+		"JOURNAL_BYPASS_LOG="+filepath.Join(driver.runtime.SettingsFolder, BypassLogName),
+	)
+	command.Env = append(command.Env, driver.runtime.ProfilePin...)
+	command.Env = append(command.Env, driver.runtime.RelayVariables...)
+
+	return command, nil
 }
 
 func (driver *ProcessDriver) command(start profilecontracts.Start) (*exec.Cmd, error) {
