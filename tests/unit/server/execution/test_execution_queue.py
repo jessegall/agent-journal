@@ -1,6 +1,7 @@
 from contextlib import ExitStack
 from dataclasses import replace
 from datetime import datetime, timezone
+from unittest.mock import Mock
 
 import pytest
 
@@ -15,7 +16,9 @@ from engine.execution.execution_ticket import ExecutionTicket
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 from server.errors.pool_busy_error import PoolBusyError
+from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.execution_queue import ExecutionQueue
+from server.execution.tickets.command_tickets import CommandTickets
 
 ENTERED = Timestamp(datetime(2026, 11, 13, 12, tzinfo=timezone.utc))
 CAPACITY = DEFAULT_POOL_LIMITS.capacity(ExecutionLength.INSTANT)
@@ -63,3 +66,12 @@ def test_status_lists_running_and_waiting_with_class_and_line():
     with pool.admitted(ticket(ExecutionPriority.RESERVED, "Stop"), owner="session-1"):
         entries = pool.read()
     assert [(entry.is_running, entry.described) for entry in entries] == [(True, "reserved hook at reserved: Stop")]
+
+
+def test_a_hook_of_a_session_starts_while_a_long_command_of_that_session_runs():
+    pool = queue()
+    priorities = Mock(spec=ExecutionPriorities)
+    priorities.command_ticket.return_value = ticket(ExecutionPriority.RESERVED, "worker dispatch")
+    with CommandTickets(pool, priorities, Clock()).admitted("session-1", "worker dispatch"):
+        with pool.admitted(ticket(ExecutionPriority.RESERVED, "PreToolUse"), owner="session-1", wait_limit_seconds=0):
+            assert [entry.is_running for entry in pool.read()] == [True, True]

@@ -18,8 +18,8 @@ RECHECK_SECONDS = 0.5
 
 class ExecutionQueue:
     """The server's instant lane, kept in memory: a hook, command or viewer request starts when the one
-    decision gives it room, the immediate ones at once; a session runs one ticket at a time, in the order
-    it asked; a ticket leaves the lane on any exit, an exception included, and when its client has gone; a
+    decision gives it room, the immediate ones at once; a session runs one of the tickets it owns at a time, in
+    the order it asked (its hooks own one, its commands none); a ticket leaves the lane on any exit, an exception included, and when its client has gone; a
     wait past its limit is refused, naming what held the lane."""
 
     def __init__(self, order: ExecutionOrder, clock: Clock, crash_log: Callable[[str], None] = lambda text: None) -> None:
