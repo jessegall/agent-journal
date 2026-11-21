@@ -45,12 +45,18 @@ final readonly class SignInCompletion
             return;
         }
 
+        if ($attempt->isLive() && $attempt->isExpiredAt($now)) {
+            $this->endWithout($attempt, SignInState::Expired, $now);
+
+            return;
+        }
+
         if (! $attempt->accepts($generation, $now)) {
             throw SignInAttemptStale::for($attempt->id);
         }
 
         if (! $this->starterMayStillAdd($attempt)) {
-            $this->endWithout($attempt, SignInState::Failed);
+            $this->endWithout($attempt, SignInState::Failed, $now);
 
             return;
         }
@@ -76,7 +82,7 @@ final readonly class SignInCompletion
             $account = Account::lockedForJournal($attempt->account_id);
 
             if (! $attempt->method->isSecret() && ! $account->isSamePrincipal($identity)) {
-                $this->endWithout($attempt, SignInState::DifferentAccount);
+                $this->endWithout($attempt, SignInState::DifferentAccount, $now);
 
                 return;
             }
@@ -111,12 +117,12 @@ final readonly class SignInCompletion
     }
 
     /**
-     * An attempt that publishes nothing, as a different account or a starter without the grant:
+     * An attempt that publishes nothing, as a different account, a starter without the grant or one past its deadline:
      * it ends in that state, its staging folder is cleaned, and a reconnected account keeps its saved folder and login.
      */
-    private function endWithout(SignInAttempt $attempt, SignInState $state): void
+    private function endWithout(SignInAttempt $attempt, SignInState $state, CarbonImmutable $now): void
     {
-        $attempt->finish($state);
+        $attempt->finishAt($state, $now);
         $this->facts->applyRequired();
     }
 }

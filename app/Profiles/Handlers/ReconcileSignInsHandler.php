@@ -9,6 +9,7 @@ use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ReconcileSignIns;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Models\SignInAttempt;
+use Carbon\CarbonImmutable;
 
 /**
  * Ends each live attempt the host took but no longer runs as interrupted, in the order the attempt's own end takes
@@ -24,7 +25,7 @@ final readonly class ReconcileSignInsHandler implements CommandHandler
         $ended = 0;
 
         foreach (SignInAttempt::lostBy($command->hostId, $command->runningAttemptIds) as $attempt) {
-            $attempt->finish(SignInState::Interrupted);
+            $attempt->finishAt(SignInState::Interrupted, CarbonImmutable::now());
             $this->facts->applyRequired();
             $ended++;
         }

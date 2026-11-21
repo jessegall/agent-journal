@@ -527,10 +527,26 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     /**
      * The proof failed: the attempt ends failed, keeping the provider's reason when it refused the proof.
      */
-    public function fail(string|null $refusal): void
+    /**
+     * Ends a live attempt in the given state at this moment: an attempt that already ended keeps its result, and one
+     * at or past its deadline ends Expired whatever was asked. Answers the state the attempt is in afterwards.
+     */
+    public function finishAt(SignInState $state, CarbonImmutable $now, string|null $reason = null): SignInState
     {
-        $this->refusal = $refusal;
-        $this->finish(SignInState::Failed);
+        if (! $this->isLive()) {
+            return $this->state;
+        }
+
+        if ($this->isExpiredAt($now)) {
+            $this->finish(SignInState::Expired);
+
+            return SignInState::Expired;
+        }
+
+        $this->refusal = $reason;
+        $this->finish($state);
+
+        return $state;
     }
 
     /**
@@ -549,16 +565,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         $this->result_account_id = $account->id;
         $this->finish(SignInState::AlreadyAdded);
-    }
-
-    /**
-     * Handing the user's answer to the program broke partway: the attempt ends interrupted with that reason, so it is
-     * told apart from a reply the browser lost, and a fresh sign-in is the way on.
-     */
-    public function interrupt(string $reason): void
-    {
-        $this->refusal = $reason;
-        $this->finish(SignInState::Interrupted);
     }
 
     /**

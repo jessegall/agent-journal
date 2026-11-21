@@ -16051,6 +16051,7 @@ method	PrivateSignInProcesses::checkNext()
 method	PrivateSignInProcesses::cleanNext()
 method	PrivateSignInProcesses::deliver()
 method	PrivateSignInProcesses::isGone()
+method	PrivateSignInProcesses::isPastDeadline()
 method	PrivateSignInProcesses::isStillBound()
 method	PrivateSignInProcesses::isUnused()
 method	PrivateSignInProcesses::makePrivateFolder()
@@ -18151,7 +18152,7 @@ method	ReportSignIn::__construct()
 method	ReportSignInCleanupController::__invoke()
 method	ReportSignInController::__invoke()
 method	ReportSignInHandler::__construct()
-method	ReportSignInHandler::fail()
+method	ReportSignInHandler::end()
 method	ReportSignInHandler::handle()
 method	ReportSignInHandler::interrupt()
 method	ReportStopped::__construct()
@@ -20203,11 +20204,10 @@ method	SignInAttempt::displace()
 method	SignInAttempt::driverForJournal()
 method	SignInAttempt::end()
 method	SignInAttempt::expiredLiveIds()
-method	SignInAttempt::fail()
 method	SignInAttempt::finish()
+method	SignInAttempt::finishAt()
 method	SignInAttempt::finishMatching()
 method	SignInAttempt::found()
-method	SignInAttempt::interrupt()
 method	SignInAttempt::isExpiredAt()
 method	SignInAttempt::isLive()
 method	SignInAttempt::isPublishedIn()
@@ -28289,6 +28289,7 @@ property	ExpireNavigationRequestsHandler::$navigation
 property	ExpireNavigationRequestsOnTick::$commands
 property	ExpireSharesHandler::$endings
 property	ExpireSignInAttempt::$attemptId
+property	ExpireSignInAttemptHandler::$challenges
 property	ExpireSignInAttemptHandler::$facts
 property	ExplainCommandCall::$dialect
 property	ExplainCommandCall::$line

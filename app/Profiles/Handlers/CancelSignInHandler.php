@@ -10,6 +10,7 @@ use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
+use Carbon\CarbonImmutable;
 
 final readonly class CancelSignInHandler implements CommandHandler
 {
@@ -26,7 +27,7 @@ final readonly class CancelSignInHandler implements CommandHandler
             return;
         }
 
-        $attempt->finish(SignInState::Cancelled);
+        $attempt->finishAt(SignInState::Cancelled, CarbonImmutable::now());
         $this->facts->applyRequired();
         $this->challenges->forget($attempt->id);
     }

@@ -269,6 +269,48 @@ final class SignInHostTest extends TestCase
         $this->assertStringContainsString('start a fresh sign-in', (string) end($host->refusals));
     }
 
+    public function test_a_success_after_the_deadline_ends_expired_and_a_later_failure_changes_nothing(): void
+    {
+        $host = $this->enrollHost();
+        $attemptId = $this->begin();
+        $this->signed($host, '/host/sign-ins/claim');
+        $challenge = ['address' => 'https://claude.ai/oauth/authorize?state', 'code' => null];
+        $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
+        $this->report($host, $attemptId, 'waiting')->assertNoContent();
+        $this->travelTo($this->attempt($attemptId)->expires_at->addSecond());
+
+        $proof = ['display' => 'work@example.test', 'subject' => 'subject-1', 'workspace' => 'workspace-1'];
+        $this->report($host, $attemptId, 'verified', $proof);
+        $this->report($host, $attemptId, 'failed', ['refusal' => 'Too late'])->assertNoContent();
+
+        $attempt = $this->attempt($attemptId);
+        $this->assertSame(SignInState::Expired, $attempt->state);
+        $this->assertNull($attempt->refusal);
+        $this->assertSame(0, Account::query()->withoutGlobalScopes()->count());
+        $this->assertNull($this->app->make(SignInChallenges::class)->challengeOf($attemptId));
+    }
+
+    public function test_the_runner_stops_a_program_at_its_deadline_and_proves_nothing(): void
+    {
+        $directory = $this->root.'/new-account';
+        $host = new RecordingSignInHost(new ClaimedSignIn(
+            'attempt-1',
+            'claude-code',
+            SignInMethod::OAuth,
+            $directory,
+            0,
+            CarbonImmutable::now()->addMilliseconds(300)->toIso8601ZuluString('millisecond'),
+            null,
+        ));
+        $protocols = new SignInProtocols($this->app);
+        $protocols->register('claude-code', SignInMethod::OAuth, LingeringProtocol::class);
+
+        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => usleep(50_000), $this->app->make(Files::class), new LocalAccountFolders($this->app->make(Files::class)))->runNext();
+
+        $this->assertTrue($ran);
+        $this->assertSame([SignInOutcome::Waiting], $host->outcomes);
+    }
+
     public function test_the_runner_makes_the_folder_private_and_reports_what_the_check_says(): void
     {
         $directory = $this->root.'/new-account';

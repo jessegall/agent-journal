@@ -70,7 +70,7 @@ final readonly class PrivateSignInProcesses
         $process = $protocol->begin($claimed->directory);
         $this->host->report($claimed, SignInOutcome::Waiting, SignInIdentity::unproved());
 
-        if (! $this->waitForEnd($protocol, $process, $claimed)) {
+        if (! $this->waitForEnd($protocol, $process, $claimed) || $this->isPastDeadline($claimed)) {
             $process->stop();
 
             return true;
@@ -231,6 +231,14 @@ final readonly class PrivateSignInProcesses
         }
 
         return true;
+    }
+
+    /**
+     * Whether the attempt's deadline has come: no proof starts then, and the journal ends the attempt Expired.
+     */
+    private function isPastDeadline(ClaimedSignIn $claimed): bool
+    {
+        return ! CarbonImmutable::now()->lessThan(CarbonImmutable::parse($claimed->expiresAt));
     }
 
     /**

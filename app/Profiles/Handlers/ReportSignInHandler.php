@@ -8,10 +8,12 @@ use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Enums\SignInOutcome;
+use App\Profiles\Enums\SignInState;
 use App\Profiles\Exceptions\SignInAnswerUndelivered;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
 use App\Profiles\Support\SignInCompletion;
+use Carbon\CarbonImmutable;
 
 /**
  * Applies the runner's report to the attempt it runs: a verified sign-in goes through the completion that rechecks
@@ -37,7 +39,7 @@ final readonly class ReportSignInHandler implements CommandHandler
                 $command->generation,
                 $command->identity,
             ),
-            SignInOutcome::Failed => $this->fail($attempt, $command->refusal),
+            SignInOutcome::Failed => $this->end($attempt, SignInState::Failed, $command->refusal),
             SignInOutcome::Interrupted => $this->interrupt($attempt, $command->generation, $command->refusal),
         };
     }
@@ -48,22 +50,22 @@ final readonly class ReportSignInHandler implements CommandHandler
      */
     private function interrupt(SignInAttempt $attempt, int $generation, string|null $reason): void
     {
-        if (! $attempt->isLive() || $attempt->generation !== $generation) {
+        if ($attempt->generation !== $generation) {
             return;
         }
 
-        $attempt->interrupt($reason ?? SignInAnswerUndelivered::toProgram()->getMessage());
-        $this->challenges->forget($attempt->id);
-        $this->facts->applyRequired();
+        $reason ??= SignInAnswerUndelivered::toProgram()->getMessage();
+        $this->end($attempt, SignInState::Interrupted, $reason);
     }
 
-    private function fail(SignInAttempt $attempt, string|null $refusal): void
+    /**
+     * Ends a live attempt through its one guarded step, so one past its deadline ends Expired instead, and forgets its
+     * challenge and any staged answer.
+     */
+    private function end(SignInAttempt $attempt, SignInState $state, string|null $reason): void
     {
-        if (! $attempt->isLive()) {
-            return;
-        }
-
-        $attempt->fail($refusal);
+        $attempt->finishAt($state, CarbonImmutable::now(), $reason);
+        $this->challenges->forget($attempt->id);
         $this->facts->applyRequired();
     }
 }

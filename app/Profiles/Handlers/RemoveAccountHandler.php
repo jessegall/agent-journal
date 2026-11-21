@@ -11,6 +11,7 @@ use App\Profiles\Enums\SignInState;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
+use Carbon\CarbonImmutable;
 
 /**
  * Starts the removal under the program's selection lock, then the account's: a sign-in running on the account is
@@ -31,7 +32,7 @@ final readonly class RemoveAccountHandler implements CommandHandler
             return;
         }
 
-        SignInAttempt::liveFor($driver, $account)?->finish(SignInState::Cancelled);
+        SignInAttempt::liveFor($driver, $account)?->finishAt(SignInState::Cancelled, CarbonImmutable::now());
         $this->facts->applyRequired();
         $account->refresh()->beginRemoval();
         $selection->clearIfChosen($account);
