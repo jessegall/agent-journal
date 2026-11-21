@@ -10,8 +10,10 @@ import {
     dismissLaunchOutcome,
     recheck,
     retry,
+    stopSession,
     terminalPage,
 } from '@kit/sessionStarts';
+import { keyedPost } from '@kit/keyedPost';
 import { useSwitchOperation } from './composables/useSwitchOperation';
 import SessionAction from './SessionAction.vue';
 import SessionForm from './SessionForm.vue';
@@ -88,7 +90,32 @@ function cancelStart(): void {
     });
 }
 
+/**
+ * Stops the session the bar shows, at the generation it shows, once under a new request id; the bar then follows the
+ * stop from the page.
+ */
+function stop(): void {
+    if (props.agent.sessionId === null) {
+        return;
+    }
+
+    pendingType.value = 'stop';
+    const requestId = newRequestId();
+    keyedPost(
+        stopSession.url(props.agent.id),
+        { requestId, sessionId: props.agent.sessionId, generation: props.agent.sessionGeneration },
+        requestId,
+        {
+            onAccepted: () => undefined,
+            onRefused: (reason) => (notice.value = reason),
+            onUncertain: readAgain,
+            onFinish: () => (pendingType.value = null),
+        },
+    );
+}
+
 const handlers: Record<StatusActionData['type'], () => void> = {
+    stop,
     start: () => (formMode.value = 'start'),
     resume: () => (formMode.value = 'resume'),
     switch: () => (formMode.value = 'switch'),

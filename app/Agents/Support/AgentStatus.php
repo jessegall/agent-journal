@@ -63,18 +63,52 @@ final readonly class AgentStatus
 
         $request = $evidence->request;
 
+        if ($request?->operation === DriverOperation::Stop && $evidence->hasLiveSession()) {
+            return self::stopping($evidence, $request);
+        }
+
         if ($request?->progress === RequestProgress::DeliveryUncertain) {
             return self::unknown($evidence, self::operationOf($request));
         }
 
-        $isOpenStop = $request?->operation === DriverOperation::Stop
-            && in_array($request->progress, RequestProgress::open(), true);
+        return null;
+    }
 
-        if ($isOpenStop) {
-            return self::plain(SessionState::Stopping, $evidence, [], self::operationOf($request));
+    /**
+     * An accepted stop of the live session decides until the exit of its generation is proved: Stopping while it is
+     * under way or applied without that proof, waiting for helpers while they still run, unconfirmed when its delivery
+     * is uncertain or the host falls silent, and Retry stop when it failed and may be sent again to the same target.
+     */
+    private static function stopping(AgentEvidence $evidence, DriverRequestStatus $stop): self|null
+    {
+        $operation = self::operationOf($stop);
+        $isUnderWay = in_array($stop->progress, RequestProgress::open(), true)
+            || $stop->progress === RequestProgress::Applied;
+        $isSilent = $evidence->sessionStatus === SessionStatus::Silent;
+
+        if ($stop->progress === RequestProgress::DeliveryUncertain || ($isUnderWay && $isSilent)) {
+            return self::labelled(
+                SessionState::Unknown,
+                'Stop could not be confirmed',
+                $evidence,
+                [StatusAction::of(StatusActionType::CheckStatus)],
+                $operation,
+            );
         }
 
-        return null;
+        if ($stop->progress === RequestProgress::Failed && $stop->canRetry) {
+            return self::failedRequest($evidence, $stop);
+        }
+
+        if (! $isUnderWay) {
+            return null;
+        }
+
+        $label = $stop->progress === RequestProgress::Accepted && $evidence->waitsOnHelpers
+            ? 'Stopping · Waiting for helpers'
+            : SessionState::Stopping->label();
+
+        return self::labelled(SessionState::Stopping, $label, $evidence, [], $operation);
     }
 
     private static function switching(AgentEvidence $evidence, SwitchEvidence $switch): self
@@ -139,7 +173,10 @@ final readonly class AgentStatus
     private static function live(AgentEvidence $evidence): self
     {
         $runtime = $evidence->runtime;
-        $switch = [StatusAction::of(StatusActionType::Switch)];
+        $switch = [
+            ...($evidence->canStop ? [StatusAction::of(StatusActionType::Stop)] : []),
+            StatusAction::of(StatusActionType::Switch),
+        ];
 
         if (in_array($evidence->processStart, ProcessStartState::unresolved(), true)) {
             return self::isWakeRefused($evidence->request) ? self::unknown($evidence) : self::starting($evidence);

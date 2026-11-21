@@ -27,14 +27,15 @@ final readonly class AgentFacts
         public DriverRequest|null $request,
         public DriverSwitch|null $switch,
         public LaunchOutcome|null $launch,
+        public bool $waitsOnHelpers,
     ) {}
 
     /**
      * The facts as the evidence a status is decided from, read at this time. A start an owner made runs on its own
      * host and opens no runtime here, so only a main start is expected to have one; only an owner's start in
-     * progress may be cancelled.
+     * progress may be cancelled, and only an actor allowed to stop it may stop a live session.
      */
-    public function evidence(bool $retired, bool $resumable, CarbonImmutable $now): AgentEvidence
+    public function evidence(bool $retired, bool $resumable, bool $canStop, CarbonImmutable $now): AgentEvidence
     {
         $session = $this->session;
         $isOwnerStart = $session?->parent_session_id !== null;
@@ -54,6 +55,8 @@ final readonly class AgentFacts
             $resumable,
             $session !== null && $isOwnerStart && $launchInProgress,
             $this->runtime?->variant === DriverVariant::Terminal,
+            $canStop && $session !== null,
+            $this->waitsOnHelpers,
         );
     }
 }

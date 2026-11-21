@@ -31,6 +31,7 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
+use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverVariant;
@@ -48,12 +49,14 @@ use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Exceptions\KeyScriptRefused;
 use App\Agents\Exceptions\StaleProcessGeneration;
+use App\Agents\Exceptions\StopOutdated;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\DriverTurn;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\SessionPolicy;
+use App\Agents\Support\AgentStatus;
 use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverBudgets;
@@ -600,6 +603,59 @@ final class AgentDriverLedgerTest extends TestCase
 
         $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($opened->sessionId)->status);
         $this->assertNull(ProcessStart::latestOfSession($opened->sessionId)?->refusal);
+    }
+
+    public function test_two_stops_of_the_same_generation_converge_on_one_request(): void
+    {
+        [, $opened] = $this->openRuntime();
+        $agentId = $this->agentIdOf($opened);
+        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
+
+        $first = $this->asOwner(new StopAgent($agentId, $opened->sessionId, 'stop-a', $generation));
+        $second = $this->asOwner(new StopAgent($agentId, $opened->sessionId, 'stop-b', $generation));
+
+        $this->assertSame($first->requestId, $second->requestId);
+        $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::Stop)->count());
+        $this->assertThrows(
+            fn () => $this->asOwner(new StopAgent($agentId, $opened->sessionId, 'stop-c', $generation + 1)),
+            StopOutdated::class,
+        );
+    }
+
+    public function test_an_applied_stop_keeps_stopping_until_the_exit_of_its_generation_is_proved(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $agentId = $this->agentIdOf($opened);
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+        $stop = $this->asOwner(new StopAgent($agentId, $opened->sessionId, 'stop-1', $runtime->process_generation));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->reportProgress($host->hostId, $stop->requestId, RequestProgress::Applied);
+
+        $this->assertSame('Stopping', $this->statusOf($agentId)->label);
+
+        $this->assertThrows(
+            fn () => $this->asSystem(
+                new ReportRuntimeExit($host->hostId, $opened->runtimeId, $runtime->process_generation - 1, 'old exit'),
+            ),
+            HostReportRefused::class,
+        );
+        $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($opened->sessionId)->status);
+
+        $this->reportExit($host, $opened);
+
+        $this->assertSame('Stopped', $this->statusOf($agentId)->label);
+    }
+
+    public function test_a_stop_waiting_for_its_helpers_says_so(): void
+    {
+        [, $main] = $this->openRuntime();
+        [, $helper] = $this->openRuntime();
+        AgentSession::query()->whereKey($helper->sessionId)->update(['parent_session_id' => $main->sessionId]);
+        $agentId = $this->agentIdOf($main);
+
+        $this->asOwner(new StopAgent($agentId, $main->sessionId, 'stop-main'));
+
+        $this->assertSame('Stopping · Waiting for helpers', $this->statusOf($agentId)->label);
     }
 
     public function test_retiring_an_agent_with_a_running_runtime_stops_it_through_its_host(): void
@@ -1154,6 +1210,13 @@ final class AgentDriverLedgerTest extends TestCase
             'process_start_id' => $claimed['processStartId'],
             'process_generation' => $claimed['processGeneration'],
         ])->assertSuccessful();
+    }
+
+    private function statusOf(string $agentId): AgentStatus
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+
+        return $this->app->make(AgentDirectory::class)->visibleAgent($agentId)->status;
     }
 
     private function reportExit(EnrolledHost $host, OpenedRuntime $opened): void

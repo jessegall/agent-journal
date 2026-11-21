@@ -13,7 +13,8 @@ use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 
 /**
- * Stops an agent's runtime: it takes no more requests from now on.
+ * Stops an agent's runtime: it takes no more requests from now on. Bound to the process generation the caller saw,
+ * it is refused when another one runs now; stops of the same session and generation converge on one request.
  *
  * @extends Command<DriverReceipt>
  */
@@ -24,6 +25,7 @@ final readonly class StopAgent extends Command implements AgentStackCommand
         public string $agentId,
         public string $sessionId,
         public string $idempotencyKey,
+        public int|null $expectedGeneration = null,
     ) {}
 
     public function target(): StackTarget

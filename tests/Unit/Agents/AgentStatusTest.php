@@ -219,6 +219,36 @@ final class AgentStatusTest extends TestCase
         $this->assertSame('Ask the host operator to finish setup in the running program.', $status->reason);
     }
 
+    public function test_a_live_session_offers_stop_only_to_an_actor_allowed_to_stop(): void
+    {
+        $allowed = new AgentEvidence(
+            false,
+            self::SESSION,
+            SessionStatus::Active,
+            ProcessStartState::Running,
+            self::runtime(RuntimeActivity::Running),
+            true,
+            null,
+            null,
+            null,
+            false,
+            false,
+            false,
+            true,
+        );
+
+        $status = AgentStatus::of($allowed, self::words(false));
+        $refused = AgentStatus::of(self::live(self::runtime(RuntimeActivity::Running)), self::words(false));
+
+        $this->assertSame(
+            [[StatusActionType::Stop, StatusActionType::Switch], [StatusActionType::Switch]],
+            [
+                array_map(fn (StatusAction $action) => $action->type, $status->actions),
+                array_map(fn (StatusAction $action) => $action->type, $refused->actions),
+            ],
+        );
+    }
+
     public function test_a_retired_agent_offers_no_lifecycle_command(): void
     {
         $evidence = new AgentEvidence(true, null, null, null, null, false, null, null, null, true, false);

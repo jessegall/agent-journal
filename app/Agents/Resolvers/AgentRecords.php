@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\AgentDirectory;
@@ -22,6 +23,7 @@ use App\Agents\Models\LaunchOutcomeDismissal;
 use App\Agents\Models\MainAgentDesignation;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\StartRecord;
+use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\AgentFacts;
 use App\Agents\Support\AgentInspection;
 use App\Agents\Support\AgentOption;
@@ -30,6 +32,7 @@ use App\Agents\Support\LaunchOutcome;
 use App\Agents\Support\ResumableConversation;
 use App\Agents\Support\StartRemedyWords;
 use App\Drivers\Enums\HookDriver;
+use App\Operations\Enums\AccessType;
 use Illuminate\Support\Collection;
 use PhpOption\Option;
 
@@ -55,6 +58,7 @@ final readonly class AgentRecords implements AgentDirectory
         private AgentInspection $inspection,
         private StartRemedyWords $remedyWords,
         private ServerClock $clock,
+        private CurrentAuthorizer $authorizer,
     ) {}
 
     public function visible(): array
@@ -81,6 +85,13 @@ final readonly class AgentRecords implements AgentDirectory
             ->orderByDesc('sequence')->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_runtime_id')
             ->keyBy('agent_runtime_id');
 
+        $waitingOnHelpers = AgentRuntime::sessionsWaitingOnHelpers(array_values(array_map(
+            strval(...),
+            $sessions->pluck('id')->all(),
+        )));
+
+        $canStop = $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AccessType::Edit]) !== [];
+
         $switches = DriverSwitch::query()->whereIn('agent_id', $ids)->orderByDesc('created_at')
             ->limit(self::AGENTS_SHOWN * 2)->get()->unique('agent_id')->keyBy('agent_id');
 
@@ -100,6 +111,8 @@ final readonly class AgentRecords implements AgentDirectory
             $conversations,
             $refusals,
             $launches,
+            $waitingOnHelpers,
+            $canStop,
         ): AgentOption {
             $session = $sessions->get($agent->id);
             $runtime = $runtimes->get((string) $session?->id);
@@ -113,9 +126,11 @@ final readonly class AgentRecords implements AgentDirectory
                     $requests->get((string) $runtime?->id),
                     $switches->get($agent->id),
                     $launches[$agent->id] ?? null,
+                    in_array($session?->id, $waitingOnHelpers, true),
                 ),
                 $conversations->get($agent->id, new Collection()),
                 $refusals[$agent->id] ?? null,
+                $canStop,
             );
         })->all());
     }
@@ -162,6 +177,7 @@ final readonly class AgentRecords implements AgentDirectory
         AgentFacts $facts,
         Collection $conversations,
         string|null $startRefusal,
+        bool $canStop,
     ): AgentOption {
         $session = $facts->session;
         $runtime = $facts->runtime;
@@ -197,7 +213,7 @@ final readonly class AgentRecords implements AgentDirectory
             $startRefusal,
             $facts->launch,
             AgentStatus::of(
-                $facts->evidence($agent->isRetired(), $resumable !== [], $this->clock->now()),
+                $facts->evidence($agent->isRetired(), $resumable !== [], $canStop, $this->clock->now()),
                 $this->remedyWords,
             ),
         );

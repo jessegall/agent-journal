@@ -80,6 +80,20 @@ final readonly class DriverRequests
             ->first();
     }
 
+    /**
+     * The stop already asked of the runtime and not yet ended, if one is, so a second stop of the same session and
+     * process generation converges on it.
+     */
+    public function openStop(StackTarget $target): DriverRequest|null
+    {
+        return DriverRequest::query()
+            ->where('agent_runtime_id', $this->lockedRuntime($target)->id)
+            ->where('operation', DriverOperation::Stop)
+            ->whereIn('progress', [RequestProgress::Accepted, RequestProgress::Staged, RequestProgress::Applying])
+            ->lockForUpdate()
+            ->first();
+    }
+
     public function holdRuntime(StackTarget $target, HoldReason $reason): void
     {
         $this->lockedRuntime($target)->holdFor($reason);
