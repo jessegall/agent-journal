@@ -15,8 +15,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * One connected folder as the owner sees it, read at one server time: its reference, the project and environment it
  * works in by label and id, the machine it is on, each program and whether Start is offered for it, when its relay
- * was last in contact and until when its presence holds, where it stands now with the words for that, and its
- * terminal sign-ins. Its canonical path is never shown.
+ * was last in contact and until when its presence holds, when the server took its revocation, where it stands now
+ * with the words for that, and its terminal sign-ins. Its canonical path is never shown.
  */
 #[TypeScript]
 final class ProjectBindingRowData extends Data
@@ -37,6 +37,7 @@ final class ProjectBindingRowData extends Data
         #[DataCollectionOf(BindingProviderData::class)]
         public readonly array $capabilities = [],
         public readonly string|null $presenceExpiresAt = null,
+        public readonly string|null $revokedAt = null,
         public readonly string $stateText = '',
         #[DataCollectionOf(TerminalSignInRowData::class)]
         public readonly array $signIns = [],
@@ -64,6 +65,7 @@ final class ProjectBindingRowData extends Data
             'environmentLabel' => $binding->environment?->label ?? 'No environment',
             'capabilities' => self::providersOf($binding, $state),
             'presenceExpiresAt' => $binding->presence_expires_at?->toIso8601String(),
+            'revokedAt' => $binding->revoked_at?->toIso8601String(),
             'stateText' => self::stateTextOf($binding, $state, $currentRelease)
                 .($binding->isStopUnconfirmedAt($serverTime)
                     ? ' Session stop unconfirmed: its lease ended and the device has not confirmed it stopped.'

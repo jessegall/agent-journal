@@ -111,6 +111,7 @@ function windowData(
                     environmentLabel: 'Main',
                     capabilities: [],
                     presenceExpiresAt: null,
+                    revokedAt: null,
                     stateText: 'Ready.',
                     signIns: [],
                 },

@@ -84,6 +84,13 @@ const deviceName = computed(() => `${props.binding.machineLabel} ${shortReferenc
                     </li>
                 </ul>
             </dd>
+            <template v-if="binding.revokedAt !== null">
+                <dt class="sr-only">Revoked</dt>
+                <dd class="text-small text-muted">
+                    Revoked on the server
+                    <time :datetime="binding.revokedAt">{{ dateTimeWithZone(binding.revokedAt) }}</time>
+                </dd>
+            </template>
             <template v-if="outcome">
                 <dd class="text-small text-text-2" aria-live="polite">{{ outcome }}</dd>
             </template>

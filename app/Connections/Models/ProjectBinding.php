@@ -60,6 +60,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $reconciled_boot_id
  * @property string|null $leased_runtime_id
  * @property CarbonImmutable|null $lease_expires_at
+ * @property CarbonImmutable|null $revoked_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Agent $mainAgent
@@ -104,6 +105,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             'boot_generation' => 'integer',
             'setup_generation' => 'integer',
             'lease_expires_at' => 'immutable_datetime',
+            'revoked_at' => 'immutable_datetime',
         ];
     }
 
@@ -306,10 +308,16 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public function revoke(): void
     {
+        if ($this->isRevoked()) {
+            return;
+        }
+
+        $now = CarbonImmutable::now();
         $this->authority_generation++;
         $this->readiness = BindingReadiness::Revoked;
+        $this->revoked_at = $now;
         $this->assertSaved($this->save());
-        $this->raise(new ProjectBindingRevoked($this->id, $this->authority_generation, CarbonImmutable::now()));
+        $this->raise(new ProjectBindingRevoked($this->id, $this->authority_generation, $now));
     }
 
     /**
@@ -329,6 +337,19 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Answers ]----------
+
+    public function isRevoked(): bool
+    {
+        return $this->readiness === BindingReadiness::Revoked;
+    }
+
+    /**
+     * When the server took the binding's revocation, in ISO 8601; empty for a binding not revoked.
+     */
+    public function revokedAtText(): string
+    {
+        return (string) $this->revoked_at?->toIso8601String();
+    }
 
     /**
      * Whether the relay of the binding's current boot reported what became of its earlier sessions, so starts and
@@ -373,7 +394,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public function isReportableBy(string $hostId): bool
     {
-        return $this->host_id === $hostId && $this->readiness !== BindingReadiness::Revoked;
+        return $this->host_id === $hostId && ! $this->isRevoked();
     }
 
     /**

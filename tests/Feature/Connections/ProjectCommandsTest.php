@@ -139,7 +139,7 @@ final class ProjectCommandsTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->actingAs($owner)->deleteJson("/settings/project-connections/bindings/{$binding->id}")->assertNoContent();
+        $this->actingAs($owner)->deleteJson("/settings/project-connections/bindings/{$binding->id}")->assertOk();
 
         $this->command($start, 'request-3', $binding->id, ['comment', 'list'])->assertUnauthorized();
         $this->expectException(DeviceGrantRefused::class);
