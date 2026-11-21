@@ -39,15 +39,15 @@ final readonly class SeparateRequiredListeners implements Pipe
 
         foreach ($declarations->events as $event => $listeners) {
             foreach ($listeners as $listener) {
-                $class = explode('@', $listener, 2)[0];
+                $requiredClass = self::requiredClassOf($listener);
 
-                if (! self::isRequired($class)) {
+                if ($requiredClass === null) {
                     $ordinary[$event][] = $listener;
 
                     continue;
                 }
 
-                $this->assertRequired($declarations, $event, $listener, $class, $required[$event] ?? []);
+                $this->assertRequired($declarations, $event, $listener, $requiredClass, $required[$event] ?? []);
                 $required[$event][] = $listener;
             }
         }
@@ -55,13 +55,26 @@ final readonly class SeparateRequiredListeners implements Pipe
         return new ListenerDeclarations($ordinary, $declarations->ownership, array_map(self::sorted(...), $required));
     }
 
-    private static function isRequired(string $class): bool
+    /**
+     * The listener's class when it carries InCommandTransaction, or none.
+     *
+     * @return ReflectionClass<object>|null
+     */
+    private static function requiredClassOf(string $listener): ReflectionClass|null
     {
-        return class_exists($class) && new ReflectionClass($class)->getAttributes(InCommandTransaction::class) !== [];
+        $class = explode('@', $listener, 2)[0];
+
+        if (! class_exists($class)) {
+            return null;
+        }
+
+        $reflection = new ReflectionClass($class);
+
+        return $reflection->getAttributes(InCommandTransaction::class) === [] ? null : $reflection;
     }
 
     /**
-     * @param  class-string  $class
+     * @param  ReflectionClass<object>  $class
      * @param  list<string>  $earlier  the event's required listeners already taken
      *
      * @throws InvalidListener
@@ -70,11 +83,11 @@ final readonly class SeparateRequiredListeners implements Pipe
         ListenerDeclarations $declarations,
         string $event,
         string $listener,
-        string $class,
+        ReflectionClass $class,
         array $earlier,
     ): void {
         foreach (self::DEFERRING as $interface) {
-            if (is_subclass_of($class, $interface)) {
+            if ($class->implementsInterface($interface)) {
                 throw InvalidListener::requiredButDeferred($listener, $event, $interface);
             }
         }
@@ -83,10 +96,10 @@ final readonly class SeparateRequiredListeners implements Pipe
             throw InvalidListener::requiredTwice($listener, $event);
         }
 
-        $owner = $declarations->ownership->domainHoldingListener((string) new ReflectionClass($class)->getFileName());
+        $owner = $declarations->ownership->domainHoldingListener((string) $class->getFileName());
         $eventOwner = $declarations->ownership->eventDomain($event, $listener);
 
-        if ($owner !== null && $owner !== $eventOwner && ! self::isDeclaredBy($event, $class)) {
+        if ($owner !== null && $owner !== $eventOwner && ! self::isDeclaredBy($event, $class->getName())) {
             throw InvalidListener::requiredWithoutDeclaration($listener, $event, $owner->name);
         }
     }

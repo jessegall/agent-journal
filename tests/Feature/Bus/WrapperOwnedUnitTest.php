@@ -1,0 +1,102 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Bus;
+
+use App\Bus\CommandMiddleware\RunInTransaction;
+use App\Bus\Support\CommandCall;
+use App\Bus\Support\CommandNesting;
+use App\Bus\Support\Publication;
+use App\Domains\Support\RequiredListenerRegistry;
+use Domain\Tasks\Commands\StartTask;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Facades\Schema;
+use RuntimeException;
+use Tests\Fixtures\Contracts\NotesFirstRename;
+use Tests\Fixtures\Contracts\RaisingRow;
+use Tests\Fixtures\Contracts\RowNoted;
+use Tests\Fixtures\Contracts\RowRenamed;
+use Tests\Support\RefreshHookDatabase;
+use Tests\TestCase;
+
+/**
+ * Under the test wrapper's uncommitted transaction the first command owns an event unit as a commit would: its
+ * required listener runs inside it, its public facts go out once it returns, and a command that throws sends none.
+ */
+final class WrapperOwnedUnitTest extends TestCase
+{
+    use RefreshHookDatabase;
+
+    /**
+     * @var list<string>
+     */
+    private array $heard = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::create('raising_rows', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+        $required = [RowRenamed::class => [NotesFirstRename::class.'@handle']];
+        $this->app->instance(RequiredListenerRegistry::class, new RequiredListenerRegistry($required));
+        $dispatcher = $this->app->make(Dispatcher::class);
+        $dispatcher->listen(RowRenamed::class, fn (RowRenamed $renamed) => $this->heard[] = "renamed {$renamed->name}");
+        $dispatcher->listen(RowNoted::class, fn () => $this->heard[] = 'noted');
+    }
+
+    public function test_the_required_listener_runs_inside_and_the_public_facts_go_out_when_the_command_returns(): void
+    {
+        $row = RaisingRow::query()->create(['name' => 'start']);
+        $heardInside = null;
+
+        $this->command(function () use ($row, &$heardInside): void {
+            $row->rename('first');
+            $heardInside = $this->heard;
+        });
+
+        $this->assertSame([], $heardInside);
+        $this->assertSame(['renamed first', 'noted'], $this->heard);
+    }
+
+    public function test_a_command_that_throws_sends_no_facts(): void
+    {
+        $row = RaisingRow::query()->create(['name' => 'start']);
+
+        $this->assertThrows(fn () => $this->command(function () use ($row): void {
+            $row->rename('first');
+
+            throw new RuntimeException('the command failed');
+        }), RuntimeException::class);
+
+        $this->assertSame([], $this->heard);
+    }
+
+    /**
+     * Runs the work as a command's handler would, through the transaction step, the nesting and the release.
+     *
+     * @param  callable(): void  $work
+     */
+    private function command(callable $work): void
+    {
+        $call = CommandCall::of(new StartTask('task'), 'Tasks', true, false, null);
+        $nesting = $this->app->make(CommandNesting::class);
+        $nesting->enter(StartTask::class);
+
+        try {
+            $this->app->make(RunInTransaction::class)->handle($call, function () use ($work): null {
+                $work();
+
+                return null;
+            });
+        } finally {
+            $nesting->leave();
+            $this->app->make(Publication::class)->release();
+        }
+    }
+}

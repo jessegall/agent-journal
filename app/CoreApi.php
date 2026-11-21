@@ -453,10 +453,13 @@ use App\Bus\Exceptions\MiddlewareSkippedCommand;
 use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
 use App\Bus\Exceptions\OperationUnavailable;
+use App\Bus\Exceptions\RaisedOutsideUnit;
+use App\Bus\Exceptions\RowWriteRefused;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\Command as BaseCommand;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
+use App\Bus\Support\EventUnitLifecycle;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
 use App\Bus\Values\RecoveryCall;
@@ -537,12 +540,16 @@ use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
+use App\Contracts\Attributes\InCommandTransaction;
+use App\Contracts\Attributes\RequiresListener;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\DomainAvailability;
 use App\Contracts\Event;
+use App\Contracts\EventSource;
 use App\Contracts\Listener;
 use App\Contracts\ListenerFailureLog;
+use App\Contracts\RaisesEvents;
 use App\Desks\Commands\CreateDesk;
 use App\Desks\Commands\InstallDesks;
 use App\Desks\Commands\ProvisionActorDesk;
@@ -1378,6 +1385,7 @@ final class CoreApi
                 CommandMiddleware::class,
                 CommandRefusal::class,
                 Event::class,
+                EventSource::class,
                 Listener::class,
                 CommandHandler::class,
                 CommandProvider::class,
@@ -1795,6 +1803,8 @@ final class CoreApi
                 MiddlewareDeclaration::class,
                 Authorize::class,
                 Effect::class,
+                InCommandTransaction::class,
+                RequiresListener::class,
                 CommandEffectType::class,
                 CommandCall::class,
                 CurrentUser::class,
@@ -2103,6 +2113,8 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                RowWriteRefused::class,
+                RaisedOutsideUnit::class,
                 FileMissing::class,
                 FileUnreadable::class,
                 FileJsonInvalid::class,
@@ -2338,6 +2350,8 @@ final class CoreApi
                 SkillOwnerRequired::class,
             )
             ->support(
+                RaisesEvents::class,
+                EventUnitLifecycle::class,
                 BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,

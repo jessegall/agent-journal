@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\Contracts\FactStaging;
+use App\Bus\Exceptions\OverlappingTransactionOwner;
 use Illuminate\Database\Connection;
 use Illuminate\Database\ConnectionInterface;
 
 /**
  * The event unit active for each database connection in this execution, scoped so an Octane request or a queued job
- * never sees another's; the capture asks it at each save.
+ * never sees another's; the capture asks it at each save. Laravel shares one transaction manager across connections,
+ * so only one connection's owner may hold a unit at a time.
  */
 final class ActiveEventUnits
 {
@@ -31,7 +33,14 @@ final class ActiveEventUnits
      */
     public function open(ConnectionInterface $connection): EventUnit
     {
-        return $this->units[self::nameOf($connection)] = new EventUnit($this->staging);
+        $name = self::nameOf($connection);
+        $open = array_keys($this->units);
+
+        if ($open !== [] && $open !== [$name]) {
+            throw OverlappingTransactionOwner::on($name, $open[0]);
+        }
+
+        return $this->units[$name] = new EventUnit($this->staging);
     }
 
     public function close(ConnectionInterface $connection): void

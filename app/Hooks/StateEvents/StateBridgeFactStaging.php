@@ -12,7 +12,8 @@ use Illuminate\Contracts\Events\Dispatcher;
 /**
  * Stages a bridged fact's dispatch with the audience its sibling's admission holds while its command runs, and
  * delivers it after the commit under that audience, the bridge last; a fact no state observes goes out plainly, and
- * a sibling never borrows another's audience.
+ * a sibling never borrows another's audience. The dispatcher is asked by its name each time, since a test's fake
+ * replaces it.
  */
 final readonly class StateBridgeFactStaging implements FactStaging
 {
@@ -20,7 +21,7 @@ final readonly class StateBridgeFactStaging implements FactStaging
 
     public function stage(Event $event): object|null
     {
-        $dispatcher = $this->container->make(Dispatcher::class);
+        $dispatcher = $this->dispatcherNow();
 
         return $dispatcher instanceof StateEventDispatcher && $dispatcher->bridges($event::class)
             ? $this->scope->capture($event)
@@ -29,7 +30,7 @@ final readonly class StateBridgeFactStaging implements FactStaging
 
     public function deliver(Event $event, object|null $staged): void
     {
-        $dispatcher = $this->container->make(Dispatcher::class);
+        $dispatcher = $this->dispatcherNow();
 
         if ($dispatcher instanceof StateEventDispatcher && $staged instanceof StateEventDispatch) {
             $dispatcher->dispatchStaged($staged);
@@ -37,6 +38,14 @@ final readonly class StateBridgeFactStaging implements FactStaging
             return;
         }
 
-        $dispatcher->dispatch($event);
+        $this->container->make(Dispatcher::class)->dispatch($event);
+    }
+
+    /**
+     * The dispatcher the container holds now: the state event dispatcher, or a test's fake in its place.
+     */
+    private function dispatcherNow(): object
+    {
+        return $this->container->make('events');
     }
 }

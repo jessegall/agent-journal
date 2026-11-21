@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use App\Numbers\Support\NumberingOutsideCommands;
+use App\Bus\Support\OuterTransactionOwner;
+use App\Bus\Support\WritesOutsideCommands;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithCachedConfig;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Laravel\Fortify\Features;
 use PDO;
@@ -40,7 +42,8 @@ abstract class TestCase extends BaseTestCase
         $this->applicationMorphMap = Relation::morphMap();
         Http::preventStrayRequests();
         $this->withoutVite();
-        $this->app->make(NumberingOutsideCommands::class)->allow();
+        $this->app->make(WritesOutsideCommands::class)->allow();
+        $this->app->make(OuterTransactionOwner::class)->register();
         $this->beforeApplicationDestroyed(fn () => $this->closeConnections());
     }
 
@@ -49,6 +52,15 @@ abstract class TestCase extends BaseTestCase
      * test's exception keeps its connection alive through the trace, and an open transaction there would hold the
      * locks the next test's table cleanup waits for.
      */
+    /**
+     * Fakes the named business events and keeps Eloquent's own events real, so the event unit still captures each
+     * save; a bare Event::fake() would fake those too.
+     */
+    protected function fakeBusinessEvents(string ...$events): void
+    {
+        Event::fake($events);
+    }
+
     protected function closeConnections(): void
     {
         foreach ($this->app->make(DatabaseManager::class)->getConnections() as $connection) {
