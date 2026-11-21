@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"journal-agent/shellwords"
 )
 
 // ErrAccountFolderUnsafe refuses a protected-account start whose sign-in folder, or a folder above it, is not private
@@ -49,8 +51,8 @@ func accountFolderScript(root, accountID string, owner, rootOwner int) string {
 	user := strconv.Itoa(owner)
 
 	return strings.Join([]string{
-		"root=" + shellWords([]string{root}),
-		`folder="$root/accounts/"` + shellWords([]string{accountID}),
+		"root=" + shellwords.Quoted(root),
+		`folder="$root/accounts/"` + shellwords.Quoted(accountID),
 		`refuse() { printf '%s\t%s\n' "$1" "$2"; exit 1; }`,
 		`for above in "$root" "$root/accounts"; do`,
 		`  [ "$(stat -c %u "$above")" = "` + strconv.Itoa(rootOwner) + `" ] || refuse "is not owned by root" "$above"`,

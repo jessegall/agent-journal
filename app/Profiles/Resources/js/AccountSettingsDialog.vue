@@ -7,6 +7,8 @@ import Modal from '@kit/Modal';
 import TextField from '@kit/TextField';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, nextTick, ref, watch } from 'vue';
+import AccountFactList from './AccountFactList.vue';
+import AccountUsageDetails from './AccountUsageDetails.vue';
 import { useAccountNaming } from './accountNaming';
 import {
     accountStateLook,
@@ -16,13 +18,14 @@ import {
 
 /**
  * Everything about one account in one dialog: its way back when it must sign in again, its name, whether it is the
- * default, the facts the row leaves out and its recent starts. Removing it asks inside the same dialog, with Back
- * focused, so Enter never removes by accident.
+ * default, the facts the row leaves out, the usage its programs reported and its recent starts. Removing it asks
+ * inside the same dialog, with Back focused, so Enter never removes by accident.
  */
 const props = defineProps<{
     account: AccountRowData;
     isChosen: boolean;
     isOpen: boolean;
+    now: Date;
 }>();
 const emit = defineEmits<{ close: []; signInAgain: [] }>();
 
@@ -187,14 +190,10 @@ function signInAgain(): void {
                         >
                     </div>
                 </template>
-                <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-                    <template v-for="fact in facts" :key="fact.term">
-                        <dt class="text-text-3">{{ fact.term }}</dt>
-                        <dd class="min-w-0 [overflow-wrap:anywhere] text-text">
-                            {{ fact.value }}
-                        </dd>
-                    </template>
-                </dl>
+                <AccountFactList :facts="facts" />
+                <template v-if="account.usage !== undefined">
+                    <AccountUsageDetails :usage="account.usage" :now="now" />
+                </template>
                 <template v-if="account.recentStarts.length > 0">
                     <div class="flex flex-col gap-1">
                         <span class="text-text-3">Recent starts</span>

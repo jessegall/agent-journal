@@ -5,7 +5,7 @@ import Button from '@kit/Button';
 import { postJson } from '@kit/jsonRequests';
 import type { AgentOptionData } from '@generated/types/chat';
 import type { AgentAction } from '@kit/CoreTypes';
-import { recheck, retry, terminalFrame } from '@kit/sessionStarts';
+import { recheck, retry, terminalPage } from '@kit/sessionStarts';
 import SessionForm from './SessionForm.vue';
 
 /**
@@ -61,7 +61,7 @@ function act(action: AgentAction): void {
         <template v-for="action in agent.actions" :key="action">
             <template v-if="action === 'open'">
                 <Link
-                    :href="terminalFrame.url(agent.id)"
+                    :href="terminalPage.url(agent.id)"
                     class="rounded-control border border-border-2 px-2.5 py-0.5 text-small text-text-2 hover:bg-hover hover:text-text"
                     >{{ labels.open }}</Link
                 >

@@ -97,6 +97,7 @@ Email
 Ended
 Enter a short code on OpenAI's site. The rest happens by itself.
 Enter this code there when it asks.
+Estimated USD value observed by the journal. It covers only the sessions the journal ran.
 Every window is open
 Examples
 Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(', ') }}
@@ -299,6 +300,7 @@ Suits a server.
 Switched
 Switching
 System
+Terminal
 Tests and checks
 That conversation belongs to another agent.
 That conversation is not one this agent can continue.
@@ -325,6 +327,7 @@ Turning off traffic inspection does not hide the content from the provider.
 Unfinished sign-ins
 Unknown
 Update share {{ liveShare.number }}
+Usage
 Use these lines
 Used for {{ revision.purpose }}; its output is {{ revision.outputRequirement }}
 Version control
@@ -334,6 +337,7 @@ Waiting
 Waiting for the host to confirm the start
 Waiting for the host to confirm the stop
 Waiting for you to finish on OpenAI's page…
+Watch terminal
 What
 What is still needed
 What the journal is and how to read and write its records.

@@ -335,7 +335,7 @@ func (opener runtimeOpener) codexRuntime(
 	executable := installedProgram(opener.installationFolder, profiles.Codex{})
 	owner, err := opener.codexOwners.Of(ctx, account, prepared.Claim.Generation,
 		func(ctx context.Context) (*host.CodexOwner, error) {
-			return host.StartCodexOwner(ctx, executable, environment, ownerRoot)
+			return host.StartCodexOwner(ctx, executable, environment, ownerRoot, prepared.Claim.SignInMethod)
 		})
 	if err != nil {
 		return nil, err
@@ -343,6 +343,11 @@ func (opener runtimeOpener) codexRuntime(
 	runtime := prepared.Runtime()
 	settings := host.CodexThreadSettings{
 		Root: root, WritableRoots: []string{runtime.Folder}, Transport: transport,
+	}
+	if opener.usage != nil {
+		usage := host.NewUsageSink(prepared, opener.usage)
+		owner.ReportWindowsTo(usage)
+		settings.Usage = usage
 	}
 	if runtime.Model != nil {
 		settings.Model = *runtime.Model

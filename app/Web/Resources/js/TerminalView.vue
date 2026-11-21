@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import SwitchCase from '@kit/SwitchCase';
-import { computed } from 'vue';
+import type { TerminalWindowData } from '@/types/generated';
+import { computed, toRef } from 'vue';
 import TerminalRow from './TerminalRow.vue';
 import { useTerminalFrames } from './useTerminalFrames';
 
@@ -8,10 +9,10 @@ import { useTerminalFrames } from './useTerminalFrames';
  * An agent's live terminal, read only: the screen as the driver draws it, with its colours and cursor, at the
  * driver's own size, and what the view knows about it: its age, a silent host, an end or a restart.
  */
-const props = defineProps<{ agentId: string }>();
+const props = defineProps<{ data: TerminalWindowData }>();
 
 const { state, refusal, drawn, endedAt, isSilent, ageSeconds } =
-    useTerminalFrames(props.agentId);
+    useTerminalFrames(toRef(props, 'data'));
 
 const notices = computed<string[]>(() => {
     const screen = drawn.value;

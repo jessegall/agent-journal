@@ -8,6 +8,7 @@ use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Support\EnrolledHost;
 use App\Drivers\Enums\HookDriver;
+use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\AccountUsageChanged;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountUsageCost;
@@ -105,6 +106,21 @@ final class UsageReportTest extends TestCase
 
         Event::assertDispatchedTimes(AccountUsageChanged::class, 1);
         $this->assertSame(1, AccountUsageCost::query()->withoutGlobalScopes()->count());
+    }
+
+    public function test_a_committed_report_refreshes_the_accounts_page_once_and_a_duplicate_not_at_all(): void
+    {
+        $key = $this->claimedStart($this->account);
+        Event::fake([AccountsChanged::class]);
+
+        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
+        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
+
+        Event::assertDispatchedTimes(AccountsChanged::class, 1);
+        Event::assertDispatched(
+            AccountsChanged::class,
+            fn (AccountsChanged $changed) => $changed->accountId === $this->account->id,
+        );
     }
 
     public function test_a_cost_from_a_stopped_start_of_an_earlier_sign_in_still_counts_for_its_account(): void

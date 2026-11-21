@@ -13,6 +13,7 @@ use App\Agents\Enums\CleanupStep;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ReservationState;
 use App\Agents\Enums\StartOriginType;
+use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\CleanupOperation;
@@ -97,6 +98,22 @@ final class LaunchCleanupTest extends TestCase
 
         $this->assertSame(ReservationState::Released, $this->reservationOf($launch)->state);
         $this->assertSame(0, CleanupOperation::query()->count());
+    }
+
+    public function test_a_start_past_the_host_capacity_is_refused_unless_the_owner_switched_the_guard_off(): void
+    {
+        $budgets = ExecutionBudgets::defaults();
+        $room = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes);
+        CapacityReservation::reserve('start-1', $budgets, $room);
+
+        $this->assertThrows(
+            fn () => CapacityReservation::reserve('start-2', $budgets, $room),
+            CapacityUnavailable::class,
+        );
+
+        $unguarded = new HostCapacity($budgets->cpuCores, $budgets->memoryBytes, $budgets->workspaceBytes, false);
+        CapacityReservation::reserve('start-2', $budgets, $unguarded);
+        $this->assertTrue(CapacityReservation::isHeldFor('start-2'));
     }
 
     public function test_a_launch_past_its_wall_budget_is_stopped_and_a_younger_one_runs_on(): void

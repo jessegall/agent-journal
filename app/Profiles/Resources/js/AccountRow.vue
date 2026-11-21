@@ -8,6 +8,7 @@ import DriverIcon from '@kit/DriverIcon';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, ref } from 'vue';
 import AccountSettingsDialog from './AccountSettingsDialog.vue';
+import { usageLine } from './accountUsage';
 import {
     accountStateLook,
     cleanupProblemText,
@@ -17,13 +18,18 @@ import {
 
 /**
  * One saved account in the list: its driver's icon, its name, and one grey line with its driver, what it bills,
- * whether it is the default, its state and its expiry; on the right only its buttons, the way back for an account
- * that must sign in again and one settings button that opens everything else.
+ * whether it is the default, its state and its expiry, and under it one line of the usage its programs reported;
+ * on the right only its buttons, the way back for an account that must sign in again and one settings button that
+ * opens everything else.
  */
-const props = defineProps<{
-    account: AccountRowData;
-    isChosen: boolean;
-}>();
+const props = withDefaults(
+    defineProps<{
+        account: AccountRowData;
+        isChosen: boolean;
+        now?: Date;
+    }>(),
+    { now: () => new Date() },
+);
 const emit = defineEmits<{ signInAgain: [] }>();
 
 const isLeaving = computed(
@@ -42,6 +48,7 @@ const stateColour: Record<string, string> = {
     busy: 'bg-text-4',
     quiet: 'bg-text-4',
 };
+const usage = computed(() => usageLine(props.account.usage, props.now));
 const isOpen = ref(false);
 const retrying = useForm({});
 
@@ -93,6 +100,9 @@ function retryAccountCleanup(): void {
                     </span>
                 </template>
             </div>
+            <template v-if="usage !== null">
+                <span class="text-small text-text-2">{{ usage }}</span>
+            </template>
             <template v-if="account.cleanupProblem !== null">
                 <div class="mt-1 flex flex-wrap items-center gap-2">
                     <span class="text-small text-text-2">{{
@@ -126,6 +136,7 @@ function retryAccountCleanup(): void {
             :account="account"
             :is-chosen="isChosen"
             :is-open="isOpen"
+            :now="now"
             @close="isOpen = false"
             @sign-in-again="emit('signInAgain')"
         />

@@ -13,6 +13,7 @@ use App\Agents\Events\SessionClosed;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
+use App\Agents\Support\CapacityRelease;
 use App\Agents\Support\DriverRequestEndings;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\StartTransaction;
@@ -38,6 +39,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
         private ServerClock $clock,
         private CommandFacts $facts,
         private DriverRequestEndings $endings,
+        private CapacityRelease $capacity,
     ) {}
 
     /**
@@ -102,6 +104,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
             $session = AgentSession::query()->findOrFail($sessionId);
             $session->endWithEvidenceAt($now, 'no host took up its start within the presence window');
             $start->cancelPending();
+            $this->capacity->releaseFor($session->start_request_id);
             $this->credentials->revoke($session);
             AgentRuntime::query()
                 ->where('agent_session_id', $session->id)
