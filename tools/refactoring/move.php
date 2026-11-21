@@ -152,6 +152,17 @@ if ($missed !== []) {
     printf("Not found: %s\n", implode(', ', $missed));
 }
 
+if ($namespace !== null && ! $dry) {
+    foreach (sources() as $file) {
+        $body = (string) file_get_contents($file);
+        $repointed = namespaceImportRepointed($body, $namespace, $into);
+
+        if ($repointed !== $body) {
+            file_put_contents($file, $repointed);
+        }
+    }
+}
+
 if (! $dry) {
     report(dangling($was, sources()));
 }
@@ -1284,7 +1295,56 @@ function declaredUnder(string $namespace): array
  */
 function namesClass(string $source, string $qualified): bool
 {
-    return preg_match('/'.preg_quote($qualified, '/').'(?![A-Za-z0-9_\\\\])/', $source) === 1;
+    return preg_match('/'.preg_quote($qualified, '/').'(?![A-Za-z0-9_\\\\])/', $source) === 1
+        || namesThroughNamespaceImport($source, $qualified);
+}
+
+/**
+ * Whether the source reaches the class through an import of one of its namespaces: `use A\B\Scripts;` and then
+ * `Scripts\Show::class`, or the same through an alias. Such a use names the class as surely as its full name does.
+ */
+function namesThroughNamespaceImport(string $source, string $qualified): bool
+{
+    $parts = explode('\\', $qualified);
+
+    for ($cut = count($parts) - 1; $cut >= 1; $cut--) {
+        $namespace = implode('\\', array_slice($parts, 0, $cut));
+        $rest = implode('\\', array_slice($parts, $cut));
+        $import = '/^use\s+'.preg_quote($namespace, '/').'(?:\s+as\s+(\w+))?\s*;/m';
+
+        if (preg_match($import, $source, $found) !== 1) {
+            continue;
+        }
+
+        $local = ($found[1] ?? '') !== '' ? $found[1] : $parts[$cut - 1];
+        $use = '/(?<![A-Za-z0-9_\\\\])'.preg_quote("{$local}\\{$rest}", '/').'(?![A-Za-z0-9_\\\\])/';
+
+        if (preg_match($use, $source) === 1) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * An import of the namespace a --namespace move empties, pointed at the namespace its classes moved into: the
+ * namespace keeps its old local name through an alias, so every `Scripts\Show::class` beneath it still resolves.
+ */
+function namespaceImportRepointed(string $body, string $from, string $into): string
+{
+    $import = '/^use\s+'.preg_quote($from, '/').'(\s+as\s+\w+)?\s*;/m';
+    $last = shortNameOf($from);
+
+    return (string) preg_replace_callback(
+        $import,
+        static function (array $found) use ($into, $last): string {
+            $alias = ($found[1] ?? '') !== '' ? $found[1] : (shortNameOf($into) === $last ? '' : " as {$last}");
+
+            return "use {$into}{$alias};";
+        },
+        $body,
+    );
 }
 
 /**
@@ -1455,6 +1515,24 @@ function naming(): array
         ['a longer class beginning with it', 'use A\\B\\ProblemsLoader;', 'A\\B\\Problems', false],
         ['a deeper namespace beginning with it', 'use A\\B\\Problems\\Row;', 'A\\B\\Problems', false],
         ['the name leading ::class', '$x = A\\B\\Problems::class;', 'A\\B\\Problems', true],
+        ['a use through its imported namespace', "use A\\B\\Scripts;\n\$x = Scripts\\Show::class;", 'A\\B\\Scripts\\Show', true],
+        ['a use through an aliased namespace', "use A\\B\\Scripts as Old;\n\$x = Old\\Show::class;", 'A\\B\\Scripts\\Show', true],
+        ['another class of the imported namespace', "use A\\B\\Scripts;\n\$x = Scripts\\Showing::class;", 'A\\B\\Scripts\\Show', false],
+    ];
+}
+
+/**
+ * How a --namespace move points an import of the namespace it empties at the new one.
+ *
+ * @return list<array{string, string, string, string, string}>
+ */
+function namespaceImports(): array
+{
+    return [
+        ['an import keeps its local name by an alias', "use A\\Http\\Scripts;\n", 'A\\Http\\Scripts', 'A\\Scripts\\Controllers', "use A\\Scripts\\Controllers as Scripts;\n"],
+        ['an aliased import keeps its alias', "use A\\Http\\Scripts as S;\n", 'A\\Http\\Scripts', 'A\\Scripts\\Controllers', "use A\\Scripts\\Controllers as S;\n"],
+        ['the same last name needs no alias', "use A\\Http\\Scripts;\n", 'A\\Http\\Scripts', 'A\\Web\\Scripts', "use A\\Web\\Scripts;\n"],
+        ['a class import is left alone', "use A\\Http\\Scripts\\Show;\n", 'A\\Http\\Scripts', 'A\\Web\\Scripts', "use A\\Http\\Scripts\\Show;\n"],
     ];
 }
 
@@ -1584,6 +1662,17 @@ function selfTest(): int
         }
 
         $say($got === $want, $why, $want, $got);
+    }
+
+    foreach (namespaceImports() as [$why, $body, $from, $into, $want]) {
+        $got = namespaceImportRepointed($body, $from, $into);
+        $ran++;
+
+        if ($got !== $want) {
+            $failed++;
+        }
+
+        printf("  %s  %-48s %s\n", $got === $want ? 'ok  ' : 'FAIL', $why, $got === $want ? '' : sprintf('(wanted %s, got %s)', var_export($want, true), var_export($got, true)));
     }
 
     foreach (duplicates() as [$why, $body, $want]) {
