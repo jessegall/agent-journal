@@ -21,6 +21,7 @@ final class CleanupReportRequest extends FormRequest
             'generation' => ['required', 'integer', 'min:0'],
             'store_removed' => ['required', 'boolean'],
             'directory_removed' => ['required', 'boolean'],
+            'still_bound' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -31,7 +32,11 @@ final class CleanupReportRequest extends FormRequest
 
     public function progress(): CleanupProgress
     {
-        return new CleanupProgress($this->boolean('store_removed'), $this->boolean('directory_removed'));
+        return new CleanupProgress(
+            $this->boolean('store_removed'),
+            $this->boolean('directory_removed'),
+            $this->boolean('still_bound'),
+        );
     }
 
     public function targetId(): string

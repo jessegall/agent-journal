@@ -6,6 +6,7 @@ namespace App\Profiles\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Support\ArrangementSetting;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
@@ -36,6 +37,8 @@ final readonly class PolicyResolver
         private OperationNames $operations,
         private PolicyCatalogue $policies,
         private CommandRegistry $commands,
+        private ArrangementSetting $arrangement,
+        private AgentImage $image,
     ) {}
 
     /**
@@ -160,13 +163,24 @@ final readonly class PolicyResolver
     private function execution(ProposedProfile $profile): ExecutionPolicy
     {
         $type = $profile->base;
+
+        if ($this->arrangement->arrangement->isContained()) {
+            return ExecutionPolicy::make(
+                ExecutionModeType::RequiredContainer,
+                $this->image->reference,
+                ProfileStartPolicy::WORKSPACE,
+                $type->containedBudgets,
+                [],
+            );
+        }
+
         $mode = $profile->container ?? $type->defaultExecutionMode();
 
         if ($type->isContainerRequired() && $mode !== ExecutionModeType::RequiredContainer) {
             throw ProfilePolicyRefused::writerOutsideContainer($profile->key);
         }
 
-        $image = $mode === ExecutionModeType::RequiredContainer ? ProfileStartPolicy::HELPER_IMAGE : null;
+        $image = $mode === ExecutionModeType::RequiredContainer ? $this->image->reference : null;
 
         return ExecutionPolicy::make(
             $mode,

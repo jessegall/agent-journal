@@ -68,7 +68,7 @@ final readonly class ContainerManifest
             [],
             false,
             $network,
-            [$mount, ...$rules->sessionMounts($start->sessionId, $resumedSessionId)],
+            [$mount, ...$rules->accountMounts(), ...$rules->sessionMounts($start->sessionId, $resumedSessionId)],
             [],
             $policy->budgets,
             $rules,

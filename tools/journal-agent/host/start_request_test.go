@@ -42,6 +42,29 @@ func (connection *connection) Write(content []byte) (int, error) {
 	return connection.written.Write(content)
 }
 
+func (executor *recordingExecutor) FolderUse(_ context.Context, request FolderUseRequest) (FolderUseReply, error) {
+	return FolderUseReply{Bound: request.Folder == "bound7"}, nil
+}
+
+func TestAFolderUseRequestNeedsAPlainIdAndReachesTheExecutor(t *testing.T) {
+	for line, want := range map[string]string{
+		`{"folderUse":{"folder":"bound7"}}`: `{"bound":true}`,
+		`{"folderUse":{"folder":"free7"}}`:  `{"bound":false}`,
+	} {
+		pipe := &connection{Reader: strings.NewReader(line + "\n")}
+		if err := AnswerHostRequest(context.Background(), pipe, &recordingExecutor{}); err != nil || strings.TrimSpace(pipe.written.String()) != want {
+			t.Fatalf("%s gave %q, %v", line, pipe.written.String(), err)
+		}
+	}
+
+	for _, line := range []string{`{"folderUse":{"folder":"../7"}}`, `{"folderUse":{"folder":"a7"},"drain":{"account":"/a"}}`} {
+		pipe := &connection{Reader: strings.NewReader(line + "\n")}
+		if err := AnswerHostRequest(context.Background(), pipe, &recordingExecutor{}); !errors.Is(err, ErrMalformedRequest) {
+			t.Fatalf("%s gave %v", line, err)
+		}
+	}
+}
+
 func TestAStartRequestReachesTheExecutorAndItsReplyIsWritten(t *testing.T) {
 	executor := &recordingExecutor{}
 	line := `{"start":{"startId":"s1","runtimeId":"r1","sessionId":"sess","program":"claude",` +

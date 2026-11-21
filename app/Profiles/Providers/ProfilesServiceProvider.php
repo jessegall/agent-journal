@@ -38,6 +38,7 @@ use App\Profiles\Policies\ProfileDraftPolicy;
 use App\Profiles\Resolvers\ActiveAccountRecords;
 use App\Profiles\Resolvers\ProfilePrograms;
 use App\Profiles\Resolvers\ProfileRecords;
+use App\Profiles\Support\AgentImage;
 use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Support\BuiltInProfilePins;
 use App\Profiles\Support\ClaudeKeySignIn;
@@ -80,6 +81,9 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->bind(BuiltInStartProfiles::class, BuiltInProfilePins::class);
         $this->app->bind(ActiveAccountReader::class, ActiveAccountRecords::class);
         $this->app->singleton(SignInProtocols::class);
+        $this->app->singleton(AgentImage::class, fn () => AgentImage::fromConfig(
+            $this->app->make('config')->string('agents.agent_image'),
+        ));
         $this->app->singleton(SignInEgress::class, fn () => new SignInEgress(
             $this->app->make('config')->string('accounts.egress_proxy'),
         ));

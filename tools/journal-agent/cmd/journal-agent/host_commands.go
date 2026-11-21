@@ -154,6 +154,7 @@ func serve(arguments []string) error {
 	preparation := startPreparation(journal, *stateFolder, *installationFolder)
 	reports := &host.StartReports{Folder: *stateFolder}
 	sessions := host.ContainerSessions{}
+	var bindsAccount func(ctx context.Context, folder string) (bool, error)
 	if arrangement.IsContained() {
 		sessions, err = host.ContainerSessionsOf(ctx, host.Containers{Docker: "docker", Host: *dockerSocket}, string(installation))
 		if err != nil {
@@ -161,6 +162,7 @@ func serve(arguments []string) error {
 		}
 		rules := host.ContainerRules{Arrangement: arrangement, InstallationName: installation, AgentImage: *agentImage}
 		containers := host.Containers{Docker: "docker", Host: *dockerSocket, Rules: rules}
+		bindsAccount = containers.BindsAccount
 		evidence := host.NativeEvidence{Folder: *stateFolder}
 		// Without a report the journal refuses every contained start, so a failed report stops no other work.
 		if err := host.ReportContainedProtection(ctx, containers, *seccomp, evidence, journal); err != nil {
@@ -179,7 +181,7 @@ func serve(arguments []string) error {
 	}
 	startSocket := host.StartSocket{Folder: *startSocketFolder, Executor: &protectedExecutor{
 		preparation: preparation, open: opener.open, reports: reports, reporter: journal,
-		codexOwners: opener.codexOwners, arrangement: arrangement,
+		codexOwners: opener.codexOwners, arrangement: arrangement, bindsAccount: bindsAccount,
 	}}
 	startListener, err := startSocket.Listen()
 	if err != nil {

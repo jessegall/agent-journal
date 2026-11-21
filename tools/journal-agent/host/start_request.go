@@ -64,11 +64,24 @@ type DrainReply struct {
 	Reason  string `json:"reason,omitempty"`
 }
 
-// HostRequest is one line the host-local adapters send: one start, stop or drain.
+// FolderUseRequest asks whether any container on the agent daemon, running or not yet removed, binds the account
+// folder of that plain id, before a displaced folder is signed out and deleted.
+type FolderUseRequest struct {
+	Folder string `json:"folder"`
+}
+
+// FolderUseReply answers whether the folder is still bound; a daemon that cannot be asked answers bound, with why.
+type FolderUseReply struct {
+	Bound  bool   `json:"bound"`
+	Reason string `json:"reason,omitempty"`
+}
+
+// HostRequest is one line the host-local adapters send: one start, stop, drain or folder use.
 type HostRequest struct {
-	Start *StartRequest `json:"start,omitempty"`
-	Stop  *StopRequest  `json:"stop,omitempty"`
-	Drain *DrainRequest `json:"drain,omitempty"`
+	Start     *StartRequest     `json:"start,omitempty"`
+	Stop      *StopRequest      `json:"stop,omitempty"`
+	Drain     *DrainRequest     `json:"drain,omitempty"`
+	FolderUse *FolderUseRequest `json:"folderUse,omitempty"`
 }
 
 // Executor starts and stops prepared starts; the protected start service implements it.
@@ -76,6 +89,7 @@ type Executor interface {
 	Start(ctx context.Context, request StartRequest) (StartReply, error)
 	Stop(ctx context.Context, request StopRequest) (StopReply, error)
 	Drain(ctx context.Context, request DrainRequest) (DrainReply, error)
+	FolderUse(ctx context.Context, request FolderUseRequest) (FolderUseReply, error)
 }
 
 var (
@@ -131,6 +145,8 @@ func (request HostRequest) carryOut(ctx context.Context, executor Executor) (any
 	switch {
 	case request.isDrain():
 		return executor.Drain(ctx, *request.Drain)
+	case request.isFolderUse():
+		return executor.FolderUse(ctx, *request.FolderUse)
 	case request.isStart():
 		if err := request.Start.Check(); err != nil {
 			return StartReply{StartID: request.Start.StartID, Refusal: err.Error()}, nil
@@ -145,15 +161,32 @@ func (request HostRequest) carryOut(ctx context.Context, executor Executor) (any
 
 // isDrain is whether the request asks only to drain a named account.
 func (request HostRequest) isDrain() bool {
-	return request.Drain != nil && request.Start == nil && request.Stop == nil && request.Drain.Account != ""
+	return request.operations() == 1 && request.Drain != nil && request.Drain.Account != ""
+}
+
+// isFolderUse is whether the request asks only about one account folder named by a plain id.
+func (request HostRequest) isFolderUse() bool {
+	return request.operations() == 1 && request.FolderUse != nil && plainAccountID.MatchString(request.FolderUse.Folder)
 }
 
 // isStart is whether the request asks only for a start.
 func (request HostRequest) isStart() bool {
-	return request.Start != nil && request.Stop == nil && request.Drain == nil
+	return request.operations() == 1 && request.Start != nil
 }
 
 // isStop is whether the request asks only to stop a named execution.
 func (request HostRequest) isStop() bool {
-	return request.Stop != nil && request.Start == nil && request.Drain == nil && request.Stop.Execution != ""
+	return request.operations() == 1 && request.Stop != nil && request.Stop.Execution != ""
+}
+
+// operations is how many operations the request names; a request names exactly one.
+func (request HostRequest) operations() int {
+	named := 0
+	for _, isNamed := range []bool{request.Start != nil, request.Stop != nil, request.Drain != nil, request.FolderUse != nil} {
+		if isNamed {
+			named++
+		}
+	}
+
+	return named
 }

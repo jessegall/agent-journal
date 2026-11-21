@@ -15,20 +15,29 @@ type LaunchLabels struct {
 	Installation string
 	Launch       string
 	Session      string
+	// Account is the plain id of the account folder the container binds, so every container that binds an account's
+	// folder can be found; empty for one that binds none.
+	Account string
 }
 
 const (
 	installationLabel = "journal.installation"
 	launchLabel       = "journal.launch"
 	sessionLabel      = "journal.session"
+	accountLabel      = "journal.account"
 )
 
 func (labels LaunchLabels) arguments() []string {
-	return []string{
+	arguments := []string{
 		"--label", installationLabel + "=" + labels.Installation,
 		"--label", launchLabel + "=" + labels.Launch,
 		"--label", sessionLabel + "=" + labels.Session,
 	}
+	if labels.Account == "" {
+		return arguments
+	}
+
+	return append(arguments, "--label", accountLabel+"="+labels.Account)
 }
 
 // CleanupStep mirrors App\Agents\Enums\CleanupStep: one transient resource of an ended launch.
@@ -138,6 +147,17 @@ func (containers Containers) Labelled(ctx context.Context, installation string) 
 		}
 	}
 	return found, nil
+}
+
+// BindsAccount is whether any container on the daemon, running or not yet removed, carries the label of the account
+// folder with that plain id.
+func (containers Containers) BindsAccount(ctx context.Context, folder string) (bool, error) {
+	output, err := containers.command(ctx, "ps", "--all", "--quiet", "--filter", "label="+accountLabel+"="+folder).Output()
+	if err != nil {
+		return true, err
+	}
+
+	return strings.TrimSpace(string(output)) != "", nil
 }
 
 // OrphanOutcome is what reconciliation concluded about one container no running execution of this host owns.

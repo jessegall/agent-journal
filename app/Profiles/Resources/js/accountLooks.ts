@@ -32,6 +32,7 @@ export function programIcon(program: string): 'claude' | 'codex' {
  */
 export const cleanupProblemText: Record<CleanupProblem, string> = {
     sign_in_not_verified: 'Unable to verify the sign-in was removed.',
+    still_bound: 'A running session still uses the old sign-in; it is removed when that session ends.',
     folder_not_deleted:
         'The sign-in was removed, but its folder could not be deleted.',
 };

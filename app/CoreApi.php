@@ -229,6 +229,7 @@ use App\Agents\Events\StartAccepted;
 use App\Agents\Events\StartUnavailable;
 use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
+use App\Agents\Exceptions\AccountFolderInvalid;
 use App\Agents\Exceptions\AccountInUse;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Exceptions\AccountUseMissing;
@@ -855,6 +856,7 @@ use App\Profiles\Exceptions\ProfileRevisionUnreadable;
 use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Exceptions\SignInCodeInvalid;
+use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Support\BaseOverride;
 use App\Profiles\Support\OperationRule;
 use App\Profiles\Support\PolicyOverride;
@@ -2163,6 +2165,7 @@ final class CoreApi
                 OutcomeUnknown::class,
                 CallKeyInvalid::class,
                 BuiltInProfileMissing::class,
+                SignInMethodMissing::class,
                 AutoAssignmentSizeInvalid::class,
                 OfflineReplyModeInvalid::class,
                 SkillSourceInvalid::class,
@@ -2325,6 +2328,7 @@ final class CoreApi
                 StartRecordMissing::class,
                 ConversationIncompatible::class,
                 ManifestRefused::class,
+                AccountFolderInvalid::class,
                 ContainerUnavailable::class,
                 ImageUnverified::class,
                 CapacityUnavailable::class,

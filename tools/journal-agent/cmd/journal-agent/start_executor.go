@@ -21,8 +21,11 @@ type protectedExecutor struct {
 	reporter    host.StartReporter
 	codexOwners *host.CodexOwners
 	arrangement host.Arrangement
-	mutex       sync.Mutex
-	executions  map[string]execution
+	// bindsAccount asks the agent daemon whether a container binds an account folder; none on a local host, where
+	// no container binds one.
+	bindsAccount func(ctx context.Context, folder string) (bool, error)
+	mutex        sync.Mutex
+	executions   map[string]execution
 }
 
 // execution is one start the executor runs: its driver, the start key its reports carry and its account.
@@ -128,6 +131,21 @@ func (executor *protectedExecutor) Drain(ctx context.Context, request host.Drain
 		return host.DrainReply{Reason: "the account's Codex app-server could not be proven ended"}, nil
 	}
 	return host.DrainReply{Drained: true}, nil
+}
+
+// FolderUse answers whether a container still binds the account folder, so a displaced folder is deleted only once
+// none does; a daemon that cannot be asked counts as binding it.
+func (executor *protectedExecutor) FolderUse(ctx context.Context, request host.FolderUseRequest) (host.FolderUseReply, error) {
+	if executor.bindsAccount == nil {
+		return host.FolderUseReply{}, nil
+	}
+
+	bound, err := executor.bindsAccount(ctx, request.Folder)
+	if err != nil {
+		return host.FolderUseReply{Bound: true, Reason: "the agent daemon could not be asked: " + err.Error()}, nil
+	}
+
+	return host.FolderUseReply{Bound: bound}, nil
 }
 
 // report queues the report and sends what is queued; what the journal does not acknowledge now is sent later.

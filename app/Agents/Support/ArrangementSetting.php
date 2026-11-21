@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\ArrangementType;
+use App\Agents\Exceptions\AccountFolderInvalid;
 use App\Agents\Exceptions\ArrangementUnknown;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\InstallationNameMissing;
@@ -13,6 +14,7 @@ use App\Agents\Exceptions\RunnerArrangementRefused;
 use App\Agents\Exceptions\WorkspaceSourceMissing;
 use App\Agents\Exceptions\WorkspaceSourcesInvalid;
 use App\Agents\Models\Host;
+use App\Agents\Values\SelectedAccount;
 use App\Programs\Enums\HookProgram;
 
 /**
@@ -49,8 +51,9 @@ final readonly class ArrangementSetting
      * environment without a source is refused before any container exists.
      *
      * @throws WorkspaceSourceMissing
+     * @throws AccountFolderInvalid
      */
-    public function mountRules(string|null $accountSource, string $environment): MountRules
+    public function mountRules(SelectedAccount|null $account, string $environment): MountRules
     {
         if (! $this->arrangement->isContained()) {
             return MountRules::local();
@@ -58,7 +61,7 @@ final readonly class ArrangementSetting
 
         return MountRules::contained(
             $this->installationName,
-            $accountSource,
+            $account === null ? null : MountRules::accountFolder($account->folder()),
             $this->workspaceSources->for($environment),
         );
     }

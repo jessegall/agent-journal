@@ -11,6 +11,9 @@ return [
     */
     'arrangement' => (string) env('AGENTS_ARRANGEMENT', 'local'),
 
+    // The agent image a server's session containers run, by its digest; the same variable compose pins it with.
+    'agent_image' => (string) env('AGENT_IMAGE', ''),
+
     /*
     | The prefix of every container, network and volume of this journal on the agent daemon, required when contained;
     | compose passes its project name. The profiles folder holds the seccomp and AppArmor profiles a manifest may name.

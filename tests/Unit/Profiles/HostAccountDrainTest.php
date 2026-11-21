@@ -31,4 +31,13 @@ final class HostAccountDrainTest extends TestCase
             $this->assertFalse(new HostAccountDrain('/missing/start.sock', $arrangement)->drain('/accounts/a7', 'a7'));
         }
     }
+
+    public function test_a_displaced_folder_is_free_locally_once_drained_and_never_free_on_a_contained_host_that_cannot_answer(): void
+    {
+        $this->assertTrue(new HostAccountDrain('', ArrangementType::Local)->isDisplacedFolderFree('/accounts/a7', 'a7'));
+        $this->assertFalse(new HostAccountDrain('', ArrangementType::Contained)->isDisplacedFolderFree('/accounts/a7', 'a7'));
+        $this->assertFalse(
+            new HostAccountDrain('/missing/start.sock', ArrangementType::Contained)->isDisplacedFolderFree('/accounts/a7', 'a7'),
+        );
+    }
 }

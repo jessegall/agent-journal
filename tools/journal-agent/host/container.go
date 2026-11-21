@@ -124,6 +124,38 @@ func RequireContainerTransport(arrangement string) error {
 	return fmt.Errorf("%w: %s", ErrContainerTransportUnsupported, arrangement)
 }
 
+// accountsRoot is where the agent daemon holds every account's own sign-in folder, and accountTarget where a
+// container finds its session's own one.
+const (
+	accountsRoot  = "/srv/journal/accounts"
+	accountTarget = "/home/journal/.account"
+)
+
+// plainAccountID is an account folder's name as the journal makes it: lowercase letters and digits, nothing else.
+var plainAccountID = regexp.MustCompile(`^[a-z0-9]+$`)
+
+// bindsOnlyAccount is whether the manifest's one account mount is the account's own folder, read-write, at the
+// account home, named by a plain id; with no account named, whether it binds no account at all. A contained Claude
+// Code session binding its own account reverses the standing "no credential in a container" decision, as the user
+// decided in question 30 (doc 61, decision 8); no other account's folder and nothing else under the root is bound.
+func (manifest ContainerManifest) bindsOnlyAccount(accountID string) bool {
+	var accountMounts []ContainerMount
+	for _, mount := range manifest.Mounts {
+		if mount.Target == accountTarget || strings.HasPrefix(mount.Source, accountsRoot) {
+			accountMounts = append(accountMounts, mount)
+		}
+	}
+
+	if len(accountMounts) == 0 {
+		return accountID == ""
+	}
+
+	mount := accountMounts[0]
+
+	return len(accountMounts) == 1 && plainAccountID.MatchString(accountID) && mount.Type == MountDaemonBind &&
+		mount.Target == accountTarget && mount.Writable && mount.Source == accountsRoot+"/"+accountID
+}
+
 // IsSafe is whether the manifest may start a container: unprivileged, with no capabilities or published ports, an
 // exact image digest, a named user, security profiles that are one value each, and only the mounts the rules allow.
 func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
@@ -138,7 +170,7 @@ func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
 // unprivileged user, a read-only root, no capabilities, its mounts, its security profiles, the bounded resources and
 // the labels that let reconciliation find it again.
 func (manifest ContainerManifest) DockerCreateArguments(name string, labels LaunchLabels, rules ContainerRules) ([]string, error) {
-	if !manifest.IsSafe(rules) {
+	if !manifest.IsSafe(rules) || !manifest.bindsOnlyAccount(labels.Account) {
 		return nil, ErrManifestUnsafe
 	}
 

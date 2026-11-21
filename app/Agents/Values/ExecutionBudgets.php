@@ -96,6 +96,25 @@ final readonly class ExecutionBudgets
     }
 
     /**
+     * The main agent's budget in its container, larger than a helper's: 4 cores, 8 GiB memory and swap, 512
+     * processes, 4,096 files, a 1 GiB tmp, a 256 MiB home, a 20 GiB workspace and twelve hours.
+     */
+    public static function mainAgent(): self
+    {
+        return self::make(
+            4,
+            8 * self::GIB,
+            8 * self::GIB,
+            512,
+            4096,
+            self::GIB,
+            256 * self::MIB,
+            20 * self::GIB,
+            12 * 3600,
+        );
+    }
+
+    /**
      * The per-start defaults: 2 cores, 4 GiB memory and swap, 256 processes, 1,024 files, 256 MiB tmp, a 64 MiB home,
      * a 10 GiB workspace and six hours.
      */

@@ -159,6 +159,7 @@ case	ClaudeCodeTool::WebSearch
 case	ClaudeCodeTool::Write
 case	CleanupProblem::FolderNotDeleted
 case	CleanupProblem::SignInNotVerified
+case	CleanupProblem::StillBound
 case	CleanupState::Done
 case	CleanupState::Failed
 case	CleanupState::Pending
@@ -1272,6 +1273,7 @@ class	AgentContext
 class	AgentContextFactory
 class	AgentContextMissing
 class	AgentHoldReleased
+class	AgentImage
 class	AgentInbox
 class	AgentInboxCounts
 class	AgentInspection
@@ -2443,6 +2445,7 @@ class	FolderLoop
 class	FolderMissing
 class	FolderTooDeep
 class	FolderTrustRefused
+class	FolderUseReplyData
 class	FolderWalker
 class	FolderWorkspace
 class	FollowingSequenceState
@@ -7013,6 +7016,7 @@ method	AccountNoticesSection::read()
 method	AccountOwnerCheck::__construct()
 method	AccountOwnerCheck::allows()
 method	AccountOwnerDrain::drain()
+method	AccountOwnerDrain::isDisplacedFolderFree()
 method	AccountOwnerScope::__construct()
 method	AccountOwnerScope::apply()
 method	AccountOwnerScope::mayRead()
@@ -7387,6 +7391,8 @@ method	AgentContextFactory::tokenOf()
 method	AgentContextFactory::verifiedCall()
 method	AgentContextMissing::forRequest()
 method	AgentHoldReleased::__construct()
+method	AgentImage::__construct()
+method	AgentImage::fromConfig()
 method	AgentInbox::__construct()
 method	AgentInboxCounts::__construct()
 method	AgentInspection::__construct()
@@ -8891,6 +8897,7 @@ method	ClaimStartHandler::__construct()
 method	ClaimStartHandler::handle()
 method	ClaimedAccountCheck::__construct()
 method	ClaimedCleanup::__construct()
+method	ClaimedCleanup::isDisplacedFolder()
 method	ClaimedGatewayOperation::__construct()
 method	ClaimedRequest::__construct()
 method	ClaimedRequests::__construct()
@@ -9044,6 +9051,7 @@ method	CleanupOperation::stateAfterPass()
 method	CleanupProblem::of()
 method	CleanupProgress::__construct()
 method	CleanupProgress::isComplete()
+method	CleanupProgress::stillBound()
 method	CleanupReport::__construct()
 method	CleanupReport::hasFailed()
 method	CleanupReportController::__invoke()
@@ -11079,6 +11087,7 @@ method	ExecutionBudgetInvalid::notPositive()
 method	ExecutionBudgetInvalid::swapDiffers()
 method	ExecutionBudgets::__construct()
 method	ExecutionBudgets::defaults()
+method	ExecutionBudgets::mainAgent()
 method	ExecutionBudgets::make()
 method	ExecutionContext::__construct()
 method	ExecutionContext::inFolder()
@@ -11374,6 +11383,7 @@ method	FolderTrustRefused::outsideWorkingRoots()
 method	FolderType::ofFolder()
 method	FolderType::requirement()
 method	FolderType::requirementNotMetBy()
+method	FolderUseReplyData::__construct()
 method	FolderWalker::__construct()
 method	FolderWalker::entering()
 method	FolderWalker::entry()
@@ -11913,7 +11923,9 @@ method	HostAccess::destination()
 method	HostAccess::permits()
 method	HostAccess::root()
 method	HostAccountDrain::__construct()
+method	HostAccountDrain::askHost()
 method	HostAccountDrain::drain()
+method	HostAccountDrain::isDisplacedFolderFree()
 method	HostArrangementRefused::containedHost()
 method	HostArrangementRefused::localHost()
 method	HostArrangementRefused::refusalCode()
@@ -14384,6 +14396,8 @@ method	PrivateSignInProcesses::__construct()
 method	PrivateSignInProcesses::checkNext()
 method	PrivateSignInProcesses::cleanNext()
 method	PrivateSignInProcesses::isGone()
+method	PrivateSignInProcesses::isStillBound()
+method	PrivateSignInProcesses::isUnused()
 method	PrivateSignInProcesses::makePrivateFolder()
 method	PrivateSignInProcesses::publishChallenge()
 method	PrivateSignInProcesses::reconcileAtStart()
@@ -20827,6 +20841,7 @@ parameter	$bodyFields
 parameter	$bodyHtml
 parameter	$bold
 parameter	$bottom
+parameter	$bound
 parameter	$boundary
 parameter	$branch
 parameter	$branches
@@ -21039,6 +21054,7 @@ parameter	$constraints
 parameter	$construct
 parameter	$constructor
 parameter	$consumed
+parameter	$containedBudgets
 parameter	$containedShortfall
 parameter	$container
 parameter	$containerRequired
@@ -21635,6 +21651,7 @@ parameter	$isSingleton
 parameter	$isStale
 parameter	$isStateListenerUse
 parameter	$isStatic
+parameter	$isStillBound
 parameter	$isStoreRemoved
 parameter	$isTrusted
 parameter	$isUnread
@@ -22373,6 +22390,7 @@ parameter	$replacesRuleNumber
 parameter	$replayed
 parameter	$replays
 parameter	$reply
+parameter	$replyClass
 parameter	$replyId
 parameter	$replyInboxId
 parameter	$replyInboxes
@@ -23372,6 +23390,7 @@ property	AgentHoldReleased::$actor
 property	AgentHoldReleased::$hold
 property	AgentHoldReleased::$reason
 property	AgentHoldReleased::$runtimeId
+property	AgentImage::$reference
 property	AgentInbox::$messages
 property	AgentInbox::$page
 property	AgentInbox::$total
@@ -24231,6 +24250,7 @@ property	CleanSignInAttempt::$attemptId
 property	CleanSignInAttempt::$hostId
 property	CleanSignInAttempt::$progress
 property	CleanupProgress::$isDirectoryRemoved
+property	CleanupProgress::$isStillBound
 property	CleanupProgress::$isStoreRemoved
 property	CleanupReport::$failure
 property	CleanupReport::$keptWorkspace
@@ -25510,6 +25530,7 @@ property	FolderEntries::$entries
 property	FolderEntry::$fingerprint
 property	FolderEntry::$path
 property	FolderEntry::$type
+property	FolderUseReplyData::$bound
 property	FolderWalker::$closed
 property	FolderWalker::$confinement
 property	FolderWalker::$roots
@@ -27230,7 +27251,9 @@ property	PolicyRegistration::$coordinatorOnly
 property	PolicyRegistration::$notForReadOnly
 property	PolicyRegistration::$ownerOnly
 property	PolicyRegistration::$policy
+property	PolicyResolver::$arrangement
 property	PolicyResolver::$commands
+property	PolicyResolver::$image
 property	PolicyResolver::$operations
 property	PolicyResolver::$policies
 property	PoolDefinition::$assignableType
@@ -27356,6 +27379,7 @@ property	ProfileAuthorizerProvider::$catalogue
 property	ProfileAuthorizerProvider::$gate
 property	ProfileAuthorizerProvider::$profiles
 property	ProfileBase::$accesses
+property	ProfileBase::$containedBudgets
 property	ProfileBase::$containerRequired
 property	ProfileBase::$coordinator
 property	ProfileBase::$executionMode

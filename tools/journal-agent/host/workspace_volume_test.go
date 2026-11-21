@@ -68,9 +68,9 @@ func TestTheDeployKeyReachesTheCloneOnStandardInputAlone(t *testing.T) {
 func TestAFailedCloneNamesItsCauseAndRemovesTheVolume(t *testing.T) {
 	cases := map[string]error{
 		"echo 'git@example.test: Permission denied (publickey).' >&2; exit 128": ErrDeployKeyRefused,
-		"echo 'ERROR: Repository not found.' >&2; exit 128":                      ErrRepositoryNotFound,
-		"echo 'ssh: Could not resolve hostname example.test' >&2; exit 128":      ErrRepositoryHostUnreachable,
-		"echo 'something else' >&2; exit 1":                                      ErrWorkspaceCloneFailed,
+		"echo 'ERROR: Repository not found.' >&2; exit 128":                     ErrRepositoryNotFound,
+		"echo 'ssh: Could not resolve hostname example.test' >&2; exit 128":     ErrRepositoryHostUnreachable,
+		"echo 'something else' >&2; exit 1":                                     ErrWorkspaceCloneFailed,
 	}
 
 	for onRun, want := range cases {

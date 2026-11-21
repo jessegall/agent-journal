@@ -132,6 +132,12 @@ final readonly class PrivateSignInProcesses
             return false;
         }
 
+        if ($this->isStillBound($claimed)) {
+            $this->host->reportCleanup($claimed, CleanupProgress::stillBound());
+
+            return true;
+        }
+
         $isStoreRemoved = $claimed->isStoreRemoved || $this->removeStore($claimed);
         $isDirectoryRemoved = $isStoreRemoved && $this->removeDirectory($claimed->directory);
         $this->host->reportCleanup($claimed, new CleanupProgress($isStoreRemoved, $isDirectoryRemoved));
@@ -150,7 +156,7 @@ final readonly class PrivateSignInProcesses
 
         $isServed = $this->protocols->supports($claimed->program, $claimed->method);
 
-        if (! $isServed || ! $this->owners->drain($claimed->directory, $claimed->accountId)) {
+        if (! $isServed || ! $this->isUnused($claimed)) {
             return false;
         }
 
@@ -160,6 +166,24 @@ final readonly class PrivateSignInProcesses
         $verification = $protocol->verify($claimed->directory);
 
         return $verification->isCertain && ! $verification->isSignedIn;
+    }
+
+    /**
+     * Whether a live account's displaced folder is still used by a running session, which keeps it to the end of its
+     * run; a removed account's folder and a new account's staging folder never are.
+     */
+    private function isStillBound(ClaimedCleanup $claimed): bool
+    {
+        return $claimed->isDisplacedFolder() && ! $this->isGone($claimed->directory)
+            && ! $this->owners->isDisplacedFolderFree($claimed->directory, (string) $claimed->accountId);
+    }
+
+    /**
+     * Whether nothing runs on the folder any more: a displaced folder was already found free, any other is drained.
+     */
+    private function isUnused(ClaimedCleanup $claimed): bool
+    {
+        return $claimed->isDisplacedFolder() || $this->owners->drain($claimed->directory, $claimed->accountId);
     }
 
     private function removeDirectory(string $directory): bool

@@ -146,6 +146,7 @@ final readonly class SignedSignInHost implements SignInHost
             'generation' => $claimed->generation,
             'store_removed' => $progress->isStoreRemoved,
             'directory_removed' => $progress->isDirectoryRemoved,
+            'still_bound' => $progress->isStillBound,
         ]);
         [$route, $parameters] = match ($claimed->target) {
             CleanupTarget::Account => ['profiles.account-host.cleanup', ['account' => $claimed->id]],

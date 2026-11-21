@@ -18,7 +18,14 @@ final readonly class CleanupProgress
     public function __construct(
         public bool $isStoreRemoved,
         public bool $isDirectoryRemoved,
+        // A displaced folder a running session's container still binds: nothing was tried, so no try counts.
+        public bool $isStillBound = false,
     ) {}
+
+    public static function stillBound(): self
+    {
+        return new self(false, false, true);
+    }
 
     public function isComplete(): bool
     {

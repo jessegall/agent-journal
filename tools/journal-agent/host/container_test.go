@@ -83,7 +83,7 @@ func containedManifest() ContainerManifest {
 }
 
 func TestAContainedManifestMountsItsVolumesAndDaemonFoldersUnderItsProfiles(t *testing.T) {
-	arguments, err := containedManifest().DockerCreateArguments("journal-session-7", labels(), containedRules)
+	arguments, err := containedManifest().DockerCreateArguments("journal-session-7", accountLabels("7"), containedRules)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,6 +99,54 @@ func TestAContainedManifestMountsItsVolumesAndDaemonFoldersUnderItsProfiles(t *t
 			t.Fatalf("the arguments lack %s: %v", want, arguments)
 		}
 	}
+}
+
+func TestAContainerOnAnAccountCarriesItsLabelAndBindsOnlyThatAccountsFolder(t *testing.T) {
+	arguments, err := containedManifest().DockerCreateArguments("journal-session-7", accountLabels("7"), containedRules)
+	if err != nil || !slices.Contains(arguments, "journal.account=7") {
+		t.Fatalf("the account label is missing: %v %v", err, arguments)
+	}
+
+	unsafe := map[string]func(*ContainerManifest) LaunchLabels{
+		"another account's folder": func(changed *ContainerManifest) LaunchLabels {
+			changed.Mounts[1].Source = "/srv/journal/accounts/8"
+			return accountLabels("7")
+		},
+		"the accounts root": func(changed *ContainerManifest) LaunchLabels {
+			changed.Mounts[1].Source = "/srv/journal/accounts"
+			return accountLabels("7")
+		},
+		"an id that is not plain": func(changed *ContainerManifest) LaunchLabels {
+			changed.Mounts[1].Source = "/srv/journal/accounts/A-7"
+			return accountLabels("A-7")
+		},
+		"a read-only account": func(changed *ContainerManifest) LaunchLabels {
+			changed.Mounts[1].Writable = false
+			return accountLabels("7")
+		},
+		"an account mount with no account named": func(*ContainerManifest) LaunchLabels {
+			return labels()
+		},
+		"an account named with no mount": func(changed *ContainerManifest) LaunchLabels {
+			changed.Mounts = slices.Delete(changed.Mounts, 1, 2)
+			return accountLabels("7")
+		},
+	}
+	for name, change := range unsafe {
+		changed := containedManifest()
+		named := change(&changed)
+
+		if _, err := changed.DockerCreateArguments("journal-session-7", named, containedRules); !errors.Is(err, ErrManifestUnsafe) {
+			t.Fatalf("%s gave %v", name, err)
+		}
+	}
+}
+
+func accountLabels(account string) LaunchLabels {
+	named := labels()
+	named.Account = account
+
+	return named
 }
 
 func TestALocalManifestKeepsItsOldTmpfsSizesInAFixedOrder(t *testing.T) {
@@ -143,7 +191,7 @@ func TestAContainedManifestNamingAnotherImageIsRefused(t *testing.T) {
 	changed := containedManifest()
 	changed.Image = "journal/helper@sha256:def"
 
-	if _, err := changed.DockerCreateArguments("journal-session-7", labels(), containedRules); !errors.Is(err, ErrManifestUnsafe) {
+	if _, err := changed.DockerCreateArguments("journal-session-7", accountLabels("7"), containedRules); !errors.Is(err, ErrManifestUnsafe) {
 		t.Fatalf("another image gave %v", err)
 	}
 }
@@ -196,7 +244,7 @@ func TestAnAgentContainerIsNotCreatedOnADaemonThatDiscardsItsBudgets(t *testing.
 	unbounded := fakeImageDocker(t, "[ \"$3\" = info ] && { echo none; exit 0; }; touch "+created)
 	unbounded.Rules = containedRules
 
-	_, err := unbounded.Create(context.Background(), containedManifest(), "journal-session-7", labels())
+	_, err := unbounded.Create(context.Background(), containedManifest(), "journal-session-7", accountLabels("7"))
 	if !errors.Is(err, ErrBudgetsUnenforced) {
 		t.Fatalf("a daemon with cgroup driver none gave %v", err)
 	}
@@ -207,7 +255,7 @@ func TestAnAgentContainerIsNotCreatedOnADaemonThatDiscardsItsBudgets(t *testing.
 
 	bounded := fakeImageDocker(t, "[ \"$3\" = info ] && { echo cgroupfs; exit 0; }; echo c1")
 	bounded.Rules = containedRules
-	if id, err := bounded.Create(context.Background(), containedManifest(), "journal-session-7", labels()); err != nil || id != "c1" {
+	if id, err := bounded.Create(context.Background(), containedManifest(), "journal-session-7", accountLabels("7")); err != nil || id != "c1" {
 		t.Fatalf("a daemon with a cgroup driver gave %q, %v", id, err)
 	}
 }
@@ -234,7 +282,7 @@ func TestAnAttachableManifestGetsATerminalAndHelpersDoNot(t *testing.T) {
 	helper, _ := manifest().DockerCreateArguments("helper-7", labels(), localRules)
 	main := containedManifest()
 	main.Attachable = true
-	arguments, _ := main.DockerCreateArguments("journal-session-7", labels(), containedRules)
+	arguments, _ := main.DockerCreateArguments("journal-session-7", accountLabels("7"), containedRules)
 
 	if slices.Contains(helper, "--tty") || !slices.Contains(arguments, "--tty") || !slices.Contains(arguments, "--interactive") {
 		t.Fatalf("the helper has %v and the session %v", helper, arguments)

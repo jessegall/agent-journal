@@ -198,6 +198,11 @@ final class AccountRemovalTest extends TestCase
             {
                 throw new LogicException('a folder that is gone has no owners to drain');
             }
+
+            public function isDisplacedFolderFree(string $directory, string $accountId): bool
+            {
+                throw new LogicException('a folder that is gone is used by no session');
+            }
         };
         $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), $nobodyMayDrain);
 
@@ -227,6 +232,11 @@ final class AccountRemovalTest extends TestCase
         $stillRunning = new class implements AccountOwnerDrain
         {
             public function drain(string $directory, string|null $accountId): bool
+            {
+                return false;
+            }
+
+            public function isDisplacedFolderFree(string $directory, string $accountId): bool
             {
                 return false;
             }
@@ -270,6 +280,65 @@ final class AccountRemovalTest extends TestCase
         $this->asOwner(new RetryAccountCleanup($this->account->id));
 
         $this->assertSame($generation, $this->asHost(new ClaimCleanup('host'))?->generation);
+    }
+
+    public function test_a_displaced_folder_a_running_session_still_uses_is_kept_until_it_is_free(): void
+    {
+        $directory = sys_get_temp_dir().'/account-cleanup-'.bin2hex(random_bytes(4));
+        mkdir($directory);
+        $host = new RecordingSignInHost(null);
+        $protocols = new SignInProtocols($this->app);
+        $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
+        $displaced = new ClaimedCleanup(
+            CleanupTarget::SignInAttempt,
+            'attempt',
+            'codex',
+            SignInMethod::OAuth,
+            $directory,
+            1,
+            false,
+            'account',
+        );
+        $session = new class implements AccountOwnerDrain
+        {
+            public bool $isRunning = true;
+
+            public function drain(string $directory, string|null $accountId): bool
+            {
+                throw new LogicException('a displaced folder is never drained: that would end the account\'s new runs');
+            }
+
+            public function isDisplacedFolderFree(string $directory, string $accountId): bool
+            {
+                return ! $this->isRunning;
+            }
+        };
+        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), $session);
+
+        $host->nextCleanup = $displaced;
+        $runner->cleanNext();
+        $this->assertDirectoryExists($directory);
+
+        $session->isRunning = false;
+        $host->nextCleanup = $displaced;
+        $runner->cleanNext();
+
+        $this->assertEquals([CleanupProgress::stillBound(), new CleanupProgress(true, true)], $host->cleanups);
+        $this->assertDirectoryDoesNotExist($directory);
+    }
+
+    public function test_a_folder_still_in_use_counts_no_try_and_says_so(): void
+    {
+        $started = $this->asOwner(new BeginSignIn('claude-code', SignInMethod::OAuth, 'new'));
+        $this->asOwner(new CancelSignIn($started->attemptId));
+
+        foreach (range(1, CleanupProgress::MOST_TRIES + 1) as $try) {
+            $this->asHost(new CleanSignInAttempt('host', $started->attemptId, CleanupProgress::stillBound()));
+        }
+
+        $attempt = SignInAttempt::query()->withoutGlobalScopes()->sole();
+        $this->assertSame([0, CleanupProblem::StillBound], [$attempt->cleanup_tries, $attempt->cleanup_problem]);
+        $this->assertSame($started->attemptId, $this->asHost(new ClaimCleanup('host'))?->id);
     }
 
     public function test_the_owner_retries_an_unfinished_sign_ins_cleanup_by_its_attempt(): void

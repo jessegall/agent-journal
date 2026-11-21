@@ -9,7 +9,8 @@ use App\Profiles\Values\CleanupProgress;
 
 /**
  * A row whose folder a host cleans in tries: it keeps the proof that the program's store is gone, counts the tries
- * that left something behind with what was left, and waits for the owner's Retry once the tries run out.
+ * that left something behind with what was left, and waits for the owner's Retry once the tries run out. A folder a
+ * running session still uses is no try: it is cleaned once the session is gone.
  */
 trait KeepsCleanupTries
 {
@@ -19,6 +20,12 @@ trait KeepsCleanupTries
      */
     protected function recordCleanupTry(CleanupProgress $progress): bool
     {
+        if ($progress->isStillBound) {
+            $this->cleanup_problem = CleanupProblem::StillBound;
+
+            return false;
+        }
+
         $this->store_removed = $this->store_removed || $progress->isStoreRemoved;
 
         if ($this->store_removed && $progress->isDirectoryRemoved) {

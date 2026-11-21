@@ -12,11 +12,13 @@ use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\StartOriginType;
+use App\Agents\Exceptions\AccountFolderInvalid;
 use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Exceptions\ContainerUnavailable;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\CapacityReservation;
+use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\ContainerManifest;
 use App\Agents\Support\FolderWorkspace;
 use App\Agents\Support\HostCapability;
@@ -28,10 +30,13 @@ use App\Agents\Support\SecurityOptions;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\HostCapacity;
+use App\Agents\Values\SelectedAccount;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
+use App\Profiles\Models\Account;
 use App\Profiles\Values\ProfileBase;
+use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
@@ -356,6 +361,60 @@ final class ContainerManifestTest extends TestCase
         );
 
         $this->assertSame($id, $manifest->image);
+    }
+
+    public function test_a_contained_start_on_an_account_binds_that_accounts_folder_and_nothing_else(): void
+    {
+        $setting = ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}');
+        $accountA = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01a1', 1);
+        $accountB = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/accounts/01b2', 1);
+
+        $manifestOf = fn (SelectedAccount $account) => ContainerManifest::compile(
+            $this->prepared(),
+            ProfileBase::writingHelper()->defaultAccess(),
+            $this->policy(),
+            'acme-s1',
+            $setting->mountRules($account, 'main'),
+            null,
+        );
+
+        $this->assertEquals(
+            [
+                ManifestMount::daemonBind('/srv/journal/workspaces/main', '/workspace', true),
+                ManifestMount::daemonBind('/srv/journal/accounts/01a1', '/home/journal/.account', true),
+                ManifestMount::volume('acme-history-session-1', '/home/journal/.account/projects', true),
+            ],
+            $manifestOf($accountA)->mounts,
+        );
+        $this->assertSame('/srv/journal/accounts/01b2', $manifestOf($accountB)->mounts[1]->source);
+        $this->assertRefused(fn () => ContainerManifest::make(
+            self::IMAGE,
+            '10001:10001',
+            true,
+            [],
+            false,
+            'acme-s1',
+            [ManifestMount::daemonBind('/srv/journal/accounts/01b2', '/home/journal/.account', true)],
+            [],
+            ExecutionBudgets::defaults(),
+            $setting->mountRules($accountA, 'main'),
+            SecurityOptions::none(),
+        ));
+    }
+
+    public function test_an_account_folder_that_is_not_a_plain_id_is_refused_before_any_container(): void
+    {
+        $setting = ArrangementSetting::fromConfig('contained', 'acme', '{"main":{"folder":"main"}}');
+
+        foreach (['/accounts/..', '/accounts/a1/../b2', '/accounts/A1', '/accounts/a-1'] as $directory) {
+            $account = new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', $directory, 1);
+            $this->assertThrows(fn () => $setting->mountRules($account, 'main'), AccountFolderInvalid::class);
+        }
+
+        $this->assertEquals(MountRules::local(), ArrangementSetting::fromConfig('local', '', '{}')->mountRules(
+            new SelectedAccount(new RecordIdentity(Account::LINK_TYPE, '01m7y41pesrb3jvbxmhd5ssfer'), 'claude-code', '/Users/me/.journal/accounts/A1', 1),
+            'main',
+        ));
     }
 
     public function test_a_contained_session_gets_its_own_history_and_a_resume_the_history_it_resumes(): void

@@ -21,9 +21,11 @@ final readonly class MountRules
 
     private const int MOST_CONTAINED_MOUNTS = 3;
 
-    private const string PROJECTS_TARGET = '/home/journal/.account/projects';
+    private const string ACCOUNT_TARGET = '/home/journal/.account';
 
-    private const array CONTAINED_TARGETS = ['/workspace', '/home/journal/.account', self::PROJECTS_TARGET];
+    private const string PROJECTS_TARGET = self::ACCOUNT_TARGET.'/projects';
+
+    private const array CONTAINED_TARGETS = ['/workspace', self::ACCOUNT_TARGET, self::PROJECTS_TARGET];
 
     /**
      * Host folders that hold accounts, credentials or host control; no local mount may name them.
@@ -73,6 +75,29 @@ final readonly class MountRules
         }
 
         return $this->workspaceSource->mount($writable);
+    }
+
+    /**
+     * A contained session's own account folder, bound read-write at the account home so the program can refresh its
+     * sign-in (doc 61, decision 8, the user's question 30); none locally or without an account.
+     *
+     * @return list<ManifestMount>
+     */
+    public function accountMounts(): array
+    {
+        if ($this->installationName === null || $this->accountSource === null) {
+            return [];
+        }
+
+        return [ManifestMount::daemonBind($this->accountSource, self::ACCOUNT_TARGET, true)];
+    }
+
+    /**
+     * The daemon path of an account's own folder under the accounts root.
+     */
+    public static function accountFolder(string $folder): string
+    {
+        return self::ACCOUNTS_ROOT.'/'.$folder;
     }
 
     /**

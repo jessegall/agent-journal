@@ -7,6 +7,7 @@ namespace App\Profiles\Values;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Values\AccessPolicy;
+use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\HostAccess;
 use App\Agents\Values\StopCondition;
 use App\Operations\Enums\AccessType;
@@ -36,6 +37,8 @@ final readonly class ProfileBase
         public array $stopConditions,
         public OfflineReplyMode $offlineReply,
         public bool $coordinator,
+        // What its sessions may use in a container on a server; locally every start keeps the defaults.
+        public ExecutionBudgets $containedBudgets,
     ) {}
 
     /**
@@ -51,7 +54,7 @@ final readonly class ProfileBase
             ...self::running(),
         ], [
             HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
-        ], ExecutionModeType::ProtectedHost, false, [], OfflineReplyMode::Neutral, true);
+        ], ExecutionModeType::ProtectedHost, false, [], OfflineReplyMode::Neutral, true, ExecutionBudgets::mainAgent());
     }
 
     /**
@@ -64,7 +67,7 @@ final readonly class ProfileBase
             AccessType::Execute,
         ], [
             HostAccess::root('.', [...self::looking(), AccessType::Execute]),
-        ], ExecutionModeType::RequiredContainer, false, [], OfflineReplyMode::Refuse, false);
+        ], ExecutionModeType::RequiredContainer, false, [], OfflineReplyMode::Refuse, false, ExecutionBudgets::defaults());
     }
 
     /**
@@ -79,7 +82,7 @@ final readonly class ProfileBase
             HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
         ], ExecutionModeType::RequiredContainer, true, [
             StopCondition::cleanWorktree(),
-        ], OfflineReplyMode::Refuse, false);
+        ], OfflineReplyMode::Refuse, false, ExecutionBudgets::defaults());
     }
 
     /**
