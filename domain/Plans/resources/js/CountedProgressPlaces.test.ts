@@ -13,6 +13,7 @@ vi.mock('@inertiajs/vue3', () => ({
 vi.mock('@kit/usePageChanges', () => ({ formSendingHooks: () => ({}) }));
 vi.mock('@generated/routes/plans', () => ({
     start: ({ plan }: { plan: string }) => ({ url: `/plans/${plan}/start`, method: 'post' }),
+    plan: { url: ({ plan }: { plan: string }) => `/plans/${plan}` },
 }));
 
 const { default: PlanCard } = await import('./PlanCard.vue');
@@ -38,7 +39,7 @@ const phase = {
     title: 'Work',
     isCurrent: true,
     canRunChecks: true,
-    tasks: [],
+    tasks: { phase: '1', revision: 1, isRevisionChanged: false, after: '0', rows: [] },
     ...counts,
 } as PhaseReaderData;
 
@@ -56,7 +57,7 @@ describe('counted progress', () => {
         const places = [
             mount(PlanCard, { props: { card, href: '/plans?plan=12' } }),
             mount(PlanReader, {
-                props: { reader: { card, insideResults: true, brief: '' } as PlanReaderData, selectionMissing: false },
+                props: { reader: { card, insideResults: true, brief: '', outline: { phases: [], phasesAfter: '0' } } as PlanReaderData, selectionMissing: false },
             }),
             mount(PhaseWindow, { props: { data: phase } }),
         ];
@@ -83,7 +84,7 @@ describe('counted progress', () => {
 
     it('names a started plan with nothing unfinished as ready to finish', () => {
         const reader = mount(PlanReader, {
-            props: { reader: { card, insideResults: true, brief: '' } as PlanReaderData, selectionMissing: false },
+            props: { reader: { card, insideResults: true, brief: '', outline: { phases: [], phasesAfter: '0' } } as PlanReaderData, selectionMissing: false },
         });
 
         expect(reader.text()).toContain('Ready to finish');

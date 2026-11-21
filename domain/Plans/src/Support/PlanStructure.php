@@ -28,8 +28,9 @@ final readonly class PlanStructure
     }
 
     /**
-     * Places the tasks at the end of the phase, in the given order; a task already in a phase, or named twice, is
-     * refused before anything is written. It runs inside the caller's transaction.
+     * Places the tasks at the end of the phase, in the given order, as a new revision of the phase, so a reader paging
+     * the phase at the old one starts it over; a task already in a phase, or named twice, is refused before anything is
+     * written. It runs inside the caller's transaction.
      *
      * @param  list<string>  $ids
      *
@@ -54,11 +55,12 @@ final readonly class PlanStructure
 
         $placed = PlanProgress::fromTaskProgress($this->taskCounts->progressOfPlaced($ids));
         $phase->recordProgress($phase->progress->plus($placed));
+        $phase->advanceRevision();
         $plan->recordProgress($plan->progress->plus($placed));
     }
 
     /**
-     * Adds the tasks only when the phase is still at the revision the caller read, and makes a new revision of it.
+     * Adds the tasks only when the phase is still at the revision the caller read; adding makes its new revision.
      *
      * @param  list<string>  $ids
      *
@@ -71,6 +73,5 @@ final readonly class PlanStructure
         $phase->refresh();
         $phase->assertAtRevision($expectedRevision);
         $this->addTasks($phase, $ids);
-        $phase->advanceRevision();
     }
 }

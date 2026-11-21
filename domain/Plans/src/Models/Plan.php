@@ -331,17 +331,14 @@ final class Plan extends Model implements Assignable, EventSource, Numbered, Rea
     }
 
     /**
-     * The card of this plan with its own tallies and the progress of each phase, keyed by the phase's number in order,
-     * from which PlanProgress picks the current phase.
+     * The card of this plan with its own tallies and its current phase's number, none for a plan without phases.
      *
-     * @param  array<int, PlanProgress>  $progressOfPhase
      * @param  Option<AssignmentHolder>  $holder
      * @param  bool  $focused  whether this is the plan the caller's stack works on now
      */
-    public function card(array $progressOfPhase, Option $holder, bool $focused): PlanCard
+    public function card(int|null $currentPhase, Option $holder, bool $focused): PlanCard
     {
         $progress = $this->progress;
-        $currentPhase = PlanProgress::currentPhaseOf($progressOfPhase);
 
         return new PlanCard(
             $this->id,

@@ -13,12 +13,13 @@ import {
     stateLook,
     typeIcon,
 } from './planLooks';
+import PhaseOutline from './PhaseOutline.vue';
 import StartPlanForm from './StartPlanForm.vue';
 
 /**
  * The selected plan, or why there is none: nothing chosen, or a choice that cannot be read (no title is shown). The
  * plan's number, type and title come first, its state and holder below, then its whole brief as plain paragraphs and
- * its progress, or No phases yet. Start, when offered, is the visible primary action.
+ * its progress and its phases, or No phases yet. Start, when offered, is the visible primary action.
  */
 const props = defineProps<{
     reader?: PlanReaderData;
@@ -100,6 +101,7 @@ const paragraphs = computed(() =>
                         </p>
                     </template>
                 </div>
+                <PhaseOutline :outline="reader.outline" />
             </template>
         </Reader>
     </template>

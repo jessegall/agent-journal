@@ -6,32 +6,31 @@ namespace Domain\Plans\Resolvers;
 
 use App\Processes\Contracts\VerificationTiming;
 use App\Ui\Contracts\PageResolver;
-use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Data\PhaseCheckData;
 use Domain\Plans\Data\PhaseReaderData;
 use Domain\Plans\Http\Requests\PhaseRequest;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
-use Domain\Tasks\Api\TaskSummary;
-use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Plans\Support\PlanOutline;
 use Spatie\LaravelData\Optional;
 
 /**
  * One phase's record page: the phase within its plan, its counts from the phase's tallies, whether it is the plan's
- * current phase, whether the caller may run checks now, its latest check receipt, and its tasks by number.
+ * current phase, whether the caller may run checks now, its latest check receipt, and the page of its tasks the reader
+ * asked for, the same first page the plan's outline shows.
  */
 final readonly class PhaseWindowResolver implements PageResolver
 {
     public function __construct(
         private PhaseRequest $request,
-        private TaskResolver $tasks,
+        private PlanOutline $outline,
         private VerificationTiming $timing,
     ) {}
 
     public function read(): PhaseReaderData
     {
         $phase = $this->request->phase();
-        $tasks = $this->tasks->summaries($phase->taskIds());
+        $ask = $this->request->outlinePageAsk();
         $progress = $phase->progress;
 
         return PhaseReaderData::from([
@@ -42,17 +41,18 @@ final readonly class PhaseWindowResolver implements PageResolver
             'finishedTasks' => $progress->finished,
             'cancelledTasks' => $progress->cancelled,
             'totalTasks' => $progress->total,
-            'isCurrent' => PlanProgress::currentPhaseOf(Phase::progressOfPhasesIn($phase->plan_id)) === $phase->number,
+            'isCurrent' => (Phase::currentNumbersOf([$phase->plan_id])[$phase->plan_id] ?? null) === $phase->number,
             'canRunChecks' => $this->timing->forCaller()->isAllowed(),
-            'tasks' => $tasks,
-            'checkReceipt' => self::checkReceiptOf($phase, $tasks),
+            'tasks' => $this->outline->tasksOf($phase, $ask->tasksAfter, $ask->revision),
+            'checkReceipt' => self::checkReceiptOf($phase),
         ]);
     }
 
     /**
-     * @param  list<TaskSummary>  $tasks
+     * The phase's latest check receipt, and whether it came after the phase's tallies last moved, which a placed or
+     * changed task does.
      */
-    private static function checkReceiptOf(Phase $phase, array $tasks): PhaseCheckData|Optional
+    private static function checkReceiptOf(Phase $phase): PhaseCheckData|Optional
     {
         $check = PhaseCheck::query()->ofPhase($phase)->latest('recorded_at')->first();
 
@@ -60,13 +60,12 @@ final readonly class PhaseWindowResolver implements PageResolver
             return Optional::create();
         }
 
-        $changes = array_map(fn (TaskSummary $task) => $task->changedAt, $tasks);
-
         return PhaseCheckData::from([
             'operation' => $check->operation,
             'outcome' => $check->outcome,
             'recordedAt' => $check->recorded_at->toIso8601String(),
-            'isAfterLastChange' => $changes === [] || $check->recorded_at->greaterThanOrEqualTo(max($changes)),
+            'isAfterLastChange' => $phase->updated_at === null
+                || $check->recorded_at->greaterThanOrEqualTo($phase->updated_at),
         ]);
     }
 }

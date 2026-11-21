@@ -1,0 +1,69 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Plans\Support;
+
+use Domain\Plans\Data\PhaseHeadingData;
+use Domain\Plans\Data\PhaseTaskPageData;
+use Domain\Plans\Data\PlanOutlineData;
+use Domain\Plans\Models\Phase;
+use Domain\Plans\Models\PhaseTask;
+use Domain\Tasks\Contracts\TaskResolver;
+use Spatie\LaravelData\Optional;
+
+/**
+ * Reads a plan's outline by cursor, never whole: a page of phase headings by (plan, number, id), and a page of one
+ * phase's tasks by (position, task id) at the revision the reader holds, with the page's task summaries from Tasks in
+ * one batch. The rows read follow the page sizes, never the plan's or the phase's size.
+ */
+final readonly class PlanOutline
+{
+    public const int PHASES_PER_PAGE = 50;
+
+    public const int TASKS_PER_PAGE = 50;
+
+    public function __construct(private TaskResolver $tasks) {}
+
+    public function of(string $planId, int|null $currentPhase, OutlinePageAsk $ask): PlanOutlineData
+    {
+        $headings = Phase::headingsIn($planId, $ask->phasesAfter, self::PHASES_PER_PAGE + 1);
+        $shown = $headings->take(self::PHASES_PER_PAGE);
+
+        return PlanOutlineData::from([
+            'phases' => array_values($shown->map(
+                fn (Phase $phase) => PhaseHeadingData::ofPhase($phase, $currentPhase),
+            )->all()),
+            'phasesAfter' => (string) $ask->phasesAfter,
+            'nextPhasesAfter' => $headings->count() > self::PHASES_PER_PAGE
+                ? (string) $headings[self::PHASES_PER_PAGE - 1]->number
+                : Optional::create(),
+            'phaseTasks' => $ask->phase === null
+                ? Optional::create()
+                : $this->tasksOf(Phase::numberedIn($planId, $ask->phase), $ask->tasksAfter, $ask->revision),
+        ]);
+    }
+
+    /**
+     * The page of the phase's tasks after the position; when the phase is no longer at the revision the reader holds,
+     * its first page, marked as a changed revision.
+     */
+    public function tasksOf(Phase $phase, int $afterPosition, int $revision): PhaseTaskPageData
+    {
+        $isRevisionChanged = $revision !== 0 && $revision !== $phase->revision;
+        $after = $isRevisionChanged ? 0 : $afterPosition;
+        $page = PhaseTask::pageOf($phase->id, $after, self::TASKS_PER_PAGE + 1);
+        $shown = array_slice($page, 0, self::TASKS_PER_PAGE, true);
+
+        return PhaseTaskPageData::from([
+            'phase' => (string) $phase->number,
+            'revision' => $phase->revision,
+            'isRevisionChanged' => $isRevisionChanged,
+            'after' => (string) $after,
+            'rows' => $this->tasks->summaries(array_values($shown)),
+            'nextAfter' => count($page) > self::TASKS_PER_PAGE
+                ? (string) array_key_last($shown)
+                : Optional::create(),
+        ]);
+    }
+}

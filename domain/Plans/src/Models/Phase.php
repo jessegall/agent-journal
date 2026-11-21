@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -113,17 +114,34 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
-     * The task tallies of every phase of the plan, keyed by number in the plan's order, read from the phase rows.
+     * The current phase's number of each plan that has phases, read from the phase tallies in one grouped query: the
+     * first phase with fewer finished tasks than tasks, else the last; zero of zero counts as complete.
      *
-     * @return array<int, PlanProgress>
+     * @param  list<string>  $planIds
+     * @return array<string, int>
      */
-    public static function progressOfPhasesIn(string $planId): array
+    public static function currentNumbersOf(array $planIds): array
     {
-        return self::query()->where('plan_id', $planId)->readAll('the task tallies of every phase of one plan')
-            ->orderBy('number')
-            ->get(['id', 'number', 'total_tasks', 'finished_tasks', 'cancelled_tasks', 'blocked_tasks', 'started_tasks'])
-            ->mapWithKeys(fn (self $phase) => [$phase->number => $phase->progress])
+        return self::query()->whereIn('plan_id', $planIds)
+            ->selectRaw(
+                'plan_id, coalesce(min(case when finished_tasks < total_tasks then number end), max(number)) as current',
+            )
+            ->groupBy('plan_id')
+            ->readAll('one row of each listed plan')
+            ->pluck('current', 'plan_id')
+            ->map(fn (mixed $number) => (int) $number)
             ->all();
+    }
+
+    /**
+     * At most limit of the plan's phases after the phase numbered after, in the plan's order, with their tallies.
+     *
+     * @return EloquentCollection<int, self>
+     */
+    public static function headingsIn(string $planId, int $after, int $limit): EloquentCollection
+    {
+        return self::query()->where('plan_id', $planId)->where('number', '>', $after)
+            ->orderBy('number')->orderBy('id')->limit($limit)->get();
     }
 
     // ----------[ Mutations ]----------

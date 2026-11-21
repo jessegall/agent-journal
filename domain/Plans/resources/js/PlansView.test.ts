@@ -13,7 +13,10 @@ type ReadOptions = {
 const reads: { url: string; options: ReadOptions }[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
-    router: { get: (url: string, _data: unknown, options: ReadOptions) => reads.push({ url, options }) },
+    router: {
+        get: (url: string, _data: unknown, options: ReadOptions) => reads.push({ url, options }),
+        reload: vi.fn(),
+    },
     useForm: () => reactive({ errors: {}, processing: false, submit: vi.fn() }),
     Link: { template: '<a><slot /></a>' },
 }));
@@ -43,7 +46,10 @@ function slice(filters: Partial<PlanFiltersData>, rows: PlanCardData[], page = 1
         filters: { q: '', page, ...filters },
         pagination: { page, lastPage: 3, total: rows.length },
         selectionMissing: false,
-        selected: filters.plan === undefined ? undefined : { card: rows[0], insideResults: true },
+        selected:
+            filters.plan === undefined
+                ? undefined
+                : { card: rows[0], insideResults: true, brief: '', outline: { phases: [], phasesAfter: '0' } },
     } as PlanListData;
 }
 

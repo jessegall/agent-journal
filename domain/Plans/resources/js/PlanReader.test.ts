@@ -31,6 +31,7 @@ function reader(card: Partial<PlanCardData>, brief: string): PlanReaderData {
         },
         insideResults: true,
         brief,
+        outline: { phases: [], phasesAfter: '0' },
     } as PlanReaderData;
 }
 

@@ -34,23 +34,6 @@ final readonly class PlanProgress
         return new self($progress->done, $progress->cancelled, $progress->blocked, $progress->started, $progress->total);
     }
 
-    /**
-     * The phase that is current among phases in their order, keyed by number: the first with fewer finished tasks
-     * than tasks, else the last; zero of zero counts as complete, and a plan without phases has none.
-     *
-     * @param  array<int, self>  $progressOfPhase
-     */
-    public static function currentPhaseOf(array $progressOfPhase): int|null
-    {
-        foreach ($progressOfPhase as $number => $progress) {
-            if (! $progress->isComplete()) {
-                return $number;
-            }
-        }
-
-        return array_key_last($progressOfPhase);
-    }
-
     public function plus(self $other): self
     {
         return new self(
@@ -78,6 +61,10 @@ final readonly class PlanProgress
         return $this->total - $this->finished - $this->cancelled;
     }
 
+    /**
+     * Whether no task is left to finish: as many finished as there are, so zero of zero counts as complete; the
+     * current phase is the first that is not (Phase::currentNumbersOf).
+     */
     public function isComplete(): bool
     {
         return $this->finished >= $this->total;

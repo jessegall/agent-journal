@@ -26,7 +26,6 @@ use Domain\Plans\States\Support\WorkingOnPlanStateReference;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Collection;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -159,8 +158,9 @@ final readonly class PlanRecords implements PlanResolver
     }
 
     /**
-     * Builds the cards with a fixed number of queries, none of them over tasks: the phases' tallies in plan order, and
-     * the plans' assignments with their holders' names through Core.
+     * Builds the cards with a fixed number of queries, none of them over tasks or over every phase: each plan's
+     * current phase from the phase tallies in one grouped query, and the plans' assignments with their holders' names
+     * through Core.
      *
      * @param  EloquentCollection<int, Plan>  $plans
      * @param  Option<string>  $focused
@@ -168,28 +168,14 @@ final readonly class PlanRecords implements PlanResolver
      */
     private function cardsOf(EloquentCollection $plans, Option $focused): array
     {
-        $phasesOfPlan = Phase::query()->whereIn(
-            'plan_id',
-            $plans->modelKeys(),
-        )->readAll('the task tallies of every phase of the listed plans')->orderBy('plan_id')->orderBy('number')->get([
-            'id',
-            'plan_id',
-            'number',
-            'total_tasks',
-            'finished_tasks',
-            'cancelled_tasks',
-            'blocked_tasks',
-            'started_tasks',
-        ])->groupBy('plan_id');
+        $currentPhaseOf = Phase::currentNumbersOf(array_values(array_map(strval(...), $plans->modelKeys())));
 
         $holders = $this->assignees->holdersOfRecords(
             array_values($plans->map(fn (Plan $plan) => $plan->assignmentIdentity())->all()),
         );
 
         return array_values($plans->map(fn (Plan $plan) => $plan->card(
-            $phasesOfPlan->get($plan->id, new Collection())->mapWithKeys(
-                fn (Phase $phase) => [$phase->number => $phase->progress],
-            )->all(),
+            $currentPhaseOf[$plan->id] ?? null,
             $holders->forRecord($plan->assignmentIdentity()),
             $focused->getOrElse(null) === $plan->id,
         ))->all());

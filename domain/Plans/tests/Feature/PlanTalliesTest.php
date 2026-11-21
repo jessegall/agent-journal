@@ -8,6 +8,7 @@ use App\Bus\Contracts\CommandBus;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Contracts\PlanResolver;
+use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Support\PlanStructure;
 use Domain\Plans\Tests\TestCase;
@@ -74,14 +75,31 @@ final class PlanTalliesTest extends TestCase
         );
     }
 
-    public function test_the_current_phase_is_the_last_when_all_are_complete_and_none_without_phases(): void
+    public function test_the_current_phase_is_the_first_unfinished_else_the_last_and_none_without_phases(): void
     {
-        $finishedOne = new PlanProgress(finished: 1, cancelled: 0, blocked: 0, started: 0, total: 1);
-        $cancelledOne = new PlanProgress(finished: 0, cancelled: 1, blocked: 0, started: 0, total: 1);
+        $this->startUserRequestAs($this->owner->id);
+        $finished = Task::factory()->create();
+        $finished->finish('Done.');
+        $cancelled = Task::factory()->create();
+        $cancelled->cancel('Dropped.');
 
-        $this->assertSame(2, PlanProgress::currentPhaseOf([1 => $finishedOne, 2 => PlanProgress::none()]));
-        $this->assertSame(1, PlanProgress::currentPhaseOf([1 => $cancelledOne, 2 => PlanProgress::none()]));
-        $this->assertNull(PlanProgress::currentPhaseOf([]));
+        $complete = Plan::factory()->create();
+        $this->structure()->addTasks($this->structure()->addPhase($complete, 'Done'), [$finished->id]);
+        $this->structure()->addPhase($complete, 'Empty');
+
+        $cancelledFirst = Plan::factory()->create();
+        $this->structure()->addTasks($this->structure()->addPhase($cancelledFirst, 'Dropped'), [$cancelled->id]);
+        $this->structure()->addPhase($cancelledFirst, 'Later');
+
+        $bare = Plan::factory()->create();
+
+        $current = Phase::currentNumbersOf([$complete->id, $cancelledFirst->id, $bare->id]);
+
+        $this->assertSame([$complete->id => 2, $cancelledFirst->id => 1], [
+            $complete->id => $current[$complete->id],
+            $cancelledFirst->id => $current[$cancelledFirst->id],
+        ]);
+        $this->assertArrayNotHasKey($bare->id, $current);
     }
 
     public function test_a_card_read_loads_the_same_rows_however_many_tasks_the_plan_holds(): void
