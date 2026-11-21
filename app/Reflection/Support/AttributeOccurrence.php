@@ -71,4 +71,12 @@ final class AttributeOccurrence
             $this->building = false;
         }
     }
+
+    /**
+     * A new build of the attribute, never kept, for a reader whose use changes the object it is given.
+     */
+    public function freshInstance(): object
+    {
+        return ($this->build)();
+    }
 }

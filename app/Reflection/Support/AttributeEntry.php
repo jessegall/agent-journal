@@ -41,8 +41,29 @@ final class AttributeEntry
      */
     public function instance(): object
     {
-        $instance = $this->occurrence->instance();
+        return $this->typed($this->occurrence->instance());
+    }
 
+    /**
+     * A new build of the attribute, never kept or shared, for a reader whose use changes the object it is given, such
+     * as a validation rule a normalizer rewrites.
+     *
+     * @return A
+     *
+     * @throws AttributeTypeUnexpected
+     */
+    public function freshInstance(): object
+    {
+        return $this->typed($this->occurrence->freshInstance());
+    }
+
+    /**
+     * @return A
+     *
+     * @throws AttributeTypeUnexpected
+     */
+    private function typed(object $instance): object
+    {
         if (! $instance instanceof $this->type) {
             throw AttributeTypeUnexpected::for($this->name(), $this->type);
         }

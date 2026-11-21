@@ -13,7 +13,8 @@ use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
-use ReflectionClass;
+use App\Reflection\Concerns\Reflects;
+use App\Reflection\Support\Reflector;
 
 /**
  * One command an owner lists, with the handler of its name, and what its attributes declare: an application
@@ -21,6 +22,8 @@ use ReflectionClass;
  */
 final readonly class DeclaredCommand
 {
+    use Reflects;
+
     /**
      * @param  class-string  $command
      * @param  class-string  $handler
@@ -43,16 +46,18 @@ final readonly class DeclaredCommand
      */
     public static function read(string $command, CommandOwner $owner, string $handler): self
     {
-        $reflection = new ReflectionClass($command);
-        $authorizations = $reflection->getAttributes(Authorize::class);
-        $entries = $reflection->getAttributes(Entry::class);
-        $entry = $entries === [] ? CommandEntry::Application : $entries[0]->newInstance()->entry;
+        $declaration = Reflector::of($command);
+        $authorizations = $declaration->attributes(Authorize::class);
+        $entries = $declaration->attributes(Entry::class);
+        $entry = $entries->first()
+            ->map(fn (Entry $declared) => $declared->entry)
+            ->getOrElse(CommandEntry::Application);
 
         $fault = match (true) {
             count($authorizations) > 1 || count($entries) > 1 => 'it declares Authorize or Entry twice',
-            $authorizations !== [] && $entries !== [] => 'it declares both Authorize and Entry',
-            $entries !== [] && $entry === CommandEntry::Application => 'an application command needs no Entry',
-            $authorizations === [] && $entries === [] => 'it declares neither Authorize nor a trusted Entry',
+            count($authorizations) > 0 && count($entries) > 0 => 'it declares both Authorize and Entry',
+            count($entries) > 0 && $entry === CommandEntry::Application => 'an application command needs no Entry',
+            $authorizations->count() + $entries->count() === 0 => 'it declares neither Authorize nor a trusted Entry',
             default => null,
         };
 
@@ -60,28 +65,26 @@ final readonly class DeclaredCommand
             throw CommandDeclarationInvalid::for($command, $fault);
         }
 
-        $authorize = $authorizations === [] ? null : $authorizations[0]->newInstance();
+        $authorize = $authorizations->first()->getOrElse(null);
 
         return new self($command, $owner, $handler, $authorize, $entry);
     }
 
     public function needsRepeatableRead(): bool
     {
-        return $this->reflection()->getAttributes(RepeatableRead::class) !== [];
+        return $this->reflect($this->command)->hasAttribute(RepeatableRead::class);
     }
 
     public function effect(): CommandEffectType
     {
-        foreach ($this->reflection()->getAttributes(Effect::class) as $declared) {
-            return $declared->newInstance()->type;
-        }
-
-        return CommandEffectType::StateChange;
+        return $this->reflect($this->command)->attributes(Effect::class)->first()
+            ->map(fn (Effect $declared) => $declared->type)
+            ->getOrElse(CommandEffectType::StateChange);
     }
 
     public function hasActorScopedReceipt(): bool
     {
-        return $this->reflection()->getAttributes(RetainedActorRequestKey::class) !== [];
+        return $this->reflect($this->command)->hasAttribute(RetainedActorRequestKey::class);
     }
 
     /**
@@ -89,7 +92,8 @@ final readonly class DeclaredCommand
      */
     public function isRequestKeyRequired(): bool
     {
-        return $this->reflection()->getAttributes(RequiresRequestKey::class) !== [] || $this->hasActorScopedReceipt();
+        return $this->reflect($this->command)->hasAttribute(RequiresRequestKey::class)
+            || $this->hasActorScopedReceipt();
     }
 
     /**
@@ -99,29 +103,35 @@ final readonly class DeclaredCommand
      */
     public function retention(): ReceiptRetention
     {
-        $attribute = $this->reflection()->getAttributes(RequiresRequestKey::class)[0] ?? null;
-        $retained = $this->reflection()->getAttributes(RetainedActorRequestKey::class)[0] ?? null;
+        $declaration = $this->reflect($this->command);
+        $requiresKey = $declaration->hasAttribute(RequiresRequestKey::class);
+        $retainsKey = $declaration->hasAttribute(RetainedActorRequestKey::class);
 
-        if ($attribute !== null && $retained !== null) {
+        if ($requiresKey && $retainsKey) {
             $conflictingAttributes = 'it declares both RequiresRequestKey and RetainedActorRequestKey';
 
             throw CommandDeclarationInvalid::for($this->command, $conflictingAttributes);
         }
 
-        if ($retained !== null) {
-            return ReceiptRetention::retainedForActor($this->command, $retained->newInstance());
+        if ($retainsKey) {
+            return ReceiptRetention::retainedForActor(
+                $this->command,
+                $declaration->attribute(RetainedActorRequestKey::class),
+            );
         }
 
-        return $attribute === null
-            ? ReceiptRetention::standard()
-            : ReceiptRetention::declaredBy($this->command, $attribute->newInstance());
+        return $requiresKey
+            ? ReceiptRetention::declaredBy($this->command, $declaration->attribute(RequiresRequestKey::class))
+            : ReceiptRetention::standard();
     }
 
     /**
-     * @return ReflectionClass<object>
+     * What PHP declares about the command class.
+     *
+     * @return Reflector<object>
      */
-    public function reflection(): ReflectionClass
+    public function declaration(): Reflector
     {
-        return new ReflectionClass($this->command);
+        return $this->reflect($this->command);
     }
 }

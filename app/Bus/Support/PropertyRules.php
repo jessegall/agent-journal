@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\Exceptions\CommandDeclarationInvalid;
+use App\Reflection\Support\AttributeEntry;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 use Illuminate\Support\Arr;
-use ReflectionAttribute;
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionProperty;
 use Spatie\LaravelData\Attributes\Validation\ActiveUrl;
 use Spatie\LaravelData\Attributes\Validation\Confirmed;
 use Spatie\LaravelData\Attributes\Validation\CurrentPassword;
@@ -65,24 +64,24 @@ final readonly class PropertyRules
     /**
      * Each ruled property's Laravel rules, the type rule first; a property with no attribute has no entry.
      *
-     * @param  ReflectionClass<object>  $command
+     * @param  Reflector<object>  $command
      * @return array<string, list<string|object>>
      */
-    public function of(ReflectionClass $command): array
+    public function of(Reflector $command): array
     {
         $rules = [];
 
-        foreach ($command->getProperties() as $property) {
+        foreach ($command->properties() as $property) {
             $this->refuseRulesInsideValue($command, $property, []);
-            $attributes = $property->getAttributes(ValidationRule::class, ReflectionAttribute::IS_INSTANCEOF);
+            $attributes = $property->attributesImplementing(ValidationRule::class);
 
-            if ($attributes === []) {
+            if (count($attributes) === 0) {
                 continue;
             }
 
-            $rules[$property->getName()] = [
+            $rules[$property->name()] = [
                 $this->typeRuleOf($command, $property),
-                ...$this->rulesOf($command, $property, $attributes),
+                ...$this->rulesOf($command, $property, $attributes->entries()),
             ];
         }
 
@@ -90,47 +89,46 @@ final readonly class PropertyRules
     }
 
     /**
-     * @param  ReflectionClass<object>  $command
+     * @param  Reflector<object>  $command
      */
-    private function typeRuleOf(ReflectionClass $command, ReflectionProperty $property): string
+    private function typeRuleOf(Reflector $command, ReflectedProperty $property): string
     {
-        $type = $property->getType();
-        $name = $type instanceof ReflectionNamedType ? $type->getName() : '';
+        $name = self::namedTypeOf($property);
 
         if (enum_exists($name)) {
             $problem = sprintf(
                 '%s is the enum %s, whose cases already limit it; take its validation attributes off',
-                $property->getName(),
+                $property->name(),
                 $name,
             );
 
-            throw CommandDeclarationInvalid::for($command->getName(), $problem);
+            throw CommandDeclarationInvalid::for($command->name(), $problem);
         }
 
         if (! isset(self::TYPE_RULES[$name])) {
             $problem = sprintf(
                 '%s holds the value %s, which checks itself in its factory; take its validation attributes off',
-                $property->getName(),
+                $property->name(),
                 $name,
             );
 
-            throw CommandDeclarationInvalid::for($command->getName(), $problem);
+            throw CommandDeclarationInvalid::for($command->name(), $problem);
         }
 
         return self::TYPE_RULES[$name];
     }
 
     /**
-     * @param  ReflectionClass<object>  $command
-     * @param  list<ReflectionAttribute<ValidationRule>>  $attributes
+     * @param  Reflector<object>  $command
+     * @param  list<AttributeEntry<ValidationRule>>  $attributes
      * @return list<string|object>
      */
-    private function rulesOf(ReflectionClass $command, ReflectionProperty $property, array $attributes): array
+    private function rulesOf(Reflector $command, ReflectedProperty $property, array $attributes): array
     {
         $rules = [];
 
         foreach ($attributes as $attribute) {
-            $this->refuseLookup($command, $property, $attribute->getName());
+            $this->refuseLookup($command, $property, $attribute->name());
             $rule = $this->builtRule($command, $property, $attribute);
             $this->refuseUnknownFields($command, $property, $rule);
             array_push($rules, ...$this->denormalized($command, $property, $rule));
@@ -140,58 +138,57 @@ final readonly class PropertyRules
     }
 
     /**
-     * @param  ReflectionClass<object>  $command
+     * @param  Reflector<object>  $command
      */
-    private function refuseLookup(ReflectionClass $command, ReflectionProperty $property, string $attribute): void
+    private function refuseLookup(Reflector $command, ReflectedProperty $property, string $attribute): void
     {
         if (! in_array($attribute, self::LOOKUP_RULES, true)) {
             return;
         }
 
-        $problem = "{$property->getName()} uses ".class_basename($attribute).', which reads the database, a file, the request or the network; look it up in the handler instead';
+        $problem = "{$property->name()} uses ".class_basename($attribute).', which reads the database, a file, the request or the network; look it up in the handler instead';
 
-        throw CommandDeclarationInvalid::for($command->getName(), $problem);
+        throw CommandDeclarationInvalid::for($command->name(), $problem);
     }
 
     /**
-     * @param  ReflectionClass<object>  $command
-     * @param  ReflectionAttribute<ValidationRule>  $attribute
+     * A new build of the rule for each read: the denormalizer rewrites some rules, such as In, as it reads them.
+     *
+     * @param  Reflector<object>  $command
+     * @param  AttributeEntry<ValidationRule>  $attribute
      */
     private function builtRule(
-        ReflectionClass $command,
-        ReflectionProperty $property,
-        ReflectionAttribute $attribute,
+        Reflector $command,
+        ReflectedProperty $property,
+        AttributeEntry $attribute,
     ): ValidationRule {
         try {
-            return $attribute->newInstance();
+            return $attribute->freshInstance();
         } catch (Throwable $failure) {
-            throw CommandDeclarationInvalid::ruleUnreadable($command->getName(), $property->getName(), $failure);
+            throw CommandDeclarationInvalid::ruleUnreadable($command->name(), $property->name(), $failure);
         }
     }
 
     /**
-     * @param  ReflectionClass<object>  $command
+     * @param  Reflector<object>  $command
      * @return list<string|object>
      */
-    private function denormalized(ReflectionClass $command, ReflectionProperty $property, ValidationRule $rule): array
+    private function denormalized(Reflector $command, ReflectedProperty $property, ValidationRule $rule): array
     {
         try {
             return array_values($this->denormalizer->execute($rule, ValidationPath::create()));
         } catch (Throwable $failure) {
-            throw CommandDeclarationInvalid::ruleUnreadable($command->getName(), $property->getName(), $failure);
+            throw CommandDeclarationInvalid::ruleUnreadable($command->name(), $property->name(), $failure);
         }
     }
 
     /**
      * A rule naming another field, such as RequiredWithout('brief'), names one of the command's own properties.
      *
-     * @param  ReflectionClass<object>  $command
+     * @param  Reflector<object>  $command
      */
-    private function refuseUnknownFields(
-        ReflectionClass $command,
-        ReflectionProperty $property,
-        ValidationRule $rule,
-    ): void {
+    private function refuseUnknownFields(Reflector $command, ReflectedProperty $property, ValidationRule $rule): void
+    {
         if (! $rule instanceof StringValidationAttribute) {
             return;
         }
@@ -201,41 +198,51 @@ final readonly class PropertyRules
                 continue;
             }
 
-            $problem = "{$property->getName()} names the field {$parameter->name}, which the command does not have";
+            $problem = "{$property->name()} names the field {$parameter->name}, which the command does not have";
 
-            throw CommandDeclarationInvalid::for($command->getName(), $problem);
+            throw CommandDeclarationInvalid::for($command->name(), $problem);
         }
     }
 
     /**
      * A value a command carries checks itself, so a validation attribute on one of its properties is never read.
      *
-     * @param  ReflectionClass<object>  $command
+     * @param  Reflector<object>  $command
      * @param  list<string>  $seen  the value classes already walked, so a value holding itself ends
      */
-    private function refuseRulesInsideValue(ReflectionClass $command, ReflectionProperty $property, array $seen): void
+    private function refuseRulesInsideValue(Reflector $command, ReflectedProperty $property, array $seen): void
     {
-        $type = $property->getType();
-        $name = $type instanceof ReflectionNamedType ? $type->getName() : '';
+        $name = self::namedTypeOf($property);
 
         if (! class_exists($name) || in_array($name, $seen, true)) {
             return;
         }
 
-        foreach (new ReflectionClass($name)->getProperties() as $inside) {
-            if ($inside->getAttributes(ValidationRule::class, ReflectionAttribute::IS_INSTANCEOF) !== []) {
+        foreach (Reflector::of($name)->properties() as $inside) {
+            if (count($inside->attributesImplementing(ValidationRule::class)) > 0) {
                 $problem = sprintf(
                     "%s holds %s, whose property %s has a validation attribute that is never read; check it in %s's factory",
-                    $property->getName(),
+                    $property->name(),
                     $name,
-                    $inside->getName(),
+                    $inside->name(),
                     $name,
                 );
 
-                throw CommandDeclarationInvalid::for($command->getName(), $problem);
+                throw CommandDeclarationInvalid::for($command->name(), $problem);
             }
 
             $this->refuseRulesInsideValue($command, $inside, [...$seen, $name]);
         }
+    }
+
+    /**
+     * The one name of the property's declared type; empty for an untyped property or a union or intersection.
+     */
+    private static function namedTypeOf(ReflectedProperty $property): string
+    {
+        return $property->type()
+            ->filter(fn ($type) => $type->isNamed())
+            ->map(fn ($type) => $type->name())
+            ->getOrElse('');
     }
 }

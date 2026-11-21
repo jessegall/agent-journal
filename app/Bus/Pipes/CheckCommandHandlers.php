@@ -17,11 +17,12 @@ use App\Bus\Support\DeclaredCommand;
 use App\Bus\Support\SharedBindingCheck;
 use App\Operations\Enums\AccessType;
 use App\Pipelines\Contracts\Pipe;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\ReflectedParameter;
+use App\Reflection\Support\Reflector;
 use Illuminate\Auth\Access\Response;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionNamedType;
-use ReflectionParameter;
+use PhpOption\Option;
 
 /**
  * Checks every command's handler: a final class built fresh in its owner's Handlers folder, whose public handle takes
@@ -46,9 +47,9 @@ final readonly class CheckCommandHandlers implements Pipe
         $command = $declared->command;
         $handler = $declared->handler;
 
-        $reflection = new ReflectionClass($handler);
+        $declaration = Reflector::of($handler);
 
-        if (! $reflection->isFinal() || ! $reflection->isInstantiable()) {
+        if (! $declaration->isFinal() || ! $declaration->isInstantiable()) {
             throw CommandDeclarationInvalid::for($handler, 'a handler is a final class that can be built');
         }
 
@@ -56,11 +57,14 @@ final readonly class CheckCommandHandlers implements Pipe
             $handler,
             static fn (string $problem) => CommandDeclarationInvalid::for($handler, $problem),
         );
-        $handle = $reflection->hasMethod('handle') ? $reflection->getMethod('handle') : null;
 
-        if ($handle === null || ! $handle->isPublic() || $handle->isStatic()) {
+        if (! $declaration->hasMethod('handle')
+            || ! $declaration->method('handle')->isPublic()
+            || $declaration->method('handle')->isStatic()) {
             throw CommandDeclarationInvalid::for($handler, 'it needs a public, non-static handle method');
         }
+
+        $handle = $declaration->method('handle');
 
         $authorize = $declared->authorize;
 
@@ -75,7 +79,7 @@ final readonly class CheckCommandHandlers implements Pipe
             $this->checkAuthorization($command, $authorize, $handler, $handle);
         }
 
-        $problem = $declarations->grammarFor($declared->owner)->problemWithResult($handle->getReturnType());
+        $problem = $declarations->grammarFor($declared->owner)->problemWithResult($handle);
 
         if ($problem !== null) {
             throw CommandDeclarationInvalid::for($handler, "its result {$problem}");
@@ -96,7 +100,7 @@ final readonly class CheckCommandHandlers implements Pipe
         string $command,
         Authorize $authorize,
         string $handler,
-        ReflectionMethod $handle,
+        ReflectedMethod $handle,
     ): void {
         $policy = $authorize->policy;
 
@@ -126,17 +130,16 @@ final readonly class CheckCommandHandlers implements Pipe
         }
 
         $model = $policy::model();
-        $subject = (string) new ReflectionMethod($command, 'subject')->getReturnType();
+        $subject = self::textOf(Reflector::of($command)->method('subject')->returnType());
 
         if ($subject !== $model) {
             throw CommandAuthorizationInvalid::subjectMismatched($command, $subject, $model);
         }
 
         self::assertPermits($command, $policy, $model);
-        $second = $handle->getParameters()[1] ?? null;
-        $secondType = $second?->getType();
-        $takesBoth = $handle->getNumberOfRequiredParameters() === 2 && self::takesFirst($handle, $command)
-            && $secondType instanceof ReflectionNamedType && $secondType->getName() === $model;
+        $takesBoth = $handle->requiredParameterCount() === 2
+            && self::takesAt($handle, 0, $command)
+            && self::takesAt($handle, 1, $model);
 
         if (! $takesBoth) {
             throw CommandAuthorizationInvalid::handlerShape($command, $handler, "the command and {$model}");
@@ -154,34 +157,48 @@ final readonly class CheckCommandHandlers implements Pipe
      */
     private static function assertPermits(string $command, string $policy, string $model): void
     {
-        $permits = method_exists($policy, 'permits') ? new ReflectionMethod($policy, 'permits') : null;
+        if (! method_exists($policy, 'permits')) {
+            throw CommandAuthorizationInvalid::permitsMissing($command, $policy, $model);
+        }
+
+        $permits = Reflector::of($policy)->method('permits');
         $types = array_map(
-            fn (ReflectionParameter $parameter) => (string) $parameter->getType(),
-            $permits?->getParameters() ?? [],
+            fn (ReflectedParameter $parameter) => self::textOf($parameter->type()),
+            $permits->parameters(),
         );
-        $fits = $permits !== null && $permits->isPublic() && ! $permits->isStatic()
+        $fits = $permits->isPublic() && ! $permits->isStatic()
             && $types === [Actor::class, $model, AccessType::class]
-            && (string) $permits->getReturnType() === Response::class;
+            && self::textOf($permits->returnType()) === Response::class;
 
         if (! $fits) {
             throw CommandAuthorizationInvalid::permitsMissing($command, $policy, $model);
         }
     }
 
-    private static function takesFirst(ReflectionMethod $handle, string $command): bool
+    /**
+     * Whether the method's parameter at this position is declared as exactly this one named type.
+     */
+    private static function takesAt(ReflectedMethod $handle, int $position, string $type): bool
     {
-        $type = ($handle->getParameters()[0] ?? null)?->getType();
+        $parameters = $handle->parameters();
 
-        return $type instanceof ReflectionNamedType && $type->getName() === $command;
+        return isset($parameters[$position]) && $parameters[$position]->type()
+            ->filter(fn (DeclaredType $declared) => $declared->isNamedAs($type))
+            ->isDefined();
     }
 
-    private static function takesOnly(ReflectionMethod $handle, string $command): bool
+    private static function takesOnly(ReflectedMethod $handle, string $command): bool
     {
-        $parameter = $handle->getParameters()[0] ?? null;
-        $type = $parameter?->getType();
+        return $handle->requiredParameterCount() === 1 && self::takesAt($handle, 0, $command);
+    }
 
-        return $handle->getNumberOfRequiredParameters() === 1
-            && $type instanceof ReflectionNamedType
-            && $type->getName() === $command;
+    /**
+     * A declared type as PHP writes it; empty when none is declared.
+     *
+     * @param  Option<DeclaredType>  $type
+     */
+    private static function textOf(Option $type): string
+    {
+        return $type->map(fn (DeclaredType $declared) => $declared->text)->getOrElse('');
     }
 }

@@ -36,7 +36,7 @@ final readonly class RegisterCommands implements Pipe
                 actorScopedReceipt: $declared->hasActorScopedReceipt(),
                 retention: $declared->retention(),
                 middleware: $this->middlewareFor($declared, $declarations),
-                rules: $this->propertyRules->of($declared->reflection()),
+                rules: $this->propertyRules->of($declared->declaration()),
                 authorize: $declared->authorize,
                 entry: $declared->entry,
             );

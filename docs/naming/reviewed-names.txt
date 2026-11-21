@@ -1127,6 +1127,9 @@ case	TransportProfileType::Mcp
 case	TypeKind::Intersection
 case	TypeKind::Named
 case	TypeKind::Union
+case	TypeShape::Intersection
+case	TypeShape::Named
+case	TypeShape::Union
 case	UnansweredReason::Cycle
 case	UnansweredReason::NoOwner
 case	UnansweredReason::RootTimeout
@@ -5957,6 +5960,7 @@ constant	CommandFrame::FIRST
 constant	CommandFrame::INSIDE
 constant	CommandFrame::TRANSACTION
 constant	CommandGrammar::SCALARS
+constant	CommandGrammar::UNLISTED_ARRAY
 constant	CommandNesting::LIMIT
 constant	CommandOwner::CORE
 constant	CommandReaderResolver::READERS
@@ -6919,6 +6923,7 @@ enum	ToolType
 enum	TransitionType
 enum	TransportProfileType
 enum	TypeKind
+enum	TypeShape
 enum	UnansweredReason
 enum	UnresolvedType
 enum	UnsupportedKeyword
@@ -8807,12 +8812,15 @@ method	AttentionState::stateLabel()
 method	AttributeBuiltRecursively::on()
 method	AttributeEntry::__construct()
 method	AttributeEntry::arguments()
+method	AttributeEntry::freshInstance()
 method	AttributeEntry::instance()
 method	AttributeEntry::name()
+method	AttributeEntry::typed()
 method	AttributeMatch::selects()
 method	AttributeMissing::on()
 method	AttributeOccurrence::__construct()
 method	AttributeOccurrence::arguments()
+method	AttributeOccurrence::freshInstance()
 method	AttributeOccurrence::instance()
 method	AttributeOccurrence::name()
 method	AttributeTypeUnexpected::for()
@@ -9351,8 +9359,10 @@ method	CheckCommandHandlers::assertPermits()
 method	CheckCommandHandlers::check()
 method	CheckCommandHandlers::checkAuthorization()
 method	CheckCommandHandlers::handle()
+method	CheckCommandHandlers::takesAt()
 method	CheckCommandHandlers::takesFirst()
 method	CheckCommandHandlers::takesOnly()
+method	CheckCommandHandlers::textOf()
 method	CheckCommandMiddleware::checkScope()
 method	CheckCommandMiddleware::handle()
 method	CheckCommandStart::handle()
@@ -10713,6 +10723,7 @@ method	DeclarativeReader::readLastLine()
 method	DeclarativeReader::readLine()
 method	DeclarativeReader::readLines()
 method	DeclaredCommand::__construct()
+method	DeclaredCommand::declaration()
 method	DeclaredCommand::effect()
 method	DeclaredCommand::hasActorScopedReceipt()
 method	DeclaredCommand::isRequestKeyRequired()
@@ -15959,6 +15970,7 @@ method	ProofSampleData::sample()
 method	PropertyRules::__construct()
 method	PropertyRules::builtRule()
 method	PropertyRules::denormalized()
+method	PropertyRules::namedTypeOf()
 method	PropertyRules::of()
 method	PropertyRules::refuseLookup()
 method	PropertyRules::refuseRulesInsideValue()
@@ -23018,6 +23030,7 @@ parameter	$installation
 parameter	$installationName
 parameter	$installed
 parameter	$installer
+parameter	$instance
 parameter	$instances
 parameter	$instant
 parameter	$instead
@@ -26426,6 +26439,7 @@ property	DeclaredType::$builtin
 property	DeclaredType::$kind
 property	DeclaredType::$members
 property	DeclaredType::$name
+property	DeclaredType::$shape
 property	DeclaredType::$text
 property	DeferredCommandHandler::$container
 property	DeferredCommandHandler::$handler
@@ -34631,6 +34645,7 @@ variable	$requireEditor
 variable	$required
 variable	$requiredClass
 variable	$requirement
+variable	$requiresKey
 variable	$requiresSeparateStreams
 variable	$reservation
 variable	$resolved
@@ -34649,6 +34664,7 @@ variable	$resumable
 variable	$resumed
 variable	$retained
 variable	$retainedPageId
+variable	$retainsKey
 variable	$retentionStart
 variable	$retired
 variable	$retiredSkill
