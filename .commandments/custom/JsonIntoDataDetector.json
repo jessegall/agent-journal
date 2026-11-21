@@ -33,7 +33,7 @@
             },
             {
                 "inside": {
-                    "hasAnnotation": "App\\Settings\\Attributes\\DecodesAnyJson"
+                    "hasAnnotation": "App\\Contracts\\Attributes\\DecodesAnyJson"
                 }
             }
         ]
@@ -41,7 +41,7 @@
     "sin": {
         "description": "Decoded JSON is read as a loose array instead of a Data class that writes its shape down.",
         "name": "json-into-data",
-        "rule": "Hand json_decode's result straight to a Spatie Data class's from(), collect() or validateAndCreate() and read its typed properties, never $decoded['key'] ?? fallback. A method decoding JSON of no fixed shape (a value of any JSON type kept as stored) carries #[DecodesAnyJson], allowed only where JsonIntoDataTest lists it.",
+        "rule": "Hand json_decode's result straight to a Spatie Data class's from(), collect() or validateAndCreate() and read its typed properties, never $decoded['key'] ?? fallback. A method decoding JSON whose keys are not ours to name carries #[DecodesAnyJson], allowed only where JsonIntoDataTest lists it.",
         "skill": "php/spatie-data"
     }
 }

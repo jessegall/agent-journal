@@ -23,11 +23,13 @@ final class JsonIntoDataTest extends TestCase
     private const array TAKERS = ['from', 'collect', 'validateAndCreate'];
 
     /**
-     * The only methods allowed #[DecodesAnyJson]: their JSON is a value of any type, kept as it was stored.
+     * The only methods allowed #[DecodesAnyJson]: their JSON has no shape of ours to name, a value of any type kept
+     * as stored or a tool's own JSON line.
      */
     private const array ANY_JSON_METHODS = [
         'App\\Settings\\Storage\\EncodedValue::jsonSerialize',
         'App\\Settings\\Casts\\SettingsDocumentCast::get',
+        'App\\Processes\\Support\\DeclarativeReader::lineOf',
     ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void

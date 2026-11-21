@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Storage;
 
-use App\Settings\Attributes\DecodesAnyJson;
+use App\Contracts\Attributes\DecodesAnyJson;
 use JsonSerializable;
 use PhpOption\None;
 use PhpOption\Option;

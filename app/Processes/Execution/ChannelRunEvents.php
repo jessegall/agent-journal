@@ -201,10 +201,10 @@ final class ChannelRunEvents implements RunEvents
      */
     private function sendSpooled(): void
     {
-        $events = array_values(array_slice(array_map(
+        $events = array_map(
             fn (string $line): RunEvent => RunEvent::from(json_decode($line, true, 512, JSON_THROW_ON_ERROR)),
-            $this->spooledLines('events.jsonl'),
-        ), $this->sent));
+            array_slice($this->spooledLines('events.jsonl'), $this->sent),
+        );
 
         if ($events !== []) {
             $this->processes->recordRunEvents($this->runId, $this->eventKey, $events);
