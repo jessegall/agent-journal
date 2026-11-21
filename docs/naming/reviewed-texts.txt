@@ -48,6 +48,7 @@ Cancel
 Cancel script
 Cancel sign-in
 Cancelled
+Cancelling the sign-in…
 Checked reader revision
 Checking the new session
 Checking the sign-in with {{ driverName(driver) }}…

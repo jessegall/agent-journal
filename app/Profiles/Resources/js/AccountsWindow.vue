@@ -8,14 +8,18 @@ import EmptyState from '@kit/EmptyState';
 import Icon from '@kit/Icon';
 import PageHeader from '@kit/PageHeader';
 import Spinner from '@kit/Spinner';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useScrollAnchor } from '@kit/useScrollAnchor';
 import { useIsStale } from '@kit/windowFreshness';
 import AccountRecovery from './AccountRecovery.vue';
 import AccountRow from './AccountRow.vue';
 import AddAccountWizard from './AddAccountWizard.vue';
 import { signInAgainLabel } from './accountLooks';
-import { changeNumberOf, isChosen, newestSelections } from './accountSelections';
+import {
+    changeNumberOf,
+    isChosen,
+    newestSelections,
+} from './accountSelections';
 import { attemptToRejoin, isLive } from './signIn';
 import type { WizardRequest } from './signIn';
 import { useUsageClock } from './usageClock';
@@ -53,6 +57,29 @@ const waitingSignIn = computed(() =>
     ),
 );
 
+const root = ref<HTMLElement | null>(null);
+const announcement = ref('');
+
+/**
+ * Closes the wizard and puts focus where the user goes on: Finish signing in for a sign-in left waiting, Add account
+ * after a cancel, which is announced once.
+ */
+async function closeWizard(
+    ending: 'waiting' | 'cancelled' | 'closed',
+): Promise<void> {
+    request.value = null;
+    announcement.value = ending === 'cancelled' ? 'Sign-in cancelled.' : '';
+    await nextTick();
+
+    if (ending === 'closed') {
+        return;
+    }
+
+    const target =
+        ending === 'waiting' ? '[data-sign-in-resume]' : '[data-account-add]';
+    root.value?.querySelector<HTMLElement>(target)?.focus();
+}
+
 function resumeOrAgain(row: AccountRowData): void {
     const running = attemptToRejoin(props.data.attempts, row.driver, row.id);
 
@@ -64,13 +91,14 @@ function resumeOrAgain(row: AccountRowData): void {
 </script>
 
 <template>
-    <div class="mx-auto flex w-full max-w-[760px] flex-col sm:pt-4">
+    <div ref="root" class="mx-auto flex w-full max-w-[760px] flex-col sm:pt-4">
         <PageHeader title="Accounts" :count="data.rows.length">
             <template #actions>
                 <template v-if="waitingSignIn !== undefined && !isStale">
                     <Button
                         variant="bordered"
                         size="small"
+                        data-sign-in-resume
                         @click="
                             request = {
                                 kind: 'resume',
@@ -83,6 +111,7 @@ function resumeOrAgain(row: AccountRowData): void {
                 <Button
                     variant="primary"
                     size="small"
+                    data-account-add
                     :disabled="waitingSignIn !== undefined || isStale"
                     @click="request = { kind: 'new' }"
                     ><Icon name="plus" />Add account</Button
@@ -114,7 +143,9 @@ function resumeOrAgain(row: AccountRowData): void {
                     <AccountRow
                         :account="row"
                         :is-chosen="isChosen(selections, row.driver, row.id)"
-                        :selection-change-number="changeNumberOf(selections, row.driver)"
+                        :selection-change-number="
+                            changeNumberOf(selections, row.driver)
+                        "
                         :now="now"
                         @sign-in-again="resumeOrAgain(row)"
                     >
@@ -152,7 +183,8 @@ function resumeOrAgain(row: AccountRowData): void {
             :methods="data.methods"
             :attempts="data.attempts"
             :rows="data.rows"
-            @close="request = null"
+            @close="closeWizard"
         />
+        <p class="sr-only" role="status">{{ announcement }}</p>
     </div>
 </template>

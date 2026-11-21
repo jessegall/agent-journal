@@ -32,7 +32,12 @@ const props = defineProps<{
     rows: AccountRowData[];
 }>();
 
-const emit = defineEmits<{ close: [] }>();
+/**
+ * How the wizard was closed: with its sign-in left waiting, with it cancelled, or with nothing running.
+ */
+const emit = defineEmits<{
+    close: [ending: 'waiting' | 'cancelled' | 'closed'];
+}>();
 
 const driver = ref('claude-code');
 const method = ref<SignInMethod | null>(null);
@@ -215,13 +220,22 @@ function continueWithChoice(): void {
     }
 }
 
+/**
+ * Back during a live task cancels it and returns to the choice once the host acknowledges the cancel; a refused or
+ * lost cancel keeps the task where it was.
+ */
 function back(): void {
-    if (followed.value !== undefined && isLive(followed.value)) {
-        actions.cancel(followed.value.id);
+    if (followed.value === undefined || !isLive(followed.value)) {
+        chooseAnotherWay();
+
+        return;
     }
 
-    followedId.value = null;
-    awaited.value = null;
+    actions.cancel(followed.value.id, (isCancelled) => {
+        if (isCancelled) {
+            chooseAnotherWay();
+        }
+    });
 }
 
 function chooseAnotherWay(): void {
@@ -235,8 +249,9 @@ function addAnother(): void {
 }
 
 function close(): void {
+    const isWaiting = followed.value !== undefined && isLive(followed.value);
     actions.forget();
-    emit('close');
+    emit('close', isWaiting ? 'waiting' : 'closed');
 }
 
 /**
@@ -256,12 +271,22 @@ function askToClose(): void {
     close();
 }
 
+/**
+ * Cancel sign-in on closing: the wizard closes once the host acknowledges the cancel, and stays asking otherwise.
+ */
 function cancelAndClose(): void {
-    if (followed.value !== undefined) {
-        actions.cancel(followed.value.id);
+    if (followed.value === undefined) {
+        close();
+
+        return;
     }
 
-    close();
+    actions.cancel(followed.value.id, (isCancelled) => {
+        if (isCancelled) {
+            actions.forget();
+            emit('close', 'cancelled');
+        }
+    });
 }
 </script>
 
@@ -303,6 +328,15 @@ function cancelAndClose(): void {
                     {{ startRefusal }}
                 </p>
             </template>
+        </template>
+        <template v-else-if="step === 2 && actions.cancelling.processing">
+            <div
+                class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"
+                role="status"
+            >
+                <Spinner large class="text-brand" />
+                <p class="text-field text-text-2">Cancelling the sign-in…</p>
+            </div>
         </template>
         <template v-else-if="step === 2 && isOtherMethodRunning">
             <ChosenSignIn :driver="shownDriver" :method="shownMethod!" />

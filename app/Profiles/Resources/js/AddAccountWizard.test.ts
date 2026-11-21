@@ -478,7 +478,69 @@ describe('AddAccountWizard', () => {
             { url: '/accounts/sign-ins/attempt-1', method: 'delete' },
             expect.anything(),
         );
-        expect(view.emitted('close')).toHaveLength(1);
+        expect(view.emitted('close')).toBeUndefined();
+
+        cancelling.submit.mock.calls[0][1].onSuccess();
+        cancelling.submit.mock.calls[0][1].onFinish();
+        expect(view.emitted('close')).toEqual([['cancelled']]);
+        view.unmount();
+    });
+
+    it('goes back to the choice only once the host acknowledges the cancel', async () => {
+        const view = openWizard();
+        await flushPromises();
+        const [, , cancelling] = forms;
+
+        await view
+            .findAll('[role="radio"]')
+            .find((card) => card.text().includes('API key'))!
+            .trigger('click');
+        await button(view, 'Continue').trigger('click');
+        await view.setProps({ attempts: [attempt('waiting')] });
+        await flushPromises();
+
+        await button(view, 'Back').trigger('click');
+        const options = cancelling.submit.mock.calls[0][1];
+        options.onFinish();
+        await flushPromises();
+        expect(view.text()).toContain('Where to get it.');
+
+        await button(view, 'Back').trigger('click');
+        const second = cancelling.submit.mock.calls[1][1];
+        second.onSuccess();
+        second.onFinish();
+        await flushPromises();
+        expect(view.findAll('[role="radio"]').length).toBeGreaterThan(0);
+        view.unmount();
+    });
+
+    it('leaves a waiting sign-in with Keep waiting and ends a sign-in cancelled elsewhere', async () => {
+        const view = openWizard();
+        await flushPromises();
+
+        await view
+            .findAll('[role="radio"]')
+            .find((card) => card.text().includes('API key'))!
+            .trigger('click');
+        await button(view, 'Continue').trigger('click');
+        await view.setProps({ attempts: [attempt('waiting')] });
+        await flushPromises();
+
+        await view.setProps({ attempts: [attempt('cancelled')] });
+        await flushPromises();
+        expect(view.text()).toContain('The sign-in was cancelled.');
+        expect(view.find('input[type="password"]').exists()).toBe(false);
+
+        await view.setProps({
+            attempts: [attempt('waiting', { id: 'attempt-2' })],
+        });
+        await view.setProps({
+            request: { kind: 'resume', attemptId: 'attempt-2' },
+        });
+        await flushPromises();
+        await view.find('button[aria-label="Close"]').trigger('click');
+        await button(view, 'Keep waiting').trigger('click');
+        expect(view.emitted('close')).toEqual([['waiting']]);
         view.unmount();
     });
 });

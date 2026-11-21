@@ -125,6 +125,19 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     }
 
     watch(
+        () => followed.value?.state,
+        (state) => {
+            if (
+                state !== undefined &&
+                !['starting', 'waiting', 'checking'].includes(state)
+            ) {
+                clearTimeout(timer);
+                challenge.value = { address: null, code: null };
+            }
+        },
+    );
+
+    watch(
         () => followed.value?.id,
         (attemptId) => {
             forget();
@@ -206,11 +219,28 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         });
     }
 
-    function cancel(attemptId: string): void {
-        forget();
+    /**
+     * Asks the host to cancel the attempt and says once whether it was: its challenge goes only when the cancel is
+     * acknowledged, and a refused or lost reply keeps the attempt as it was.
+     */
+    function cancel(
+        attemptId: string,
+        settled: (isCancelled: boolean) => void = () => {},
+    ): void {
+        const sending = formSendingHooks();
+        let isCancelled = false;
+
         cancelling.submit(cancelSignIn({ attempt: attemptId }), {
             ...KEEP_THE_WIZARD,
-            ...formSendingHooks(),
+            ...sending,
+            onSuccess: () => {
+                isCancelled = true;
+                forget();
+            },
+            onFinish: () => {
+                sending.onFinish();
+                settled(isCancelled);
+            },
         });
     }
 
