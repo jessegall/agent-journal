@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Agents\Host;
 
 use App\Agents\Commands\ReportWorkspaceRead;
 use App\Agents\Models\WorkspaceRead;
-use App\Agents\Support\HostContext;
+use App\Agents\Values\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\WorkspaceReadReportRequest;
 use Illuminate\Http\JsonResponse;

@@ -25,6 +25,7 @@ use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\AgentRequests\Support\SignedCallSender;
 use App\AgentRequests\Support\StartEnvironment;
 use App\Agents\Actions\ReserveStarts;
+use App\Agents\Actions\SignedHostCalls;
 use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
@@ -36,6 +37,7 @@ use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\DockerImageVerifier as DockerImageVerifierContract;
 use App\Agents\Contracts\DriverConversationResolver;
 use App\Agents\Contracts\HelperCommitImport as HelperCommitImportContract;
+use App\Agents\Contracts\HostCalls;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\MergeAdmission;
@@ -225,6 +227,7 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make(PublishedReleases::class),
             $this->app->make(ServerOrigin::class),
         ));
+        $this->app->bind(HostCalls::class, SignedHostCalls::class);
         $this->app->singleton(ServerOrigin::class, fn () => new ServerOrigin(
             $this->app->make('config')->string('agents.server_origin'),
         ));

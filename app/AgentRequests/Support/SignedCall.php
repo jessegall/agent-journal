@@ -6,6 +6,7 @@ namespace App\AgentRequests\Support;
 
 use App\AgentRequests\Exceptions\CallFieldInvalid;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Request;
 
 /**
  * The identity of one call an agent makes: its id, when the agent issued it, and the digest of its body.
@@ -63,6 +64,21 @@ final readonly class SignedCall
         ];
 
         return self::sign($token, $fields);
+    }
+
+    /**
+     * The signature a request should carry under this token: the envelope over its own method, target and body.
+     */
+    public static function signatureOfRequest(string $token, Request $request, string $callId, int $issuedAt): string
+    {
+        return self::sign($token, [
+            self::PROTOCOL,
+            strtoupper($request->getMethod()),
+            self::targetOf($request->getRequestUri()),
+            $callId,
+            (string) $issuedAt,
+            self::digestOf($request->getContent()),
+        ]);
     }
 
     /**

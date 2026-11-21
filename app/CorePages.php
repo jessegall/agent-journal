@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Connections\Pages\ConnectionsPages;
 use App\Processes\Pages\ProcessPages;
 use App\Profiles\Pages\ProfilesPages;
 use App\Scripts\Pages\ScriptsPages;
@@ -24,6 +25,7 @@ final class CorePages
         return [
             new WebPages()->declarations(),
             new SharingPages()->declarations(),
+            new ConnectionsPages()->declarations(),
             new ProcessPages()->declarations(),
             new ProfilesPages()->declarations(),
             new ScriptsPages()->declarations(),

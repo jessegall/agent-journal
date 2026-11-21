@@ -21,6 +21,18 @@ final readonly class ServerOrigin
     }
 
     /**
+     * The server's name as its owner reads it: its host name, or "this server" while no https origin is set.
+     */
+    public function name(): string
+    {
+        if (! $this->isHttps()) {
+            return 'this server';
+        }
+
+        return (string) parse_url($this->configured, PHP_URL_HOST);
+    }
+
+    /**
      * The origin as https://host or https://host:port, with no path, query or anything a shell would read.
      *
      * @throws ServerOriginInvalid

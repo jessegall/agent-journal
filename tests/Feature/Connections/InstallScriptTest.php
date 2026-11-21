@@ -8,13 +8,20 @@ use App\Agents\Enums\HostProtocolVersion;
 use App\Connections\Exceptions\TicketMalformed;
 use App\Connections\Support\InstallScript;
 use Symfony\Component\Process\Process;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * The script an install line pipes into sh: it parses, holds the ticket once and runs nothing before its last line.
  */
+#[TimeLimit(seconds: 30, reason: 'It runs sh on every cut of the rendered script.')]
 final class InstallScriptTest extends TestCase
 {
+    use CommitsHookRows;
+
+    private const array TABLES = ['project_invitations', 'settings_records'];
+
     private const string VERSION = '1.0.0';
 
     private const string TICKET = 'Tk3_x-9QvZ0aB1cD2eF3gH4iJ5kL6mN7';

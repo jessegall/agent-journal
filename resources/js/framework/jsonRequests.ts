@@ -110,6 +110,18 @@ export async function putJson<T>(
 }
 
 /**
+ * Deletes in the journal and reads whether it was refused; an answer without a body counts as done.
+ */
+export async function deleteJson(url: string): Promise<JsonReply<null>> {
+    const response = await send('DELETE', url, {});
+    if (response.status === 204) {
+        return { ok: true, value: null };
+    }
+
+    return replyOf<null>(response);
+}
+
+/**
  * Deletes in the journal without reading the answer, so it also goes out while the page is hidden.
  */
 export async function deleteLeaving(url: string): Promise<void> {

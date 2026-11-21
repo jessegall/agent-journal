@@ -52,6 +52,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // An install line's ticket and a relay's credential never reach a flashed session or an exception report.
+        $exceptions->dontFlash(['ticket', 'hostCredential']);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

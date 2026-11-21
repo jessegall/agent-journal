@@ -67,6 +67,9 @@ Comments
 Configure a gateway
 Confirm
 Confirm disabling
+Connect a project
+Connecting lets {{ data.serverName }} direct an agent that can read and change the files of that project.
+Connecting projects is switched off on this server.
 Continue
 Continues on its own
 Contract
@@ -111,10 +114,12 @@ Full screen
 Gateway
 Gateway runtime
 Gateways
+Generate install line
 Home
 How to sign in
 Idle
 Import
+Install line
 Invalid settings
 It arrived
 It has no email, so give it a name you'll recognise.
@@ -146,6 +151,7 @@ Name
 Name of the layout
 Name of the new layout
 Name this account
+Needs an update
 Needs sign-in
 Network
 New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
@@ -164,6 +170,7 @@ Not run yet.
 Not shared yet
 Nothing is open in this pane.
 Off
+Offline
 Offline: start the sharing service.
 Older entries
 Older shares
@@ -188,6 +195,7 @@ Paste a key from the Anthropic Console.
 Paste a key from the OpenAI platform. You pay for what agents use.
 Paste a token made with claude setup-token.
 Paste it below and send it.
+Paste it in a terminal in the project folder. It works once, until {{ new Date(expiresAt).toLocaleTimeString() }}.
 Plans
 Pool empty
 Pool too large
@@ -222,6 +230,7 @@ Remove stored output ({{ storedBytes }} bytes)
 Removed
 Removing
 Rename
+Replace
 Reply
 Requests
 Reset layout
@@ -233,8 +242,11 @@ Retry cleanup
 Reveal address
 Review this proposal
 Revision {{ revision.revision }}: {{ revision.operation }} ({{ revision.owner }})
+Revoke
+Revoked
 Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.activeRevision}` }}
 Rules
+Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }}.
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
 Runs
 Runtimes
@@ -248,6 +260,7 @@ Save the current layout to it
 Saved
 Secrets
 Send code
+Setting up
 Setup token
 Share
 Share for
@@ -379,6 +392,7 @@ to
 tools
 unresolved
 updated {{ ageSeconds().toFixed(1) }} s ago
+{{ binding.projectLabel }} on {{ binding.machineLabel }}
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}

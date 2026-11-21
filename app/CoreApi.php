@@ -557,6 +557,14 @@ use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
+use App\Connections\Commands\IssueProjectInvitation;
+use App\Connections\Commands\RecoverProjectBinding;
+use App\Connections\Commands\RedeemProjectInvitation;
+use App\Connections\Commands\RevokeProjectBinding;
+use App\Connections\Commands\RevokeProjectInvitation;
+use App\Connections\Values\BindingFolder;
+use App\Connections\Values\IssuedInvitation;
+use App\Connections\Values\Redemption;
 use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Attributes\RequiresListener;
 use App\Contracts\CommandHandler;
@@ -1996,6 +2004,9 @@ final class CoreApi
                 SharedContent::class,
                 ShareSelectedTarget::class,
                 GatewayConfiguration::class,
+                IssuedInvitation::class,
+                Redemption::class,
+                BindingFolder::class,
                 GatewaySettings::class,
                 GatewayOperation::class,
                 GatewayEndpoint::class,
@@ -2236,6 +2247,11 @@ final class CoreApi
                 RetryShare::class,
                 ConfigureShareGateway::class,
                 DisableShareGateway::class,
+                IssueProjectInvitation::class,
+                RevokeProjectInvitation::class,
+                RedeemProjectInvitation::class,
+                RecoverProjectBinding::class,
+                RevokeProjectBinding::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

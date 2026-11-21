@@ -16,4 +16,5 @@ enum Icon: string
     case Docs = 'docs';
     case Activity = 'activity';
     case Accounts = 'accounts';
+    case Connections = 'connections';
 }

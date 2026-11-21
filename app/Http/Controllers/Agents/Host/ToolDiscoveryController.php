@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Agents\Host;
 
 use App\Agents\Contracts\ToolDiscovery;
 use App\Agents\Models\AgentRuntime;
-use App\Agents\Support\HostContext;
+use App\Agents\Values\HostContext;
 use Illuminate\Http\JsonResponse;
 
 /**
