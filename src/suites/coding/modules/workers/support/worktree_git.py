@@ -702,12 +702,24 @@ class WorktreeGit:
         if FileAccess.exists(Path(worktree.folder)):
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", worktree.folder)
         if FileAccess.exists(Path(worktree.folder)):
-            FileAccess.rmtree(worktree.folder)
+            self.delete_folder(Path(worktree.folder))
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
         if not self.is_merged(folder, worktree.base_branch, worktree.branch):
             return True
         self.git(folder, GIT_LIMIT_SECONDS, "branch", "-D", worktree.branch)
         return False
+
+    # a folder something still writes into, such as a container filling vendor, cannot be deleted whole: it is moved
+    # aside so the worktree's place is free, and what can be deleted of it is
+    @staticmethod
+    def delete_folder(path: Path) -> None:
+        try:
+            FileAccess.rmtree(path)
+        except OSError:
+            aside = path.with_name(f"{path.name}.removed")
+            FileAccess.rmtree(aside, ignore_errors=True)
+            FileAccess.rename(path, aside)
+            FileAccess.rmtree(aside, ignore_errors=True)
 
     # The folder is checked out on a branch that is not the worktree's; a folder with no branch, left on a commit by an
     # interrupted rebase, is still its worker's.
