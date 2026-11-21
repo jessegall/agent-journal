@@ -29,7 +29,7 @@ func TestUndoTakesOutWhatTheInstallerAddedAndKeepsWhatChangedSince(t *testing.T)
 		t.Fatal(err)
 	}
 
-	kept, err := MachineChanges{StateFolder: state}.Undo()
+	undo, err := MachineChanges{StateFolder: state}.Undo()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,8 +37,11 @@ func TestUndoTakesOutWhatTheInstallerAddedAndKeepsWhatChangedSince(t *testing.T)
 	if content, _ := os.ReadFile(zshrc); string(content) != "alias ll='ls -l'" {
 		t.Fatalf("the startup file reads %q", content)
 	}
-	if len(kept) != 1 || kept[0] != bashrc {
-		t.Fatalf("kept %v, want only the file holding the stanza twice", kept)
+	if len(undo.Kept) != 1 || undo.Kept[0].Path != bashrc {
+		t.Fatalf("kept %v, want only the file holding the stanza twice", undo.Kept)
+	}
+	if len(undo.Removed) != 2 {
+		t.Fatalf("removed %v, want the unchanged startup file and the link", undo.Removed)
 	}
 	if _, err := os.Lstat(link); !os.IsNotExist(err) {
 		t.Fatalf("the journal link is still there: %v", err)
