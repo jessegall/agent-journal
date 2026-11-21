@@ -283,7 +283,8 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 }
 
 // inChildWorktree prepares the linked worktree of a connected project's child before its process exists, keeps the
-// runtime and its start on the claim's receipt, and answers the start with the worktree as the runtime's folder.
+// runtime and its start on the claim's receipt, serves the Git broker in it, and answers the start with the worktree
+// as the runtime's folder.
 func (opener runtimeOpener) inChildWorktree(runtimeID string, prepared host.PreparedStart) (host.PreparedStart, error) {
 	checkout := prepared.Claim.ChildCheckout
 	claim := host.WorktreeClaim{ClaimID: checkout.ClaimID, Generation: checkout.Generation,
@@ -295,6 +296,12 @@ func (opener runtimeOpener) inChildWorktree(runtimeID string, prepared host.Prep
 	if err := opener.worktrees.RecordRuntime(receipt, runtimeID, prepared.Claim.StartKey); err != nil {
 		return host.PreparedStart{}, err
 	}
+	// The child changes Git only through the broker of fixed operations, served in its worktree's private folder.
+	listener, err := host.ListenBroker(receipt.Path)
+	if err != nil {
+		return host.PreparedStart{}, fmt.Errorf("runtime %s: its Git broker was not served: %w", runtimeID, err)
+	}
+	go host.ServeBroker(listener, host.GitBroker{Checkout: receipt.Path, Writes: checkout.Writes, Git: "git"})
 	prepared.Grant.Runtime.Folder = receipt.Path
 
 	return prepared, nil
