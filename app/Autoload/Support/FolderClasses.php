@@ -9,7 +9,8 @@ use ReflectionClass;
 
 /**
  * The classes of one type a folder declares, read through Composer's PSR-4 roots, so a list that mirrors a folder is
- * found from the folder instead of written out by hand. Each folder is listed once per process (CodeFiles).
+ * found from the folder instead of written out by hand. Each folder is listed once per process (CodeFiles), and the
+ * classes found in it are kept for the process (KnownFolderClasses).
  */
 final readonly class FolderClasses
 {
@@ -23,6 +24,21 @@ final readonly class FolderClasses
      * @return list<class-string<T>>
      */
     public static function in(string $folders, string $type): array
+    {
+        $found = KnownFolderClasses::in($folders, $type, fn () => self::read($folders, $type));
+
+        return array_values(array_filter($found, fn (string $class) => is_a($class, $type, true)));
+    }
+
+    /**
+     * The classes of the type in the process's one listing of the folders.
+     *
+     * @template T of object
+     *
+     * @param  class-string<T>  $type
+     * @return list<class-string<T>>
+     */
+    private static function read(string $folders, string $type): array
     {
         $names = Psr4ClassNames::fromComposer();
         $code = CodeFiles::ofProcess();

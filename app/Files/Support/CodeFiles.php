@@ -136,9 +136,10 @@ final class CodeFiles
      */
     private function counted(FilePath $path, Closure $read): mixed
     {
-        $result = $read();
-        $this->reads[$path->relative] = $this->readCount($path) + 1;
-
-        return $result;
+        try {
+            return $read();
+        } finally {
+            $this->reads[$path->relative] = $this->readCount($path) + 1;
+        }
     }
 }

@@ -1748,6 +1748,8 @@ class	CloseTerminalViewHandler
 class	CloseWorkChain
 class	CloseWorkChainHandler
 class	ClosedFolders
+class	CodeFiles
+class	CodeReadOutsideProject
 class	CodeReview
 class	CodeReviewDecisions
 class	CodeReviewRefused
@@ -8828,6 +8830,16 @@ method	CloseWorkChainHandler::handle()
 method	ClosedFolders::__construct()
 method	ClosedFolders::assertNotClosed()
 method	ClosedFolders::closedIn()
+method	CodeFiles::__construct()
+method	CodeFiles::assertProject()
+method	CodeFiles::counted()
+method	CodeFiles::file()
+method	CodeFiles::folder()
+method	CodeFiles::ofProcess()
+method	CodeFiles::over()
+method	CodeFiles::projectPathOf()
+method	CodeFiles::readCount()
+method	CodeReadOutsideProject::for()
 method	CodeReview::casts()
 method	CodeReview::decision()
 method	CodeReview::failImport()
@@ -10905,6 +10917,8 @@ method	FileRules::flags()
 method	FileRules::paths()
 method	FileRules::rule()
 method	FileUnreadable::at()
+method	Files::codeFile()
+method	Files::codeFolder()
 method	Files::digest()
 method	Files::exists()
 method	Files::filePathOf()
@@ -10975,6 +10989,7 @@ method	FolderEntries::isEmpty()
 method	FolderEntries::paths()
 method	FolderEntries::sorted()
 method	FolderEntry::__construct()
+method	FolderEntry::isFile()
 method	FolderEntry::isFolder()
 method	FolderEntry::name()
 method	FolderLoop::at()
@@ -12094,6 +12109,8 @@ method	LiveShareStatus::isPubliclyShared()
 method	LoadMigrations::__construct()
 method	LoadMigrations::__invoke()
 method	LocalFiles::__construct()
+method	LocalFiles::codeFile()
+method	LocalFiles::codeFolder()
 method	LocalFiles::decoded()
 method	LocalFiles::digest()
 method	LocalFiles::exists()
@@ -13493,6 +13510,7 @@ method	PipelineRunner::runOf()
 method	PipelineRunner::runSteps()
 method	PipelineRunner::sequence()
 method	PipelineRunner::step()
+method	Place::closedFolders()
 method	Place::folderMode()
 method	Place::isPrivate()
 method	Place::notPrivate()
@@ -14475,6 +14493,7 @@ method	Psr4ClassNames::__construct()
 method	Psr4ClassNames::classOf()
 method	Psr4ClassNames::fromComposer()
 method	Psr4ClassNames::readComposer()
+method	Psr4ClassNames::withoutSteps()
 method	PublicAddresses::isPublic()
 method	PublicComment::__construct()
 method	PublicCommentPage::__construct()
@@ -23456,6 +23475,13 @@ property	CloseWorkChainHandler::$chains
 property	CloseWorkChainHandler::$owner
 property	ClosedFolders::$config
 property	ClosedFolders::$roots
+property	CodeFiles::$confinement
+property	CodeFiles::$files
+property	CodeFiles::$folders
+property	CodeFiles::$process
+property	CodeFiles::$projectRoot
+property	CodeFiles::$reads
+property	CodeFiles::$walker
 property	CodeReviewDecisions::$admission
 property	CodeReviewDecisions::$asks
 property	CodeReviewDecisions::$assignments
@@ -24643,6 +24669,7 @@ property	FlowNodeData::$order
 property	FlowNodeData::$rank
 property	FlowNodeData::$type
 property	FlowShape::$ports
+property	FolderClasses::$found
 property	FolderEntries::$entries
 property	FolderEntry::$fingerprint
 property	FolderEntry::$path
@@ -25283,6 +25310,7 @@ property	ListenerOwnership::$registry
 property	ListenerPolicy::$ownership
 property	ListenerPolicy::$runner
 property	LoadMigrations::$app
+property	LocalFiles::$code
 property	LocalFiles::$confinement
 property	LocalFiles::$contents
 property	LocalFiles::$reading
@@ -30721,6 +30749,7 @@ variable	$fromTraits
 variable	$frontMatter
 variable	$frozen
 variable	$full
+variable	$function
 variable	$gated
 variable	$gatewayClass
 variable	$gatewayKeys
@@ -31038,6 +31067,7 @@ variable	$needed
 variable	$negation
 variable	$negationStart
 variable	$networkRead
+variable	$new
 variable	$newLevel
 variable	$newProfiles
 variable	$newer
@@ -31255,6 +31285,7 @@ variable	$provider
 variable	$providerClass
 variable	$pruned
 variable	$pruning
+variable	$publicNames
 variable	$publication
 variable	$publicationId
 variable	$publications

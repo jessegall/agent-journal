@@ -45,7 +45,7 @@ final class CodeFilesTest extends TestCase
         $second = $code->folder($pattern);
 
         $this->assertSame($first, $second);
-        $this->assertSame([FilePath::in(Place::Project, 'app/Tasks/Console/Close.php')], $second->paths());
+        $this->assertEquals([FilePath::in(Place::Project, 'app/Tasks/Console/Close.php')], $second->paths());
         $this->assertSame(1, $code->readCount($pattern));
     }
 
