@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Hooks;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Contracts\StackInspectionQuery;
+use App\Hooks\Inspection\Contracts\StackInspectionQuery;
 use Illuminate\Http\JsonResponse;
 
 /**

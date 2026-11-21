@@ -6,7 +6,7 @@ namespace App\Hooks\Events;
 
 use App\Agents\Values\StackTarget;
 use App\Contracts\Event;
-use App\Hooks\Inputs\ToolResult;
+use App\Hooks\Inputs\Values\ToolResult;
 
 /**
  * An agent's tool call finished, raised inside the hook call after the replay check: listeners record what the call

@@ -6,13 +6,13 @@ namespace Tests\Feature\Hooks;
 
 use App\Agents\Models\AgentRuntime;
 use App\Bus\Support\OperationDeadline;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Inputs\DriverToolInput;
+use App\Hooks\Inputs\Values\DriverToolInput;
+use App\Hooks\References\StateReference;
 use App\Hooks\Stack\HookAnswer;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Models\ProcessRun;

@@ -6,8 +6,8 @@ namespace Tests\Fixtures\Hooks;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Stack\Contracts\StateFactory;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Stack\Frame;
+use App\Hooks\References\StateReference;
+use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\States\AgentState;
 use Carbon\CarbonImmutable;
 use Closure;

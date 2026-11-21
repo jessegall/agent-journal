@@ -10,7 +10,7 @@ use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Hooks\Contracts\ActorWorkStacks;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
 use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;

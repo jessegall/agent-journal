@@ -6,13 +6,13 @@ namespace Tests\Unit\Hooks;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Exceptions\RepeatedCommandRewrite;
 use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\References\StateReference;
 use App\Hooks\Stack\AgentStack;
-use App\Hooks\Stack\Frame;
+use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Stack\HookRewrite;
 use App\Hooks\States\AgentState;

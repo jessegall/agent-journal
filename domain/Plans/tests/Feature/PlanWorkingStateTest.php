@@ -10,7 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Stack\Frame;
+use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Storage\FrameRecord;
 use Domain\Plans\Commands\StartPlan;

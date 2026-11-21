@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Contracts;
 
-use App\Hooks\Exceptions\WorkOccurrenceStale;
-use App\Hooks\Values\WorkOccurrence;
+use App\Hooks\References\Exceptions\WorkOccurrenceStale;
+use App\Hooks\References\WorkOccurrence;
 
 /**
  * What the owner of a ticking state type answers for the work behind its frames: whether one occurrence is still live,

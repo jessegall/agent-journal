@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Models;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\Support\AgentSessionScope;
 use App\Hooks\Storage\RecordedAnswer;
 use App\Hooks\Storage\RecordedAnswerCast;

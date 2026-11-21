@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Drivers\Enums\HookDriver;
+use App\Hooks\Compatibility\DriverCompatibility;
+use App\Hooks\Compatibility\Exceptions\DriverArrangementUnproven;
 use App\Hooks\Enums\AuthenticationArrangement;
 use App\Hooks\Enums\DriverEvidence;
-use App\Hooks\Exceptions\DriverArrangementUnproven;
-use App\Hooks\Support\DriverCompatibility;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

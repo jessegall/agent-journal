@@ -7,7 +7,7 @@ namespace App\Mcp\Support;
 use App\Agents\Support\AgentContext;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\CurrentState;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
 use App\Mcp\Data\ToolResult;
 use Illuminate\Contracts\Container\Container;
 

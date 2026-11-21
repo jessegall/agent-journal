@@ -9,7 +9,7 @@ use App\Agents\Values\ProfileDefaults;
 use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartProposal;
-use App\Hooks\Support\DriverCompatibility;
+use App\Hooks\Compatibility\DriverCompatibility;
 use App\Profiles\Enums\InstancePolicy;
 
 /**

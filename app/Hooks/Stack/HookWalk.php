@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Exceptions\BottomStateDelegated;
 use App\Hooks\Exceptions\InvalidHookAnswer;
 use App\Hooks\Exceptions\StateBelowTopPushed;
 use App\Hooks\Inputs\Contracts\HookInput;
+use App\Hooks\References\StateReference;
+use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Storage\WalkStep;
 use Closure;
 
@@ -51,7 +52,7 @@ final class HookWalk
         $decision = $frame->answer($input);
         $answer = $decision->answerType();
 
-        $this->steps[] = WalkStep::fromDecision($selected, $decision);
+        $this->steps[] = $selected->walkStep($decision);
 
         if ($frame->isBottom() && $decision->isDelegating()) {
             throw BottomStateDelegated::for($frame->typeKey(), $input->methodName(), $this->visitedFrames());

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks;
 
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\States\AgentState;
 

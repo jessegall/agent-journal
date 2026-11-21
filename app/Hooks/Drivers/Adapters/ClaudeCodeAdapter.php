@@ -1,0 +1,261 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Hooks\Drivers\Adapters;
+
+use App\Agents\Values\Operation;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Actions\CheckProtectedResources;
+use App\Hooks\Actions\RecordDriverFailure;
+use App\Hooks\Drivers\Contracts\DriverAdapter;
+use App\Hooks\Drivers\Contracts\DriverCall;
+use App\Hooks\ToolNames\Enums\ClaudeCodeTool;
+use App\Hooks\Enums\ContextStartType;
+use App\Hooks\Enums\FileAccess;
+use App\Hooks\Enums\HookEvent;
+use App\Hooks\Enums\RewriteSupport;
+use App\Hooks\Exceptions\UnsupportedHook;
+use App\Hooks\Inputs\Values\CompactionDetails;
+use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\Values\DriverToolInput;
+use App\Hooks\Inputs\FailureDetails;
+use App\Hooks\Inputs\Values\FileChange;
+use App\Hooks\Inputs\Values\FileChanges;
+use App\Hooks\Inputs\FileEditRequested;
+use App\Hooks\Inputs\Values\HookIdentity;
+use App\Hooks\Inputs\Values\PromptDetails;
+use App\Hooks\Inputs\PromptSubmitted;
+use App\Hooks\Inputs\ProtectedFileRead;
+use App\Hooks\Inputs\Values\SessionEndDetails;
+use App\Hooks\Inputs\SessionEnded;
+use App\Hooks\Inputs\SessionStarted;
+use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\Inputs\Values\StopDetails;
+use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Inputs\ToolRequested;
+use App\Hooks\Stack\HookAnswer;
+use App\Hooks\Compatibility\DriverCompatibility;
+use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Enums\ShellDialect;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReplies;
+use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Drivers\Adapters\GuardedFiles;
+use App\Hooks\Drivers\HookPayload;
+use App\Hooks\Drivers\Adapters\JournalToolCall;
+use App\Hooks\Drivers\JournalTools;
+use App\Hooks\Drivers\Adapters\JudgedCall;
+use App\Hooks\Drivers\Adapters\NotificationCall;
+use App\Hooks\Drivers\Adapters\UnjudgedCall;
+
+/**
+ * Reads Claude Code's hook payloads into the journal's inputs and renders its answers as Claude Code replies.
+ * A callback or tool it does not map is refused by name. A journal allow never becomes a native approval.
+ */
+final readonly class ClaudeCodeAdapter implements DriverAdapter
+{
+    private const string DRIVER = 'Claude Code';
+
+    public function __construct(
+        private ShellCommandParser $parser,
+        private JournalTools $journalTools,
+        private GuardedFiles $files,
+        private RecordDriverFailure $failures,
+        private CheckProtectedResources $protection,
+    ) {}
+
+    public function capabilities(): DriverCapabilities
+    {
+        return new DriverCapabilities(
+            self::DRIVER,
+            'Claude Code 2.1.323, hook payloads captured on 2026-11-17',
+            [
+                'onSessionStart',
+                'onPrompt',
+                'onCompaction',
+                'onShellCommand',
+                'onFileEdit',
+                'onToolRequested',
+                'onStop',
+                'onToolFinished',
+                'onSessionEnd',
+            ],
+            RewriteSupport::WithoutApproval,
+        );
+    }
+
+    public function compatibility(): DriverCompatibility
+    {
+        return DriverCompatibility::pinned(HookDriver::ClaudeCode);
+    }
+
+    public function modelArguments(string $model): array
+    {
+        return HookDriver::ClaudeCode->modelArguments($model);
+    }
+
+    public function callFor(HookPayload $hookInput, HookIdentity $hook): DriverCall
+    {
+        $event = $hookInput->event()->getOrCall(
+            static fn () => throw UnsupportedHook::for(self::DRIVER, $hookInput->hookEventName),
+        );
+
+        return match ($event) {
+            HookEvent::SessionStart => $this->startCall($hookInput, $hook),
+            HookEvent::UserPromptSubmit => new JudgedCall(
+                new PromptSubmitted(
+                    $hook,
+                    new PromptDetails(
+                        $hookInput->nativePromptId() ?? $hook->hookId,
+                        $hookInput->promptText(),
+                        $hookInput->nativePromptId(),
+                    ),
+                ),
+                fn (HookAnswer $answer) => DriverReplies::prompt($answer),
+            ),
+            HookEvent::PreToolUse => $this->toolCall($hookInput, $hook),
+            HookEvent::PostToolUse => $this->callsJournalTools($hookInput)
+                ? JournalToolCall::finished()
+                : JudgedCall::forFinishedTool($hook, $hookInput),
+            HookEvent::Stop => new JudgedCall(
+                new StopRequested($hook, new StopDetails($hook->hookId, $hookInput->isStopContinuation())),
+                fn (HookAnswer $answer) => DriverReplies::stop($answer),
+            ),
+            HookEvent::StopFailure => new NotificationCall(
+                $hook,
+                new FailureDetails(HookDriver::ClaudeCode->value, $hookInput->driverFailure()),
+                $this->failures,
+            ),
+            HookEvent::SessionEnd => new JudgedCall(
+                new SessionEnded($hook, new SessionEndDetails($hookInput->endReason())),
+                fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionEnd, $answer),
+            ),
+        };
+    }
+
+    public function renderShell(HookAnswer $answer, DriverToolInput $original): DriverReply
+    {
+        return DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval);
+    }
+
+    public function renderStop(HookAnswer $answer): DriverReply
+    {
+        return DriverReplies::stop($answer);
+    }
+
+    /**
+     * A start after a compaction is the compaction itself, identified by this callback's id, which its retries share.
+     */
+    private function startCall(HookPayload $hookInput, HookIdentity $hook): DriverCall
+    {
+        $source = $hookInput->startSource();
+        $input = $source === ContextStartType::Compact
+            ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
+            : new SessionStarted($hook, $hookInput->startDetails());
+
+        return new JudgedCall(
+            $input,
+            fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionStart, $answer),
+        );
+    }
+
+    /**
+     * After a call to the journal's own tools nothing walks the stack again; after any other tool the journal is told.
+     */
+    private function callsJournalTools(HookPayload $hookInput): bool
+    {
+        $tool = ClaudeCodeTool::tryFrom($hookInput->toolNameText());
+
+        return $this->journalTools->names($hookInput->toolNameText())
+            || ($tool instanceof ClaudeCodeTool && $tool->discoversJournalTools());
+    }
+
+    private function toolCall(HookPayload $hookInput, HookIdentity $hook): DriverCall
+    {
+        if ($this->journalTools->names($hookInput->toolNameText())) {
+            return JournalToolCall::starting();
+        }
+
+        $tool = ClaudeCodeTool::named($hookInput->toolNameText());
+
+        if ($tool->canReadResources()) {
+            $this->journalTools->requireJournalResource(self::DRIVER, $hookInput);
+        }
+
+        if ($tool->discoversJournalTools()) {
+            return JournalToolCall::starting();
+        }
+
+        if ($tool->isFileReader()) {
+            if ($this->protection->refusesRead($hook->sessionId, $hookInput->fileRead())) {
+                return new UnjudgedCall(DriverReplies::denyProtected());
+            }
+
+            return $this->files->callUnlessRefused(
+                $hook,
+                FileAccess::Read,
+                $hookInput->toolArguments()->presentTexts('file_path', 'path'),
+                fn () => $this->judgedTool($hook, $tool->operation($hookInput->toolArguments()), $hookInput),
+            );
+        }
+
+        if ($tool === ClaudeCodeTool::Bash && $this->refusesCommand($hookInput, $hook)) {
+            return new UnjudgedCall(DriverReplies::denyProtected());
+        }
+
+        if ($tool === ClaudeCodeTool::Bash) {
+            $original = $hookInput->toolArguments();
+            $command = $this->parser->parse($hookInput->argument('command'), ShellDialect::Bash);
+
+            return $this->files->guardShell($hook, $command, fn () => new JudgedCall(
+                new ShellCommandRequested($hook, $command),
+                fn (HookAnswer $answer) => $this->renderShell($answer, $original),
+            ));
+        }
+
+        if ($tool->changesFiles()) {
+            $original = $hookInput->toolArguments();
+            $path = $hookInput->argument('file_path', 'notebook_path');
+
+            if ($this->protection->refusesChange(ProtectedFileRead::resolve($hookInput->workFolder(), $path))) {
+                return new UnjudgedCall(DriverReplies::denyProtected());
+            }
+
+            $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
+
+            return $this->files->callUnlessRefused(
+                $hook,
+                FileAccess::Write,
+                [$path],
+                fn () => new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original)),
+            );
+        }
+
+        if ($tool->keepsOwnTaskList()) {
+            return new UnjudgedCall(DriverReplies::allowTool([]));
+        }
+
+        return $this->judgedTool($hook, $tool->operation($hookInput->toolArguments()), $hookInput);
+    }
+
+    /**
+     * A tool call the walk judges by its declared operation; the ready bottom allows it only when the policy grants it.
+     */
+    private function judgedTool(HookIdentity $hook, Operation $operation, HookPayload $hookInput): DriverCall
+    {
+        $original = $hookInput->toolArguments();
+
+        return new JudgedCall(
+            new ToolRequested($hook, $operation),
+            fn (HookAnswer $answer) => $this->renderShell($answer, $original),
+        );
+    }
+
+    private function refusesCommand(HookPayload $hookInput, HookIdentity $hook): bool
+    {
+        $command = $hookInput->argument('command');
+
+        return $this->protection->refusesCommand($hook->sessionId, $command, $hookInput->workFolder());
+    }
+}

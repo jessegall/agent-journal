@@ -9,7 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\AgentSession;
 use App\Contracts\Support\InsertsAbsentRows;
 use App\Hooks\Enums\StopAttemptState;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\Support\AgentSessionScope;
 use App\Hooks\Values\StopAttemptReference;
 use App\Links\Support\Linkable;

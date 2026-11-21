@@ -7,9 +7,10 @@ namespace App\Hooks\Stack;
 use App\Actors\Contracts\ServerClock;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\ConditionalStateType;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
+use App\Hooks\References\StateReference;
 use App\Hooks\Stack\Contracts\StateFactory;
+use App\Hooks\Stack\Frames\Frame;
 use Illuminate\Support\Str;
 
 /**

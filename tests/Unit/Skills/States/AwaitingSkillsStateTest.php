@@ -6,11 +6,11 @@ namespace Tests\Unit\Skills\States;
 
 use App\Hooks\Decisions\Denied;
 use App\Hooks\Enums\FileOperation;
-use App\Hooks\Inputs\FileChange;
-use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
-use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\Inputs\Values\FileChange;
+use App\Hooks\Inputs\Values\FileChanges;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Processes\Enums\CommandEffect;
 use App\Processes\Enums\CommandType;
 use App\Processes\Enums\ParseOutcome;

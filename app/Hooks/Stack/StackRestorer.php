@@ -11,6 +11,7 @@ use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Exceptions\StateSchemaUnknown;
 use App\Hooks\Stack\Contracts\StateFactory;
+use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 

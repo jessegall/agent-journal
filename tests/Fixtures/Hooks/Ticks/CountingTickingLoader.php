@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
-use App\Hooks\Contracts\TickableStateLoader;
+use App\Hooks\StateLoading\Contracts\TickableStateLoader;
 use App\Hooks\Contracts\WorkOccurrenceGuard;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Decisions\StateSet;
+use App\Hooks\StateLoading\StateSet;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\States\AgentState;
 

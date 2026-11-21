@@ -6,7 +6,7 @@ namespace App\Hooks\Models;
 
 use App\Agents\Enums\DriverFailure;
 use App\Contracts\Support\InsertsAbsentRows;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;

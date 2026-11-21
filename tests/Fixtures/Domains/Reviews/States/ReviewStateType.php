@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews\States;
 
-use App\Hooks\Contracts\StateLoader;
+use App\Hooks\StateLoading\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Decisions\StateSet;
+use App\Hooks\StateLoading\StateSet;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\States\AgentState;
 use App\Settings\Support\CurrentSettingsResolver;

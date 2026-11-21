@@ -6,10 +6,10 @@ namespace Tests\Feature\Hooks\Programs;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Drivers\ClaudeCodeAdapter;
+use App\Hooks\Drivers\Adapters\ClaudeCodeAdapter;
+use App\Hooks\Drivers\Adapters\JudgedCall;
+use App\Hooks\Drivers\Adapters\NotificationCall;
 use App\Hooks\Drivers\DriverReply;
-use App\Hooks\Drivers\JudgedCall;
-use App\Hooks\Drivers\NotificationCall;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\ContextCompacted;

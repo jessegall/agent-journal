@@ -12,7 +12,7 @@ use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\InvalidObservationAnswer;
 use App\Hooks\Exceptions\InvalidShellAnswer;
 use App\Hooks\Exceptions\InvalidStopAnswer;
-use App\Hooks\Inputs\DriverToolInput;
+use App\Hooks\Inputs\Values\DriverToolInput;
 use App\Hooks\Stack\HookAnswer;
 
 /**
@@ -78,8 +78,22 @@ final class DriverReplies
         return match ($type) {
             AnswerType::Allow => self::allowTool($answer->context),
             AnswerType::Deny => self::denyTool($answer->decision->refusalReason(), $answer->context),
-            AnswerType::Rewrite => $rewrites->reply($answer, $original),
+            AnswerType::Rewrite => self::rewrite($rewrites, $answer, $original),
             AnswerType::Delegate => throw InvalidShellAnswer::forAnswer($type->value),
+        };
+    }
+
+    /**
+     * A rewrite the program takes without approval runs the replacement line; one that needs approval is refused.
+     */
+    private static function rewrite(RewriteSupport $rewrites, HookAnswer $answer, DriverToolInput $original): DriverReply
+    {
+        return match ($rewrites) {
+            RewriteSupport::WithoutApproval => self::rewriteTool(
+                $original->withCommand($answer->decision->replacementLine()),
+                $answer->context,
+            ),
+            RewriteSupport::NeedsApproval => self::denyTool(self::REWRITE_REFUSAL, $answer->context),
         };
     }
 

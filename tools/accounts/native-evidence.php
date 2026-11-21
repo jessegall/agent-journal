@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace Tools\Accounts;
 
-use App\Hooks\Support\DriverCompatibility;
+use App\Hooks\Compatibility\DriverCompatibility;
 use RuntimeException;
 
 const PASS = 'pass';

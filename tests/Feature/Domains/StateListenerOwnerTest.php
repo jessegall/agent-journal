@@ -10,7 +10,7 @@ use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerOwnership;
 use App\Domains\Support\StateListenerDeclarations;
 use App\Hooks\Declarations\StateMethods;
-use App\Hooks\States\Support\StateTypeRegistry;
+use App\Hooks\StateCatalog\StateTypeRegistry;
 use Tests\Fixtures\Hooks\Declarations\OwnerlessLoader;
 use Tests\Fixtures\Hooks\Declarations\OwnerlessState;
 use Tests\TestCase;

@@ -7,9 +7,10 @@ namespace Tests\Unit\Hooks\Programs;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\UnsupportedHook;
-use App\Hooks\Inputs\DriverToolInput;
+use App\Hooks\Inputs\Values\DriverToolInput;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\States\AgentState;
@@ -56,8 +57,8 @@ final class ProgramCapabilitiesTest extends TestCase
         );
         $original = new DriverToolInput(['command' => 'composer test']);
 
-        $taken = $this->capabilities(RewriteSupport::WithoutApproval)->rewrites->reply($answer, $original);
-        $refused = $this->capabilities(RewriteSupport::NeedsApproval)->rewrites->reply($answer, $original);
+        $taken = DriverReplies::shell($answer, $original, RewriteSupport::WithoutApproval);
+        $refused = DriverReplies::shell($answer, $original, RewriteSupport::NeedsApproval);
 
         $this->assertStringContainsString('"updatedInput":{"command":"journal run tests"}', $taken->stdout);
         $this->assertStringContainsString('"permissionDecision":"deny"', $refused->stdout);

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Decisions;
 
 use App\Hooks\Exceptions\StateReferencesInvalid;
+use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
 
 /**
  * The references of one batch of frames of one state type, in their stack order, at most 100.

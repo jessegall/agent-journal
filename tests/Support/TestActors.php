@@ -8,7 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Values\StackTarget;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Records\Support\RecordIdentity;
 use Domain\Access\Support\AccessSettings;
 

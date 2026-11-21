@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks\Ticks;
 
 use App\Hooks\Contracts\TickableState;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
 use App\Hooks\States\AgentState;
 use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;

@@ -6,8 +6,8 @@ namespace Tests\Unit\Hooks;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Exceptions\TooManyTickCommands;
+use App\Hooks\StateCatalog\StateTypeRegistry;
 use App\Hooks\States\AgentState;
-use App\Hooks\States\Support\StateTypeRegistry;
 use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;

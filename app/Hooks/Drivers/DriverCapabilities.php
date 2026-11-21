@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Drivers;
 
+use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Stack\AgentStack;
@@ -35,7 +36,11 @@ final readonly class DriverCapabilities
      */
     public function finalAnswer(HookAnswer $answer, AgentStack $stackBefore): HookAnswer
     {
-        return $this->rewrites->finalAnswer($answer, $stackBefore);
+        if ($this->rewrites->canRewrite() || ! $answer->isRewrite()) {
+            return $answer;
+        }
+
+        return $answer->replacedBy(Decision::deny(DriverReplies::REWRITE_REFUSAL), $stackBefore);
     }
 
     public function supports(string $hookMethod): bool

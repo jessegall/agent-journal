@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
-use App\Hooks\Values\Answer\RenderedCall;
-use App\Hooks\Values\Answer\SettledCall;
+use App\Hooks\CallStages\RenderedCall;
+use App\Hooks\CallStages\SettledCall;
 use App\Pipelines\Contracts\Pipe;
 
 /**

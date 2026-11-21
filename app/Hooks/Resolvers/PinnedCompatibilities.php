@@ -8,9 +8,9 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Models\Host;
 use App\Agents\Support\ArrangementSetting;
 use App\Drivers\Enums\HookDriver;
+use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Enums\DriverEvidence;
-use App\Hooks\Support\DriverCompatibility;
 
 /**
  * The compatibility of each program's pinned build, as its account-free capture and native procedure recorded it.

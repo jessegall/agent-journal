@@ -8,11 +8,11 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\EngineTargetAccess;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Lifecycle\FrameLifecycle;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Mutations\StatePush;
+use App\Hooks\References\StateReference;
+use App\Hooks\Settlement\FrameLifecycle;
 use App\Hooks\Stack\StackRestorer;
-use App\Hooks\Stack\StatePush;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Support\StackTransaction;
 

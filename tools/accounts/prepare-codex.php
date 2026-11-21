@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 use App\Agents\Enums\TransportProfileType;
 use App\Drivers\Enums\HookDriver;
+use App\Hooks\Compatibility\DriverCompatibility;
+use App\Hooks\Drivers\AccountConfigurationWrite;
 use App\Hooks\Drivers\CodexFolderTrust;
 use App\Hooks\Drivers\CodexJournalServer;
-use App\Hooks\Support\AccountConfigurationWrite;
-use App\Hooks\Support\DriverCompatibility;
 
 require __DIR__.'/../../vendor/autoload.php';
 

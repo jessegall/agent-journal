@@ -8,8 +8,8 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Events\ToolCallFinished;
-use App\Hooks\Inputs\DriverToolInput;
-use App\Hooks\Inputs\ToolResult;
+use App\Hooks\Inputs\Values\DriverToolInput;
+use App\Hooks\Inputs\Values\ToolResult;
 use App\Skills\Listeners\RecordProvenSkillReads;
 
 /**

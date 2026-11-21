@@ -8,7 +8,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandRefused;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
-use App\Hooks\Stack\AdvisoryStackAdmission;
+use App\Hooks\Admission\AdvisoryStackAdmission;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote;

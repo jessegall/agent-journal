@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
+use App\Hooks\CallStages\HookCallStage;
+use App\Hooks\CallStages\LockedCall;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Values\Answer\HookCallStage;
-use App\Hooks\Values\Answer\LockedCall;
 use App\Pipelines\Contracts\Pipe;
 
 /**

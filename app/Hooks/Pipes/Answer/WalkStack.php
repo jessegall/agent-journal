@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
+use App\Hooks\Admission\HookShellAdmission;
+use App\Hooks\CallStages\RestoredCall;
+use App\Hooks\CallStages\WalkedCall;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Stack\HookRewrite;
-use App\Hooks\Stack\HookShellAdmission;
-use App\Hooks\Values\Answer\RestoredCall;
-use App\Hooks\Values\Answer\WalkedCall;
 use App\Pipelines\Contracts\Pipe;
 use Illuminate\Contracts\Container\Container;
 

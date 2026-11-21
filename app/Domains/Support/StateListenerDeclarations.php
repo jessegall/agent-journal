@@ -8,7 +8,7 @@ use App\Hooks\Declarations\StateEventDeclaration;
 use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Declarations\StateMethod;
 use App\Hooks\Declarations\StateMethods;
-use App\Hooks\States\Support\StateTypeRegistry;
+use App\Hooks\StateCatalog\StateTypeRegistry;
 use ReflectionMethod;
 
 /**

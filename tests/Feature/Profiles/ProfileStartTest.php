@@ -32,7 +32,7 @@ use App\Agents\Values\HostCombination;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Enums\HookDriver;
-use App\Hooks\Support\DriverCompatibility;
+use App\Hooks\Compatibility\DriverCompatibility;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\StartProfileMain;
 use App\Profiles\Commands\SwitchAgentDriver;

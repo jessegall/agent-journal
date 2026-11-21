@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Lifecycle;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
 
 /**
  * What a lifecycle method is told: the stack the frame is on, the frame's id and the state it was built from.

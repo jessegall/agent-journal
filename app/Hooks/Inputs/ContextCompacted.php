@@ -11,6 +11,8 @@ use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Inputs\Contracts\HookAnswerer;
 use App\Hooks\Inputs\Contracts\HookInput;
+use App\Hooks\Inputs\Values\CompactionDetails;
+use App\Hooks\Inputs\Values\HookIdentity;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
 use PhpOption\Some;

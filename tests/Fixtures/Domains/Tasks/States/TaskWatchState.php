@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\Tasks\States;
 
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\References\SubjectReference;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
 use App\Hooks\Values\EventCommands;

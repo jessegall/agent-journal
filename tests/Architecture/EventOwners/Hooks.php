@@ -41,7 +41,7 @@ return [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
-            'app/Hooks/Lifecycle/FrameLifecycle.php',
+            'app/Hooks/Settlement/FrameLifecycle.php',
         ],
     ],
     StateTypesRequested::class => [

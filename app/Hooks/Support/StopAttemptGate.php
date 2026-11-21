@@ -16,7 +16,7 @@ use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Enums\StopPreparationState;
 use App\Hooks\Events\HelperStopHeld;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\StopAttempt;
 use App\Hooks\States\Contracts\StopConditionGate;
 use App\Hooks\Values\StopPreparation;

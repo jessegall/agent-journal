@@ -6,14 +6,14 @@ namespace Tests\Unit\Hooks;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SelectionReason;
-use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Inputs\Values\StopDetails;
+use App\Hooks\References\StateReference;
 use App\Hooks\Stack\AgentStack;
-use App\Hooks\Stack\Frame;
+use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Stack\SelectedStateMethod;
 use App\Hooks\Stack\StateMethodSelector;
 use App\Hooks\States\AgentState;

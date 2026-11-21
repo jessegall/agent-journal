@@ -12,7 +12,7 @@ use App\CoreCommands;
 use App\Domains\Contracts\LinkRecordProvider;
 use App\Domains\Contracts\StateProvider;
 use App\Hooks\Events\StateTypesRequested;
-use App\Hooks\States\Support\StateTypeRegistry;
+use App\Hooks\StateCatalog\StateTypeRegistry;
 use App\Links\Support\LinkTypeRegistry;
 use App\Numbers\Contracts\NumberedModelProvider;
 use Domain\Chat\ChatDomain;

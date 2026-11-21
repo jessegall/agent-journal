@@ -13,7 +13,7 @@ declare(strict_types=1);
  */
 
 use App\Drivers\Enums\HookDriver;
-use App\Hooks\Support\DriverCompatibility;
+use App\Hooks\Compatibility\DriverCompatibility;
 
 use function Tools\Accounts\empty_folder;
 use function Tools\Accounts\installed_build;

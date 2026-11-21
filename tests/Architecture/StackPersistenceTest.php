@@ -21,7 +21,7 @@ final class StackPersistenceTest extends TestCase
      * stack, history pruning and the stack row itself.
      */
     private const array SHARED_PATH = [
-        'app/Hooks/Stack/StatePush.php',
+        'app/Hooks/Mutations/StatePush.php',
         'app/Hooks/Actions/EngineStacks.php',
         'app/Hooks/Pipes/Answer/SaveCall.php',
         'app/Hooks/Actions/StartStacks.php',

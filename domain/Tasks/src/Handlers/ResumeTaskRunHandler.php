@@ -8,7 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Desks\Contracts\RunClaims;
 use App\Desks\Exceptions\RunClaimRefused;
 use App\Hooks\Contracts\ActorWorkStacks;
-use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\References\SubjectReference;
 use Domain\Tasks\Commands\ResumeTaskRun;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskResumeCovered;

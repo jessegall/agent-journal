@@ -10,7 +10,7 @@ use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Domains\Support\DomainRegistry;
 use App\Hooks\Stack\StateTypes;
-use App\Hooks\States\Support\ReadyStateLoader;
+use App\Hooks\StateLoading\Loaders\ReadyStateLoader;
 use App\Sharing\Events\ShareActivated;
 use App\Web\Listeners\BroadcastPageChange;
 use Illuminate\Contracts\Foundation\Application;

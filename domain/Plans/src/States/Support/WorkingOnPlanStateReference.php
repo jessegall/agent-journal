@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\States\Support;
 
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferenceFactory;
-use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
 
 /**
  * The stack reference of working on a plan.

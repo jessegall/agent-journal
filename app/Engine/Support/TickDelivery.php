@@ -13,7 +13,7 @@ use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Models\EngineFrameTime;
 use App\Engine\Values\FrameSettlement;
 use App\Engine\Values\TickCandidate;
-use App\Hooks\Exceptions\WorkOccurrenceStale;
+use App\Hooks\References\Exceptions\WorkOccurrenceStale;
 use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Ticks\TickContext;
 use App\Hooks\Values\FrameGrant;

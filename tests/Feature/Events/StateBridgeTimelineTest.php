@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Events;
 
-use App\Hooks\StateEvents\StateEventBridge;
+use App\Hooks\Delivery\StateEventBridge;
 use App\Hooks\StateEvents\StateEventScope;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Events\QueryExecuted;

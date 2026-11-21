@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Hooks\Contracts\StateLoader;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\StateLoading\Contracts\StateLoader;
+use App\Hooks\References\StateReference;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Decisions\StateSet;
+use App\Hooks\StateLoading\StateSet;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\States\AgentState;
 

@@ -9,7 +9,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\UserStack;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
 use App\Operations\Enums\AccessType;
 
 /**

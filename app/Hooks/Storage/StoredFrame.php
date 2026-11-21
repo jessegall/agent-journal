@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Storage;
 
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
+use App\Hooks\References\StateReference;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;

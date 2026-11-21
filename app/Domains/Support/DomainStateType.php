@@ -7,11 +7,11 @@ namespace App\Domains\Support;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\DomainAvailability;
 use App\Hooks\Contracts\ConditionalStateType;
-use App\Hooks\Contracts\RecipientStateLoader;
-use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Decisions\StateSet;
 use App\Hooks\Enums\SessionTransferType;
+use App\Hooks\StateLoading\Contracts\RecipientStateLoader;
+use App\Hooks\StateLoading\Contracts\StateLoader;
+use App\Hooks\StateLoading\StateSet;
 use Closure;
 
 /**

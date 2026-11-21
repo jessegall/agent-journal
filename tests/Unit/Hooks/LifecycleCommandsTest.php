@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Exceptions\TooManyLifecycleCommands;
 use App\Hooks\Lifecycle\LifecycleContext;
+use App\Hooks\References\StateReference;
 use App\Hooks\States\AgentState;
 use App\Hooks\Values\LifecycleCommands;
 use App\Records\Commands\UnlinkRecords;

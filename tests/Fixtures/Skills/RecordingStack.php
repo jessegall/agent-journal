@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Skills;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\AgentStack;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
 
 /**
  * An agent stack that only records what was pushed, for listeners tested outside a hook call.

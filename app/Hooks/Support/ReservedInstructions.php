@@ -7,11 +7,11 @@ namespace App\Hooks\Support;
 use App\Hooks\Commands\FocusInstruction;
 use App\Hooks\Commands\RefreshPlanInstruction;
 use App\Hooks\Commands\ReleaseInstruction;
-use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\LifecycleStage;
 use App\Hooks\Exceptions\InstructionOriginRefused;
 use App\Hooks\Lifecycle\LifecycleOrigin;
 use App\Hooks\Lifecycle\LifecycleOrigins;
+use App\Hooks\References\SubjectReference;
 use App\Hooks\Values\InstructionMarker;
 
 /**

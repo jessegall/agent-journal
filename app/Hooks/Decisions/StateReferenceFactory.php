@@ -6,6 +6,8 @@ namespace App\Hooks\Decisions;
 
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Exceptions\StateTypeMissing;
+use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
 
 /**
  * The base of a domain's state references: the class names its state type once in TYPE_KEY and builds references

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
+use App\Hooks\CallStages\WalkedCall;
 use App\Hooks\Support\AgentMessageDelivery;
-use App\Hooks\Values\Answer\WalkedCall;
 use App\Pipelines\Contracts\Pipe;
 
 /**

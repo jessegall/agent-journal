@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Supervision\States\Support;
 
-use App\Hooks\Contracts\StateLoader;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Decisions\StateSet;
-use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\SessionTransferType;
+use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
+use App\Hooks\StateLoading\Contracts\StateLoader;
+use App\Hooks\StateLoading\StateSet;
 use App\Supervision\Models\AskHop;
 use App\Supervision\States\AnsweringAskState;
 

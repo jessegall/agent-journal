@@ -6,12 +6,13 @@ namespace App\Hooks\Decisions;
 
 use App\Hooks\Contracts\Answer;
 use App\Hooks\Contracts\StackTransition;
+use App\Hooks\Decisions\Enums\SimpleAnswer;
+use App\Hooks\Decisions\Enums\SimpleTransition;
 use App\Hooks\Enums\AnswerType;
-use App\Hooks\Enums\SimpleAnswer;
-use App\Hooks\Enums\SimpleTransition;
 use App\Hooks\Exceptions\ConflictingStackTransition;
 use App\Hooks\Exceptions\NoRefusalReason;
 use App\Hooks\Exceptions\NoReplacementLine;
+use App\Hooks\References\StateReference;
 use App\Hooks\Values\WithContext;
 
 /**

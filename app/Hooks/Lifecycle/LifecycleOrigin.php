@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Lifecycle;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\LifecycleStage;
+use App\Hooks\References\StateReference;
 
 /**
  * Where a lifecycle command comes from: the stack, the settled change, the place of the answer in it, the frame and

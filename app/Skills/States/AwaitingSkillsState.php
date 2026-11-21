@@ -13,9 +13,9 @@ use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Lifecycle\LifecycleContext;
-use App\Hooks\Stack\StackVerdict;
 use App\Hooks\States\AgentState;
 use App\Hooks\Values\LifecycleCommands;
+use App\Hooks\Values\StackVerdict;
 use App\Skills\Enums\PublicationState;
 
 /**

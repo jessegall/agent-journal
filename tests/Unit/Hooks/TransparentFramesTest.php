@@ -6,13 +6,13 @@ namespace Tests\Unit\Hooks;
 
 use App\Agents\Values\StackTarget;
 use App\Communication\States\AnsweringMessageState;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
 use App\Hooks\Stack\AgentStack;
-use App\Hooks\Stack\Frame;
+use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\WalkStep;

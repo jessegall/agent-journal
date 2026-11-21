@@ -8,7 +8,7 @@ use App\Agents\Events\DriverFailed;
 use App\Agents\Models\ProcessStart;
 use App\Bus\Contracts\CommandFacts;
 use App\Hooks\Inputs\FailureDetails;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\FailureReceipt;
 
 /**

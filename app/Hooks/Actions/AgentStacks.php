@@ -6,10 +6,10 @@ namespace App\Hooks\Actions;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\AgentStack;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Exceptions\ActivationDeclined;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Stack\StatePush;
+use App\Hooks\Mutations\StatePush;
+use App\Hooks\References\Exceptions\ActivationDeclined;
+use App\Hooks\References\StateReference;
 use App\Hooks\Support\StackAccess;
 use App\Hooks\Support\StackTransaction;
 

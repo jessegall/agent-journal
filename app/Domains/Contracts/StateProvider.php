@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Contracts;
 
-use App\Hooks\Contracts\StateLoader;
+use App\Hooks\StateLoading\Contracts\StateLoader;
 
 /**
  * A domain that puts its own states on an agent's stack, such as Chat's answering-message state. Its Domain class

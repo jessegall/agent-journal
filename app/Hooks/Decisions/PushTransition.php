@@ -7,6 +7,7 @@ namespace App\Hooks\Decisions;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransition;
 use App\Hooks\Enums\TransitionType;
+use App\Hooks\References\StateReference;
 
 final readonly class PushTransition implements StackTransition
 {

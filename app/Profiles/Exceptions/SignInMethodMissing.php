@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Exceptions;
 
 use App\Drivers\Enums\HookDriver;
-use App\Hooks\Support\DriverCompatibility;
+use App\Hooks\Compatibility\DriverCompatibility;
 use RuntimeException;
 
 /**

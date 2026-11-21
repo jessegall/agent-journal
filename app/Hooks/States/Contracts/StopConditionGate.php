@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\States\Contracts;
 
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 
 /**
  * Answers a stop by the conditions the session was started under: it records the attempt and reads the host's

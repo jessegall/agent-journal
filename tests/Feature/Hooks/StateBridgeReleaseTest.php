@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Agents\Values\StackTarget;
 use App\Bus\Support\EventUnitLifecycle;
 use App\Bus\Support\RequiredListenerRegistry;
-use App\Hooks\StateEvents\StateEventBridge;
+use App\Hooks\Delivery\StateEventBridge;
 use App\Hooks\StateEvents\StateEventScope;
 use App\Hooks\Support\StackTransaction;
 use Illuminate\Database\ConnectionInterface;

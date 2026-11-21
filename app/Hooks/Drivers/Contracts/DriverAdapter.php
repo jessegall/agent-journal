@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Hooks\Drivers\Contracts;
 
+use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Drivers\DriverCapabilities;
 use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Drivers\HookPayload;
-use App\Hooks\Inputs\DriverToolInput;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\DriverToolInput;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\Support\DriverCompatibility;
 
 /**
  * Turns the journal's final answer into one program's native reply. An adapter maps only the hooks its capabilities

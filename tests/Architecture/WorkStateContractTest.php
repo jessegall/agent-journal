@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Hooks\Contracts\InstructsForeground;
-use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Stack\StateTypes;
+use App\Hooks\StateLoading\Contracts\StateLoader;
 use App\Hooks\States\AgentState;
 use ReflectionClass;
 use Tests\Fixtures\Hooks\WorkStates\GatesToolsOnly;

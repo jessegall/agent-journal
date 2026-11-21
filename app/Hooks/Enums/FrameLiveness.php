@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Enums;
 
-use App\Hooks\Stack\Frame;
+use App\Hooks\Stack\Frames\Frame;
 
 /**
  * Whether a stored frame is asked by a hook: live, finished, or switched off. A frame that is not live stays stored

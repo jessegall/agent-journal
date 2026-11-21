@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
+use App\Hooks\References\StateReference;
 use App\Hooks\Stack\Contracts\StateFactory;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;

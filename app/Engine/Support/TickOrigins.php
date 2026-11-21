@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Engine\Support;
 
-use App\Hooks\Contracts\StateTypes;
 use App\Hooks\Exceptions\TickSubjectUndeclared;
-use App\Hooks\Exceptions\WorkOccurrenceStale;
+use App\Hooks\References\Exceptions\WorkOccurrenceStale;
+use App\Hooks\StateCatalog\Contracts\StateTypes;
 use App\Hooks\Values\WorkLockSet;
 use Closure;
 

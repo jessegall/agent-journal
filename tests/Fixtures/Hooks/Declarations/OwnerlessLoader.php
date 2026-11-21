@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Declarations;
 
-use App\Hooks\Contracts\StateLoader;
+use App\Hooks\StateLoading\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Decisions\StateSet;
+use App\Hooks\StateLoading\StateSet;
 use App\Hooks\Enums\SessionTransferType;
 
 /**

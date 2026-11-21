@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Hooks;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\CurrentState;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

@@ -67,7 +67,9 @@ final class ChatDomain extends Domain implements
 
     public function exports(): Exports
     {
-        return Exports::make()->events(DockChanged::class)->build();
+        return Exports::make()
+            ->events(DockChanged::class)
+            ->build();
     }
 
     public function commands(): array

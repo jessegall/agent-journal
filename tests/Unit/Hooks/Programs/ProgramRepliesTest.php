@@ -11,7 +11,7 @@ use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\InvalidShellAnswer;
 use App\Hooks\Exceptions\InvalidStopAnswer;
-use App\Hooks\Inputs\DriverToolInput;
+use App\Hooks\Inputs\Values\DriverToolInput;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;

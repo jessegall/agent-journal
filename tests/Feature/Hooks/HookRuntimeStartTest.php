@@ -8,7 +8,7 @@ use App\Contracts\StartTransaction;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use App\Drivers\Enums\HookDriver;
-use App\Hooks\Contracts\DriverAdapters;
+use App\Hooks\Drivers\Contracts\DriverAdapters;
 use App\Hooks\Drivers\Contracts\DriverCall;
 use App\Hooks\Drivers\HookPayload;
 use App\Hooks\Stack\StateTypes;

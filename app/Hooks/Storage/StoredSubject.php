@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Storage;
 
-use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\References\SubjectReference;
 use Spatie\LaravelData\Data;
 
 /**

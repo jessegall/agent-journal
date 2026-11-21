@@ -11,7 +11,7 @@ use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Hooks\Commands\RecordStopResults;
 use App\Hooks\Enums\StopResultType;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\StopAttempt;
 use App\Hooks\Readers\SessionInspections;
 use App\Hooks\States\Contracts\StopConditionGate;

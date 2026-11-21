@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks\Ticks;
 
 use App\Hooks\Contracts\WorkOccurrenceGuard;
-use App\Hooks\Exceptions\WorkOccurrenceStale;
-use App\Hooks\Values\WorkOccurrence;
+use App\Hooks\References\Exceptions\WorkOccurrenceStale;
+use App\Hooks\References\WorkOccurrence;
 
 /**
  * The occurrence guard of the ticking fixtures: an occurrence a test names as over is refused; the rest are live.

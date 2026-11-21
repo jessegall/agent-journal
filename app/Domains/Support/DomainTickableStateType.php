@@ -6,12 +6,12 @@ namespace App\Domains\Support;
 
 use App\Actors\Support\ActorIdentity;
 use App\Hooks\Contracts\ConditionalStateType;
-use App\Hooks\Contracts\RecipientStateLoader;
-use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Decisions\StateSet;
 use App\Hooks\Enums\SessionTransferType;
+use App\Hooks\StateLoading\Contracts\RecipientStateLoader;
+use App\Hooks\StateLoading\Contracts\TickableStateLoader;
+use App\Hooks\StateLoading\StateSet;
 
 /**
  * A domain's ticking state type registered with the domain that owns it: the same as DomainStateType, and still marked

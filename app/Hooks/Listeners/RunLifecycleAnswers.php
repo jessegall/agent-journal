@@ -6,7 +6,7 @@ namespace App\Hooks\Listeners;
 
 use App\Contracts\Listener;
 use App\Hooks\Events\LifecycleAnswersSettled;
-use App\Hooks\Lifecycle\LifecycleEffects;
+use App\Hooks\Settlement\LifecycleEffects;
 
 /**
  * Runs the commands of a settled stack change once it committed.

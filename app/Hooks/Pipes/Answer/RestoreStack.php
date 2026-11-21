@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
-use App\Hooks\Lifecycle\FrameLifecycle;
+use App\Hooks\CallStages\PreparedCall;
+use App\Hooks\CallStages\RestoredCall;
+use App\Hooks\Settlement\FrameLifecycle;
 use App\Hooks\Stack\StackRestorer;
-use App\Hooks\Values\Answer\PreparedCall;
-use App\Hooks\Values\Answer\RestoredCall;
 use App\Pipelines\Contracts\Pipe;
 
 /**

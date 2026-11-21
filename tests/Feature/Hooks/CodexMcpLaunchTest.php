@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Agents\Enums\TransportProfileType;
+use App\Hooks\Drivers\AccountConfigurationWrite;
 use App\Hooks\Drivers\CodexFolderTrust;
 use App\Hooks\Drivers\CodexJournalServer;
 use App\Hooks\Exceptions\JournalServerUnresolved;
-use App\Hooks\Support\AccountConfigurationWrite;
 use Illuminate\Filesystem\Filesystem;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;

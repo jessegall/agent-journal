@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Inspection;
 
-use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\FrameLiveness;
-use App\Hooks\Stack\Frame;
+use App\Hooks\References\SubjectReference;
+use App\Hooks\Stack\Frames\Frame;
 use Spatie\LaravelData\Data;
 
 /**

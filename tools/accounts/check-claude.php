@@ -15,7 +15,7 @@ declare(strict_types=1);
  */
 
 use App\Drivers\Enums\HookDriver;
-use App\Hooks\Support\DriverCompatibility;
+use App\Hooks\Compatibility\DriverCompatibility;
 use Tools\Accounts\AccountStatus;
 
 use function Tools\Accounts\empty_folder;

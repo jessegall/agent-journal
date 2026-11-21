@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks;
 
 use App\Actors\Support\ActorIdentity;
-use App\Hooks\Contracts\RecipientStateLoader;
+use App\Hooks\StateLoading\Contracts\RecipientStateLoader;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Decisions\StateSet;
+use App\Hooks\StateLoading\StateSet;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\States\AgentState;
 use Closure;

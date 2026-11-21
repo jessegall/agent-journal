@@ -8,6 +8,7 @@ use App\Agents\Values\StackTarget;
 use App\Bus\Enums\CommandEffectType;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\Contracts\StackPermission;
+use App\Hooks\Values\StackVerdict;
 
 final readonly class ActiveStackPermission implements StackPermission
 {

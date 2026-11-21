@@ -7,7 +7,7 @@ namespace App\Hooks\Inspection;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\AgentStack;
-use App\Hooks\Stack\Frame;
+use App\Hooks\Stack\Frames\Frame;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

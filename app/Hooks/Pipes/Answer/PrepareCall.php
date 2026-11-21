@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
+use App\Hooks\CallStages\LockedCall;
+use App\Hooks\CallStages\PreparedCall;
 use App\Hooks\Stack\SessionStartStep;
 use App\Hooks\Support\ContextCollection;
 use App\Hooks\Support\FinishedToolCalls;
-use App\Hooks\Values\Answer\LockedCall;
-use App\Hooks\Values\Answer\PreparedCall;
 use App\Pipelines\Contracts\Pipe;
 
 /**

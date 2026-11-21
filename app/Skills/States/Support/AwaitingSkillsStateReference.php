@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Skills\States\Support;
 
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferenceFactory;
-use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
 use App\Skills\Models\SkillPublication;
 
 /**

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
-use App\Hooks\Contracts\StateTypes as StateTypesContract;
 use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Events\StateTypesRequested;
+use App\Hooks\StateCatalog\Contracts\StateTypes as StateTypesContract;
+use App\Hooks\StateCatalog\StateTypeRegistry;
+use App\Hooks\StateLoading\Loaders\ReadyStateLoader;
 use App\Hooks\States\ReadyState;
-use App\Hooks\States\Support\ReadyStateLoader;
-use App\Hooks\States\Support\StateTypeRegistry;
 use App\Hooks\Ticks\TickingTypes;
 use Illuminate\Contracts\Events\Dispatcher;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Storage;
 
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
 use Carbon\CarbonImmutable;
 
 /**

@@ -6,13 +6,13 @@ namespace Tests\Unit\Hooks;
 
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\Denied;
+use App\Hooks\Decisions\Enums\SimpleTransition;
 use App\Hooks\Decisions\PushTransition;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\SimpleTransition;
 use App\Hooks\Exceptions\ConflictingStackTransition;
 use App\Hooks\Exceptions\EmptyReason;
+use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
 use PHPUnit\Framework\TestCase;
 
 final class DecisionTest extends TestCase

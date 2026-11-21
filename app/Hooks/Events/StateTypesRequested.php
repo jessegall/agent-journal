@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Events;
 
 use App\Contracts\Event;
-use App\Hooks\Contracts\StateRegistration;
+use App\Hooks\StateCatalog\Registration\Contracts\StateRegistration;
 
 /**
  * Raised while collecting state declarations: a domain listener registers its own state types here, at

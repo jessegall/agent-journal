@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Hooks\Contracts\JournalToolNames;
-use App\Hooks\Drivers\ClaudeCodeAdapter;
-use App\Hooks\Drivers\CodexAdapter;
+use App\Hooks\Drivers\Adapters\ClaudeCodeAdapter;
+use App\Hooks\Drivers\Adapters\CodexAdapter;
+use App\Hooks\Drivers\Adapters\JournalToolCall;
+use App\Hooks\Drivers\Adapters\JudgedCall;
 use App\Hooks\Drivers\Contracts\DriverAdapter;
 use App\Hooks\Drivers\HookPayload;
-use App\Hooks\Drivers\JournalToolCall;
-use App\Hooks\Drivers\JudgedCall;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Mcp\Support\McpCatalogue;
 use PHPUnit\Framework\Attributes\DataProvider;

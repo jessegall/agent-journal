@@ -10,7 +10,7 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentContext;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Exceptions\HookIdentityExpired;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 use Carbon\CarbonImmutable;
 
 /**

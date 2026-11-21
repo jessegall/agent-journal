@@ -12,7 +12,7 @@ use App\Hooks\Contracts\StopEvidence;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Enums\StopResultType;
 use App\Hooks\Exceptions\StopResultsRefused;
-use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\Values\HookIdentity;
 use App\Hooks\Models\StopAttempt;
 use App\Hooks\Models\StopResult;
 use App\Hooks\Values\StopAttemptReference;

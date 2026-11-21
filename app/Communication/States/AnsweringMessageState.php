@@ -14,9 +14,9 @@ use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Lifecycle\LifecycleContext;
-use App\Hooks\Stack\StackVerdict;
 use App\Hooks\States\AgentState;
 use App\Hooks\Values\LifecycleCommands;
+use App\Hooks\Values\StackVerdict;
 
 /**
  * An actor answering a message it took up: reading is allowed, changing files and stopping are refused until it

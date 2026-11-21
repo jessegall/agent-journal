@@ -6,13 +6,13 @@ namespace Domain\Tasks\States\Support;
 
 use App\Actors\Support\ActorIdentity;
 use App\Desks\Contracts\RunClaims;
-use App\Hooks\Contracts\RecipientStateLoader;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Decisions\StateSet;
-use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Exceptions\StateSubjectMissing;
+use App\Hooks\References\StateReference;
+use App\Hooks\References\SubjectReference;
+use App\Hooks\StateLoading\Contracts\RecipientStateLoader;
+use App\Hooks\StateLoading\StateSet;
 use App\Hooks\States\AgentState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;

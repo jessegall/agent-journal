@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
-use App\Hooks\Lifecycle\FrameLifecycle;
-use App\Hooks\Values\Answer\SettledCall;
-use App\Hooks\Values\Answer\WalkedCall;
+use App\Hooks\CallStages\SettledCall;
+use App\Hooks\CallStages\WalkedCall;
+use App\Hooks\Settlement\FrameLifecycle;
 use App\Pipelines\Contracts\Pipe;
 
 /**

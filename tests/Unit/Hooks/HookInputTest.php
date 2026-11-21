@@ -6,8 +6,8 @@ namespace Tests\Unit\Hooks;
 
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Inputs\Contracts\HookInput;
-use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Inputs\Values\StopDetails;
 use App\Hooks\States\AgentState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

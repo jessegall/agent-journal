@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Values;
 
-use App\Hooks\Contracts\TickSubjectLocks;
+use App\Hooks\References\Contracts\TickSubjectLocks;
+use App\Hooks\References\WorkOccurrence;
 
 /**
  * The work subjects one tick command locks: its origin first, then every subject it declares, ordered by state type and

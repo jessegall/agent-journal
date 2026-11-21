@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\Hooks\Enums\ToolOutcome;
-use App\Hooks\Inputs\DriverToolInput;
-use App\Hooks\Inputs\ToolResult;
+use App\Hooks\Inputs\Values\DriverToolInput;
+use App\Hooks\Inputs\Values\ToolResult;
 use App\Skills\Enums\ReadEvidence;
 use App\Skills\Values\ProvenSkillRead;
 use PHPUnit\Framework\Attributes\DataProvider;

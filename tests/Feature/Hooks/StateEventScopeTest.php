@@ -10,7 +10,7 @@ use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
-use App\Hooks\StateEvents\StateEventBridge;
+use App\Hooks\Delivery\StateEventBridge;
 use App\Hooks\StateEvents\StateEventScope;
 use App\Hooks\Values\FrameGrant;
 use Illuminate\Database\ConnectionInterface;

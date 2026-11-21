@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Sequences\Tests\Unit\States;
 
 use App\Hooks\Decisions\Denied;
-use App\Hooks\Enums\SimpleTransition;
+use App\Hooks\Decisions\Enums\SimpleTransition;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\Contracts\HookInput;
-use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Inputs\Values\HookIdentity;
+use App\Hooks\Inputs\Values\StopDetails;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\States\FollowingSequenceState;
 use Domain\Sequences\Support\SequenceWork;

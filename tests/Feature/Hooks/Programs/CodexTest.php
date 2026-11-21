@@ -6,19 +6,19 @@ namespace Tests\Feature\Hooks\Programs;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Drivers\CodexAdapter;
+use App\Hooks\Drivers\Adapters\CodexAdapter;
+use App\Hooks\Drivers\Adapters\JudgedCall;
 use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Drivers\DriverReply;
-use App\Hooks\Drivers\JudgedCall;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\References\StateReference;
 use App\Hooks\Stack\AgentStack;
-use App\Hooks\Stack\Frame;
+use App\Hooks\Stack\Frames\Frame;
 use App\Hooks\Stack\HookAnswer;
 use App\Processes\Enums\CommandType;
 use Carbon\CarbonImmutable;
@@ -134,7 +134,7 @@ final class CodexTest extends TestCase
         );
         $rewrite = new HookAnswer(Decision::rewrite('journal run tests'), [], [], $stackAfter);
 
-        $settled = $capabilities->rewrites->finalAnswer($rewrite, $stackBefore);
+        $settled = $capabilities->finalAnswer($rewrite, $stackBefore);
         $reply = json_decode($this->renderAnswer('shell command', $settled)->stdout, true);
 
         $this->assertSame([], $settled->stack->frameIds());

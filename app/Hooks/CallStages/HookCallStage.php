@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Hooks\CallStages;
+
+use App\Agents\Values\StackTarget;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Inputs\Contracts\HookInput;
+use App\Hooks\Inputs\Values\HookIdentity;
+use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Stack\HookAnswer;
+use Closure;
+use App\Hooks\CallStages\LockedCall;
+
+/**
+ * One hook call as it enters the answer pipeline: the input, what the program can take, the adapter's way to render
+ * the reply, and whose call it is.
+ */
+final readonly class HookCallStage
+{
+    /**
+     * @param  Closure(HookAnswer): DriverReply  $render  the program adapter's reply to the final answer
+     */
+    public function __construct(
+        public HookInput $input,
+        public DriverCapabilities $capabilities,
+        public Closure $render,
+        public HookIdentity $identity,
+        public StackTarget $target,
+    ) {}
+
+    public function locked(AgentStackRow $row): LockedCall
+    {
+        return new LockedCall($this, $row);
+    }
+}

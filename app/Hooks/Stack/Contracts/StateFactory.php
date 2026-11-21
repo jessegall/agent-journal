@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Stack\Contracts;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Stack\Frame;
+use App\Hooks\References\StateReference;
+use App\Hooks\Stack\Frames\Frame;
 
 /**
  * Builds the frame for a state reference, with a new frame id, from the registered state types.

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Unit\States;
 
 use App\Hooks\Decisions\Denied;
-use App\Hooks\Enums\SimpleTransition;
+use App\Hooks\Decisions\Enums\SimpleTransition;
 use App\Hooks\Inputs\Contracts\HookInput;
-use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Inputs\Values\HookIdentity;
+use App\Hooks\Inputs\Values\StopDetails;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;

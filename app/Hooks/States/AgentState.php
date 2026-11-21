@@ -17,8 +17,8 @@ use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Lifecycle\LifecycleContext;
-use App\Hooks\Stack\StackVerdict;
 use App\Hooks\Values\LifecycleCommands;
+use App\Hooks\Values\StackVerdict;
 
 /**
  * One state on an agent's stack. Every hook method delegates to the state below until a state overrides it, and

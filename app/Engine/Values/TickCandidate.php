@@ -6,7 +6,7 @@ namespace App\Engine\Values;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\TickableState;
-use App\Hooks\Values\WorkOccurrence;
+use App\Hooks\References\WorkOccurrence;
 use Carbon\CarbonImmutable;
 
 /**

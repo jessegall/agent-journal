@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Hooks\Contracts\StackEditor;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\References\StateReference;
+use App\Hooks\Stack\Frames\Frame;
 
 /**
  * The stack as the frame answering right now may change it, within one walk.

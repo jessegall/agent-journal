@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Contracts;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Exceptions\ActivationDeclined;
+use App\Hooks\References\Exceptions\ActivationDeclined;
+use App\Hooks\References\StateReference;
 
 /**
  * Pushes a state onto the calling agent's own stack, inside the caller's StackTransactionRunner, under the stack's row
