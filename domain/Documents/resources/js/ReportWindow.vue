@@ -2,16 +2,22 @@
 import type { RecordPageData } from '@generated/types/documents';
 import CommentsPanel from '@kit/CommentsPanel';
 import ShareButton from '@kit/ShareButton';
+import { useNotifications } from '@kit/notifications';
+import { onMounted } from 'vue';
 import LinksPanel from './LinksPanel.vue';
 import RecordStatus from './RecordStatus.vue';
 import RecordWindow from './RecordWindow.vue';
 
 /**
- * A report's page: its text, and the comments left on it.
+ * A report's page: its text, and the comments left on it. Once it is shown, the reader's own report-ready
+ * receipt of it, if any, becomes read.
  */
 const props = defineProps<{ data: RecordPageData }>();
 
 const number = props.data.label.replace('report ', '');
+const notifications = useNotifications();
+
+onMounted(() => void notifications.markTargetRead('report', number));
 </script>
 
 <template>

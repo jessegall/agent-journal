@@ -26,6 +26,7 @@ function clientOf(overrides: Partial<NotificationClient>): NotificationClient {
         page: vi.fn(async () => pageOf(1, 1)),
         markRead: vi.fn(async () => pageOf(2, 0, '2026-11-22T10:00:00+00:00')),
         markQuestionRead: vi.fn(async () => pageOf(2, 0, '2026-11-22T10:00:00+00:00')),
+        markTargetRead: vi.fn(async () => pageOf(2, 0, '2026-11-22T10:00:00+00:00')),
         ...overrides,
     };
 }

@@ -19,6 +19,8 @@ use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxNotices as InboxNoticesContract;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Contracts\Notifications;
+use App\Communication\Contracts\NotificationTargets;
 use App\Communication\Links\MessageLinkRecords;
 use App\Communication\Models\Message;
 use App\Communication\Policies\MessageAdministrationPolicy;
@@ -29,6 +31,7 @@ use App\Communication\Resolvers\QuestionNotificationTarget;
 use App\Communication\Support\InboxNotices;
 use App\Communication\Support\MessageAnswerActivation;
 use App\Communication\Support\MessageClaimProvider;
+use App\Communication\Support\NotificationDelivery;
 use App\Communication\Support\NotificationTargetRegistry;
 use App\Communication\Support\PendingInboxWork;
 use App\Communication\Support\RegisteredInboxes;
@@ -58,6 +61,8 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->scoped(AgentMessageReader::class, AgentMessages::class);
         $this->app->scoped(RequestSource::class, SelectedMessages::class);
         $this->app->singleton(NotificationTargetRegistry::class);
+        $this->app->singleton(NotificationTargets::class, NotificationTargetRegistry::class);
+        $this->app->bind(Notifications::class, NotificationDelivery::class);
     }
 
     public function boot(

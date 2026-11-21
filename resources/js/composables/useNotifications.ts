@@ -1,7 +1,7 @@
 import type { NotificationPage } from '@/generated/types/core';
 import { xsrfToken } from '@/echo';
 import { notifications } from '@/routes/communication';
-import { read, readQuestion } from '@/routes/communication/notifications';
+import { read, readQuestion, readTarget } from '@/routes/communication/notifications';
 import { onBeforeUnmount, onMounted } from 'vue';
 import {
     LEASE_MILLISECONDS,
@@ -57,6 +57,8 @@ const client: NotificationClient = {
         requestPage(read.url(), { method: 'POST', body: JSON.stringify({ receiptId }) }),
     markQuestionRead: (messageId) =>
         requestPage(readQuestion.url(), { method: 'POST', body: JSON.stringify({ messageId }) }),
+    markTargetRead: (targetKey, targetId) =>
+        requestPage(readTarget.url(), { method: 'POST', body: JSON.stringify({ targetKey, targetId }) }),
 };
 
 /**

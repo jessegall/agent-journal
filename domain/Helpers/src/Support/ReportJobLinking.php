@@ -11,6 +11,7 @@ use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\ReportJobDiscrepancy;
 use Domain\Helpers\Models\ReportJobLink;
+use Domain\Helpers\Values\FiledReport;
 
 /**
  * Ties a filed report to the helper job its filing session was started for, from that session's own start, never
@@ -19,8 +20,9 @@ use Domain\Helpers\Models\ReportJobLink;
  */
 final readonly class ReportJobLinking
 {
-    public function link(string $reportId, ActorIdentity $filer, StartRecordDetails $start): void
+    public function link(FiledReport $report, ActorIdentity $filer, StartRecordDetails $start): void
     {
+        $reportId = $report->id;
         $reference = (string) $start->ownerReference;
         [$type, $jobId] = explode(':', $reference, 2) + [1 => ''];
 
@@ -50,7 +52,7 @@ final readonly class ReportJobLinking
             return;
         }
 
-        ReportJobLink::create($reportId, $job, $start->requestId);
+        ReportJobLink::create($report, $job, $start->requestId);
     }
 
     /**

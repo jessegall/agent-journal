@@ -16,6 +16,6 @@ return [
         'owner' => 'ReportJobLink::create',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new ReportJobLinked('report', 'job'),
+        'sample' => fn () => new ReportJobLinked('report', 1, 'job'),
     ],
 ];

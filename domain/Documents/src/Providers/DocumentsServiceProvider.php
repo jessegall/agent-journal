@@ -9,6 +9,7 @@ use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionProvenance;
 use App\Autoload\Support\FolderClasses;
+use App\Communication\Contracts\NotificationTargets;
 use App\Docking\Sources\Contracts\DockRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
@@ -34,6 +35,7 @@ use Domain\Documents\Resolvers\AttachmentPages;
 use Domain\Documents\Resolvers\DocumentPages;
 use Domain\Documents\Resolvers\DocumentRecords;
 use Domain\Documents\Resolvers\DraftRecords;
+use Domain\Documents\Resolvers\ReportNotificationTarget;
 use Domain\Documents\Resolvers\ReportPages;
 use Domain\Documents\Resolvers\ReportRecords;
 use Domain\Documents\Resolvers\RetainedDrafts;
@@ -62,8 +64,13 @@ final class DocumentsServiceProvider extends ServiceProvider
         $this->app->scoped(ReportReader::class, ReportPages::class);
     }
 
-    public function boot(LinkTypeRegistry $links, ReadEntitlements $reads, DockRegistration $docks): void
-    {
+    public function boot(
+        LinkTypeRegistry $links,
+        ReadEntitlements $reads,
+        DockRegistration $docks,
+        NotificationTargets $notificationTargets,
+    ): void {
+        $notificationTargets->register(ReportNotificationTarget::KEY, ReportNotificationTarget::class);
         $docks->offerDockFor($docks->register(Document::LINK_TYPE, Document::class, DocumentDocking::class));
         $docks->offerDockFor($docks->register(Report::LINK_TYPE, Report::class, ReportDocking::class));
         $reads->declare('docs_drafts_read', ReadEntitlement::grant(DocumentPolicy::class, AccessType::Edit));

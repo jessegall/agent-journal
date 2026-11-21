@@ -32,6 +32,7 @@ export type NotificationClient = {
     page(cursor: string | null): Promise<NotificationPage>;
     markRead(receiptId: string): Promise<NotificationPage>;
     markQuestionRead(messageId: string): Promise<NotificationPage>;
+    markTargetRead(targetKey: string, targetId: string): Promise<NotificationPage>;
 };
 
 /**
@@ -49,6 +50,7 @@ export type NotificationStore = {
     refresh(): Promise<void>;
     markRead(receiptId: string): Promise<void>;
     markQuestionRead(messageId: string): Promise<void>;
+    markTargetRead(targetKey: string, targetId: string): Promise<void>;
     checkLease(): void;
     purge(): void;
 };
@@ -120,11 +122,11 @@ export function notificationStore(
     }
 
     /**
-     * Whether the snapshot shows the question's receipt read; a question outside the snapshot may still be unread.
+     * Whether the snapshot shows the target's receipt read; a target outside the snapshot may still be unread.
      */
-    function isQuestionRead(messageId: string): boolean {
+    function isTargetRead(targetKey: string, targetId: string): boolean {
         return snapshot.value?.items.some(
-            (item) => item.target?.key === QUESTION_TARGET && item.target.id === messageId && item.readAt !== null,
+            (item) => item.target?.key === targetKey && item.target.id === targetId && item.readAt !== null,
         ) ?? false;
     }
 
@@ -139,14 +141,13 @@ export function notificationStore(
         try {
             take(await send(), startedIn);
         } catch (error) {
+            // A refused mark changed nothing: the reader holds no such receipt, so the snapshot stands as it is.
             if (error instanceof NotificationRequestFailed && error.failure === 'lost') {
                 await refresh();
 
                 if (startedIn === generation && isUnread()) {
-                    await send().then((page) => take(page, startedIn)).catch(() => failed(startedIn));
+                    await send().then((page) => take(page, startedIn)).catch(() => undefined);
                 }
-            } else {
-                failed(startedIn);
             }
         } finally {
             if (startedIn === generation) {
@@ -177,7 +178,13 @@ export function notificationStore(
         refresh,
         markRead: (receiptId) => mark(receiptId, () => client.markRead(receiptId), () => isStillUnread(receiptId)),
         markQuestionRead: (messageId) =>
-            mark(messageId, () => client.markQuestionRead(messageId), () => !isQuestionRead(messageId)),
+            mark(messageId, () => client.markQuestionRead(messageId), () => !isTargetRead(QUESTION_TARGET, messageId)),
+        markTargetRead: (targetKey, targetId) =>
+            mark(
+                `${targetKey}:${targetId}`,
+                () => client.markTargetRead(targetKey, targetId),
+                () => !isTargetRead(targetKey, targetId),
+            ),
         checkLease,
         purge,
     };

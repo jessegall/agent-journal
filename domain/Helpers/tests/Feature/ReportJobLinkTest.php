@@ -21,6 +21,7 @@ use Domain\Helpers\Models\ReportJobDiscrepancy;
 use Domain\Helpers\Models\ReportJobLink;
 use Domain\Helpers\Support\ReportJobLinking;
 use Domain\Helpers\Tests\TestCase;
+use Domain\Helpers\Values\FiledReport;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 
@@ -46,10 +47,10 @@ final class ReportJobLinkTest extends TestCase
         [$helper, $identity] = $this->helper();
         $first = $this->jobOf($identity);
         $this->jobOf($identity);
-        $reportId = (string) Str::ulid();
+        $report = new FiledReport((string) Str::ulid(), 7);
 
-        $this->linking()->link($reportId, $helper, $this->startFor($first, $helper));
-        $this->linking()->link($reportId, $helper, $this->startFor($first, $helper));
+        $this->linking()->link($report, $helper, $this->startFor($first, $helper));
+        $this->linking()->link($report, $helper, $this->startFor($first, $helper));
 
         $this->assertSame($first->id, ReportJobLink::query()->sole()->helper_job_id);
     }
@@ -59,14 +60,14 @@ final class ReportJobLinkTest extends TestCase
         [, $identity] = $this->helper();
         [$other] = $this->helper();
         $job = $this->jobOf($identity);
-        $reportId = (string) Str::ulid();
+        $report = new FiledReport((string) Str::ulid(), 7);
 
-        $this->linking()->link($reportId, $other, $this->startFor($job, $other));
+        $this->linking()->link($report, $other, $this->startFor($job, $other));
 
         $this->assertSame(0, ReportJobLink::query()->count());
         $this->assertSame(
             ReportJobDiscrepancyReason::FilerMismatch,
-            ReportJobDiscrepancy::query()->where('report_id', $reportId)->sole()->reason,
+            ReportJobDiscrepancy::query()->where('report_id', $report->id)->sole()->reason,
         );
     }
 
@@ -75,7 +76,7 @@ final class ReportJobLinkTest extends TestCase
         [$helper] = $this->helper();
         $start = $this->start('tasks.task:'.Str::ulid(), $helper);
 
-        $this->linking()->link((string) Str::ulid(), $helper, $start);
+        $this->linking()->link(new FiledReport((string) Str::ulid(), 8), $helper, $start);
 
         $this->assertSame(0, ReportJobLink::query()->count());
         $this->assertSame(0, ReportJobDiscrepancy::query()->count());

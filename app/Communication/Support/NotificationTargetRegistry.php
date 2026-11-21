@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Support;
 
 use App\Communication\Contracts\NotificationTargetResolver;
+use App\Communication\Contracts\NotificationTargets;
 use App\Communication\Exceptions\NotificationTargetUnregistered;
 use App\Registries\Support\Registry;
 use Illuminate\Container\Container;
@@ -13,7 +14,7 @@ use Illuminate\Container\Container;
  * The resolver class of each notification target key, such as chat.question, registered once at boot and made
  * for each read, so it answers for the actor of that request.
  */
-final class NotificationTargetRegistry
+final class NotificationTargetRegistry implements NotificationTargets
 {
     /**
      * @var Registry<class-string<NotificationTargetResolver>>

@@ -11,6 +11,7 @@ use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Helpers\Support\ReportJobLinking;
+use Domain\Helpers\Values\FiledReport;
 
 /**
  * Ties a report to the helper job it answers in the transaction that filed it, from the start of the filing
@@ -29,7 +30,11 @@ final readonly class LinkReportToJob implements Listener
         $filer = ActorIdentity::of($fact->actor);
 
         $this->starts->currentOwnerStart()->forAll(
-            fn (StartRecordDetails $start) => $this->linking->link($fact->reportId, $filer, $start),
+            fn (StartRecordDetails $start) => $this->linking->link(
+                new FiledReport($fact->reportId, $fact->number),
+                $filer,
+                $start,
+            ),
         );
     }
 }

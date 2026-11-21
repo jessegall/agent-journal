@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Support;
 
 use App\Actors\Support\ActorIdentity;
+use App\Communication\Contracts\Notifications;
 use App\Communication\Data\NotificationTarget;
 use App\Communication\Enums\NotificationSourceType;
 use App\Communication\Models\NotificationOccurrence;
@@ -15,7 +16,7 @@ use App\Communication\Models\NotificationScope;
  * Records one occurrence and one receipt for each distinct recipient, inside the caller's transaction. A replay of
  * the same occurrence key changes nothing. Scopes are locked in one stable order, so two deliveries never deadlock.
  */
-final readonly class NotificationDelivery
+final readonly class NotificationDelivery implements Notifications
 {
     public function __construct(private NotificationScopes $scopes) {}
 

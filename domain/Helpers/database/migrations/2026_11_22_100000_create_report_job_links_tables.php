@@ -13,6 +13,7 @@ return new class extends Migration
         Schema::create('report_job_links', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->ulid('report_id')->unique();
+            $table->unsignedBigInteger('report_number');
             $table->foreignUlid('helper_job_id')->constrained('helper_jobs')->restrictOnDelete();
             $table->string('dispatch_request_id', 64);
             $table->timestampTz('verified_at');

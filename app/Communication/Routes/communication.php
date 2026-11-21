@@ -10,6 +10,7 @@ use App\Http\Controllers\Communication\InboxCountsController;
 use App\Http\Controllers\Communication\InboxHistoryController;
 use App\Http\Controllers\Communication\MarkNotificationReadController;
 use App\Http\Controllers\Communication\MarkQuestionNotificationReadController;
+use App\Http\Controllers\Communication\MarkTargetNotificationReadController;
 use App\Http\Controllers\Communication\MessagesBetweenController;
 use App\Http\Controllers\Communication\NotificationPageController;
 use App\Http\Controllers\Communication\ReadMessagesController;
@@ -68,4 +69,6 @@ Route::middleware(['web', 'auth', 'journal.user'])
         Route::post('notifications/read', MarkNotificationReadController::class)->name('notifications.read');
         Route::post('notifications/read-question', MarkQuestionNotificationReadController::class)
             ->name('notifications.read-question');
+        Route::post('notifications/read-target', MarkTargetNotificationReadController::class)
+            ->name('notifications.read-target');
     });

@@ -10,4 +10,5 @@ namespace App\Communication\Enums;
 enum NotificationSourceType: string
 {
     case Question = 'question';
+    case Report = 'report';
 }

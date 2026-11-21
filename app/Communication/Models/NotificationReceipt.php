@@ -125,6 +125,23 @@ final class NotificationReceipt extends Model implements ReadableModel
     }
 
     /**
+     * The scope's receipt of the occurrence that leads to this target, when the scope holds one.
+     *
+     * @return Option<self>
+     */
+    public static function findForTarget(string $scopeId, string $targetKey, string $targetId): Option
+    {
+        return Option::fromValue(self::query()
+            ->where('scope_id', $scopeId)
+            ->whereIn(
+                'occurrence_id',
+                NotificationOccurrence::query()->where('target_key', $targetKey)->where('target_id', $targetId)
+                    ->select('id'),
+            )
+            ->first());
+    }
+
+    /**
      * The scope's receipt of the occurrence with this key, when the scope holds one.
      *
      * @return Option<self>
