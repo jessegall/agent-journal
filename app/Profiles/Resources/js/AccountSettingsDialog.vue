@@ -71,6 +71,13 @@ const running = computed(() => {
     return count === 1 ? '1 agent' : `${count} agents`;
 });
 
+const recentStartsTerm = 'Recent starts';
+const useFacts = computed(() => [
+    { term: 'Default', value: '' },
+    { term: 'Running now', value: running.value },
+    ...(props.account.recentStarts.length > 0 ? [{ term: recentStartsTerm, value: '' }] : []),
+]);
+
 const signInFacts = computed(() => [
     { term: 'State', value: accountStateLook[props.account.state].label },
     { term: 'Program', value: driverName(props.account.driver) },
@@ -236,47 +243,48 @@ function signInAgain(): void {
             </form>
             <section class="flex flex-col gap-2" aria-labelledby="account-use">
                 <h4 id="account-use" class="m-0 text-small font-semibold text-text-3">Use</h4>
-                <dl class="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">
-                    <dt class="text-text-3">Default</dt>
-                    <dd class="flex min-w-0 items-center gap-2">
-                        <template v-if="isChosen">
-                            <span class="shrink-0 rounded bg-chip px-1.5 py-0.5 text-small whitespace-nowrap text-text-2"
-                                >Default</span
-                            >
-                        </template>
-                        <template v-else-if="canBeDefault">
-                            <span class="text-text-2">No</span>
-                            <Button variant="bordered" size="small" :pending="choosing.processing" @click="makeDefault"
-                                >Make default</Button
-                            >
-                        </template>
-                        <template v-else-if="needsSignIn">
-                            <span class="text-text-2">Sign in first to make it the default</span>
-                        </template>
-                        <template v-else>
-                            <span class="text-text-2">No</span>
-                        </template>
-                    </dd>
-                    <dt class="text-text-3">Running now</dt>
-                    <dd class="text-text">{{ running }}</dd>
-                    <template v-if="account.recentStarts.length > 0">
-                        <dt class="self-start text-text-3">Recent starts</dt>
-                        <dd class="min-w-0">
-                            <ul class="m-0 flex list-none flex-col gap-1 p-0">
-                                <template v-for="start in account.recentStarts" :key="start.sessionId">
-                                    <li>
-                                        <Link
-                                            :href="accountStart({ session: start.sessionId }).url"
-                                            class="text-brand-text underline"
-                                            >{{ start.isRunning ? 'Running since' : 'Started' }}
-                                            {{ start.startedAt }}</Link
-                                        >
-                                    </li>
-                                </template>
-                            </ul>
-                        </dd>
+                <AccountFactList :facts="useFacts">
+                    <template #Default>
+                        <span class="flex flex-wrap items-center gap-2">
+                            <template v-if="isChosen">
+                                <span
+                                    class="rounded-badge border border-line px-1.5 text-[11px] leading-4 whitespace-nowrap text-text-2"
+                                    >Default</span
+                                >
+                            </template>
+                            <template v-else-if="canBeDefault">
+                                <span class="text-text-2">No</span>
+                                <Button
+                                    variant="bordered"
+                                    size="small"
+                                    :pending="choosing.processing"
+                                    @click="makeDefault"
+                                    >Make default</Button
+                                >
+                            </template>
+                            <template v-else-if="needsSignIn">
+                                <span class="text-text-2">Sign in first to make it the default</span>
+                            </template>
+                            <template v-else>
+                                <span class="text-text-2">No</span>
+                            </template>
+                        </span>
                     </template>
-                </dl>
+                    <template #[recentStartsTerm]>
+                        <ul class="m-0 flex list-none flex-col gap-1 p-0">
+                            <template v-for="start in account.recentStarts" :key="start.sessionId">
+                                <li>
+                                    <Link
+                                        :href="accountStart({ session: start.sessionId }).url"
+                                        class="text-brand-text underline"
+                                        >{{ start.isRunning ? 'Running since' : 'Started' }}
+                                        {{ dateOf(start.startedAt) }}</Link
+                                    >
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                </AccountFactList>
             </section>
             <section class="flex flex-col gap-2" aria-labelledby="account-sign-in">
                 <h4 id="account-sign-in" class="m-0 text-small font-semibold text-text-3">Sign-in</h4>
