@@ -61,6 +61,7 @@ fi
 docker compose up -d --wait app
 docker compose exec -T app php artisan migrate --force
 $fresh && docker compose exec -T app php artisan db:seed --force
+sh scripts/prepare-hook-test-database.sh
 
 # The host is enrolled once: its id lives in .env and its secret in secrets/, both kept on a later run.
 if ! grep -q '^AGENTS_HOST_ID=.' .env || [ ! -s secrets/journal_host_secret ]; then
