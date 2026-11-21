@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace Tests\Unit\Agents;
 
 use App\Agents\Contracts\HostOperatorAccess;
+use App\Agents\Data\DriverRequestStatus;
+use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverSwitchStage;
+use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\ProcessStartState;
+use App\Agents\Enums\RequestOutcome;
+use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Enums\SessionState;
 use App\Agents\Enums\SessionStatus;
@@ -104,6 +109,16 @@ final class AgentStatusTest extends TestCase
                 SessionState::Starting,
                 'Starting',
                 [],
+            ],
+            'generic refusal of the initial wake' => [
+                self::live(
+                    self::runtime(RuntimeActivity::Starting),
+                    start: ProcessStartState::Pending,
+                    request: self::refusedWake(),
+                ),
+                SessionState::Unknown,
+                'Status unknown',
+                ['check-status'],
             ],
             'sign-in hold' => [
                 self::live(self::runtime(RuntimeActivity::Idle, HoldReason::LoginRequired)),
@@ -203,19 +218,36 @@ final class AgentStatusTest extends TestCase
         SessionStatus $status = SessionStatus::Active,
         SwitchEvidence|null $switch = null,
         LaunchOutcome|null $launch = null,
+        ProcessStartState $start = ProcessStartState::Running,
+        DriverRequestStatus|null $request = null,
     ): AgentEvidence {
         return new AgentEvidence(
             false,
             self::SESSION,
             $status,
-            ProcessStartState::Running,
+            $start,
             $runtime,
             true,
             $switch,
-            null,
+            $request,
             $launch,
             false,
             false,
+        );
+    }
+
+    private static function refusedWake(): DriverRequestStatus
+    {
+        return new DriverRequestStatus(
+            requestId: '01jd8x0g9m3qz6v4k2t7r5w1cj',
+            sequence: 1,
+            operation: DriverOperation::Wake,
+            progress: RequestProgress::Failed,
+            outcome: RequestOutcome::Refused,
+            expectedTiming: ExpectedTiming::Unknown,
+            changedAt: null,
+            hold: HoldReason::None,
+            canRetry: true,
         );
     }
 

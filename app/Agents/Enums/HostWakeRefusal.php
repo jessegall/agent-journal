@@ -23,4 +23,18 @@ enum HostWakeRefusal: string
     {
         return self::tryFrom($reason) ?? self::Unknown;
     }
+
+    /**
+     * The start refusal this host reason is kept as on the start's receipt, so it reads in the refusal's own words.
+     */
+    public function startReason(): StartRefusalType|HostRefusal
+    {
+        return match ($this) {
+            self::ContainerUnavailable => StartRefusalType::ContainerUnavailable,
+            self::ImageUnverified => StartRefusalType::ImageUnverified,
+            self::CapacityUnavailable => StartRefusalType::CapacityUnavailable,
+            self::ProtectedAccountFolderRejected => HostRefusal::AccountFolderRejected,
+            self::Unknown => HostRefusal::Unknown,
+        };
+    }
 }

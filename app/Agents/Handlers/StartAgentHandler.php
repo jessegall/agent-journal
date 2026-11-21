@@ -29,6 +29,7 @@ use App\Agents\Models\StartRecord;
 use App\Agents\Resolvers\Support\PendingStartSecrets;
 use App\Agents\Support\AgentWakes;
 use App\Agents\Support\ContainerAdmission;
+use App\Agents\Support\InitialWakeSettlement;
 use App\Agents\Support\StartedAgent;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\RuntimeIntent;
@@ -167,7 +168,7 @@ final readonly class StartAgentHandler implements CommandHandler
 
         $this->wakes->wake(
             new StackTarget($started->session->agent_id, $started->session->id),
-            'start-'.$started->session->id,
+            InitialWakeSettlement::keyOf($started->session->id),
         );
     }
 

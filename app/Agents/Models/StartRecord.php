@@ -9,9 +9,14 @@ use App\Agents\Contracts\StartRefusal;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverSourceType;
 use App\Agents\Enums\DriverVariant;
+use App\Agents\Enums\HostRefusal;
 use App\Agents\Enums\ModelSelectionType;
+use App\Agents\Enums\ResumeRefusal;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
+use App\Agents\Enums\StartPreflightRefusal;
+use App\Agents\Enums\StartRefusalType;
+use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\StartRefusalReplayed;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Values\StartRequest;
@@ -281,8 +286,18 @@ final class StartRecord extends Model implements ReadableModel
      */
     public function refuse(StartRefusal $refusal): void
     {
+        $this->refuseFor($refusal->reason());
+    }
+
+    /**
+     * The start was refused for this reason after it was accepted, such as by the host that could not wake it: the
+     * record keeps the reason as its receipt, and its session stays named.
+     */
+    public function refuseFor(
+        StartRefusalType|StartPreflightRefusal|ResumeRefusal|StartUnavailableReason|HostRefusal $reason,
+    ): void {
         $this->disposition = StartDisposition::Refused;
-        $this->refusal_reason = $refusal->reason()->value;
+        $this->refusal_reason = $reason->value;
         $this->refused_at = Carbon::now();
         $this->save();
     }

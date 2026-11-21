@@ -152,7 +152,7 @@ final readonly class AgentStatus
         $switch = [StatusAction::of(StatusActionType::Switch)];
 
         if (in_array($evidence->processStart, ProcessStartState::unresolved(), true)) {
-            return self::starting($evidence);
+            return self::isWakeRefused($evidence->request) ? self::unknown($evidence) : self::starting($evidence);
         }
 
         if ($evidence->sessionStatus === SessionStatus::Silent) {
@@ -183,6 +183,16 @@ final readonly class AgentStatus
             RuntimeActivity::Stopping => self::plain(SessionState::Stopping, $evidence, []),
             RuntimeActivity::Stopped, RuntimeActivity::HostUnavailable => self::unknown($evidence),
         };
+    }
+
+    /**
+     * Whether the host refused the session's wake without proving it never started a process: the launch stays for
+     * reconciliation, neither starting nor ended.
+     */
+    private static function isWakeRefused(DriverRequestStatus|null $request): bool
+    {
+        return $request?->operation === DriverOperation::Wake
+            && in_array($request->progress, [RequestProgress::Failed, RequestProgress::Unavailable], true);
     }
 
     private static function failedRequest(AgentEvidence $evidence, DriverRequestStatus $request): self

@@ -52,11 +52,13 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Models\DriverTurn;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Models\SessionPolicy;
 use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\InitialWakeSettlement;
 use App\Agents\Support\NativeTurns;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PendingWorkSources;
@@ -549,6 +551,55 @@ final class AgentDriverLedgerTest extends TestCase
         $this->expectException(DriverRequestRefused::class);
 
         $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-after-exit'));
+    }
+
+    public function test_a_refused_message_wake_keeps_the_session_its_credentials_and_its_start(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $wake = $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'message-wake'));
+        $claimed = $this->claimedScript($host, $wake->requestId);
+
+        $this->reportRefusedWake($host, $claimed, 'container-unavailable', true);
+
+        $session = AgentSession::query()->findOrFail($opened->sessionId);
+        $this->assertSame(SessionStatus::Active, $session->status);
+        $this->assertNull(ProcessStart::latestOfSession($opened->sessionId)?->refusal);
+        $this->assertSame(RequestProgress::Failed, DriverRequest::query()->findOrFail($wake->requestId)->progress);
+    }
+
+    public function test_a_proved_unstarted_initial_wake_ends_the_launch_once_with_its_reason(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $wake = $this->asOwner(new WakeAgent(
+            $this->agentIdOf($opened),
+            $opened->sessionId,
+            InitialWakeSettlement::keyOf($opened->sessionId),
+        ));
+        $claimed = $this->claimedScript($host, $wake->requestId);
+
+        $this->reportRefusedWake($host, $claimed, 'container-unavailable', true);
+        $this->reportRefusedWake($host, $claimed, 'container-unavailable', true);
+
+        $session = AgentSession::query()->findOrFail($opened->sessionId);
+        $start = ProcessStart::latestOfSession($opened->sessionId);
+        $this->assertSame(SessionStatus::Ended, $session->status);
+        $this->assertSame('The host cannot provide a container.', $start?->refusal);
+    }
+
+    public function test_a_generic_refusal_of_the_initial_wake_keeps_the_launch_for_reconciliation(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $wake = $this->asOwner(new WakeAgent(
+            $this->agentIdOf($opened),
+            $opened->sessionId,
+            InitialWakeSettlement::keyOf($opened->sessionId),
+        ));
+        $claimed = $this->claimedScript($host, $wake->requestId);
+
+        $this->reportRefusedWake($host, $claimed, null, false);
+
+        $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($opened->sessionId)->status);
+        $this->assertNull(ProcessStart::latestOfSession($opened->sessionId)?->refusal);
     }
 
     public function test_retiring_an_agent_with_a_running_runtime_stops_it_through_its_host(): void
@@ -1078,6 +1129,31 @@ final class AgentDriverLedgerTest extends TestCase
         )->assertOk()->json('requests');
 
         return collect($requests)->firstOrFail(fn (array $claimed) => $claimed['requestId'] === $requestId);
+    }
+
+    /**
+     * The host refuses a claimed wake, naming a reason and that no process was made only when it knows.
+     *
+     * @param  array<string, mixed>  $claimed
+     */
+    private function reportRefusedWake(
+        EnrolledHost $host,
+        array $claimed,
+        string|null $reason,
+        bool $noProcessCreated,
+    ): void {
+        $this->hostCall($host, '/host/reports/request', [
+            'request_id' => $claimed['requestId'],
+            'attempt' => $claimed['attempt'],
+            'progress' => 'failed',
+            'actual_binding' => null,
+            'outcome' => 'refused',
+            'refusal_reason' => $reason,
+            'no_process_created' => $noProcessCreated,
+            'session_id' => $claimed['sessionId'],
+            'process_start_id' => $claimed['processStartId'],
+            'process_generation' => $claimed['processGeneration'],
+        ])->assertSuccessful();
     }
 
     private function reportExit(EnrolledHost $host, OpenedRuntime $opened): void
