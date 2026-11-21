@@ -353,7 +353,7 @@ moves the button.</p>
       </div>
       <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><span class="plain" style="padding-right:8px">Moves on by itself</span></div>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>3e</b>Claude Code provider token: one secret field and where to get it</div>
+  <div class="frame"><div class="cap"><b>3e</b>Claude Code setup token: one secret field and where to get it</div>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
@@ -384,7 +384,7 @@ moves the button.</p>
 <h2 class="sec">4 · Step three: checking, done, or what went wrong</h2>
 <p class="note">After the code or secret is sent, or OpenAI's page is finished, the step shows the spinner until the account appears (state
 <code>checking</code>, task 1632). Closing never stops the check. Each failure says what happened in the one sentence from
-<code>endedMessages</code> (signIn.ts lines 59–67) and offers <b>Start again</b> (same method) and <b>Choose another way</b> (step one).
+<code>endedMessages</code> (signIn.ts lines 59–67) and offers <b>Try again</b> (same method) and <b>Another way</b> (step one). Every result has a short label as its heading and a plain sentence under it.
 The done mark is blue; the other marks are grey.</p>
 <div class="grid">
   <div class="frame"><div class="cap"><b>4a</b>Checking (state <code>checking</code>)</div>
@@ -424,19 +424,70 @@ The done mark is blue; the other marks are grey.</p>
       <div class="m-foot"><button class="btn normal">Another way</button><span class="gap"></span><button class="btn primary normal">Show it</button></div>
     </div></div></div>
 </div>
+<h2 class="sec" style="margin-top:40px">Step three for an API key or token: name the account</h2>
+<p class="note">A key or token has no email to name the account by. When the check passes, step three keeps its place and asks for a name
+instead of showing 4b. The field opens holding a default made from the program and method (“Claude Code API key”, “Claude Code provider token”,
+“Codex API key”), with “ 2”, “ 3” added when that name is already in the list, all of it selected so typing replaces it. The account is
+already saved under that default, so closing the modal keeps it. Save renames it and moves on to 4b. A refused name shows under the field,
+in space already held for it, and the step stays.</p>
+<div class="grid">
+  <div class="frame"><div class="cap"><b>4e</b>Name it: default taken, so numbered</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
+      <div class="m-body">
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code · <b>API key</b><span class="plain">Pay per use</span></div>
+        <div class="status"><span class="mark done" style="width:20px;height:20px;font-size:11px">✓</span>The key works.</div>
+        <div><h4 style="margin:0 0 4px;font-size:var(--t-card);font-weight:600">Name this account</h4>
+          <p class="foot-note" style="font-size:var(--t-small)">It has no email, so give it a name you'll recognise.</p></div>
+        <div class="field"><label>Name</label><input class="focus" value="Claude Code API key 2" style="background:color-mix(in srgb,var(--brand-dim) 70%,transparent)"><span class="under">You already have a “Claude Code API key”, so this one is number 2.</span></div>
+        <div class="spacer"></div>
+        <p class="foot-note">You can change it later from the list.</p>
+      </div>
+      <div class="m-foot"><span class="gap"></span><button class="btn primary normal">Save</button></div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>4f</b>Saving the name</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
+      <div class="m-body">
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-codex"/></svg>Codex · <b>API key</b><span class="plain">Pay per use</span></div>
+        <div class="status"><span class="mark done" style="width:20px;height:20px;font-size:11px">✓</span>The key works.</div>
+        <div><h4 style="margin:0 0 4px;font-size:var(--t-card);font-weight:600">Name this account</h4>
+          <p class="foot-note" style="font-size:var(--t-small)">It has no email, so give it a name you'll recognise.</p></div>
+        <div class="field"><label>Name</label><input value="Team Codex key" disabled style="opacity:.6"><span class="under"></span></div>
+        <div class="spacer"></div>
+        <p class="foot-note">You can change it later from the list.</p>
+      </div>
+      <div class="m-foot"><span class="gap"></span><button class="btn primary normal" disabled><span class="spin tiny"></span>Saving</button></div>
+    </div></div></div>
+  <div class="frame"><div class="cap"><b>4g</b>Name refused; the step stays</div>
+    <div class="stage"><div class="modal">
+      <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
+      <div class="m-body">
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-claude"/></svg>Claude Code · <b>Setup token</b><span class="plain">Subscription</span></div>
+        <div class="status"><span class="mark done" style="width:20px;height:20px;font-size:11px">✓</span>The token works.</div>
+        <div><h4 style="margin:0 0 4px;font-size:var(--t-card);font-weight:600">Name this account</h4>
+          <p class="foot-note" style="font-size:var(--t-small)">It has no email, so give it a name you'll recognise.</p></div>
+        <div class="field"><label>Name</label><input class="bad" value="Server / build box"><span class="under err">A name can't have a slash in it.</span></div>
+        <div class="spacer"></div>
+        <p class="foot-note">You can change it later from the list.</p>
+      </div>
+      <div class="m-foot"><span class="gap"></span><button class="btn primary normal">Save</button></div>
+    </div></div></div>
+</div>
 <table class="st" style="margin-top:24px">
   <tr><th>Attempt state</th><th>Step shows</th><th>Sentence</th><th>Footer</th></tr>
-  <tr><td><code>starting</code></td><td>3a</td><td>Starting the sign-in…</td><td>Back · (Send code, inactive)</td></tr>
+  <tr><td><code>starting</code></td><td>3a</td><td>Getting the sign-in page…</td><td>Back · (Send code, inactive)</td></tr>
   <tr><td><code>waiting</code></td><td>3b, 3d, 3e or 3f by method</td><td>—</td><td>Back · Send code / Add account</td></tr>
-  <tr><td>code refused</td><td>stays on its step, field error (3c)</td><td>This is not a sign-in code: it has spaces. Paste the sign-in code again.</td><td>unchanged</td></tr>
+  <tr><td>code refused</td><td>stays on its step, field error (3c)</td><td>That isn't the code: it has spaces. Copy it again and paste it.</td><td>unchanged</td></tr>
   <tr><td><code>checking</code></td><td>4a</td><td>Checking the sign-in with Claude Code… / Codex…</td><td>Close</td></tr>
-  <tr><td><code>complete</code></td><td>4b</td><td>Account added</td><td>Add another · Done</td></tr>
-  <tr><td><code>failed</code></td><td>4c</td><td>The sign-in did not finish.</td><td>Choose another way · Start again</td></tr>
-  <tr><td><code>expired</code></td><td>4c</td><td>The sign-in took too long and was stopped.</td><td>same</td></tr>
-  <tr><td><code>interrupted</code></td><td>4c</td><td>The sign-in was interrupted.</td><td>same</td></tr>
-  <tr><td><code>cancelled</code></td><td>step one after the user's own Back; 4c if cancelled elsewhere</td><td>The sign-in was cancelled.</td><td>same</td></tr>
-  <tr><td><code>already_added</code></td><td>4d</td><td>This account is already added.</td><td>Choose another way · Show the account</td></tr>
-  <tr><td><code>different_account</code></td><td>only from a row's Sign in again, not from Add account</td><td>That sign-in was for a different account…</td><td>Add it as a new account</td></tr>
+  <tr><td><code>complete</code>, sign-in with an email</td><td>4b</td><td><b>Account added</b> — &lt;email&gt; is ready.</td><td>Add another · Done</td></tr>
+  <tr><td><code>complete</code>, API key or token</td><td>4e, then 4b</td><td><b>Name this account</b> — It has no email, so give it a name you'll recognise.</td><td>Keep this name · Save</td></tr>
+  <tr><td><code>failed</code></td><td>4c</td><td><b>Sign-in didn't finish</b> — Nothing was saved. Try again, or pick another way to sign in.</td><td>Another way · Try again</td></tr>
+  <tr><td><code>expired</code></td><td>4c</td><td><b>Took too long</b> — Nothing was saved. Try again when you're ready.</td><td>same</td></tr>
+  <tr><td><code>interrupted</code></td><td>4c</td><td><b>Sign-in stopped</b> — Something broke it off. Nothing was saved. Try again.</td><td>same</td></tr>
+  <tr><td><code>cancelled</code></td><td>step one after the user's own Back; 4c if stopped elsewhere</td><td><b>Sign-in stopped</b> — It was stopped before it finished.</td><td>same</td></tr>
+  <tr><td><code>already_added</code></td><td>4d</td><td><b>Already added</b> — It's &lt;name&gt; in your list.</td><td>Another way · Show it</td></tr>
+  <tr><td><code>different_account</code></td><td>only from a row's Sign in again, not from Add account</td><td><b>Different account</b> — You signed in as someone else. This account wasn't changed.</td><td>Add as new account</td></tr>
 </table>
 
 <!-- ============ 5. CLOSE WHILE RUNNING ============ -->
@@ -483,7 +534,7 @@ step two with the account's program and method. Status stays grey text. The rows
           <div class="acts-row"><button class="btn danger small hide">Remove</button><span class="plain">Signed in</span></div></li>
       </ul>
     </div></div></div>
-  <div class="frame"><div class="cap"><b>6b</b>Needs sign-in (state <code>needs_sign_in</code>), and an account being removed (state <code>removing</code>)</div>
+  <div class="frame"><div class="cap"><b>6b</b>Expired (state <code>needs_sign_in</code>), and an account being removed (state <code>removing</code>)</div>
     <div class="stage win-stage"><div class="win">
       <div class="ph"><h3>Accounts</h3><span class="count">2</span><span class="gap"></span>
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
@@ -503,7 +554,7 @@ step two with the account's program and method. Status stays grey text. The rows
   <tr><th>Account state</th><th>Pencil</th><th>On hover or focus</th><th>Always shown</th></tr>
   <tr><td><code>signed_in</code>, chosen</td><td>yes</td><td>Remove</td><td>Signed in</td></tr>
   <tr><td><code>signed_in</code>, not chosen</td><td>yes</td><td>Make default · Remove</td><td>Signed in</td></tr>
-  <tr><td><code>needs_sign_in</code></td><td>yes</td><td>Remove</td><td>Sign in again (primary) · Needs sign-in</td></tr>
+  <tr><td><code>needs_sign_in</code></td><td>yes</td><td>Remove</td><td>Sign in again (primary) · Expired, with “Expired on 18 Nov. Sign in again to keep using it.” under the subtext</td></tr>
   <tr><td><code>removing</code></td><td>no</td><td>nothing</td><td>spinner · Removing, and why it waits in the subtext</td></tr>
   <tr><td><code>removed</code></td><td>no</td><td>nothing</td><td>the row leaves the list on the next reload</td></tr>
 </table>
@@ -585,7 +636,7 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
   <tr><td>The modal is closed or the page reloaded mid sign-in</td><td>The attempt keeps running; “Finish signing in” (1c) reopens it at the right step; Add account is inactive meanwhile.</td></tr>
   <tr><td>The user does not see what costs money</td><td>Every card names its billing; the chosen line repeats it on every later step; the list's subtext keeps it.</td></tr>
   <tr><td>A secret shows on screen</td><td>Token and key use <code>TextField secret</code> (password input, <code>new-password</code>) and are never shown again.</td></tr>
-  <tr><td>The check never ends</td><td>The attempt's expiry turns it into <code>expired</code>, shown as 4c with Start again.</td></tr>
+  <tr><td>The check never ends</td><td>The attempt's expiry turns it into <code>expired</code>, shown as 4c with Try again.</td></tr>
   <tr><td>Hidden row actions can't be found by keyboard or on touch</td><td>They appear on <code>:focus-within</code>, so tabbing into a row shows them, and on a screen without hover (<code>hover: none</code>) they are always shown.</td></tr>
   <tr><td>Actions appearing push the row around</td><td>Their space is always kept and only their opacity changes.</td></tr>
   <tr><td>An account is removed by accident</td><td>A separate confirmation that names the account; focus opens on Cancel; Remove is the danger button.</td></tr>
@@ -597,7 +648,7 @@ Enter never removes by accident. On confirm the dialog closes and the row turns 
 <ul class="todo">
   <li>A kit <code>Modal</code>: native <code>&lt;dialog&gt;</code>, fixed body height, header with step bars and ✕, footer slot, focus trap, Escape.</li>
   <li>A kit segmented switch and a selectable option card (<code>role="radiogroup"</code>, arrow keys move).</li>
-  <li>Per-program, per-method texts (card title, how it works, where to get it) and a short billing word (Subscription / API usage) on <code>SignInMethodData</code>, next to <code>billingNote</code>.</li>
+  <li>Per-program, per-method texts (card title, how it works, where to get it) and a short billing word (Subscription / Pay per use) on <code>SignInMethodData</code>, next to <code>billingNote</code>.</li>
   <li>AccountsWindow.vue: one list of all rows, with the program in each row's subtext and one header button; SignInForm.vue split into the modal's steps; AccountRow's state shown as grey text.</li>
   <li>The done state reads the new account's name from the reloaded rows by the attempt's account id.</li>
   <li>AccountRow.vue: whole-row hover background; actions moved to the right, level with the name, with opacity on <code>group-hover</code> and <code>focus-within</code> and always shown under <code>hover: none</code>; a pencil icon button after the name replaces the Rename button and the inline rename form; Sign in again only for <code>needs_sign_in</code>, opening the wizard at step two.</li>
