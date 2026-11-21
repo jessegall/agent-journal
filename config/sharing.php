@@ -2,7 +2,15 @@
 
 declare(strict_types=1);
 
+$tunnels = env('SHARING_TUNNELS_DIR', storage_path('sharing'));
+
 return [
+    /*
+     * The folder that holds every gateway's configuration folder: the root of the file funnel's private place
+     * sharing-tunnels, so a gateway's folder must lie inside it.
+     */
+    'tunnels_dir' => $tunnels,
+
     /*
      * The share-only listener: it serves public share links and nothing else, on loopback inside its container, on
      * its own port. Gateways forward only there.
@@ -18,7 +26,7 @@ return [
      */
     'tunler' => [
         'binary' => env('SHARING_TUNLER_BINARY', '/opt/sharing/bin/tunler'),
-        'config_dir' => env('SHARING_TUNLER_CONFIG_DIR', storage_path('sharing/tunler')),
+        'config_dir' => env('SHARING_TUNLER_CONFIG_DIR', "{$tunnels}/tunler"),
         'subdomain' => env('SHARING_TUNLER_SUBDOMAIN'),
     ],
 
@@ -28,7 +36,7 @@ return [
      */
     'ngrok' => [
         'binary' => env('SHARING_NGROK_BINARY', '/opt/sharing/bin/ngrok'),
-        'config_dir' => env('SHARING_NGROK_CONFIG_DIR', storage_path('sharing/ngrok')),
+        'config_dir' => env('SHARING_NGROK_CONFIG_DIR', "{$tunnels}/ngrok"),
         'control_port' => (int) env('SHARING_NGROK_CONTROL_PORT', 4041),
     ],
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Files\Enums\PlaceExemption;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -16,7 +17,7 @@ final readonly class DirectFileAccess
     public const string WAITING_LIST = 'docs/naming/direct-file-access-sites.txt';
 
     /**
-     * @param  array<string, list<array{line: int, form: string, instead: string}>>  $findings  by path from the root
+     * @param  array<string, list<array{line: int, form: string, instead: string, exemption: string|null}>>  $findings  by path from the root
      */
     private function __construct(private string $projectRoot, private array $findings) {}
 
@@ -50,7 +51,8 @@ final readonly class DirectFileAccess
     }
 
     /**
-     * Each file and form found, as the waiting list writes them, sorted.
+     * Each file and form found, as the list writes them, sorted: a site still waiting to move as 'path form', and a
+     * site the user settled as outside the places as 'exempt Reason path form', which sorts after them.
      *
      * @return list<string>
      */
@@ -60,7 +62,7 @@ final readonly class DirectFileAccess
 
         foreach ($this->findings as $path => $found) {
             foreach ($found as $finding) {
-                $sites[] = "{$path} {$finding['form']}";
+                $sites[] = self::lineOf($path, $finding);
             }
         }
 
@@ -71,11 +73,11 @@ final readonly class DirectFileAccess
     }
 
     /**
-     * The sites the waiting list holds, its comment lines left out.
+     * The sites the list holds, its comment lines left out.
      *
      * @return list<string>
      */
-    public function waitingSites(): array
+    public function listedSites(): array
     {
         $lines = file("{$this->projectRoot}/".self::WAITING_LIST, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
 
@@ -83,23 +85,23 @@ final readonly class DirectFileAccess
     }
 
     /**
-     * What differs from the waiting list: each new site with its lines and the Files method to use instead, and each
-     * listed site the code no longer has.
+     * What differs from the list: each new site with its lines and the Files method to use instead, and each listed
+     * site the code no longer has.
      */
     public function report(): string
     {
-        $waiting = $this->waitingSites();
+        $listed = $this->listedSites();
         $lines = [];
 
         foreach ($this->findings as $path => $found) {
             foreach ($found as $finding) {
-                if (! in_array("{$path} {$finding['form']}", $waiting, true)) {
+                if (! in_array(self::lineOf($path, $finding), $listed, true)) {
                     $lines[] = "  new: {$path}:{$finding['line']} {$finding['form']}, use {$finding['instead']}";
                 }
             }
         }
 
-        foreach (array_diff($waiting, $this->sites()) as $gone) {
+        foreach (array_diff($listed, $this->sites()) as $gone) {
             $lines[] = "  gone: {$gone} is listed but no longer in the code; remove its line from ".self::WAITING_LIST;
         }
 
@@ -107,20 +109,46 @@ final readonly class DirectFileAccess
     }
 
     /**
-     * The waiting list as it is written: a header with the counts, then one site per line.
+     * The list as it is written: a header with the counts, then one site per line, the exempt ones last.
      */
     public function listText(): string
     {
         $sites = $this->sites();
-        $files = count($this->findings);
-        $count = count($sites);
+        $exempt = count(array_filter($sites, fn (string $site) => str_starts_with($site, 'exempt ')));
+        $waiting = count($sites) - $exempt;
 
         return <<<TEXT
-        # The direct file access sites still waiting to move to App\\Files\\Contracts\\Files (plan 39): {$files} files, {$count} sites.
-        # One line per file and form, without line numbers. A task that moves a site removes its own lines here, in the same task;
-        # the list only shrinks. tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed
-        # site the code no longer has. Regenerate with: php tools/refactoring/direct-file-sites.php --write
+        # The direct file access sites outside app/Files (plan 39): {$waiting} still waiting to move to App\\Files\\Contracts\\Files,
+        # and {$exempt} exempt. One line per file and form, without line numbers. A task that moves a site removes its own
+        # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
+        # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
+        # tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed site the code no
+        # longer has. Regenerate with: php tools/refactoring/direct-file-sites.php --write
+        # The exemptions:
 
-        TEXT.implode("\n", $sites)."\n";
+        TEXT.self::exemptionLines().implode("\n", $sites)."\n";
+    }
+
+    /**
+     * One comment line per exemption the user settled, with its reason.
+     */
+    private static function exemptionLines(): string
+    {
+        $lines = array_map(
+            fn (PlaceExemption $exemption) => "#   {$exemption->name}: {$exemption->description()}\n",
+            PlaceExemption::cases(),
+        );
+
+        return implode('', $lines)."\n";
+    }
+
+    /**
+     * @param  array{line: int, form: string, instead: string, exemption: string|null}  $finding
+     */
+    private static function lineOf(string $path, array $finding): string
+    {
+        return $finding['exemption'] === null
+            ? "{$path} {$finding['form']}"
+            : "exempt {$finding['exemption']} {$path} {$finding['form']}";
     }
 }

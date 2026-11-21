@@ -118,7 +118,7 @@ final class SkillCatalogueTest extends TestCase
         return SkillCatalogue::build(
             $registry,
             $this->app,
-            new CanonicalRenderer(new MarkdownParts()),
+            new CanonicalRenderer($this->app->make(MarkdownParts::class)),
             $this->app->make(ConditionTree::class),
             $this->app->make(StoredSkillSource::class),
         );

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Console;
 
 use App\Agents\Support\ArrangementSetting;
+use App\Files\Contracts\Files;
 use App\Profiles\Exceptions\SignInRunnerRefused;
 use App\Profiles\Support\HostAccountDrain;
 use App\Profiles\Support\HostSecret;
@@ -24,7 +25,7 @@ final class RunSignInsCommand extends Command
 
     protected $description = 'Run the journal sign-ins on this host';
 
-    public function handle(Factory $http, SignInProtocols $protocols, ArrangementSetting $arrangement): int
+    public function handle(Factory $http, SignInProtocols $protocols, ArrangementSetting $arrangement, Files $files): int
     {
         $runner = new PrivateSignInProcesses(
             new SignedSignInHost($http, (string) getenv('JOURNAL_URL'), HostSecret::fromEnvironment(
@@ -33,6 +34,7 @@ final class RunSignInsCommand extends Command
             ), $arrangement->arrangement),
             $protocols,
             static fn () => usleep(500_000),
+            $files,
             new HostAccountDrain((string) getenv('AGENTS_HOST_START_SOCKET'), $arrangement->arrangement),
         );
 

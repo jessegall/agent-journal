@@ -25,10 +25,10 @@ use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
 use App\Processes\Values\SampleOutcome;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
+use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsCommandsAsStart;
 use Tests\TestCase;
@@ -52,7 +52,7 @@ final class SampleWorkflowTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
         $this->start = TestStart::start();
         $this->requestId = $this->runAsAgent(new OpenCommandRequest(
             'acme verify',

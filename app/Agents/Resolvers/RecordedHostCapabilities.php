@@ -12,9 +12,13 @@ use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Exceptions\CapabilityMatrixInvalid;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
+use App\Files\Contracts\Files;
+use App\Files\Exceptions\FileJsonInvalid;
+use App\Files\Exceptions\FileMissing;
+use App\Files\Exceptions\FileUnreadable;
+use App\Files\Values\FilePath;
 use App\Programs\Enums\HookProgram;
 use BackedEnum;
-use JsonException;
 
 /**
  * Answers from the checked-in matrix docs/accounts/container-capabilities.json; a capability without a row is
@@ -24,7 +28,7 @@ final readonly class RecordedHostCapabilities implements HostCapabilities
 {
     private const string UNRECORDED_EVIDENCE = 'docs/accounts/start-handshake.md';
 
-    public function __construct(private string $matrixPath) {}
+    public function __construct(private Files $files, private FilePath $matrix) {}
 
     /**
      * @throws CapabilityMatrixInvalid
@@ -53,13 +57,13 @@ final readonly class RecordedHostCapabilities implements HostCapabilities
     private function rows(): array
     {
         try {
-            $matrix = json_decode((string) file_get_contents($this->matrixPath), true, 8, JSON_THROW_ON_ERROR);
-        } catch (JsonException $failure) {
-            throw CapabilityMatrixInvalid::unreadable($this->matrixPath, $failure);
+            $matrix = $this->files->readJson($this->matrix);
+        } catch (FileMissing|FileUnreadable|FileJsonInvalid $failure) {
+            throw CapabilityMatrixInvalid::unreadable($this->matrix->label(), $failure);
         }
 
         if (! isset($matrix['rows']) || ! is_array($matrix['rows'])) {
-            throw CapabilityMatrixInvalid::withoutRows($this->matrixPath);
+            throw CapabilityMatrixInvalid::withoutRows($this->matrix->label());
         }
 
         $rows = [];
@@ -89,7 +93,7 @@ final readonly class RecordedHostCapabilities implements HostCapabilities
     private function field(array $row, int $number, string $name): string
     {
         if (! isset($row[$name]) || ! is_string($row[$name]) || $row[$name] === '') {
-            throw CapabilityMatrixInvalid::row($this->matrixPath, $number, $name);
+            throw CapabilityMatrixInvalid::row($this->matrix->label(), $number, $name);
         }
 
         return $row[$name];
@@ -109,6 +113,6 @@ final readonly class RecordedHostCapabilities implements HostCapabilities
     private function caseField(array $row, int $number, string $name, string $enum): BackedEnum
     {
         return $enum::tryFrom($this->field($row, $number, $name))
-            ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, $name);
+            ?? throw CapabilityMatrixInvalid::row($this->matrix->label(), $number, $name);
     }
 }

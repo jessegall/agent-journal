@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Autoload\Support\Psr4ClassNames;
+use App\Files\Support\CodeFiles;
 use App\Mcp\Tools\JournalTool;
 use ReflectionClass;
-use Symfony\Component\Finder\Finder;
 
 /**
- * Discovers concrete tools in a domain's MCP directory in filename order.
+ * Discovers concrete tools in a domain's MCP directory in filename order; a missing directory holds none.
  */
 final readonly class McpToolDirectory
 {
@@ -19,16 +19,16 @@ final readonly class McpToolDirectory
      */
     public static function classesIn(string $folder): array
     {
-        if (! is_dir($folder)) {
-            return [];
-        }
-
-        $files = Finder::create()->files()->in($folder)->depth(0)->name('*.php')->sortByName();
+        $code = CodeFiles::ofProcess();
         $names = Psr4ClassNames::fromComposer();
         $tools = [];
 
-        foreach ($files as $file) {
-            $class = $names->classOf((string) $file->getRealPath());
+        foreach ($code->folder($code->projectPathOf("{$folder}/*.php")) as $entry) {
+            if (! $entry->isFile()) {
+                continue;
+            }
+
+            $class = $names->classOf($entry->fingerprint->realPath);
 
             if (! is_subclass_of($class, JournalTool::class) || new ReflectionClass($class)->isAbstract()) {
                 continue;

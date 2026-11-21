@@ -4,124 +4,144 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
+use App\Files\Exceptions\FileOutsidePlaces;
+use App\Files\Exceptions\FilePathInvalid;
+use App\Files\Exceptions\FileUnwritable;
+use App\Files\Exceptions\FolderClosed;
+use App\Files\Exceptions\LinkLeavesPlace;
+use App\Files\Values\Depth;
+use App\Files\Values\FilePath;
+use App\Files\Values\FolderEntry;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Exceptions\SkillPublicationFailed;
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
 
 /**
- * Writes skills on the host, and only inside the journal's protected skills root: staged folders under generations,
- * and per target a symlink the journal created, switched to a complete staged folder by an atomic rename under a
- * short flock. A target that is anything else is someone's own files and is never touched.
+ * Writes skills on the host, and only inside the journal's protected skills root, the host-skills place: staged
+ * folders under generations, and per target a symlink the journal created, switched to a complete staged folder by an
+ * atomic rename under a short lock. A target that is anything else is someone's own files and is never touched.
  */
 final readonly class HostSkillPublisher implements SkillPublisher
 {
+    /**
+     * The deepest a staged publication goes: skills/<key>/SKILL.md for Claude Code (doc 69).
+     */
+    private const int STAGED_LEVEL_LIMIT = 3;
+
+    private const string GENERATIONS = 'generations';
+
     public function __construct(
         private SkillTargets $targets,
+        private Files $files,
     ) {}
 
     public function stage(string $stagingFolder, array $files): void
     {
-        $folder = $this->insideRoot($stagingFolder);
+        $folder = $this->pathOf($stagingFolder);
 
         foreach ($files as $relative => $bytes) {
-            if ($relative === '' || str_starts_with($relative, '/') || in_array('..', explode('/', $relative), true)) {
-                throw SkillPublicationFailed::escape($relative);
-            }
+            $file = $this->childOf($folder, $relative);
 
-            $path = "{$folder}/{$relative}";
-
-            if (is_file($path) && hash_file('sha256', $path) === hash('sha256', $bytes)) {
+            if ($this->files->exists($file) && $this->files->digest($file) === hash('sha256', $bytes)) {
                 continue;
             }
 
-            $this->write($path, $bytes);
+            try {
+                $this->files->write($file, $bytes);
+            } catch (FileUnwritable $failure) {
+                throw SkillPublicationFailed::write("{$file->label()} cannot be written", $failure);
+            }
         }
     }
 
     public function activate(string $target, string $stagingFolder): void
     {
-        $activePath = $this->insideRoot($target);
-        $folder = $this->insideRoot($stagingFolder);
-        $this->makeFolder(dirname($activePath));
-        $lock = fopen("{$activePath}.lock", 'c');
-
-        if ($lock === false) {
-            throw SkillPublicationFailed::write("the lock beside {$activePath} cannot be opened");
-        }
+        $active = $this->pathOf($target);
+        $folder = $this->pathOf($stagingFolder);
+        $lock = $active->parent()->child("{$active->name()}.lock");
 
         try {
-            flock($lock, LOCK_EX);
-            $this->checkOwned($activePath);
-            $pointer = "{$activePath}.next-".bin2hex(random_bytes(6));
-
-            if (! @symlink($folder, $pointer) || ! @rename($pointer, $activePath)) {
-                @unlink($pointer);
-
-                throw SkillPublicationFailed::write("the pointer at {$activePath} cannot be switched");
-            }
-        } finally {
-            flock($lock, LOCK_UN);
-            fclose($lock);
+            $this->files->makeFolder($active->parent(), Permissions::Shared);
+            $this->files->locked($lock, fn () => $this->switchTo($active, $folder));
+        } catch (FileUnwritable $failure) {
+            throw SkillPublicationFailed::write("the pointer at {$active->label()} cannot be switched", $failure);
         }
     }
 
     public function clear(string $stagingFolder, array $files): void
     {
-        $folder = $this->insideRoot($stagingFolder);
+        $folder = $this->pathOf($stagingFolder);
 
-        if (! is_dir($folder) || is_link($folder)) {
+        if ($this->files->isLink($folder) || ! $this->files->isFolder($folder)) {
             return;
         }
 
-        $skillFiles = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($folder, FilesystemIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST,
-        );
-        $paths = iterator_to_array($skillFiles, false);
-
-        foreach ($paths as $entry) {
-            $this->checkStaged($folder, $entry, $files);
+        foreach ($this->files->list($folder, Depth::levels(self::STAGED_LEVEL_LIMIT)) as $entry) {
+            $this->assertStaged($folder, $entry, $files);
         }
 
-        foreach ($paths as $entry) {
-            $this->remove($entry);
-        }
+        $this->files->deleteFolder($folder, Depth::levels(self::STAGED_LEVEL_LIMIT));
+        $generation = $folder->parent();
 
-        rmdir($folder);
-        $generation = dirname($folder);
-
-        if (dirname($generation) === $this->targets->generationsFolder() && $this->isEmptyFolder($generation)) {
-            rmdir($generation);
+        if ($generation->parent()->relative === self::GENERATIONS
+            && $this->files->list($generation)->isEmpty()) {
+            $this->files->deleteFolder($generation, Depth::one());
         }
     }
 
     public function activeFolder(string $target): string|null
     {
-        $activePath = $this->insideRoot($target);
+        $active = $this->pathOf($target);
 
-        return is_link($activePath) ? (string) readlink($activePath) : null;
+        if (! $this->files->isLink($active)) {
+            return null;
+        }
+
+        return rtrim($this->targets->root(), '/').'/'.$this->files->linkTarget($active)->relative;
     }
 
     /**
-     * Refuses a target that exists and is not a symlink into the protected root, which only the journal makes.
+     * Points the active link at the staged folder by making a new link beside it and moving it over the old one, so
+     * a reader sees the old generation or the new, never neither.
      */
-    private function checkOwned(string $target): void
+    private function switchTo(FilePath $active, FilePath $folder): void
     {
-        if (! file_exists($target) && ! is_link($target)) {
+        $this->assertOwned($active);
+        $pointer = $active->parent()->child("{$active->name()}.next-".bin2hex(random_bytes(6)));
+
+        try {
+            $this->files->link($pointer, $folder);
+            $this->files->move($pointer, $active);
+        } catch (FileUnwritable|LinkLeavesPlace $failure) {
+            $this->files->delete($pointer);
+
+            throw SkillPublicationFailed::write("the pointer at {$active->label()} cannot be switched", $failure);
+        }
+    }
+
+    /**
+     * Refuses a target that exists and is not a link into the generations, which only the journal makes.
+     */
+    private function assertOwned(FilePath $target): void
+    {
+        if (! $this->files->isLink($target) && ! $this->files->exists($target) && ! $this->files->isFolder($target)) {
             return;
         }
 
-        if (! is_link($target)) {
-            throw SkillPublicationFailed::collision($target);
+        if (! $this->files->isLink($target)) {
+            throw SkillPublicationFailed::collision($target->label());
         }
 
-        $points = (string) readlink($target);
+        try {
+            $points = $this->files->linkTarget($target);
+        } catch (LinkLeavesPlace $outside) {
+            throw SkillPublicationFailed::collision($target->label(), $outside);
+        }
 
-        if (! str_starts_with($points, $this->targets->generationsFolder().'/')) {
-            throw SkillPublicationFailed::collision($target);
+        if (! str_starts_with($points->relative, self::GENERATIONS.'/')) {
+            throw SkillPublicationFailed::collision($target->label());
         }
     }
 
@@ -131,90 +151,46 @@ final readonly class HostSkillPublisher implements SkillPublisher
      *
      * @param  array<string, string>  $files
      */
-    private function checkStaged(string $folder, SplFileInfo $entry, array $files): void
+    private function assertStaged(FilePath $folder, FolderEntry $entry, array $files): void
     {
-        $relative = substr($entry->getPathname(), strlen($folder) + 1);
+        $relative = substr($entry->path->relative, strlen($folder->relative) + 1);
 
-        if ($entry->isLink()) {
-            throw SkillPublicationFailed::changedFile($entry->getPathname());
-        }
-
-        if ($entry->isDir()) {
+        if ($entry->isFolder()) {
             return;
         }
 
-        $staged = array_key_exists($relative, $files)
-            && hash_file('sha256', $entry->getPathname()) === hash('sha256', $files[$relative]);
+        $isStaged = $entry->isFile()
+            && array_key_exists($relative, $files)
+            && $this->files->digest($entry->path) === hash('sha256', $files[$relative]);
 
-        if (! $staged) {
-            throw SkillPublicationFailed::changedFile($entry->getPathname());
+        if (! $isStaged) {
+            throw SkillPublicationFailed::changedFile($entry->path->label());
         }
-    }
-
-    private function remove(SplFileInfo $entry): void
-    {
-        if ($entry->isDir()) {
-            rmdir($entry->getPathname());
-
-            return;
-        }
-
-        unlink($entry->getPathname());
-    }
-
-    private function isEmptyFolder(string $folder): bool
-    {
-        return is_dir($folder) && ! is_link($folder) && new FilesystemIterator($folder)->valid() === false;
     }
 
     /**
-     * The path, checked to lie inside the protected root, never through a parent step.
+     * A path the skill targets name, as a path in the host-skills place; its last name is never followed, so the
+     * active link is handled as the link.
      */
-    private function insideRoot(string $path): string
+    private function pathOf(string $path): FilePath
     {
-        $root = rtrim($this->targets->root(), '/');
-
-        if (! str_starts_with($path, $root.'/') || in_array('..', explode('/', $path), true)) {
-            throw SkillPublicationFailed::escape($path);
-        }
-
-        $existing = $path;
-
-        while (! file_exists($existing) && $existing !== $root && $existing !== '/') {
-            $existing = dirname($existing);
-        }
-
-        $real = realpath($existing);
-        $realRoot = realpath($root);
-
-        $leavesRoot = $real !== false
-            && $realRoot !== false
-            && $real !== $realRoot
-            && ! str_starts_with($real, $realRoot.'/');
-
-        if ($leavesRoot && ! is_link($path)) {
-            throw SkillPublicationFailed::escape($path);
-        }
-
-        return $path;
-    }
-
-    private function write(string $path, string $bytes): void
-    {
-        $this->makeFolder(dirname($path));
-        $temporary = "{$path}.part-".bin2hex(random_bytes(6));
-
-        if (@file_put_contents($temporary, $bytes) !== strlen($bytes) || ! @rename($temporary, $path)) {
-            @unlink($temporary);
-
-            throw SkillPublicationFailed::write("{$path} cannot be written");
+        try {
+            return $this->files->pathIn(Place::HostSkills, dirname($path))->child(basename($path));
+        } catch (FileOutsidePlaces|FilePathInvalid|FolderClosed $escape) {
+            throw SkillPublicationFailed::escape($path, $escape);
         }
     }
 
-    private function makeFolder(string $folder): void
+    private function childOf(FilePath $folder, string $relative): FilePath
     {
-        if (! is_dir($folder) && ! @mkdir($folder, 0o755, true) && ! is_dir($folder)) {
-            throw SkillPublicationFailed::write("the folder {$folder} cannot be made");
+        if ($relative === '') {
+            throw SkillPublicationFailed::escape($relative);
+        }
+
+        try {
+            return $folder->child($relative);
+        } catch (FilePathInvalid $escape) {
+            throw SkillPublicationFailed::escape($relative, $escape);
         }
     }
 }

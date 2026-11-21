@@ -6,22 +6,24 @@ namespace App\Hooks\Relay;
 
 use App\Agents\Support\BypassReport;
 use App\Agents\Support\LoggedBypass;
+use App\Files\Contracts\Files;
+use App\Files\Values\FilePath;
 
 /**
  * The host's own file of bypasses not yet uploaded, one JSON line each.
  */
 final readonly class BypassLog
 {
-    public function __construct(private string $path) {}
+    public function __construct(private Files $files, private FilePath $log) {}
 
     public function append(LoggedBypass $fact): void
     {
-        file_put_contents($this->path, $fact->toJson().PHP_EOL, FILE_APPEND | LOCK_EX);
+        $this->files->append($this->log, $fact->toJson().PHP_EOL);
     }
 
     public function pending(): BypassReport
     {
-        $lines = is_file($this->path) ? array_filter(explode(PHP_EOL, (string) file_get_contents($this->path))) : [];
+        $lines = $this->files->exists($this->log) ? array_filter(explode(PHP_EOL, $this->files->read($this->log))) : [];
 
         return BypassReport::from(
             [
@@ -34,8 +36,6 @@ final readonly class BypassLog
 
     public function clear(): void
     {
-        if (is_file($this->path)) {
-            unlink($this->path);
-        }
+        $this->files->delete($this->log);
     }
 }

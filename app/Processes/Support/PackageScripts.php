@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Processes\Values\ScriptBinding;
 use App\Processes\Values\ScriptBody;
 use App\Processes\Values\Word;
@@ -53,6 +55,7 @@ final readonly class PackageScripts
     /**
      * @return list<ScriptBody>
      */
+    #[OutsideThePlaces(PlaceExemption::CommandFileSystem)]
     public function bodyOf(string $manager, string $name, string $projectRoot): array
     {
         $file = self::PACKAGE_FILES[$manager];

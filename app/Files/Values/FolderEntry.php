@@ -23,4 +23,9 @@ final readonly class FolderEntry
     {
         return $this->type === EntryType::Folder;
     }
+
+    public function isFile(): bool
+    {
+        return $this->type === EntryType::File;
+    }
 }

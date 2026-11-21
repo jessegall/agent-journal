@@ -13,6 +13,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Bus\Support\EntryDispatchers;
+use App\Files\Contracts\Files;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
@@ -77,6 +78,9 @@ final class AccountRemovalTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // The account folders of this test lie in the system's temporary folder, so the accounts root is that folder.
+        config(['accounts.root' => sys_get_temp_dir()]);
 
         Bus::fake([SignInDeadline::class]);
         $this->account = $this->chooseActiveAccounts()['codex'];
@@ -146,7 +150,7 @@ final class AccountRemovalTest extends TestCase
             false,
             'account',
         );
-        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null);
+        $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class));
 
         $this->assertTrue($runner->cleanNext());
         $host->nextCleanup = new ClaimedCleanup(
@@ -196,7 +200,7 @@ final class AccountRemovalTest extends TestCase
             }
         };
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => null, $stillRunning)->cleanNext();
+        new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class), $stillRunning)->cleanNext();
 
         $this->assertEquals([new CleanupProgress(false, false)], $host->cleanups);
         $this->assertDirectoryExists($directory);

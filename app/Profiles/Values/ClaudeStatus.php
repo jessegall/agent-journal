@@ -39,27 +39,21 @@ final readonly class ClaudeStatus
     /**
      * Whether it is logged in by this method in exactly this folder.
      */
-    public function isSignedInBy(string $authMethod, string $directory): bool
+    public function isSignedInBy(string $authMethod, string $directory, string $realDirectory): bool
     {
-        return $this->isLoggedIn && $this->authMethod === $authMethod && $this->reads($directory);
+        return $this->isLoggedIn && $this->authMethod === $authMethod && $this->reads($directory, $realDirectory);
     }
 
     /**
-     * Whether the folder it read is the attempted one, the same path or, when both exist, the same real folder behind
-     * a trailing slash or a symbolic link.
+     * Whether the folder it read is the attempted one: the same path, behind a trailing slash or not, or the folder's
+     * real path, as the program reports it after following a symbolic link.
      */
-    private function reads(string $directory): bool
+    private function reads(string $directory, string $realDirectory): bool
     {
         if ($this->configDirectory === null) {
             return false;
         }
 
-        if (rtrim($this->configDirectory, '/') === rtrim($directory, '/')) {
-            return true;
-        }
-
-        $real = realpath($this->configDirectory);
-
-        return $real !== false && $real === realpath($directory);
+        return in_array(rtrim($this->configDirectory, '/'), [rtrim($directory, '/'), $realDirectory], true);
     }
 }

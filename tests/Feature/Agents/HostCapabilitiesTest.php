@@ -15,6 +15,7 @@ use App\Agents\Exceptions\CapabilityMatrixInvalid;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
 use App\Agents\Resolvers\RecordedHostCapabilities;
 use App\Agents\Support\HostCapabilityQuery;
+use App\Files\Contracts\Files;
 use App\Programs\Enums\HookProgram;
 use Tests\TestCase;
 
@@ -133,7 +134,7 @@ final class HostCapabilitiesTest extends TestCase
 
     public function test_a_supported_row_admits_and_a_missing_row_is_unverified(): void
     {
-        $capabilities = new RecordedHostCapabilities(
+        $capabilities = $this->capabilities(
             $this->matrix(
                 [
                     [
@@ -170,7 +171,7 @@ final class HostCapabilitiesTest extends TestCase
 
     public function test_a_row_with_an_unknown_status_is_refused_by_name(): void
     {
-        $capabilities = new RecordedHostCapabilities(
+        $capabilities = $this->capabilities(
             $this->matrix(
                 [
                     [
@@ -186,7 +187,9 @@ final class HostCapabilitiesTest extends TestCase
             ),
         );
 
-        $this->expectExceptionObject(CapabilityMatrixInvalid::row($this->matrixPath, 0, 'status'));
+        $this->expectExceptionObject(
+            CapabilityMatrixInvalid::row($this->app->make(Files::class)->filePathOf($this->matrixPath)->label(), 0, 'status'),
+        );
 
         $capabilities->capability(
             $this->capabilityQuery(
@@ -211,6 +214,13 @@ final class HostCapabilitiesTest extends TestCase
         ExecutionModeType $mode,
     ): HostCapabilityQuery {
         return new HostCapabilityQuery($capability, $program, AccountModeType::Subscription, $mode);
+    }
+
+    private function capabilities(string $matrixPath): RecordedHostCapabilities
+    {
+        $files = $this->app->make(Files::class);
+
+        return new RecordedHostCapabilities($files, $files->filePathOf($matrixPath));
     }
 
     /**

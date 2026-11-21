@@ -7,7 +7,6 @@ namespace App\Files\Support;
 use App\Files\Enums\Place;
 use App\Files\Exceptions\FolderClosed;
 use App\Files\Values\FilePath;
-use Illuminate\Contracts\Config\Repository;
 
 /**
  * The folders the file funnel never enters: the project's closed folders, and the root of every private place as
@@ -15,7 +14,7 @@ use Illuminate\Contracts\Config\Repository;
  */
 final readonly class ClosedFolders
 {
-    public function __construct(private Repository $config, private PlaceRoots $roots) {}
+    public function __construct(private PlaceRoots $roots) {}
 
     public function assertNotClosed(FilePath $file): void
     {
@@ -33,7 +32,7 @@ final readonly class ClosedFolders
      */
     public function closedIn(Place $place): array
     {
-        $folders = $place === Place::Project ? $this->config->array('files.closed_folders') : [];
+        $folders = $place->closedFolders();
         $root = $this->roots->root($place);
 
         foreach ($this->roots->available() as $other) {
@@ -44,6 +43,6 @@ final readonly class ClosedFolders
             }
         }
 
-        return array_values(array_map(strval(...), $folders));
+        return $folders;
     }
 }

@@ -6,6 +6,8 @@ namespace App\Processes\Console;
 
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\AgentRequests\Values\CommandReport;
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Calls\ProcessCalls;
 use App\Processes\Enums\CommandClass;
@@ -25,6 +27,7 @@ final class ProcessExportCommand extends Command
 
     protected $description = 'Write a part\'s stored output to a file';
 
+    #[OutsideThePlaces(PlaceExemption::UserNamedFile)]
     public function handle(ProcessCalls $processes): int
     {
         $run = (string) $this->argument('run');

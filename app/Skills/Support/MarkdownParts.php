@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
+use App\Files\Contracts\Files;
+use App\Files\Exceptions\FileMissing;
+use App\Files\Exceptions\FileOutsidePlaces;
+use App\Files\Exceptions\FilePathInvalid;
+use App\Files\Exceptions\FileUnreadable;
+use App\Files\Exceptions\FolderClosed;
+use App\Files\Exceptions\FolderMissing;
+use App\Files\Exceptions\LinkLeavesPlace;
+use App\Files\Exceptions\LinkLoop;
+use App\Skills\Contracts\MarkdownParts as MarkdownPartsContract;
 use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillOwner;
@@ -19,8 +29,10 @@ use Illuminate\Support\Str;
  * Reads Markdown parts and assets from an owner's resources/skills folder, and nowhere else: no absolute path, no
  * parent step, no URL and no symlink that leaves the folder. A part is taken as written; it includes nothing itself.
  */
-final readonly class MarkdownParts
+final readonly class MarkdownParts implements MarkdownPartsContract
 {
+    public function __construct(private Files $files) {}
+
     /**
      * The part's Markdown: the whole body without its front matter, or the subtree under its heading path without
      * that heading.
@@ -79,16 +91,6 @@ final readonly class MarkdownParts
     }
 
     /**
-     * The real path of a file a skill declares as an asset, checked to lie inside the owner's folder.
-     *
-     * @throws SkillSourceInvalid
-     */
-    public function assetPath(string $file, SkillOwner $owner): string
-    {
-        return $this->pathOf($file, $owner);
-    }
-
-    /**
      * The file's one # title, which stands first in the file and is the skill's name.
      *
      * @throws SkillSourceInvalid
@@ -126,7 +128,7 @@ final readonly class MarkdownParts
      */
     private function markdownOf(string $file, SkillOwner $owner): MarkdownText
     {
-        $text = (string) file_get_contents($this->pathOf($file, $owner));
+        $text = $this->sourceOf($file, $owner);
 
         try {
             return MarkdownText::body($this->withoutFrontMatter(str_replace(["\r\n", "\r"], "\n", $text)));
@@ -136,32 +138,22 @@ final readonly class MarkdownParts
     }
 
     /**
+     * The text of a skill source inside its owner's resources/skills folder, read through the funnel, which refuses a
+     * path that climbs out and a link that leaves the place; each refusal is told as the skill's own.
+     *
      * @throws SkillSourceInvalid
      */
-    private function pathOf(string $file, SkillOwner $owner): string
+    private function sourceOf(string $file, SkillOwner $owner): string
     {
-        $isRelative = $file !== '' && ! str_starts_with($file, '/') && ! str_starts_with($file, '\\') && preg_match(
-            '#^[A-Za-z]:|://#',
-            $file,
-        ) !== 1;
-        $stepsUp = in_array('..', preg_split('#[/\\\\]#', $file) ?: [], true);
-
-        if (! $isRelative || $stepsUp) {
-            throw SkillSourceInvalid::outsideFolder($file);
+        try {
+            return $this->files->read($this->files->filePathOf($owner->skillsFolder())->child($file));
+        } catch (FilePathInvalid|FileOutsidePlaces|FolderClosed|LinkLeavesPlace $refusal) {
+            throw SkillSourceInvalid::outsideFolder($file, $refusal);
+        } catch (FileMissing|FolderMissing|LinkLoop $refusal) {
+            throw SkillSourceInvalid::missingFile($file, $refusal);
+        } catch (FileUnreadable $refusal) {
+            throw SkillSourceInvalid::unreadable($file, $refusal);
         }
-
-        $folder = realpath($owner->skillsFolder());
-        $path = realpath($owner->skillsFolder().'/'.$file);
-
-        if ($folder === false || $path === false || ! is_file($path)) {
-            throw SkillSourceInvalid::missingFile($file);
-        }
-
-        if (! str_starts_with($path, $folder.DIRECTORY_SEPARATOR)) {
-            throw SkillSourceInvalid::outsideFolder($file);
-        }
-
-        return $path;
     }
 
     private function withoutFrontMatter(string $text): string

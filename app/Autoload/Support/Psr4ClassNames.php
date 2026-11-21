@@ -10,7 +10,7 @@ use Composer\Autoload\ClassLoader;
 /**
  * The class a PHP file declares, read from Composer's PSR-4 roots: each domain's src folder maps to its own
  * namespace, which Laravel's guess from the base path cannot know. The roots are read once per process: no code
- * registers new ones while it runs, and reading them resolves every package's folders.
+ * registers new ones while it runs.
  */
 final class Psr4ClassNames
 {
@@ -36,11 +36,7 @@ final class Psr4ClassNames
         foreach (ClassLoader::getRegisteredLoaders() as $loader) {
             foreach ($loader->getPrefixesPsr4() as $namespace => $folders) {
                 foreach ($folders as $folder) {
-                    $real = realpath($folder);
-
-                    if ($real !== false) {
-                        $roots[$real] = $namespace;
-                    }
+                    $roots[self::withoutSteps($folder)] = $namespace;
                 }
             }
         }
@@ -48,6 +44,29 @@ final class Psr4ClassNames
         uksort($roots, fn (string $one, string $other) => strlen($other) <=> strlen($one));
 
         return new self($roots);
+    }
+
+    /**
+     * A folder as Composer names it, such as /app/vendor/composer/../../app, with its '.' and '..' steps taken: the
+     * paths Composer builds from its own real folder, so no disk is read to resolve them.
+     */
+    private static function withoutSteps(string $folder): string
+    {
+        $names = [];
+
+        foreach (explode('/', $folder) as $name) {
+            if ($name === '..') {
+                array_pop($names);
+
+                continue;
+            }
+
+            if ($name !== '' && $name !== '.') {
+                $names[] = $name;
+            }
+        }
+
+        return '/'.implode('/', $names);
     }
 
     /**

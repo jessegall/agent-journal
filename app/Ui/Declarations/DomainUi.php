@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Ui\Declarations;
 
+use App\Files\Exceptions\FileMissing;
+use App\Files\Exceptions\FileOutsidePlaces;
+use App\Files\Exceptions\FilePathInvalid;
+use App\Files\Exceptions\FolderClosed;
+use App\Files\Exceptions\LinkLeavesPlace;
+use App\Files\Exceptions\LinkLoop;
+use App\Files\Support\CodeFiles;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\SectionProvider;
@@ -94,27 +101,24 @@ final readonly class DomainUi
     }
 
     /**
-     * The real path of a component named relative to the domain's script folder, refused when it lies elsewhere.
+     * The real path of a component named relative to the domain's script folder; the funnel refuses one that climbs out
+     * or links out of the project.
      */
     public function componentFile(string $declaration, string $component): string
     {
-        if (! str_ends_with($component, '.vue')
-            || str_starts_with($component, '/')
-            || in_array('..', explode('/', $component), true)) {
+        if (! str_ends_with($component, '.vue')) {
             throw UiComponentMissing::outsideOwner($declaration, $component);
         }
 
-        $file = realpath("{$this->scriptFolder}/{$component}");
+        $code = CodeFiles::ofProcess();
 
-        if ($file === false) {
-            throw UiComponentMissing::at($declaration, "{$this->scriptFolder}/{$component}");
+        try {
+            return $code->realPathOf($code->projectPathOf($this->scriptFolder)->child($component));
+        } catch (FilePathInvalid|FileOutsidePlaces|FolderClosed|LinkLeavesPlace $refusal) {
+            throw UiComponentMissing::outsideOwner($declaration, $component, $refusal);
+        } catch (FileMissing|LinkLoop $refusal) {
+            throw UiComponentMissing::at($declaration, "{$this->scriptFolder}/{$component}", $refusal);
         }
-
-        if (! str_starts_with($file, realpath($this->scriptFolder).DIRECTORY_SEPARATOR)) {
-            throw UiComponentMissing::outsideOwner($declaration, $component);
-        }
-
-        return $file;
     }
 
     /**

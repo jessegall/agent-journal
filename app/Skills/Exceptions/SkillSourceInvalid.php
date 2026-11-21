@@ -15,14 +15,20 @@ use Throwable;
  */
 final class SkillSourceInvalid extends RuntimeException implements CodedRefusal
 {
-    public static function outsideFolder(string $file): self
+    public static function outsideFolder(string $file, Throwable|null $cause = null): self
     {
-        return new self("The skill source {$file} is not a relative path inside its owner's resources/skills folder.");
+        return new self(
+            "The skill source {$file} is not a relative path inside its owner's resources/skills folder.",
+            previous: $cause,
+        );
     }
 
-    public static function missingFile(string $file): self
+    public static function missingFile(string $file, Throwable|null $cause = null): self
     {
-        return new self("The skill source {$file} does not exist in its owner's resources/skills folder.");
+        return new self(
+            "The skill source {$file} does not exist in its owner's resources/skills folder.",
+            previous: $cause,
+        );
     }
 
     public static function unreadable(string $file, Throwable $cause): self

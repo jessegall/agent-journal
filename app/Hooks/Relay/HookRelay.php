@@ -9,6 +9,8 @@ use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\AgentCallReply;
 use App\Agents\Support\LoggedBypass;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
 use App\Hooks\Enums\CallFailure;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Exceptions\OutputGrantsInvalid;
@@ -18,7 +20,7 @@ use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
-use Illuminate\Filesystem\Filesystem;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Client\ConnectionException;
 use JsonException;
 
@@ -44,13 +46,15 @@ final readonly class HookRelay
 
     public function __construct(
         private AgentRequestClient $client,
-        private Filesystem $files,
+        private Files $files,
         private OutputGrantSeal $grantSeal,
+        private Repository $config,
     ) {}
 
     public function relay(HookProgram $program, string $json, RelaySettings $settings): ProgramReply
     {
-        $log = new BypassLog($settings->bypassLogPath);
+        $this->config->set(Place::HookRuntime->rootSetting(), $settings->runtimeFolder());
+        $log = new BypassLog($this->files, $settings->bypassLog());
         $pending = new PendingEnvelopes($this->files, $settings->pendingEnvelopesFolder());
         $envelope = CallbackEnvelope::forCallback($program->value, $json, CarbonImmutable::now());
         $preparation = new PreparationState($this->files, $settings->preparationFile());
@@ -173,13 +177,15 @@ final readonly class HookRelay
      */
     private function grantsOf(RelaySettings $settings): OutputGrants
     {
-        if ($settings->startKey === '' || ! is_file($settings->outputGrantsFile)) {
+        $isGiven = $settings->startKey !== '' && $settings->outputGrantsFile !== '';
+
+        if (! $isGiven || ! $this->files->exists($settings->outputGrants())) {
             return OutputGrants::none();
         }
 
         try {
             return OutputGrants::fromSnapshot(
-                (string) file_get_contents($settings->outputGrantsFile),
+                $this->files->read($settings->outputGrants()),
                 $settings->startKey,
                 $this->grantSeal,
             );

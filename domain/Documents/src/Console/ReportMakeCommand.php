@@ -6,6 +6,7 @@ namespace Domain\Documents\Console;
 
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\AgentRequests\Values\CommandReport;
+use App\Files\Contracts\Files;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\JournalRouteType;
@@ -25,9 +26,9 @@ final class ReportMakeCommand extends Command
 
     protected $help = 'Example: php artisan report:make "Check of the starter" --abstract "What the check found" --file report.md --about "plan 3"';
 
-    public function handle(DocumentCalls $documents): int
+    public function handle(DocumentCalls $documents, Files $files): int
     {
-        $body = $this->bodyText();
+        $body = $this->bodyText($files);
 
         if ($body === null) {
             $this->error('Give the text with exactly one of --body <text>, --body - or --file <path>.');

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Processes\Console;
 
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Files\Contracts\Files;
+use App\Files\Exceptions\FileMissing;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Calls\ImportProposalsCall;
 use App\Processes\Enums\JournalRouteType;
@@ -22,18 +24,20 @@ final class CommandTypeImportCommand extends Command
 
     protected $description = 'Import a declaration file as proposals';
 
-    public function handle(): int
+    public function handle(Files $files): int
     {
         $file = (string) $this->argument('file');
 
-        if (! is_file($file)) {
+        try {
+            $declarations = $files->readNamed($file);
+        } catch (FileMissing) {
             $this->error("There is no declaration file at {$file}.");
 
             return self::FAILURE;
         }
 
         return $this->runCall(ImportProposalsCall::from([
-            'declarations' => (string) file_get_contents($file),
+            'declarations' => $declarations,
             'requestKey' => $this->requestKey(),
         ]));
     }

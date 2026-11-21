@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Sharing\Gateways\Support;
 
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 use App\Sharing\Exceptions\GatewaySecretRefused;
-use Illuminate\Container\Attributes\Config;
 
 /**
  * The gateways' secrets, each kept as a file named by its reference in the journal's private secrets folder, so a
@@ -15,14 +18,11 @@ final readonly class GatewaySecrets
 {
     private const string REFERENCE = '/^[a-z0-9_-]+$/';
 
-    public function __construct(
-        #[Config('sharing.secrets_dir')]
-        private string $folder,
-    ) {}
+    public function __construct(private Files $files) {}
 
     public function has(string $reference): bool
     {
-        return self::isReference($reference) && is_file($this->path($reference));
+        return self::isReference($reference) && $this->files->exists($this->path($reference));
     }
 
     /**
@@ -41,14 +41,7 @@ final readonly class GatewaySecrets
      */
     public function store(string $reference, string $secret): void
     {
-        $path = $this->path($reference);
-
-        if (! is_dir($this->folder)) {
-            mkdir($this->folder, 0700, true);
-        }
-
-        file_put_contents($path, $secret, LOCK_EX);
-        chmod($path, 0600);
+        $this->files->write($this->path($reference), $secret, Permissions::OwnerOnly);
     }
 
     /**
@@ -58,7 +51,7 @@ final readonly class GatewaySecrets
      */
     public function read(string $reference): string
     {
-        return trim((string) file_get_contents($this->path($reference)));
+        return trim($this->files->read($this->path($reference)));
     }
 
     /**
@@ -66,12 +59,12 @@ final readonly class GatewaySecrets
      *
      * @throws GatewaySecretRefused when the reference names no secret
      */
-    private function path(string $reference): string
+    private function path(string $reference): FilePath
     {
         if (! self::isReference($reference)) {
             throw GatewaySecretRefused::forReference($reference);
         }
 
-        return "{$this->folder}/{$reference}";
+        return FilePath::in(Place::SharingSecrets, $reference);
     }
 }

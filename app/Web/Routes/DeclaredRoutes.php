@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Web\Routes;
 
+use App\Files\Support\CodeFiles;
+use App\Files\Values\FolderEntry;
 use App\Http\Controllers\Web\PageController;
 use App\Http\Support\Web\DeclaredRouteKey;
 use App\Ui\Support\UiDeclarations;
@@ -68,8 +70,14 @@ final readonly class DeclaredRoutes
             }
         }
 
+        $code = CodeFiles::ofProcess();
+        $publicNames = array_map(
+            fn (FolderEntry $entry) => $entry->name(),
+            $code->folder($code->projectPathOf("{$publicFolder}/*"))->entries,
+        );
+
         foreach (array_keys($prefixes) as $prefix) {
-            if (file_exists("{$publicFolder}/{$prefix}")) {
+            if (in_array($prefix, $publicNames, true)) {
                 throw UiPrefixUnavailable::usedByPublicFile($prefix);
             }
         }

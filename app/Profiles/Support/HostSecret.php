@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Profiles\Exceptions\HostSecretUnreadable;
 
 /**
@@ -31,6 +33,7 @@ final readonly class HostSecret
     /**
      * @throws HostSecretUnreadable
      */
+    #[OutsideThePlaces(PlaceExemption::HostSecretFile)]
     private static function fromFile(string $path): string
     {
         if (! is_file($path)) {

@@ -8,6 +8,7 @@ use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Skills\Enums\PublicationState;
 use RuntimeException;
+use Throwable;
 
 /**
  * A publication step that cannot go on: a state it may not move to, a target the journal does not own, a path that
@@ -25,16 +26,17 @@ final class SkillPublicationFailed extends RuntimeException implements CodedRefu
         return new self("A publication that is {$state->value} is not waiting for a worker.");
     }
 
-    public static function collision(string $target): self
+    public static function collision(string $target, Throwable|null $cause = null): self
     {
         return new self(
             "The skill target {$target} holds files the journal did not create; move them before publishing there.",
+            previous: $cause,
         );
     }
 
-    public static function escape(string $path): self
+    public static function escape(string $path, Throwable|null $cause = null): self
     {
-        return new self("The path {$path} leaves the protected skills root; nothing was written there.");
+        return new self("The path {$path} leaves the protected skills root; nothing was written there.", previous: $cause);
     }
 
     public static function newerExists(string $publicationId): self
@@ -47,9 +49,9 @@ final class SkillPublicationFailed extends RuntimeException implements CodedRefu
         return new self("The staged file {$path} was changed or added by hand; its folder is kept.");
     }
 
-    public static function write(string $reason): self
+    public static function write(string $reason, Throwable|null $cause = null): self
     {
-        return new self("The skills could not be written: {$reason}");
+        return new self("The skills could not be written: {$reason}", previous: $cause);
     }
 
     public function refusalCode(): RefusalCode

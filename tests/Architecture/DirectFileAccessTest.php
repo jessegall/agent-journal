@@ -21,7 +21,7 @@ final class DirectFileAccessTest extends TestCase
         $found = DirectFileAccess::across(base_path())->outside('app/Files');
 
         $this->assertSame(
-            $found->waitingSites(),
+            $found->listedSites(),
             $found->sites(),
             "Read, list, stat and write files through App\\Files\\Contracts\\Files:\n".$found->report(),
         );

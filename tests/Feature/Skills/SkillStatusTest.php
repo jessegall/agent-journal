@@ -9,6 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Files\Enums\Place;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Enums\GenerationState;
 use App\Skills\Enums\PublicationState;
@@ -53,6 +54,7 @@ final class SkillStatusTest extends TestCase
         parent::setUp();
 
         $this->makeTemporaryFolder('journal-skills');
+        config([Place::HostSkills->rootSetting() => $this->root]);
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
     }

@@ -11,6 +11,7 @@ use App\Agents\Enums\ProgramFailure;
 use App\Agents\Events\ProgramFailed;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
+use App\Files\Contracts\Files;
 use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountNoticeReason;
@@ -107,7 +108,7 @@ final class AccountChecksTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
 
-        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => null)->checkNext();
+        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class))->checkNext();
 
         $this->assertTrue($ran);
         $this->assertSame([AccountCheckResult::SignedIn], $host->checks);

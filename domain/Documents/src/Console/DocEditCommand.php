@@ -6,6 +6,7 @@ namespace Domain\Documents\Console;
 
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\AgentRequests\Values\CommandReport;
+use App\Files\Contracts\Files;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\JournalRouteType;
@@ -26,7 +27,7 @@ final class DocEditCommand extends Command
 
     protected $help = 'Example: php artisan doc:edit 4 --section "Risks" --body - < risks.md ; or --replace "old words" --with "new words" ; or --title "New title"';
 
-    public function handle(DocumentCalls $documents, DraftTokens $drafts): int
+    public function handle(DocumentCalls $documents, DraftTokens $drafts, Files $files): int
     {
         $number = (int) $this->argument('number');
         $held = $drafts->of($number);
@@ -37,14 +38,14 @@ final class DocEditCommand extends Command
             return self::FAILURE;
         }
 
-        $status = $this->runReport(function () use ($documents, $drafts, $number, $held): CommandReport {
+        $status = $this->runReport(function () use ($documents, $drafts, $files, $number, $held): CommandReport {
             $draft = $documents->editDocument(
                 number: (string) $number,
                 token: $held['token'],
                 version: $held['version'],
                 mode: $this->mode(),
                 section: $this->stringOption('section'),
-                body: $this->bodyText(),
+                body: $this->bodyText($files),
                 originalText: $this->stringOption('replace'),
                 replacementText: $this->stringOption('with'),
                 title: $this->stringOption('title'),

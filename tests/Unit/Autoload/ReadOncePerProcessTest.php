@@ -7,6 +7,9 @@ namespace Tests\Unit\Autoload;
 use App\Autoload\Support\FolderClasses;
 use App\Autoload\Support\Psr4ClassNames;
 use App\CoreApi;
+use App\Files\Enums\Place;
+use App\Files\Support\CodeFiles;
+use App\Files\Values\FilePath;
 use Illuminate\Console\Command;
 use PHPUnit\Framework\TestCase;
 
@@ -33,5 +36,6 @@ final class ReadOncePerProcessTest extends TestCase
 
         $this->assertNotSame([], $first);
         $this->assertSame($first, FolderClasses::in($folder, Command::class));
+        $this->assertSame(1, CodeFiles::ofProcess()->readCount(FilePath::in(Place::Project, 'app/*/Console/*.php')));
     }
 }

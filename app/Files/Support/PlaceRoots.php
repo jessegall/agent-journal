@@ -11,6 +11,7 @@ use App\Files\Exceptions\FolderClosed;
 use App\Files\Exceptions\PlaceUnavailable;
 use App\Files\Values\FilePath;
 use Illuminate\Contracts\Config\Repository;
+use SensitiveParameter;
 
 /**
  * The real root folder of each place, read from its setting when the place is used, so one missing root stops only
@@ -20,9 +21,13 @@ final readonly class PlaceRoots
 {
     public function __construct(private Repository $config) {}
 
+    /**
+     * The real root of the place; a missing root is made with the place's mode when it can be, and only a root that
+     * is not configured or cannot be made is unavailable.
+     */
     public function root(Place $place): string
     {
-        $root = $this->existingRoot($place);
+        $root = $this->existingRoot($place) ?? $this->madeRoot($place);
 
         if ($root === null) {
             throw PlaceUnavailable::for($place);
@@ -42,10 +47,26 @@ final readonly class PlaceRoots
     }
 
     /**
+     * The file path of an absolute path in a place the caller names, a private one included, as an account folder
+     * handed over by its owner; FileOutsidePlaces when the path does not lie in that place.
+     */
+    public function pathIn(Place $place, #[SensitiveParameter] string $absolutePath): FilePath
+    {
+        $root = $this->root($place);
+        $real = $this->realPathOf($absolutePath);
+
+        if (! $this->isWithin($real, $place)) {
+            throw FileOutsidePlaces::given();
+        }
+
+        return FilePath::in($place, ltrim(substr($real, strlen($root)), '/'));
+    }
+
+    /**
      * The file path of an absolute path given from outside, such as a command's --file, in the open place that holds
      * it; a private place's file is never reached this way.
      */
-    public function filePathOf(string $absolutePath): FilePath
+    public function filePathOf(#[SensitiveParameter] string $absolutePath): FilePath
     {
         if (str_contains($absolutePath, "\0")) {
             throw FilePathInvalid::nulByte();
@@ -64,7 +85,7 @@ final readonly class PlaceRoots
     /**
      * Whether a real path is the place's root or lies beneath it.
      */
-    public function isWithin(string $real, Place $place): bool
+    public function isWithin(#[SensitiveParameter] string $real, Place $place): bool
     {
         $root = $this->root($place);
 
@@ -74,7 +95,7 @@ final readonly class PlaceRoots
     /**
      * The place whose root lies closest above a real path, so a private place inside the project is the one found.
      */
-    private function innermostPlaceOf(string $real): Place
+    private function innermostPlaceOf(#[SensitiveParameter] string $real): Place
     {
         $holders = array_filter($this->available(), fn (Place $place) => $this->isWithin($real, $place));
 
@@ -88,23 +109,40 @@ final readonly class PlaceRoots
     }
 
     /**
-     * The real path of a path, or of its folder followed by its name when the file does not exist yet.
+     * The real path of a path; for a path not there yet, the real path of its nearest existing folder followed by the
+     * names below it, none of which may climb.
      */
-    private function realPathOf(string $path): string
+    private function realPathOf(#[SensitiveParameter] string $path): string
     {
-        $real = realpath($path);
+        $existing = $path;
+        $missing = [];
 
-        if ($real !== false) {
-            return $real;
+        while (realpath($existing) === false) {
+            $name = basename($existing);
+
+            if ($name === '..' || $existing === dirname($existing)) {
+                throw FileOutsidePlaces::given();
+            }
+
+            array_unshift($missing, $name);
+            $existing = dirname($existing);
         }
 
-        $folder = realpath(dirname($path));
+        return rtrim((string) realpath($existing).'/'.implode('/', $missing), '/');
+    }
 
-        if ($folder === false) {
-            throw FileOutsidePlaces::given();
+    /**
+     * The configured root, made now with the place's mode; none when it is not configured or cannot be made.
+     */
+    private function madeRoot(Place $place): string|null
+    {
+        $configured = $this->config->get($place->rootSetting());
+
+        if (! is_string($configured) || $configured === '' || ! @mkdir($configured, $place->folderMode(), true)) {
+            return null;
         }
 
-        return $folder.'/'.basename($path);
+        return $this->existingRoot($place);
     }
 
     private function existingRoot(Place $place): string|null

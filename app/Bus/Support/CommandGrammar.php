@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Files\Support\CodeFiles;
 use BackedEnum;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -143,15 +144,17 @@ final readonly class CommandGrammar
     }
 
     /**
-     * The classes a file imports, by the short name or alias they are used under.
+     * The classes a file of the project's code imports, by the short name or alias they are used under, from the
+     * process's one read of the file.
      *
      * @return array<string, string>
      */
     private static function importsOf(string $file): array
     {
+        $code = CodeFiles::ofProcess();
         preg_match_all(
             '/^use\s+([A-Za-z0-9_\\\\]+)(?:\s+as\s+([A-Za-z0-9_]+))?;/m',
-            (string) file_get_contents($file),
+            $code->file($code->projectPathOf($file)),
             $imports,
             PREG_SET_ORDER,
         );

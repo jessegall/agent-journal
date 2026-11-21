@@ -115,7 +115,7 @@ final class ShippedSkillFilesTest extends TestCase
         string $file,
     ): void {
         $root = $domain === '' ? base_path() : base_path("domain/{$domain}");
-        $rendered = new CanonicalRenderer(new MarkdownParts())->render(
+        $rendered = new CanonicalRenderer($this->app->make(MarkdownParts::class))->render(
             new $class(),
             new SkillOwner('Owner', $root, [], true),
         )->markdown;

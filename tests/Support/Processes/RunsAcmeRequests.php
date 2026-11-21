@@ -31,7 +31,6 @@ use App\Processes\Values\ReaderApproval;
 use App\Processes\Values\ReaderDefinition;
 use App\Processes\Values\RecordRule;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
@@ -65,7 +64,7 @@ trait RunsAcmeRequests
 
     private function openAcmeRequest(): void
     {
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
         $this->start = TestStart::start();
         $this->requestId = $this->runAsAgent(new OpenCommandRequest(
             'acme verify',

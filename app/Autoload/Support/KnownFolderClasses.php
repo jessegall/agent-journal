@@ -7,8 +7,8 @@ namespace App\Autoload\Support;
 use Closure;
 
 /**
- * The classes of each folder this process already read: the files cannot change while it runs, so a boot takes the
- * list read before instead of walking the folder again.
+ * The classes of each folder this process already found: the files cannot change while it runs, so a boot takes the
+ * classes found before instead of resolving and reflecting on the folder's files again.
  */
 final class KnownFolderClasses
 {

@@ -15,6 +15,8 @@ enum Place: string
     case SharingTunnels = 'sharing-tunnels';
     case HostSkills = 'host-skills';
     case Temporary = 'temporary';
+    case ProcessOutput = 'process-output';
+    case HookRuntime = 'hook-runtime';
 
     /**
      * The places a path given from outside, such as a command's --file, may lie in.
@@ -29,14 +31,29 @@ enum Place: string
     public function isPrivate(): bool
     {
         return match ($this) {
-            self::Accounts, self::SharingSecrets, self::SharingTunnels => true,
-            self::Project, self::HostSkills, self::Temporary => false,
+            self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HookRuntime => true,
+            self::Project, self::HostSkills, self::Temporary, self::ProcessOutput => false,
         };
     }
 
     public function folderMode(): int
     {
-        return $this->isPrivate() ? 0o700 : 0o755;
+        return Permissions::of($this)->folderMode();
+    }
+
+    /**
+     * The folders inside this place the funnel never enters, relative to its root: the project's repository,
+     * dependencies, agent worktrees and the folder the accounts live in.
+     *
+     * @return list<string>
+     */
+    public function closedFolders(): array
+    {
+        return match ($this) {
+            self::Project => ['.journal/worktrees', '.git', 'vendor', 'node_modules', 'storage/app/private'],
+            self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HostSkills, self::Temporary,
+            self::ProcessOutput, self::HookRuntime => [],
+        };
     }
 
     /**
@@ -47,7 +64,9 @@ enum Place: string
         return match ($this) {
             self::Accounts => 'accounts.root',
             self::SharingSecrets => 'sharing.secrets_dir',
-            self::Project, self::SharingTunnels, self::HostSkills, self::Temporary => "files.places.{$this->value}",
+            self::SharingTunnels => 'sharing.tunnels_dir',
+            self::ProcessOutput => 'filesystems.disks.process-output.root',
+            self::Project, self::HostSkills, self::Temporary, self::HookRuntime => "files.places.{$this->value}",
         };
     }
 }

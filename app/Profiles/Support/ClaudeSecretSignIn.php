@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
+use App\Files\Exceptions\FileExists;
+use App\Files\Exceptions\FileUnwritable;
+use App\Files\Values\FilePath;
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Exceptions\SignInSecretUnwritable;
 use App\Profiles\Values\SignInChallenge;
@@ -17,7 +23,7 @@ use App\Profiles\Values\SignInVerification;
  */
 abstract readonly class ClaudeSecretSignIn implements SignInProtocol
 {
-    public function __construct(protected ClaudeProgram $claude) {}
+    public function __construct(protected ClaudeProgram $claude, protected Files $files) {}
 
     public function begin(string $directory): PrivateAccountProcess
     {
@@ -35,11 +41,13 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
     public function acceptCode(PrivateAccountProcess $process, string $code): void
     {
         $directory = $process->workingDirectory();
-        $path = $this->secretFile($directory);
-        $file = fopen($path, 'x') ?: throw SignInSecretUnwritable::in($directory);
-        chmod($path, 0600);
-        fwrite($file, $code);
-        fclose($file);
+
+        try {
+            $this->files->create($this->secretPath($directory), $code, Permissions::OwnerOnly);
+        } catch (FileExists|FileUnwritable $failure) {
+            throw SignInSecretUnwritable::in($directory, $failure);
+        }
+
         $this->install($directory);
         $process->release();
     }
@@ -64,12 +72,12 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
      */
     public function verify(string $directory): SignInVerification
     {
-        if (! is_file($this->secretFile($directory))) {
+        if (! $this->files->exists($this->secretPath($directory))) {
             return new SignInVerification(false, SignInIdentity::unproved());
         }
 
         $status = $this->claude->status($directory, $this->variables($directory), $this->readFiles($directory));
-        $isSignedIn = $status->isSignedInBy($this->authMethod(), $directory);
+        $isSignedIn = $status->isSignedInBy($this->authMethod(), $directory, $this->realFolder($directory));
         $identity = $isSignedIn ? new SignInIdentity(null, null, null, $status->expiresAt) : SignInIdentity::unproved();
 
         return new SignInVerification($isSignedIn, $identity, $status->isReadable);
@@ -79,15 +87,29 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
     {
         $this->uninstall($directory);
 
-        if (is_file($this->secretFile($directory))) {
-            unlink($this->secretFile($directory));
-        }
+        $this->files->delete($this->secretPath($directory));
     }
 
     /**
      * The file in the account folder that holds the value.
      */
     abstract protected function secretFile(string $directory): string;
+
+    /**
+     * The value's file in the private place of the accounts.
+     */
+    protected function secretPath(string $directory): FilePath
+    {
+        return $this->files->pathIn(Place::Accounts, $this->secretFile($directory));
+    }
+
+    /**
+     * The account folder's real path, which the program may report instead of the path it was given.
+     */
+    protected function realFolder(string $directory): string
+    {
+        return $this->files->realPath($this->files->pathIn(Place::Accounts, $directory));
+    }
 
     /**
      * The authMethod the status prints for this method.

@@ -97,7 +97,8 @@ final class FileContents
     }
 
     /**
-     * The file's sha256: the one hashed before while its fingerprint holds, else the hasher's.
+     * The file's sha256: the one hashed before while its fingerprint holds, else the hasher's, kept only for a file
+     * that has settled, as kept bytes are.
      *
      * @param  Closure(): string  $hasher
      */
@@ -110,7 +111,10 @@ final class FileContents
         }
 
         $hashed = $this->fresh($fingerprint, $hasher);
-        $this->digests[$path] = new KeptDigest($fingerprint, $hashed);
+
+        if ($fingerprint->isSettled(CarbonImmutable::now()->getTimestamp())) {
+            $this->digests[$path] = new KeptDigest($fingerprint, $hashed);
+        }
 
         return $hashed;
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Files\Values;
 
 use App\Files\Exceptions\FileMissing;
+use SensitiveParameter;
 
 /**
  * What one stat says of a file: its real path, inode, size, modified time and changed time. Kept bytes are served
@@ -23,7 +24,7 @@ final readonly class Fingerprint
     /**
      * The fingerprint of the file at a resolved real path, read with one stat.
      */
-    public static function of(FilePath $file, string $realPath): self
+    public static function of(FilePath $file, #[SensitiveParameter] string $realPath): self
     {
         clearstatcache(true, $realPath);
         $stat = @stat($realPath);
@@ -38,7 +39,7 @@ final readonly class Fingerprint
     /**
      * The fingerprint of a link itself, read with one lstat, never following it.
      */
-    public static function ofLink(FilePath $link, string $path): self
+    public static function ofLink(FilePath $link, #[SensitiveParameter] string $path): self
     {
         clearstatcache(true, $path);
         $stat = @lstat($path);

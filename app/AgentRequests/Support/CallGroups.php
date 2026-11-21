@@ -6,6 +6,7 @@ namespace App\AgentRequests\Support;
 
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
+use App\Files\Support\CodeFiles;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -102,8 +103,10 @@ final class CallGroups
     {
         $calls = [];
 
-        foreach (glob("{$folder}/*Call.php") ?: [] as $file) {
-            $class = $namespace.'\\'.basename($file, '.php');
+        $code = CodeFiles::ofProcess();
+
+        foreach ($code->folder($code->projectPathOf("{$folder}/*Call.php")) as $entry) {
+            $class = $namespace.'\\'.basename($entry->name(), '.php');
 
             if (class_exists($class) && is_subclass_of($class, JournalCall::class)) {
                 $calls[] = $class;
@@ -226,9 +229,10 @@ final class CallGroups
      */
     private static function importsOf(ReflectionClass $call): array
     {
+        $code = CodeFiles::ofProcess();
         preg_match_all(
             '/^use\s+([\w\\\\]+)(?:\s+as\s+(\w+))?;/m',
-            (string) file_get_contents((string) $call->getFileName()),
+            $code->file($code->projectPathOf((string) $call->getFileName())),
             $uses,
             PREG_SET_ORDER,
         );

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Files\Support\CodeFiles;
+
 /**
  * A reader Core ships for one tool, bound to the version its samples came from: the core rule it approves, where that
  * version is read, the invocation it reads, its reader, its output contract and its exit map; the samples sit in
@@ -37,7 +39,7 @@ final readonly class ShippedReader
         /**
          * @var array{samples: list<array{file: string, exit: int, proves: string}>} $manifest
          */
-        $manifest = json_decode((string) file_get_contents("{$this->proofFolder()}/manifest.json"), true);
+        $manifest = json_decode($this->proofFile('manifest.json'), true, 512, JSON_THROW_ON_ERROR);
 
         return array_map(ProofSample::fromArray(...), $manifest['samples']);
     }
@@ -47,6 +49,16 @@ final readonly class ShippedReader
      */
     public function outputOf(ProofSample $sample): string
     {
-        return (string) file_get_contents("{$this->proofFolder()}/{$sample->file}");
+        return $this->proofFile($sample->file);
+    }
+
+    /**
+     * A file of the shipped proof folder, part of the project's code and read once per process.
+     */
+    private function proofFile(string $name): string
+    {
+        $code = CodeFiles::ofProcess();
+
+        return $code->file($code->projectPathOf("{$this->proofFolder()}/{$name}"));
     }
 }

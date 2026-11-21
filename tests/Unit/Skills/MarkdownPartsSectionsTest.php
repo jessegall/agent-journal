@@ -66,8 +66,8 @@ final class MarkdownPartsSectionsTest extends TestCase
 
         They keep their output.
         TEXT, $sections[0]->content);
-        $this->assertSame('Run.', $sections[1]->body(new MarkdownParts(), $this->owner()));
-        $this->assertSame('Read.', $sections[2]->body(new MarkdownParts(), $this->owner()));
+        $this->assertSame('Run.', $sections[1]->body($this->app->make(MarkdownParts::class), $this->owner()));
+        $this->assertSame('Read.', $sections[2]->body($this->app->make(MarkdownParts::class), $this->owner()));
     }
 
     public function test_no_text_under_the_title_gives_no_purpose_section(): void
@@ -122,10 +122,10 @@ final class MarkdownPartsSectionsTest extends TestCase
 
             Again.
             TEXT,
-            $sections[0]->body(new MarkdownParts(), $this->owner()),
+            $sections[0]->body($this->app->make(MarkdownParts::class), $this->owner()),
         );
-        $this->assertStringContainsString('## Not a heading', $sections[0]->body(new MarkdownParts(), $this->owner()));
-        $this->assertSame('', $sections[1]->body(new MarkdownParts(), $this->owner()));
+        $this->assertStringContainsString('## Not a heading', $sections[0]->body($this->app->make(MarkdownParts::class), $this->owner()));
+        $this->assertSame('', $sections[1]->body($this->app->make(MarkdownParts::class), $this->owner()));
     }
 
     public function test_front_matter_and_line_endings_do_not_change_the_sections(): void
@@ -282,7 +282,16 @@ final class MarkdownPartsSectionsTest extends TestCase
         $this->expectException(SkillSourceInvalid::class);
         $this->expectExceptionMessage($message);
 
-        new MarkdownParts()->sectionsOf($path, $this->owner(), 'Shell');
+        $this->app->make(MarkdownParts::class)->sectionsOf($path, $this->owner(), 'Shell');
+    }
+
+    public function test_a_link_in_the_skills_folder_to_a_host_file_is_refused_and_the_file_never_read(): void
+    {
+        symlink('/etc/hosts', $this->root.'/resources/skills/hosts.md');
+
+        $this->expectExceptionObject(SkillSourceInvalid::outsideFolder('hosts.md'));
+
+        $this->app->make(MarkdownParts::class)->sectionsOf('hosts.md', $this->owner(), 'Shell');
     }
 
     public function test_a_file_that_is_not_text_is_refused_as_unreadable(): void
@@ -309,7 +318,7 @@ final class MarkdownPartsSectionsTest extends TestCase
      */
     private function sections(string $name): array
     {
-        return new MarkdownParts()->sectionsOf('shell.md', $this->owner(), $name);
+        return $this->app->make(MarkdownParts::class)->sectionsOf('shell.md', $this->owner(), $name);
     }
 
     private function owner(): SkillOwner

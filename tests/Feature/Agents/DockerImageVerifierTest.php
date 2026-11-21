@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Agents\Support\DockerImageVerifier;
+use App\Files\Contracts\Files;
 use Tests\TestCase;
 
 final class DockerImageVerifierTest extends TestCase
 {
     public function test_only_the_verified_agent_image_of_the_record_is_verified(): void
     {
-        $verifier = new DockerImageVerifier($this->record([
+        $verifier = $this->verifier($this->record([
             $this->image('agent', 'journal-agent@sha256:aaa'),
             $this->image('runner', 'journal-runner@sha256:bbb'),
         ]));
@@ -23,9 +24,16 @@ final class DockerImageVerifierTest extends TestCase
 
     public function test_no_image_is_verified_before_the_build_wrote_a_record(): void
     {
-        $verifier = new DockerImageVerifier(sys_get_temp_dir().'/no-docker-images-'.uniqid().'.json');
+        $verifier = $this->verifier(sys_get_temp_dir().'/no-docker-images-'.uniqid().'.json');
 
         $this->assertFalse($verifier->isVerified('journal-agent@sha256:aaa'));
+    }
+
+    private function verifier(string $recordPath): DockerImageVerifier
+    {
+        $files = $this->app->make(Files::class);
+
+        return new DockerImageVerifier($files, $files->filePathOf($recordPath));
     }
 
     /**

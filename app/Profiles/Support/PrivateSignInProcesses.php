@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Agents\Enums\ArrangementType;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
+use App\Files\Values\Depth;
 use App\Profiles\Contracts\AccountOwnerDrain;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Contracts\SignInProtocol;
@@ -16,7 +20,6 @@ use App\Profiles\Values\CleanupProgress;
 use App\Profiles\Values\SignInIdentity;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Filesystem\Filesystem;
 
 /**
  * The host's sign-in runner: takes one sign-in, makes its private folder, runs the program's own sign-in until it
@@ -32,6 +35,7 @@ final readonly class PrivateSignInProcesses
         private SignInHost $host,
         private SignInProtocols $protocols,
         private Closure $pause,
+        private Files $files,
         private AccountOwnerDrain $owners = new HostAccountDrain('', ArrangementType::Local),
     ) {}
 
@@ -60,7 +64,7 @@ final readonly class PrivateSignInProcesses
             return true;
         }
 
-        self::makePrivateFolder($claimed->directory);
+        $this->makePrivateFolder($claimed->directory);
         $process = $protocol->begin($claimed->directory);
         $this->host->report($claimed, SignInOutcome::Waiting, SignInIdentity::unproved());
 
@@ -153,11 +157,13 @@ final readonly class PrivateSignInProcesses
 
     private function removeDirectory(string $directory): bool
     {
-        if (is_dir($directory) && ! is_link($directory)) {
-            new Filesystem()->deleteDirectory($directory);
+        $folder = $this->files->pathIn(Place::Accounts, $directory);
+
+        if (! $this->files->isLink($folder) && $this->files->isFolder($folder)) {
+            $this->files->deleteFolder($folder, Depth::levels(Depth::LEVEL_LIMIT));
         }
 
-        return ! file_exists($directory);
+        return ! $this->files->isLink($folder) && ! $this->files->isFolder($folder) && ! $this->files->exists($folder);
     }
 
     /**
@@ -209,13 +215,9 @@ final readonly class PrivateSignInProcesses
     /**
      * The account folder, only the host user may enter it, and every file it holds is private to that user.
      */
-    private static function makePrivateFolder(string $directory): void
+    private function makePrivateFolder(string $directory): void
     {
-        if (! is_dir($directory)) {
-            mkdir($directory, 0700, true);
-        }
-
-        chmod($directory, 0700);
+        $this->files->makeFolder($this->files->pathIn(Place::Accounts, $directory), Permissions::OwnerOnly);
         umask(0077);
     }
 }

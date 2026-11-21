@@ -33,7 +33,33 @@ final readonly class FilePath
 
     public function child(string $name): self
     {
+        if (str_starts_with($name, '/')) {
+            throw FilePathInvalid::climbs($name);
+        }
+
         return self::in($this->place, $this->relative === '' ? $name : "{$this->relative}/{$name}");
+    }
+
+    /**
+     * The folder this path lies in; the root of a place has none inside it.
+     */
+    public function parent(): self
+    {
+        if ($this->relative === '') {
+            throw FilePathInvalid::climbs('..');
+        }
+
+        $folder = dirname($this->relative);
+
+        return new self($this->place, $folder === '.' ? '' : $folder);
+    }
+
+    /**
+     * The last name of the path, as a folder lists it.
+     */
+    public function name(): string
+    {
+        return basename($this->relative);
     }
 
     /**

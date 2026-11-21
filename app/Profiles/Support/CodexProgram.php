@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 use App\Profiles\Values\CodexStatus;
 use Illuminate\Contracts\Config\Repository;
 
@@ -17,6 +21,7 @@ final readonly class CodexProgram
     public function __construct(
         private Repository $config,
         private SignInEgress $egress,
+        private Files $files,
     ) {}
 
     /**
@@ -26,7 +31,7 @@ final readonly class CodexProgram
      */
     public function start(array $arguments, string $directory): PrivateAccountProcess
     {
-        self::useFileCredentialStore($directory);
+        $this->useFileCredentialStore($directory);
         $command = [$this->config->string('accounts.codex_program'), ...$arguments];
 
         return PrivateAccountProcess::start($command, $this->environment($directory), $directory);
@@ -37,7 +42,7 @@ final readonly class CodexProgram
         $process = $this->start(['login', 'status'], $directory);
         $output = $process->finish();
 
-        return new CodexStatus($process->exitCode(), $output, is_file($directory.'/auth.json'));
+        return new CodexStatus($process->exitCode(), $output, $this->files->exists($this->accountFile($directory, 'auth.json')));
     }
 
     /**
@@ -48,15 +53,13 @@ final readonly class CodexProgram
     {
         $this->start(['logout'], $directory)->finish();
 
-        if (is_file($directory.'/auth.json')) {
-            unlink($directory.'/auth.json');
-        }
+        $this->files->delete($this->accountFile($directory, 'auth.json'));
     }
 
-    private static function useFileCredentialStore(string $directory): void
+    private function useFileCredentialStore(string $directory): void
     {
-        $file = $directory.'/config.toml';
-        $config = is_file($file) ? (string) file_get_contents($file) : '';
+        $file = $this->accountFile($directory, 'config.toml');
+        $config = $this->files->exists($file) ? $this->files->read($file) : '';
 
         if (preg_match('/^\s*cli_auth_credentials_store\s*=/m', $config) === 1) {
             $setting = 'cli_auth_credentials_store = "file"';
@@ -65,8 +68,15 @@ final readonly class CodexProgram
             $config = 'cli_auth_credentials_store = "file"'.PHP_EOL.$config;
         }
 
-        file_put_contents($file, $config);
-        chmod($file, 0600);
+        $this->files->write($file, $config, Permissions::OwnerOnly);
+    }
+
+    /**
+     * A file of the account folder, in the private place of the accounts.
+     */
+    private function accountFile(string $directory, string $name): FilePath
+    {
+        return $this->files->pathIn(Place::Accounts, $directory)->child($name);
     }
 
     /**

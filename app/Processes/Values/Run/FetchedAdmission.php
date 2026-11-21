@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Values\Run;
 
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 use App\Processes\Calls\AdmissionAlreadyStarted;
 use App\Processes\Calls\AdmissionFetched;
 use App\Processes\Calls\AdmissionToStart;
@@ -89,8 +91,8 @@ final readonly class FetchedAdmission
         return new ExecutionContext($dialect, $this->workingFolder, $this->workingFolder, $this->environment);
     }
 
-    public function spoolFolder(): string
+    public function spoolFolder(): FilePath
     {
-        return sys_get_temp_dir().'/journal-runs/'.$this->runId;
+        return FilePath::in(Place::Temporary, "journal-runs/{$this->runId}");
     }
 }

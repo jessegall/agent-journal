@@ -8,6 +8,7 @@ use App\CoreApi;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Files\Exceptions\PlaceUnavailable;
+use App\Files\Support\CodeFiles;
 use App\Files\Support\LocalFiles;
 use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
@@ -28,6 +29,13 @@ final class FilesServiceTest extends TestCase
 
         $this->assertInstanceOf(LocalFiles::class, $files);
         $this->assertSame($files, $this->app->make(Files::class));
+    }
+
+    public function test_code_reads_through_files_are_the_process_code_reads(): void
+    {
+        $pattern = FilePath::in(Place::Project, 'app/Files/Contracts/*.php');
+
+        $this->assertSame(CodeFiles::ofProcess()->folder($pattern), $this->app->make(Files::class)->codeFolder($pattern));
     }
 
     public function test_core_exports_the_funnel_to_the_domains(): void
@@ -55,7 +63,8 @@ final class FilesServiceTest extends TestCase
     {
         $folder = $this->placeInTemporaryFolder(Place::Temporary);
         file_put_contents("{$folder}/a.txt", 'a');
-        config(['files.places.host-skills' => "{$folder}/missing"]);
+        file_put_contents("{$folder}/blocker", '');
+        config(['files.places.host-skills' => "{$folder}/blocker/skills"]);
         $files = $this->app->make(Files::class);
 
         $this->assertSame('a', $files->read(FilePath::in(Place::Temporary, 'a.txt')));

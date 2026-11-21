@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Relay;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Hooks\Exceptions\OutputGrantsInvalid;
 
 /**
@@ -46,6 +48,7 @@ final readonly class OutputGrants
         return new self($decoded['generation'], $paths);
     }
 
+    #[OutsideThePlaces(PlaceExemption::CommandFileSystem)]
     public function allowsRead(string $path): bool
     {
         $real = realpath($path);

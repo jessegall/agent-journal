@@ -14,8 +14,8 @@ use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestRunAdmissions;
@@ -38,7 +38,7 @@ final class StoredOutputReadTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
         $this->start = TestStart::start();
         $this->run = ProcessRun::create(
             new ActorIdentity(ActorType::Agent, $this->start->agent->id),

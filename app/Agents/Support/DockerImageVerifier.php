@@ -6,7 +6,9 @@ namespace App\Agents\Support;
 
 use App\Agents\Contracts\DockerImageVerifier as DockerImageVerifierContract;
 use App\Agents\Data\DockerImageRecordData;
-use JsonException;
+use App\Files\Contracts\Files;
+use App\Files\Exceptions\FileJsonInvalid;
+use App\Files\Values\FilePath;
 
 /**
  * Answers from docs/accounts/docker-images.json, which the image build script writes: an image is verified only when
@@ -15,19 +17,17 @@ use JsonException;
  */
 final readonly class DockerImageVerifier implements DockerImageVerifierContract
 {
-    public function __construct(private string $recordPath) {}
+    public function __construct(private Files $files, private FilePath $record) {}
 
     /**
-     * @throws JsonException when the record exists but is not valid JSON
+     * @throws FileJsonInvalid when the record exists but is not valid JSON
      */
     public function isVerified(string $reference): bool
     {
-        if (! is_file($this->recordPath)) {
+        if (! $this->files->exists($this->record)) {
             return false;
         }
 
-        return DockerImageRecordData::from(
-            json_decode((string) file_get_contents($this->recordPath), true, 8, JSON_THROW_ON_ERROR),
-        )->hasAgentImage($reference);
+        return DockerImageRecordData::from($this->files->readJson($this->record))->hasAgentImage($reference);
     }
 }

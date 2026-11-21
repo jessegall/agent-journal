@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Files\Support;
 
 use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Files\Exceptions\FileJsonInvalid;
+use App\Files\Exceptions\FileMissing;
+use App\Files\Exceptions\FileOutsidePlaces;
 use App\Files\Exceptions\FileReadReentered;
 use App\Files\Exceptions\FileUnreadable;
+use App\Files\Exceptions\LinkLeavesPlace;
 use App\Files\Exceptions\PlaceUnavailable;
 use App\Files\Values\Depth;
 use App\Files\Values\FilePath;
@@ -33,11 +37,23 @@ final class LocalFiles implements Files
         private readonly PathConfinement $confinement,
         private readonly FileContents $contents,
         private readonly FolderWalker $walker,
+        private readonly CodeFiles $code,
+        private readonly FileWriter $writer,
     ) {}
 
     public function filePathOf(string $absolutePath): FilePath
     {
         return $this->roots->filePathOf($absolutePath);
+    }
+
+    public function pathIn(Place $place, string $absolutePath): FilePath
+    {
+        return $this->roots->pathIn($place, $absolutePath);
+    }
+
+    public function realPath(FilePath $path): string
+    {
+        return $this->confinement->resolved($path);
     }
 
     public function read(FilePath $file): string
@@ -50,6 +66,28 @@ final class LocalFiles implements Files
                 ? $this->contents->fresh($fingerprint, $loader)
                 : $this->contents->kept($fingerprint, $loader);
         });
+    }
+
+    public function readNamed(string $path): string
+    {
+        try {
+            $file = $this->roots->filePathOf($path);
+        } catch (FileOutsidePlaces) {
+            return $this->readOutsidePlaces($path, null);
+        }
+
+        return $this->read($file);
+    }
+
+    public function readNamedAtMost(string $path, int $bytes): string
+    {
+        try {
+            $file = $this->roots->filePathOf($path);
+        } catch (FileOutsidePlaces) {
+            return $this->readOutsidePlaces($path, $bytes);
+        }
+
+        return $this->readAtMost($file, $bytes);
     }
 
     public function readAtMost(FilePath $file, int $bytes): string
@@ -93,6 +131,29 @@ final class LocalFiles implements Files
         return $real !== null && is_file($real);
     }
 
+    public function isLink(FilePath $path): bool
+    {
+        return is_link($this->confinement->entryPath($path));
+    }
+
+    public function linkTarget(FilePath $link): FilePath
+    {
+        $path = $this->confinement->entryPath($link);
+        $target = is_link($path) ? readlink($path) : false;
+
+        if ($target === false) {
+            throw FileMissing::at($link->label());
+        }
+
+        try {
+            $absolute = str_starts_with($target, '/') ? $target : dirname($path)."/{$target}";
+
+            return $this->roots->pathIn($link->place, $absolute);
+        } catch (FileOutsidePlaces $outside) {
+            throw LinkLeavesPlace::from($link->label(), $outside);
+        }
+    }
+
     public function isFolder(FilePath $folder): bool
     {
         $real = $this->confinement->existingRealPath($folder);
@@ -115,6 +176,100 @@ final class LocalFiles implements Files
         return $this->whileReading($pattern, fn () => $this->walker->expand($pattern));
     }
 
+    public function codeFolder(FilePath $pattern): FolderEntries
+    {
+        return $this->code->folder($pattern);
+    }
+
+    public function codeFile(FilePath $file): string
+    {
+        return $this->code->file($file);
+    }
+
+    public function write(FilePath $file, string $bytes, Permissions $permissions = Permissions::Shared): void
+    {
+        $real = $this->writablePath($file);
+        $this->writer->replace($real, $bytes, $permissions->mode(), $file->label());
+        $this->contents->drop($real);
+    }
+
+    public function create(FilePath $file, string $bytes, Permissions $permissions = Permissions::Shared): void
+    {
+        $real = $this->writablePath($file);
+        $this->writer->create($real, $bytes, $permissions->mode(), $file->label());
+        $this->contents->drop($real);
+    }
+
+    public function append(FilePath $file, string $line): void
+    {
+        $real = $this->writablePath($file);
+        $this->writer->append($real, $line, Permissions::of($file->place)->mode(), $file->label());
+        $this->contents->drop($real);
+    }
+
+    public function makeFolder(FilePath $folder, Permissions $permissions): void
+    {
+        $real = $this->confinement->resolvedForWrite($folder);
+        $this->writer->makeFolderWithMode($real, $permissions->folderMode(), $folder->label());
+    }
+
+    public function delete(FilePath $file): void
+    {
+        $path = $this->confinement->entryPath($file);
+        $this->writer->remove($path, $file->label());
+        $this->contents->drop($path);
+    }
+
+    public function deleteFolder(FilePath $folder, Depth $depth): void
+    {
+        $this->writer->removeFolder($this->confinement->entryPath($folder), $depth->levels, $folder->label());
+    }
+
+    public function link(FilePath $link, FilePath $target): void
+    {
+        if ($target->place !== $link->place) {
+            throw LinkLeavesPlace::from($link->label());
+        }
+
+        $path = $this->confinement->entryPath($link);
+        $this->writer->link($path, $this->confinement->resolved($target), $link->label());
+    }
+
+    public function move(FilePath $from, FilePath $to): void
+    {
+        $fromPath = $this->confinement->entryPath($from);
+        $toPath = $this->confinement->entryPath($to);
+        $this->writer->move($fromPath, $toPath, $from->label());
+        $this->contents->drop($fromPath);
+        $this->contents->drop($toPath);
+        clearstatcache(true, $fromPath);
+        clearstatcache(true, $toPath);
+    }
+
+    public function locked(FilePath $lock, Closure $work): mixed
+    {
+        $mode = Permissions::of($lock->place)->mode();
+        $handle = $this->writer->lockOpened($this->writablePath($lock), $mode, $lock->label());
+
+        try {
+            return $work();
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
+    }
+
+    public function scratch(Closure $work, string $extension = ''): mixed
+    {
+        $file = FilePath::in(Place::Temporary, 'journal-scratch-'.bin2hex(random_bytes(8)).$extension);
+
+        try {
+            return $work($file);
+        } finally {
+            $this->delete($file);
+        }
+    }
+
     public function freeSpace(Place $place): int
     {
         $free = disk_free_space($this->roots->root($place));
@@ -129,6 +284,36 @@ final class LocalFiles implements Files
     public function readCount(FilePath $file): int
     {
         return $this->contents->openCount($this->confinement->resolved($file));
+    }
+
+    /**
+     * A file the user named that lies outside every place, read as named: the exemption the user settled for a
+     * command's own file argument.
+     */
+    private function readOutsidePlaces(string $path, int|null $limit): string
+    {
+        if (! is_file($path)) {
+            throw FileMissing::at($path);
+        }
+
+        $bytes = @file_get_contents($path, length: $limit === null ? null : max(0, $limit));
+
+        if ($bytes === false) {
+            throw FileUnreadable::at($path);
+        }
+
+        return $bytes;
+    }
+
+    /**
+     * The real path a file is written at, inside its place and no closed folder, with its missing folders made.
+     */
+    private function writablePath(FilePath $file): string
+    {
+        $real = $this->confinement->resolvedForWrite($file);
+        $this->writer->makeFolder(dirname($real), $file->place->folderMode(), $file->label());
+
+        return $real;
     }
 
     /**

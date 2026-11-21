@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Processes\Values\ExecutableBinding;
 use App\Processes\Values\ExecutableVerdict;
 use App\Processes\Values\ExecutionContext;
@@ -53,6 +55,7 @@ final readonly class ExecutableCheck
         );
     }
 
+    #[OutsideThePlaces(PlaceExemption::CommandFileSystem)]
     private function verifyContent(
         ProgramIdentity $program,
         ExecutableBinding $binding,

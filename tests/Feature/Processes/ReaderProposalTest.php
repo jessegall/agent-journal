@@ -21,9 +21,9 @@ use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsTestAgent;
@@ -46,7 +46,7 @@ final class ReaderProposalTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
         $requestId = $this->runAsAgent(new OpenCommandRequest(
             'acme verify',
             str_repeat('a', 64),

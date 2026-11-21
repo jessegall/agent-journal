@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sharing\Gateways\Tunler;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Files\Enums\PlaceExemption;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Enums\GatewayAddressCheck;
 use App\Sharing\Exceptions\GatewayOpenFailed;
@@ -46,8 +50,10 @@ final readonly class TunlerGateway implements ShareGateway
         private string $configFolder,
         #[Config('sharing.tunler.subdomain')]
         private string|null $subdomain,
+        private Files $files,
     ) {}
 
+    #[OutsideThePlaces(PlaceExemption::GatewayBinary)]
     public function setupCheck(GatewayConfiguration $configuration): GatewaySetupCheck
     {
         if (! is_file($this->binary) || ! is_executable($this->binary)) {
@@ -56,7 +62,7 @@ final readonly class TunlerGateway implements ShareGateway
 
         $problems = [];
 
-        if (! is_dir($this->configFolder)) {
+        if (! $this->files->isFolder($this->files->pathIn(Place::SharingTunnels, $this->configFolder))) {
             $problems[] = "The journal's tunler configuration folder does not exist.";
         }
 

@@ -20,20 +20,30 @@ final class FileFunctionScanTest extends TestCase
 
         $this->assertSame(
             [
-                [21, 'Illuminate\Filesystem\Filesystem'],
-                [29, 'file_get_contents()'],
-                [30, 'file_put_contents()'],
-                [31, 'fopen()'],
-                [32, 'is_dir()'],
-                [33, 'glob()'],
-                [34, 'hash_file()'],
-                [35, 'new RecursiveDirectoryIterator'],
-                [36, 'new FilesystemIterator'],
-                [37, 'Symfony\Component\Finder\Finder'],
-                [38, 'Illuminate\Support\Facades\File'],
+                [23, 'Illuminate\Filesystem\Filesystem'],
+                [31, 'file_get_contents()'],
+                [32, 'file_put_contents()'],
+                [33, 'fopen()'],
+                [34, 'is_dir()'],
+                [35, 'glob()'],
+                [36, 'hash_file()'],
+                [37, 'new RecursiveDirectoryIterator'],
+                [38, 'new FilesystemIterator'],
+                [39, 'Symfony\Component\Finder\Finder'],
+                [40, 'Illuminate\Support\Facades\File'],
+                [70, 'file_get_contents()'],
             ],
             array_map(fn (array $finding) => [$finding['line'], $finding['form']], $findings),
         );
+    }
+
+    public function test_a_site_in_a_method_marked_outside_the_places_carries_its_exemption(): void
+    {
+        $findings = FileFunctionScan::of(ParsedFile::fromPath(dirname(__DIR__).'/Fixtures/FileAccess/DirectFileAccess.php'));
+        $exemptions = array_column($findings, 'exemption', 'line');
+
+        $this->assertSame('UserNamedFile', $exemptions[70]);
+        $this->assertNull($exemptions[31]);
     }
 
     public function test_each_finding_names_the_files_method_to_use_instead(): void

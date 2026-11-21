@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Processes\Enums\ShellDialect;
 
 /**
@@ -45,6 +47,7 @@ final readonly class ExecutionContext
     /**
      * The key that scopes a project's saved aliases: a digest of its root folder.
      */
+    #[OutsideThePlaces(PlaceExemption::CommandFileSystem)]
     public function projectKey(): string
     {
         return hash('sha256', realpath($this->projectRoot) ?: $this->projectRoot);

@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
+use App\Files\Contracts\Files;
+use App\Files\Exceptions\FileMissing;
+use App\Files\Exceptions\FileUnreadable;
+
 /**
  * Reads the text of a new document or report from exactly one of --body, --body - (standard input) or --file, read
- * here on the agent's side: the server never opens a path.
+ * here on the agent's side: the server never opens a path. A file in a private place is refused (FolderClosed).
  */
 trait ReadsRecordBody
 {
-    protected function bodyText(): string|null
+    protected function bodyText(Files $files): string|null
     {
         $body = $this->option('body');
         $file = $this->option('file');
@@ -20,7 +24,11 @@ trait ReadsRecordBody
         }
 
         if (is_string($file)) {
-            return is_readable($file) ? (string) file_get_contents($file) : null;
+            try {
+                return $files->readNamed($file);
+            } catch (FileMissing|FileUnreadable) {
+                return null;
+            }
         }
 
         return $body === '-' ? (string) stream_get_contents(STDIN) : $body;

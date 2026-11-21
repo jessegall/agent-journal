@@ -12,10 +12,9 @@ use App\Processes\Models\EvidencePermit;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\EvidenceRuns;
-use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\PermitLimits;
-use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\Processes\ProcessOutputDisk;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -38,7 +37,7 @@ final class EvidencePermitTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake(SpoolRecorder::DISK);
+        ProcessOutputDisk::fake();
         config(['processes.runner' => true]);
         $this->start = TestStart::start();
         $this->runCommandsAs($this->start);
