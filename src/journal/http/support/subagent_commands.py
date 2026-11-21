@@ -25,6 +25,6 @@ class SubagentCommands:
     def other_thread(self, environment: str, thread: str | None) -> bool:
         if not thread:
             return False
-        with self.scope.environment(self.environments.existing(environment).row_id):
+        with self.scope.environment(self.environments.lookup(environment).row_id):
             agent = self.agents.current()
         return agent is not None and agent.provider == CODEX and agent.session != thread

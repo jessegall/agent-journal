@@ -17,7 +17,6 @@ from journal.events.agent.stop import Stop
 from journal.events.bus import Bus
 from journal.events.listener import Listener
 from journal.support.decision import Decision
-from journal.support.missing_row import MissingRow
 from journal.support.hook_measure import HookMeasure
 from journal.support.listener_queue import ListenerQueue
 from journal.support.hook import Hook
@@ -46,7 +45,7 @@ UNBOUND_SESSION = "unbound_session"
 
 
 class Receiver:
-    """Translates a hook into its agent event, records it as an entry under the hook's key, a hook sent again being answered from that entry and reaching no listener, runs the blocking listeners at once and merges their decisions into the answer, and passes the rest to the deferred worker after the reply. A hook naming an environment that has no row is let through and recorded nowhere. A hook that does not include its environment's launch id, or that claims a worker, a verifier or a reviewer without that agent's proof, is recorded and reported, and reaches no listener; a verified worker's, verifier's or reviewer's hook is recorded and answered by the engine's listeners and those the helper's file allows, under that agent's own conduct, so none of the main agent's conduct blocks it and no recording listener posts it as the main agent's."""
+    """Translates a hook into its agent event, records it as an entry under the hook's key, a hook sent again being answered from that entry and reaching no listener, runs the blocking listeners at once and merges their decisions into the answer, and passes the rest to the deferred worker after the reply. A hook that does not include its environment's launch id, or that claims a worker, a verifier or a reviewer without that agent's proof, is recorded and reported, and reaches no listener; a verified worker's, verifier's or reviewer's hook is recorded and answered by the engine's listeners and those the helper's file allows, under that agent's own conduct, so none of the main agent's conduct blocks it and no recording listener posts it as the main agent's."""
 
     def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: ListenerQueue, scope: Scope, transcript: TranscriptTurns, seats: HookSeats, recorder: RequestTimeRecorder, launches: LaunchFiles, worker_hooks: WorkerHooks, stages: StageTimes, nudger: Nudger, checker_hooks: CheckerHooks, role_listeners: RoleListeners, time_source: TimeSource, phase: AnswerPhase, fault_log: FaultLog, settings: SettingRows, registry: Registry) -> None:
         self.time_source, self.phase, self.fault_log, self.settings, self.registry = time_source, phase, fault_log, settings, registry
@@ -59,10 +58,7 @@ class Receiver:
     def receive(self, raw_hook: Hook) -> Decision:
         self.recorder.begin(self.time_source.seconds())
         hook = raw_hook if raw_hook.researcher else self.worker_hooks.attributed(raw_hook)
-        try:
-            environment = self.environments.existing(hook.environment)
-        except MissingRow:
-            return Decision()
+        environment = self.environments.lookup(hook.environment)
         with self.scope.environment(environment.row_id):
             if self.is_resent(hook):
                 return self.resent_answer(hook)

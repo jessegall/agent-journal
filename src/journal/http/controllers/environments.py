@@ -38,7 +38,7 @@ class EnvironmentController(Controller[Environment]):
         name, session = request.body.get("name", "").strip(), request.body.get("session", "")
         if not name:
             raise Rejection("an environment needs a name")
-        environment = self.hydration.created(name, request.body.get("provider", "claude"), session, request.actor) if session else self.repository.ensure(name)
+        environment = self.hydration.created(name, request.body.get("provider", "claude"), session, request.actor) if session else self.repository.lookup(name)
         return Response.json(environment, 201)
 
     def sessions(self, request: Request) -> Response:

@@ -85,7 +85,7 @@ def test_the_shim_attributes_a_codex_command_with_and_without_a_server(app: App,
     from journal.repositories.agents import Agents
     from journal.repositories.environments import Environments
     agents = app.container.get(Agents)
-    development = app.container.get(Environments).ensure("development")
+    development = app.container.get(Environments).lookup("development")
     with app.container.get(Scope).environment(development.id):
         agents.save(Agent(session="codex-session", environment_id=development.id, provider="codex", is_overview_read=False), Actor.system())
     environ = {key: value for key, value in os.environ.items() if key not in ("JOURNAL_SESSION", "CODEX_SANDBOX", *Claude.inherited_markers)}
@@ -347,7 +347,7 @@ def test_two_worktree_launches_run_side_by_side_each_with_its_own_environment_an
             urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=body, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": name, "X-Journal-Launch": launch_id}), timeout=5).read()
         agents, environments = app.container.get(Agents), app.container.get(Environments)
         alpha, beta = agents.session_agent("s-alpha"), agents.session_agent("s-beta")
-        assert alpha.environment_id == environments.ensure("alpha").row_id and beta.environment_id == environments.ensure("beta").row_id, "each launch's agent is its own environment's"
+        assert alpha.environment_id == environments.lookup("alpha").row_id and beta.environment_id == environments.lookup("beta").row_id, "each launch's agent is its own environment's"
         assert alpha.state != "ended" and beta.state != "ended", "and the second never ends the first"
     finally:
         app.runtime().stop()

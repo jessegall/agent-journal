@@ -453,7 +453,7 @@ class AgentSteps:
             return outputs.counted(outputs.query())
 
     def another_environment(self, name: str) -> str:
-        self.app.container.get(Environments).ensure(name)
+        self.app.container.get(Environments).lookup(name)
         self.observed(f"the project has another environment, {name}", None, None)
         return name
 
