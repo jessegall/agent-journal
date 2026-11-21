@@ -122,15 +122,14 @@ archive_etag() {
   curl -fsSI "$1" 2>/dev/null | awk 'tolower($1) == "etag:" {gsub(/["\r]/, "", $2); print $2}'
 }
 
-# a checkout whose commit is the pushed tip of version-5, with nothing changed, holds the code of that branch's archive,
-# so it is named by the archive's ETag as a download from curl is; a checkout ahead, behind or changed names nothing
+# a checkout that holds the pushed tip of version-5, at it or ahead of it (the journal commits the files it publishes),
+# holds all the code of that branch's archive, so it is named by the archive's ETag as a download from curl is and no
+# newer version is offered; a checkout behind the tip names nothing
 name_checkout_release() {
   [ -z "${JOURNAL_INSTALLED_CHECKSUM:-}" ] || return 0
   command -v git >/dev/null 2>&1 && git -C "$HERE" rev-parse --git-dir >/dev/null 2>&1 || return 0
-  [ -z "$(git -C "$HERE" status --porcelain --untracked-files=no 2>/dev/null)" ] || return 0
-  local_tip=$(git -C "$HERE" rev-parse HEAD 2>/dev/null)
   remote_tip=$(git -C "$HERE" ls-remote origin refs/heads/version-5 2>/dev/null | awk '{print $1}')
-  [ -n "$remote_tip" ] && [ "$local_tip" = "$remote_tip" ] || return 0
+  [ -n "$remote_tip" ] && git -C "$HERE" merge-base --is-ancestor "$remote_tip" HEAD 2>/dev/null || return 0
   archive_url="https://codeload.github.com/jessegall/agent-journal/tar.gz/refs/heads/version-5"
   JOURNAL_INSTALLED_CHECKSUM=$(archive_etag "$archive_url")
   JOURNAL_INSTALLED_TAG="version-5"

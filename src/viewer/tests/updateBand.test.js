@@ -8,6 +8,7 @@ const apps = [];
 afterEach(() => {
     apps.splice(0).forEach((app) => app.unmount());
     document.body.innerHTML = "";
+    localStorage.clear();
 });
 
 
@@ -37,12 +38,20 @@ test("a current journal, or a check that cannot answer, shows nothing", async ()
 });
 
 test("not now puts it away, and a failed install says why", async () => {
-    const later = await drawn({check: {ok: true, value: {is_current: false}}});
+    const later = await drawn({check: {ok: true, value: {is_current: false, checksum: "a"}}});
     later.element.querySelector("[data-update-later]").click();
     await settle();
     expect(later.element.querySelector("[data-update-band]")).toBeNull();
-    const failed = await drawn({check: {ok: true, value: {is_current: false}}, install: {ok: false, error: "the download failed"}});
+    const failed = await drawn({check: {ok: true, value: {is_current: false, checksum: "b"}}, install: {ok: false, error: "the download failed"}});
     failed.element.querySelector("[data-update-install]").click();
     await settle();
     expect(failed.element.textContent).toContain("the download failed");
+});
+
+test("a release put off with not now stays away after a reload, and a newer one is offered", async () => {
+    const later = await drawn({check: {ok: true, value: {is_current: false, checksum: "a"}}});
+    later.element.querySelector("[data-update-later]").click();
+    await settle();
+    expect((await drawn({check: {ok: true, value: {is_current: false, checksum: "a"}}})).element.querySelector("[data-update-band]")).toBeNull();
+    expect((await drawn({check: {ok: true, value: {is_current: false, checksum: "b"}}})).element.querySelector("[data-update-band]")).not.toBeNull();
 });
