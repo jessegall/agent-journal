@@ -26,6 +26,7 @@ use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use Carbon\CarbonImmutable;
+use Domain\Tasks\Models\Task;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Agents\TestStart;
@@ -81,7 +82,9 @@ final class ContinueStackTest extends TestCase
         $frames = [$row->frames->all()[0]];
 
         foreach ($typeKeys as $position => $typeKey) {
-            $subject = $typeKey === 'skills.awaiting' ? NoSubject::None : new SubjectReference('42', 1);
+            $subject = $typeKey === 'skills.awaiting'
+                ? NoSubject::None
+                : new SubjectReference(Task::factory()->create(['title' => 'Owed work'])->id, 1);
             $frames[] = new FrameRecord(
                 "frame-{$position}",
                 new StateReference($typeKey, $subject),

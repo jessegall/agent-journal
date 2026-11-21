@@ -10,26 +10,43 @@ use App\Actors\Support\DatabaseClock;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Agents\Values\StackTarget;
+use App\Bus\Contracts\GuardedCommandBus;
+use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Support\EngineAccess;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\EngineStacks;
 use App\Hooks\Actions\StartStacks;
+use App\Hooks\Commands\FocusTask;
+use App\Hooks\Commands\ReleaseTaskFocus;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\Enums\LifecycleStage;
 use App\Hooks\Events\StateTypesRequested;
+use App\Hooks\Exceptions\InstructionOriginRefused;
 use App\Hooks\Exceptions\StackMissing;
 use App\Hooks\Exceptions\StackTooDeep;
+use App\Hooks\Lifecycle\LifecycleOrigin;
+use App\Hooks\Lifecycle\LifecycleOrigins;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
+use App\Hooks\Support\InstructionMarkers;
+use App\Hooks\Support\ReservedInstructions;
 use App\Hooks\Support\StackTransaction;
+use App\Hooks\Values\LifecycleCommands;
+use App\Records\Commands\UnlinkRecords;
 use Carbon\CarbonImmutable;
+use Closure;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Tests\Fixtures\Hooks\Lifecycle\LifecycleLog;
+use Tests\Fixtures\Hooks\Lifecycle\RecordingGuardedBus;
 use Tests\Fixtures\Hooks\Lifecycle\RecordingStateLoader;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -107,6 +124,94 @@ final class StateLifecycleTest extends TestCase
 
         $this->assertSame(['exit:B', 'enter:C'], $this->log->calls);
         $this->assertSame(['A', 'C'], $this->storedSubjects());
+    }
+
+    public function test_a_replacement_runs_the_exit_answer_then_the_enter_answer_after_commit_with_their_origins(): void
+    {
+        $bus = $this->recordingBus();
+        $this->push('A');
+        $this->push('B');
+        $this->tasks->finished = ['B'];
+        $this->log->answers = ['exit:B' => $this->answer(1), 'enter:C' => $this->answer(2)];
+
+        $this->push('C');
+
+        $this->assertSame(
+            [
+                ['command' => UnlinkRecords::class, 'stage' => 'exit', 'ordinal' => 1, 'inTransaction' => false],
+                ['command' => UnlinkRecords::class, 'stage' => 'enter', 'ordinal' => 2, 'inTransaction' => false],
+            ],
+            $bus->runs,
+        );
+    }
+
+    public function test_a_rolled_back_change_runs_none_of_its_answers(): void
+    {
+        $bus = $this->recordingBus();
+        $this->log->answers = ['enter:A' => $this->answer(1)];
+
+        $this->assertThrows(fn () => $this->transaction()->run(function (): void {
+            $this->app->make(AgentStacks::class)->push($this->target, $this->task('A'));
+
+            throw SimulatedFailure::of('The change fails.');
+        }), SimulatedFailure::class);
+
+        $this->assertSame([], $bus->runs);
+    }
+
+    public function test_a_state_asking_for_a_maintenance_command_is_refused_naming_its_stage_and_runs_nothing_after_it(): void
+    {
+        $bus = $this->recordingBus();
+        $this->log->answers = ['enter:A' => LifecycleCommands::of(new MarkSilentSessions(), ...$this->answer(1)->commands)];
+        Log::spy();
+
+        $this->push('A');
+
+        $this->assertSame([], $bus->runs);
+        Log::shouldHaveReceived('warning')->withArgs(
+            fn (string $message) => str_contains($message, MarkSilentSessions::class)
+                && str_contains($message, 'the enter of frame'),
+        )->once();
+    }
+
+    public function test_a_task_frames_enter_writes_its_own_marker_and_its_exit_forgets_only_that_one(): void
+    {
+        $instructions = $this->app->make(ReservedInstructions::class);
+        $markers = $this->app->make(InstructionMarkers::class);
+
+        $this->asOrigin('frame-a', 'A', LifecycleStage::Enter, fn () => $instructions->focus(FocusTask::class, 'tasks.task'));
+        $this->asOrigin('frame-b', 'B', LifecycleStage::Enter, fn () => $instructions->focus(FocusTask::class, 'tasks.task'));
+        $this->asOrigin('frame-a', 'A', LifecycleStage::Exit, fn () => $instructions->release(ReleaseTaskFocus::class));
+
+        $this->assertTrue($markers->lookup($this->target, 'frame-a')->isEmpty());
+        $this->assertSame('B', $markers->lookup($this->target, 'frame-b')->get()->subjectId);
+
+        $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->close($this->target));
+
+        $this->assertTrue($markers->lookup($this->target, 'frame-b')->isEmpty());
+    }
+
+    public function test_a_reserved_command_without_an_engine_origin_or_from_the_wrong_stage_changes_no_marker(): void
+    {
+        $instructions = $this->app->make(ReservedInstructions::class);
+
+        $this->assertThrows(fn () => $instructions->focus(FocusTask::class, 'tasks.task'), InstructionOriginRefused::class);
+        $this->assertThrows(
+            fn () => $this->asOrigin('frame-a', 'A', LifecycleStage::Exit, fn () => $instructions->focus(FocusTask::class, 'tasks.task')),
+            InstructionOriginRefused::class,
+        );
+
+        $this->assertTrue($this->app->make(InstructionMarkers::class)->lookup($this->target, 'frame-a')->isEmpty());
+    }
+
+    public function test_a_second_open_of_an_open_stack_settles_nothing_and_a_close_exits_nothing(): void
+    {
+        $this->push('A');
+
+        $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->open($this->target));
+        $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->close($this->target));
+
+        $this->assertSame(['enter:A'], $this->log->calls);
     }
 
     public function test_a_failing_enter_leaves_no_frame(): void
@@ -320,6 +425,35 @@ final class StateLifecycleTest extends TestCase
             ),
             array_map(fn (FrameRecord $frame) => $frame->enteredAt, $frames),
         );
+    }
+
+    private function recordingBus(): RecordingGuardedBus
+    {
+        $bus = new RecordingGuardedBus(
+            $this->app->make(LifecycleOrigins::class),
+            fn () => $this->app->make(ConnectionInterface::class)->transactionLevel(),
+        );
+        $this->app->instance(GuardedCommandBus::class, $bus);
+
+        return $bus;
+    }
+
+    private function answer(int $number): LifecycleCommands
+    {
+        return LifecycleCommands::of(new UnlinkRecords(
+            TestActors::record('tasks.task', $number),
+            TestActors::record('tasks.task', $number + 100),
+        ));
+    }
+
+    /**
+     * @param  Closure(): void  $work
+     */
+    private function asOrigin(string $frameId, string $subject, LifecycleStage $stage, Closure $work): void
+    {
+        $reference = new StateReference('tasks.working', new SubjectReference($subject, 1));
+        $origin = new LifecycleOrigin($this->target, 'transition-1', 1, $frameId, $reference, $stage);
+        $this->app->make(LifecycleOrigins::class)->within($origin, $work);
     }
 
     private function transaction(): StackTransaction

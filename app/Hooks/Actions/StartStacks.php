@@ -12,7 +12,9 @@ use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SessionTransferType;
 use App\Hooks\Exceptions\StateSchemaUnknown;
 use App\Hooks\Exceptions\StateTransferUnknown;
+use App\Hooks\Lifecycle\FrameLifecycle;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\FrameRecord;
@@ -31,12 +33,15 @@ final readonly class StartStacks
         private StackTransaction $transaction,
         private ServerClock $clock,
         private StateTypes $types,
+        private StackRestorer $restorer,
+        private FrameLifecycle $lifecycle,
     ) {}
 
     /**
      * Opens the stack with the ready bottom state, or leaves the one a racing start opened first. A start that
      * resumes the agent's conversation carries the durable frames of its last closed stack above that bottom, in
-     * order; session-only frames stay behind with the old stack, which stays history.
+     * order; session-only frames stay behind with the old stack, which stays history. Only the open whose insert won
+     * enters the carried frames; a racing loser reads the winner's row and settles nothing.
      */
     public function open(StackTarget $target): void
     {
@@ -49,13 +54,19 @@ final readonly class StartStacks
             $this->clock->now(),
         );
 
-        AgentStackRow::insertIfMissing(
-            $target,
-            new FrameRecords([$bottom, ...$this->carriedFrames($target)]),
-            $this->types->ticking(),
-        );
+        $carried = $this->carriedFrames($target);
+        $frames = new FrameRecords([$bottom, ...$carried]);
+        $won = AgentStackRow::insertIfMissing($target, $frames, $this->types->ticking());
 
         AgentStackRow::lockAuthorizedFor($target)->frames->checkBottom();
+
+        if ($won && $carried !== []) {
+            $this->lifecycle->settle(
+                $target,
+                $this->restorer->restore(new FrameRecords([$bottom]), $target),
+                $this->restorer->restore($frames, $target),
+            );
+        }
     }
 
     /**

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Lifecycle;
 
 use App\Agents\Values\StackTarget;
+use App\Bus\Contracts\CommandFacts;
+use App\Hooks\Enums\LifecycleStage;
+use App\Hooks\Events\LifecycleAnswersSettled;
 use App\Hooks\Exceptions\StackChangedInLifecycle;
 use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Stack\AgentStack;
@@ -24,7 +27,10 @@ final class FrameLifecycle
      */
     private array $running = [];
 
-    public function __construct(private readonly StateEventActivity $eventActivity) {}
+    public function __construct(
+        private readonly StateEventActivity $eventActivity,
+        private readonly CommandFacts $facts,
+    ) {}
 
     /**
      * @throws StackTooDeep when the stack after the change holds more frames than a stack may
@@ -41,20 +47,31 @@ final class FrameLifecycle
         $runningBefore = $this->running;
         $this->running[self::keyOf($target)] = true;
 
+        $answers = new LifecycleAnswers($target);
+
         try {
-            $this->eventActivity->evaluate($target, function () use ($target, $removed, $added, $resumed): void {
+            $callbacks = function () use ($target, $removed, $added, $resumed, $answers): void {
                 foreach (array_reverse($removed) as $frame) {
-                    $frame->exit($target);
+                    $answers->add($frame, LifecycleStage::Exit, $frame->exit($target));
                 }
 
                 foreach ($added as $frame) {
-                    $frame->enter($target);
+                    $answers->add($frame, LifecycleStage::Enter, $frame->enter($target));
                 }
 
-                $resumed?->resume($target);
-            });
+                if ($resumed !== null) {
+                    $answers->add($resumed, LifecycleStage::Resume, $resumed->resume($target));
+                }
+            };
+            $this->eventActivity->evaluate($target, $callbacks);
         } finally {
             $this->running = $runningBefore;
+        }
+
+        $collected = $answers->withCommands();
+
+        if ($collected !== []) {
+            $this->facts->publishAfterCommit(new LifecycleAnswersSettled($collected));
         }
     }
 

@@ -676,6 +676,11 @@ use App\Files\Values\FolderEntries;
 use App\Files\Values\FolderEntry;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Commands\CertifyPassedStops;
+use App\Hooks\Commands\FocusPlan;
+use App\Hooks\Commands\FocusTask;
+use App\Hooks\Commands\RefreshPlanInstruction;
+use App\Hooks\Commands\ReleasePlanFocus;
+use App\Hooks\Commands\ReleaseTaskFocus;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
@@ -748,6 +753,7 @@ use App\Hooks\Stack\StackVerdict;
 use App\Hooks\States\AgentState;
 use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Values\EventCommands;
+use App\Hooks\Values\LifecycleCommands;
 use App\Hooks\Values\StopAttemptReference;
 use App\Http\Data\Assignments\RecordHolderData;
 use App\Http\Data\PaginationData;
@@ -1603,6 +1609,7 @@ final class CoreApi
                 PaginationData::class,
                 NavigationUncertainty::class,
                 EventCommands::class,
+                LifecycleCommands::class,
                 StackWide::class,
                 FolderClasses::class,
                 Endpoint::class,
@@ -2117,6 +2124,11 @@ final class CoreApi
                 Everyone::class,
             )
             ->commands(
+                FocusPlan::class,
+                FocusTask::class,
+                RefreshPlanInstruction::class,
+                ReleasePlanFocus::class,
+                ReleaseTaskFocus::class,
                 ActivateProfiles::class,
                 RevokeProfiles::class,
                 StartProfileMain::class,

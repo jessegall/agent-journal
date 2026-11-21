@@ -18,6 +18,7 @@ use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\Stack\StackVerdict;
+use App\Hooks\Values\LifecycleCommands;
 
 /**
  * One state on an agent's stack. Every hook method delegates to the state below until a state overrides it, and
@@ -43,21 +44,30 @@ abstract class AgentState implements HookAnswerer
     }
 
     /**
-     * Runs after a committed stack change put this frame on the stack.
+     * Runs when a stack change puts this frame on the stack, and returns the commands the engine runs after commit.
      */
-    public function onEnter(LifecycleContext $context): void {}
+    public function onEnter(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::none();
+    }
 
     /**
      * Runs after a committed stack change made this frame the live top again because the live frame covering it was
      * removed; a frame covered only by finished or switched-off frames already answered first, so it is not resumed.
      */
-    public function onResume(LifecycleContext $context): void {}
+    public function onResume(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::none();
+    }
 
     /**
      * Runs after a committed stack change removed this frame, finished or not; a frame that is only passed over by a
      * walk has not left and is not exited.
      */
-    public function onExit(LifecycleContext $context): void {}
+    public function onExit(LifecycleContext $context): LifecycleCommands
+    {
+        return LifecycleCommands::none();
+    }
 
     /**
      * Asked before the hook's own method: a decision answers the hook and the method is not asked; null, the default,

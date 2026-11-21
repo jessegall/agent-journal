@@ -14,6 +14,7 @@ use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Values\EventCommands;
+use App\Hooks\Values\LifecycleCommands;
 use Carbon\CarbonImmutable;
 
 /**
@@ -90,19 +91,19 @@ final readonly class Frame
         return ! $this->isFinished() && $this->isEnabled();
     }
 
-    public function enter(StackTarget $target): void
+    public function enter(StackTarget $target): LifecycleCommands
     {
-        $this->state->onEnter($this->lifecycleContext($target));
+        return $this->state->onEnter($this->lifecycleContext($target));
     }
 
-    public function resume(StackTarget $target): void
+    public function resume(StackTarget $target): LifecycleCommands
     {
-        $this->state->onResume($this->lifecycleContext($target));
+        return $this->state->onResume($this->lifecycleContext($target));
     }
 
-    public function exit(StackTarget $target): void
+    public function exit(StackTarget $target): LifecycleCommands
     {
-        $this->state->onExit($this->lifecycleContext($target));
+        return $this->state->onExit($this->lifecycleContext($target));
     }
 
     /**

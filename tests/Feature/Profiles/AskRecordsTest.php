@@ -49,8 +49,8 @@ use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Values\AskReference;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
+use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -232,17 +232,9 @@ final class AskRecordsTest extends TestCase
         $start = TestStart::start('journal-code-reviewer');
         $start->startRequest($this->app);
         $task = Task::create('Review a task', 'Check the expected result.', $start->agent);
-        $task->start(ActorIdentity::of($start->agent));
-        $now = CarbonImmutable::now();
-        new AgentStackRow()->startFor(
-            new StackTarget($start->agent->id, $start->session->id),
-            new FrameRecords([
-                new FrameRecord('ready', new StateReference(ReadyState::TYPE_KEY, NoSubject::None), true, 1, $now),
-                new FrameRecord('work', WorkingOnTaskStateReference::forTask($task), false, 1, $now),
-            ]),
-            new TickingTypes([]),
-        );
+        $start->openStack($this->app);
         $commands = $this->app->make(CommandBus::class);
+        $commands->run(new StartTask($task->id));
 
         $question = $commands->run(new AskSupervisor('What should I check?', 'question'));
         $review = $commands->run(new AskSupervisor('Review this task', 'review', AskTypeKey::from('review.ready')));
