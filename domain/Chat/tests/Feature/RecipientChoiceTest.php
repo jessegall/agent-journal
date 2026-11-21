@@ -17,6 +17,7 @@ use App\Desks\Models\DeskRecord;
 use App\Desks\Support\BuiltInDesks;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
@@ -68,8 +69,8 @@ final class RecipientChoiceTest extends TestCase
         $mainInboxId = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole()->inboxId();
         $helperInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $helper[0]))->inboxId();
 
-        $this->assertSame($mainInboxId, $this->destinationShownFor($owner, $main[1]));
-        $this->assertSame($helperInboxId, $this->destinationShownFor($owner, $helper[1]));
+        $this->assertSame($mainInboxId, $this->destinationShownFor($owner, $main[0]));
+        $this->assertSame($helperInboxId, $this->destinationShownFor($owner, $helper[0]));
     }
 
     /**
@@ -86,9 +87,9 @@ final class RecipientChoiceTest extends TestCase
         return [$agent->id, $session->id];
     }
 
-    private function destinationShownFor(User $owner, string $sessionId): string
+    private function destinationShownFor(User $owner, string $agentId): string
     {
-        $window = ['window' => ['chat.conversation' => ['session' => $sessionId]], 'session' => $sessionId];
+        $window = ConversationRequest::queryFor($agentId);
         $destination = '';
 
         $this->actingAs($owner)->get(route('home', $window, false))->assertInertia(

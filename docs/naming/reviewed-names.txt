@@ -57,9 +57,20 @@ case	AdmissionRefusalCode::SyntaxUnsupported
 case	AdmissionRefusalCode::UnresolvedExecutable
 case	AdmissionState::AlreadyStarted
 case	AdmissionState::ToRun
+case	AgentAction::Open
+case	AgentAction::Recheck
+case	AgentAction::Resume
+case	AgentAction::Retry
+case	AgentAction::Start
+case	AgentAction::Switch
 case	AgentInboxState::All
 case	AgentInboxState::Answered
 case	AgentInboxState::Pending
+case	AgentPresence::Failed
+case	AgentPresence::Idle
+case	AgentPresence::PendingSwitch
+case	AgentPresence::Retired
+case	AgentPresence::Working
 case	AnalysisLimit::Depth
 case	AnalysisLimit::ExecutableParts
 case	AnalysisLimit::Milliseconds
@@ -1146,8 +1157,10 @@ class	AgentMessageDelivery
 class	AgentMessageDetails
 class	AgentMessages
 class	AgentNotAvailable
+class	AgentOption
 class	AgentPolicy
 class	AgentProfileMissing
+class	AgentRecords
 class	AgentRequestClient
 class	AgentReservedForReview
 class	AgentRetirementDenied
@@ -1920,6 +1933,7 @@ class	DriverSkillAdapters
 class	DriverSkillsUnsupported
 class	DriverSwitch
 class	DriverSwitchReceipt
+class	DriverSwitchStageController
 class	DriverSwitchStageRefused
 class	DriverSwitchStale
 class	DriverSwitchStopped
@@ -1934,6 +1948,7 @@ class	EffectiveCommand
 class	ElapsedTime
 class	EligibleAccountData
 class	EligibleAccounts
+class	EligibleAccountsController
 class	EligibleAccountsData
 class	EmptyReason
 class	EmptyRunPolicy
@@ -3127,6 +3142,7 @@ class	ReceiptPublisher
 class	ReceiptRetention
 class	ReceivedScreen
 class	RecheckDriverSwitch
+class	RecheckDriverSwitchController
 class	RecheckDriverSwitchHandler
 class	ReconcileAccounts
 class	ReconcileAccountsCommand
@@ -3441,6 +3457,7 @@ class	RestoredCaptures
 class	ResultBudget
 class	ResultReceipt
 class	ResultTooLarge
+class	ResumableConversation
 class	ResumeKeyScript
 class	ResumeKeyScriptCommand
 class	ResumeKeyScriptHandler
@@ -3478,6 +3495,7 @@ class	RetryDriverRequest
 class	RetryDriverRequestCommand
 class	RetryDriverRequestHandler
 class	RetryDriverSwitch
+class	RetryDriverSwitchController
 class	RetryDriverSwitchHandler
 class	RetryProcessRun
 class	RetryProcessRunHandler
@@ -3708,6 +3726,7 @@ class	SessionInspection
 class	SessionInspections
 class	SessionOpened
 class	SessionOption
+class	SessionOutdated
 class	SessionOutputGrant
 class	SessionOutputPaths
 class	SessionPolicy
@@ -4345,7 +4364,9 @@ class	SupportedDriverAdapters
 class	SwitchAccount
 class	SwitchAccountHandler
 class	SwitchAgentDriver
+class	SwitchAgentDriverController
 class	SwitchAgentDriverHandler
+class	SwitchAgentDriverRequest
 class	SyntaxOrigin
 class	SystemActor
 class	SystemActorRequired
@@ -4588,6 +4609,8 @@ constant	AdvisoryStackAdmission::NAMESPACE
 constant	AgentMessageReader::CONTEXT_TOOL
 constant	AgentMessageReader::SEARCH_TYPE
 constant	AgentMessages::CHUNK_BYTES
+constant	AgentRecords::AGENTS_SHOWN
+constant	AgentRecords::CONVERSATIONS_SHOWN
 constant	AgentRuntime::FRESH_SECONDS
 constant	AgentSessions::START_RESERVATION_LOCKS
 constant	AgentStack::DEPTH_LIMIT
@@ -5224,7 +5247,9 @@ enum	ActionMethod
 enum	ActorType
 enum	AdmissionRefusalCode
 enum	AdmissionState
+enum	AgentAction
 enum	AgentInboxState
+enum	AgentPresence
 enum	AnalysisLimit
 enum	AnswerType
 enum	ArrangementType
@@ -5462,6 +5487,7 @@ interface	ActorWorkStacks
 interface	AdmittedRecipients
 interface	AgentAuthority
 interface	AgentCallContext
+interface	AgentDirectory
 interface	AgentMessageReader
 interface	AgentRequestClient
 interface	AgentResolver
@@ -6236,6 +6262,7 @@ method	Agent::preferVariant()
 method	Agent::retireAt()
 method	Agent::soleActorForProfile()
 method	Agent::variantFor()
+method	AgentAction::offeredFor()
 method	AgentActivity::mayTakeWork()
 method	AgentActorRequired::forActor()
 method	AgentActors::actor()
@@ -6268,6 +6295,9 @@ method	AgentContextFactory::header()
 method	AgentContextFactory::tokenOf()
 method	AgentContextFactory::verifiedCall()
 method	AgentContextMissing::forRequest()
+method	AgentDirectory::mainAgentId()
+method	AgentDirectory::visible()
+method	AgentDirectory::visibleAgent()
 method	AgentHoldReleased::__construct()
 method	AgentImage::__construct()
 method	AgentImage::fromConfig()
@@ -6314,8 +6344,17 @@ method	AgentMessages::source()
 method	AgentNotAvailable::forAgent()
 method	AgentNotAvailable::refusalCode()
 method	AgentNotAvailable::status()
+method	AgentOption::__construct()
+method	AgentOption::assertRuns()
 method	AgentPolicy::model()
+method	AgentPresence::label()
+method	AgentPresence::of()
 method	AgentProfileMissing::forAuthority()
+method	AgentRecords::__construct()
+method	AgentRecords::mainAgentId()
+method	AgentRecords::optionOf()
+method	AgentRecords::visible()
+method	AgentRecords::visibleAgent()
 method	AgentRequestClient::__construct()
 method	AgentRequestClient::post()
 method	AgentRequestClient::prepare()
@@ -9181,12 +9220,16 @@ method	DriverSwitch::refuse()
 method	DriverSwitch::retryLaunch()
 method	DriverSwitch::startingOf()
 method	DriverSwitch::stoppingOf()
+method	DriverSwitch::target()
 method	DriverSwitchReceipt::__construct()
 method	DriverSwitchReceipt::of()
 method	DriverSwitchStage::blocksWriter()
 method	DriverSwitchStage::followers()
 method	DriverSwitchStage::isFinal()
+method	DriverSwitchStage::isUnconfirmed()
+method	DriverSwitchStage::label()
 method	DriverSwitchStage::mayMoveTo()
+method	DriverSwitchStageController::__invoke()
 method	DriverSwitchStageRefused::from()
 method	DriverSwitchStale::forAgent()
 method	DriverSwitchStale::refusalCode()
@@ -9224,6 +9267,7 @@ method	EligibleAccountData::__construct()
 method	EligibleAccountData::fromAccount()
 method	EligibleAccounts::__construct()
 method	EligibleAccounts::forDriver()
+method	EligibleAccountsController::__invoke()
 method	EligibleAccountsData::__construct()
 method	EmptyReason::forDecision()
 method	EmptyRunPolicy::__construct()
@@ -10746,6 +10790,7 @@ method	LoginPage::startingWith()
 method	MainAgentDesignation::agent()
 method	MainAgentDesignation::create()
 method	MainAgentDesignation::designatedAgent()
+method	MainAgentDesignation::designatedAgentId()
 method	MainAgentDesignation::isDesignated()
 method	MainAgentMissing::forInstallation()
 method	MainDesk::occupant()
@@ -13023,6 +13068,7 @@ method	ReceiptRetention::standard()
 method	ReceivedScreen::__construct()
 method	ReceivedScreen::isNewerThan()
 method	RecheckDriverSwitch::__construct()
+method	RecheckDriverSwitchController::__invoke()
 method	RecheckDriverSwitchHandler::handle()
 method	ReconcileAccountsCommand::handle()
 method	ReconcileAccountsHandler::__construct()
@@ -13753,6 +13799,7 @@ method	ResultReceipt::supersedeBy()
 method	ResultReceipts::find()
 method	ResultReceipts::forPart()
 method	ResultTooLarge::for()
+method	ResumableConversation::__construct()
 method	ResumeKeyScript::__construct()
 method	ResumeKeyScriptCommand::handle()
 method	ResumeKeyScriptHandler::__construct()
@@ -13815,6 +13862,7 @@ method	RetryDriverRequestCommand::handle()
 method	RetryDriverRequestHandler::__construct()
 method	RetryDriverRequestHandler::handle()
 method	RetryDriverSwitch::__construct()
+method	RetryDriverSwitchController::__invoke()
 method	RetryDriverSwitchHandler::handle()
 method	RetryProcessRun::__construct()
 method	RetryProcessRunHandler::__construct()
@@ -14457,6 +14505,7 @@ method	SessionInspections::lastStop()
 method	SessionInspections::of()
 method	SessionOpened::__construct()
 method	SessionOption::__construct()
+method	SessionOutdated::forAgent()
 method	SessionOutputAccess::grantedTo()
 method	SessionOutputAccess::mayRead()
 method	SessionOutputGrant::casts()
@@ -15975,6 +16024,7 @@ method	StartProfileAuthority::description()
 method	StartProfileAuthority::mayRunApplicationCommands()
 method	StartProfileAuthority::profileKey()
 method	StartProfileMain::__construct()
+method	StartProfileMain::toTarget()
 method	StartProfileMainController::__invoke()
 method	StartProfileMainHandler::__construct()
 method	StartProfileMainHandler::handle()
@@ -16662,9 +16712,14 @@ method	SwitchAccount::__construct()
 method	SwitchAccountHandler::__construct()
 method	SwitchAccountHandler::handle()
 method	SwitchAgentDriver::__construct()
+method	SwitchAgentDriverController::__invoke()
+method	SwitchAgentDriverController::answer()
 method	SwitchAgentDriverHandler::__construct()
 method	SwitchAgentDriverHandler::assertCurrent()
 method	SwitchAgentDriverHandler::handle()
+method	SwitchAgentDriverRequest::command()
+method	SwitchAgentDriverRequest::rules()
+method	SwitchAgentDriverRequest::target()
 method	SyntaxForm::isStatement()
 method	SyntaxForm::isStatementBoundary()
 method	SyntaxOrigin::__construct()
@@ -18438,6 +18493,7 @@ parameter	$listeners
 parameter	$listing
 parameter	$listingOperation
 parameter	$literal
+parameter	$live
 parameter	$liveHolders
 parameter	$liveShare
 parameter	$liveness
@@ -19058,6 +19114,7 @@ parameter	$result	app/Profiles/Data/CodexMessageData.php
 parameter	$result	app/Scripts/Data/ProfileStepData.php
 parameter	$result	app/Supervision/Commands/ResolveMergeAttempt.php
 parameter	$results	app/Hooks/StateEvents/StateEventEffects.php
+parameter	$resumable
 parameter	$resumedSessionId
 parameter	$retained
 parameter	$retainedCards
@@ -19216,6 +19273,7 @@ parameter	$sequence
 parameter	$serverClock
 parameter	$service
 parameter	$session
+parameter	$sessionGeneration
 parameter	$sessionId
 parameter	$sessionIds
 parameter	$sessionStart
@@ -19389,6 +19447,7 @@ parameter	$surface
 parameter	$swapBytes
 parameter	$switch
 parameter	$switchId
+parameter	$switchStage
 parameter	$switchable
 parameter	$switchedOn
 parameter	$switches
@@ -19481,6 +19540,7 @@ parameter	$types
 parameter	$unavailableCount
 parameter	$unavailableReason
 parameter	$unavailableRequirements
+parameter	$unavailableSentence
 parameter	$uncertainty
 parameter	$unchangedReturns
 parameter	$unclaimed
@@ -19960,6 +20020,20 @@ property	AgentMessages::$actors
 property	AgentMessages::$continuations
 property	AgentMessages::$inboxes
 property	AgentMessages::$session
+property	AgentOption::$actions
+property	AgentOption::$agentId
+property	AgentOption::$assignee
+property	AgentOption::$conversations
+property	AgentOption::$name
+property	AgentOption::$presence
+property	AgentOption::$profileKey
+property	AgentOption::$retired
+property	AgentOption::$sessionGeneration
+property	AgentOption::$sessionId
+property	AgentOption::$switchId
+property	AgentOption::$switchStage
+property	AgentRecords::$actors
+property	AgentRecords::$inspection
 property	AgentRequestClient::$http
 property	AgentRuntimeReassigned::$actor
 property	AgentRuntimeReassigned::$fromHostId
@@ -21352,6 +21426,7 @@ property	EligibleAccountData::$isDefault
 property	EligibleAccountData::$label
 property	EligibleAccountData::$signInRevision
 property	EligibleAccountData::$unavailableReason
+property	EligibleAccountData::$unavailableSentence
 property	EligibleAccounts::$authorizer
 property	EligibleAccountsData::$accounts
 property	EligibleAccountsData::$driver
@@ -24292,6 +24367,9 @@ property	RestoredCall::$reminders
 property	RestoredCall::$row
 property	RestoredCall::$stackBefore
 property	RestoredCaptures::$parts
+property	ResumableConversation::$conversationId
+property	ResumableConversation::$driver
+property	ResumableConversation::$startedAt
 property	ResumeKeyScript::$expectedRowVersion
 property	ResumeKeyScript::$reason
 property	ResumeKeyScript::$requestId
@@ -27028,6 +27106,7 @@ variable	$gatewayKeys
 variable	$gathered
 variable	$generated
 variable	$generation
+variable	$generations
 variable	$gh
 variable	$git
 variable	$given
@@ -27612,6 +27691,7 @@ variable	$result	app/Bus/Support/EventUnitLifecycle.php
 variable	$result	app/Scripts/Models/ProfileRun.php
 variable	$result	app/Scripts/Models/ProfileStepResult.php
 variable	$resultBytes
+variable	$resumable
 variable	$resumed
 variable	$retained
 variable	$retainedPageId
@@ -27812,6 +27892,7 @@ variable	$summaryTotal
 variable	$switch
 variable	$switchable
 variable	$switchedOn
+variable	$switches
 variable	$syntaxFacts
 variable	$table
 variable	$tables

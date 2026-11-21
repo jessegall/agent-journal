@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Domain\Chat\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Agents\Contracts\SessionResolver;
-use App\Agents\Support\SessionOption;
-use App\Assignments\Support\AssigneeIdentity;
+use App\Agents\Contracts\AgentDirectory;
+use App\Agents\Support\AgentOption;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxDestinationResolver;
@@ -19,18 +18,18 @@ use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Resolvers\Support\DockedRecordRecords;
 use Domain\Chat\Support\ConversationPair;
-use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
 /**
- * The chat window, on Home and on its own page: the agent sessions the user can talk to now, and the conversation
- * with the chosen one when it is still active.
+ * The chat window, on Home and on its own page: every agent the user can see, idle ones included, the chosen one
+ * (the main agent unless the query names another) and its conversation, which is there with or without a session.
+ * An agent out of sight is refused like a missing one.
  */
 final readonly class ChatWindowResolver implements PageResolver
 {
     public function __construct(
         private ConversationRequest $request,
-        private SessionResolver $sessions,
+        private AgentDirectory $agents,
         private ConversationResolver $messages,
         private CurrentActor $actors,
         private ActorInboxResolver $ownInboxes,
@@ -41,38 +40,29 @@ final readonly class ChatWindowResolver implements PageResolver
 
     public function read(): ChatData
     {
-        $sessions = $this->sessions->active();
-        $chosen = $this->request->chosenSession()->flatMap(
-            fn (string $sessionId) => Option::fromArraysValue(
-                array_values(
-                    array_filter($sessions, fn (SessionOption $session) => $session->sessionId === $sessionId),
-                ),
-                0,
-            ),
-        );
+        $agents = $this->agents->visible();
+        $main = $this->agents->mainAgentId();
+        $chosen = $this->request->chosenAgent()->orElse($main)->map($this->agents->visibleAgent(...));
 
         return ChatData::from([
-            'sessions' => array_map(
-                fn (SessionOption $session) => [
-                    'id' => (string) $session->sessionId,
-                    'agentName' => $session->agentName,
-                ],
-                $sessions,
-            ),
-            'conversation' => $chosen->map($this->conversationIn(...))->getOrElse(Optional::create()),
+            'agents' => $agents,
+            'setupRequired' => $main->isEmpty(),
+            'selectedAgentId' => $chosen
+                ->map(fn (AgentOption $agent) => $agent->agentId)
+                ->getOrElse(Optional::create()),
+            'conversation' => $chosen->map($this->conversationWith(...))->getOrElse(Optional::create()),
         ]);
     }
 
-    private function conversationIn(SessionOption $session): ConversationData
+    private function conversationWith(AgentOption $agent): ConversationData
     {
         $actorInboxId = $this->ownInboxes->preferredFor($this->actors->actor())->inboxId();
-        $agent = AssigneeIdentity::ofActorIdentity($session->target->actorIdentity());
-        $agentInboxId = $this->destinations->resolve($agent)->inboxId();
+        $agentInboxId = $this->destinations->resolve($agent->assignee)->inboxId();
         $page = $this->messages->between($actorInboxId, $agentInboxId, null, MessagePage::DEFAULT_LIMIT);
 
         $conversationPair = new ConversationPair($actorInboxId, $agentInboxId);
         $docked = $this->records->visibleCards($this->docked->docked($conversationPair));
 
-        return ConversationData::fromPage($actorInboxId, $agentInboxId, $page, (string) $session->sessionId, $docked);
+        return ConversationData::fromPage($actorInboxId, $agentInboxId, $page, $agent, $docked);
     }
 }

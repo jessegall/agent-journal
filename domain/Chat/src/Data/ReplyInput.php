@@ -24,6 +24,6 @@ final class ReplyInput extends Data
         #[Regex('/\S/')]
         public readonly string $body,
         #[Ulid]
-        public readonly string $session,
+        public readonly string $agent,
     ) {}
 }

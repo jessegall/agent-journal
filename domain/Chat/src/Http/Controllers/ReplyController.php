@@ -7,6 +7,7 @@ namespace Domain\Chat\Http\Controllers;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Commands\ReplyToMessage;
 use Domain\Chat\Data\ReplyInput;
+use Domain\Chat\Http\Requests\ConversationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -18,7 +19,7 @@ final readonly class ReplyController
     public function __invoke(ReplyInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new ReplyToMessage($input->messageId, $input->stateVersion, $input->body));
-        $window = ['window' => ['chat.conversation' => ['session' => $input->session]], 'session' => $input->session];
+        $window = ConversationRequest::queryFor($input->agent);
 
         return $redirect->route('home', $window, 303);
     }

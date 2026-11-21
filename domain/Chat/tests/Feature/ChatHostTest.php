@@ -7,9 +7,11 @@ namespace Domain\Chat\Tests\Feature;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentRuntime;
 use App\Communication\Models\Message;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
@@ -51,14 +53,16 @@ final class ChatHostTest extends TestCase
         $session = $this->startedMainAgentSession();
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
         $agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId();
-        $window = ['window' => ['chat.conversation' => ['session' => $session->id]], 'session' => $session->id];
+        $window = ConversationRequest::queryFor($session->agent_id);
 
         $this->actingAs($owner)
             ->post('/chat/messages', [
                 'sourceInboxId' => $ownInboxId,
                 'destinationInboxId' => $agentInboxId,
                 'body' => 'Is the build green?',
-                'session' => $session->id,
+                'agent' => $session->agent_id,
+                'expectedSessionId' => $session->id,
+                'expectedGeneration' => AgentRuntime::ofSession($session->id)?->process_generation ?? 0,
             ])
             ->assertRedirect(route('home', $window, false));
 

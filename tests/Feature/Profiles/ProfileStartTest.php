@@ -75,6 +75,8 @@ final class ProfileStartTest extends TestCase
      */
     private array $accounts;
 
+    private User $owner;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -82,9 +84,9 @@ final class ProfileStartTest extends TestCase
         $this->accounts = $this->chooseActiveAccounts();
         $this->serveEveryCombination();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->startUserRequestAs($this->owner->id);
         $this->main = Agent::create('Main', 'main-agent');
     }
 
@@ -188,6 +190,34 @@ final class ProfileStartTest extends TestCase
         $this->assertSame(StartPreflightRefusal::CombinationNotDeclared->value, $refused->failureReason);
         $this->assertSame($refused->switchId, $repeated->switchId);
         $this->assertSame($old->sessionId, $this->main->refresh()->current_session_id);
+    }
+
+    public function test_the_switch_route_answers_a_repeat_with_the_same_switch_and_its_stage_is_read_back(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $old = $this->start('default', null);
+        Host::query()->update(['combinations' => []]);
+        $codex = $this->accounts['codex'];
+        $switch = [
+            'requestId' => strtolower((string) Str::ulid()),
+            'agentId' => $this->main->id,
+            'expectedSessionId' => $old->sessionId,
+            'expectedGeneration' => 0,
+            'driver' => HookDriver::Codex->value,
+            'variant' => DriverVariant::Headless->value,
+            'accountId' => $codex->id,
+            'accountRevision' => $codex->sign_in_generation,
+            'model' => 'default',
+        ];
+
+        $first = $this->actingAs($this->owner)->postJson(route('profiles.switch', 'journal-main'), $switch);
+        $repeat = $this->actingAs($this->owner)->postJson(route('profiles.switch', 'journal-main'), $switch);
+
+        $first->assertOk()->assertJsonPath('stage', DriverSwitchStage::Refused->value);
+        $this->assertSame($first->json('switchId'), $repeat->json('switchId'));
+        $this->actingAs($this->owner)->getJson(route('profiles.switch-stage', $switch['requestId']))
+            ->assertJsonPath('switchId', $first->json('switchId'))
+            ->assertJsonPath('stage', DriverSwitchStage::Refused->value);
     }
 
     public function test_an_explicit_resume_continues_the_chosen_older_thread_and_a_foreign_one_is_refused(): void

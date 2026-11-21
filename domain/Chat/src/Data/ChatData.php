@@ -10,17 +10,20 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The chat window: the sessions the user can talk to and the open conversation, when one is chosen.
+ * The chat window: the agents the user can see, idle ones included, the one chosen (the main agent unless another
+ * is), and the conversation with it. Without a designated main agent the installation still needs setting up.
  */
 #[TypeScript]
 final class ChatData extends Data
 {
     /**
-     * @param  list<SessionOptionData>  $sessions
+     * @param  list<AgentOptionData>  $agents
      */
     public function __construct(
-        #[DataCollectionOf(SessionOptionData::class)]
-        public readonly array $sessions,
+        #[DataCollectionOf(AgentOptionData::class)]
+        public readonly array $agents,
+        public readonly bool $setupRequired,
+        public readonly string|Optional $selectedAgentId = new Optional(),
         public readonly ConversationData|Optional $conversation = new Optional(),
     ) {}
 }

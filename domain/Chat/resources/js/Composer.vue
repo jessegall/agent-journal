@@ -12,13 +12,16 @@ import type { MessageInput } from '@generated/types/chat';
 import type { MessageView } from '@kit/CoreTypes';
 
 /**
- * Asks the agent of the chosen conversation, from the user's inbox to the agent's (doc 4, 6.5). The text is the draft of this conversation, so switching
- * conversations or reloading keeps it; a send keeps the target it was sent to, even when the user switches while it
- * is on its way, and clears only that draft, only if it was not typed on since.
+ * Asks the chosen agent, from the user's inbox to the agent's (doc 4, 6.5). The text is the draft of this agent, so
+ * browsing other agents, a switch or a reload keeps it; a send names the session the user saw the agent run, is
+ * refused when the agent runs another one by then, and clears only its own draft, only if it was not typed on since.
  */
 const props = defineProps<{
     draftKey: string;
-    session: string;
+    agent: string;
+    agentName: string;
+    sessionId: string | null;
+    sessionGeneration: number;
     sourceInboxId: string;
     destinationInboxId: string;
     replyingTo: MessageView | null;
@@ -31,7 +34,9 @@ const body = ref('');
 const textarea = ref<HTMLTextAreaElement | null>(null);
 const form = useForm<MessageInput>({
     body: '',
-    session: props.session,
+    agent: props.agent,
+    expectedSessionId: props.sessionId,
+    expectedGeneration: props.sessionGeneration,
     sourceInboxId: props.sourceInboxId,
     destinationInboxId: props.destinationInboxId,
 });
@@ -59,7 +64,9 @@ function submit(): void {
     const sent = {
         key: props.draftKey,
         body: body.value,
-        session: props.session,
+        agent: props.agent,
+        expectedSessionId: props.sessionId,
+        expectedGeneration: props.sessionGeneration,
         sourceInboxId: props.sourceInboxId,
         destinationInboxId: props.destinationInboxId,
         replyingTo: props.replyingTo,
@@ -86,7 +93,7 @@ function submit(): void {
             messageId: sent.replyingTo?.id,
             stateVersion: sent.replyingTo?.stateVersion,
             body: sent.body,
-            session: sent.session,
+            agent: sent.agent,
         })).submit(replyRoute(), hooks);
 
         return;
@@ -94,7 +101,9 @@ function submit(): void {
 
     form.transform(() => ({
         body: sent.body,
-        session: sent.session,
+        agent: sent.agent,
+        expectedSessionId: sent.expectedSessionId,
+        expectedGeneration: sent.expectedGeneration,
         sourceInboxId: sent.sourceInboxId,
         destinationInboxId: sent.destinationInboxId,
     })).submit(sendRoute(), hooks);
@@ -115,6 +124,9 @@ function sendOnEnter(event: KeyboardEvent): void {
         class="flex flex-col gap-1.5 rounded-composer border border-border-2 px-3 py-2.5"
         @submit.prevent="submit"
     >
+        <p class="text-small text-text-3">
+            To {{ agentName }}<template v-if="sessionId === null">, no session</template>
+        </p>
         <template v-if="replyingTo">
             <p class="text-small text-text-3">
                 Replying to: {{ replyingTo.body.slice(0, 80) }}

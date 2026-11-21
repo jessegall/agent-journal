@@ -10,7 +10,8 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * What the composer sends: the body exactly as typed (never trimmed, see bootstrap/app.php) and the target session.
+ * What the composer sends: the body exactly as typed (never trimmed, see bootstrap/app.php) the agent it goes to and the session
+ * the sender saw it run, so a message is never delivered to a session the sender did not see.
  */
 #[TypeScript]
 final class MessageInput extends Data
@@ -23,6 +24,9 @@ final class MessageInput extends Data
         #[Ulid]
         public readonly string $destinationInboxId,
         #[Ulid]
-        public readonly string $session,
+        public readonly string $agent,
+        #[Ulid]
+        public readonly string|null $expectedSessionId,
+        public readonly int $expectedGeneration,
     ) {}
 }

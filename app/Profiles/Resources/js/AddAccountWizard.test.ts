@@ -84,6 +84,7 @@ const claudeMethods: SignInMethodData[] = [
     {
         method: 'oauth',
         isSecret: false,
+        secretSource: null,
         billingNote: 'Uses your subscription.',
         title: 'Sign in with Claude',
         description: "Opens Claude's sign-in page.",

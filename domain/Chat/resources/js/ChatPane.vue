@@ -1,30 +1,33 @@
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
 import { draftKey } from './composables/useMessageDrafts';
-import type { ChatData } from '@generated/types/chat';
+import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import type { MessageView } from '@kit/CoreTypes';
 import { read as readRoute } from '@generated/routes/chat';
+import AgentPicker from './AgentPicker.vue';
+import AgentSessionActions from './AgentSessionActions.vue';
 import Composer from './Composer.vue';
 import MessageList from './MessageList.vue';
 
 /**
- * Home's left pane (doc 4, 6.1): the running sessions to talk to, the chosen conversation, the dock above the composer
- * (its cards arrive later through the dock slot) and the composer.
+ * Home's left pane (doc 4, 6.1): the agents to talk to, idle ones included, the chosen agent's conversation with its
+ * session actions, the dock above the composer (its cards arrive later through the dock slot) and the composer.
  */
 const props = defineProps<{
     chat: ChatData;
-    sessionUrl: (session: string) => string;
+    agentUrl: (agent: AgentOptionData) => string;
 }>();
 
 const page = usePage();
 const conversation = computed(() => props.chat.conversation);
+const selected = computed(() => props.chat.agents.find((agent) => agent.id === props.chat.selectedAgentId));
 const key = computed(() => {
     const user = page.props.currentUser;
 
     return conversation.value === undefined || !user
         ? undefined
-        : draftKey(user.id, conversation.value.id);
+        : draftKey(user.id, conversation.value.agentId);
 });
 const replyingTo = ref<MessageView | null>(null);
 const unreadShown = computed(() =>
@@ -53,7 +56,7 @@ function readShown(): void {
         {
             inboxId: shown.sourceInboxId,
             messageIds: unreadShown.value,
-            session: shown.sessionId,
+            agent: shown.agentId,
         },
         { preserveScroll: true, preserveState: true },
     );
@@ -74,34 +77,19 @@ watch(
         class="@container flex h-full min-h-0 flex-col gap-2 px-3 pb-2"
         aria-label="Chat"
     >
-        <nav
-            class="flex flex-wrap gap-1.5 border-b border-border py-2"
-            aria-label="Agent sessions"
-        >
-            <template v-if="chat.sessions.length === 0">
-                <p class="text-small text-text-3">
-                    No agent session is running.
-                </p>
-            </template>
-            <template v-for="session in chat.sessions" :key="session.id">
-                <Link
-                    :href="sessionUrl(session.id)"
-                    preserve-scroll
-                    class="rounded-control border border-border-2 px-2.5 py-0.5 text-small text-text-2 hover:bg-hover hover:text-text"
-                    :class="{
-                        'border-brand bg-sel text-text':
-                            conversation?.sessionId === session.id,
-                    }"
-                    :aria-current="
-                        conversation?.sessionId === session.id
-                            ? 'true'
-                            : undefined
-                    "
-                    >{{ session.agentName }}</Link
-                >
-            </template>
-        </nav>
-        <template v-if="conversation && key">
+        <AgentPicker
+            :agents="chat.agents"
+            :selected-agent-id="chat.selectedAgentId"
+            :agent-url="agentUrl"
+        />
+        <template v-if="chat.setupRequired">
+            <p class="text-small text-text-3">
+                This installation has no main agent yet. Run
+                <code>php artisan agents:install</code> to create it.
+            </p>
+        </template>
+        <template v-if="conversation && key && selected">
+            <AgentSessionActions :agent="selected" />
             <MessageList
                 :messages="conversation.messages"
                 :own-inbox-id="conversation.sourceInboxId"
@@ -125,7 +113,10 @@ watch(
             <slot name="dock" />
             <Composer
                 :draft-key="key"
-                :session="conversation.sessionId"
+                :agent="conversation.agentId"
+                :agent-name="selected.name"
+                :session-id="conversation.sessionId"
+                :session-generation="conversation.sessionGeneration"
                 :source-inbox-id="conversation.sourceInboxId"
                 :destination-inbox-id="conversation.destinationInboxId"
                 :replying-to="replyingTo"
@@ -134,7 +125,7 @@ watch(
         </template>
         <template v-else>
             <p class="m-auto text-empty text-text-3">
-                Choose an agent session to talk to.
+                Choose an agent to talk to.
             </p>
         </template>
     </section>

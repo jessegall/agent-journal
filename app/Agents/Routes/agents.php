@@ -7,8 +7,10 @@ use App\Agents\Http\Controllers\Calls;
 use App\Http\Controllers\Agents\CloseTerminalViewController;
 use App\Http\Controllers\Agents\ContinueStartController;
 use App\Http\Controllers\Agents\OpenTerminalViewController;
+use App\Http\Controllers\Agents\RecheckDriverSwitchController;
 use App\Http\Controllers\Agents\RenewTerminalViewController;
 use App\Http\Controllers\Agents\RetireAgentController;
+use App\Http\Controllers\Agents\RetryDriverSwitchController;
 use App\Http\Controllers\Agents\StartAgentController;
 use App\Http\Controllers\Agents\TerminalFrameController;
 use Illuminate\Container\Container;
@@ -30,6 +32,15 @@ Route::middleware(['web', 'auth', 'journal.user'])
         Route::post('/', OpenTerminalViewController::class)->name('open');
         Route::put('/', RenewTerminalViewController::class)->name('renew');
         Route::delete('/', CloseTerminalViewController::class)->name('close');
+    });
+
+Route::middleware(['web', 'auth', 'journal.user'])
+    ->prefix('/agents/switches/{switch}')
+    ->name('agents.switch.')
+    ->whereUlid('switch')
+    ->group(function (): void {
+        Route::post('/retry', RetryDriverSwitchController::class)->name('retry');
+        Route::post('/recheck', RecheckDriverSwitchController::class)->name('recheck');
     });
 
 Route::post('/agents/sessions/{session}/continue', ContinueStartController::class)

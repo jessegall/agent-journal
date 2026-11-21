@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use PhpOption\Option;
 
 /**
  * Which agent is the installation's main agent: one row at most, which Home and admission read the main agent through.
@@ -45,6 +46,14 @@ final class MainAgentDesignation extends Model implements ReadableModel
     public static function designatedAgent(): Agent
     {
         return self::query()->with('agent')->firstOr(fn () => throw MainAgentMissing::forInstallation())->agent;
+    }
+
+    /**
+     * @return Option<string>
+     */
+    public static function designatedAgentId(): Option
+    {
+        return Option::fromValue(self::query()->value('agent_id'));
     }
 
     public static function isDesignated(): bool

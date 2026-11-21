@@ -30,6 +30,32 @@ enum DriverSwitchStage: string
     }
 
     /**
+     * The words Home shows for where the switch stands.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Requested, self::Preflighted => 'Checking the new session',
+            self::Refused => 'Refused',
+            self::Stopping => 'Stopping the old session',
+            self::StopUnconfirmed => 'Waiting for the host to confirm the stop',
+            self::Stopped, self::Starting => 'Starting the new session',
+            self::StartUnconfirmed => 'Waiting for the host to confirm the start',
+            self::Confirmed => 'Switched',
+            self::LaunchFailed => 'The new session failed to start',
+            self::Cancelled => 'Cancelled',
+        };
+    }
+
+    /**
+     * Whether the switch waits for the host to confirm its old process stopped or its new one runs.
+     */
+    public function isUnconfirmed(): bool
+    {
+        return in_array($this, [self::StopUnconfirmed, self::StartUnconfirmed], true);
+    }
+
+    /**
      * Whether no new writer may start while the switch stands here: the old process may still run, or the new one
      * may already.
      */

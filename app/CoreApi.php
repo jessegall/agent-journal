@@ -160,6 +160,7 @@ use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\ActorGuidance;
+use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Contracts\CallingDriver;
@@ -187,12 +188,15 @@ use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\AccountProcessRole;
+use App\Agents\Enums\AgentAction;
+use App\Agents\Enums\AgentPresence;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverFailure;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverSourceType;
+use App\Agents\Enums\DriverSwitchStage;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
@@ -256,6 +260,7 @@ use App\Agents\Exceptions\ModelRequired;
 use App\Agents\Exceptions\ModelUnavailable;
 use App\Agents\Exceptions\NavigationAnswerRefused;
 use App\Agents\Exceptions\OfflineReplyModeInvalid;
+use App\Agents\Exceptions\SessionOutdated;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Exceptions\StartRecordMissing;
 use App\Agents\Exceptions\StartRefused;
@@ -263,6 +268,7 @@ use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AccountUseCounts;
 use App\Agents\Support\AgentLabel;
+use App\Agents\Support\AgentOption;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\ContainerManifest;
 use App\Agents\Support\DriverConversationSummary;
@@ -284,6 +290,7 @@ use App\Agents\Support\OwnerStartReceipt;
 use App\Agents\Support\OwnerStartRequest;
 use App\Agents\Support\PreparedStart;
 use App\Agents\Support\RankedLaunchCandidate;
+use App\Agents\Support\ResumableConversation;
 use App\Agents\Support\ScreenReportAnswer;
 use App\Agents\Support\SecurityOptions;
 use App\Agents\Support\SessionOption;
@@ -296,6 +303,7 @@ use App\Agents\Values\AccountUse;
 use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\ClaimedRequest;
 use App\Agents\Values\DriverReceipt;
+use App\Agents\Values\DriverSwitchTarget;
 use App\Agents\Values\EntryGoalAnswer;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
@@ -1288,6 +1296,7 @@ final class CoreApi
                 CurrentActorSetter::class,
                 AgentResolver::class,
                 SessionResolver::class,
+                AgentDirectory::class,
                 ToolDiscovery::class,
                 StartExecutor::class,
                 WorkspaceSource::class,
@@ -1534,6 +1543,9 @@ final class CoreApi
                 CapabilityStatusType::class,
                 ExecutionModeType::class,
                 AccountModeType::class,
+                AgentAction::class,
+                AgentPresence::class,
+                DriverSwitchStage::class,
                 HostCapabilityType::class,
                 SelectedDriver::class,
                 SelectedAccount::class,
@@ -1547,6 +1559,7 @@ final class CoreApi
                 ModelSelection::class,
                 ChosenAccount::class,
                 StartProposal::class,
+                DriverSwitchTarget::class,
                 SelectionSource::class,
                 ProfileDefaults::class,
                 ModelSelectionType::class,
@@ -1613,6 +1626,8 @@ final class CoreApi
                 ActorContext::class,
                 AgentLabel::class,
                 SessionOption::class,
+                AgentOption::class,
+                ResumableConversation::class,
                 StackTarget::class,
                 Decision::class,
                 AnswerType::class,
@@ -2259,6 +2274,7 @@ final class CoreApi
                 UnknownLinkType::class,
                 StateSubjectMissing::class,
                 StackTargetRefused::class,
+                SessionOutdated::class,
                 StackLockTimedOut::class,
                 StackTransactionRequired::class,
                 InvalidAssignmentIdentity::class,

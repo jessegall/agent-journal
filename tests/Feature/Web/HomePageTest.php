@@ -7,13 +7,16 @@ namespace Tests\Feature\Web;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Communication\Models\Message;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
@@ -23,7 +26,7 @@ use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
- * Home: the chat with a chosen agent session beside the plans slice, and the composer's send.
+ * Home: the chat with a chosen agent beside the plans slice, and the composer's send.
  */
 final class HomePageTest extends TestCase
 {
@@ -78,7 +81,7 @@ final class HomePageTest extends TestCase
         $this->get('/')->assertRedirect('/login');
     }
 
-    public function test_home_shows_the_running_sessions_and_the_same_plans_slice_as_the_plans_page(): void
+    public function test_home_shows_the_agents_and_the_same_plans_slice_as_the_plans_page(): void
     {
         $this->actingAs(
             $this->owner,
@@ -98,8 +101,10 @@ final class HomePageTest extends TestCase
                 ->where('window_plans_list.data.pagination.total', 1))
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
                 ->where('window_chat_conversation.state', 'ready')
-                ->where('window_chat_conversation.data.sessions.0.id', (string) $this->session->id)
-                ->where('window_chat_conversation.data.sessions.0.agentName', 'Builder')
+                ->where('window_chat_conversation.data.agents.0.id', $this->session->agent_id)
+                ->where('window_chat_conversation.data.agents.0.name', 'Builder')
+                ->where('window_chat_conversation.data.agents.0.actions', ['open', 'switch'])
+                ->where('window_chat_conversation.data.setupRequired', true)
                 ->missing('window_chat_conversation.data.conversation')));
     }
 
@@ -133,16 +138,13 @@ final class HomePageTest extends TestCase
 
         $home = route(
             'home',
-            [
-                'window' => ['chat.conversation' => ['session' => (string) $this->session->id]],
-                'session' => (string) $this->session->id,
-            ],
+            ConversationRequest::queryFor($this->session->agent_id),
             false,
         );
 
         $this->actingAs($this->owner)->post(
             '/chat/messages',
-            [...$this->pair(), 'body' => $body, 'session' => (string) $this->session->id],
+            [...$this->pair(), 'body' => $body, ...$this->seenSession()],
         )
             ->assertStatus(303)
             ->assertRedirect($home);
@@ -158,11 +160,12 @@ final class HomePageTest extends TestCase
     public function test_the_chat_window_is_also_chats_own_page(): void
     {
         $this->actingAs($this->owner)->get(
-            "/chat?session={$this->session->id}",
+            "/chat?agent={$this->session->agent_id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('chat/ChatWindow')
             ->where('page.state', 'ready')
-            ->where('page.data.sessions.0.agentName', 'Builder')
+            ->where('page.data.agents.0.name', 'Builder')
+            ->where('page.data.conversation.agentId', $this->session->agent_id)
             ->where('page.data.conversation.sessionId', (string) $this->session->id));
     }
 
@@ -196,11 +199,22 @@ final class HomePageTest extends TestCase
     {
         $this->actingAs($this->owner)->from('/')->post(
             '/chat/messages',
-            [...$this->pair(), 'body' => "  \n\t ", 'session' => (string) $this->session->id],
+            [...$this->pair(), 'body' => "  \n\t ", ...$this->seenSession()],
         )
             ->assertRedirect('/')
             ->assertSessionHasErrors('body');
 
+        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
+    }
+
+    public function test_a_message_written_for_a_session_the_agent_no_longer_runs_is_not_delivered(): void
+    {
+        $outdated = [...$this->seenSession(), 'expectedSessionId' => strtolower((string) Str::ulid())];
+
+        $this->actingAs($this->owner)->from('/')
+            ->post('/chat/messages', [...$this->pair(), 'body' => 'Still there?', ...$outdated])
+            ->assertRedirect('/')
+            ->assertSessionHasErrors(['session' => 'The agent now runs another session. Send the message again to reach it.']);
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 
@@ -209,7 +223,7 @@ final class HomePageTest extends TestCase
         $guessed = [...$this->pair(), 'destinationInboxId' => TestIds::of(99999)];
 
         $this->actingAs($this->owner)->from('/')
-            ->post('/chat/messages', [...$guessed, 'body' => 'Hello', 'session' => (string) $this->session->id])
+            ->post('/chat/messages', [...$guessed, 'body' => 'Hello', ...$this->seenSession()])
             ->assertRedirect('/')
             ->assertSessionHasErrors('command');
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
@@ -223,5 +237,19 @@ final class HomePageTest extends TestCase
         [$sourceInboxId, $destinationInboxId] = explode('-', $this->pairId);
 
         return ['sourceInboxId' => $sourceInboxId, 'destinationInboxId' => $destinationInboxId];
+    }
+
+    /**
+     * The agent a send goes to and the session the sender saw it run.
+     *
+     * @return array{agent: string, expectedSessionId: string, expectedGeneration: int}
+     */
+    private function seenSession(): array
+    {
+        return [
+            'agent' => $this->session->agent_id,
+            'expectedSessionId' => $this->session->id,
+            'expectedGeneration' => AgentRuntime::ofSession($this->session->id)?->process_generation ?? 0,
+        ];
     }
 }

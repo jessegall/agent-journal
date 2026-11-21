@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
  * Version 5's agent bar (shell/AgentBar.vue) under decision D3: 54 px, the 8 px state dot and the state word of the
- * session chosen in the chat. Only running sessions can be chosen, so a chosen one is Working; with none chosen it
- * shows version 5's placeholder.
+ * agent chosen in the chat. The bar hears of the agent through its live session, so a named agent is Working and an
+ * agent with no session reads Idle.
  */
 defineProps<{ agentName?: string }>();
 </script>
@@ -14,12 +14,13 @@ defineProps<{ agentName?: string }>();
     >
         <template v-if="agentName">
             <span class="size-2 flex-none rounded-full bg-brand"></span>
-            <span class="font-semibold text-text">Working</span>
+            <span class="font-semibold text-text">{{ agentName }}</span>
+            <span class="text-text-3">Working</span>
         </template>
         <template v-else>
             <span class="size-2 flex-none rounded-full bg-text-4"></span>
-            <span class="font-semibold text-text-4">Agent 1</span>
-            <span class="text-text-4">No session yet</span>
+            <span class="font-semibold text-text-4">Idle</span>
+            <span class="text-text-4">No session</span>
         </template>
     </div>
 </template>

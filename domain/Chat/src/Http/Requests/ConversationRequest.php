@@ -10,7 +10,7 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * The chat window's own query: the agent session it talks to, as a decimal string, when one is chosen.
+ * The chat window's own query: the agent it talks to, when one is chosen.
  */
 final class ConversationRequest extends FormRequest
 {
@@ -19,14 +19,24 @@ final class ConversationRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['session' => ['nullable', 'string', 'ulid']];
+        return ['agent' => ['nullable', 'string', 'ulid']];
+    }
+
+    /**
+     * The query that opens Home with this agent chosen in the chat window.
+     *
+     * @return array<string, array<string, array<string, string>>>
+     */
+    public static function queryFor(string $agentId): array
+    {
+        return ['window' => ['chat.conversation' => ['agent' => $agentId]]];
     }
 
     /**
      * @return Option<string>
      */
-    public function chosenSession(): Option
+    public function chosenAgent(): Option
     {
-        return $this->filled('session') ? Some::create($this->string('session')->lower()->toString()) : None::create();
+        return $this->filled('agent') ? Some::create($this->string('agent')->lower()->toString()) : None::create();
     }
 }

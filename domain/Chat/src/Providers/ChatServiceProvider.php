@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Providers;
 
+use App\Agents\Exceptions\SessionOutdated;
 use App\Agents\Exceptions\StackTargetRefused;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -22,6 +23,11 @@ final class ChatServiceProvider extends ServiceProvider
             $exceptions->renderable(
                 fn (StackTargetRefused $refused) => $this->app->make(Redirector::class)->back(303)->withErrors(
                     ['session' => 'This agent session cannot take a message now.'],
+                ),
+            );
+            $exceptions->renderable(
+                fn (SessionOutdated $outdated) => $this->app->make(Redirector::class)->back(303)->withErrors(
+                    ['session' => 'The agent now runs another session. Send the message again to reach it.'],
                 ),
             );
         }

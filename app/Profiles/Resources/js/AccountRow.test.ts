@@ -65,6 +65,7 @@ import AccountRow from './AccountRow.vue';
 const subscription: SignInMethodData = {
     method: 'oauth',
     isSecret: false,
+    secretSource: null,
     billingNote: 'Uses your subscription.',
     title: 'Sign in with ChatGPT',
     description:

@@ -12,6 +12,7 @@ use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Commands\DockRecord;
+use Domain\Chat\Http\Requests\ConversationRequest;
 use Domain\Chat\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
@@ -60,7 +61,7 @@ final class DockSectionTest extends TestCase
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
         $agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId();
         $task = Task::factory()->create(['title' => 'Ship the dock']);
-        $window = ['window' => ['chat.conversation' => ['session' => $session->id]], 'session' => $session->id];
+        $window = ConversationRequest::queryFor($session->agent_id);
 
         $this->assertSame([], $this->dockedTitles($owner, $window));
 

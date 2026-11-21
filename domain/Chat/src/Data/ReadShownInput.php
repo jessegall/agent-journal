@@ -26,6 +26,6 @@ final class ReadShownInput extends Data
         #[ArrayType, Min(1), Max(100)]
         public readonly array $messageIds,
         #[Ulid]
-        public readonly string $session,
+        public readonly string $agent,
     ) {}
 }

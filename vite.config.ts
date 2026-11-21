@@ -124,6 +124,7 @@ export default defineConfig({
         include: [
             'resources/js/**/*.test.ts',
             'app/*/Resources/js/**/*.test.ts',
+            'domain/*/resources/js/**/*.test.ts',
         ],
     },
 });

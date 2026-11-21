@@ -2,8 +2,8 @@ import { reactive } from 'vue';
 import { keepStoredJson, readStoredJson } from '@kit/browserStorage';
 
 /**
- * Unsent message text per user and conversation, so leaving and coming back to a conversation, or reloading the page,
- * keeps what was typed. Each conversation has its own draft. The drafts live in this tab's session storage; when the
+ * Unsent message text per user and agent, so browsing other agents, a switch to another driver or reloading the page
+ * keeps what was typed. Each agent has its own draft. The drafts live in this tab's session storage; when the
  * browser refuses storage they still last for as long as the page stays open.
  */
 const storageKey = 'journal.message-drafts';
@@ -21,8 +21,8 @@ function store(): void {
     keepStoredJson('session', storageKey, [...drafts]);
 }
 
-export function draftKey(userId: string, conversationId: string): string {
-    return `${userId}/${conversationId}`;
+export function draftKey(userId: string, agentId: string): string {
+    return `${userId}/${agentId}`;
 }
 
 export function useMessageDrafts() {

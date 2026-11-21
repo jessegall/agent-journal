@@ -7,6 +7,7 @@ namespace Domain\Chat\Http\Controllers;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Commands\ReadMessages;
 use Domain\Chat\Data\ReadShownInput;
+use Domain\Chat\Http\Requests\ConversationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -18,7 +19,7 @@ final readonly class ReadShownController
     public function __invoke(ReadShownInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $commands->run(new ReadMessages($input->inboxId, $input->messageIds));
-        $window = ['window' => ['chat.conversation' => ['session' => $input->session]], 'session' => $input->session];
+        $window = ConversationRequest::queryFor($input->agent);
 
         return $redirect->route('home', $window, 303);
     }
