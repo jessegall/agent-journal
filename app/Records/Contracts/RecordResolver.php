@@ -17,6 +17,13 @@ use Illuminate\Database\Eloquent\Model;
 interface RecordResolver
 {
     /**
+     * Every record type a domain registered a provider for.
+     *
+     * @return list<string>
+     */
+    public function types(): array;
+
+    /**
      * The record people named, such as doc 12, through the provider whose word it uses.
      *
      * @throws UnknownLinkType|RecordUnavailable

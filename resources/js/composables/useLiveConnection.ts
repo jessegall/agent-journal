@@ -2,11 +2,13 @@ import { usePage } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, watch } from 'vue';
 import type { UserConnection } from '@/echo';
 import { connectUser } from '@/echo';
+import { invalidateProtectedViews } from './protectedView';
 import { forgetPageChanges, pageChanged } from './usePageChanges';
 
 /**
  * The shell's one connection: opened in the browser for the signed-in user, opened again only for a new user, and
- * closed when the user signs out or the shell leaves.
+ * closed when the user signs out or the shell leaves. A reconnect, and a grant that may have been taken away, clear
+ * what protected views show before the page is read again.
  */
 export function useLiveConnection(): void {
     const page = usePage();
@@ -22,7 +24,7 @@ export function useLiveConnection(): void {
         forgetPageChanges();
 
         if (userId !== undefined) {
-            connection = connectUser(userId, pageChanged, pageChanged);
+            connection = connectUser(userId, pageChanged, invalidateProtectedViews, invalidateProtectedViews);
         }
     }
 

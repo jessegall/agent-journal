@@ -10,7 +10,7 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * The chat window's own query: the agent it talks to, when one is chosen.
+ * The chat window's own query: the agent it talks to, when one is chosen, and where the dock's next page starts.
  */
 final class ConversationRequest extends FormRequest
 {
@@ -19,7 +19,7 @@ final class ConversationRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['agent' => ['nullable', 'string', 'ulid']];
+        return ['agent' => ['nullable', 'string', 'ulid'], 'dock' => ['nullable', 'string', 'max:2048']];
     }
 
     /**
@@ -30,6 +30,14 @@ final class ConversationRequest extends FormRequest
     public static function queryFor(string $agentId): array
     {
         return ['window' => ['chat.conversation' => ['agent' => $agentId]]];
+    }
+
+    /**
+     * The token of the dock's next page, when the user asked for more.
+     */
+    public function dockToken(): string|null
+    {
+        return $this->filled('dock') ? $this->string('dock')->toString() : null;
     }
 
     /**

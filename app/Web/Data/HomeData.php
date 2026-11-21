@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Data;
 
+use App\Ui\Data\SlotSectionData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -18,14 +19,14 @@ final class HomeData extends Data
     /**
      * @param  list<LayoutData>  $layouts
      * @param  list<HomeWindowData>  $windows
-     * @param  list<HomeSectionData>  $barSections
+     * @param  list<SlotSectionData>  $barSections
      */
     public function __construct(
         #[DataCollectionOf(LayoutData::class)]
         public readonly array $layouts,
         #[DataCollectionOf(HomeWindowData::class)]
         public readonly array $windows,
-        #[DataCollectionOf(HomeSectionData::class)]
+        #[DataCollectionOf(SlotSectionData::class)]
         public readonly array $barSections,
     ) {}
 }

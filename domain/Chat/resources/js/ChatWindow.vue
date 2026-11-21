@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import { agentUrl } from './agentLinks';
 import ChatPane from './ChatPane.vue';
@@ -12,6 +12,20 @@ defineProps<{ data: ChatData }>();
 
 const page = usePage();
 const ownPage = page.component === 'chat/ChatWindow';
+const HOME_PROP = 'window_chat_conversation';
+
+/**
+ * Reads the dock's next page: on Chat's own page through its query, on Home through the chat window's own part of it.
+ */
+function loadMore(token: string): void {
+    if (ownPage) {
+        router.reload({ only: ['page'], data: { dock: token } });
+
+        return;
+    }
+
+    router.reload({ only: [HOME_PROP], data: { window: { 'chat.conversation': { dock: token } } } });
+}
 </script>
 
 <template>
@@ -19,5 +33,6 @@ const ownPage = page.component === 'chat/ChatWindow';
         :chat="data"
         :offers-choice="ownPage"
         :agent-url="(agent: AgentOptionData) => agentUrl(page.url, agent)"
+        :load-more="loadMore"
     />
 </template>

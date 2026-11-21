@@ -64,8 +64,8 @@ use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\CloseCard;
-use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\DockData;
+use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentPageData;
 use Domain\Documents\Data\DocumentView;
@@ -162,7 +162,7 @@ final class DocumentsDomain extends Domain implements
             ->contracts(DraftResolver::class, DraftReader::class, DocumentResolver::class, ReportResolver::class)
             ->contracts(AttachmentReader::class, DocumentReader::class, ReportReader::class)
             ->values(
-                DockCard::class,
+                DockSuggestion::class,
                 DockData::class,
                 CloseCard::class,
                 RecordInspection::class,

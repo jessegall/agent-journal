@@ -19,6 +19,7 @@ export function connectUser(
     userId: string,
     onChange: () => void,
     onReconnect: () => void,
+    onProtectedViewInvalidated: () => void,
 ): UserConnection {
     const echo = new Echo({
         broadcaster: 'reverb',
@@ -41,7 +42,9 @@ export function connectUser(
     const channelName = `journal.user.${userId}`;
     let wasLost = false;
 
-    echo.private(channelName).listen('.page.changed', onChange);
+    echo.private(channelName)
+        .listen('.page.changed', onChange)
+        .listen('.view.protected-invalidated', onProtectedViewInvalidated);
     echo.connector.pusher.connection.bind(
         'state_change',
         (states: { current: string }) => {

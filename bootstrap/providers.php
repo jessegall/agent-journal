@@ -9,6 +9,7 @@ use App\Bus\Providers\CommandBusServiceProvider;
 use App\Comments\Providers\CommentsServiceProvider;
 use App\Communication\Providers\CommunicationServiceProvider;
 use App\Desks\Providers\DesksServiceProvider;
+use App\Docking\Providers\DockingServiceProvider;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Engine\Providers\EngineServiceProvider;
@@ -54,6 +55,7 @@ return [
     AgentsServiceProvider::class,
     AssignmentsServiceProvider::class,
     RecordsServiceProvider::class,
+    DockingServiceProvider::class,
     SharingServiceProvider::class,
     CommunicationServiceProvider::class,
     DesksServiceProvider::class,

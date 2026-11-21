@@ -4,21 +4,24 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { draftKey } from './composables/useMessageDrafts';
 import type { AgentOptionData, ChatData } from '@generated/types/chat';
 import type { MessageView } from '@kit/CoreTypes';
+import SlotSections from '@kit/SlotSections';
 import { read as readRoute } from '@generated/routes/chat';
 import AgentPicker from './AgentPicker.vue';
 import AgentSessionActions from './AgentSessionActions.vue';
 import Composer from './Composer.vue';
+import DockStack from './dock/DockStack.vue';
 import MessageList from './MessageList.vue';
 
 /**
- * The chat (doc 4, 6.1): the chosen agent's conversation, the dock above the composer (its cards arrive later through
- * the dock slot) and the composer. On Chat's own page it also offers the agents and their session actions, which
+ * The chat (doc 4, 6.1): the chosen agent's conversation, what other domains suggest in the dock slot, the sources
+ * docked in the conversation and the composer. On Chat's own page it also offers the agents and their session actions, which
  * Home's agent bar offers instead.
  */
 const props = defineProps<{
     chat: ChatData;
     offersChoice: boolean;
     agentUrl: (agent: AgentOptionData) => string;
+    loadMore: (token: string) => void;
 }>();
 
 const page = usePage();
@@ -99,6 +102,8 @@ watch(
             <MessageList
                 :messages="conversation.messages"
                 :own-inbox-id="conversation.sourceInboxId"
+                :agent-id="conversation.agentId"
+                :message-action="conversation.messageAction"
                 @reply="(message) => (replyingTo = message)"
             />
             <template v-if="unreadShown.length > 0">
@@ -109,14 +114,13 @@ watch(
                     <span>Reading is shared with everyone at this inbox.</span>
                 </p>
             </template>
-            <ul class="flex flex-wrap gap-1.5" aria-label="Docked records">
-                <template v-for="card in conversation.dockedCards" :key="`${card.type}:${card.id}`">
-                    <li class="rounded-control border border-border-2 px-2 py-1 text-small text-text-2">
-                        {{ card.title }}
-                    </li>
-                </template>
-            </ul>
-            <slot name="dock" />
+            <SlotSections :sections="chat.dockSections" />
+            <DockStack
+                :key="conversation.id"
+                :dock="conversation.dock"
+                :agent-id="conversation.agentId"
+                :load-more="loadMore"
+            />
             <Composer
                 :draft-key="key"
                 :agent="conversation.agentId"

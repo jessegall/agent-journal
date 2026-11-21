@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Support\AgentOption;
-use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Data\MessagePage;
-use App\Records\Contracts\RecordResolver;
+use App\Communication\Data\MessageView;
+use App\Docking\Data\SourceActionData;
+use App\Docking\Sources\Contracts\DockRegistration;
 use App\Ui\Contracts\PageResolver;
+use App\Ui\Contracts\SlotSections;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Http\Requests\ConversationRequest;
-use Domain\Chat\Resolvers\Support\DockedRecordRecords;
-use Domain\Chat\Support\ConversationPair;
+use Domain\Chat\Support\AuthorizedConversations;
+use Domain\Chat\Support\DockProjection;
 use Spatie\LaravelData\Optional;
 
 /**
@@ -27,15 +27,16 @@ use Spatie\LaravelData\Optional;
  */
 final readonly class ChatWindowResolver implements PageResolver
 {
+    private const string PAGE = 'chat.conversation';
+
     public function __construct(
         private ConversationRequest $request,
         private AgentDirectory $agents,
         private ConversationResolver $messages,
-        private CurrentActor $actors,
-        private ActorInboxResolver $ownInboxes,
-        private InboxDestinationResolver $destinations,
-        private DockedRecordRecords $docked,
-        private RecordResolver $records,
+        private AuthorizedConversations $conversations,
+        private DockProjection $dock,
+        private SlotSections $slots,
+        private DockRegistration $docking,
     ) {}
 
     public function read(): ChatData
@@ -52,18 +53,27 @@ final readonly class ChatWindowResolver implements PageResolver
                 ->map(fn (AgentOption $agent) => $agent->agentId)
                 ->getOrElse(Optional::create()),
             'conversation' => $chosen->map($this->conversationWith(...))->getOrElse(Optional::create()),
+            'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
         ]);
     }
 
     private function conversationWith(AgentOption $agent): ConversationData
     {
-        $actorInboxId = $this->ownInboxes->preferredFor($this->actors->actor())->inboxId();
-        $agentInboxId = $this->destinations->resolve($agent->assignee)->inboxId();
-        $page = $this->messages->between($actorInboxId, $agentInboxId, null, MessagePage::DEFAULT_LIMIT);
+        $peers = $this->conversations->withAgent($agent->agentId);
+        $page = $this->messages->between($peers->ownInboxId, $peers->peerInboxId, null, MessagePage::DEFAULT_LIMIT);
+        $dock = $this->dock->page($peers, $this->request->dockToken());
 
-        $conversationPair = new ConversationPair($actorInboxId, $agentInboxId);
-        $docked = $this->records->visibleCards($this->docked->docked($conversationPair));
+        $messageAction = $this->docking->offersDock(MessageView::LINK_TYPE)
+            ? SourceActionData::from(['label' => 'Add to chat', 'type' => MessageView::LINK_TYPE])
+            : Optional::create();
 
-        return ConversationData::fromPage($actorInboxId, $agentInboxId, $page, $agent, $docked);
+        return ConversationData::fromPage(
+            $peers->ownInboxId,
+            $peers->peerInboxId,
+            $page,
+            $agent,
+            $dock,
+            $messageAction,
+        );
     }
 }

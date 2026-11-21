@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import type { Component } from 'vue';
-import { computed, defineAsyncComponent } from 'vue';
+import { computed } from 'vue';
 import PaneGrid from '@/components/panes/PaneGrid.vue';
 import type { PaneWindow } from '@/components/panes/paneLayout';
 import { providePaneLayout } from '@/components/panes/usePaneLayout';
 import WindowHost from '@/framework/WindowHost.vue';
 import type { WindowResult } from '@/generated/types/page-props';
-import { components } from '@/generated/ui-manifest';
+import { componentNamed } from '@/framework/manifestComponents';
 import type { HomeData, HomeWindowData } from '@/types/generated';
 import AgentBar from './AgentBar.vue';
 import InformationBar from './InformationBar.vue';
@@ -41,21 +41,6 @@ providePaneLayout('home-layout', () =>
 );
 
 const windowsByPane = computed(() => new Map(props.home.windows.map((window) => [window.paneKey, window])));
-const loaded = new Map<string, Component>();
-
-function componentNamed(name: string): Component {
-    const known = loaded.get(name);
-
-    if (known !== undefined) {
-        return known;
-    }
-
-    const component = defineAsyncComponent(async () => (await components[name]()).default as Component);
-    loaded.set(name, component);
-
-    return component;
-}
-
 function componentOf(window: HomeWindowData): Component {
     return componentNamed(window.component);
 }

@@ -7,13 +7,15 @@ namespace Domain\Chat\Data;
 use App\Agents\Support\AgentOption;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
-use App\Records\Data\RecordCard;
+use App\Docking\Data\SourceActionData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The conversation with one agent, with its live session when it has one; its id keys the composer's draft.
+ * The conversation with one agent, with its live session when it has one and the sources docked in it; its id keys
+ * the composer's draft.
  *
  * @method static static from(array<string, mixed> $conversation)
  */
@@ -22,7 +24,6 @@ final class ConversationData extends Data
 {
     /**
      * @param  list<MessageView>  $messages
-     * @param  list<RecordCard>  $dockedCards
      */
     public function __construct(
         public readonly string $id,
@@ -33,21 +34,21 @@ final class ConversationData extends Data
         public readonly string $destinationInboxId,
         #[DataCollectionOf(MessageView::class)]
         public readonly array $messages,
-        #[DataCollectionOf(RecordCard::class)]
-        public readonly array $dockedCards,
+        public readonly DockPageData $dock,
+        public readonly SourceActionData|Optional $messageAction,
     ) {}
 
     /**
-     * The messages between the user's inbox and the chosen agent's inbox, whether or not the agent runs a session.
-     *
-     * @param  list<RecordCard>  $dockedCards
+     * The messages between the user's inbox and the chosen agent's inbox, whether or not the agent runs a session,
+     * and the first page of what is docked there.
      */
     public static function fromPage(
         string $sourceInboxId,
         string $destinationInboxId,
         MessagePage $page,
         AgentOption $agent,
-        array $dockedCards,
+        DockPageData $dock,
+        SourceActionData|Optional $messageAction,
     ): self {
         return self::from([
             'id' => "{$sourceInboxId}-{$destinationInboxId}",
@@ -57,7 +58,8 @@ final class ConversationData extends Data
             'sourceInboxId' => $sourceInboxId,
             'destinationInboxId' => $destinationInboxId,
             'messages' => $page->messages,
-            'dockedCards' => $dockedCards,
+            'dock' => $dock,
+            'messageAction' => $messageAction,
         ]);
     }
 }

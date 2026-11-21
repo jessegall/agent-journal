@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Ui\Support;
 
+use App\Ui\Contracts\DeclaredPages;
+use App\Ui\Contracts\SlotSections;
 use App\Ui\Contracts\VisibilityCheck;
+use App\Ui\Data\SlotSectionData;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\RegisteredAction;
@@ -23,7 +26,7 @@ use PhpOption\Option;
  * The pages, sections, actions and navigation of every installed domain, checked together once at start-up and never
  * changed after. It holds class names and paths only; readers and checks are built per request by whoever uses them.
  */
-final readonly class UiDeclarations
+final readonly class UiDeclarations implements DeclaredPages, SlotSections
 {
     /**
      * @param  array<string, RegisteredPage>  $pages  by full key
@@ -115,6 +118,20 @@ final readonly class UiDeclarations
         return array_values($this->sections);
     }
 
+    public function sectionsIn(string $page, string $slot): array
+    {
+        return array_values(array_map(
+            fn (RegisteredSection $section) => SlotSectionData::from([
+                'propName' => $section->propName,
+                'component' => $section->componentName(),
+            ]),
+            array_filter(
+                $this->sections(),
+                fn (RegisteredSection $section) => $section->host->key === $page && $section->slot->key === $slot,
+            ),
+        ));
+    }
+
     /**
      * @return list<RegisteredAction>
      */
@@ -152,6 +169,16 @@ final readonly class UiDeclarations
     public function pageOrNone(string $key): Option
     {
         return Option::fromArraysValue($this->pages, $key);
+    }
+
+    public function declares(string $page): bool
+    {
+        return isset($this->pages[$page]);
+    }
+
+    public function addressOf(string $page, array $arguments): string
+    {
+        return route($this->page($page)->routeName(), $arguments, false);
     }
 
     /**

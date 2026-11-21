@@ -14,6 +14,8 @@ use App\Http\Middleware\Web\CheckPageVisibility;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
 use App\Settings\Contracts\SettingsAccessPolicy;
+use App\Ui\Contracts\DeclaredPages;
+use App\Ui\Contracts\SlotSections;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Console\GenerateUiManifest;
 use App\Web\Contracts\CurrentUserResolver;
@@ -70,6 +72,8 @@ final class WebServiceProvider extends ServiceProvider
             UiDeclarations::class,
             fn ($app) => $app->make(DomainRegistry::class)->uiDeclarations(...CorePages::declarations()),
         );
+        $this->app->bind(SlotSections::class, UiDeclarations::class);
+        $this->app->bind(DeclaredPages::class, UiDeclarations::class);
         // Inertia's page check reads the declared components, and today's pages through its usual finder.
         $this->app->bind('inertia.view-finder', fn ($app) => new UiComponentFinder(
             $app->make(UiDeclarations::class),

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Web\Events\PageChanged;
+use App\Web\Events\ProtectedViewInvalidated;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -16,6 +17,13 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Web/Listeners/BroadcastPageChange.php',
+        ],
+    ],
+    ProtectedViewInvalidated::class => [
+        'role' => EventRole::Projection,
+        'migrated' => false,
+        'producers' => [
+            'app/Web/Listeners/BroadcastProtectedViewInvalidation.php',
         ],
     ],
 ];

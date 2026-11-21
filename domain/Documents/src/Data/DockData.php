@@ -15,10 +15,10 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class DockData extends Data
 {
     /**
-     * @param  list<DockCard>  $suggestions
+     * @param  list<DockSuggestion>  $suggestions
      */
     public function __construct(
-        #[DataCollectionOf(DockCard::class)]
+        #[DataCollectionOf(DockSuggestion::class)]
         public readonly array $suggestions,
     ) {}
 }

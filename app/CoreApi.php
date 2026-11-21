@@ -586,6 +586,47 @@ use App\Desks\Exceptions\SeatCapacityReached;
 use App\Desks\Exceptions\SeatConflict;
 use App\Desks\Exceptions\SecondForwardingSeat;
 use App\Desks\Support\SeatChangeResult;
+use App\Docking\Cards\Button;
+use App\Docking\Cards\ChatExcerpt;
+use App\Docking\Cards\ComposedCard;
+use App\Docking\Cards\ConsoleOutput;
+use App\Docking\Cards\Contracts\DockPart;
+use App\Docking\Cards\CountedProgress;
+use App\Docking\Cards\DestinationArgument;
+use App\Docking\Cards\Disclosure;
+use App\Docking\Cards\DockCard;
+use App\Docking\Cards\DockDestination;
+use App\Docking\Cards\DockIdentity;
+use App\Docking\Cards\DockLink;
+use App\Docking\Cards\Duration;
+use App\Docking\Cards\ExcerptMessage;
+use App\Docking\Cards\Group;
+use App\Docking\Cards\IndeterminateProgress;
+use App\Docking\Cards\Row;
+use App\Docking\Cards\Stack;
+use App\Docking\Cards\StateLabel;
+use App\Docking\Cards\Subtitle;
+use App\Docking\Cards\Title;
+use App\Docking\Data\SourceActionData;
+use App\Docking\Enums\Alignment;
+use App\Docking\Enums\ConsoleStream;
+use App\Docking\Enums\DisclosureState;
+use App\Docking\Enums\Emphasis;
+use App\Docking\Enums\PartType;
+use App\Docking\Enums\Tone;
+use App\Docking\Exceptions\DockCardInvalid;
+use App\Docking\Exceptions\DockDefinitionInvalid;
+use App\Docking\Exceptions\DockSourceUnavailable;
+use App\Docking\Exceptions\PartMapInvalid;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Docking\Sources\Contracts\DestinationGate;
+use App\Docking\Sources\Contracts\Dockable;
+use App\Docking\Sources\Contracts\DockableProvider;
+use App\Docking\Sources\Contracts\DockRegistration;
+use App\Docking\Sources\Contracts\DockSourceChanged;
+use App\Docking\Sources\DockDefinition;
+use App\Docking\Wire\Contracts\CardEncoder;
+use App\Docking\Wire\EncodedCard;
 use App\Domains\Contracts\IncomingWorkProvider;
 use App\Domains\Contracts\InternalAssignableContributor;
 use App\Drivers\Enums\HookDriver;
@@ -1169,6 +1210,7 @@ use App\Text\Values\TextAnchor;
 use App\Text\Values\TextRange;
 use App\Text\Values\TextVersion;
 use App\Ui\Contracts\CountResolver;
+use App\Ui\Contracts\DeclaredPages;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageOption;
@@ -1176,8 +1218,10 @@ use App\Ui\Contracts\PageProvider;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SectionProvider;
 use App\Ui\Contracts\SectionResolver;
+use App\Ui\Contracts\SlotSections;
 use App\Ui\Contracts\UserInterfaceUpdater;
 use App\Ui\Contracts\VisibilityCheck;
+use App\Ui\Data\SlotSectionData;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\ChoiceOption;
 use App\Ui\Declarations\FloatSize;
@@ -1256,6 +1300,16 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                CardContext::class,
+                DeclaredPages::class,
+                CardEncoder::class,
+                SlotSections::class,
+                DockPart::class,
+                Dockable::class,
+                DockableProvider::class,
+                DockRegistration::class,
+                DestinationGate::class,
+                DockSourceChanged::class,
                 Files::class,
                 MarkdownParts::class,
                 ReadEntitlements::class,
@@ -1470,6 +1524,36 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                ComposedCard::class,
+                Button::class,
+                ChatExcerpt::class,
+                ConsoleOutput::class,
+                CountedProgress::class,
+                DestinationArgument::class,
+                Disclosure::class,
+                DockCard::class,
+                DockDestination::class,
+                DockIdentity::class,
+                DockLink::class,
+                Duration::class,
+                ExcerptMessage::class,
+                Group::class,
+                IndeterminateProgress::class,
+                Row::class,
+                Stack::class,
+                StateLabel::class,
+                Subtitle::class,
+                Title::class,
+                Alignment::class,
+                ConsoleStream::class,
+                DisclosureState::class,
+                Emphasis::class,
+                PartType::class,
+                Tone::class,
+                DockDefinition::class,
+                EncodedCard::class,
+                SourceActionData::class,
+                SlotSectionData::class,
                 FilePath::class,
                 OutsideThePlaces::class,
                 PlaceExemption::class,
@@ -2150,6 +2234,10 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                DockCardInvalid::class,
+                DockDefinitionInvalid::class,
+                DockSourceUnavailable::class,
+                PartMapInvalid::class,
                 RowWriteRefused::class,
                 RaisedOutsideUnit::class,
                 FileMissing::class,

@@ -47,6 +47,11 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
         $this->providerOfType->put($type, $class);
     }
 
+    public function types(): array
+    {
+        return $this->providerOfType->keys();
+    }
+
     public function identify(RecordReference $reference): RecordIdentity
     {
         foreach ($this->providerOfType->keys() as $type) {

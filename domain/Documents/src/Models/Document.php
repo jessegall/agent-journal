@@ -24,7 +24,7 @@ use App\Text\Values\TextVersion;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Api\Events\DocumentPublished;
 use Domain\Documents\Data\CloseCard;
-use Domain\Documents\Data\DockCard;
+use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Enums\AttentionState;
@@ -223,11 +223,11 @@ final class Document extends Model implements Commentable, EventSource, Numbered
         return new ShareRecordCard($this->shareIdentity(), $revision->title, (string) $revision->number);
     }
 
-    public function dockCard(): DockCard
+    public function dockCard(): DockSuggestion
     {
         $revision = $this->currentRevisionOrFail();
 
-        return DockCard::from([
+        return DockSuggestion::from([
             'type' => 'doc',
             'number' => (string) $this->number,
             'title' => $revision->title,

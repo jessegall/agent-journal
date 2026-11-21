@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
+use App\Ui\Data\SlotSectionData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -18,6 +19,7 @@ final class ChatData extends Data
 {
     /**
      * @param  list<AgentOptionData>  $agents
+     * @param  list<SlotSectionData>  $dockSections
      */
     public function __construct(
         #[DataCollectionOf(AgentOptionData::class)]
@@ -25,6 +27,8 @@ final class ChatData extends Data
         public readonly bool $setupRequired,
         public readonly string|Optional $mainAgentId = new Optional(),
         public readonly string|Optional $selectedAgentId = new Optional(),
+        #[DataCollectionOf(SlotSectionData::class)]
+        public readonly array $dockSections = [],
         public readonly ConversationData|Optional $conversation = new Optional(),
     ) {}
 }

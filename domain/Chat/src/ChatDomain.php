@@ -24,15 +24,18 @@ use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
+use Domain\Chat\Events\DockChanged;
 use Domain\Chat\Http\Controllers\CancelMessageController;
+use Domain\Chat\Http\Controllers\DockController;
 use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\TakeNextController;
+use Domain\Chat\Http\Controllers\UndockController;
 use Domain\Chat\Mcp\MessageResource;
 use Domain\Chat\Mcp\MessageSearch;
 use Domain\Chat\Mcp\PendingMessagesOverview;
-use Domain\Chat\Policies\DockedRecordPolicy;
+use Domain\Chat\Policies\ConversationPolicy;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Resolvers\ChatWindowResolver;
 use Domain\Chat\Resolvers\ChosenAgentSection;
@@ -51,7 +54,7 @@ final class ChatDomain extends Domain implements
 {
     public function description(): string
     {
-        return 'The conversation product: the chat window, composer, chosen agent and docked records, built on Core messaging.';
+        return 'The conversation product: the chat window, composer, chosen agent and the sources docked in a conversation, built on Core messaging.';
     }
 
     /**
@@ -64,7 +67,7 @@ final class ChatDomain extends Domain implements
 
     public function exports(): Exports
     {
-        return Exports::make()->build();
+        return Exports::make()->events(DockChanged::class)->build();
     }
 
     public function commands(): array
@@ -80,7 +83,7 @@ final class ChatDomain extends Domain implements
                 [AccessType::Edit],
             ),
             new PolicyRegistration(
-                DockedRecordPolicy::class,
+                ConversationPolicy::class,
                 [AccessType::Edit],
             ),
         ];
@@ -97,6 +100,8 @@ final class ChatDomain extends Domain implements
                     ActionRoute::post('messages', SendMessageController::class, 'send'),
                     ActionRoute::post('messages/read', ReadShownController::class, 'read'),
                     ActionRoute::post('messages/reply', ReplyController::class, 'reply'),
+                    ActionRoute::post('dock', DockController::class, 'dock'),
+                    ActionRoute::post('dock/remove', UndockController::class, 'undock'),
                 ),
             Page::make('inbox', 'Inbox', Icon::Chat, InboxPageResolver::class, 'Inbox.vue')
                 ->at('inbox')

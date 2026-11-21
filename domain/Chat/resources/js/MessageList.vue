@@ -1,12 +1,21 @@
 <script setup lang="ts">
-import type { MessageView } from '@kit/CoreTypes';
+import type { MessageView, SourceActionData } from '@kit/CoreTypes';
+import AddToChat from './AddToChat.vue';
 
 /**
  * The messages between two inboxes, oldest first: the user's own on the right, the other inbox's on the left with
- * the name of whoever wrote it, and for each incoming question whether it is unread, waiting or taken up. Bodies are
- * shown as text, never as HTML.
+ * the name of whoever wrote it, and for each incoming question whether it is unread, waiting or taken up, with the
+ * actions the backend offers on a message. Bodies are shown as text, never as HTML.
  */
-const props = defineProps<{ messages: MessageView[]; ownInboxId: string }>();
+const props = withDefaults(
+    defineProps<{
+        messages: MessageView[];
+        ownInboxId: string;
+        agentId?: string;
+        messageAction?: SourceActionData;
+    }>(),
+    { agentId: undefined, messageAction: undefined },
+);
 
 const emit = defineEmits<{ reply: [message: MessageView] }>();
 
@@ -66,6 +75,9 @@ function stateOf(message: MessageView): string | null {
                         <button type="button" class="underline" @click="emit('reply', message)">
                             Reply
                         </button>
+                    </template>
+                    <template v-if="messageAction !== undefined && agentId !== undefined">
+                        <AddToChat :action="messageAction" :source-id="message.id" :agent-id="agentId" />
                     </template>
                 </span>
             </div>

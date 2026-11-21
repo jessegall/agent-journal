@@ -23,7 +23,7 @@ use App\Text\Support\MarkdownText;
 use App\Text\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Api\Events\ReportFiled;
-use Domain\Documents\Data\DockCard;
+use Domain\Documents\Data\DockSuggestion;
 use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Enums\AttentionState;
@@ -152,9 +152,9 @@ final class Report extends Model implements Commentable, EventSource, Numbered, 
         ]);
     }
 
-    public function dockCard(): DockCard
+    public function dockCard(): DockSuggestion
     {
-        return DockCard::from([
+        return DockSuggestion::from([
             'type' => 'report',
             'number' => (string) $this->number,
             'title' => $this->title,

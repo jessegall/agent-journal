@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Data;
 
 use App\Communication\Enums\MessageState;
+use App\Communication\Models\Message;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -16,6 +17,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class MessageView extends Data
 {
+    /**
+     * The type a message is linked and docked under.
+     */
+    public const string LINK_TYPE = Message::LINK_TYPE;
+
     public function __construct(
         public readonly string $id,
         public readonly string $sourceInboxId,

@@ -57,7 +57,8 @@ final readonly class PageProps
     }
 
     /**
-     * Home: one optional prop per window, each reading only its own part of the query, window[full.page.key].
+     * Home: one optional prop per window, each reading only its own part of the query, window[full.page.key], and one
+     * per section of a window's slots.
      *
      * @return array<string, mixed>
      */
@@ -66,10 +67,21 @@ final readonly class PageProps
         $props = [];
 
         foreach ($this->declarations->pages() as $page) {
-            if ($page->page->opensIn === PageDestination::Page && $this->owners->isAvailable($page->owner)) {
-                $props[$page->propName] = $this->inertia->optional(
-                    fn () => $this->pageResult($page, $request, $request->windowQuery($page->key)),
-                );
+            if ($page->page->opensIn !== PageDestination::Page || ! $this->owners->isAvailable($page->owner)) {
+                continue;
+            }
+
+            $props[$page->propName] = $this->inertia->optional(
+                fn () => $this->pageResult($page, $request, $request->windowQuery($page->key)),
+            );
+
+            if ($page->isHome()) {
+                continue;
+            }
+
+            foreach ($this->sectionsOf($page) as $section) {
+                $loadSection = fn () => $this->sectionResult($section, $request);
+                $props[$section->propName] = $this->inertia->optional($loadSection);
             }
         }
 

@@ -71,6 +71,10 @@ case	AgentPresence::Idle
 case	AgentPresence::PendingSwitch
 case	AgentPresence::Retired
 case	AgentPresence::Working
+case	Alignment::Between
+case	Alignment::Center
+case	Alignment::End
+case	Alignment::Start
 case	AnalysisLimit::Depth
 case	AnalysisLimit::ExecutableParts
 case	AnalysisLimit::Milliseconds
@@ -227,6 +231,9 @@ case	CommentType::Text
 case	ConditionOutcome::Match
 case	ConditionOutcome::NoMatch
 case	ConditionOutcome::Unavailable
+case	ConsoleStream::Combined
+case	ConsoleStream::Stderr
+case	ConsoleStream::Stdout
 case	ContextStartType::Clear
 case	ContextStartType::Compact
 case	ContextStartType::Resume
@@ -253,6 +260,8 @@ case	DiagnosticCode::UnknownKeyword
 case	DiagnosticCode::UnknownMember
 case	DiagnosticCode::UnknownObject
 case	DiagnosticCode::UnknownTrigger
+case	DisclosureState::Closed
+case	DisclosureState::Open
 case	DiscoveryProfile::MainAgent
 case	DiscoveryProfile::ReadOnlyHelper
 case	DiscoveryProfile::WritingHelper
@@ -299,6 +308,9 @@ case	DriverSwitchStage::Stopped
 case	DriverSwitchStage::Stopping
 case	DriverVariant::Headless
 case	DriverVariant::Terminal
+case	Emphasis::Primary
+case	Emphasis::Quiet
+case	Emphasis::Secondary
 case	EmptyPolicy::AllowedSuccess
 case	EmptyPolicy::Invalid
 case	EmptySelection::AllowedEmpty
@@ -546,6 +558,19 @@ case	PartJoin::Sequence
 case	PartResultType::EvidenceOnly
 case	PartResultType::Receipted
 case	PartResultType::Unavailable
+case	PartType::Button
+case	PartType::ChatExcerpt
+case	PartType::ConsoleOutput
+case	PartType::CountedProgress
+case	PartType::Disclosure
+case	PartType::Duration
+case	PartType::Group
+case	PartType::IndeterminateProgress
+case	PartType::Row
+case	PartType::Stack
+case	PartType::StateLabel
+case	PartType::Subtitle
+case	PartType::Title
 case	Permissions::OwnerOnly
 case	Permissions::Shared
 case	Place::Accounts
@@ -944,6 +969,12 @@ case	TokenType::PipeBoth
 case	TokenType::Redirect
 case	TokenType::Semicolon
 case	TokenType::Word
+case	Tone::Danger
+case	Tone::Good
+case	Tone::Muted
+case	Tone::Neutral
+case	Tone::Note
+case	Tone::Warn
 case	ToolOutcome::Cancelled
 case	ToolOutcome::Failed
 case	ToolOutcome::Succeeded
@@ -1389,6 +1420,7 @@ class	BooleanValueData
 class	BottomStateCannotFinish
 class	BottomStateDelegated
 class	BroadcastPageChange
+class	BroadcastProtectedViewInvalidation
 class	BuildRules
 class	BuildShellTreePipeline
 class	BuiltInAskType
@@ -1402,6 +1434,7 @@ class	BuiltinSteps
 class	BundleActivated
 class	BundleRowData
 class	BusyReplyData
+class	Button
 class	BypassLog
 class	BypassReport
 class	BypassReportController
@@ -1473,6 +1506,7 @@ class	ChangeAutoAssignmentRequest
 class	ChangeSupervisor
 class	ChangeSupervisorHandler
 class	ChannelRunEvents
+class	ChatExcerpt
 class	CheckAccount
 class	CheckAccountHandler
 class	CheckCommandHandlers
@@ -1707,6 +1741,7 @@ class	CompleteList
 class	CompleteSignIn
 class	CompleteSignInHandler
 class	CompleteSubstitutions
+class	ComposedCard
 class	CompoundCommandReader
 class	CompoundParts
 class	CompoundToParse
@@ -1729,6 +1764,7 @@ class	ConfigureShareGatewayHandler
 class	ConfigureShareGatewayRequest
 class	ConfiguredOperations
 class	ConflictingStackTransition
+class	ConsoleOutput
 class	ConsoleOwner
 class	ConsoleOwnerMissing
 class	ConsumedPreview
@@ -1773,6 +1809,7 @@ class	CoreSettings
 class	CoreSkills
 class	CountInboxMessagesCall
 class	CountInboxMessagesController
+class	CountedProgress
 class	CreateAgent
 class	CreateAgentHandler
 class	CreateDesk
@@ -1814,7 +1851,9 @@ class	DeclarationFileText
 class	DeclarationInvalid
 class	DeclarativeReader
 class	DeclaredCommand
+class	DeclaredPageGate
 class	DeclaredPageRequest
+class	DeclaredPageRoutes
 class	DeclaredProposal
 class	DeclaredReads
 class	DeclaredRouteKey
@@ -1849,6 +1888,9 @@ class	DeskSeating
 class	DeskUnavailable
 class	DesksSeeder
 class	DesksServiceProvider
+class	DestinationArgument
+class	DestinationEncoder
+class	DestinationField
 class	DestinationRegistry
 class	DirectDestinations
 class	DisableAutoAssignment
@@ -1863,6 +1905,7 @@ class	DisableShareGateway
 class	DisableShareGatewayController
 class	DisableShareGatewayHandler
 class	DisabledSettingsGroup
+class	Disclosure
 class	DismissAccountNotice
 class	DismissAccountNoticeController
 class	DismissAccountNoticeHandler
@@ -1874,9 +1917,21 @@ class	DismissMessageHandler
 class	DismissMessageRequest
 class	DispatcherFactStaging
 class	Dispatches
+class	DockCard
+class	DockCardEncoder
+class	DockCardInvalid
+class	DockDefinition
+class	DockDefinitionInvalid
+class	DockDefinitions
+class	DockDestination
+class	DockIdentity
+class	DockLink
+class	DockNodeTypes
+class	DockSourceUnavailable
 class	DockerImageData
 class	DockerImageRecordData
 class	DockerImageVerifier
+class	DockingServiceProvider
 class	Domain
 class	DomainCycle
 class	DomainDeclarationError
@@ -1943,6 +1998,7 @@ class	DriverTurn
 class	DriverTurnReportData
 class	DriverUnsupported
 class	Drivers
+class	Duration
 class	Effect
 class	EffectiveCommand
 class	ElapsedTime
@@ -1960,6 +2016,7 @@ class	EnableAutoAssignmentController
 class	EnableAutoAssignmentHandler
 class	EnableSettingGroup
 class	EnableSettingGroupHandler
+class	EncodedCard
 class	EncodedSetting
 class	EncodedToggle
 class	EncodedValue
@@ -1996,6 +2053,7 @@ class	EntryDispatcher
 class	EntryDispatchers
 class	EntryGoalAnswer
 class	EntryReplayedData
+class	EnumField
 class	EnumSetting
 class	EnvironmentCredentialSource
 class	Environments
@@ -2016,6 +2074,8 @@ class	EvidenceRejected
 class	EvidenceRunStarted
 class	EvidenceRuns
 class	EvidenceValidator
+class	ExcerptField
+class	ExcerptMessage
 class	ExcludedSkill
 class	ExecutableBinding
 class	ExecutableCheck
@@ -2091,6 +2151,7 @@ class	FindReplay
 class	Fingerprint
 class	FinishTree
 class	FinishedToolCalls
+class	FlagField
 class	FloatSize
 class	FlowEdgeData
 class	FlowGraphData
@@ -2121,6 +2182,7 @@ class	FrameSettlement
 class	FrozenSessionPolicies
 class	FunctionToParse
 class	GateListenersByDomain
+class	GatedCardContext
 class	GatedListeners
 class	GatewayActionRequest
 class	GatewayChildren
@@ -2156,6 +2218,7 @@ class	GrantOfflineReply
 class	GrantShapeInvalid
 class	GrantedSessionOutputs
 class	Grants
+class	Group
 class	GroupReference
 class	GroupSnapshotRequired
 class	GuardCommandOrigin
@@ -2189,7 +2252,6 @@ class	HoldAccountUses
 class	HoldAccountUsesHandler
 class	HoldReleaseRequest
 class	HomeData
-class	HomeSectionData
 class	HomeWindowData
 class	HomeWindowResolver
 class	HookAnswer
@@ -2270,6 +2332,7 @@ class	IncomingWorkFailed
 class	IncomingWorkList
 class	IncomingWorkRepeated
 class	IncompleteTextAnchor
+class	IndeterminateProgress
 class	InitializeResultData
 class	InputRefused
 class	InspectMergeAttempts
@@ -2292,6 +2355,7 @@ class	InstallNumbersHandler
 class	InstallShippedReadersCommand
 class	InstallationNameMissing
 class	InstalledVersion
+class	InstantField
 class	Instruction
 class	IntegerChoiceConstraintsData
 class	IntegerChoiceOptionData
@@ -2376,6 +2440,8 @@ class	LayoutRequest
 class	LayoutsController
 class	LayoutsView
 class	LazyLoadRefused
+class	LegacyDockable
+class	LegacyDockableProvider
 class	LexedLine
 class	LexerCursor
 class	LexerScan
@@ -2386,6 +2452,7 @@ class	LineAdmission
 class	LineAdmitted
 class	LineNormalizer
 class	LineRefused
+class	LinesField
 class	Link
 class	LinkAccess
 class	LinkAddCommand
@@ -2625,6 +2692,7 @@ class	NoteNegation
 class	NoteOptionStatement
 class	NotificationCall
 class	NumberChanged
+class	NumberField
 class	NumberGroup
 class	NumberHolderUnsaved
 class	NumberLimitReached
@@ -2755,8 +2823,11 @@ class	PartActivity
 class	PartAssessments
 class	PartCapture
 class	PartClassification
+class	PartDescriptor
 class	PartEnd
 class	PartKey
+class	PartMap
+class	PartMapInvalid
 class	PartOutputData
 class	PartProjection
 class	PartResult
@@ -2970,6 +3041,7 @@ class	ProtectedFileRead
 class	ProtectedItem
 class	ProtectedItemData
 class	ProtectedMerge
+class	ProtectedViewInvalidated
 class	ProtectionReport
 class	ProtectionReportController
 class	ProtectionReportData
@@ -3538,6 +3610,7 @@ class	RouteAsk
 class	RouteAskHandler
 class	RouteNumber
 class	RoutePath
+class	Row
 class	RowWriteRefused
 class	RuleActivated
 class	RuleApprovals
@@ -4094,11 +4167,14 @@ class	SkipPipeSymbol
 class	Slot
 class	SlotContext
 class	SlotContexts
+class	SlotSectionData
+class	SourceActionData
 class	SourceAddressRule
 class	SourceRange
 class	SpawnedProcess
 class	SpoolRecorder
 class	StableKey
+class	Stack
 class	StackAccess
 class	StackAlreadyClosed
 class	StackChangedInLifecycle
@@ -4212,6 +4288,7 @@ class	StateEventResults
 class	StateEventScope
 class	StateEventStacks
 class	StateEvents
+class	StateLabel
 class	StateListenerDeclarations
 class	StateMethod
 class	StateMethodSelector
@@ -4329,6 +4406,7 @@ class	SubmitSignInCodeRequest
 class	SubstitutionQueue
 class	SubstitutionsRead
 class	SubstitutionsToParse
+class	Subtitle
 class	SuperviseRun
 class	SuperviseSharingCommand
 class	SupervisedRun
@@ -4404,6 +4482,7 @@ class	TextCalls
 class	TextChunk
 class	TextCommentLocation
 class	TextCommentView
+class	TextField
 class	TextFields
 class	TextLineTooLong
 class	TextMatchInvalid
@@ -4441,6 +4520,7 @@ class	TickableStateMissing
 class	TickingTypes
 class	TimeBudget
 class	TimingVerdict
+class	Title
 class	ToggleGroup
 class	ToggleGroupAvailabilityData
 class	ToggleOption
@@ -4679,6 +4759,7 @@ constant	CertifyPassedStops::MAINTENANCE_SCOPE
 constant	CertifyPassedStopsHandler::PASS_LIMIT
 constant	ChallengeProbe::SECONDS
 constant	ChannelRunEvents::HEARTBEAT_SECONDS
+constant	ChatExcerpt::MESSAGE_LIMIT
 constant	CheckRules::PHP_SPELLINGS
 constant	CheckRules::TOOLS
 constant	ChildEnvironment::SECRET_VARIABLES
@@ -4730,6 +4811,9 @@ constant	ConditionTree::MOST_DEPTH
 constant	ConditionTree::MOST_NODES
 constant	ConditionTree::MOST_PARAMETER_BYTES
 constant	ConditionTree::NAMED_KEY
+constant	ConsoleOutput::LINE_CHARACTER_LIMIT
+constant	ConsoleOutput::LINE_LIMIT
+constant	ConsoleOutput::TERMINAL_CONTROLS
 constant	ContainerManifest::LOG_BYTES
 constant	ContainerManifest::LOG_FILES
 constant	ContainerManifest::USER
@@ -4761,6 +4845,9 @@ constant	DeskRecord::LARGEST_SEAT_COUNT
 constant	DeskRecord::LINK_TYPE
 constant	DeskSeat::LINK_TYPE
 constant	DesksServiceProvider::OWNER
+constant	DockCard::BYTE_LIMIT
+constant	DockCard::NODE_LIMIT
+constant	DockDefinition::DEFAULT_PRESENTATION
 constant	Domain::TRAIT_OF_CAPABILITY
 constant	DomainEventServiceProvider::LANES
 constant	DomainEventServiceProvider::LANES_VERSION
@@ -4774,6 +4861,7 @@ constant	Drivers::TYPE
 constant	Drivers::VERSION
 constant	ElapsedTime::NANOSECONDS_PER_MILLISECOND
 constant	ElapsedTime::NANOSECONDS_PER_SECOND
+constant	EncodedCard::VERSION
 constant	EncodedValue::JSON_FLAGS
 constant	EndTerminalViews::MAINTENANCE_SCOPE
 constant	EnforceLaunchLimits::MAINTENANCE_SCOPE
@@ -4791,6 +4879,7 @@ constant	Everyone::TYPE
 constant	Everyone::VERSION
 constant	EvidenceRead::CREATED_AT
 constant	EvidenceRead::UPDATED_AT
+constant	ExcerptMessage::PREVIEW_CHARACTER_LIMIT
 constant	ExecutionBudgets::DEFAULT_HOME_BYTES
 constant	ExecutionBudgets::GIB
 constant	ExecutionBudgets::MIB
@@ -4880,6 +4969,7 @@ constant	MessageAnswerActivation::LARGEST_PASS
 constant	MessageBody::MOST_BYTES
 constant	MessagePage::DEFAULT_LIMIT
 constant	MessagePage::LARGEST_LIMIT
+constant	MessageView::LINK_TYPE
 constant	MeteredShareBudget::MEBIBYTE
 constant	ModelSelection::DEFAULT_INPUT
 constant	ModuleRuleBundle::CREATED_AT
@@ -4966,6 +5056,7 @@ constant	PropertyRules::TYPE_RULES
 constant	ProtectedAccounts::SIGN_IN_COMMAND
 constant	ProtectedMerge::SAFE_SETTINGS
 constant	ProtectedMerge::STEP_SECONDS_LIMIT
+constant	ProtectedViewInvalidated::NAME
 constant	ProtectionReport::CONTAINER_PLATFORM
 constant	ProvenSkillRead::SHELL_READ
 constant	ProvenSkillRead::SKILL_FILE
@@ -5251,6 +5342,7 @@ enum	AdmissionState
 enum	AgentAction
 enum	AgentInboxState
 enum	AgentPresence
+enum	Alignment
 enum	AnalysisLimit
 enum	AnswerType
 enum	ArrangementType
@@ -5290,10 +5382,12 @@ enum	CommandScopeType
 enum	CommandType
 enum	CommentType
 enum	ConditionOutcome
+enum	ConsoleStream
 enum	ContextStartType
 enum	ConversationModeType
 enum	CoreAskType
 enum	DiagnosticCode
+enum	DisclosureState
 enum	DiscoveryProfile
 enum	DismissalType
 enum	DockerImageName
@@ -5305,6 +5399,7 @@ enum	DriverSourceType
 enum	DriverStopDecision
 enum	DriverSwitchStage
 enum	DriverVariant
+enum	Emphasis
 enum	EmptyPolicy
 enum	EmptySelection
 enum	EntryType
@@ -5363,6 +5458,7 @@ enum	ParseOutcome
 enum	PartEndType
 enum	PartJoin
 enum	PartResultType
+enum	PartType
 enum	Permissions
 enum	Place
 enum	PlaceExemption
@@ -5450,6 +5546,7 @@ enum	TerminalFrameState
 enum	TerminalViewRefusal
 enum	TextAnchorType
 enum	TokenType
+enum	Tone
 enum	ToolOutcome
 enum	ToolType
 enum	TransitionType
@@ -5538,6 +5635,8 @@ interface	CallRefusal
 interface	CallRegistrar
 interface	CallSender
 interface	CallingDriver
+interface	CardContext
+interface	CardEncoder
 interface	CatalogueConstraints
 interface	CatalogueValue
 interface	ChoiceLabel
@@ -5572,9 +5671,16 @@ interface	CurrentAuthorizer
 interface	CurrentSession
 interface	CurrentState
 interface	CurrentUserResolver
+interface	DeclaredPages
 interface	Desk
+interface	DestinationGate
 interface	DestinationProvider
 interface	Destinations
+interface	DockPart
+interface	DockRegistration
+interface	DockSourceChanged
+interface	Dockable
+interface	DockableProvider
 interface	DockerImageVerifier
 interface	DomainAvailability
 interface	DomainBootstrapper
@@ -5657,6 +5763,7 @@ interface	OverviewContribution
 interface	PageOption
 interface	PageProvider
 interface	PageResolver
+interface	PartField
 interface	PendingWorkSource
 interface	Pipable
 interface	Pipe
@@ -5748,6 +5855,7 @@ interface	SkillProvider
 interface	SkillPublisher
 interface	SkillResolver
 interface	Sleeper
+interface	SlotSections
 interface	StackAdmission
 interface	StackEditor
 interface	StackInspectionQuery
@@ -7299,6 +7407,8 @@ method	BoundedReads::newEloquentBuilder()
 method	BoundedReads::toArray()
 method	BroadcastPageChange::__construct()
 method	BroadcastPageChange::handle()
+method	BroadcastProtectedViewInvalidation::__construct()
+method	BroadcastProtectedViewInvalidation::handle()
 method	BuildRules::all()
 method	BuildRules::build()
 method	BuildShellTreePipeline::pipes()
@@ -7340,6 +7450,10 @@ method	BundleActivated::staleReason()
 method	BundleRowData::__construct()
 method	BundleRowData::fromBundle()
 method	BusyReplyData::__construct()
+method	Button::__construct()
+method	Button::children()
+method	Button::key()
+method	Button::type()
 method	BypassLog::__construct()
 method	BypassLog::append()
 method	BypassLog::clear()
@@ -7455,6 +7569,8 @@ method	CaptureJobMessageSource::handle()
 method	CaptureState::isComplete()
 method	CapturedChunk::__construct()
 method	CapturedPart::__construct()
+method	CardContext::permittedDestination()
+method	CardEncoder::encode()
 method	CatalogueOnFirstRead::__construct()
 method	CatalogueOnFirstRead::all()
 method	CatalogueOnFirstRead::catalogue()
@@ -7503,6 +7619,10 @@ method	ChannelRunEvents::staleReason()
 method	ChannelRunEvents::started()
 method	ChannelRunEvents::startedInside()
 method	ChannelRunEvents::stopped()
+method	ChatExcerpt::__construct()
+method	ChatExcerpt::children()
+method	ChatExcerpt::key()
+method	ChatExcerpt::type()
 method	CheckAccount::__construct()
 method	CheckAccountHandler::__construct()
 method	CheckAccountHandler::handle()
@@ -8337,6 +8457,7 @@ method	CompleteSignIn::__construct()
 method	CompleteSignInHandler::__construct()
 method	CompleteSignInHandler::handle()
 method	CompleteSubstitutions::handle()
+method	ComposedCard::__construct()
 method	CompoundCommandReader::back()
 method	CompoundCommandReader::definition()
 method	CompoundCommandReader::into()
@@ -8425,6 +8546,11 @@ method	ConfigureShareGatewayRequest::typedSecrets()
 method	ConfiguredOperations::__construct()
 method	ConfiguredOperations::has()
 method	ConflictingStackTransition::forTransition()
+method	ConsoleOutput::__construct()
+method	ConsoleOutput::children()
+method	ConsoleOutput::key()
+method	ConsoleOutput::plain()
+method	ConsoleOutput::type()
 method	ConsoleOwner::__construct()
 method	ConsoleOwner::actAsOwner()
 method	ConsoleOwner::finish()
@@ -8547,6 +8673,10 @@ method	CoreSkills::skills()
 method	CountInboxMessagesCall::__construct()
 method	CountInboxMessagesController::__invoke()
 method	CountResolver::count()
+method	CountedProgress::__construct()
+method	CountedProgress::children()
+method	CountedProgress::key()
+method	CountedProgress::type()
 method	CountsLoads::newFromBuilder()
 method	CountsPivotLoads::fromRawAttributes()
 method	CreateAgent::__construct()
@@ -8719,12 +8849,19 @@ method	DeclaredCommand::needsRepeatableRead()
 method	DeclaredCommand::read()
 method	DeclaredCommand::reflection()
 method	DeclaredCommand::retention()
+method	DeclaredPageGate::__construct()
+method	DeclaredPageGate::contextFor()
+method	DeclaredPageGate::permits()
 method	DeclaredPageRequest::chosenSession()
 method	DeclaredPageRequest::inspectedPage()
 method	DeclaredPageRequest::parameter()
 method	DeclaredPageRequest::plainQuery()
 method	DeclaredPageRequest::rules()
 method	DeclaredPageRequest::windowQuery()
+method	DeclaredPageRoutes::__construct()
+method	DeclaredPageRoutes::destinationOf()
+method	DeclaredPages::addressOf()
+method	DeclaredPages::declares()
 method	DeclaredProposal::__construct()
 method	DeclaredReads::__construct()
 method	DeclaredReads::declare()
@@ -8845,6 +8982,16 @@ method	DeskUnavailable::status()
 method	DesksSeeder::run()
 method	DesksServiceProvider::boot()
 method	DesksServiceProvider::register()
+method	DestinationArgument::__construct()
+method	DestinationEncoder::__construct()
+method	DestinationEncoder::encode()
+method	DestinationField::__construct()
+method	DestinationField::encode()
+method	DestinationField::name()
+method	DestinationField::named()
+method	DestinationField::typeScript()
+method	DestinationGate::contextFor()
+method	DestinationGate::permits()
 method	DestinationProvider::destinationsFor()
 method	DestinationRegistry::__construct()
 method	DestinationRegistry::destinationsFor()
@@ -8871,6 +9018,11 @@ method	DisableShareGatewayHandler::__construct()
 method	DisableShareGatewayHandler::cancelOpensOf()
 method	DisableShareGatewayHandler::handle()
 method	DisabledSettingsGroup::__construct()
+method	Disclosure::__construct()
+method	Disclosure::children()
+method	Disclosure::key()
+method	Disclosure::type()
+method	DisclosureState::isOpen()
 method	DismissAccountNotice::__construct()
 method	DismissAccountNoticeController::__invoke()
 method	DismissAccountNoticeHandler::handle()
@@ -8887,12 +9039,64 @@ method	DispatcherFactStaging::__construct()
 method	DispatcherFactStaging::deliver()
 method	DispatcherFactStaging::stage()
 method	Dispatches::__construct()
+method	DockCard::__construct()
+method	DockCard::checkedNodeCount()
+method	DockCard::named()
+method	DockCardEncoder::__construct()
+method	DockCardEncoder::encode()
+method	DockCardEncoder::node()
+method	DockCardInvalid::blankKey()
+method	DockCardInvalid::blankName()
+method	DockCardInvalid::emptyDisclosure()
+method	DockCardInvalid::finishedBeforeStart()
+method	DockCardInvalid::progressOutOfRange()
+method	DockCardInvalid::repeatedKey()
+method	DockCardInvalid::tooMuchText()
+method	DockDefinition::__construct()
+method	DockDefinition::assertOwns()
+method	DockDefinition::identity()
+method	DockDefinitionInvalid::notAProvider()
+method	DockDefinitionInvalid::notDockable()
+method	DockDefinitionInvalid::notOwned()
+method	DockDefinitionInvalid::repeated()
+method	DockDefinitionInvalid::unknown()
+method	DockDefinitions::__construct()
+method	DockDefinitions::definition()
+method	DockDefinitions::offerDockFor()
+method	DockDefinitions::offersDock()
+method	DockDefinitions::register()
+method	DockDestination::__construct()
+method	DockDestination::isDeclaredIn()
+method	DockDestination::linkIn()
+method	DockIdentity::__construct()
+method	DockLink::__construct()
+method	DockLink::jsonSerialize()
+method	DockNodeTypes::__construct()
+method	DockNodeTypes::alias()
+method	DockNodeTypes::provide()
+method	DockPart::children()
+method	DockPart::key()
+method	DockPart::type()
+method	DockRegistration::definition()
+method	DockRegistration::offerDockFor()
+method	DockRegistration::offersDock()
+method	DockRegistration::register()
+method	DockSourceChanged::dockId()
+method	DockSourceChanged::dockType()
+method	DockSourceUnavailable::of()
+method	DockSourceUnavailable::unreadable()
+method	DockSourceUnavailable::unsupported()
+method	Dockable::composeDockCard()
+method	Dockable::identifyFor()
+method	DockableProvider::cardsFor()
+method	DockableProvider::requireReadable()
 method	DockerImageData::__construct()
 method	DockerImageData::isAgentImage()
 method	DockerImageRecordData::__construct()
 method	DockerImageRecordData::hasAgentImage()
 method	DockerImageVerifier::__construct()
 method	DockerImageVerifier::isVerified()
+method	DockingServiceProvider::register()
 method	Domain::bootSteps()
 method	Domain::bootstrappers()
 method	Domain::canDisable()
@@ -9254,6 +9458,10 @@ method	Drivers::__construct()
 method	Drivers::evaluate()
 method	Drivers::keyTexts()
 method	Drivers::toArray()
+method	Duration::__construct()
+method	Duration::children()
+method	Duration::key()
+method	Duration::type()
 method	Effect::__construct()
 method	EffectiveCommand::__construct()
 method	ElapsedTime::__construct()
@@ -9291,6 +9499,8 @@ method	EnabledSettingsGroup::decimal()
 method	EnabledSettingsGroup::enum()
 method	EnabledSettingsGroup::integer()
 method	EnabledSettingsGroup::string()
+method	EncodedCard::__construct()
+method	EncodedCard::jsonSerialize()
 method	EncodedSetting::__construct()
 method	EncodedSetting::jsonSerialize()
 method	EncodedToggle::__construct()
@@ -9391,6 +9601,11 @@ method	EntryGoalAnswer::__construct()
 method	EntryGoalAnswer::of()
 method	EntryReplayedData::__construct()
 method	EntryType::at()
+method	EnumField::__construct()
+method	EnumField::encode()
+method	EnumField::name()
+method	EnumField::named()
+method	EnumField::typeScript()
 method	EnumSetting::__construct()
 method	EnumSetting::accepts()
 method	EnumSetting::caseOf()
@@ -9489,6 +9704,13 @@ method	EvidenceValidator::problem()
 method	EvidenceValidator::runProblems()
 method	EvidenceValidator::validate()
 method	EvidenceValidator::verify()
+method	ExcerptField::__construct()
+method	ExcerptField::encode()
+method	ExcerptField::name()
+method	ExcerptField::named()
+method	ExcerptField::typeScript()
+method	ExcerptMessage::__construct()
+method	ExcerptMessage::jsonSerialize()
 method	ExcludedSkill::__construct()
 method	ExecutableBinding::__construct()
 method	ExecutableBinding::builtin()
@@ -9738,6 +9960,11 @@ method	Fingerprint::ofLink()
 method	FinishTree::handle()
 method	FinishedToolCalls::__construct()
 method	FinishedToolCalls::announce()
+method	FlagField::__construct()
+method	FlagField::encode()
+method	FlagField::name()
+method	FlagField::named()
+method	FlagField::typeScript()
 method	FloatSize::__construct()
 method	FloatSize::of()
 method	FloatSize::standard()
@@ -9845,6 +10072,8 @@ method	FunctionToParse::__construct()
 method	FunctionToParse::afterHeader()
 method	GateListenersByDomain::available()
 method	GateListenersByDomain::handle()
+method	GatedCardContext::__construct()
+method	GatedCardContext::permittedDestination()
 method	GatedListeners::__construct()
 method	GatewayActionRequest::configurationId()
 method	GatewayActionRequest::rules()
@@ -9933,6 +10162,10 @@ method	GrantedSessionOutputs::mayRead()
 method	Grants::__construct()
 method	Grants::evaluate()
 method	Grants::toArray()
+method	Group::__construct()
+method	Group::children()
+method	Group::key()
+method	Group::type()
 method	GroupDeclaration::key()
 method	GroupDeclaration::label()
 method	GroupDeclaration::settings()
@@ -10016,7 +10249,6 @@ method	HoldReleaseRequest::reason()
 method	HoldReleaseRequest::rules()
 method	HoldReleaseRequest::sessionId()
 method	HomeData::__construct()
-method	HomeSectionData::__construct()
 method	HomeWindowData::__construct()
 method	HomeWindowResolver::__construct()
 method	HomeWindowResolver::read()
@@ -10294,6 +10526,10 @@ method	IncomingWorkRegistration::register()
 method	IncomingWorkRepeated::forWork()
 method	IncompleteTextAnchor::missing()
 method	IncompleteTextAnchor::withoutType()
+method	IndeterminateProgress::__construct()
+method	IndeterminateProgress::children()
+method	IndeterminateProgress::key()
+method	IndeterminateProgress::type()
 method	InitializeResultData::__construct()
 method	InputRefused::fieldMessages()
 method	InsertsAbsentRows::insertIfAbsent()
@@ -10324,6 +10560,12 @@ method	InstalledVersion::__construct()
 method	InstalledVersion::checkoutCommit()
 method	InstalledVersion::label()
 method	InstalledVersion::readLabel()
+method	InstantField::__construct()
+method	InstantField::encode()
+method	InstantField::name()
+method	InstantField::named()
+method	InstantField::optional()
+method	InstantField::typeScript()
 method	Instruction::__construct()
 method	Instruction::command()
 method	Instruction::condition()
@@ -10578,6 +10820,13 @@ method	LayoutsController::store()
 method	LayoutsController::update()
 method	LayoutsView::layouts()
 method	LazyLoadRefused::for()
+method	LegacyDockable::__construct()
+method	LegacyDockable::composeDockCard()
+method	LegacyDockable::identifyFor()
+method	LegacyDockableProvider::__construct()
+method	LegacyDockableProvider::cardsFor()
+method	LegacyDockableProvider::dockableOf()
+method	LegacyDockableProvider::requireReadable()
 method	LexedLine::__construct()
 method	LexerCursor::__construct()
 method	LexerCursor::append()
@@ -10626,6 +10875,11 @@ method	LineRefused::details()
 method	LineRefused::for()
 method	LineRefused::refusalCode()
 method	LineRefused::status()
+method	LinesField::__construct()
+method	LinesField::encode()
+method	LinesField::name()
+method	LinesField::named()
+method	LinesField::typeScript()
 method	Link::between()
 method	Link::connect()
 method	Link::connectKey()
@@ -11442,6 +11696,11 @@ method	NoteOptionStatement::handle()
 method	NotificationCall::__construct()
 method	NotificationCall::replyWith()
 method	NumberChanged::for()
+method	NumberField::__construct()
+method	NumberField::encode()
+method	NumberField::name()
+method	NumberField::named()
+method	NumberField::typeScript()
 method	NumberGroup::casts()
 method	NumberGroup::create()
 method	NumberGroup::forRecords()
@@ -11816,6 +12075,9 @@ method	PartClassification::isKnown()
 method	PartClassification::nodeIn()
 method	PartClassification::outputRequirement()
 method	PartClassification::summary()
+method	PartDescriptor::__construct()
+method	PartDescriptor::nodeName()
+method	PartDescriptor::typeScript()
 method	PartEnd::__construct()
 method	PartEnd::exited()
 method	PartEnd::hasEnded()
@@ -11823,9 +12085,23 @@ method	PartEnd::hasStatus()
 method	PartEnd::notYet()
 method	PartEnd::signalled()
 method	PartEnd::unavailable()
+method	PartField::encode()
+method	PartField::name()
+method	PartField::typeScript()
 method	PartKey::__construct()
+method	PartKey::assertGiven()
 method	PartKey::name()
 method	PartKey::partId()
+method	PartMap::__construct()
+method	PartMap::assertEveryTypeMapped()
+method	PartMap::descriptorOf()
+method	PartMap::descriptors()
+method	PartMap::part()
+method	PartMap::standard()
+method	PartMapInvalid::repeatedClass()
+method	PartMapInvalid::repeatedType()
+method	PartMapInvalid::unmappedClass()
+method	PartMapInvalid::unmappedType()
 method	PartOutputData::__construct()
 method	PartProjection::__construct()
 method	PartResult::__construct()
@@ -11861,6 +12137,7 @@ method	PartSummary::__construct()
 method	PartSummaryData::__construct()
 method	PartTransitionRefused::between()
 method	PartTransitionRefused::notDrained()
+method	PartType::isContainer()
 method	PathConfinement::__construct()
 method	PathConfinement::absolutePath()
 method	PathConfinement::confined()
@@ -12589,6 +12866,10 @@ method	ProtectedMerge::inspect()
 method	ProtectedMerge::merge()
 method	ProtectedMerge::publish()
 method	ProtectedMerge::revision()
+method	ProtectedViewInvalidated::__construct()
+method	ProtectedViewInvalidated::broadcastAs()
+method	ProtectedViewInvalidated::broadcastOn()
+method	ProtectedViewInvalidated::broadcastWith()
 method	ProtectionReport::__construct()
 method	ProtectionReport::fromStored()
 method	ProtectionReport::isEnforcedInContainer()
@@ -13157,6 +13438,7 @@ method	RecordProviders::providerOf()
 method	RecordProviders::register()
 method	RecordProviders::requireReadable()
 method	RecordProviders::requireWritable()
+method	RecordProviders::types()
 method	RecordProviders::visibleCards()
 method	RecordReceipt::__construct()
 method	RecordReceipt::handle()
@@ -13177,6 +13459,7 @@ method	RecordResolver::identify()
 method	RecordResolver::linkedCards()
 method	RecordResolver::requireReadable()
 method	RecordResolver::requireWritable()
+method	RecordResolver::types()
 method	RecordResolver::visibleCards()
 method	RecordRule::__construct()
 method	RecordRule::captures()
@@ -13952,6 +14235,10 @@ method	RoutePath::hasParameter()
 method	RoutePath::isFilledBy()
 method	RoutePath::of()
 method	RoutePath::shape()
+method	Row::__construct()
+method	Row::children()
+method	Row::key()
+method	Row::type()
 method	RowCapture::persisted()
 method	RowWriteRefused::for()
 method	RuleActivated::__construct()
@@ -15869,6 +16156,9 @@ method	SlotContext::record()
 method	SlotContext::session()
 method	SlotContexts::for()
 method	SlotContexts::idIn()
+method	SlotSectionData::__construct()
+method	SlotSections::sectionsIn()
+method	SourceActionData::__construct()
 method	SourceAddressRule::__construct()
 method	SourceAddressRule::forHeader()
 method	SourceAddressRule::none()
@@ -15889,6 +16179,11 @@ method	SpoolRecorder::append()
 method	SpoolRecorder::finish()
 method	SpoolRecorder::write()
 method	StableKey::isValid()
+method	Stack::__construct()
+method	Stack::children()
+method	Stack::key()
+method	Stack::of()
+method	Stack::type()
 method	StackAccess::__construct()
 method	StackAccess::assertTargetGranted()
 method	StackAccess::context()
@@ -16220,6 +16515,10 @@ method	StateEvents::contains()
 method	StateEvents::eventClasses()
 method	StateFactory::frameFor()
 method	StateFactory::isEnabled()
+method	StateLabel::__construct()
+method	StateLabel::children()
+method	StateLabel::key()
+method	StateLabel::type()
 method	StateListenerDeclarations::__construct()
 method	StateListenerDeclarations::declarations()
 method	StateListenerDeclarations::ownerOf()
@@ -16602,6 +16901,10 @@ method	SubstitutionsRead::__construct()
 method	SubstitutionsToParse::__construct()
 method	SubstitutionsToParse::innerSource()
 method	SubstitutionsToParse::inside()
+method	Subtitle::__construct()
+method	Subtitle::children()
+method	Subtitle::key()
+method	Subtitle::type()
 method	SuperviseRun::__construct()
 method	SuperviseRun::handle()
 method	SuperviseSharingCommand::handle()
@@ -16828,6 +17131,11 @@ method	TextChunk::of()
 method	TextCommentLocation::__construct()
 method	TextCommentView::__construct()
 method	TextContent::textVersion()
+method	TextField::__construct()
+method	TextField::encode()
+method	TextField::name()
+method	TextField::named()
+method	TextField::typeScript()
 method	TextFields::__construct()
 method	TextFields::digest()
 method	TextFields::next()
@@ -16929,6 +17237,10 @@ method	TimingVerdict::allowed()
 method	TimingVerdict::isAllowed()
 method	TimingVerdict::reason()
 method	TimingVerdict::refused()
+method	Title::__construct()
+method	Title::children()
+method	Title::key()
+method	Title::type()
 method	ToggleGroup::__construct()
 method	ToggleGroup::key()
 method	ToggleGroup::label()
@@ -17121,9 +17433,11 @@ method	UiDeclarationMissing::for()
 method	UiDeclarations::__construct()
 method	UiDeclarations::actions()
 method	UiDeclarations::actionsOf()
+method	UiDeclarations::addressOf()
 method	UiDeclarations::assertUniqueKeys()
 method	UiDeclarations::check()
 method	UiDeclarations::childrenOf()
+method	UiDeclarations::declares()
 method	UiDeclarations::navigation()
 method	UiDeclarations::ownerOf()
 method	UiDeclarations::owners()
@@ -17133,6 +17447,7 @@ method	UiDeclarations::pages()
 method	UiDeclarations::refuseRepeatedPropNames()
 method	UiDeclarations::refuseRepeatedRoutes()
 method	UiDeclarations::sections()
+method	UiDeclarations::sectionsIn()
 method	UiDeclarations::visibilityChecksOf()
 method	UiKeyInvalid::notLocal()
 method	UiKeyRepeated::inDomain()
@@ -17457,6 +17772,7 @@ parameter	$access
 parameter	$accessClass
 parameter	$accessTypes
 parameter	$accesses
+parameter	$accessibleName
 parameter	$account
 parameter	$accountCheck
 parameter	$accountDirectory
@@ -17520,6 +17836,7 @@ parameter	$ahead
 parameter	$alias
 parameter	$aliasId
 parameter	$aliases
+parameter	$alignment
 parameter	$allocator
 parameter	$allowOperations
 parameter	$allowPaths
@@ -18039,6 +18356,7 @@ parameter	$elementType
 parameter	$eligible
 parameter	$else
 parameter	$email
+parameter	$emphasis
 parameter	$empty
 parameter	$emptyFolderVariables
 parameter	$emptyProblem
@@ -18183,6 +18501,7 @@ parameter	$filtersOf
 parameter	$findings
 parameter	$fingerprint
 parameter	$finished
+parameter	$finishedAt
 parameter	$finishedRootRecovery
 parameter	$finishedTool
 parameter	$first
@@ -18307,6 +18626,7 @@ parameter	$hops
 parameter	$host
 parameter	$hostId
 parameter	$hostSecret
+parameter	$href
 parameter	$http
 parameter	$icon
 parameter	$id
@@ -18329,6 +18649,7 @@ parameter	$index
 parameter	$ineligible
 parameter	$inertia
 parameter	$inherited
+parameter	$initial
 parameter	$initialArguments
 parameter	$inner
 parameter	$inode
@@ -18711,6 +19032,7 @@ parameter	$operations
 parameter	$operator
 parameter	$option
 parameter	$optionKey
+parameter	$optional
 parameter	$optionalField
 parameter	$options
 parameter	$order
@@ -18735,6 +19057,7 @@ parameter	$outputRequirement
 parameter	$outputs
 parameter	$outsideCommands
 parameter	$over
+parameter	$overBudget
 parameter	$override
 parameter	$overrides
 parameter	$overview
@@ -18832,6 +19155,7 @@ parameter	$pipes
 parameter	$place
 parameter	$placeholder
 parameter	$placement
+parameter	$placementId
 parameter	$plain
 parameter	$plan
 parameter	$planner
@@ -18858,6 +19182,8 @@ parameter	$preparer
 parameter	$presence
 parameter	$presenceSeconds
 parameter	$presentActors
+parameter	$presentation
+parameter	$presentations
 parameter	$preview
 parameter	$previewChecksum
 parameter	$previewId
@@ -19188,6 +19514,7 @@ parameter	$runsOnSuccess
 parameter	$runtime
 parameter	$runtimeId
 parameter	$runtimes
+parameter	$safeSummary
 parameter	$same
 parameter	$sample
 parameter	$sampledAt
@@ -19344,6 +19671,7 @@ parameter	$sourceKey
 parameter	$sourceRoot
 parameter	$sourceType
 parameter	$sources
+parameter	$speaker
 parameter	$spellings
 parameter	$spoolFolder
 parameter	$stack
@@ -19502,6 +19830,7 @@ parameter	$toggles
 parameter	$token
 parameter	$tokens
 parameter	$tombstoneDays
+parameter	$tone
 parameter	$tooLarge
 parameter	$tooLong
 parameter	$tool
@@ -19585,6 +19914,7 @@ parameter	$value	app/Agents/Support/ArrangementSetting.php
 parameter	$value	app/Assignments/Casts/PoolReferenceCast.php
 parameter	$value	app/Bus/Support/OneLineRule.php
 parameter	$value	app/Comments/Casts/CommentViewsCast.php
+parameter	$value	app/Docking/Cards/DestinationArgument.php
 parameter	$value	app/Hooks/Storage/FrameRecordsCast.php
 parameter	$value	app/Hooks/Storage/RecordedAnswerCast.php
 parameter	$value	app/Hooks/Storage/RecordedStepsCast.php
@@ -20453,6 +20783,8 @@ property	BooleanValueData::$type
 property	BottomStateDelegated::$visitedFrames
 property	BroadcastPageChange::$events
 property	BroadcastPageChange::$recipients
+property	BroadcastProtectedViewInvalidation::$events
+property	BroadcastProtectedViewInvalidation::$recipients
 property	BuiltInAskType::$subjects
 property	BuiltInDesks::$desks
 property	BuiltInProfilePins::$dispatchers
@@ -20469,6 +20801,10 @@ property	BundleRowData::$module
 property	BundleRowData::$rules
 property	BundleRowData::$version
 property	BusyReplyData::$retryAfterSeconds
+property	Button::$emphasis
+property	Button::$key
+property	Button::$label
+property	Button::$target
 property	BypassLog::$files
 property	BypassLog::$log
 property	BypassReport::$bypasses
@@ -20571,6 +20907,9 @@ property	ChannelRunEvents::$sent
 property	ChannelRunEvents::$sequence
 property	ChannelRunEvents::$spoolFolder
 property	ChannelRunEvents::$waitingToSend
+property	ChatExcerpt::$key
+property	ChatExcerpt::$messages
+property	ChatExcerpt::$open
 property	CheckAccount::$accountCheck
 property	CheckAccount::$accountId
 property	CheckAccount::$generation
@@ -20968,6 +21307,8 @@ property	CompleteSignIn::$attemptId
 property	CompleteSignIn::$generation
 property	CompleteSignIn::$identity
 property	CompleteSignInHandler::$completion
+property	ComposedCard::$card
+property	ComposedCard::$source
 property	CompoundParts::$node
 property	CompoundParts::$range
 property	CompoundParts::$redirects
@@ -21017,6 +21358,11 @@ property	ConfigureShareGatewayHandler::$gateways
 property	ConfigureShareGatewayHandler::$policy
 property	ConfigureShareGatewayHandler::$secrets
 property	ConfiguredOperations::$operations
+property	ConsoleOutput::$key
+property	ConsoleOutput::$lines
+property	ConsoleOutput::$open
+property	ConsoleOutput::$stream
+property	ConsoleOutput::$truncated
 property	ConsoleOwner::$actors
 property	ConsoleOwner::$admission
 property	ConsoleOwner::$key
@@ -21108,6 +21454,9 @@ property	CoreSettings::$displayName
 property	CoreSettings::$domainSwitches
 property	CoreSettings::$general
 property	CountInboxMessagesCall::$inboxId
+property	CountedProgress::$completed
+property	CountedProgress::$key
+property	CountedProgress::$total
 property	CreateAgent::$name
 property	CreateAgent::$profileKey
 property	CreateAgentHandler::$desks
@@ -21200,6 +21549,9 @@ property	DeclaredCommand::$command
 property	DeclaredCommand::$entry
 property	DeclaredCommand::$handler
 property	DeclaredCommand::$owner
+property	DeclaredPageGate::$pages
+property	DeclaredPageRoutes::$declarations
+property	DeclaredPageRoutes::$router
 property	DeclaredProposal::$proposed
 property	DeclaredProposal::$requestId
 property	DeclaredReads::$reads
@@ -21230,6 +21582,10 @@ property	DeskSeating::$claims
 property	DeskSeating::$facts
 property	DeskSeating::$repair
 property	DeskSeating::$responsibilities
+property	DestinationArgument::$name
+property	DestinationArgument::$value
+property	DestinationEncoder::$pages
+property	DestinationField::$name
 property	DestinationRegistry::$providers
 property	DirectDestinations::$actor
 property	DirectDestinations::$holder
@@ -21256,6 +21612,10 @@ property	DisableShareGatewayHandler::$policy
 property	DisabledSettingsGroup::$key
 property	DisabledSettingsGroup::$owner
 property	DisabledSettingsGroup::$revision
+property	Disclosure::$body
+property	Disclosure::$initial
+property	Disclosure::$key
+property	Disclosure::$title
 property	DismissAccountNotice::$noticeId
 property	DismissMessage::$messageId
 property	DismissMessage::$reason
@@ -21269,6 +21629,26 @@ property	DismissMessageHandler::$claims
 property	DismissMessageHandler::$inboxes
 property	DispatcherFactStaging::$container
 property	Dispatches::$command
+property	DockCard::$accessibleName
+property	DockCard::$open
+property	DockCard::$overBudget
+property	DockCard::$root
+property	DockCardEncoder::$destinations
+property	DockCardEncoder::$parts
+property	DockDefinition::$class
+property	DockDefinition::$presentations
+property	DockDefinition::$provider
+property	DockDefinition::$type
+property	DockDefinitions::$offered
+property	DockDefinitions::$owned
+property	DockDefinitions::$records
+property	DockDestination::$arguments
+property	DockDestination::$page
+property	DockIdentity::$id
+property	DockIdentity::$type
+property	DockLink::$href
+property	DockLink::$page
+property	DockNodeTypes::$parts
 property	DockerImageData::$architecture
 property	DockerImageData::$builtAt
 property	DockerImageData::$claudeCode
@@ -21418,6 +21798,9 @@ property	DriverTurnReportData::$outcome
 property	DriverTurnReportData::$processGeneration
 property	DriverTurnReportData::$runtimeId
 property	Drivers::$keys
+property	Duration::$finishedAt
+property	Duration::$key
+property	Duration::$startedAt
 property	Effect::$type
 property	EffectiveCommand::$authorize
 property	EffectiveCommand::$command
@@ -21459,6 +21842,12 @@ property	EnableSettingGroupHandler::$writer
 property	EnabledSettingsGroup::$key
 property	EnabledSettingsGroup::$owner
 property	EnabledSettingsGroup::$revision
+property	EncodedCard::$accessibleName
+property	EncodedCard::$open
+property	EncodedCard::$placementId
+property	EncodedCard::$root
+property	EncodedCard::$safeSummary
+property	EncodedCard::$source
 property	EncodedSetting::$encodedSetting
 property	EncodedSetting::$key
 property	EncodedToggle::$encodedToggle
@@ -21535,6 +21924,8 @@ property	EntryGoalAnswer::$script
 property	EntryGoalAnswer::$version
 property	EntryReplayedData::$operationKey
 property	EntryReplayedData::$runtimeId
+property	EnumField::$enum
+property	EnumField::$name
 property	EnumSetting::$backing
 property	EnumSetting::$default
 property	EnumSetting::$enum
@@ -21583,6 +21974,10 @@ property	EvidenceRuns::$projects
 property	EvidenceRuns::$syntax
 property	EvidenceRuns::$timing
 property	EvidenceValidator::$manifests
+property	ExcerptField::$name
+property	ExcerptMessage::$preview
+property	ExcerptMessage::$sentAt
+property	ExcerptMessage::$speaker
 property	ExcludedSkill::$key
 property	ExcludedSkill::$reason
 property	ExecutableBinding::$configurationRevision
@@ -21732,6 +22127,7 @@ property	Fingerprint::$modifiedAt
 property	Fingerprint::$realPath
 property	Fingerprint::$size
 property	FinishedToolCalls::$events
+property	FlagField::$name
 property	FloatSize::$height
 property	FloatSize::$width
 property	FlowEdgeData::$from
@@ -21785,6 +22181,8 @@ property	FrameSettlement::$stackId
 property	FrameSettlement::$target
 property	FunctionToParse::$start
 property	FunctionToParse::$toParse
+property	GatedCardContext::$gate
+property	GatedCardContext::$viewer
 property	GatedListeners::$events
 property	GatedListeners::$required
 property	GatewayChildren::$children
@@ -21845,6 +22243,9 @@ property	GrammarContext::$draft
 property	GrammarContext::$source
 property	GrantOfflineReply::$profiles
 property	Grants::$requirements
+property	Group::$children
+property	Group::$key
+property	Group::$label
 property	GroupReference::$key
 property	GroupReference::$owner
 property	GuardCommandOrigin::$checks
@@ -21904,8 +22305,6 @@ property	HoldAccountUsesHandler::$facts
 property	HomeData::$barSections
 property	HomeData::$layouts
 property	HomeData::$windows
-property	HomeSectionData::$component
-property	HomeSectionData::$propName
 property	HomeWindowData::$component
 property	HomeWindowData::$icon
 property	HomeWindowData::$key
@@ -22046,6 +22445,8 @@ property	InboxView::$inboxId
 property	InboxView::$label
 property	IncomingWorkList::$container
 property	IncomingWorkList::$workClasses
+property	IndeterminateProgress::$key
+property	IndeterminateProgress::$label
 property	InitializeResultData::$protocolVersion
 property	InspectMergeAttemptsHandler::$access
 property	InspectMergeAttemptsHandler::$facts
@@ -22078,6 +22479,8 @@ property	InstallShippedReadersCommand::$signature
 property	InstalledVersion::$cache
 property	InstalledVersion::$files
 property	InstalledVersion::$process
+property	InstantField::$name
+property	InstantField::$optional
 property	Instruction::$keyword
 property	Instruction::$operand
 property	Instruction::$source
@@ -22202,6 +22605,10 @@ property	LayoutData::$name
 property	LayoutData::$shape
 property	LayoutsController::$redirect
 property	LayoutsController::$users
+property	LegacyDockable::$page
+property	LegacyDockable::$record
+property	LegacyDockableProvider::$pages
+property	LegacyDockableProvider::$records
 property	LexedLine::$diagnostic
 property	LexedLine::$outcome
 property	LexedLine::$tokens
@@ -22237,6 +22644,7 @@ property	LineAdmission::$syntax
 property	LineAdmission::$timing
 property	LineAdmitted::$runId
 property	LineRefused::$refusal
+property	LinesField::$name
 property	Link::$guarded
 property	LinkAccess::$model
 property	LinkAddCommand::$description
@@ -22701,6 +23109,7 @@ property	Not::$child
 property	NotificationCall::$details
 property	NotificationCall::$failures
 property	NotificationCall::$hook
+property	NumberField::$name
 property	NumberGroup::$attributes
 property	NumberObserver::$allocator
 property	NumberedModel::$holder
@@ -22983,12 +23392,17 @@ property	PartClassification::$node
 property	PartClassification::$program
 property	PartClassification::$purpose
 property	PartClassification::$unresolved
+property	PartDescriptor::$class
+property	PartDescriptor::$fields
+property	PartDescriptor::$type
 property	PartEnd::$code
 property	PartEnd::$reason
 property	PartEnd::$type
 property	PartKey::$attempt
 property	PartKey::$node
 property	PartKey::$operation
+property	PartMap::$byType
+property	PartMap::$descriptors
 property	PartOutputData::$size
 property	PartOutputData::$startsAt
 property	PartOutputData::$stream
@@ -23492,6 +23906,7 @@ property	ProtectedItemData::$item
 property	ProtectedItemData::$reason
 property	ProtectedMerge::$processes
 property	ProtectedMerge::$repository
+property	ProtectedViewInvalidated::$userIds
 property	ProtectionReport::$build
 property	ProtectionReport::$driver
 property	ProtectionReport::$items
@@ -24492,6 +24907,9 @@ property	RouteAskHandler::$asks
 property	RouteAskHandler::$router
 property	RoutePath::$parameters
 property	RoutePath::$path
+property	Row::$alignment
+property	Row::$children
+property	Row::$key
 property	RuleActivated::$digest
 property	RuleActivated::$projectKey
 property	RuleActivated::$reason
@@ -25575,6 +25993,10 @@ property	Slot::$recordParameter
 property	Slot::$takes
 property	SlotContext::$id
 property	SlotContext::$type
+property	SlotSectionData::$component
+property	SlotSectionData::$propName
+property	SourceActionData::$label
+property	SourceActionData::$type
 property	SourceAddressRule::$header
 property	SourceRange::$end
 property	SourceRange::$start
@@ -25585,6 +26007,8 @@ property	SpawnedProcess::$process
 property	SpoolRecorder::$facts
 property	SpoolRecorder::$files
 property	SpoolRecorder::$manifest
+property	Stack::$children
+property	Stack::$key
 property	StackAccess::$calls
 property	StackAccess::$retryWindow
 property	StackCommandAdmission::$actor
@@ -25828,6 +26252,9 @@ property	StateEventScope::$dispatches
 property	StateEventScope::$session
 property	StateEventStacks::$restorer
 property	StateEvents::$byEvent
+property	StateLabel::$key
+property	StateLabel::$text
+property	StateLabel::$tone
 property	StateListenerDeclarations::$ownership
 property	StateMethod::$declaringClass
 property	StateMethod::$name
@@ -26127,6 +26554,8 @@ property	SubstitutionsToParse::$context
 property	SubstitutionsToParse::$depth
 property	SubstitutionsToParse::$owner
 property	SubstitutionsToParse::$word
+property	Subtitle::$key
+property	Subtitle::$text
 property	SuperviseRun::$files
 property	SuperviseRun::$processes
 property	SuperviseRun::$supervisor
@@ -26247,6 +26676,7 @@ property	TextCommentView::$anchor
 property	TextCommentView::$comment
 property	TextCommentView::$target
 property	TextCommentView::$type
+property	TextField::$name
 property	TextFields::$continuations
 property	TextOperand::$text
 property	TextPart::$firstLine
@@ -26321,6 +26751,8 @@ property	TimeBudget::$startedAt
 property	TimingVerdict::$phase
 property	TimingVerdict::$plan
 property	TimingVerdict::$unfinishedTasks
+property	Title::$key
+property	Title::$text
 property	ToggleGroup::$defaultEnabled
 property	ToggleGroup::$key
 property	ToggleGroup::$label
@@ -26958,6 +27390,7 @@ variable	$dispatcher
 variable	$distinct
 variable	$doc
 variable	$docblock
+variable	$dockable
 variable	$docker
 variable	$domain
 variable	$domainDeclarations
@@ -27307,6 +27740,7 @@ variable	$literal
 variable	$literalArguments
 variable	$literals
 variable	$liveHolders
+variable	$loadSection
 variable	$loader
 variable	$lock
 variable	$locks
@@ -27322,6 +27756,7 @@ variable	$maintenance
 variable	$malformed
 variable	$manager
 variable	$manifest
+variable	$map
 variable	$mapped
 variable	$mapper
 variable	$markdown
@@ -27963,6 +28398,7 @@ variable	$underline
 variable	$underlined
 variable	$unenforced
 variable	$unexpected
+variable	$union
 variable	$unique
 variable	$unknown
 variable	$unproven
@@ -27984,6 +28420,13 @@ variable	$usesBusReceipt
 variable	$valid
 variable	$validation
 variable	$validator
+variable	$value	app/Docking/Wire/Fields/DestinationField.php
+variable	$value	app/Docking/Wire/Fields/EnumField.php
+variable	$value	app/Docking/Wire/Fields/FlagField.php
+variable	$value	app/Docking/Wire/Fields/InstantField.php
+variable	$value	app/Docking/Wire/Fields/LinesField.php
+variable	$value	app/Docking/Wire/Fields/NumberField.php
+variable	$value	app/Docking/Wire/Fields/TextField.php
 variable	$value	app/Scripts/Support/ObjectReader.php
 variable	$variable
 variable	$variables
