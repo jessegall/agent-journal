@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Rules\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Rules\Handlers\ProposeRuleHandler;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -19,7 +17,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<string>
  */
-#[HandledBy(ProposeRuleHandler::class)]
 #[Authorize(RulePolicy::class, AccessType::Create)]
 final readonly class ProposeRule extends Command
 {

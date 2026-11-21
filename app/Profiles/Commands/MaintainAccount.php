@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Profiles\Handlers\MaintainAccountHandler;
 use App\Profiles\Policies\AccountPolicy;
 
 /**
@@ -17,7 +15,6 @@ use App\Profiles\Policies\AccountPolicy;
  *
  * @extends Command<null>
  */
-#[HandledBy(MaintainAccountHandler::class)]
 #[Authorize(AccountPolicy::class, AccessType::Edit)]
 final readonly class MaintainAccount extends Command
 {

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Memory\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Memory\Handlers\SaveMemoryHandler;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;
 use Spatie\LaravelData\Attributes\Validation\Between;
@@ -20,7 +18,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<string>
  */
-#[HandledBy(SaveMemoryHandler::class)]
 #[Authorize(MemoryPolicy::class, AccessType::Create)]
 final readonly class SaveMemory extends Command
 {

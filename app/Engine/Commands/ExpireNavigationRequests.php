@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Engine\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Engine\Handlers\ExpireNavigationRequestsHandler;
 
 /**
  * Expires every navigation request nobody answered in time; the engine runs it on each pass.
@@ -16,7 +14,6 @@ use App\Engine\Handlers\ExpireNavigationRequestsHandler;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::EngineMaintenance)]
-#[HandledBy(ExpireNavigationRequestsHandler::class)]
 final readonly class ExpireNavigationRequests extends Command
 {
     /**

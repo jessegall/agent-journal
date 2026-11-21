@@ -7,9 +7,10 @@ everything a module developer needs for that.
 ## A command and its handler
 
 A command is a final readonly value in the owner's `Commands` folder that extends `App\Bus\Support\Command` and
-declares only its business fields in its constructor. It names its handler with `#[HandledBy]`, and its docblock says
-what it answers. A handler sits in `Handlers`, has one public `handle` method that takes the command, and holds no
-transaction code: the bus opens the transaction.
+declares only its business fields in its constructor, and its docblock says what it answers. Its handler is found by
+its name: `Domain\Rules\Commands\ProposeRule` is handled by `Domain\Rules\Handlers\ProposeRuleHandler`, so the command
+names no handler and the two folders import one way. A handler has one public `handle` method that takes the command,
+and holds no transaction code: the bus opens the transaction.
 
 The handler reads who dispatched the command with `$command->dispatchedBy()`: an `App\Actors\Support\ActorContext`,
 the actor's type and id and nothing more, no authority. The bus binds it on every call. A command the caller has just
@@ -19,10 +20,8 @@ built is unbound, and reading `dispatchedBy()` on it raises `App\Bus\Exceptions\
 namespace Domain\Rules\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Rules\Handlers\ProposeRuleHandler;
 use Domain\Rules\Policies\RulePolicy;
 
 /**
@@ -30,7 +29,6 @@ use Domain\Rules\Policies\RulePolicy;
  *
  * @extends Command<string>
  */
-#[HandledBy(ProposeRuleHandler::class)]
 #[Authorize(RulePolicy::class, AccessType::Create)]
 final readonly class ProposeRule extends Command
 {
@@ -235,10 +233,7 @@ The registry checks every declaration when the application starts:
 | Error | Fix |
 |---|---|
 | `App\Bus\Exceptions\CommandDeclarationInvalid` | Make the command final readonly in `Commands`, extending `App\Bus\Support\Command`, with fields and a result the grammar above allows. |
-| `App\Bus\Exceptions\CommandHandlerMissing` | Add `#[HandledBy]` naming a handler in the owner's `Handlers` folder. |
-| `App\Bus\Exceptions\CommandHandlerTwice` | Name one handler. |
-| `App\Bus\Exceptions\HandlerServesTwoCommands` | Give each command its own handler. |
-| `App\Bus\Exceptions\HandlerInOtherOwner` | Keep the handler with its command's owner. |
+| `App\Bus\Exceptions\CommandHandlerMissing` | Write the handler the message names: the command's name with `Handler`, in the owner's `Handlers` folder. |
 | `App\Bus\Exceptions\CommandListedTwice` | List each command once. |
 | `App\Bus\Exceptions\MiddlewareDeclarationInvalid` | Name only commands the module may see, in a `CommandMiddleware` folder. |
 | `App\Bus\Exceptions\MiddlewareListedTwice` | Declare each middleware once per scope and stage. |

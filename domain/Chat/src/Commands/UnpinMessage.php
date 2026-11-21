@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Domain\Chat\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Chat\Handlers\UnpinMessageHandler;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Support\ConversationPair;
 
@@ -19,7 +17,6 @@ use Domain\Chat\Support\ConversationPair;
  * @extends Command<null>
  */
 #[RetainedActorRequestKey]
-#[HandledBy(UnpinMessageHandler::class)]
 #[Authorize(MessagePinPolicy::class, AccessType::Edit)]
 final readonly class UnpinMessage extends Command
 {

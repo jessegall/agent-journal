@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Engine\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Engine\Handlers\EnforceLaunchLimitsHandler;
 
 /**
  * Stops every launch past its wall limit and every session of a revoked profile revision; the engine runs it on each
@@ -17,7 +15,6 @@ use App\Engine\Handlers\EnforceLaunchLimitsHandler;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::EngineMaintenance)]
-#[HandledBy(EnforceLaunchLimitsHandler::class)]
 final readonly class EnforceLaunchLimits extends Command
 {
     /**

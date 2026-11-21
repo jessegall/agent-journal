@@ -6,12 +6,17 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Commands\StartAgent;
 use App\Agents\Contracts\ActiveAccountReader;
+use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\StartExecutor;
+use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Models\Agent;
+use App\Agents\Support\HostCapability;
+use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\StartPolicy;
@@ -33,6 +38,15 @@ final class HostBridgeTest extends TestCase
         $this->startTestUserRequest(1);
         $this->mock(ActiveAccountReader::class)->shouldNotReceive('forStart');
         $this->mock(StartExecutor::class)->shouldNotReceive('start');
+        $this->mock(HostCapabilities::class)->shouldReceive('capability')->andReturnUsing(
+            fn (HostCapabilityQuery $query) => new HostCapability(
+                $query,
+                $query->capability === HostCapabilityType::AccountTransport
+                    ? CapabilityStatusType::Unverified : CapabilityStatusType::Supported,
+                'Test evidence',
+                'Recorded for the test.',
+            ),
+        );
         $commands = $this->app->make(CommandBus::class);
         $actor = Agent::create('Builder', 'writing-helper');
 

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Profiles\Handlers\ReleaseAccountRemovalHandler;
 
 /**
  * Lets a host clean a removed account once no process runs on its folder: its pending starts are cancelled and its
@@ -17,7 +15,6 @@ use App\Profiles\Handlers\ReleaseAccountRemovalHandler;
  * @extends Command<bool>
  */
 #[Entry(CommandEntry::AccountMaintenance)]
-#[HandledBy(ReleaseAccountRemovalHandler::class)]
 final readonly class ReleaseAccountRemoval extends Command
 {
     public function __construct(

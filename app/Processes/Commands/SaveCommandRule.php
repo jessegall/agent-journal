@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Processes\Handlers\SaveCommandRuleHandler;
 use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Values\ApprovalReceipt;
 use App\Processes\Values\ProposedRule;
@@ -19,7 +17,6 @@ use App\Processes\Values\ProposedRule;
  *
  * @extends Command<ApprovalReceipt>
  */
-#[HandledBy(SaveCommandRuleHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, AccessType::Create)]
 final readonly class SaveCommandRule extends Command
 {

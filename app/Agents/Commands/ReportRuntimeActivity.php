@@ -6,9 +6,7 @@ namespace App\Agents\Commands;
 
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
-use App\Agents\Handlers\ReportRuntimeActivityHandler;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
@@ -19,7 +17,6 @@ use App\Bus\Support\Command;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ReportRuntimeActivityHandler::class)]
 final readonly class ReportRuntimeActivity extends Command
 {
     public function __construct(

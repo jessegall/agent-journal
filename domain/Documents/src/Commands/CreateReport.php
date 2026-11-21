@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use App\Records\Support\RecordIdentity;
 use Domain\Documents\Api\CreatedRecord;
-use Domain\Documents\Handlers\CreateReportHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\ReportPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -23,7 +21,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<CreatedRecord>
  */
-#[HandledBy(CreateReportHandler::class)]
 #[Authorize(ReportPolicy::class, AccessType::Create)]
 final readonly class CreateReport extends Command
 {

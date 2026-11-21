@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Sharing\Handlers\ApproveShareRequestHandler;
 use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\ShareSummary;
 
@@ -19,7 +17,6 @@ use App\Sharing\Support\ShareSummary;
  *
  * @extends Command<ShareSummary>
  */
-#[HandledBy(ApproveShareRequestHandler::class)]
 #[Authorize(SharingPolicy::class, AccessType::Edit)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 final readonly class ApproveShareRequest extends Command

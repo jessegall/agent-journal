@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Records\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Records\Handlers\LinkRecordsHandler;
 use App\Records\Policies\RecordLinkPolicy;
 use App\Records\Support\RecordIdentity;
 
@@ -17,7 +15,6 @@ use App\Records\Support\RecordIdentity;
  *
  * @extends Command<null>
  */
-#[HandledBy(LinkRecordsHandler::class)]
 #[Authorize(RecordLinkPolicy::class, AccessType::Create)]
 final readonly class LinkRecords extends Command
 {

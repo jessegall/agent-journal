@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Sharing\Handlers\ConfigureShareGatewayHandler;
 use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\GatewayConfiguration;
 
@@ -20,7 +18,6 @@ use App\Sharing\Support\GatewayConfiguration;
  *
  * @extends Command<GatewayConfiguration>
  */
-#[HandledBy(ConfigureShareGatewayHandler::class)]
 #[Authorize(SharingPolicy::class, AccessType::Create)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 final readonly class ConfigureShareGateway extends Command

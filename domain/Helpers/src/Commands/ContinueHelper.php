@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Helpers\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Helpers\Handlers\ContinueHelperHandler;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Support\HelperReceipt;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -19,7 +17,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<HelperReceipt>
  */
-#[HandledBy(ContinueHelperHandler::class)]
 #[Authorize(HelperPolicy::class, AccessType::Create)]
 final readonly class ContinueHelper extends Command
 {

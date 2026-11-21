@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Supervision\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Supervision\Handlers\HandOffCodeReviewHandler;
 
 /**
  * Hands certified work that must be reviewed to its reviewer: imports its commits under their protected ref, then
@@ -21,7 +19,6 @@ use App\Supervision\Handlers\HandOffCodeReviewHandler;
  */
 #[RepeatableRead]
 #[Entry(CommandEntry::EngineMaintenance)]
-#[HandledBy(HandOffCodeReviewHandler::class)]
 final readonly class HandOffCodeReview extends Command
 {
     /**

@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\RecordCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Tasks\Handlers\StartTaskHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskRunPolicy;
 
@@ -19,7 +17,6 @@ use Domain\Tasks\Policies\TaskRunPolicy;
  *
  * @extends Command<int>
  */
-#[HandledBy(StartTaskHandler::class)]
 #[Authorize(TaskRunPolicy::class, AccessType::Create)]
 final readonly class StartTask extends Command implements RecordCommand
 {

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Skills\Handlers\PruneSkillPublicationsHandler;
 use App\Skills\Values\PrunedPublications;
 
 /**
@@ -18,5 +16,4 @@ use App\Skills\Values\PrunedPublications;
  * @extends Command<PrunedPublications>
  */
 #[Entry(CommandEntry::SkillPublisher)]
-#[HandledBy(PruneSkillPublicationsHandler::class)]
 final readonly class PruneSkillPublications extends Command {}

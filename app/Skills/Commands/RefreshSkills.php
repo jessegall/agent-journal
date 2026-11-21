@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Skills\Handlers\RefreshSkillsHandler;
 use App\Skills\Values\RefreshResult;
 
 /**
@@ -18,5 +16,4 @@ use App\Skills\Values\RefreshResult;
  * @extends Command<RefreshResult>
  */
 #[Entry(CommandEntry::SkillPublisher)]
-#[HandledBy(RefreshSkillsHandler::class)]
 final readonly class RefreshSkills extends Command {}

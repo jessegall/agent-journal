@@ -1666,7 +1666,6 @@ class	CommandEntrance
 class	CommandFrame
 class	CommandGrammar
 class	CommandHandlerMissing
-class	CommandHandlerTwice
 class	CommandInputInvalid
 class	CommandListedTwice
 class	CommandNesting
@@ -2243,9 +2242,6 @@ class	HandOffCodeReviewHandler
 class	HandOffCodeReviewsOnTick
 class	HandStartSkillsToHost
 class	HandleInertiaRequests
-class	HandledBy
-class	HandlerInOtherOwner
-class	HandlerServesTwoCommands
 class	HeartbeatReportController
 class	HeldAccountUses
 class	HeldPartData
@@ -8212,7 +8208,6 @@ method	CommandGrammar::problemWithResult()
 method	CommandGrammar::problemWithType()
 method	CommandGrammar::problemWithValue()
 method	CommandHandlerMissing::for()
-method	CommandHandlerTwice::for()
 method	CommandInputInvalid::fieldProblems()
 method	CommandInputInvalid::from()
 method	CommandInputInvalid::refusalCode()
@@ -10289,9 +10284,6 @@ method	HandStartSkillsToHost::handle()
 method	HandleInertiaRequests::__construct()
 method	HandleInertiaRequests::share()
 method	HandleInertiaRequests::version()
-method	HandledBy::__construct()
-method	HandlerInOtherOwner::for()
-method	HandlerServesTwoCommands::for()
 method	HasActorColumns::actor()
 method	HasActorColumns::byActor()
 method	HasActorColumns::isByActor()
@@ -13161,6 +13153,7 @@ method	ReadBuilder::readLimit()
 method	ReadBuilder::readRelationCompletely()
 method	ReadBuilder::simplePaginate()
 method	ReadCommandHandlers::handle()
+method	ReadCommandHandlers::handlerNamedFor()
 method	ReadCommandHandlers::handlerOf()
 method	ReadCommandPipeline::pipes()
 method	ReadCompoundPipeline::pipes()
@@ -22473,7 +22466,6 @@ property	HandleInertiaRequests::$rootView
 property	HandleInertiaRequests::$sharing
 property	HandleInertiaRequests::$users
 property	HandleInertiaRequests::$version
-property	HandledBy::$handler
 property	HeldAccountUses::$account
 property	HeldAccountUses::$sessionIds
 property	HeldPartData::$code
@@ -27818,7 +27810,6 @@ variable	$grouped
 variable	$groups
 variable	$guard
 variable	$handle
-variable	$handledBy
 variable	$handler
 variable	$handlerEntries
 variable	$handlers

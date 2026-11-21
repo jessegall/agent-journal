@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Bus\Shop\Handlers;
 
 use Tests\Fixtures\Bus\Shop\Commands\ArrayResultItem;
 
-final class ArrayResultHandler
+final class ArrayResultItemHandler
 {
     /**
      * @return array<string, mixed>

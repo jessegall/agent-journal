@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use Domain\Plans\Enums\PlanType;
-use Domain\Plans\Handlers\EditPlanHandler;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -21,7 +19,6 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  *
  * @extends Command<int>
  */
-#[HandledBy(EditPlanHandler::class)]
 #[Authorize(PlanPolicy::class, AccessType::Edit)]
 final readonly class EditPlan extends Command
 {

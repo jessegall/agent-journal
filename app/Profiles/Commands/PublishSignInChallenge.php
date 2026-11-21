@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Profiles\Handlers\PublishSignInChallengeHandler;
 
 /**
  * The host's runner hands over the challenge its program printed for the attempt it runs, for the user only. Run
@@ -17,7 +15,6 @@ use App\Profiles\Handlers\PublishSignInChallengeHandler;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(PublishSignInChallengeHandler::class)]
 final readonly class PublishSignInChallenge extends Command
 {
     public function __construct(

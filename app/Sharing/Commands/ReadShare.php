@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Sharing\Handlers\ReadShareHandler;
 use App\Sharing\Support\SharedPage;
 
 /**
@@ -20,7 +18,6 @@ use App\Sharing\Support\SharedPage;
  */
 #[RepeatableRead]
 #[Entry(CommandEntry::ShareGateway)]
-#[HandledBy(ReadShareHandler::class)]
 final readonly class ReadShare extends Command
 {
     public function __construct(

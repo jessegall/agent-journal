@@ -6,11 +6,9 @@ namespace App\Agents\Commands;
 
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
-use App\Agents\Handlers\ReportRequestProgressHandler;
 use App\Agents\Values\NavigationRoundReport;
 use App\Agents\Values\ScriptProgress;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
@@ -21,7 +19,6 @@ use App\Bus\Support\Command;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ReportRequestProgressHandler::class)]
 final readonly class ReportRequestProgress extends Command
 {
     public function __construct(

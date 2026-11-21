@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Profiles\Handlers\ReconcileSignInsHandler;
 
 /**
  * A host's runner says, when it starts, which of its sign-ins it still runs: every other live attempt it took ends as
@@ -18,7 +16,6 @@ use App\Profiles\Handlers\ReconcileSignInsHandler;
  * @extends Command<int>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ReconcileSignInsHandler::class)]
 final readonly class ReconcileSignIns extends Command
 {
     /**

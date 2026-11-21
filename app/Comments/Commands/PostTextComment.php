@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Comments\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
-use App\Comments\Handlers\PostTextCommentHandler;
 use App\Comments\Policies\CommentPolicy;
 use App\Operations\Enums\AccessType;
 use App\Records\Support\RecordIdentity;
@@ -19,7 +17,6 @@ use App\Text\Values\TextRange;
  *
  * @extends Command<string> the comment's id
  */
-#[HandledBy(PostTextCommentHandler::class)]
 #[Authorize(CommentPolicy::class, AccessType::Create)]
 final readonly class PostTextComment extends Command
 {

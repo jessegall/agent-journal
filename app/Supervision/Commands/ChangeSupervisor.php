@@ -6,19 +6,16 @@ namespace App\Supervision\Commands;
 
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\SupervisorTarget;
-use App\Supervision\Handlers\ChangeSupervisorHandler;
 use App\Supervision\Policies\SupervisorPolicy;
 use App\Supervision\Values\SupervisorChangeReceipt;
 
 /**
  * @extends Command<SupervisorChangeReceipt>
  */
-#[HandledBy(ChangeSupervisorHandler::class)]
 #[Authorize(SupervisorPolicy::class, AccessType::Edit)]
 final readonly class ChangeSupervisor extends Command
 {

@@ -55,7 +55,6 @@ the registration accepts the access, its restrictions allow it for the profile's
 A command declares one pair:
 
 ```php
-#[HandledBy(WriteNoteHandler::class)]
 #[Authorize(NoteWorkPolicy::class, AccessType::Create)]
 final readonly class WriteNote extends Command
 {

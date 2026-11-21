@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Profiles\Handlers\ReconcileAccountsHandler;
 
 /**
  * The scheduled sweep: ends, oldest first, up to 100 live sign-ins past their deadline that a lost or late deadline
@@ -17,5 +15,4 @@ use App\Profiles\Handlers\ReconcileAccountsHandler;
  * @extends Command<int>
  */
 #[Entry(CommandEntry::AccountMaintenance)]
-#[HandledBy(ReconcileAccountsHandler::class)]
 final readonly class ReconcileAccounts extends Command {}

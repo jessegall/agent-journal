@@ -6,12 +6,10 @@ namespace App\Communication\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Effect;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Support\Command;
-use App\Communication\Handlers\AnswerMessageHandler;
 use App\Communication\Policies\MessagePolicy;
 use App\Operations\Enums\AccessType;
 
@@ -21,7 +19,6 @@ use App\Operations\Enums\AccessType;
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 #[Effect(CommandEffectType::Recovery)]
-#[HandledBy(AnswerMessageHandler::class)]
 #[Authorize(MessagePolicy::class, AccessType::Edit)]
 final readonly class AnswerMessage extends Command
 {

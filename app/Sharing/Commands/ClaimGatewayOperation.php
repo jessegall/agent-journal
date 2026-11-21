@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Sharing\Handlers\ClaimGatewayOperationHandler;
 use App\Sharing\Support\ClaimedGatewayOperation;
 
 /**
@@ -18,7 +16,6 @@ use App\Sharing\Support\ClaimedGatewayOperation;
  * @extends Command<ClaimedGatewayOperation|null>
  */
 #[Entry(CommandEntry::ShareGateway)]
-#[HandledBy(ClaimGatewayOperationHandler::class)]
 final readonly class ClaimGatewayOperation extends Command
 {
     public function __construct(

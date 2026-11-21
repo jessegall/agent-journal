@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Web\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Web\Handlers\RecordUserHeartbeatHandler;
 use App\Web\Policies\PresencePolicy;
 
 /**
@@ -16,6 +14,5 @@ use App\Web\Policies\PresencePolicy;
  *
  * @extends Command<null>
  */
-#[HandledBy(RecordUserHeartbeatHandler::class)]
 #[Authorize(PresencePolicy::class, AccessType::Edit)]
 final readonly class RecordUserHeartbeat extends Command {}

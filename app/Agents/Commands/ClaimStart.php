@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Handlers\ClaimStartHandler;
 use App\Agents\Support\ClaimedStart;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
@@ -19,7 +17,6 @@ use App\Bus\Support\Command;
  * @extends Command<ClaimedStart|null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ClaimStartHandler::class)]
 final readonly class ClaimStart extends Command
 {
     public function __construct(

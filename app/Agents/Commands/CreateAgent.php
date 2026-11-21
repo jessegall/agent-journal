@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Commands;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Handlers\CreateAgentHandler;
 use App\Agents\Policies\AgentPolicy;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -19,7 +17,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<ActorIdentity>
  */
-#[HandledBy(CreateAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AccessType::Create)]
 final readonly class CreateAgent extends Command
 {

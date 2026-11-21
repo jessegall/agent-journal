@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\RecordCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Tasks\Handlers\ResumeTaskRunHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Policies\TaskRunPolicy;
@@ -23,7 +21,6 @@ use Domain\Tasks\Policies\TaskRunPolicy;
  */
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-#[HandledBy(ResumeTaskRunHandler::class)]
 #[Authorize(TaskRunPolicy::class, AccessType::Create)]
 final readonly class ResumeTaskRun extends Command implements RecordCommand
 {

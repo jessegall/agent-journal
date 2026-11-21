@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Profiles\Handlers\SaveProfileDraftHandler;
 use App\Profiles\Policies\ProfileDraftPolicy;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ScriptSource;
@@ -16,7 +14,6 @@ use App\Profiles\Values\ScriptSource;
 /**
  * @extends Command<int>
  */
-#[HandledBy(SaveProfileDraftHandler::class)]
 #[Authorize(ProfileDraftPolicy::class, AccessType::Edit)]
 final readonly class SaveProfileDraft extends Command
 {

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Handlers\ClaimStartGrantHandler;
 use App\Agents\Support\StartGrant;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
@@ -18,7 +16,6 @@ use App\Bus\Support\Command;
  * @extends Command<StartGrant|null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ClaimStartGrantHandler::class)]
 final readonly class ClaimStartGrant extends Command
 {
     public function __construct(

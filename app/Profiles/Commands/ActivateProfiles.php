@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Profiles\Handlers\ActivateProfilesHandler;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\DraftExpectations;
@@ -20,7 +18,6 @@ use App\Profiles\Values\ProfileActivation;
  *
  * @extends Command<ProfileActivation>
  */
-#[HandledBy(ActivateProfilesHandler::class)]
 #[Authorize(ProfileAdministrationPolicy::class, AccessType::Edit)]
 final readonly class ActivateProfiles extends Command
 {

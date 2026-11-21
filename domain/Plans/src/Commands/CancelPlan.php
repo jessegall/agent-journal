@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Plans\Handlers\CancelPlanHandler;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -19,7 +17,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<null>
  */
-#[HandledBy(CancelPlanHandler::class)]
 #[Authorize(PlanPolicy::class, AccessType::Edit)]
 final readonly class CancelPlan extends Command
 {

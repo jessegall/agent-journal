@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Enums\CommandEntry;
@@ -61,7 +60,6 @@ final class CommandFolderTest extends TestCase
             $reflection = new ReflectionClass($class);
 
             foreach ([
-                HandledBy::class,
                 RepeatableRead::class,
                 Authorize::class,
                 Entry::class,

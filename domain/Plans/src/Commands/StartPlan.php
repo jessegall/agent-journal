@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Plans\Handlers\StartPlanHandler;
 use Domain\Plans\Policies\PlanPolicy;
 
 /**
@@ -16,7 +14,6 @@ use Domain\Plans\Policies\PlanPolicy;
  *
  * @extends Command<null>
  */
-#[HandledBy(StartPlanHandler::class)]
 #[Authorize(PlanPolicy::class, AccessType::Create)]
 final readonly class StartPlan extends Command
 {

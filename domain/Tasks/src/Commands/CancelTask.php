@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\RecordCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Tasks\Handlers\CancelTaskHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskRunPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -19,7 +17,6 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  *
  * @extends Command<null>
  */
-#[HandledBy(CancelTaskHandler::class)]
 #[Authorize(TaskRunPolicy::class, AccessType::Edit)]
 final readonly class CancelTask extends Command implements RecordCommand
 {

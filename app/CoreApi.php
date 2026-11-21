@@ -422,7 +422,6 @@ use App\Assignments\Support\RecordIds;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Effect;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
@@ -448,7 +447,6 @@ use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
-use App\Bus\Exceptions\CommandHandlerTwice;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Exceptions\CommandListedTwice;
 use App\Bus\Exceptions\CommandNestingTooDeep;
@@ -464,8 +462,6 @@ use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Bus\Exceptions\ContinuationCalledTwice;
 use App\Bus\Exceptions\DomainDisabled;
 use App\Bus\Exceptions\ExplicitTransactionInCommand;
-use App\Bus\Exceptions\HandlerInOtherOwner;
-use App\Bus\Exceptions\HandlerServesTwoCommands;
 use App\Bus\Exceptions\MiddlewareDeclarationInvalid;
 use App\Bus\Exceptions\MiddlewareListedTwice;
 use App\Bus\Exceptions\MiddlewareSkippedCommand;
@@ -1932,7 +1928,6 @@ final class CoreApi
                 NumberedPage::class,
                 AssignmentHolders::class,
                 AssignmentHolder::class,
-                HandledBy::class,
                 OneLine::class,
                 RepeatableRead::class,
                 RequiresRequestKey::class,
@@ -2428,7 +2423,6 @@ final class CoreApi
                 CommandDeclarationInvalid::class,
                 CommandInputInvalid::class,
                 CommandHandlerMissing::class,
-                CommandHandlerTwice::class,
                 CommandListedTwice::class,
                 CommandNestingTooDeep::class,
                 CommandNotRegistered::class,
@@ -2440,8 +2434,6 @@ final class CoreApi
                 CommandTransactionMismatch::class,
                 ContinuationCalledTwice::class,
                 ExplicitTransactionInCommand::class,
-                HandlerInOtherOwner::class,
-                HandlerServesTwoCommands::class,
                 MiddlewareDeclarationInvalid::class,
                 MiddlewareListedTwice::class,
                 MiddlewareSkippedCommand::class,

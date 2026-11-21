@@ -41,6 +41,7 @@ final class CapabilityActivationTest extends TestCase
     {
         $this->startTestUserRequest(1);
         $commands = $this->app->make(CommandBus::class);
+        $this->recordCapabilities(CapabilityStatusType::Supported, CapabilityStatusType::Unverified);
 
         $this->assertThrows(fn () => $commands->run($this->activation()), AccountContainerUnsupported::class);
         $this->assertFalse($this->app->make(ProfileResolver::class)->has(ProfileKey::from(self::PROFILE)));
@@ -63,7 +64,7 @@ final class CapabilityActivationTest extends TestCase
         $first = $commands->run($this->start($policy));
         $this->assertTrue($first->newSession);
 
-        $this->app->forgetInstance(HostCapabilities::class);
+        $this->recordCapabilities(CapabilityStatusType::Supported, CapabilityStatusType::Unverified);
         $this->assertThrows(fn () => $commands->run($this->start($policy)), AccountContainerUnsupported::class);
     }
 
@@ -91,12 +92,20 @@ final class CapabilityActivationTest extends TestCase
         ));
     }
 
-    private function recordCapabilities(CapabilityStatusType $runtime): void
-    {
+    /**
+     * Records the container runtime and the account transport as given, and every other capability supported.
+     */
+    private function recordCapabilities(
+        CapabilityStatusType $runtime,
+        CapabilityStatusType $account = CapabilityStatusType::Supported,
+    ): void {
         $this->mock(HostCapabilities::class)->shouldReceive('capability')->andReturnUsing(
-            function (HostCapabilityQuery $query) use ($runtime): HostCapability {
-                $status = $query->capability === HostCapabilityType::ContainerRuntime
-                    ? $runtime : CapabilityStatusType::Supported;
+            function (HostCapabilityQuery $query) use ($runtime, $account): HostCapability {
+                $status = match ($query->capability) {
+                    HostCapabilityType::ContainerRuntime => $runtime,
+                    HostCapabilityType::AccountTransport => $account,
+                    default => CapabilityStatusType::Supported,
+                };
 
                 return new HostCapability($query, $status, 'Test evidence', 'Recorded for the test.');
             },

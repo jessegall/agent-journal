@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use App\Processes\Enums\CommandClass;
-use App\Processes\Handlers\RevokeCommandPermissionsHandler;
 use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Values\CommandPattern;
 
@@ -19,7 +17,6 @@ use App\Processes\Values\CommandPattern;
  *
  * @extends Command<string>
  */
-#[HandledBy(RevokeCommandPermissionsHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, AccessType::Edit)]
 final readonly class RevokeCommandPermissions extends Command
 {

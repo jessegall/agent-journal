@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Assignments\Commands;
 
-use App\Assignments\Handlers\ConfigureAutoAssignmentHandler;
 use App\Assignments\Policies\AssignmentPolicy;
 use App\Assignments\Support\AutoAssignmentChange;
 use App\Assignments\Support\AutoAssignmentInput;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
@@ -20,7 +18,6 @@ use App\Operations\Enums\AccessType;
  * @extends Command<AutoAssignmentChange>
  */
 #[RepeatableRead]
-#[HandledBy(ConfigureAutoAssignmentHandler::class)]
 #[Authorize(AssignmentPolicy::class, AccessType::Create)]
 final readonly class ConfigureAutoAssignment extends Command
 {

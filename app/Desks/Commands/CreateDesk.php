@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Desks\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Support\Command;
-use App\Desks\Handlers\CreateDeskHandler;
 use App\Desks\Policies\DeskPolicy;
 use App\Operations\Enums\AccessType;
 
@@ -20,7 +18,6 @@ use App\Operations\Enums\AccessType;
  */
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-#[HandledBy(CreateDeskHandler::class)]
 #[Authorize(DeskPolicy::class, AccessType::Create)]
 final readonly class CreateDesk extends Command
 {

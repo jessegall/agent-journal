@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Profiles\Handlers\RevokeProfilesHandler;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Values\ProfileKey;
 
@@ -18,7 +16,6 @@ use App\Profiles\Values\ProfileKey;
  *
  * @extends Command<int>
  */
-#[HandledBy(RevokeProfilesHandler::class)]
 #[Authorize(ProfileAdministrationPolicy::class, AccessType::Edit)]
 final readonly class RevokeProfiles extends Command
 {

@@ -12,7 +12,6 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Contracts\RecordCommand;
 use App\Bus\Exceptions\CommandAuthorizationInvalid;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
-use App\Bus\Exceptions\HandlerInOtherOwner;
 use App\Bus\Support\CommandDeclarations;
 use App\Bus\Support\DeclaredCommand;
 use App\Bus\Support\SharedBindingCheck;
@@ -46,14 +45,6 @@ final readonly class CheckCommandHandlers implements Pipe
     {
         $command = $declared->command;
         $handler = $declared->handler;
-
-        if (! $declared->owner->holdsIn('Handlers', $handler)) {
-            throw HandlerInOtherOwner::for($command, $handler);
-        }
-
-        if (! class_exists($handler)) {
-            throw CommandDeclarationInvalid::for($handler, 'the handler class does not exist');
-        }
 
         $reflection = new ReflectionClass($handler);
 

@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Profiles\Enums\SignInOutcome;
-use App\Profiles\Handlers\ReportSignInHandler;
 use App\Profiles\Values\SignInIdentity;
 
 /**
@@ -21,7 +19,6 @@ use App\Profiles\Values\SignInIdentity;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ReportSignInHandler::class)]
 final readonly class ReportSignIn extends Command
 {
     public function __construct(

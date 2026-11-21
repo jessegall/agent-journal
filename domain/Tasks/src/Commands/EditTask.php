@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Tasks\Handlers\EditTaskHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -20,7 +18,6 @@ use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
  *
  * @extends Command<int>
  */
-#[HandledBy(EditTaskHandler::class)]
 #[Authorize(TaskPolicy::class, AccessType::Edit)]
 final readonly class EditTask extends Command
 {

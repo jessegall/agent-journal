@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
-use Domain\Documents\Handlers\ChangeDocumentDetailsHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -22,7 +20,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<DraftReference>
  */
-#[HandledBy(ChangeDocumentDetailsHandler::class)]
 #[Authorize(DocumentPolicy::class, AccessType::Edit)]
 final readonly class ChangeDocumentDetails extends Command
 {

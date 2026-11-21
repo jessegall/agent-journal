@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Handlers\InspectMergeAttemptsHandler;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
@@ -19,7 +17,6 @@ use App\Bus\Support\Command;
  */
 #[RepeatableRead]
 #[Entry(CommandEntry::EngineMaintenance)]
-#[HandledBy(InspectMergeAttemptsHandler::class)]
 final readonly class InspectMergeAttempts extends Command
 {
     /**

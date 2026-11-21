@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Plans\Handlers\RecordPhaseCheckHandler;
 use Domain\Plans\Policies\PlanPolicy;
 
 /**
@@ -17,7 +15,6 @@ use Domain\Plans\Policies\PlanPolicy;
  *
  * @extends Command<string>
  */
-#[HandledBy(RecordPhaseCheckHandler::class)]
 #[Authorize(PlanPolicy::class, AccessType::Edit)]
 final readonly class RecordPhaseCheck extends Command
 {

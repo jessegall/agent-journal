@@ -6,10 +6,8 @@ namespace Tests\Fixtures\Modules\Notes\Commands;
 
 use App\Operations\Enums\AccessType;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Max;
-use Tests\Fixtures\Modules\Notes\Handlers\LimitNoteHandler;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 
@@ -18,7 +16,6 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  *
  * @extends Command<int>
  */
-#[HandledBy(LimitNoteHandler::class)]
 #[Authorize(NoteWorkPolicy::class, AccessType::Edit)]
 final readonly class LimitNote extends Command
 {

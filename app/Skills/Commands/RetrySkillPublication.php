@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Skills\Handlers\RetrySkillPublicationHandler;
 
 /**
  * The journal puts a failed publication back in the queue with the same immutable generation, once its cause is
@@ -17,7 +15,6 @@ use App\Skills\Handlers\RetrySkillPublicationHandler;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::SkillPublisher)]
-#[HandledBy(RetrySkillPublicationHandler::class)]
 final readonly class RetrySkillPublication extends Command
 {
     public function __construct(

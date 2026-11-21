@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use Domain\Documents\Enums\UploadType;
-use Domain\Documents\Handlers\BeginUploadHandler;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Policies\UploadPolicy;
 
 /**
  * @extends Command<string>
  */
-#[HandledBy(BeginUploadHandler::class)]
 #[Authorize(UploadPolicy::class, AccessType::Create)]
 final readonly class BeginUpload extends Command
 {

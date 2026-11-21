@@ -10,10 +10,8 @@ use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\DriverSwitchTarget;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Profiles\Handlers\StartProfileMainHandler;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Values\ProfileKey;
 
@@ -24,7 +22,6 @@ use App\Profiles\Values\ProfileKey;
  *
  * @extends Command<StartReceipt>
  */
-#[HandledBy(StartProfileMainHandler::class)]
 #[Authorize(ProfileAdministrationPolicy::class, AccessType::Create)]
 final readonly class StartProfileMain extends Command
 {

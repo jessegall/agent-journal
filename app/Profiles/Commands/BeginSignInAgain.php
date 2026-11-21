@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Profiles\Handlers\BeginSignInAgainHandler;
 use App\Profiles\Policies\AccountPolicy;
 use App\Profiles\Values\SignInStarted;
 
@@ -19,7 +17,6 @@ use App\Profiles\Values\SignInStarted;
  *
  * @extends Command<SignInStarted>
  */
-#[HandledBy(BeginSignInAgainHandler::class)]
 #[Authorize(AccountPolicy::class, AccessType::Create)]
 final readonly class BeginSignInAgain extends Command
 {

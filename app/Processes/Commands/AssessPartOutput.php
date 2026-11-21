@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Processes\Handlers\AssessPartOutputHandler;
 use App\Processes\Policies\ProcessPolicy;
 
 /**
@@ -17,7 +15,6 @@ use App\Processes\Policies\ProcessPolicy;
  *
  * @extends Command<string>
  */
-#[HandledBy(AssessPartOutputHandler::class)]
 #[Authorize(ProcessPolicy::class, AccessType::Edit)]
 final readonly class AssessPartOutput extends Command
 {

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Desks\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Desks\Handlers\InstallDesksHandler;
 
 /**
  * Creates Core's built-in desks once; running it again changes nothing.
@@ -16,5 +14,4 @@ use App\Desks\Handlers\InstallDesksHandler;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(InstallDesksHandler::class)]
 final readonly class InstallDesks extends Command {}

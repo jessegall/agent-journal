@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Sharing\Handlers\PruneShareAuditHandler;
 use App\Sharing\Support\AuditPruning;
 
 /**
@@ -19,5 +17,4 @@ use App\Sharing\Support\AuditPruning;
  * @extends Command<AuditPruning>
  */
 #[Entry(CommandEntry::ShareGateway)]
-#[HandledBy(PruneShareAuditHandler::class)]
 final readonly class PruneShareAudit extends Command {}

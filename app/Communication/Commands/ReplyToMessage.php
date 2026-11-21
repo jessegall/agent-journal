@@ -6,12 +6,10 @@ namespace App\Communication\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Effect;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Support\Command;
-use App\Communication\Handlers\ReplyToMessageHandler;
 use App\Communication\Policies\MessagePolicy;
 use App\Operations\Enums\AccessType;
 use Spatie\LaravelData\Attributes\Validation\Required;
@@ -25,7 +23,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 #[Effect(CommandEffectType::Recovery)]
-#[HandledBy(ReplyToMessageHandler::class)]
 #[Authorize(MessagePolicy::class, AccessType::Create)]
 final readonly class ReplyToMessage extends Command
 {

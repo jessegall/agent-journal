@@ -6,16 +6,13 @@ namespace Tests\Fixtures\Modules\Cards\Commands;
 
 use App\Operations\Enums\AccessType;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
-use Tests\Fixtures\Modules\Cards\Handlers\DrawCardHandler;
 use Tests\Fixtures\Modules\Cards\Models\Deck;
 use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
 
 /**
  * @extends Command<string>
  */
-#[HandledBy(DrawCardHandler::class)]
 #[Authorize(DeckPolicy::class, AccessType::Edit)]
 final readonly class DrawCard extends Command
 {

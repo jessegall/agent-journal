@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Skills\Handlers\PrepareSkillPublicationHandler;
 use App\Skills\Values\PreparationProgress;
 
 /**
@@ -17,7 +15,6 @@ use App\Skills\Values\PreparationProgress;
  * @extends Command<PreparationProgress>
  */
 #[Entry(CommandEntry::SkillPublisher)]
-#[HandledBy(PrepareSkillPublicationHandler::class)]
 final readonly class PrepareSkillPublication extends Command
 {
     public function __construct(

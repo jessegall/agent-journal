@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Handlers\ClaimDriverRequestsHandler;
 use App\Agents\Support\ClaimedRequests;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
@@ -18,7 +16,6 @@ use App\Bus\Support\Command;
  * @extends Command<ClaimedRequests>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ClaimDriverRequestsHandler::class)]
 final readonly class ClaimDriverRequests extends Command
 {
     public function __construct(

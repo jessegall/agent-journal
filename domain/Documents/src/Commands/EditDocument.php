@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
-use Domain\Documents\Handlers\EditDocumentHandler;
 use Domain\Documents\Policies\DocumentPolicy;
 
 /**
  * @extends Command<DraftReference>
  */
-#[HandledBy(EditDocumentHandler::class)]
 #[Authorize(DocumentPolicy::class, AccessType::Edit)]
 final readonly class EditDocument extends Command
 {

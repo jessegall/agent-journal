@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Hooks\Enums\StopAttemptState;
-use App\Hooks\Handlers\RecordStopResultsHandler;
 use App\Hooks\Values\StopResultReport;
 
 /**
@@ -20,7 +18,6 @@ use App\Hooks\Values\StopResultReport;
  * @extends Command<StopAttemptState>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(RecordStopResultsHandler::class)]
 final readonly class RecordStopResults extends Command
 {
     /**

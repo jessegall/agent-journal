@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Skills\Handlers\ActivateSkillPublicationHandler;
 
 /**
  * The worker holding a fully staged publication switches its target to it and marks it delivered; a target already
@@ -17,7 +15,6 @@ use App\Skills\Handlers\ActivateSkillPublicationHandler;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::SkillPublisher)]
-#[HandledBy(ActivateSkillPublicationHandler::class)]
 final readonly class ActivateSkillPublication extends Command
 {
     public function __construct(

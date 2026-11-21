@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Scripts\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Scripts\Enums\StepStatus;
-use App\Scripts\Handlers\RecordScriptStepResultHandler;
 
 /**
  * A host reports how a step it ran or read for a profile run ended; the run records it once and resumes the same
@@ -19,7 +17,6 @@ use App\Scripts\Handlers\RecordScriptStepResultHandler;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(RecordScriptStepResultHandler::class)]
 final readonly class RecordScriptStepResult extends Command
 {
     public function __construct(

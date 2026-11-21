@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Plans\Handlers\AddPhaseTasksHandler;
 use Domain\Plans\Policies\PlanPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -18,7 +16,6 @@ use Spatie\LaravelData\Attributes\Validation\Min;
  *
  * @extends Command<null>
  */
-#[HandledBy(AddPhaseTasksHandler::class)]
 #[Authorize(PlanPolicy::class, AccessType::Create)]
 final readonly class AddPhaseTasks extends Command
 {

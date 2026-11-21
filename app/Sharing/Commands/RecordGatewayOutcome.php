@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Sharing\Enums\GatewayOutcome;
-use App\Sharing\Handlers\RecordGatewayOutcomeHandler;
 use App\Sharing\Support\GatewayOperation;
 
 /**
@@ -19,7 +17,6 @@ use App\Sharing\Support\GatewayOperation;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::ShareGateway)]
-#[HandledBy(RecordGatewayOutcomeHandler::class)]
 final readonly class RecordGatewayOutcome extends Command
 {
     public function __construct(

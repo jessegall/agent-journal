@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Engine\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Engine\Handlers\MarkSilentSessionsHandler;
 
 /**
  * Marks silent every session whose beats stopped for a presence window; the engine runs it on each pass.
@@ -16,7 +14,6 @@ use App\Engine\Handlers\MarkSilentSessionsHandler;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::EngineMaintenance)]
-#[HandledBy(MarkSilentSessionsHandler::class)]
 final readonly class MarkSilentSessions extends Command
 {
     /**

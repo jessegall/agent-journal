@@ -6,10 +6,8 @@ namespace Tests\Fixtures\Modules\Notes\Commands;
 
 use App\Operations\Enums\AccessType;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Settings\Values\SettingReference;
-use Tests\Fixtures\Modules\Notes\Handlers\SetIntegerSettingThenFailHandler;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 
@@ -18,7 +16,6 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
  *
  * @extends Command<null>
  */
-#[HandledBy(SetIntegerSettingThenFailHandler::class)]
 #[Authorize(NoteWorkPolicy::class, AccessType::Edit)]
 final readonly class SetIntegerSettingThenFail extends Command
 {

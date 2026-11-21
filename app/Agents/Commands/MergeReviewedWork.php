@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Handlers\MergeReviewedWorkHandler;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Values\MergeOutcome;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 
@@ -18,7 +16,6 @@ use App\Operations\Enums\AccessType;
  *
  * @extends Command<MergeOutcome>
  */
-#[HandledBy(MergeReviewedWorkHandler::class)]
 #[Authorize(AgentPolicy::class, AccessType::Edit)]
 final readonly class MergeReviewedWork extends Command
 {

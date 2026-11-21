@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Helpers\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Helpers\Handlers\CancelHelperJobHandler;
 use Domain\Helpers\Policies\HelperPolicy;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
@@ -18,7 +16,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<string>
  */
-#[HandledBy(CancelHelperJobHandler::class)]
 #[Authorize(HelperPolicy::class, AccessType::Edit)]
 final readonly class CancelHelperJob extends Command
 {

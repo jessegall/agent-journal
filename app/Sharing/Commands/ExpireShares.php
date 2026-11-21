@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Sharing\Handlers\ExpireSharesHandler;
 use App\Sharing\Support\ShareExpiry;
 
 /**
@@ -18,5 +16,4 @@ use App\Sharing\Support\ShareExpiry;
  * @extends Command<ShareExpiry>
  */
 #[Entry(CommandEntry::ShareGateway)]
-#[HandledBy(ExpireSharesHandler::class)]
 final readonly class ExpireShares extends Command {}

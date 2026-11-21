@@ -6,11 +6,9 @@ namespace App\Agents\Commands;
 
 use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Enums\DriverVariant;
-use App\Agents\Handlers\OpenAgentRuntimeHandler;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 
@@ -21,7 +19,6 @@ use App\Operations\Enums\AccessType;
  *
  * @extends Command<OpenedRuntime>
  */
-#[HandledBy(OpenAgentRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AccessType::Create)]
 final readonly class OpenAgentRuntime extends Command implements AgentStartCommand
 {

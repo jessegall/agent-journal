@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use App\Skills\Enums\ReadEvidence;
-use App\Skills\Handlers\RecordSkillReadHandler;
 use App\Skills\Policies\SkillPolicy;
 
 /**
@@ -17,7 +15,6 @@ use App\Skills\Policies\SkillPolicy;
  *
  * @extends Command<bool>
  */
-#[HandledBy(RecordSkillReadHandler::class)]
 #[Authorize(SkillPolicy::class, AccessType::Read)]
 final readonly class RecordSkillRead extends Command
 {

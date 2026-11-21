@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Sharing\Handlers\RequestShareHandler;
 use App\Sharing\Policies\ShareRequestPolicy;
 use App\Sharing\Support\ShareProposalStatus;
 
@@ -19,7 +17,6 @@ use App\Sharing\Support\ShareProposalStatus;
  *
  * @extends Command<ShareProposalStatus>
  */
-#[HandledBy(RequestShareHandler::class)]
 #[Authorize(ShareRequestPolicy::class, AccessType::Create)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 final readonly class RequestShare extends Command

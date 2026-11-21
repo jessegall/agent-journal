@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Profiles\Handlers\ClaimCleanupHandler;
 use App\Profiles\Values\ClaimedCleanup;
 
 /**
@@ -19,7 +17,6 @@ use App\Profiles\Values\ClaimedCleanup;
  * @extends Command<ClaimedCleanup|null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ClaimCleanupHandler::class)]
 final readonly class ClaimCleanup extends Command
 {
     public function __construct(

@@ -8,8 +8,8 @@ use RuntimeException;
 
 final class CommandHandlerMissing extends RuntimeException
 {
-    public static function for(string $command): self
+    public static function for(string $command, string $handler): self
     {
-        return new self("The command {$command} names no handler; give it #[HandledBy(...)].");
+        return new self("The command {$command} has no handler: write {$handler}.");
     }
 }

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Handlers\RaiseNavigationHandler;
 use App\Agents\Support\NavigationRaiseAnswer;
 use App\Agents\Values\NavigationUncertainty;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
@@ -20,7 +18,6 @@ use App\Bus\Support\Command;
  * @extends Command<NavigationRaiseAnswer>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(RaiseNavigationHandler::class)]
 final readonly class RaiseNavigation extends Command
 {
     /**

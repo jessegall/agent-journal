@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Profiles\Handlers\ClaimAccountCheckHandler;
 use App\Profiles\Values\ClaimedAccountCheck;
 
 /**
@@ -18,7 +16,6 @@ use App\Profiles\Values\ClaimedAccountCheck;
  * @extends Command<ClaimedAccountCheck|null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ClaimAccountCheckHandler::class)]
 final readonly class ClaimAccountCheck extends Command
 {
     public function __construct(public string $hostId) {}

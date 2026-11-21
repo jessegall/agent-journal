@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Profiles\Handlers\RecordAccountFailureHandler;
 
 /**
  * A rejected sign-in was seen on an account in a sign-in generation: the host is asked to check the account, unless
@@ -17,7 +15,6 @@ use App\Profiles\Handlers\RecordAccountFailureHandler;
  * @extends Command<bool>
  */
 #[Entry(CommandEntry::AccountMaintenance)]
-#[HandledBy(RecordAccountFailureHandler::class)]
 final readonly class RecordAccountFailure extends Command
 {
     public function __construct(

@@ -6,12 +6,10 @@ namespace App\Communication\Commands;
 
 use App\Assignments\Support\AssignmentReference;
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Support\Command;
 use App\Communication\Contracts\MessageCommand;
-use App\Communication\Handlers\ReleaseMessageClaimHandler;
 use App\Communication\Policies\MessageAdministrationPolicy;
 use App\Operations\Enums\AccessType;
 
@@ -25,7 +23,6 @@ use App\Operations\Enums\AccessType;
  */
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-#[HandledBy(ReleaseMessageClaimHandler::class)]
 #[Authorize(MessageAdministrationPolicy::class, AccessType::Edit)]
 final readonly class ReleaseMessageClaim extends Command implements MessageCommand
 {

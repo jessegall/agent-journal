@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Skills\Handlers\CopySkillHandler;
 use App\Skills\Policies\SkillAuthoringPolicy;
 use App\Skills\Values\SkillRevisionResult;
 
@@ -18,7 +16,6 @@ use App\Skills\Values\SkillRevisionResult;
  *
  * @extends Command<SkillRevisionResult>
  */
-#[HandledBy(CopySkillHandler::class)]
 #[Authorize(SkillAuthoringPolicy::class, AccessType::Create)]
 final readonly class CopySkill extends Command
 {

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Commands;
 
 use App\Agents\Enums\DriverFailure;
-use App\Agents\Handlers\ReportFailureHandler;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
@@ -19,7 +17,6 @@ use App\Bus\Support\Command;
  * @extends Command<null>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ReportFailureHandler::class)]
 final readonly class ReportFailure extends Command
 {
     public function __construct(

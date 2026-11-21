@@ -16,7 +16,7 @@ use App\Bus\Exceptions\CommandDeclarationInvalid;
 use ReflectionClass;
 
 /**
- * One command an owner lists, with the handler its HandledBy names, and what its attributes declare: an application
+ * One command an owner lists, with the handler of its name, and what its attributes declare: an application
  * command declares one Authorize and no Entry, a trusted command one non-application Entry and no Authorize.
  */
 final readonly class DeclaredCommand

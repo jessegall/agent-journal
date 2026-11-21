@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Handlers\ReportRuntimeHeartbeatHandler;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
@@ -17,7 +15,6 @@ use App\Bus\Support\Command;
  * @extends Command<void>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(ReportRuntimeHeartbeatHandler::class)]
 final readonly class ReportRuntimeHeartbeat extends Command
 {
     public function __construct(

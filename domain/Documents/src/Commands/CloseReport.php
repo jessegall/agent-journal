@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use Domain\Documents\Handlers\CloseReportHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\ReportPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -19,7 +17,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<null>
  */
-#[HandledBy(CloseReportHandler::class)]
 #[Authorize(ReportPolicy::class, AccessType::Edit)]
 final readonly class CloseReport extends Command
 {

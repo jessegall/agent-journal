@@ -12,8 +12,6 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandListedTwice;
-use App\Bus\Exceptions\HandlerInOtherOwner;
-use App\Bus\Exceptions\HandlerServesTwoCommands;
 use App\Bus\Exceptions\MiddlewareDeclarationInvalid;
 use App\Bus\Exceptions\MiddlewareListedTwice;
 use App\Bus\Support\CommandOwner;
@@ -47,8 +45,6 @@ use Tests\Fixtures\Bus\Shop\Commands\OpenItem;
 use Tests\Fixtures\Bus\Shop\Commands\QueuedItem;
 use Tests\Fixtures\Bus\Shop\Commands\RemoveItem;
 use Tests\Fixtures\Bus\Shop\Commands\SingletonItem;
-use Tests\Fixtures\Bus\Shop\Commands\StolenItem;
-use Tests\Fixtures\Bus\Shop\Commands\TwinItem;
 use Tests\Fixtures\Bus\Shop\Commands\UnreadableRuleItem;
 use Tests\Fixtures\Bus\Shop\Commands\ValueRuledItem;
 use Tests\Fixtures\Bus\Shop\Handlers\AddItemHandler;
@@ -161,20 +157,6 @@ final class CommandRegistryTest extends TestCase
         $this->expectException(CommandHandlerMissing::class);
 
         $this->registryOf([$this->shop([NoHandlerItem::class])]);
-    }
-
-    public function test_a_handler_of_another_owner_is_refused(): void
-    {
-        $this->expectException(HandlerInOtherOwner::class);
-
-        $this->registryOf([$this->shop([StolenItem::class]), $this->garden([])]);
-    }
-
-    public function test_a_handler_serving_two_commands_is_refused(): void
-    {
-        $this->expectException(HandlerServesTwoCommands::class);
-
-        $this->registryOf([$this->shop([AddItem::class, TwinItem::class])]);
     }
 
     public function test_a_result_outside_the_grammar_is_refused(): void

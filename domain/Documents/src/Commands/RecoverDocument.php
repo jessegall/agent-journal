@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\DraftTarget;
-use Domain\Documents\Handlers\RecoverDocumentHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -22,7 +20,6 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<CloseResult>
  */
-#[HandledBy(RecoverDocumentHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, AccessType::Edit)]
 final readonly class RecoverDocument extends Command
 {

@@ -7,16 +7,13 @@ namespace App\Bus\Pipes;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\Command;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
-use App\Bus\Exceptions\CommandHandlerTwice;
 use App\Bus\Exceptions\CommandListedTwice;
-use App\Bus\Exceptions\HandlerServesTwoCommands;
 use App\Bus\Support\Command as BaseCommand;
 use App\Bus\Support\CommandDeclarations;
 use App\Bus\Support\CommandGrammar;
@@ -27,9 +24,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use ReflectionClass;
 
 /**
- * Reads every owner's commands against the command grammar and the handler each names: a command is listed once, is
- * a final readonly command in its owner's Commands folder, repeats no attribute and has one handler no other
- * command has.
+ * Reads every owner's commands against the command grammar and finds each one's handler by its name: a command is
+ * listed once, is a final readonly command in its owner's Commands folder, repeats no attribute and has a handler of
+ * its own name in the owner's Handlers folder.
  */
 final readonly class ReadCommandHandlers implements Pipe
 {
@@ -45,7 +42,6 @@ final readonly class ReadCommandHandlers implements Pipe
     public function handle(CommandDeclarations $declarations): CommandDeclarations
     {
         $commands = [];
-        $handlers = [];
 
         foreach ($declarations->owners as $owner) {
             $grammar = $declarations->grammarFor($owner);
@@ -58,12 +54,6 @@ final readonly class ReadCommandHandlers implements Pipe
                 }
 
                 $handler = $this->handlerOf($grammar, $owner, $command);
-
-                if (isset($handlers[$handler])) {
-                    throw HandlerServesTwoCommands::for($handler);
-                }
-
-                $handlers[$handler] = true;
                 $commands[$key] = DeclaredCommand::read($command, $owner, $handler);
             }
         }
@@ -72,7 +62,7 @@ final readonly class ReadCommandHandlers implements Pipe
     }
 
     /**
-     * Checks one command against the grammar and returns the handler it names.
+     * Checks one command against the grammar and returns its handler.
      *
      * @return class-string
      */
@@ -115,16 +105,22 @@ final readonly class ReadCommandHandlers implements Pipe
             throw CommandDeclarationInvalid::for($command, $problem);
         }
 
-        $handledBy = $reflection->getAttributes(HandledBy::class);
+        $handler = self::handlerNamedFor($command);
 
-        if ($handledBy === []) {
-            throw CommandHandlerMissing::for($command);
+        if (! class_exists($handler)) {
+            throw CommandHandlerMissing::for($command, $handler);
         }
 
-        if (count($handledBy) > 1) {
-            throw CommandHandlerTwice::for($command);
-        }
+        return $handler;
+    }
 
-        return $handledBy[0]->newInstance()->handler;
+    /**
+     * The handler a command has by its name: App\X\Commands\Foo is handled by App\X\Handlers\FooHandler.
+     */
+    private static function handlerNamedFor(string $command): string
+    {
+        $folder = (int) strrpos($command, '\\Commands\\');
+
+        return substr($command, 0, $folder).'\\Handlers\\'.substr($command, $folder + strlen('\\Commands\\')).'Handler';
     }
 }

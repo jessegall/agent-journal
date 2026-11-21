@@ -8,7 +8,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Tests\Fixtures\Bus\Shop\Commands\SingletonItem;
 
 #[Singleton]
-final class SingletonHandler
+final class SingletonItemHandler
 {
     public function handle(SingletonItem $command): void {}
 }

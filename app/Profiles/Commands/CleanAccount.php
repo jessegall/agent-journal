@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
-use App\Profiles\Handlers\CleanAccountHandler;
 use App\Profiles\Values\CleanupProgress;
 
 /**
@@ -19,7 +17,6 @@ use App\Profiles\Values\CleanupProgress;
  * @extends Command<bool>
  */
 #[Entry(CommandEntry::HostControl)]
-#[HandledBy(CleanAccountHandler::class)]
 final readonly class CleanAccount extends Command
 {
     public function __construct(
