@@ -11,13 +11,14 @@ use App\Domains\Providers\DomainServiceProvider;
 use App\Domains\Support\DomainRegistry;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\StateLoading\Loaders\ReadyStateLoader;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 use App\Sharing\Events\ShareActivated;
 use App\Web\Listeners\BroadcastPageChange;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
-use ReflectionProperty;
 use Tests\Fixtures\Domains\Books\BooksDomain;
 use Tests\Fixtures\Domains\Plans\PlansDomain;
 use Tests\Fixtures\Domains\Shelves\Events\BookShelved;
@@ -37,7 +38,7 @@ final class DomainServiceProviderTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->discoveryPathsBefore = $this->discoveryPathsProperty()->getValue();
+        $this->discoveryPathsBefore = $this->discoveryPathsProperty()->readStatic();
 
         parent::setUp();
     }
@@ -46,7 +47,7 @@ final class DomainServiceProviderTest extends TestCase
     {
         parent::tearDown();
 
-        $this->discoveryPathsProperty()->setValue(null, $this->discoveryPathsBefore);
+        $this->discoveryPathsProperty()->writeStatic($this->discoveryPathsBefore);
     }
 
     public function test_the_migrations_of_every_domain_are_found(): void
@@ -148,8 +149,8 @@ final class DomainServiceProviderTest extends TestCase
         });
     }
 
-    private function discoveryPathsProperty(): ReflectionProperty
+    private function discoveryPathsProperty(): ReflectedProperty
     {
-        return new ReflectionProperty(EventServiceProvider::class, 'eventDiscoveryPaths');
+        return Reflector::of(EventServiceProvider::class)->property('eventDiscoveryPaths');
     }
 }

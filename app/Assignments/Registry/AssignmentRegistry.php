@@ -28,6 +28,7 @@ use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 use App\Links\Support\LinkTypeRegistry;
 use App\Records\Support\RecordIdentity;
+use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use Illuminate\Container\Container;
 
@@ -138,12 +139,12 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         RecordIdentity::assertKnownType($type);
         $this->requireOwner($owner);
 
-        if (! is_subclass_of($providerClass, AssignableProvider::class)) {
+        if (! Reflector::isNameSubclassOf($providerClass, AssignableProvider::class)) {
             throw AssignmentProviderInvalid::forRecords($type, $providerClass);
         }
 
         if ($purpose === AssignmentPurpose::JournalAssigned
-            && ! is_subclass_of($providerClass, JournalAssignableProvider::class)) {
+            && ! Reflector::isNameSubclassOf($providerClass, JournalAssignableProvider::class)) {
             throw AssignmentProviderInvalid::forRecords($type, $providerClass);
         }
 
@@ -172,11 +173,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
             throw AutoAssignmentDeclarationRefused::assignerOfAnotherOwner($type, $owner, $recordOwner);
         }
 
-        if (! is_subclass_of($assignerClass, AutoAssigner::class)) {
+        if (! Reflector::isNameSubclassOf($assignerClass, AutoAssigner::class)) {
             throw AssignmentProviderInvalid::forAutoAssigner($type, $assignerClass);
         }
 
-        if (! is_subclass_of($workProviderClass, AssignedWorkProvider::class)) {
+        if (! Reflector::isNameSubclassOf($workProviderClass, AssignedWorkProvider::class)) {
             throw AssignmentProviderInvalid::forAssignedWork($type, $workProviderClass);
         }
 
@@ -194,7 +195,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $this->requireOwner($owner);
 
-        if (! is_subclass_of($pool->factoryClass, AssignmentPoolFactory::class)) {
+        if (! Reflector::isNameSubclassOf($pool->factoryClass, AssignmentPoolFactory::class)) {
             throw AssignmentProviderInvalid::forPoolFactory($pool->key, $pool->factoryClass);
         }
 
@@ -208,7 +209,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function registerAssignees(AssigneeDefinition $definition): void
     {
-        if (! is_subclass_of($definition->providerClass, AssigneeProvider::class)) {
+        if (! Reflector::isNameSubclassOf($definition->providerClass, AssigneeProvider::class)) {
             throw AssignmentProviderInvalid::forAssignees($definition->type, $definition->providerClass);
         }
 
@@ -223,7 +224,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $type = $definition->type->value;
 
-        if (! is_subclass_of($definition->activityClass, AutoAssignmentActivity::class)) {
+        if (! Reflector::isNameSubclassOf($definition->activityClass, AutoAssignmentActivity::class)) {
             throw AssignmentProviderInvalid::forActivity($type, $definition->activityClass);
         }
 
@@ -352,7 +353,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         foreach ($this->recordProviders->keys() as $type) {
             $model = $links->modelFor($type);
 
-            if (! is_subclass_of($model, Assignable::class)) {
+            if (! Reflector::isNameSubclassOf($model, Assignable::class)) {
                 throw AssignmentProviderInvalid::forModel($type, $model);
             }
         }
@@ -401,7 +402,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $built = Container::getInstance()->make($registeredClass);
 
-        if (! $built instanceof $contract) {
+        if (! Reflector::of($contract)->isInstance($built)) {
             throw AssignmentProviderInvalid::forResolved($registeredClass, $built::class, $contract);
         }
 

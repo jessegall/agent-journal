@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Autoload\Support;
 
 use App\Autoload\Exceptions\FileOutsideAutoload;
+use App\Reflection\Support\Reflector;
 use Composer\Autoload\ClassLoader;
 
 /**
@@ -84,7 +85,7 @@ final class Psr4ClassNames
 
             $class = $namespace.str_replace(DIRECTORY_SEPARATOR, '\\', substr($path, strlen($folder) + 1, -4));
 
-            return class_exists($class) ? $class : throw FileOutsideAutoload::missingClass($path, $class);
+            return Reflector::exists($class) ? $class : throw FileOutsideAutoload::missingClass($path, $class);
         }
 
         throw FileOutsideAutoload::for($path);

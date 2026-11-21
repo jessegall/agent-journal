@@ -6,7 +6,7 @@ namespace Tests\Architecture;
 
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Fixtures\Architecture\Refusals\UncodedRefusal;
 use Tests\TestCase;
@@ -55,8 +55,13 @@ final class CodedRefusalTest extends TestCase
      */
     private static function uncodedAmong(array $classes): array
     {
-        return array_values(array_filter($classes, fn (string $class) => class_exists($class)
-            && in_array(RendersRefusal::class, new ReflectionClass($class)->getTraitNames(), true)
-            && ! is_subclass_of($class, CodedRefusal::class)));
+        return array_values(array_filter($classes, fn (string $class) => Reflector::find($class)
+            ->filter(fn (Reflector $type) => $type->isClass())
+            ->filter(fn (Reflector $type) => array_any(
+                $type->traits(),
+                fn (Reflector $trait) => $trait->name() === RendersRefusal::class,
+            ))
+            ->filter(fn (Reflector $type) => ! $type->isSubclassOf(CodedRefusal::class))
+            ->isDefined()));
     }
 }

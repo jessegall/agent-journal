@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Support;
 
+use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\CountResolver;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Declarations\RegisteredNavigation;
@@ -271,7 +272,7 @@ final readonly class NavigationRecords implements NavigationRecordsContract
 
             $countResolver = $navigation->navigationItem->count;
 
-            if ($countResolver !== null && is_subclass_of($countResolver, CountResolver::class)) {
+            if ($countResolver !== null && Reflector::isNameSubclassOf($countResolver, CountResolver::class)) {
                 $counted[] = $navigation;
             }
 

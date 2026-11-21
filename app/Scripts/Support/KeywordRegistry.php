@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Scripts\Support;
 
 use App\Contracts\DomainAvailability;
+use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use App\Scripts\Contracts\ScriptKeywordDefinition;
 use App\Scripts\Contracts\ScriptKeywordRegistration;
@@ -102,7 +103,8 @@ final readonly class KeywordRegistry implements ScriptKeywordRegistration
 
     public function statement(KeywordDefinition $keyword): ScriptStatement
     {
-        if ($keyword->implementation === null || ! is_subclass_of($keyword->implementation, ScriptStatement::class)) {
+        if ($keyword->implementation === null
+            || ! Reflector::isNameSubclassOf($keyword->implementation, ScriptStatement::class)) {
             throw ScriptDefinitionRefused::invalidKeyword($keyword->token);
         }
 
@@ -139,7 +141,8 @@ final readonly class KeywordRegistry implements ScriptKeywordRegistration
 
     public function trigger(KeywordDefinition $keyword): ScriptTrigger
     {
-        if ($keyword->implementation === null || ! is_subclass_of($keyword->implementation, ScriptTrigger::class)) {
+        if ($keyword->implementation === null
+            || ! Reflector::isNameSubclassOf($keyword->implementation, ScriptTrigger::class)) {
             throw ScriptDefinitionRefused::invalidKeyword($keyword->token);
         }
 

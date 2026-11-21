@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\FolderType;
 use Tests\Architecture\Support\TypesDeclared;
@@ -128,7 +128,7 @@ final class FolderLayoutTest extends TestCase
                  * @var class-string $name
                  */
                 $name = $declaration['name'];
-                $misfit = $type->requirementNotMetBy(new ReflectionClass($name));
+                $misfit = $type->requirementNotMetBy(Reflector::of($name));
 
                 if ($misfit !== null) {
                     $misfits[] = substr(

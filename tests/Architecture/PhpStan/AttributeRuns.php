@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\PhpStan;
 
+use App\Reflection\Support\Reflector;
 use PhpParser\Node;
 use PhpParser\Node\AttributeGroup;
 use PhpParser\NodeFinder;
@@ -101,7 +102,7 @@ final readonly class AttributeRuns
      */
     private function groupsOf(Node $node): array
     {
-        if (! property_exists($node, 'attrGroups') || ! is_array($node->attrGroups)) {
+        if (! Reflector::of($node)->hasProperty('attrGroups') || ! is_array($node->attrGroups)) {
             return [];
         }
 

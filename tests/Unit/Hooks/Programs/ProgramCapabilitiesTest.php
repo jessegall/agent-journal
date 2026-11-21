@@ -14,7 +14,8 @@ use App\Hooks\Inputs\Values\DriverToolInput;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\States\AgentState;
-use ReflectionClass;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\TestCase;
 
@@ -67,10 +68,10 @@ final class ProgramCapabilitiesTest extends TestCase
     public function test_every_hook_method_an_adapter_can_name_is_a_real_hook(): void
     {
         $hookMethods = array_map(
-            fn ($method) => $method->getName(),
+            fn (ReflectedMethod $method) => $method->name(),
             array_filter(
-                new ReflectionClass(AgentState::class)->getMethods(),
-                fn ($method) => str_starts_with($method->getName(), 'on'),
+                Reflector::of(AgentState::class)->methods(),
+                fn (ReflectedMethod $method) => str_starts_with($method->name(), 'on'),
             ),
         );
 

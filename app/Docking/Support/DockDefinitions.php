@@ -10,6 +10,7 @@ use App\Docking\Sources\Contracts\DockableProvider;
 use App\Docking\Sources\Contracts\DockRegistration;
 use App\Docking\Sources\Contracts\FallbackDocks;
 use App\Docking\Sources\DockDefinition;
+use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -37,11 +38,11 @@ final class DockDefinitions implements DockRegistration
 
     public function register(string $type, string $class, string $provider): DockDefinition
     {
-        if (! is_subclass_of($class, Dockable::class)) {
+        if (! Reflector::isNameSubclassOf($class, Dockable::class)) {
             throw DockDefinitionInvalid::notDockable($type, $class);
         }
 
-        if (! is_subclass_of($provider, DockableProvider::class)) {
+        if (! Reflector::isNameSubclassOf($provider, DockableProvider::class)) {
             throw DockDefinitionInvalid::notAProvider($type, $provider);
         }
 

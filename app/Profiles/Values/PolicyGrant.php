@@ -7,6 +7,7 @@ namespace App\Profiles\Values;
 use App\Actors\Contracts\Policy;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Exceptions\GrantShapeInvalid;
+use App\Reflection\Support\Reflector;
 
 /**
  * One access a profile grants on one policy. The pair is the identity, and a stored grant is exactly its two keys.
@@ -47,7 +48,7 @@ final readonly class PolicyGrant
         $policy = $fields['policy'] ?? null;
 
         if ($keys !== ['access', 'policy'] || $access === null || ! is_string($policy)
-            || ! is_subclass_of($policy, Policy::class)) {
+            || ! Reflector::isNameSubclassOf($policy, Policy::class)) {
             throw GrantShapeInvalid::for($keys);
         }
 

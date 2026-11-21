@@ -9,10 +9,9 @@ use App\Bus\Exceptions\CommandDispatcherMissing;
 use App\Bus\Support\Command;
 use App\Bus\Support\CommandGrammar;
 use App\Bus\Support\PlainValue;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionProperty;
 use Tests\Fixtures\Bus\Proof\BoundItem;
 
 /**
@@ -58,8 +57,8 @@ final class CommandBaseTest extends TestCase
         $item = new BoundItem('Seeds', 3);
         $bound = $item->withDispatcher(ActorContext::forAgent('agent-1'));
         $properties = array_map(
-            fn (ReflectionProperty $property) => $property->getName(),
-            new ReflectionClass(BoundItem::class)->getProperties(),
+            fn (ReflectedProperty $property) => $property->name(),
+            Reflector::of(BoundItem::class)->properties(),
         );
         $grammar = new CommandGrammar(fn (string $class) => true);
 
@@ -72,9 +71,11 @@ final class CommandBaseTest extends TestCase
 
     public function test_the_lifecycle_methods_are_final_and_an_unbound_read_names_the_command(): void
     {
-        $this->assertTrue(new ReflectionMethod(Command::class, 'dispatchedBy')->isFinal());
-        $this->assertTrue(new ReflectionMethod(Command::class, 'withDispatcher')->isFinal());
-        $this->assertTrue(new ReflectionProperty(Command::class, 'dispatchingActor')->isPrivate());
+        $command = Reflector::of(Command::class);
+
+        $this->assertTrue($command->method('dispatchedBy')->isFinal());
+        $this->assertTrue($command->method('withDispatcher')->isFinal());
+        $this->assertTrue($command->property('dispatchingActor')->isPrivate());
 
         $this->expectException(CommandDispatcherMissing::class);
         $this->expectExceptionMessage(BoundItem::class);

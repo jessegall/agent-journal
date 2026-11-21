@@ -7,11 +7,10 @@ namespace Tests\Architecture\Support;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Reflection\Support\Reflector;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use ReflectionClass;
-use ReflectionProperty;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -121,7 +120,7 @@ final class ModelConventions
 
         foreach (self::modelsIn($files) as $path => $models) {
             foreach ($models as $line => $class) {
-                if (! is_subclass_of($class, ReadableModel::class)
+                if (! Reflector::of($class)->isSubclassOf(ReadableModel::class)
                     || ! in_array(BoundedReads::class, class_uses_recursive($class), true)) {
                     $violations[] = new Violation(
                         $path,
@@ -170,8 +169,10 @@ final class ModelConventions
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                if (is_subclass_of($name, Model::class) && ! ($reflection = new ReflectionClass($name))->isAbstract()) {
-                    $models[$path][(int) $reflection->getStartLine()] = $name;
+                $declaration = Reflector::exists($name) ? Reflector::of($name) : null;
+
+                if ($declaration !== null && $declaration->isSubclassOf(Model::class) && ! $declaration->isAbstract()) {
+                    $models[$path][$declaration->startLine()] = $name;
                 }
             }
         }
@@ -199,16 +200,10 @@ final class ModelConventions
      */
     private static function fillableAttributeColumns(string $class): array
     {
-        $reflection = new ReflectionClass($class);
-
-        while ($reflection !== false) {
-            $attribute = $reflection->getAttributes(Fillable::class)[0] ?? null;
-
-            if ($attribute !== null) {
-                return array_values($attribute->newInstance()->columns);
+        foreach (Reflector::of($class)->lineage() as $declaration) {
+            if ($declaration->hasAttribute(Fillable::class)) {
+                return array_values($declaration->attribute(Fillable::class)->columns);
             }
-
-            $reflection = $reflection->getParentClass();
         }
 
         return [];
@@ -221,6 +216,6 @@ final class ModelConventions
      */
     private static function declaresFillableProperty(string $class): bool
     {
-        return new ReflectionProperty($class, 'fillable')->getDefaultValue() !== [];
+        return Reflector::of($class)->property('fillable')->defaultValue() !== [];
     }
 }

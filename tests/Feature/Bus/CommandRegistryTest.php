@@ -45,6 +45,7 @@ use Tests\Fixtures\Bus\Shop\Commands\OpenItem;
 use Tests\Fixtures\Bus\Shop\Commands\QueuedItem;
 use Tests\Fixtures\Bus\Shop\Commands\RemoveItem;
 use Tests\Fixtures\Bus\Shop\Commands\SingletonItem;
+use Tests\Fixtures\Bus\Shop\Commands\UnbuildableLookupItem;
 use Tests\Fixtures\Bus\Shop\Commands\UnreadableRuleItem;
 use Tests\Fixtures\Bus\Shop\Commands\ValueRuledItem;
 use Tests\Fixtures\Bus\Shop\Handlers\AddItemHandler;
@@ -227,6 +228,13 @@ final class CommandRegistryTest extends TestCase
     {
         $this->refusedWith(CommandDeclarationInvalid::class, 'itemId uses Exists, which reads the database', [
             $this->shop([LookupItem::class]),
+        ]);
+    }
+
+    public function test_a_rule_that_reads_the_database_is_refused_before_it_is_built(): void
+    {
+        $this->refusedWith(CommandDeclarationInvalid::class, 'itemId uses Exists, which reads the database', [
+            $this->shop([UnbuildableLookupItem::class]),
         ]);
     }
 

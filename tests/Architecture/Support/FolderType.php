@@ -7,9 +7,9 @@ namespace Tests\Architecture\Support;
 use App\Bus\Contracts\CommandMiddleware as CommandMiddlewareContract;
 use App\Bus\Support\Command;
 use App\Hooks\States\AgentState;
+use App\Reflection\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
-use ReflectionClass;
 use Throwable;
 
 /**
@@ -39,15 +39,15 @@ enum FolderType: string
     /**
      * What the class is not, when it does not belong at this folder's root; null when it belongs.
      *
-     * @param  ReflectionClass<object>  $class
+     * @param  Reflector<object>  $class
      */
-    public function requirementNotMetBy(ReflectionClass $class): string|null
+    public function requirementNotMetBy(Reflector $class): string|null
     {
         $meetsFolderRequirement = match ($this) {
-            self::States => $class->getName() === AgentState::class || $class->isSubclassOf(AgentState::class),
+            self::States => $class->is(AgentState::class),
             self::Resolvers => ! $class->isInterface() && array_any(
-                $class->getInterfaceNames(),
-                fn (string $name) => str_contains($name, '\\Contracts\\'),
+                $class->interfaces(),
+                fn (Reflector $interface) => str_contains($interface->name(), '\\Contracts\\'),
             ),
             self::Actions => $class->isFinal() && ! $class->isEnum() && ! $class->isSubclassOf(
                 Throwable::class,
@@ -62,8 +62,8 @@ enum FolderType: string
                 && $class->isSubclassOf(Command::class),
             self::Handlers => $class->isFinal()
                 && $class->hasMethod('handle')
-                && $class->getMethod('handle')->isPublic(),
-            self::CommandMiddleware => $class->implementsInterface(CommandMiddlewareContract::class),
+                && $class->method('handle')->isPublic(),
+            self::CommandMiddleware => $class->implements(CommandMiddlewareContract::class),
         };
 
         return $meetsFolderRequirement ? null : $this->requirement();

@@ -12,6 +12,7 @@ use App\Reads\Exceptions\ReadPolicyMissing;
 use App\Reads\Support\ReadLog;
 use App\Reads\Support\ScopedReadMeter;
 use App\Reads\Support\SelfMeasuredCommands;
+use App\Reflection\Support\Reflector;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Container\Container;
@@ -65,7 +66,7 @@ final class ReadsServiceProvider extends ServiceProvider
 
         $this->app->booted(static function (): void {
             foreach (Relation::morphMap() as $linkType => $model) {
-                if (! is_subclass_of($model, ReadableModel::class)) {
+                if (! Reflector::isNameSubclassOf($model, ReadableModel::class)) {
                     throw ReadPolicyMissing::for($model, $linkType);
                 }
             }

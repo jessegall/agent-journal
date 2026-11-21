@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Reflection\Support\Reflector;
 use Spatie\LaravelData\Data;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\JsonDecodeScan;
@@ -72,7 +73,6 @@ final class JsonIntoDataTest extends TestCase
     {
         return $class !== null
             && in_array($method, self::TAKERS, true)
-            && class_exists($class)
-            && is_subclass_of($class, Data::class);
+            && Reflector::isNameSubclassOf($class, Data::class);
     }
 }

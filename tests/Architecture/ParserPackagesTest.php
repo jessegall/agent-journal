@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Reflection\Support\Reflector;
 use PhpParser\ParserFactory;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +22,6 @@ final class ParserPackagesTest extends TestCase
 
     public function test_the_docblock_parser_can_be_loaded(): void
     {
-        $this->assertTrue(class_exists(PhpDocParser::class));
+        $this->assertTrue(Reflector::exists(PhpDocParser::class));
     }
 }

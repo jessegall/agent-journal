@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Contracts\Event;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\Reflector;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;
-use ReflectionClass;
-use ReflectionNamedType;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -144,7 +144,7 @@ final readonly class EventProducers
     {
         $class = $call->eventClass;
 
-        if ($class !== null && class_exists($class) && is_subclass_of($class, Event::class)) {
+        if ($class !== null && Reflector::exists($class) && Reflector::of($class)->isSubclassOf(Event::class)) {
             return $class;
         }
 
@@ -231,16 +231,18 @@ final readonly class EventProducers
 
         $faults = [];
 
-        foreach (new ReflectionClass($event)->getProperties() as $property) {
-            $type = $property->getType();
-            $class = $type instanceof ReflectionNamedType && ! $type->isBuiltin() ? $type->getName() : null;
+        foreach (Reflector::of($event)->properties() as $property) {
+            $class = $property->type()
+                ->filter(fn (DeclaredType $type) => $type->isNamed() && ! $type->isBuiltin())
+                ->map(fn (DeclaredType $type) => $type->name())
+                ->getOrElse('');
             $holds = array_filter(
                 self::UNSERIALIZABLE,
-                fn (string $kind) => $class !== null && is_a($class, $kind, true),
+                fn (string $kind) => $class !== '' && Reflector::exists($class) && Reflector::of($class)->is($kind),
             );
 
-            if ($holds !== [] || str_contains($class ?? '', 'EventUnit')) {
-                $name = $property->getName();
+            if ($holds !== [] || str_contains($class, 'EventUnit')) {
+                $name = $property->name();
                 $faults[] = "{$short}: its property \${$name} holds a {$class}, which a queued fact cannot carry";
             }
         }

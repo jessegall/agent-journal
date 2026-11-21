@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Web\Support;
 
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SectionResolver;
 use App\Ui\Declarations\ResolverDefinition;
@@ -14,8 +17,6 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Route;
-use ReflectionClass;
-use ReflectionNamedType;
 
 /**
  * Builds a declared reader for this request: its own request class, filled with only the query it is given and the
@@ -93,11 +94,13 @@ final readonly class ReaderRequests implements ReaderRequestsContract
      */
     private function parameterFor(string $class, FormRequest $request): string
     {
-        foreach (new ReflectionClass($class)->getConstructor()?->getParameters() ?? [] as $parameter) {
-            $type = $parameter->getType();
+        $parameters = Reflector::of($class)->constructor()
+            ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+            ->getOrElse([]);
 
-            if ($type instanceof ReflectionNamedType && $type->getName() === $request::class) {
-                return $parameter->getName();
+        foreach ($parameters as $parameter) {
+            if ($parameter->type()->filter(fn (DeclaredType $type) => $type->isNamedAs($request::class))->isDefined()) {
+                return $parameter->name();
             }
         }
 

@@ -6,6 +6,9 @@ namespace Tests\Architecture\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorContext;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 use Illuminate\Container\Attributes\Bind;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Container\Attributes\Singleton;
@@ -15,8 +18,6 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeFinder;
-use ReflectionClass;
-use ReflectionNamedType;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -82,7 +83,9 @@ final readonly class BindingRules
         $abstractOwner = $this->ownerNameOfClass($definition->abstract);
         $concreteOwner = $this->ownerNameOfClass($definition->concrete);
 
-        if (! str_ends_with($definition->file, 'ServiceProvider.php') && interface_exists($definition->abstract)) {
+        if (! str_ends_with($definition->file, 'ServiceProvider.php')
+            && self::exists($definition->abstract)
+            && Reflector::of($definition->abstract)->isInterface()) {
             return [
                 $definition->violation(
                     $userOwner,
@@ -92,7 +95,8 @@ final readonly class BindingRules
             ];
         }
 
-        if (! self::exists($definition->concrete) || ! is_a($definition->concrete, $definition->abstract, true)) {
+        if (! self::exists($definition->concrete)
+            || ! Reflector::of($definition->concrete)->is($definition->abstract)) {
             return [
                 $definition->violation($userOwner, $abstractOwner, "{$definition->concrete} does not implement it"),
             ];
@@ -161,18 +165,23 @@ final readonly class BindingRules
      */
     private function firstScopedDependency(string $class, array $scoped, array $visited): string|null
     {
-        if (! class_exists($class) || in_array($class, $visited, true)) {
+        if (! self::exists($class) || ! Reflector::of($class)->isClass() || in_array($class, $visited, true)) {
             return null;
         }
 
-        foreach (new ReflectionClass($class)->getConstructor()?->getParameters() ?? [] as $parameter) {
-            $type = $parameter->getType();
+        $parameters = Reflector::of($class)->constructor()
+            ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+            ->getOrElse([]);
 
-            if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+        foreach ($parameters as $parameter) {
+            $type = $parameter->type()
+                ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin());
+
+            if ($type->isEmpty()) {
                 continue;
             }
 
-            $dependency = $type->getName();
+            $dependency = $type->get()->name();
             $target = self::bindTargetOf($dependency) ?? $dependency;
 
             if (in_array($dependency, $scoped, true)
@@ -232,10 +241,10 @@ final readonly class BindingRules
                 continue;
             }
 
-            $class = new ReflectionClass($name);
+            $class = Reflector::of($name);
             $line = $type->getStartLine();
-            $isScoped = $class->getAttributes(Scoped::class) !== [];
-            $isSingleton = $class->getAttributes(Singleton::class) !== [];
+            $isScoped = $class->hasAttribute(Scoped::class);
+            $isSingleton = $class->hasAttribute(Singleton::class);
             $target = self::bindTargetOf($name);
 
             if ($target !== null || $isScoped || $isSingleton) {
@@ -309,14 +318,14 @@ final readonly class BindingRules
             return null;
         }
 
-        $attribute = new ReflectionClass($name)->getAttributes(Bind::class)[0] ?? null;
-
-        return $attribute?->newInstance()->concrete;
+        return Reflector::of($name)->attributes(Bind::class)->first()
+            ->map(fn (Bind $bind) => $bind->concrete)
+            ->getOrElse(null);
     }
 
     private static function isScopedClass(string|null $name): bool
     {
-        return $name !== null && class_exists($name) && new ReflectionClass($name)->getAttributes(Scoped::class) !== [];
+        return $name !== null && self::exists($name) && Reflector::of($name)->hasAttribute(Scoped::class);
     }
 
     private function isCoreExport(string $name): bool
@@ -346,6 +355,6 @@ final readonly class BindingRules
      */
     private static function exists(string $name): bool
     {
-        return class_exists($name) || interface_exists($name);
+        return Reflector::exists($name) && ! Reflector::of($name)->isTrait();
     }
 }

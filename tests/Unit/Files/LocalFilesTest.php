@@ -12,10 +12,10 @@ use App\Files\Exceptions\FileUnreadable;
 use App\Files\Exceptions\LinkLeavesPlace;
 use App\Files\Support\LocalFiles;
 use App\Files\Values\FilePath;
+use App\Reflection\Support\Reflector;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Filesystem\Filesystem;
-use ReflectionMethod;
 use Tests\TestCase;
 
 /**
@@ -263,6 +263,6 @@ final class LocalFilesTest extends TestCase
      */
     private function whileReading(FilePath $file, Closure $work): mixed
     {
-        return new ReflectionMethod(LocalFiles::class, 'whileReading')->invoke($this->files, $file, $work);
+        return Reflector::of(LocalFiles::class)->method('whileReading')->invokeOn($this->files, $file, $work);
     }
 }

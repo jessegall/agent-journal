@@ -8,6 +8,7 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Exceptions\NumberedModelInvalid;
 use App\Numbers\Exceptions\NumberedModelUndeclared;
+use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -46,7 +47,7 @@ final class NumberedTypeRegistry implements NumberedModelRegistration
         $this->declaredOfLinkType->clear();
 
         foreach ($this->declared as $declared) {
-            $numbered = is_subclass_of($declared->model, Numbered::class)
+            $numbered = Reflector::isNameSubclassOf($declared->model, Numbered::class)
                 && in_array(HasNumber::class, class_uses_recursive($declared->model), true);
 
             if (! $numbered) {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Reflection\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
-use ReflectionClass;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -174,7 +174,9 @@ final readonly class ModelWrites
      */
     private static function isModel(array $type): bool
     {
-        return ! $type['isTrait'] && class_exists($type['type']) && is_subclass_of($type['type'], Model::class);
+        return ! $type['isTrait']
+            && Reflector::exists($type['type'])
+            && Reflector::of($type['type'])->isSubclassOf(Model::class);
     }
 
     /**
@@ -208,7 +210,9 @@ final readonly class ModelWrites
 
         foreach ($models as $model) {
             foreach ($model['traits'] as $trait) {
-                $file = trait_exists($trait) ? (string) new ReflectionClass($trait)->getFileName() : '';
+                $file = Reflector::exists($trait) && Reflector::of($trait)->isTrait()
+                    ? Reflector::of($trait)->fileName()->getOrElse('')
+                    : '';
                 $isProjectCode = preg_match('#/(app|domain|tests)/#', $file) === 1 && ! str_contains($file, '/vendor/');
 
                 if (! in_array($trait, $known, true) && $isProjectCode) {

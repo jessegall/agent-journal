@@ -7,6 +7,7 @@ namespace App\Web\Support;
 use App\Docking\Data\DockOfferData;
 use App\Docking\Sources\Contracts\DockableWindow;
 use App\Docking\Sources\Contracts\DockOffers;
+use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Declarations\ResolverDefinition;
 use App\Web\Contracts\WindowResults as WindowResultsContract;
@@ -51,7 +52,7 @@ final readonly class WindowResults implements WindowResultsContract
         try {
             $windowContent = $read();
 
-            if (! $windowContent instanceof $resolver->dataClass) {
+            if (! Reflector::of($resolver->dataClass)->isInstance($windowContent)) {
                 throw ReaderDataMismatch::for($key, $resolver->dataClass, $windowContent::class);
             }
 

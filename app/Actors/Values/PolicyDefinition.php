@@ -10,6 +10,7 @@ use App\Actors\Contracts\RecordPolicy;
 use App\Actors\Contracts\RestrictedPolicy;
 use App\Actors\Contracts\WorkspacePolicy;
 use App\Operations\Enums\AccessType;
+use App\Reflection\Support\Reflector;
 
 /**
  * One policy with the accesses it accepts. Which built-in agent profiles are granted each is read from the access type
@@ -30,7 +31,7 @@ final readonly class PolicyDefinition
      */
     public function grantsForAgents(bool $coordinator, bool $readOnly): array
     {
-        if (is_subclass_of($this->policy, OwnerPolicy::class)) {
+        if (Reflector::isNameSubclassOf($this->policy, OwnerPolicy::class)) {
             return [];
         }
 
@@ -47,7 +48,7 @@ final readonly class PolicyDefinition
 
     public function isRecord(): bool
     {
-        return is_subclass_of($this->policy, RecordPolicy::class);
+        return Reflector::isNameSubclassOf($this->policy, RecordPolicy::class);
     }
 
     /**
@@ -64,11 +65,13 @@ final readonly class PolicyDefinition
             return false;
         }
 
-        if ($readOnly && is_subclass_of($this->policy, WorkspacePolicy::class) && $access->changesFiles()) {
+        if ($readOnly
+            && Reflector::isNameSubclassOf($this->policy, WorkspacePolicy::class)
+            && $access->changesFiles()) {
             return false;
         }
 
-        if (is_subclass_of($this->policy, RestrictedPolicy::class)) {
+        if (Reflector::isNameSubclassOf($this->policy, RestrictedPolicy::class)) {
             return $this->policy::additionalAudience($access)->admitsAgent($coordinator, $readOnly);
         }
 

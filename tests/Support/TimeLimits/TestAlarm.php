@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\TimeLimits;
 
-use ReflectionClass;
-use ReflectionMethod;
+use App\Reflection\Support\Reflector;
 use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 
 /**
@@ -63,15 +62,15 @@ final class TestAlarm
 
     public static function secondsFor(string $className, string $methodName): int
     {
-        if (! class_exists($className) || ! method_exists($className, $methodName)) {
+        $test = Reflector::find($className)->filter(fn (Reflector $type) => $type->isClass());
+
+        if ($test->isEmpty() || ! $test->get()->hasMethod($methodName)) {
             return self::DEFAULT_SECONDS;
         }
 
-        foreach ([new ReflectionMethod($className, $methodName), new ReflectionClass($className)] as $declaration) {
-            $limits = $declaration->getAttributes(TimeLimit::class);
-
-            if ($limits !== []) {
-                return $limits[0]->newInstance()->seconds;
+        foreach ([$test->get()->method($methodName), $test->get()] as $declaration) {
+            if ($declaration->hasAttribute(TimeLimit::class)) {
+                return $declaration->attribute(TimeLimit::class)->seconds;
             }
         }
 

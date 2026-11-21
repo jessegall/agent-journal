@@ -6,6 +6,9 @@ namespace Tests\Feature\Events;
 
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 use Closure;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
@@ -28,8 +31,6 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\Attributes\DataProvider;
-use ReflectionClass;
-use ReflectionNamedType;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
@@ -86,15 +87,20 @@ final class EventPayloadTest extends TestCase
     #[DataProvider('facts')]
     public function test_a_fact_keeps_its_published_shape(string $event, bool $afterCommit, array $fields): void
     {
-        $reflection = new ReflectionClass($event);
+        $declaration = Reflector::of($event);
         $declared = [];
+        $parameters = $declaration->constructor()
+            ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+            ->getOrElse([]);
 
-        foreach ($reflection->getConstructor()?->getParameters() ?? [] as $parameter) {
-            $declared[$parameter->getName()] = (string) $parameter->getType();
+        foreach ($parameters as $parameter) {
+            $declared[$parameter->name()] = $parameter->type()
+                ->map(fn (DeclaredType $type) => $type->text)
+                ->getOrElse('');
         }
 
         $this->assertSame($fields, $declared);
-        $this->assertSame($afterCommit, $reflection->implementsInterface(ShouldDispatchAfterCommit::class));
+        $this->assertSame($afterCommit, $declaration->implements(ShouldDispatchAfterCommit::class));
         $this->assertSame([], $this->unqueueableTypesIn($event, []));
     }
 
@@ -212,11 +218,13 @@ final class EventPayloadTest extends TestCase
      */
     private function unqueueableTypesIn(string $type, array $seen): array
     {
-        if (in_array($type, $seen, true) || ! class_exists($type)) {
+        $declaration = Reflector::find($type)->filter(fn (Reflector $found) => $found->isClass());
+
+        if (in_array($type, $seen, true) || $declaration->isEmpty()) {
             return [];
         }
 
-        $found = array_values(array_filter(self::UNQUEUEABLE, fn (string $kind) => is_a($type, $kind, true)));
+        $found = array_values(array_filter(self::UNQUEUEABLE, fn (string $kind) => $declaration->get()->is($kind)));
 
         if ($found !== [] || ! (str_starts_with($type, 'App\\') || str_starts_with($type, 'Domain\\'))) {
             return $found === [] ? [] : [$type];
@@ -224,11 +232,12 @@ final class EventPayloadTest extends TestCase
 
         $inside = [];
 
-        foreach (new ReflectionClass($type)->getProperties() as $property) {
-            $propertyType = $property->getType();
+        foreach ($declaration->get()->properties() as $property) {
+            $propertyType = $property->type()
+                ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin());
 
-            if ($propertyType instanceof ReflectionNamedType && ! $propertyType->isBuiltin()) {
-                array_push($inside, ...$this->unqueueableTypesIn($propertyType->getName(), [...$seen, $type]));
+            if ($propertyType->isDefined()) {
+                array_push($inside, ...$this->unqueueableTypesIn($propertyType->get()->name(), [...$seen, $type]));
             }
         }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Support;
 
+use App\Reflection\Support\Reflector;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Exceptions\ShareGatewayInvalid;
 use App\Sharing\Exceptions\UnknownShareGateway;
@@ -35,7 +36,7 @@ final class ShareGatewayRegistry
             throw ShareGatewayInvalid::repeated($key);
         }
 
-        if (! is_subclass_of($class, ShareGateway::class)) {
+        if (! Reflector::isNameSubclassOf($class, ShareGateway::class)) {
             throw ShareGatewayInvalid::notAGateway($key, $class);
         }
 

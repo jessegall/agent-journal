@@ -9,9 +9,9 @@ use App\AgentRequests\Support\CallRoutes;
 use App\Mcp\Servers\JournalServer;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
+use App\Reflection\Support\Reflector;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Routes;
-use ReflectionClass;
 use Spatie\LaravelData\Data;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\SignedCallRules;
@@ -155,7 +155,7 @@ final class SignedCallRulesTest extends TestCase
         foreach ($files as $file) {
             $class = self::classOf($file);
 
-            if ($class !== null && is_subclass_of($class, JournalCall::class)) {
+            if ($class !== null && Reflector::of($class)->isSubclassOf(JournalCall::class)) {
                 $calls[] = $class;
             }
         }
@@ -179,9 +179,11 @@ final class SignedCallRulesTest extends TestCase
 
         foreach ($files as $file) {
             $class = self::classOf($file);
-            $route = $class === null ? [] : new ReflectionClass($class)->getAttributes(JournalRoute::class);
+            $isRead = $class !== null && Reflector::of($class)->attributes(JournalRoute::class)->first()
+                ->filter(fn (JournalRoute $route) => $route->type === JournalRouteType::Read)
+                ->isDefined();
 
-            if ($route !== [] && $route[0]->newInstance()->type === JournalRouteType::Read) {
+            if ($isRead) {
                 $commands[$class] = (string) file_get_contents($file);
             }
         }
@@ -207,6 +209,8 @@ final class SignedCallRulesTest extends TestCase
          */
         $class = $namespace[1].'\\'.$name[1];
 
-        return class_exists($class) ? $class : null;
+        $isClass = Reflector::find($class)->filter(fn (Reflector $type) => $type->isClass())->isDefined();
+
+        return $isClass ? $class : null;
     }
 }

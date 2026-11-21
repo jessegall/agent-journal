@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Settings;
 
+use App\Reflection\Enums\TypeShape;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 use App\Settings\Data\BooleanValueData;
 use App\Settings\Data\DecimalConstraintsData;
 use App\Settings\Data\DecimalValueData;
@@ -18,10 +22,7 @@ use App\Settings\Enums\GroupAvailability;
 use App\Settings\Enums\SettingAvailability;
 use App\Settings\Enums\SettingSource;
 use App\Settings\Enums\SettingType;
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionType;
-use ReflectionUnionType;
+use PhpOption\Option;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Tests\TestCase;
 
@@ -114,28 +115,27 @@ final class SettingsCatalogueDataTest extends TestCase
     public function test_no_catalogue_property_is_mixed_or_an_untyped_array(): void
     {
         foreach (glob(app_path('Settings/Data/*.php')) ?: [] as $file) {
-            $class = new ReflectionClass('App\\Settings\\Data\\'.basename($file, '.php'));
-            $this->assertTrue($class->isFinal(), "{$class->getName()} is not final.");
+            $class = Reflector::of('App\\Settings\\Data\\'.basename($file, '.php'));
+            $this->assertTrue($class->isFinal(), "{$class->name()} is not final.");
 
             $ownProperties = array_filter(
-                $class->getProperties(),
-                fn ($property) => $property->getDeclaringClass()->getName() === $class->getName(),
+                $class->properties(),
+                fn (ReflectedProperty $property) => $property->declaringClass() === $class,
             );
 
             foreach ($ownProperties as $property) {
-                $names = self::typeNamesOf($property->getType());
+                $names = self::typeNamesOf($property->type());
 
-                $this->assertNotContains('mixed', $names, "{$class->getName()}::\${$property->getName()} is mixed.");
+                $this->assertNotContains('mixed', $names, "{$class->name()}::\${$property->name()} is mixed.");
                 $this->assertTrue(
                     $property->isReadOnly(),
-                    "{$class->getName()}::\${$property->getName()} is not readonly.",
+                    "{$class->name()}::\${$property->name()} is not readonly.",
                 );
 
                 if ($names === ['array']) {
-                    $this->assertNotSame(
-                        [],
-                        $property->getAttributes(DataCollectionOf::class),
-                        "{$class->getName()}::\${$property->getName()} is an array without its element type.",
+                    $this->assertTrue(
+                        $property->hasAttribute(DataCollectionOf::class),
+                        "{$class->name()}::\${$property->name()} is an array without its element type.",
                     );
                 }
             }
@@ -150,18 +150,21 @@ final class SettingsCatalogueDataTest extends TestCase
     /**
      * The names of the types a property declares; an undeclared or intersection type reads as mixed.
      *
+     * @param  Option<DeclaredType>  $declared
      * @return list<string>
      */
-    private static function typeNamesOf(ReflectionType|null $type): array
+    private static function typeNamesOf(Option $declared): array
     {
-        if ($type instanceof ReflectionUnionType) {
-            return array_map(fn (ReflectionNamedType $named) => $named->getName(), $type->getTypes());
+        if ($declared->isEmpty()) {
+            return ['mixed'];
         }
 
-        if ($type instanceof ReflectionNamedType) {
-            return [$type->getName()];
-        }
+        $type = $declared->get();
 
-        return ['mixed'];
+        return match ($type->shape) {
+            TypeShape::Union => array_map(fn (DeclaredType $named) => $named->name(), $type->members),
+            TypeShape::Named => [$type->name()],
+            TypeShape::Intersection => ['mixed'],
+        };
     }
 }

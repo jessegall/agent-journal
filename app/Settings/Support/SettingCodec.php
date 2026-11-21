@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Reflection\Support\Reflector;
 use App\Settings\Contracts\OptionSetting;
 use App\Settings\Contracts\Setting;
 use App\Settings\Declarations\BooleanSetting;
@@ -90,7 +91,7 @@ final readonly class SettingCodec
      */
     public function encodeEnum(string $owner, EnumSetting $setting, BackedEnum $input): EncodedValue
     {
-        return $input instanceof $setting->enum && $setting->accepts($input->value)
+        return Reflector::of($setting->enum)->isInstance($input) && $setting->accepts($input->value)
             ? EncodedValue::of($input->value)
             : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }

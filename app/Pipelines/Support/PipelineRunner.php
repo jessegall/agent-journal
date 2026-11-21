@@ -8,6 +8,7 @@ use App\Pipelines\Contracts\Pipable;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Contracts\PipelineRunner as PipelineRunnerContract;
 use App\Pipelines\Exceptions\StepOutOfOrder;
+use App\Reflection\Support\Reflector;
 use Closure;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Container\Container;
@@ -43,7 +44,7 @@ final class PipelineRunner implements PipelineRunnerContract
     {
         $pipelineOutput = $this->step($definition)($input);
 
-        if (! $pipelineOutput instanceof $output) {
+        if (! Reflector::of($output)->isInstance($pipelineOutput)) {
             throw StepOutOfOrder::ending($definition, $output, $pipelineOutput);
         }
 
@@ -63,7 +64,7 @@ final class PipelineRunner implements PipelineRunnerContract
     {
         $pipelineOutput = $this->sequence($steps)($input);
 
-        if (! $pipelineOutput instanceof $output) {
+        if (! Reflector::of($output)->isInstance($pipelineOutput)) {
             throw StepOutOfOrder::endingSteps($output, $pipelineOutput);
         }
 

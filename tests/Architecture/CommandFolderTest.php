@@ -11,7 +11,7 @@ use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\RegisteredMiddleware;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\TypesDeclared;
 use Tests\Support\InstallsCommandModules;
@@ -57,7 +57,7 @@ final class CommandFolderTest extends TestCase
         $misplaced = [];
 
         foreach ($this->allClasses() as $class) {
-            $reflection = new ReflectionClass($class);
+            $declaration = Reflector::of($class);
 
             foreach ([
                 RepeatableRead::class,
@@ -65,7 +65,7 @@ final class CommandFolderTest extends TestCase
                 Entry::class,
                 RequiresRequestKey::class,
             ] as $attribute) {
-                if ($reflection->getAttributes($attribute) !== [] && ! $registry->has($class)) {
+                if ($declaration->hasAttribute($attribute) && ! $registry->has($class)) {
                     $misplaced[] = "{$class} carries ".class_basename($attribute);
                 }
             }
@@ -95,9 +95,9 @@ final class CommandFolderTest extends TestCase
         $static = [];
 
         foreach ([...$this->classesIn('Handlers'), ...$this->classesIn('CommandMiddleware')] as $class) {
-            foreach (new ReflectionClass($class)->getProperties() as $property) {
+            foreach (Reflector::of($class)->properties() as $property) {
                 if ($property->isStatic()) {
-                    $static[] = "{$class}::\${$property->getName()}";
+                    $static[] = "{$class}::\${$property->name()}";
                 }
             }
         }
@@ -161,7 +161,7 @@ final class CommandFolderTest extends TestCase
         ) as $declaration) {
             $name = $declaration['name'];
 
-            if (class_exists($name) || interface_exists($name) || enum_exists($name)) {
+            if (Reflector::find($name)->filter(fn (Reflector $type) => ! $type->isTrait())->isDefined()) {
                 $classes[] = $name;
             }
         }

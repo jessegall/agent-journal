@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Reflection\Support\Reflector;
 use Tests\Architecture\Support\FolderType;
 use Tests\TestCase;
 
@@ -22,11 +23,7 @@ final class CommandBusDocumentationTest extends TestCase
             $names[0],
             fn (
                 string $name,
-            ) => ! class_exists($name)
-                && ! interface_exists($name)
-                && ! enum_exists($name)
-                && ! trait_exists($name)
-                && ! self::isNamespace($name),
+            ) => ! Reflector::exists($name) && ! self::isNamespace($name),
         )));
 
         $this->assertSame([], $missing);
