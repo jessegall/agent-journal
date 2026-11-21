@@ -84,3 +84,17 @@ func TestAnUnknownEventGetsANamedRefusal(t *testing.T) {
 		t.Fatalf("an unknown event answered %+v", reply)
 	}
 }
+
+func TestAVendorSpawnIsRefusedTowardJournalHelpers(t *testing.T) {
+	asked := false
+	adapter := preparedAdapter(t, func(context.Context, []byte) (Reply, error) {
+		asked = true
+		return Reply{Stdout: `{"allowed":true}`}, nil
+	})
+
+	reply := adapter.Answer([]byte(`{"hook_event_name":"PreToolUse","tool_name":"Task","tool_input":{}}`))
+
+	if asked || !strings.Contains(reply.Stdout, `"deny"`) || !strings.Contains(reply.Stdout, "journal helper start") {
+		t.Fatalf("a vendor spawn answered %+v (journal asked: %v)", reply, asked)
+	}
+}

@@ -18,7 +18,15 @@ const (
 	preparationPending = "preparation-pending: the journal has not prepared this context yet, so tools wait until " +
 		"its context and state reach the driver."
 	journalAway = "the journal could not be asked in time, so this call is refused."
+	vendorSpawn = "a connected session starts no native sub-agent; dispatch a journal helper instead: " +
+		"journal helper start"
 )
+
+// vendorSpawnTools are the provider tools that start a native child: Claude Code's Task and Agent, and Codex's
+// collaboration tools. A connected session refuses them toward journal helpers.
+var vendorSpawnTools = []string{
+	"Task", "Agent", "spawn_agent", "collaboration.spawn_agent", "followup_task", "send_message", "wait_agent",
+}
 
 // knownEvents are the native events the journal answers; any other is refused by name.
 var knownEvents = []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop", "SessionEnd"}
@@ -52,6 +60,9 @@ func (adapter Adapter) Answer(native []byte) Reply {
 	if err != nil {
 		return Reply{Stderr: err.Error() + "\n", ExitCode: 2}
 	}
+	if event == "PreToolUse" && isVendorSpawn(native) {
+		return refusal(event, vendorSpawn)
+	}
 	if slices.Contains(toolEvents, event) && !adapter.isPrepared() {
 		return refusal(event, preparationPending)
 	}
@@ -80,6 +91,15 @@ func (adapter Adapter) isPrepared() bool {
 	_, err := os.Stat(adapter.PreparationFile)
 
 	return err == nil
+}
+
+// isVendorSpawn is whether the call asks the provider to start a native child.
+func isVendorSpawn(native []byte) bool {
+	var call struct {
+		Tool string `json:"tool_name"`
+	}
+
+	return json.Unmarshal(native, &call) == nil && slices.Contains(vendorSpawnTools, call.Tool)
 }
 
 // eventOf is the native call's event name, refused when it is not one the journal answers.

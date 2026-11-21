@@ -203,3 +203,67 @@ func lockFile(path string) (func(), error) {
 		file.Close()
 	}, nil
 }
+
+// Outcomes of a worktree cleanup, each with the reason it was decided.
+const (
+	CleanupRemoved   = "removed"
+	CleanupKept      = "kept"
+	CleanupAmbiguous = "ambiguous"
+)
+
+// WorktreeCleanup is what cleaning up one child's checkout did: removed, kept with a reason, or left alone as
+// ambiguous when no receipt of this journal owns the path. It names the native checkout, never a container.
+type WorktreeCleanup struct {
+	Outcome string `json:"outcome"`
+	Path    string `json:"path"`
+	Branch  string `json:"branch,omitempty"`
+	Reason  string `json:"reason,omitempty"`
+}
+
+// Cleanup removes the claim's worktree only when its completed receipt owns the path, no lease is active, the
+// checkout is clean and its tip is reachable from the target or the owner chose removal; otherwise it keeps it
+// with the reason. An unowned linked worktree is reported ambiguous and left alone; nothing is force-removed.
+func (worktrees NativeWorktrees) Cleanup(
+	ctx context.Context,
+	claim WorktreeClaim,
+	leaseActive bool,
+	target string,
+	ownerChoseRemoval bool,
+) WorktreeCleanup {
+	receipt, err := worktrees.readReceipt(claim)
+	if err != nil || !receipt.Complete || !worktrees.isRegistered(ctx, receipt.Path) {
+		return WorktreeCleanup{Outcome: CleanupAmbiguous, Path: worktrees.receiptFor(claim).Path,
+			Reason: "no completed receipt of this journal owns this worktree"}
+	}
+	kept := WorktreeCleanup{Outcome: CleanupKept, Path: receipt.Path, Branch: receipt.Branch}
+	if leaseActive {
+		kept.Reason = "the child still holds its lease"
+		return kept
+	}
+	status, err := worktrees.git(ctx, receipt.Path, "status", "--porcelain")
+	if err != nil || strings.TrimSpace(status) != "" {
+		kept.Reason = "the checkout has uncommitted work"
+		return kept
+	}
+	if !ownerChoseRemoval && !worktrees.isReachable(ctx, receipt.Path, target) {
+		kept.Reason = "its commit is not reachable from " + target
+		return kept
+	}
+	if _, err := worktrees.git(ctx, worktrees.Root, "worktree", "remove", receipt.Path); err != nil {
+		kept.Reason = "git worktree remove refused: " + err.Error()
+		return kept
+	}
+
+	return WorktreeCleanup{Outcome: CleanupRemoved, Path: receipt.Path, Branch: receipt.Branch}
+}
+
+// isReachable is whether the checkout's HEAD is an ancestor of the target ref.
+func (worktrees NativeWorktrees) isReachable(ctx context.Context, path string, target string) bool {
+	head, err := worktrees.git(ctx, path, "rev-parse", "--verify", "HEAD")
+	if err != nil {
+		return false
+	}
+	_, err = worktrees.git(ctx, worktrees.Root, "merge-base", "--is-ancestor", strings.TrimSpace(head), target)
+
+	return err == nil
+}
