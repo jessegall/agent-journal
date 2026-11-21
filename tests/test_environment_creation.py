@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.test_features import booted
+
 from journal.features.tasks.commands.task_command import TaskCommand
 from journal.models.task import Task
 from journal.repositories.environments import Environments
@@ -12,6 +14,11 @@ from journal.repositories.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.support.actor import Actor
 from journal.support.missing_row import MissingRow
+
+
+@pytest.fixture(scope="module")
+def boot():
+    return booted
 
 
 def test_an_unknown_environment_name_is_refused_and_makes_no_row(app):
