@@ -95,21 +95,6 @@ def test_worker_queued_tasks_use_their_own_sources(worker_scenario):
     worker_scenario.expect_no_link("message:2", "task:4")
 
 
-def test_worker_followup_changes_source_only_after_delivery(assigned_worker):
-    scenario, worker = assigned_worker.scenario, assigned_worker.worker
-    scenario.switch(1)
-    scenario.command(f'worker send --wait {worker.id} "Handle the original request next"')
-    scenario.story.expect_success("task overview 1", actor=worker)
-    scenario.story.expect_success('task make "Work already running" --environment main', actor=worker)
-    scenario.expect_link("message:2", "task:2", "about")
-    reply = scenario.story.hook(worker_session(scenario.story, worker), HookSamples.tool_use("Read", ToolType.READ, [], None))
-    line_id = next(line.split(":", 1)[1].split(":", 1)[0] for line in reply.lines if line.startswith("agent-line:"))
-    scenario.story.expect_text(f"agent-line show {line_id}", "Handle the original request next", actor=worker)
-    scenario.story.expect_success('task make "Work from delivered followup" --environment main', actor=worker)
-    scenario.expect_link("message:1", "task:3", "about")
-    scenario.expect_no_link("message:2", "task:3")
-
-
 def test_resumed_worker_does_not_keep_the_old_job_source(assigned_worker):
     scenario, worker = assigned_worker.scenario, assigned_worker.worker
     scenario.story.expect_success("task overview 1", actor=worker)

@@ -4,8 +4,6 @@ from engine.database.database import Database
 from engine.driver.message_template import MessageTemplate
 from engine.enums.agent_message_type import AgentMessageType
 from engine.driver.message_sender import MessageSender
-from core.modules.drivers.support.line_typing import LineTyping
-from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
@@ -30,18 +28,9 @@ def expect_queued_lines(answer, expected):
     assert [line for line in answer.lines if "queued for worker" in line] == expected, answer
 
 
-def test_raw_agent_text_is_read_by_its_row_number_on_a_hook_and_in_a_terminal(played, monkeypatch):
+def test_a_sent_text_reaches_the_agent_whole_on_its_next_hook(played):
     story = played(StartedTaskBuilder)
-    message_sender = story.container.get(MessageSender)
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
-        row = message_sender.send_text(story.agent.id, "Private instructions from the caller", "sample.raw", context)
-    reply = story.hook("s-1", HookSamples.prompt("Continue"))
-    story.expect_rows("Private instructions from the caller" not in "\n".join(reply.lines), any("agent-line" in line for line in reply.lines))
-    story.expect_text(f"agent-line show {row.id}", "Private instructions from the caller", actor=story.agent)
-    terminal_lines = []
-    monkeypatch.setattr(TerminalTyping, "type_line", lambda _self, terminal, text: terminal_lines.append(text))
-    with story.container.get(Database).transaction():
-        next_row = message_sender.send_text(story.agent.id, "Another private instruction", "sample.raw", context)
-    story.container.get(LineTyping).enter_line(next_row, Actor.core())
-    story.expect_rows(terminal_lines == [f"[journal] agent-line:{next_row.id}"])
+        story.container.get(MessageSender).send_text(story.agent.id, "Test only at the end of each phase", "sample.raw", context)
+    assert "Test only at the end of each phase" in story.hook("s-1", HookSamples.prompt("Continue")).lines

@@ -6,7 +6,7 @@ from engine.model.model import Model
 from engine.model.session_private import SessionPrivate
 from engine.time.timestamp import Timestamp
 from engine.driver.agent_message import AgentMessage
-from core.modules.drivers.agent_messages.agent_line_available_message import AgentLineAvailableMessage
+from core.modules.drivers.agent_messages.agent_notice_message import AgentNoticeMessage
 from engine.driver.message_template import MessageTemplate
 from core.modules.drivers.models.lifecycles.agent_line_lifecycle import AgentLineLifecycle
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
@@ -41,7 +41,7 @@ class AgentLine(Prunable, SessionPrivate, Model):
     @property
     def agent_message(self) -> AgentMessage:
         if self.agent_message_json is None:
-            return AgentLineAvailableMessage.declared().agent_message(line=self.id)
+            return AgentNoticeMessage.declared().agent_message(text=self.text)
         return MessageTemplate.restore(self.agent_message_json)
 
     @classmethod
