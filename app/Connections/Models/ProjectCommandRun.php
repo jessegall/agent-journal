@@ -19,18 +19,18 @@ use Illuminate\Support\Carbon;
  * which arguments, its process while it runs, and its frames and exit code once it ended.
  *
  * @property string $id
- * @property string $request_id
+ * @property string $request_key
  * @property string $agent_id
  * @property string $binding_id
  * @property list<string> $argv
  * @property CommandRunState $state
  * @property int|null $pid
  * @property int|null $exit_code
- * @property list<array{sequence: int, stream: string, data: string, base64: bool, code: int}> $frames
+ * @property list<array{sequence: int, stream: string, text: string, isBase64: bool, exitCode: int}> $frames
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['request_id', 'agent_id', 'binding_id', 'argv', 'state'])]
+#[Fillable(['request_key', 'agent_id', 'binding_id', 'argv', 'state'])]
 final class ProjectCommandRun extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -56,10 +56,10 @@ final class ProjectCommandRun extends Model implements ReadableModel
     /**
      * @param  list<string>  $argv
      */
-    public static function create(string $requestId, string $agentId, ProjectBinding $binding, array $argv): self
+    public static function start(string $requestKey, string $agentId, ProjectBinding $binding, array $argv): self
     {
         $run = new self();
-        $run->request_id = $requestId;
+        $run->request_key = $requestKey;
         $run->agent_id = $agentId;
         $run->binding_id = $binding->id;
         $run->argv = $argv;
@@ -77,9 +77,9 @@ final class ProjectCommandRun extends Model implements ReadableModel
      *
      * @return list<self>
      */
-    public static function lockByRequest(string $requestId): array
+    public static function lockByRequest(string $requestKey): array
     {
-        return array_values(self::query()->where('request_id', $requestId)->lockForUpdate()->limit(1)->get()->all());
+        return array_values(self::query()->where('request_key', $requestKey)->lockForUpdate()->limit(1)->get()->all());
     }
 
     /**
@@ -131,6 +131,6 @@ final class ProjectCommandRun extends Model implements ReadableModel
      */
     public function recordedFrames(): array
     {
-        return array_map(CommandFrame::recorded(...), $this->frames);
+        return array_map(CommandFrame::fromRecord(...), $this->frames);
     }
 }

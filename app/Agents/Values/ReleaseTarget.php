@@ -14,7 +14,7 @@ final readonly class ReleaseTarget
     /**
      * The local providers every advertised platform must run.
      */
-    public const array PROVIDERS = ['claude-code', 'codex'];
+    public const array REQUIRED_PROVIDERS = ['claude-code', 'codex'];
 
     /**
      * @param  list<string>  $prerequisites
@@ -33,9 +33,9 @@ final readonly class ReleaseTarget
      *
      * @return list<string>
      */
-    public function withheldProviders(): array
+    public function missingProviders(): array
     {
-        return array_values(array_diff(self::PROVIDERS, $this->providers));
+        return array_values(array_diff(self::REQUIRED_PROVIDERS, $this->providers));
     }
 
     /**
@@ -43,6 +43,6 @@ final readonly class ReleaseTarget
      */
     public function isSupported(): bool
     {
-        return $this->isMeasured && $this->prerequisites !== [] && $this->withheldProviders() === [];
+        return $this->isMeasured && $this->prerequisites !== [] && $this->missingProviders() === [];
     }
 }

@@ -44,7 +44,7 @@ final readonly class RequestOutcomes
         }
 
         return match ($receipt->state) {
-            ReceiptState::Completed => $this->confirmed($request, $receipt->value),
+            ReceiptState::Completed => $this->confirmed($request, $receipt->result),
             ReceiptState::Refused => RequestOutcomeData::from([
                 'outcome' => RequestOutcome::Refused,
                 'code' => $receipt->refusalCode,

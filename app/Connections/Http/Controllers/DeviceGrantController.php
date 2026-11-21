@@ -40,7 +40,7 @@ final readonly class DeviceGrantController
             'userCode' => $started->userCode,
             'approvalUrl' => $this->origin->canonical().'/connections/devices/'.$started->userCode,
             'expiresAt' => $started->expiresAt,
-            'interval' => DeviceGrant::POLL_SECONDS,
+            'interval' => DeviceGrant::POLL_SECONDS_MINIMUM,
         ], JsonResponse::HTTP_CREATED, ['Cache-Control' => 'no-store']);
     }
 

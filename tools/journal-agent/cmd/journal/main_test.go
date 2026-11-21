@@ -158,9 +158,9 @@ func fakeCommands(t *testing.T) *httptest.Server {
 			code = 3
 		}
 		frames := []client.CommandFrame{
-			{Sequence: 1, Stream: "stdout", Data: strings.Join(command.Argv, " ") + "\n"},
-			{Sequence: 2, Stream: "stdout", Data: command.Stdin},
-			{Sequence: 3, Stream: "exit", Code: code},
+			{Sequence: 1, Stream: "stdout", Text: strings.Join(command.Argv, " ") + "\n"},
+			{Sequence: 2, Stream: "stdout", Text: command.Stdin},
+			{Sequence: 3, Stream: "exit", ExitCode: code},
 		}
 		_ = json.NewEncoder(writer).Encode(map[string][]client.CommandFrame{"frames": frames})
 	}))
@@ -198,7 +198,7 @@ func TestAVerbRunsOnTheServerWithItsOutputStdinAndExitCode(t *testing.T) {
 	}
 }
 
-func TestWithTheServerDownTheVerbFailsWithItsRequestID(t *testing.T) {
+func TestWithTheServerDownTheVerbFailsWithItsRequestKey(t *testing.T) {
 	server := fakeCommands(t)
 	state := realTempDir(t)
 	root := connectedFolder(t, state, realTempDir(t), "shop")

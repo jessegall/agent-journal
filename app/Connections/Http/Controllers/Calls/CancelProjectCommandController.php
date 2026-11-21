@@ -21,8 +21,8 @@ final readonly class CancelProjectCommandController
         AgentContext $agent,
         EntryDispatchers $dispatchers,
     ): CallAccepted {
-        $cancel = new CancelProjectCommandRun($call->requestKey, $agent->agentId);
-        $dispatchers->runAsJournal(CommandEntry::HostControl, 'project command cancel', $cancel);
+        $cancelRun = new CancelProjectCommandRun($call->requestKey, $agent->agentId);
+        $dispatchers->runAsJournal(CommandEntry::HostControl, 'project command cancel', $cancelRun);
 
         return new CallAccepted();
     }

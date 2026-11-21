@@ -177,12 +177,12 @@ final class InstallLinesTest extends TestCase
         file_put_contents("{$folder}/".self::VERSION.'/manifest.json', (string) json_encode([
             'version' => self::VERSION,
             'hostProtocolVersion' => HostProtocolVersion::RemoteProject->value,
-            'capabilities' => ReleaseManifest::CAPABILITIES,
+            'capabilities' => ReleaseManifest::REQUIRED_CAPABILITIES,
             'targets' => [[
                 'os' => 'linux',
                 'arch' => 'amd64',
                 'prerequisites' => ['git', 'curl'],
-                'providers' => ReleaseTarget::PROVIDERS,
+                'providers' => ReleaseTarget::REQUIRED_PROVIDERS,
                 'artifacts' => [$relay('linux-amd64')],
             ]],
         ]));

@@ -9,5 +9,5 @@ namespace App\Connections\Values;
  */
 final readonly class BindingOutcome
 {
-    public function __construct(public string $bindingId, public string $outcome) {}
+    public function __construct(public string $id, public string $result) {}
 }

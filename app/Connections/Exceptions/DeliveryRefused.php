@@ -18,7 +18,7 @@ final class DeliveryRefused extends RuntimeException implements CodedRefusal, Co
 {
     use RendersRefusal;
 
-    public static function otherTip(string $deliveryId): self
+    public static function otherCommit(string $deliveryId): self
     {
         return new self("Delivery {$deliveryId} already holds another commit.");
     }

@@ -11,7 +11,7 @@ use App\Text\Support\MarkdownText;
 /**
  * How a comment becomes the details it is shown with; kept out of the exported Data class.
  */
-final readonly class CommentViews
+final readonly class CommentDetailsFactory
 {
     /**
      * A comment as it is shown, its text also as safe HTML.

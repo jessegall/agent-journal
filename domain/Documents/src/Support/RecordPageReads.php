@@ -27,15 +27,15 @@ final readonly class RecordPageReads
     {
         $reads = [];
 
-        foreach ($this->request->askedCommentLocation() as $commentId) {
+        foreach ($this->request->commentIdsToLocate() as $commentId) {
             $reads['commentLocation'] = $this->comments->location($record, $commentId);
         }
 
-        foreach ($this->request->askedSectionsVersion() as $version) {
+        foreach ($this->request->sectionsVersions() as $version) {
             $reads['textSections'] = $this->text->sections($record, $version, 0, $this->request->sectionsPageSize());
         }
 
-        foreach ($this->request->askedTextPart() as $version => $selection) {
+        foreach ($this->request->textPartsByVersion() as $version => $selection) {
             $reads['textPart'] = $this->text->read($record, $version, TextSelection::from($selection));
         }
 

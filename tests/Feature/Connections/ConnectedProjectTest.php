@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connections;
 
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Connections\Http\Middleware\ResolveConnectedProject;
@@ -95,12 +97,8 @@ final class ConnectedProjectTest extends TestCase
     private function projectOfCallBy(string $agentId): string
     {
         $this->app->forgetScopedInstances();
-        $this->app->instance(AgentContext::class, new AgentContext(
-            $agentId,
-            'session',
-            new SignedCall('call', CarbonImmutable::now(), 'digest'),
-            null,
-        ));
+        $agent = new AgentContext($agentId, 'session', new SignedCall('call', CarbonImmutable::now(), 'digest'), null);
+        $this->app->make(CurrentActorSetter::class)->set($agent, new OwnerAuthority('the agent call'));
         $middleware = $this->app->make(ResolveConnectedProject::class);
         $middleware->handle(Request::create('/agent/call'), fn () => new Response());
 

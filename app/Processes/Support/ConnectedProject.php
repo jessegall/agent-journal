@@ -14,7 +14,7 @@ final readonly class ConnectedProject
     /**
      * Whether the folder is the root or lies below it.
      */
-    public function holds(string $folder): bool
+    public function contains(string $folder): bool
     {
         $root = rtrim($this->root, '/');
 

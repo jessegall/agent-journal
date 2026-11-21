@@ -16,5 +16,5 @@ use App\Bus\Support\Command;
 #[Entry(CommandEntry::HostControl)]
 final readonly class RecordProjectCommandProcess extends Command
 {
-    public function __construct(public string $requestId, public int $pid) {}
+    public function __construct(public string $requestKey, public int $pid) {}
 }

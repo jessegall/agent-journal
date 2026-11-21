@@ -170,7 +170,7 @@ func (executor *protectedExecutor) MakeFolder(ctx context.Context, request host.
 		return host.AccountFolderReply{Reason: err.Error()}, nil
 	}
 
-	return host.AccountFolderReply{Done: true}, nil
+	return host.AccountFolderReply{IsDone: true}, nil
 }
 
 // RemoveFolder removes the account's folder on the agent daemon.
@@ -183,7 +183,7 @@ func (executor *protectedExecutor) RemoveFolder(ctx context.Context, request hos
 		return host.AccountFolderReply{Reason: err.Error()}, nil
 	}
 
-	return host.AccountFolderReply{Done: true}, nil
+	return host.AccountFolderReply{IsDone: true}, nil
 }
 
 // report queues the report and sends what is queued; what the journal does not acknowledge now is sent later.

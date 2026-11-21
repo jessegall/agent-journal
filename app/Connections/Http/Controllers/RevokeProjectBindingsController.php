@@ -20,7 +20,7 @@ final readonly class RevokeProjectBindingsController
     /**
      * The flash key the window reads each chosen binding's outcome from.
      */
-    public const string OUTCOMES = 'revokedBindings';
+    public const string REVOKED_BINDINGS = 'revokedBindings';
 
     public function __invoke(
         Request $request,
@@ -31,7 +31,7 @@ final readonly class RevokeProjectBindingsController
         $request->validate(['bindings' => ['required', 'array', 'min:1', 'max:50'], 'bindings.*' => ['ulid']]);
         $bindingIds = array_values(array_map(strval(...), $request->array('bindings')));
         $revoked = $commands->run(new RevokeProjectBindings($bindingIds));
-        $inertia->flash(self::OUTCOMES, $revoked->byBinding());
+        $inertia->flash(self::REVOKED_BINDINGS, $revoked->outcomesByBindingId());
 
         return $redirect->back(303);
     }

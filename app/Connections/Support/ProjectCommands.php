@@ -27,7 +27,7 @@ final readonly class ProjectCommands
     public function __construct(
         private JournalRoutes $routes,
         private EntryDispatchers $dispatchers,
-        private string $artisan,
+        private string $artisanPath,
         private string $journalUrl,
     ) {}
 
@@ -44,7 +44,7 @@ final readonly class ProjectCommands
     {
         $this->assertServed($call, $agentId);
         $requestKey = $call->requestKey->value;
-        $start = new StartProjectCommandRun($requestKey, $agentId, $call->binding, $call->argv);
+        $start = new StartProjectCommandRun($requestKey, $agentId, $call->bindingId, $call->argv);
         $started = $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $start);
 
         if ($started->isRunning && ! $started->isNew) {
@@ -52,7 +52,7 @@ final readonly class ProjectCommands
         }
 
         if (! $started->isNew) {
-            return $started->recorded;
+            return $started->recordedFrames;
         }
 
         return $this->execute($call, ['JOURNAL_URL' => $this->journalUrl, ...$startEnvironment]);
@@ -71,8 +71,8 @@ final readonly class ProjectCommands
 
         $own = array_map(fn (ProjectBinding $binding) => $binding->id, ProjectBinding::ofMainAgent($agentId));
 
-        if (! in_array($call->binding, $own, true)) {
-            throw VerbNotServed::notYourBinding($call->binding);
+        if (! in_array($call->bindingId, $own, true)) {
+            throw VerbNotServed::notYourBinding($call->bindingId);
         }
     }
 
@@ -83,8 +83,8 @@ final readonly class ProjectCommands
     private function execute(RunProjectCommandCall $call, array $environment): array
     {
         $process = new Process(
-            ['php', $this->artisan, $call->verbName(), ...array_slice($call->argv, 2)],
-            dirname($this->artisan),
+            ['php', $this->artisanPath, $call->verbName(), ...array_slice($call->argv, 2)],
+            dirname($this->artisanPath),
             $environment,
             $call->pipedInput(),
             null,
@@ -101,8 +101,8 @@ final readonly class ProjectCommands
         $code = $process->wait();
         $frames[] = CommandFrame::exit(count($frames) + 1, $code);
 
-        $finish = new FinishProjectCommandRun($call->requestKey->value, $frames, $code);
-        $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $finish);
+        $finishRun = new FinishProjectCommandRun($call->requestKey->value, $frames, $code);
+        $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $finishRun);
 
         return $frames;
     }

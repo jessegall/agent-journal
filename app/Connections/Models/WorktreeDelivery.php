@@ -73,7 +73,7 @@ final class WorktreeDelivery extends Model implements ReadableModel
         $earlier = self::query()->where('delivery_id', $submission->deliveryId)->lockForUpdate()->first();
 
         if ($earlier instanceof self && $earlier->delivered_tip !== $submission->deliveredTip) {
-            throw DeliveryRefused::otherTip($submission->deliveryId);
+            throw DeliveryRefused::otherCommit($submission->deliveryId);
         }
 
         if ($earlier instanceof self) {
@@ -115,10 +115,10 @@ final class WorktreeDelivery extends Model implements ReadableModel
      *
      * @param  list<string>  $paths
      */
-    public function recordConflict(string $targetOid, array $paths): void
+    public function recordConflict(string $resultingTargetOid, array $paths): void
     {
         $this->outcome = DeliveryOutcome::Conflicted;
-        $this->resulting_target_oid = $targetOid;
+        $this->resulting_target_oid = $resultingTargetOid;
         $this->conflict_paths = $paths;
         $this->save();
     }

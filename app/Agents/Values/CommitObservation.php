@@ -23,7 +23,7 @@ final readonly class CommitObservation
         public string $reason,
     ) {}
 
-    public static function versionOne(): self
+    public static function notRecorded(): self
     {
         return new self(1, '', '', '', '');
     }
@@ -33,7 +33,7 @@ final readonly class CommitObservation
         return new self(2, $bindingId, $checkoutId, $oid, '');
     }
 
-    public static function without(string $bindingId, string $checkoutId, string $reason): self
+    public static function withoutCommit(string $bindingId, string $checkoutId, string $reason): self
     {
         return new self(2, $bindingId, $checkoutId, '', $reason);
     }

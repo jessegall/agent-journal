@@ -38,7 +38,7 @@ final readonly class PinnedCompatibilities implements DriverCompatibilities
         }
 
         if (! $report->isReported()) {
-            return $pinned->withContainedReportMissing($report->shortfall());
+            return $pinned->awaitingContainedReport($report->shortfall());
         }
 
         return $pinned->withContainedShortfall($report->shortfall());

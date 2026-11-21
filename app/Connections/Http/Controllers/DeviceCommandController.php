@@ -22,6 +22,6 @@ final readonly class DeviceCommandController
             throw VerbNotServed::notYourBinding($request->bindingId());
         }
 
-        throw VerbNotServed::notYetForShellUsers($request->verbName());
+        throw VerbNotServed::providerSessionOnly($request->verbName());
     }
 }

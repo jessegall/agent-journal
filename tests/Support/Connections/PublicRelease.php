@@ -21,12 +21,12 @@ final class PublicRelease
         return [
             'version' => $version,
             'hostProtocolVersion' => $protocolVersion,
-            'capabilities' => ReleaseManifest::CAPABILITIES,
+            'capabilities' => ReleaseManifest::REQUIRED_CAPABILITIES,
             'targets' => [[
                 'os' => 'darwin',
                 'arch' => 'arm64',
                 'prerequisites' => ['git', 'curl'],
-                'providers' => ReleaseTarget::PROVIDERS,
+                'providers' => ReleaseTarget::REQUIRED_PROVIDERS,
                 'artifacts' => [[
                     'name' => 'bin/journal-agent',
                     'source' => 'darwin-arm64/bin/journal-agent',

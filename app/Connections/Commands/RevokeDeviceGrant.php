@@ -17,5 +17,5 @@ use App\Operations\Enums\AccessType;
 #[Authorize(ConnectionsPolicy::class, AccessType::Edit)]
 final readonly class RevokeDeviceGrant extends Command
 {
-    public function __construct(public string $grantId) {}
+    public function __construct(public string $id) {}
 }

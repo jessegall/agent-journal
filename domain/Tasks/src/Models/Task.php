@@ -40,7 +40,7 @@ use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Policies\TaskRunPolicy;
-use Domain\Tasks\Support\TaskReads;
+use Domain\Tasks\Support\TaskDetailsFactory;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -334,7 +334,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function details(Option $holder, TaskExecution|null $execution): TaskDetails
     {
-        return TaskReads::details($this, $holder, $execution);
+        return TaskDetailsFactory::details($this, $holder, $execution);
     }
 
     /**
@@ -346,7 +346,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     {
         return TaskDetails::from([
             ...$this->details($holder, $execution)->all(),
-            'text' => TaskReads::text($this),
+            'text' => TaskDetailsFactory::text($this),
         ]);
     }
 

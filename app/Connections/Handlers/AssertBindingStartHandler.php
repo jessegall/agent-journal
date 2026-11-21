@@ -31,9 +31,7 @@ final readonly class AssertBindingStartHandler implements CommandHandler
 
         $binding->host->assertEnrolledAs(ArrangementType::Local);
 
-        if ($command->rootId !== $binding->root_id
-            || $command->folder !== $binding->canonical_root
-            || ! $binding->host->permitsFolder($command->folder)) {
+        if (! $binding->isRootOf($command->rootId, $command->folder)) {
             throw BindingStartRefused::notTheRoot($binding->id);
         }
 

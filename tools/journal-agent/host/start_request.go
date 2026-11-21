@@ -84,7 +84,7 @@ type AccountFolderRequest struct {
 
 // AccountFolderReply answers whether the folder was made or removed, and why not when it was not.
 type AccountFolderReply struct {
-	Done   bool   `json:"done"`
+	IsDone bool   `json:"isDone"`
 	Reason string `json:"reason,omitempty"`
 }
 

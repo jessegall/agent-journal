@@ -113,9 +113,9 @@ final readonly class ContainerManifest
             throw ManifestRefused::because("the image {$image} is not named by its digest");
         }
 
-        $startsAsProfile = $user === $launchProfile->user() && $capabilities === $launchProfile->capabilities();
+        $matchesProfile = $user === $launchProfile->user() && $capabilities === $launchProfile->capabilities();
 
-        if ($privileged || ! $startsAsProfile || ! $readOnlyRoot) {
+        if ($privileged || ! $matchesProfile || ! $readOnlyRoot) {
             throw ManifestRefused::because(match ($launchProfile) {
                 LaunchProfileType::Standard => 'a helper runs unprivileged as 10001:10001 on a read-only root with no capabilities',
                 LaunchProfileType::ProtectedAccount => 'a protected start runs its init as 0:0 with only SETUID, SETGID and SETPCAP, unprivileged, on a read-only root',

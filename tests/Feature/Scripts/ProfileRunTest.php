@@ -98,7 +98,7 @@ final class ProfileRunTest extends TestCase
 
     private function answer(bool $dirty): void
     {
-        $this->asSystem(new ReportWorkspaceRead('host-1', new WorkspaceReadReference('read-1'), true, $dirty, ! $dirty, 3, CommitObservation::versionOne()));
+        $this->asSystem(new ReportWorkspaceRead('host-1', new WorkspaceReadReference('read-1'), true, $dirty, ! $dirty, 3, CommitObservation::notRecorded()));
     }
 
     private function report(ProfileRun $run, string $step, StepStatus $status): void

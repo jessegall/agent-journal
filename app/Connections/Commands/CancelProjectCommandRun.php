@@ -16,5 +16,5 @@ use App\Bus\Support\Command;
 #[Entry(CommandEntry::HostControl)]
 final readonly class CancelProjectCommandRun extends Command
 {
-    public function __construct(public string $requestId, public string $agentId) {}
+    public function __construct(public string $requestKey, public string $agentId) {}
 }

@@ -38,28 +38,28 @@ type StartGrant struct {
 
 // ProjectCommand mirrors App\Connections\Calls\RunProjectCommandCall: one journal verb as typed, run once per key.
 type ProjectCommand struct {
-	RequestID string   `json:"request_key"`
-	Binding   string   `json:"binding"`
-	Argv      []string `json:"argv"`
-	Stdin     string   `json:"stdin"`
+	RequestKey string   `json:"request_key"`
+	Binding    string   `json:"binding"`
+	Argv       []string `json:"argv"`
+	Stdin      string   `json:"stdin"`
 }
 
 // CommandFrame mirrors App\Connections\Values\CommandFrame: output in sequence, or the exit frame with its code.
 type CommandFrame struct {
 	Sequence int    `json:"sequence"`
 	Stream   string `json:"stream"`
-	Data     string `json:"data"`
-	Base64   bool   `json:"base64"`
-	Code     int    `json:"code"`
+	Text     string `json:"text"`
+	IsBase64 bool   `json:"isBase64"`
+	ExitCode int    `json:"exitCode"`
 }
 
 // Bytes are the frame's output as it was written.
 func (frame CommandFrame) Bytes() ([]byte, error) {
-	if frame.Base64 {
-		return base64.StdEncoding.DecodeString(frame.Data)
+	if frame.IsBase64 {
+		return base64.StdEncoding.DecodeString(frame.Text)
 	}
 
-	return []byte(frame.Data), nil
+	return []byte(frame.Text), nil
 }
 
 // IsStandardError is whether the frame was written to standard error.
@@ -102,7 +102,7 @@ func readFrames(transport *http.Client, request *http.Request, write func(Comman
 	}
 	for _, frame := range answer.Frames {
 		if frame.Stream == exitStream {
-			return frame.Code, nil
+			return frame.ExitCode, nil
 		}
 		if err := write(frame); err != nil {
 			return 0, err

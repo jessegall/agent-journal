@@ -33,7 +33,7 @@ final class InstallScriptTest extends TestCase
     /**
      * What each platform of the test release offers: its prerequisites and both local providers.
      */
-    private const array OFFERED = ['prerequisites' => ['git', 'curl'], 'providers' => ReleaseTarget::PROVIDERS];
+    private const array OFFERED = ['prerequisites' => ['git', 'curl'], 'providers' => ReleaseTarget::REQUIRED_PROVIDERS];
 
     private string $folder;
 
@@ -167,7 +167,7 @@ final class InstallScriptTest extends TestCase
         return (string) json_encode([
             'version' => self::VERSION,
             'hostProtocolVersion' => HostProtocolVersion::RemoteProject->value,
-            'capabilities' => ReleaseManifest::CAPABILITIES,
+            'capabilities' => ReleaseManifest::REQUIRED_CAPABILITIES,
             'targets' => [
                 ['os' => 'darwin', 'arch' => 'arm64', ...self::OFFERED, 'artifacts' => [$relay('darwin-arm64')]],
                 ['os' => 'linux', 'arch' => 'amd64', ...self::OFFERED, 'artifacts' => [$relay('linux-amd64')]],

@@ -11,7 +11,7 @@ use App\Comments\Enums\WholeRecord;
 use App\Comments\Events\CommentPosted;
 use App\Comments\Exceptions\CommentAnchorCorrupt;
 use App\Comments\Exceptions\CommentImmutable;
-use App\Comments\Support\CommentViews;
+use App\Comments\Support\CommentDetailsFactory;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
@@ -194,7 +194,7 @@ final class Comment extends Model implements EventSource, ReadableModel, Shareab
      */
     public function details(): CommentDetails
     {
-        return CommentViews::details($this);
+        return CommentDetailsFactory::details($this);
     }
 
     // ----------[ Internals ]----------
