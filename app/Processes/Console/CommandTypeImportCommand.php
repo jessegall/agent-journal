@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Files\Contracts\Files;
 use App\Files\Exceptions\FileMissing;
-use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Calls\ImportProposalsCall;
 use App\Processes\Enums\JournalRouteType;

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Sharing\Gateways\Ngrok;
 
 use App\Files\Attributes\OutsideThePlaces;
-use App\Files\Enums\PlaceExemption;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
+use App\Files\Enums\PlaceExemption;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Enums\GatewayAddressCheck;
 use App\Sharing\Exceptions\GatewayOpenFailed;

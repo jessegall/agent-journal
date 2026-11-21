@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Profiles\Console;
 
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\ConsoleOwner;
 use App\Files\Contracts\Files;
 use App\Files\Exceptions\FileMissing;
 use App\Files\Exceptions\FileUnreadable;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\ConsoleOwner;
 use App\Profiles\Commands\SaveProfileDraft;
 use App\Profiles\Exceptions\ProfileDraftRefused;
 use App\Profiles\Values\DraftExpectations;

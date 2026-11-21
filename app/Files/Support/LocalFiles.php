@@ -296,7 +296,7 @@ final class LocalFiles implements Files
             throw FileMissing::at($path);
         }
 
-        $bytes = @file_get_contents($path, length: $limit);
+        $bytes = @file_get_contents($path, length: $limit === null ? null : max(0, $limit));
 
         if ($bytes === false) {
             throw FileUnreadable::at($path);

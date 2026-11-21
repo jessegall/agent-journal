@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console;
 
-use App\Files\Contracts\Files;
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\AgentRequests\Values\CommandReport;
+use App\Files\Contracts\Files;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\JournalRouteType;
@@ -38,7 +38,7 @@ final class DocEditCommand extends Command
             return self::FAILURE;
         }
 
-        $status = $this->runReport(function () use ($documents, $drafts, $number, $held): CommandReport {
+        $status = $this->runReport(function () use ($documents, $drafts, $files, $number, $held): CommandReport {
             $draft = $documents->editDocument(
                 number: (string) $number,
                 token: $held['token'],
