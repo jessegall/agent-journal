@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Hooks\States;
 
-use App\Hooks\Contracts\HookAnswerer;
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\Contracts\HookAnswerer;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEnded;

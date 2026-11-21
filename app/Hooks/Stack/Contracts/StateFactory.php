@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Contracts;
+namespace App\Hooks\Stack\Contracts;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Decisions\StateReference;

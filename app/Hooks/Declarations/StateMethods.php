@@ -6,12 +6,12 @@ namespace App\Hooks\Declarations;
 
 use App\Contracts\Event;
 use App\Hooks\Attributes\StackWide;
-use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Contracts\TickableState;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\InvalidStateClass;
 use App\Hooks\Exceptions\InvalidStateMethod;
+use App\Hooks\Inputs\Contracts\HookAnswerer;
 use App\Hooks\States\AgentState;
 use App\Hooks\Values\EventCommands;
 use ReflectionClass;

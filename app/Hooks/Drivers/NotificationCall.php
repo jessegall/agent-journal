@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers;
 
 use App\Hooks\Actions\RecordDriverFailure;
-use App\Hooks\Contracts\DriverCall;
+use App\Hooks\Drivers\Contracts\DriverCall;
 use App\Hooks\Inputs\FailureDetails;
 use App\Hooks\Inputs\HookIdentity;
 use Closure;

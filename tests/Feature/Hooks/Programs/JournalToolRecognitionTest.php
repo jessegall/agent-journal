@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Programs;
 
-use App\Hooks\Contracts\DriverAdapter;
 use App\Hooks\Contracts\JournalToolNames;
 use App\Hooks\Drivers\ClaudeCodeAdapter;
 use App\Hooks\Drivers\CodexAdapter;
+use App\Hooks\Drivers\Contracts\DriverAdapter;
 use App\Hooks\Drivers\HookPayload;
 use App\Hooks\Drivers\JournalToolCall;
 use App\Hooks\Drivers\JudgedCall;

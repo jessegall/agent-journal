@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Enums\AnswerType;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;

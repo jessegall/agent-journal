@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Hooks\Contracts\DriverAdapter;
+use App\Hooks\Drivers\Contracts\DriverAdapter;
 
 /**
  * What the test of one program's adapter checks beside its fixtures: the model arguments the host starts it with.

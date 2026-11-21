@@ -8,7 +8,7 @@ use App\Actors\Contracts\ActorAttention;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
 use App\Agents\Values\StackTarget;
-use App\Hooks\Contracts\HookInput;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Models\PendingAgentMessage;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\StateEvents\StateEventContext;

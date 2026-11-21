@@ -6,10 +6,10 @@ namespace App\Hooks\Inputs;
 
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\NativeTurnRecords;
-use App\Hooks\Contracts\HookAnswerer;
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
+use App\Hooks\Inputs\Contracts\HookAnswerer;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Processes\Values\ShellCommand;
 use Carbon\CarbonImmutable;
 use PhpOption\None;

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Contracts\HookInput;
-use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Exceptions\BottomStateCannotFinish;
 use App\Hooks\Exceptions\MissingBottomState;
+use App\Hooks\Inputs\Contracts\HookInput;
+use App\Hooks\Stack\Contracts\StateFactory;
 use App\Hooks\Storage\FrameRecords;
 
 /**

@@ -6,11 +6,11 @@ namespace App\Hooks\Stack;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\ConditionalStateType;
-use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Exceptions\StateSchemaUnknown;
+use App\Hooks\Stack\Contracts\StateFactory;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 

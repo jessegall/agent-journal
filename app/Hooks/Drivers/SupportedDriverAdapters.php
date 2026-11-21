@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Drivers;
 
 use App\Drivers\Enums\HookDriver;
-use App\Hooks\Contracts\DriverAdapter;
 use App\Hooks\Contracts\DriverAdapters;
+use App\Hooks\Drivers\Contracts\DriverAdapter;
 
 /**
  * The adapter of each supported program.

@@ -10,7 +10,6 @@ use App\Agents\Values\StackTarget;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\WorkReference;
 use App\Bus\Contracts\CommandFacts;
-use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Contracts\StopEvidence;
 use App\Hooks\Contracts\StopPreparer;
 use App\Hooks\Decisions\Decision;
@@ -19,6 +18,7 @@ use App\Hooks\Enums\StopPreparationState;
 use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\StopAttempt;
+use App\Hooks\States\Contracts\StopConditionGate;
 use App\Hooks\Values\StopPreparation;
 use App\Hooks\Values\StopPreparationRequest;
 

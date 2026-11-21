@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Contracts;
+namespace App\Hooks\Drivers\Contracts;
 
 use App\Hooks\Drivers\DriverCapabilities;
 use App\Hooks\Drivers\DriverReply;

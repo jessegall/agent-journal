@@ -8,7 +8,7 @@ use App\Agents\Enums\AccessRuleType;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\Operation;
 use App\Hooks\Contracts\OperationPolicy;
-use App\Hooks\Contracts\StopConditionGate;
+use App\Hooks\States\Contracts\StopConditionGate;
 use App\Hooks\States\Support\ReadyStateLoader;
 use App\Operations\Enums\AccessType;
 use Illuminate\Container\Container;

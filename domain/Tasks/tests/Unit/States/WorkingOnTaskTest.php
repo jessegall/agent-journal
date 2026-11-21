@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Unit\States;
 
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Denied;
 use App\Hooks\Enums\SimpleTransition;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;

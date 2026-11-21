@@ -6,14 +6,14 @@ namespace Tests\Feature\Hooks\Programs;
 
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Values\StackTarget;
-use App\Hooks\Contracts\DriverCall;
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Drivers\ClaudeCodeAdapter;
 use App\Hooks\Drivers\CodexAdapter;
+use App\Hooks\Drivers\Contracts\DriverCall;
 use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Drivers\HookPayload;
 use App\Hooks\Drivers\JudgedCall;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Stack\AgentStack;

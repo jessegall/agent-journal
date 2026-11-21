@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Exceptions\BottomStateDelegated;
 use App\Hooks\Exceptions\InvalidHookAnswer;
 use App\Hooks\Exceptions\StateBelowTopPushed;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Storage\WalkStep;
 use Closure;
 

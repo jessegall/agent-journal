@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Hooks\Contracts\DriverCall;
-use App\Hooks\Contracts\HookInput;
+use App\Hooks\Drivers\Contracts\DriverCall;
 use App\Hooks\Drivers\HookPayload;
 use App\Hooks\Drivers\JudgedCall;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\HookIdentity;
 
 /**

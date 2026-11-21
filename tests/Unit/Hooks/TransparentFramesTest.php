@@ -6,10 +6,10 @@ namespace Tests\Unit\Hooks;
 
 use App\Agents\Values\StackTarget;
 use App\Communication\States\AnsweringMessageState;
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\Frame;

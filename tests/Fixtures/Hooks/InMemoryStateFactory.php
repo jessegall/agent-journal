@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Contracts\StateFactory;
+use App\Hooks\Stack\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Stack\Frame;
 use App\Hooks\States\AgentState;

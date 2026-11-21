@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Contracts;
+namespace App\Hooks\States\Contracts;
 
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\HookIdentity;

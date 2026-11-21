@@ -7,7 +7,6 @@ namespace App\Hooks\States;
 use App\Agents\Values\Operation;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\OperationPolicy;
-use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\FileEditRequested;
@@ -18,6 +17,7 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolRequested;
+use App\Hooks\States\Contracts\StopConditionGate;
 
 /**
  * The permanent bottom of every stack: it answers every hook, so a walk never runs out of states. It allows a file

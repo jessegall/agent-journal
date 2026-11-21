@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Bus\Support\OperationDeadline;
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Drivers\DriverCapabilities;
 use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Exceptions\HookDeadlineExpired;
 use App\Hooks\Exceptions\ReplayFound;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Pipelines\AnswerHookPipeline;
 use App\Hooks\StateEvents\StateEventActivity;
 use App\Hooks\Support\IncomingWorkList;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Support;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Events\ToolCallFinished;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\ToolFinished;
 use Illuminate\Contracts\Events\Dispatcher;
 

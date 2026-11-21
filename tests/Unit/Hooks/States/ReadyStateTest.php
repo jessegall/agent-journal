@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\Denied;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\FileOperation;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;

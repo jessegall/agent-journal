@@ -6,10 +6,10 @@ namespace App\Hooks\States\Support;
 
 use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Contracts\StateLoader;
-use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Enums\SessionTransferType;
+use App\Hooks\States\Contracts\StopConditionGate;
 use App\Hooks\States\ReadyState;
 use Illuminate\Contracts\Container\Container;
 

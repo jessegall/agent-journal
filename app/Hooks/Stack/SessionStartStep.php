@@ -7,7 +7,7 @@ namespace App\Hooks\Stack;
 use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Values\StackTarget;
-use App\Hooks\Contracts\HookInput;
+use App\Hooks\Inputs\Contracts\HookInput;
 use Carbon\CarbonImmutable;
 
 /**

@@ -14,7 +14,7 @@ use App\Agents\Values\AccessDecision;
 use App\Agents\Values\ReadRequest;
 use App\Agents\Values\StackTarget;
 use App\Bus\Enums\CommandEffectType;
-use App\Hooks\Contracts\StackPermission;
+use App\Hooks\Stack\Contracts\StackPermission;
 use App\Profiles\Values\StartProfileAuthority;
 
 /**

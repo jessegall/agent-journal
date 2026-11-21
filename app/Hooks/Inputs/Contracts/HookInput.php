@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Contracts;
+namespace App\Hooks\Inputs\Contracts;
 
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\NativeTurnRecords;

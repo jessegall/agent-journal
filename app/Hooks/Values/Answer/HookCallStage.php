@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Values\Answer;
 
 use App\Agents\Values\StackTarget;
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Drivers\DriverCapabilities;
 use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\HookAnswer;

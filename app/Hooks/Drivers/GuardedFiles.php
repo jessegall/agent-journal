@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Drivers;
 
-use App\Hooks\Contracts\DriverCall;
 use App\Hooks\Contracts\FileAccessPolicy;
+use App\Hooks\Drivers\Contracts\DriverCall;
 use App\Hooks\Enums\FileAccess;
 use App\Hooks\Inputs\HookIdentity;
 use App\Processes\Values\CommandPart;

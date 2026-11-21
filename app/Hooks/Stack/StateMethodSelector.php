@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Contracts\Event;
-use App\Hooks\Contracts\HookInput;
 use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Enums\SelectionReason;
+use App\Hooks\Inputs\Contracts\HookInput;
 
 /**
  * Selects the highest match and every lower StackWide match on the starting snapshot.

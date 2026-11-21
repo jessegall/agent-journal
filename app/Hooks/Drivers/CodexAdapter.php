@@ -6,8 +6,8 @@ namespace App\Hooks\Drivers;
 
 use App\Drivers\Enums\HookDriver;
 use App\Hooks\Actions\CheckProtectedResources;
-use App\Hooks\Contracts\DriverAdapter;
-use App\Hooks\Contracts\DriverCall;
+use App\Hooks\Drivers\Contracts\DriverAdapter;
+use App\Hooks\Drivers\Contracts\DriverCall;
 use App\Hooks\Enums\CodexTool;
 use App\Hooks\Enums\FileAccess;
 use App\Hooks\Enums\FileOperation;
