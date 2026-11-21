@@ -27,6 +27,7 @@ final class LayoutPartData extends Data
     /**
      * @param  list<LayoutRowData>  $rows
      * @param  list<LayoutPartData>  $children
+     * @param  list<LayoutTabData>  $tabs
      */
     public function __construct(
         public readonly LayoutTag $tag,
@@ -43,6 +44,10 @@ final class LayoutPartData extends Data
         public readonly LayoutFieldData|Optional $field = new Optional(),
         public readonly string|Optional $tone = new Optional(),
         public readonly LayoutFormData|Optional $form = new Optional(),
+        #[DataCollectionOf(LayoutTabData::class)]
+        public readonly array $tabs = [],
+        public readonly LayoutBodyData|Optional $body = new Optional(),
+        public readonly LayoutNativeData|Optional $native = new Optional(),
     ) {}
 
     public static function box(string $key, string $style, LayoutPartData ...$children): self
@@ -108,6 +113,32 @@ final class LayoutPartData extends Data
     public static function form(string $key, LayoutFormData $form, string $style, LayoutPartData ...$parts): self
     {
         return new self(LayoutTag::Form, $key, null, $style, null, null, [], array_values($parts), form: $form);
+    }
+
+    /**
+     * A tab set: every tab's key and label, and as its one child the content of the tab shown, the only one read.
+     *
+     * @param  list<LayoutTabData>  $tabs
+     */
+    public static function tabs(string $key, array $tabs, LayoutPartData $shown): self
+    {
+        return new self(LayoutTag::Tabs, $key, null, 'tabs', null, null, [], [$shown], tabs: $tabs);
+    }
+
+    /**
+     * A trusted rich body, made by the safe Markdown renderer.
+     */
+    public static function body(string $key, LayoutBodyData $body): self
+    {
+        return new self(LayoutTag::Body, $key, null, 'prose', null, null, [], [], body: $body);
+    }
+
+    /**
+     * A native part, mounted by its registered component name with its typed props.
+     */
+    public static function native(string $key, LayoutNativeData $native): self
+    {
+        return new self(LayoutTag::Native, $key, null, 'native', null, null, [], [], native: $native);
     }
 
     /**
@@ -198,6 +229,9 @@ final class LayoutPartData extends Data
             $isAction === $this->action instanceof Optional
             || $isField === $this->field instanceof Optional
             || $isForm === $this->form instanceof Optional
+            || ($this->tag === LayoutTag::Body) === $this->body instanceof Optional
+            || ($this->tag === LayoutTag::Native) === $this->native instanceof Optional
+            || ($this->tag === LayoutTag::Tabs) === ($this->tabs === [])
         ) {
             throw LayoutRefused::bindingMismatch($path, $this->tag);
         }

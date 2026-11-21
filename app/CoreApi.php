@@ -1308,10 +1308,15 @@ use App\Ui\Enums\SlotContextType;
 use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutActionData;
+use App\Ui\Layout\LayoutBodyData;
 use App\Ui\Layout\LayoutFieldData;
 use App\Ui\Layout\LayoutFormData;
+use App\Ui\Layout\LayoutNativeData;
 use App\Ui\Layout\LayoutPartData;
 use App\Ui\Layout\LayoutRowData;
+use App\Ui\Layout\LayoutTabData;
+use App\Ui\Layout\PublicationPage;
+use App\Ui\Layout\PublicationTab;
 use App\Web\Commands\RecordUserHeartbeat;
 use App\Web\Contracts\CurrentUserResolver;
 
@@ -2038,6 +2043,11 @@ final class CoreApi
                 LayoutActionData::class,
                 LayoutFieldData::class,
                 LayoutFormData::class,
+                LayoutTabData::class,
+                LayoutBodyData::class,
+                LayoutNativeData::class,
+                PublicationTab::class,
+                PublicationPage::class,
                 LayoutPartData::class,
                 LayoutRowData::class,
                 LayoutTag::class,

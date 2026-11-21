@@ -6,7 +6,7 @@ ${option.description} ${option.billingNote}
 1 hour
 30 days
 7 days
-: start it with
+: {{ step.action }} by {{ step.actor }}, project {{ step.projectId ?? 'not recorded' }}
 A sample run: it shows what the command does and gives no result.
 API key
 About the whole record
@@ -69,6 +69,7 @@ Codex cannot run in a container yet: its sandbox does not keep its tools
 Color scheme
 Command requests
 Command review
+Commands and sessions of {{ binding.projectLabel }} on {{ binding.machineLabel }} stop being accepted at once. The files on that computer stay as they are. A device that is offline now stops when its lease ends.
 Comment on a section
 Comment on the selected paragraphs
 Comment on this
@@ -79,6 +80,8 @@ Confirm
 Confirm disabling
 Connect a project
 Connected projects
+Connection recovered
+Connection revoked
 Continue
 Continues on its own
 Contract
@@ -122,6 +125,7 @@ Filter
 Filter shares
 Finish signing in
 Fixed public address
+Folder connected
 From line
 Full
 Full screen
@@ -136,6 +140,9 @@ If nothing installs, check the journal's address and this install line. The fold
 Import
 Install attempts
 Install line
+Install line issued
+Install line replaced
+Install line revoked
 Invalid settings
 It arrived
 It has no email, so give it a name you'll recognise.
@@ -144,6 +151,7 @@ It never arrived
 It waits on the host until it expires. Resume it from the Accounts header, or cancel it now.
 Journal
 Journal operation
+Journal unreachable. This is the last known list, read {{ dateTimeWithZone(data.bindings.serverTime) }}. Revoking and copying wait until the journal answers.
 Keep it
 Keep me signed in
 Keep the sign-in waiting?
@@ -270,14 +278,17 @@ Resume
 Retired
 Retry
 Retry cleanup
+Retry revoke
 Return to Settings
 Reveal address
 Review this proposal
 Revision {{ revision.revision }}: {{ revision.operation }} ({{ revision.owner }})
 Revoke
 Revoke chosen ({{ chosen.size }})
+Revoke connection
 Revoke terminal access
 Revoked
+Revoked on the server
 Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.activeRevision}` }}
 Rules
 Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }} ({{ data.origin }}).
@@ -337,12 +348,16 @@ Still to do: {{ data.steps.join('; ') }}
 Stopping the old session
 Stops after {{ sample.byteCap }} bytes or {{ sample.secondsCap }} seconds
 Suits a server.
+Support record
+Support record of {{ binding.projectLabel }} on {{ binding.machineLabel }}
 Switched
 Switching
 System
 Terminal
 Terminal access
 Terminal access ({{ signIns.length }})
+Terminal sign-in approved
+Terminal sign-in revoked
 Tests and checks
 That conversation belongs to another agent.
 That conversation is not one this agent can continue.
@@ -363,7 +378,6 @@ This account must sign in again.
 This browser did not let the journal copy the line. Select the line above and copy it with your keyboard.
 This is not available.
 This journal is not issuing install lines.
-This list could not be read again, so what it shows may be out of date.
 This machine and the share service must keep running for the link to work.
 This page could not be refreshed.
 This profile does not allow that model.
@@ -460,6 +474,7 @@ updated {{ seconds(ageSeconds()) }} ago
 {{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}
+{{ provider.label }}: start it with
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
 {{ revision.gatewayKey }} version {{ revision.version }}
 {{ revision.publicOrigin }} through {{ revision.providerHost }}, program {{ revision.executableVersion }}

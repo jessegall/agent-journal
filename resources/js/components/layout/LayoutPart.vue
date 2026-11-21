@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 import LayoutAction from '@/components/layout/LayoutAction.vue';
+import LayoutBody from '@/components/layout/LayoutBody.vue';
 import LayoutBox from '@/components/layout/LayoutBox.vue';
 import LayoutCollection from '@/components/layout/LayoutCollection.vue';
 import LayoutField from '@/components/layout/LayoutField.vue';
 import LayoutForm from '@/components/layout/LayoutForm.vue';
+import LayoutNative from '@/components/layout/LayoutNative.vue';
 import LayoutNotice from '@/components/layout/LayoutNotice.vue';
+import LayoutTabs from '@/components/layout/LayoutTabs.vue';
 import LayoutText from '@/components/layout/LayoutText.vue';
 import type { LayoutPartData, LayoutTag } from '@/generated/types/core';
 
@@ -21,6 +24,9 @@ const partComponents: Record<LayoutTag, Component> = {
     action: LayoutAction,
     field: LayoutField,
     form: LayoutForm,
+    tabs: LayoutTabs,
+    body: LayoutBody,
+    native: LayoutNative,
 };
 </script>
 

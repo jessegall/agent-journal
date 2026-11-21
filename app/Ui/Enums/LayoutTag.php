@@ -17,6 +17,9 @@ enum LayoutTag: string
     case Action = 'action';
     case Field = 'field';
     case Form = 'form';
+    case Tabs = 'tabs';
+    case Body = 'body';
+    case Native = 'native';
 
     /**
      * The sizes the part takes, the default first; none for a part that takes no size.
@@ -29,7 +32,7 @@ enum LayoutTag: string
             self::Box, self::Collection => ['normal', 'compact'],
             self::Text, self::Action => ['normal', 'small', 'large'],
             self::Field => ['normal'],
-            self::Notice, self::Form => [],
+            self::Notice, self::Form, self::Tabs, self::Body, self::Native => [],
         };
     }
 
@@ -48,14 +51,18 @@ enum LayoutTag: string
             self::Action => ['bordered', 'ghost', 'primary', 'danger'],
             self::Field => ['search', 'text'],
             self::Form => ['stack', 'inline'],
+            self::Tabs => ['tabs'],
+            self::Body => ['prose'],
+            self::Native => ['native'],
         };
     }
 
     /**
-     * Whether a part of this tag and style holds child parts: a form and a box do, but a divider box does not.
+     * Whether a part of this tag and style holds child parts: a form, a tab set (its shown tab) and a box do, but a
+     * divider box does not.
      */
     public function holdsChildren(string $style): bool
     {
-        return $this === self::Form || $this === self::Box && $style !== 'divider';
+        return $this === self::Form || $this === self::Tabs || $this === self::Box && $style !== 'divider';
     }
 }

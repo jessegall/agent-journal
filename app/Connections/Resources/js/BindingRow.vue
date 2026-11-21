@@ -27,7 +27,10 @@ const props = defineProps<{
     serverTime: string;
 }>();
 
-const emit = defineEmits<{ revoke: [deviceName: string]; choose: [chosen: boolean] }>();
+const emit = defineEmits<{
+    revoke: [deviceName: string];
+    choose: [chosen: boolean];
+}>();
 
 const isAsking = ref(false);
 const revokeButton = ref<{ $el: HTMLElement } | null>(null);
@@ -54,7 +57,9 @@ const looks = computed(() => bindingLooks[props.binding.state]);
 
 const shortReference = computed(() => props.binding.id.slice(-6).toUpperCase());
 
-const deviceName = computed(() => `${props.binding.machineLabel} ${shortReference.value}`);
+const deviceName = computed(
+    () => `${props.binding.machineLabel} ${shortReference.value}`,
+);
 </script>
 
 <template>
@@ -70,39 +75,62 @@ const deviceName = computed(() => `${props.binding.machineLabel} ${shortReferenc
                 :checked="isChosen"
                 :disabled="isStale"
                 :aria-label="`Choose ${binding.projectLabel} on ${deviceName}`"
-                @change="emit('choose', ($event.target as HTMLInputElement).checked)"
+                @change="
+                    emit('choose', ($event.target as HTMLInputElement).checked)
+                "
             />
         </template>
         <dl class="flex min-w-0 flex-1 flex-col gap-0.5">
             <dt class="sr-only">Project</dt>
-            <dd class="truncate font-medium">{{ binding.projectLabel }} / {{ binding.environmentLabel }}</dd>
+            <dd class="truncate font-medium">
+                {{ binding.projectLabel }} / {{ binding.environmentLabel }}
+            </dd>
             <dt class="sr-only">Device</dt>
-            <dd class="truncate text-small text-text-2">{{ binding.machineLabel }} · {{ shortReference }}</dd>
+            <dd class="truncate text-small text-text-2">
+                {{ binding.machineLabel }} · {{ shortReference }}
+            </dd>
             <dt class="sr-only">Status</dt>
             <dd class="flex flex-wrap items-center gap-2">
                 <StateBadge :label="looks.label" :tone="looks.tone" outlined />
-                <span class="text-small text-muted">{{ binding.stateText }}</span>
+                <span class="text-small text-muted">{{
+                    binding.stateText
+                }}</span>
             </dd>
             <dt class="sr-only">Last contact</dt>
             <dd class="text-small text-muted">
-                <template v-if="binding.lastContactAt === null">Not in contact yet</template>
+                <template v-if="binding.lastContactAt === null"
+                    >Not in contact yet</template
+                >
                 <template v-else>
                     Last contact
-                    <time :datetime="binding.lastContactAt" :title="dateTimeWithZone(binding.lastContactAt)">
+                    <time
+                        :datetime="binding.lastContactAt"
+                        :title="dateTimeWithZone(binding.lastContactAt)"
+                    >
                         {{ timeAgo(binding.lastContactAt, serverTime) }}
                     </time>
-                    <span class="sr-only">, {{ dateTimeWithZone(binding.lastContactAt) }}</span>
+                    <span class="sr-only"
+                        >, {{ dateTimeWithZone(binding.lastContactAt) }}</span
+                    >
                 </template>
             </dd>
             <dt class="sr-only">Start</dt>
             <dd>
                 <ul class="flex flex-col gap-0.5 text-small">
-                    <li v-for="provider in binding.capabilities" :key="provider.driver">
+                    <li
+                        v-for="provider in binding.capabilities"
+                        :key="provider.driver"
+                    >
                         <template v-if="provider.canStart">
-                            {{ provider.label }}: start it with <code>{{ provider.startCommand }}</code> in the folder
+                            {{ provider.label }}: start it with
+                            <code>{{ provider.startCommand }}</code> in the
+                            folder
                         </template>
                         <template v-else>
-                            <span class="text-muted">{{ provider.label }} unavailable: {{ provider.unavailableReason }}</span>
+                            <span class="text-muted"
+                                >{{ provider.label }} unavailable:
+                                {{ provider.unavailableReason }}</span
+                            >
                         </template>
                     </li>
                 </ul>
@@ -111,15 +139,23 @@ const deviceName = computed(() => `${props.binding.machineLabel} ${shortReferenc
                 <dt class="sr-only">Revoked</dt>
                 <dd class="text-small text-muted">
                     Revoked on the server
-                    <time :datetime="binding.revokedAt">{{ dateTimeWithZone(binding.revokedAt) }}</time>
+                    <time :datetime="binding.revokedAt">{{
+                        dateTimeWithZone(binding.revokedAt)
+                    }}</time>
                 </dd>
             </template>
             <template v-if="outcome">
-                <dd class="text-small text-text-2" aria-live="polite">{{ outcome }}</dd>
+                <dd class="text-small text-text-2" aria-live="polite">
+                    {{ outcome }}
+                </dd>
             </template>
             <template v-if="revokeUnconfirmed && binding.state !== 'revoked'">
                 <dd>
-                    <Button variant="bordered" size="small" :disabled="isStale" @click="emit('revoke', deviceName)"
+                    <Button
+                        variant="bordered"
+                        size="small"
+                        :disabled="isStale"
+                        @click="emit('revoke', deviceName)"
                         >Retry revoke</Button
                     >
                 </dd>
@@ -129,11 +165,20 @@ const deviceName = computed(() => `${props.binding.machineLabel} ${shortReferenc
             <dt class="sr-only">Support record</dt>
             <dd>
                 <details class="text-small text-muted">
-                    <summary>Support record of {{ binding.id }}</summary>
+                    <summary>
+                        Support record of {{ binding.projectLabel }} on
+                        {{ binding.machineLabel }}
+                    </summary>
                     <ul class="flex flex-col gap-0.5 pt-1">
-                        <li v-for="(step, index) in binding.supportRecord" :key="index">
-                            <time :datetime="step.at">{{ dateTimeWithZone(step.at) }}</time>: {{ step.action }} by
-                            {{ step.actor }}, project {{ step.projectId ?? 'not recorded' }}
+                        <li
+                            v-for="(step, index) in binding.supportRecord"
+                            :key="index"
+                        >
+                            <time :datetime="step.at">{{
+                                dateTimeWithZone(step.at)
+                            }}</time
+                            >: {{ step.action }} by {{ step.actor }}, project
+                            {{ step.projectId ?? 'not recorded' }}
                         </li>
                     </ul>
                 </details>
@@ -156,13 +201,21 @@ const deviceName = computed(() => `${props.binding.machineLabel} ${shortReferenc
                 @opened="cancelButton?.$el.focus()"
             >
                 <p class="text-small">
-                    Commands and sessions of {{ binding.projectLabel }} on {{ binding.machineLabel }} stop being
-                    accepted at once. The files on that computer stay as they are. A device that is offline now stops
-                    when its lease ends.
+                    Commands and sessions of {{ binding.projectLabel }} on
+                    {{ binding.machineLabel }} stop being accepted at once. The
+                    files on that computer stay as they are. A device that is
+                    offline now stops when its lease ends.
                 </p>
                 <template #footer>
-                    <Button ref="cancelButton" variant="bordered" @click="takeBack">Cancel</Button>
-                    <Button variant="danger" @click="confirm">Revoke connection</Button>
+                    <Button
+                        ref="cancelButton"
+                        variant="bordered"
+                        @click="takeBack"
+                        >Cancel</Button
+                    >
+                    <Button variant="danger" @click="confirm"
+                        >Revoke connection</Button
+                    >
                 </template>
             </Modal>
         </template>

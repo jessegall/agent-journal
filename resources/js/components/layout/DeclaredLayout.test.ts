@@ -17,6 +17,7 @@ function part(
         detail: null,
         rows: [],
         children: [],
+        tabs: [],
         ...fields,
     };
 }
@@ -195,6 +196,72 @@ describe('a declared layout', () => {
             method: 'post',
             data: { revision: 1, reason: 'Reviewed' },
             only: ['window_documents_report'],
+            preserveState: true,
+        });
+        view.unmount();
+        visit.mockRestore();
+    });
+
+    it('moves between tabs by arrow and chooses one by its own tab key, asking only for its window prop', async () => {
+        const visit = vi
+            .spyOn(router, 'visit')
+            .mockImplementation(() => undefined);
+        const view = mount(
+            defineComponent({
+                setup() {
+                    provideHostProp('window_handbook_entry');
+
+                    return () =>
+                        h(DeclaredLayout, {
+                            data: {
+                                root: part({
+                                    tag: 'tabs',
+                                    key: 'tabs',
+                                    style: 'tabs',
+                                    tabs: [
+                                        {
+                                            key: 'text',
+                                            label: 'Text',
+                                            isChosen: true,
+                                        },
+                                        {
+                                            key: 'references',
+                                            label: 'References',
+                                            isChosen: false,
+                                        },
+                                    ],
+                                    children: [
+                                        part({
+                                            tag: 'body',
+                                            key: 'text',
+                                            style: 'prose',
+                                            body: { html: '<p>Entry text</p>' },
+                                        }),
+                                    ],
+                                }),
+                            },
+                        });
+                },
+            }),
+            { attachTo: document.body },
+        );
+        const tabs = view.findAll('[role="tab"]');
+
+        expect(tabs.map((tab) => tab.attributes('tabindex'))).toEqual([
+            '0',
+            '-1',
+        ]);
+        expect(tabs[0].attributes('aria-selected')).toBe('true');
+        expect(view.find('[role="tabpanel"]').html()).toContain('Entry text');
+
+        await tabs[0].trigger('keydown', { key: 'ArrowRight' });
+        expect(document.activeElement).toBe(tabs[1].element);
+
+        await tabs[1].trigger('click');
+        const [href, options] = visit.mock.calls[0];
+        expect(String(href)).toContain('tab=references');
+        expect(options).toMatchObject({
+            only: ['window_handbook_entry'],
             preserveState: true,
         });
         view.unmount();
