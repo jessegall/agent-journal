@@ -208,24 +208,44 @@ describe('the settings dialog', () => {
         expect(shown.text()).toContain('Sign in with ChatGPT');
         expect(shown.text()).toContain('Signed in as');
         expect(shown.text()).toContain('WorkspaceTeam Acme');
-        expect(shown.text()).toContain('Running now3');
+        expect(shown.text()).toContain('Running now3 agents');
     });
 
-    it('renames: it holds the current name and saves only a changed name', async () => {
+    it('renames: Save shows inside the field only for a changed name, and Enter saves it', async () => {
         const shown = row();
         await openSettings(shown);
 
-        expect(button(shown, 'Save')?.attributes('disabled')).toBeDefined();
+        expect(button(shown, 'Save')).toBeUndefined();
 
         const naming = forms.find((form) => form.label === 'jesse@example.com');
         naming!.label = 'Work account';
         await flushPromises();
 
-        expect(button(shown, 'Save')?.attributes('disabled')).toBeUndefined();
+        expect(button(shown, 'Save')).toBeDefined();
 
         await shown.find('form').trigger('submit');
 
         expect(naming!.submit).toHaveBeenCalledTimes(1);
+    });
+
+    it('puts the saved name back on Escape and keeps the dialog open', async () => {
+        const shown = row();
+        await openSettings(shown);
+        const naming = forms.find((form) => form.label === 'jesse@example.com');
+        naming!.label = 'Work account';
+        await flushPromises();
+
+        await shown.find('input').trigger('keydown', { key: 'Escape' });
+
+        expect(naming!.label).toBe('jesse@example.com');
+        expect(shown.emitted('close')).toBeUndefined();
+    });
+
+    it('opens without taking the focus into the name', async () => {
+        const shown = row();
+        await openSettings(shown);
+
+        expect(document.activeElement).not.toBe(shown.find('input').element);
     });
 
     it('keeps the host refusal under the name field', async () => {
@@ -250,16 +270,14 @@ describe('the settings dialog', () => {
         const chosen = row({ isChosen: true });
         await openSettings(chosen);
 
-        expect(chosen.text()).toContain(
-            'This is the default account for new Codex starts.',
-        );
+        expect(chosen.text()).toContain('DefaultDefault');
         expect(button(chosen, 'Make default')).toBeUndefined();
     });
 
     it('asks inside the same dialog before it removes, with Back focused', async () => {
         const shown = row({ account: account({ runningCount: 2 }) });
         await openSettings(shown);
-        await button(shown, 'Remove account...')!.trigger('click');
+        await button(shown, 'Remove account')!.trigger('click');
         await flushPromises();
 
         expect(shown.text()).toContain(
@@ -270,7 +288,9 @@ describe('the settings dialog', () => {
             true,
         );
 
-        await button(shown, 'Remove')!.trigger('click');
+        expect(shown.text()).toContain('Remove this account?');
+
+        await button(shown, 'Remove account')!.trigger('click');
 
         expect(forms.some((form) => form.submit.mock.calls.length === 1)).toBe(
             true,
@@ -280,9 +300,9 @@ describe('the settings dialog', () => {
     it('keeps a refused removal on the row after its dialog closed', async () => {
         const shown = row({ account: account({}) });
         await openSettings(shown);
-        await button(shown, 'Remove account...')!.trigger('click');
+        await button(shown, 'Remove account')!.trigger('click');
         await flushPromises();
-        await button(shown, 'Remove')!.trigger('click');
+        await button(shown, 'Remove account')!.trigger('click');
         const sent = forms.find((form) => form.submit.mock.calls.length === 1)!;
 
         sent.submit.mock.calls[0][1].onError({ command: 'The account is still signing in.' });

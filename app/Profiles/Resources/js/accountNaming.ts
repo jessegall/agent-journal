@@ -3,7 +3,12 @@ import type { AccountListData } from '@generated/types/accounts';
 import type { WindowResult } from '@kit/PageTypes';
 import { useForm } from '@inertiajs/vue3';
 import { formSendingHooks } from '@kit/usePageChanges';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+
+/**
+ * How long Saved shows after a name was saved.
+ */
+const SAVED_MILLISECONDS = 2000;
 
 /**
  * The form that names an account, shared by the rename dialog and the wizard's naming step: it holds the name, can
@@ -11,6 +16,8 @@ import { computed } from 'vue';
  */
 export function useAccountNaming(account: () => { id: string; label: string }) {
     const naming = useForm({ label: account().label });
+    // Whether the name was just saved, shown at the field's end for a moment.
+    const saved = ref(false);
 
     const canSave = computed(() => {
         const name = naming.label.trim();
@@ -19,11 +26,19 @@ export function useAccountNaming(account: () => { id: string; label: string }) {
     });
 
     /**
-     * Puts the account's current name back in the field, all of it selected, so typing replaces it.
+     * Puts the account's saved name back in the field and clears the host's refusal, so an unsaved edit is dropped.
      */
-    function startFrom(field: HTMLInputElement | null): void {
+    function revert(): void {
         naming.label = account().label;
         naming.clearErrors();
+    }
+
+    /**
+     * Starts from the saved name with all of it selected, so typing replaces it: the wizard's naming step, where
+     * naming is the one thing to do.
+     */
+    function startFrom(field: HTMLInputElement | null): void {
+        revert();
         field?.focus();
         field?.select();
     }
@@ -40,12 +55,16 @@ export function useAccountNaming(account: () => { id: string; label: string }) {
             .optimistic<{ page: WindowResult<AccountListData> }>((props) => renamedIn(props.page, id, label))
             .submit(rename({ account: id }), {
                 preserveScroll: true,
-                onSuccess: onSaved,
+                onSuccess: () => {
+                    saved.value = true;
+                    window.setTimeout(() => (saved.value = false), SAVED_MILLISECONDS);
+                    onSaved();
+                },
                 ...formSendingHooks(),
             });
     }
 
-    return { naming, canSave, startFrom, save };
+    return { naming, canSave, saved, revert, startFrom, save };
 }
 
 /**

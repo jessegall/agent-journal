@@ -135,7 +135,7 @@ function keepFocusInside(event: KeyboardEvent): void {
                     <Icon name="close" />
                 </Button>
             </header>
-            <div class="flex h-[420px] flex-col gap-4 p-5">
+            <div class="flex h-[420px] flex-col gap-4 overflow-y-auto p-5 *:shrink-0">
                 <slot />
             </div>
             <footer

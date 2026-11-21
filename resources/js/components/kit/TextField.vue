@@ -5,7 +5,8 @@ import { computed } from 'vue';
 /**
  * A labelled one-line text field. A code field shows what a user types from another screen, such as a sign-in
  * code, in a fixed-width face, and is never filled in by the browser or kept by it. A secret field, such as an API
- * key, hides what is typed and is never filled in or kept either.
+ * key, hides what is typed and is never filled in or kept either. The end slot sits inside the field at its right
+ * end, such as a Save that shows only for a changed value.
  */
 const props = withDefaults(
     defineProps<{
@@ -47,6 +48,7 @@ const autocompleteValue = computed(() => {
 <template>
     <FormField :id="id" :label="label" :error="error" :hint="hint">
         <template #default="field">
+            <div class="relative flex">
             <input
                 :id="field.id"
                 v-model="value"
@@ -57,9 +59,15 @@ const autocompleteValue = computed(() => {
                 :spellcheck="code ? false : undefined"
                 :aria-invalid="field.invalid"
                 :aria-describedby="field.describedBy"
-                class="h-7 rounded-control border border-border-2 bg-transparent px-2.5 text-field text-text transition-colors duration-(--duration-hover) placeholder:text-text-4 focus-visible:border-brand focus-visible:outline-none disabled:opacity-45 aria-invalid:border-danger"
-                :class="{ 'font-mono tracking-[0.2em] uppercase': code }"
+                class="h-7 min-w-0 flex-1 rounded-control border border-border-2 bg-transparent px-2.5 text-field text-text transition-colors duration-(--duration-hover) placeholder:text-text-4 focus-visible:border-brand focus-visible:outline-none disabled:opacity-45 aria-invalid:border-danger"
+                :class="{ 'font-mono tracking-[0.2em] uppercase': code, 'pr-20': $slots.end }"
             />
+            <template v-if="$slots.end">
+                <span class="absolute inset-y-0 right-1 flex items-center">
+                    <slot name="end" />
+                </span>
+            </template>
+            </div>
         </template>
     </FormField>
 </template>
