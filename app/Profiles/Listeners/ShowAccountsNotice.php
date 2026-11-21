@@ -9,7 +9,7 @@ use App\Agents\Events\StartUnavailable;
 use App\Contracts\Listener;
 use App\Profiles\Enums\AccountNoticeReason;
 use App\Profiles\Events\AccountsChanged;
-use App\Profiles\Models\AccountNotice;
+use App\Profiles\Support\AccountNotices;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -18,7 +18,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class ShowAccountsNotice implements Listener
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private Dispatcher $events, private AccountNotices $notices) {}
 
     public function handle(StartUnavailable|ProgramFailed $fact): void
     {
@@ -30,7 +30,7 @@ final readonly class ShowAccountsNotice implements Listener
             return;
         }
 
-        $notice = AccountNotice::raise($fact->program, $reason);
+        $notice = $this->notices->record($fact->program, $reason);
         $this->events->dispatch(new AccountsChanged($fact->program, $notice->id));
     }
 }

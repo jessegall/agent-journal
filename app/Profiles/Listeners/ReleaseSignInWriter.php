@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Profiles\Listeners;
+
+use App\Contracts\Attributes\InCommandTransaction;
+use App\Contracts\Listener;
+use App\Profiles\Events\SignInAttemptFinished;
+use App\Profiles\Models\Account;
+
+/**
+ * Lets go of the account folder a finished sign-in attempt wrote, in the attempt's own transaction, so a later attempt
+ * may write it; an attempt that made no account releases nothing and looks nothing up.
+ */
+#[InCommandTransaction]
+final readonly class ReleaseSignInWriter implements Listener
+{
+    public function handle(SignInAttemptFinished $finished): void
+    {
+        if ($finished->accountId === null) {
+            return;
+        }
+
+        Account::lockedForJournal($finished->accountId)->endSignInAgain($finished->attemptId);
+    }
+}

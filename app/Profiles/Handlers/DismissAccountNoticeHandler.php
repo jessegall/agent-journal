@@ -23,7 +23,7 @@ final readonly class DismissAccountNoticeHandler implements CommandHandler
             return;
         }
 
-        $notice->dismiss(CarbonImmutable::now());
+        $notice->resolveAt(CarbonImmutable::now());
         $this->events->dispatch(new AccountsChanged($notice->program, $notice->id));
     }
 }

@@ -9,7 +9,7 @@ use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Enums\AccountNoticeReason;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\Account;
-use App\Profiles\Models\AccountNotice;
+use App\Profiles\Support\AccountNotices;
 use App\Profiles\Models\ActiveAccount;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -21,7 +21,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class CheckAccountHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private Dispatcher $events, private AccountNotices $notices) {}
 
     public function handle(CheckAccount $command): void
     {
@@ -34,7 +34,7 @@ final readonly class CheckAccountHandler implements CommandHandler
         }
 
         $selection->clearIfChosen($account);
-        AccountNotice::raise($account->program, AccountNoticeReason::NeedsSignIn);
+        $this->notices->record($account->program, AccountNoticeReason::NeedsSignIn);
         $this->events->dispatch(new AccountsChanged($account->program, $account->id));
     }
 }

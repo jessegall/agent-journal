@@ -347,7 +347,7 @@ final class Account extends Model implements ReadableModel
         $this->expires_at = $identity->expiry();
         $this->checked_at = $checkedAt;
         $this->save();
-        $this->releaseWriter($attempt);
+        $this->releaseWriter($attempt->id);
     }
 
     /**
@@ -355,9 +355,9 @@ final class Account extends Model implements ReadableModel
      * generation, as the attempt may have changed its folder; one that needed a sign-in is simply let go. An older
      * attempt's end changes nothing of a newer writer's hold.
      */
-    public function endSignInAgain(SignInAttempt $attempt): void
+    public function endSignInAgain(string $attemptId): void
     {
-        if ($this->live_writer_attempt_id !== $attempt->id) {
+        if ($this->live_writer_attempt_id !== $attemptId) {
             return;
         }
 
@@ -367,7 +367,7 @@ final class Account extends Model implements ReadableModel
             $this->maintenance = false;
         }
 
-        $this->releaseWriter($attempt);
+        $this->releaseWriter($attemptId);
     }
 
     /**
@@ -462,9 +462,9 @@ final class Account extends Model implements ReadableModel
     /**
      * Lets the attempt's writer go when it holds the folder; another attempt's hold is left as it is.
      */
-    public function releaseWriter(SignInAttempt $attempt): void
+    public function releaseWriter(string $attemptId): void
     {
-        if ($this->live_writer_attempt_id !== $attempt->id) {
+        if ($this->live_writer_attempt_id !== $attemptId) {
             return;
         }
 

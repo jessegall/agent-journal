@@ -8,7 +8,7 @@ use App\Contracts\CommandHandler;
 use App\Profiles\Commands\SwitchAccount;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\Account;
-use App\Profiles\Models\AccountNotice;
+use App\Profiles\Support\AccountNotices;
 use App\Profiles\Models\ActiveAccount;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -19,7 +19,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class SwitchAccountHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private Dispatcher $events, private AccountNotices $notices) {}
 
     public function handle(SwitchAccount $command): void
     {
@@ -27,7 +27,7 @@ final readonly class SwitchAccountHandler implements CommandHandler
         $selection = ActiveAccount::lockedFor($program);
         $account = Account::lockedForChange($command->accountId);
 
-        AccountNotice::resolveFor($program->value, CarbonImmutable::now());
+        $this->notices->resolveOpen($program->value, CarbonImmutable::now());
 
         if ($selection->select($account)) {
             $this->events->dispatch(new AccountsChanged($program->value, $account->id));

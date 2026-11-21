@@ -11,7 +11,6 @@ use App\Profiles\Enums\SignInState;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Models\Account;
-use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Policies\AccountPolicy;
@@ -27,7 +26,11 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class SignInCompletion
 {
-    public function __construct(private Dispatcher $events, private TargetAuthorizer $authorizer) {}
+    public function __construct(
+        private Dispatcher $events,
+        private TargetAuthorizer $authorizer,
+        private AccountNotices $notices,
+    ) {}
 
     /**
      * @throws SignInAttemptStale
@@ -86,7 +89,7 @@ final readonly class SignInCompletion
 
         $account->signedInAgain($attempt, $identity, $staging, $now);
         $selection->chooseFirst($account);
-        AccountNotice::resolveFor($program->value, $now);
+        $this->notices->resolveOpen($program->value, $now);
         $this->events->dispatch(new AccountsChanged($attempt->program, $account->id));
     }
 

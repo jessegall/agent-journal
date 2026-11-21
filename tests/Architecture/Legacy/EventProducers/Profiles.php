@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\ProfileRevisionRevoked;
+use App\Profiles\Events\SignInAttemptFinished;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -44,5 +45,12 @@ return [
         'producers' => [
             'app/Profiles/Handlers/RevokeProfilesHandler.php',
         ],
+    ],
+    SignInAttemptFinished::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'SignInAttempt::finish',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SignInAttemptFinished('attempt', 'account'),
     ],
 ];

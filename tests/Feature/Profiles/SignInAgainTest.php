@@ -269,7 +269,7 @@ final class SignInAgainTest extends TestCase
         $this->asHost(new CheckAccount('host', $this->account->id, $generation, AccountCheckResult::SignedIn));
         $new = $this->again('tab-2');
 
-        $this->account->refresh()->endSignInAgain(SignInAttempt::query()->findOrFail($old));
+        $this->account->refresh()->endSignInAgain($old);
 
         $this->account->refresh();
         $this->assertSame($new, $this->account->live_writer_attempt_id);
