@@ -57,6 +57,9 @@ type HeadlessRuntime struct {
 	Executable string
 	// Container runs each turn's program as its session container's own process; nil runs it as a child of the host.
 	Container TurnContainer
+	// Confinement runs each turn's program confined to a connected child's own checkout, in place of the session
+	// sandbox; nil runs it unconfined.
+	Confinement TurnConfinement
 	// Usage takes the limit windows and result costs a Claude account start's program reports; nil reads none.
 	Usage UsageObserver
 }
@@ -65,6 +68,11 @@ type HeadlessRuntime struct {
 // container's own process, with the start's settings, credential and environment inside the container.
 type TurnContainer interface {
 	TurnCommand(start profilecontracts.Start, generation int) (*exec.Cmd, error)
+}
+
+// TurnConfinement makes one turn's command run its program confined.
+type TurnConfinement interface {
+	Wrap(command *exec.Cmd)
 }
 
 // HeadlessDriver runs one child of the program per turn, each with a new process generation. Settings asked for between
@@ -250,6 +258,11 @@ func (driver *HeadlessDriver) command(start profilecontracts.Start) (*exec.Cmd, 
 	}
 	command.ExtraFiles = readFiles
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	if driver.runtime.Confinement != nil {
+		driver.runtime.Confinement.Wrap(command)
+
+		return command, nil
+	}
 	if driver.claudeAccountStart() && runtime.GOOS == "darwin" {
 		sandbox, err := host.WriteSessionSandbox(
 			start.SettingsFolder,

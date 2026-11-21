@@ -34,24 +34,27 @@ func WriteSessionSandbox(settingsFolder string, accountFolder string, workFolder
 			return SessionSandbox{}, fmt.Errorf("the sandbox folder %q is not a plain absolute path", folder)
 		}
 	}
-	accountFolder = realPath(accountFolder)
-	workFolder = realPath(workFolder)
-	profile := strings.Join([]string{
-		"(version 1)",
-		"(allow default)",
+	rules := append([]string{"(version 1)", "(allow default)"},
+		sessionSandboxRules(realPath(accountFolder), realPath(workFolder))...)
+	profile := strings.Join(append(rules, ""), "\n")
+	path := filepath.Join(settingsFolder, sandboxProfileName)
+	if err := os.WriteFile(path, []byte(profile), 0o600); err != nil {
+		return SessionSandbox{}, err
+	}
+	return SessionSandbox{ProfilePath: path}, nil
+}
+
+// sessionSandboxRules close the account's other workspaces' history and every process outside the sandbox; the
+// folders are real paths.
+func sessionSandboxRules(accountFolder string, workFolder string) []string {
+	return []string{
 		fmt.Sprintf("(deny file-read* file-write* (subpath %q))", filepath.Join(accountFolder, "projects")),
 		fmt.Sprintf("(allow file-read* file-write* (subpath %q))", ClaudeProjectFolder(accountFolder, workFolder)),
 		"(deny process-info*)",
 		"(allow process-info* (target same-sandbox))",
 		"(deny signal)",
 		"(allow signal (target same-sandbox))",
-		"",
-	}, "\n")
-	path := filepath.Join(settingsFolder, sandboxProfileName)
-	if err := os.WriteFile(path, []byte(profile), 0o600); err != nil {
-		return SessionSandbox{}, err
 	}
-	return SessionSandbox{ProfilePath: path}, nil
 }
 
 // realPath resolves a folder's symbolic links, as Seatbelt matches the real path; a folder that does not exist yet

@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // ErrLocalProjectUnprotected is returned on a machine with no native mechanism that confines a local-project start.
@@ -26,11 +27,18 @@ const (
 	refusedOutcome = "refused"
 )
 
-// LocalProjectFolders are what a local-project start is confined to: the one folder it may write in, and the private
-// state folder it may not read. A socket outside the assigned folder is never reachable.
+// LocalProjectFolders are what a connected project's child start is confined to. Its own checkout is the one folder
+// of the project it reads and writes: the rest of the canonical root, every sibling worktree and Git's common
+// directory are closed to it. The relay's state folder, its sockets included, is closed too, but for the start's own
+// runtime folder, which holds the program's settings.
 type LocalProjectFolders struct {
-	Assigned string
-	Private  string
+	Checkout string
+	Project  string
+	Common   string
+	State    string
+	Runtime  string
+	// Account is the saved account folder whose other workspaces' history stays closed, as in a session sandbox.
+	Account string
 }
 
 // LocalProjectCheck is one action a program started under the confinement tried, the outcome the confinement must
@@ -52,10 +60,53 @@ type LocalProjectProtection struct {
 	Available bool                `json:"available"`
 }
 
-// confinement is the native mechanism that runs a command confined to the folders.
-type confinement struct {
+// ChildConfinement is the native mechanism that runs a connected child's program confined to its folders.
+type ChildConfinement struct {
 	mechanism string
 	command   func(program []string) []string
+}
+
+// ConfineChild prepares the confinement of a child start: its profile, where the platform needs one, goes in the
+// start's own runtime folder. A platform with no confining mechanism refuses the start with
+// ErrLocalProjectUnprotected.
+func ConfineChild(folders LocalProjectFolders) (ChildConfinement, error) {
+	for _, folder := range []string{folders.Checkout, folders.Project, folders.Common, folders.State, folders.Runtime} {
+		if !filepath.IsAbs(folder) || strings.ContainsAny(folder, "\"\\\n") {
+			return ChildConfinement{}, fmt.Errorf("the confined folder %q is not a plain absolute path", folder)
+		}
+	}
+	if err := os.MkdirAll(folders.Runtime, 0o700); err != nil {
+		return ChildConfinement{}, err
+	}
+
+	return localProjectConfinement(folders.real(), folders.Runtime)
+}
+
+// real resolves each folder's symbolic links, as the native mechanisms match the real path.
+func (folders LocalProjectFolders) real() LocalProjectFolders {
+	resolved := LocalProjectFolders{
+		Checkout: realPath(folders.Checkout),
+		Project:  realPath(folders.Project),
+		Common:   realPath(folders.Common),
+		State:    realPath(folders.State),
+		Runtime:  realPath(folders.Runtime),
+	}
+	if folders.Account != "" {
+		resolved.Account = realPath(folders.Account)
+	}
+
+	return resolved
+}
+
+// Command is the command line that runs the program confined.
+func (confined ChildConfinement) Command(program []string) []string {
+	return confined.command(program)
+}
+
+// Wrap makes the command run its program confined.
+func (confined ChildConfinement) Wrap(command *exec.Cmd) {
+	arguments := confined.command(append([]string{command.Path}, command.Args[1:]...))
+	command.Path, command.Args = arguments[0], arguments
 }
 
 // localProjectProbe is one action the probe program tries, what it is tried against and the outcome wanted.
@@ -66,11 +117,10 @@ type localProjectProbe struct {
 	wanted      string
 }
 
-// ProbeLocalProjectProtection starts the probe program under this machine's confinement of a local-project start
-// and has it write inside the assigned folder, write outside it, read the private state folder and connect to a
-// socket outside the assigned folder. The probe program is a command line that takes the action and its path; the
-// private folder is the host's state folder, or a new one when that does not exist yet.
-func ProbeLocalProjectProtection(probe []string, private string) (LocalProjectProtection, error) {
+// ProbeLocalProjectProtection starts the probe program under this machine's confinement of a child start, in a
+// project laid out as a connected one is, and has it try each write and read the confinement allows or refuses. The
+// probe program is a command line that takes the action and its path.
+func ProbeLocalProjectProtection(probe []string) (LocalProjectProtection, error) {
 	root, err := os.MkdirTemp("", "journal-protection-")
 	if err != nil {
 		return LocalProjectProtection{}, err
@@ -82,35 +132,43 @@ func ProbeLocalProjectProtection(probe []string, private string) (LocalProjectPr
 		return LocalProjectProtection{}, err
 	}
 
-	folders := LocalProjectFolders{Assigned: filepath.Join(root, "assigned"), Private: filepath.Join(root, "private")}
-	outside := filepath.Join(root, "outside")
-	for _, folder := range []string{folders.Assigned, folders.Private, outside} {
-		if err := os.Mkdir(folder, 0o700); err != nil {
+	project := filepath.Join(root, "project")
+	worktrees := filepath.Join(project, ".journal", "worktrees")
+	folders := LocalProjectFolders{
+		Checkout: filepath.Join(worktrees, "child"),
+		Project:  project,
+		Common:   filepath.Join(project, ".git"),
+		State:    filepath.Join(root, "state"),
+		Runtime:  filepath.Join(root, "state", "runtimes", "child"),
+	}
+	sibling := filepath.Join(worktrees, "sibling")
+	for _, folder := range []string{folders.Checkout, folders.Common, folders.Runtime, sibling} {
+		if err := os.MkdirAll(folder, 0o700); err != nil {
 			return LocalProjectProtection{}, err
 		}
 	}
 
-	if resolved, err := filepath.EvalSymlinks(private); private != "" && err == nil {
-		folders.Private = resolved
-	}
-
-	socket, err := net.Listen("unix", filepath.Join(outside, "s"))
+	socket, err := net.Listen("unix", filepath.Join(folders.State, "s"))
 	if err != nil {
 		return LocalProjectProtection{}, err
 	}
 	defer socket.Close()
 
-	confined, err := localProjectConfinement(folders, root, probe[0])
+	confined, err := ConfineChild(folders)
 	if err != nil {
 		return LocalProjectProtection{}, err
 	}
 
 	report := LocalProjectProtection{Platform: runtime.GOOS, Mechanism: confined.mechanism, Available: true}
 	for _, check := range []localProjectProbe{
-		{"write inside the assigned folder", ProbeWrite, filepath.Join(folders.Assigned, "file"), allowedOutcome},
-		{"write outside the assigned folder", ProbeWrite, filepath.Join(outside, "file"), refusedOutcome},
-		{"read the private state folder", ProbeRead, folders.Private, refusedOutcome},
-		{"connect to a socket outside the assigned folder", ProbeConnect, socket.Addr().String(), refusedOutcome},
+		{"write inside its own checkout", ProbeWrite, filepath.Join(folders.Checkout, "file"), allowedOutcome},
+		{"write inside its own runtime folder", ProbeWrite, filepath.Join(folders.Runtime, "file"), allowedOutcome},
+		{"write Git's common directory", ProbeWrite, filepath.Join(folders.Common, "file"), refusedOutcome},
+		{"write a sibling worktree", ProbeWrite, filepath.Join(sibling, "file"), refusedOutcome},
+		{"read a sibling worktree", ProbeRead, sibling, refusedOutcome},
+		{"read the project's canonical checkout", ProbeRead, project, refusedOutcome},
+		{"write the relay's state", ProbeWrite, filepath.Join(folders.State, "file"), refusedOutcome},
+		{"connect to a socket of the relay", ProbeConnect, socket.Addr().String(), refusedOutcome},
 	} {
 		result := check.run(confined, probe)
 		report.Checks = append(report.Checks, result)
@@ -121,8 +179,8 @@ func ProbeLocalProjectProtection(probe []string, private string) (LocalProjectPr
 }
 
 // run starts the probe program under the confinement for this one action and compares the outcome.
-func (check localProjectProbe) run(confined confinement, probe []string) LocalProjectCheck {
-	arguments := confined.command(append(append([]string{}, probe...), check.action, check.path))
+func (check localProjectProbe) run(confined ChildConfinement, probe []string) LocalProjectCheck {
+	arguments := confined.Command(append(append([]string{}, probe...), check.action, check.path))
 	printed, err := exec.Command(arguments[0], arguments[1:]...).CombinedOutput()
 
 	observed := allowedOutcome

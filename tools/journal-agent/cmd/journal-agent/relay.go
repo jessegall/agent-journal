@@ -139,8 +139,9 @@ func (binder bindingRelay) serveClaims(ctx context.Context, journal *client.Clie
 	opener := runtimeOpener{stateFolder: folder, installationFolder: binder.installation.Folder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(),
 		hookCommand: filepath.Join(binder.installation.Folder, "bin", "journal-hook"), socket: socket,
-		declared:  combinationsOf(host.Local),
-		worktrees: &host.NativeWorktrees{Root: binder.binding.CanonicalRoot, Git: "git"}}
+		declared:   combinationsOf(host.Local),
+		worktrees:  &host.NativeWorktrees{Root: binder.binding.CanonicalRoot, Git: "git"},
+		relayState: binder.state.Folder}
 	opener.usage = host.NewUsageReports(folder)
 	opener.statusLines = &host.StatusLineRelays{}
 	go opener.usage.Run(ctx, journal)
