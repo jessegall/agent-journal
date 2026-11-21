@@ -360,6 +360,28 @@ describe('the settings dialog', () => {
         );
     });
 
+    it('shows how many agents still run while a removed account drains, and Back keeps it', async () => {
+        const draining = row({
+            account: account({ state: 'removing', runningCount: 2 }),
+            isChosen: true,
+        });
+        expect(draining.text()).toContain('Removing');
+        expect(draining.text()).toContain('2 agents still running');
+        expect(draining.text()).not.toContain('subscription·Default');
+        draining.unmount();
+
+        const kept = row({ account: account({}) });
+        await openSettings(kept);
+        await button(kept, 'Remove account')!.trigger('click');
+        await flushPromises();
+        await button(kept, 'Back')!.trigger('click');
+
+        expect(kept.text()).not.toContain('Remove this account?');
+        expect(forms.every((form) => form.submit.mock.calls.length === 0)).toBe(
+            true,
+        );
+    });
+
     it('keeps a refused removal on the row after its dialog closed', async () => {
         const shown = row({ account: account({}) });
         await openSettings(shown);

@@ -39,6 +39,20 @@ const isLeaving = computed(
     () =>
         props.account.state === 'removing' || props.account.state === 'removed',
 );
+/**
+ * While a removed account drains, how many agents still run on it; it takes no new work meanwhile.
+ */
+const drainingText = computed(() => {
+    const running = props.account.runningCount;
+
+    if (props.account.state !== 'removing' || running === 0) {
+        return null;
+    }
+
+    return running === 1
+        ? '1 agent still running'
+        : `${running} agents still running`;
+});
 const billing = computed(
     () =>
         `${driverName(props.account.driver)} ${props.account.signIn.billingLabel.toLowerCase()}`,
@@ -109,6 +123,10 @@ function recheckAccount(): void {
                     :class="stateText[state.tone]"
                     >{{ state.label }}</span
                 >
+                <template v-if="drainingText !== null">
+                    <span class="text-text-4">·</span>
+                    <span class="whitespace-nowrap">{{ drainingText }}</span>
+                </template>
                 <template v-if="account.expiresAt !== null">
                     <span class="text-text-4">·</span>
                     <span class="whitespace-nowrap text-text-4">

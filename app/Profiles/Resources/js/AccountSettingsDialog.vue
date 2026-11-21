@@ -409,7 +409,7 @@ function signInAgain(): void {
             </template>
             <template v-else>
                 <template v-if="!isLeaving">
-                    <Button variant="danger" size="small" @click="askToRemove"
+                    <Button size="small" @click="askToRemove"
                         >Remove account</Button
                     >
                 </template>
