@@ -197,6 +197,7 @@ def test_a_task_queued_behind_a_running_worker_stays_in_its_queue_unless_the_pro
     story.journal_dispatches_the_next_tasks()
     story.expect_task(printer, delegated=True)
     assert story.newest("workers") == workers, "no worker of its own is sent while its worker runs"
+    story.expect_stack(story.agents.subject, Orchestrating)
 
 
 @story(OrchestratorTwoPhasePlan, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
