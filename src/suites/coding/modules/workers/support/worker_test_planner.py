@@ -65,11 +65,12 @@ class WorkerTestPlanner:
         return self.git.test_folder(worktree) if worktree.id in running else self.libraries.worker_checkout(worktree, self.git.test_checkout(worktree))
 
     # the queued proofs of one worktree that run one test program over named files run as one run over all their
-    # files; a proof that names no file runs alone, or with the proofs of the very same command
+    # files, those that run one Go package with different -run filters as one run with the filters joined; any other
+    # proof that names no file runs alone, or with the proofs of the very same command
     @staticmethod
     def run_groups(proofs: list[Proof]) -> list[list[Proof]]:
         groups: dict[tuple[int, str], list[Proof]] = {}
         for proof in proofs:
             parsed = ProofTestCommand.parsed(proof.test_command)
-            groups.setdefault((proof.worktree_id, shlex.join(parsed.program) if parsed.files else proof.test_command), []).append(proof)
+            groups.setdefault((proof.worktree_id, shlex.join(parsed.program) if parsed.files else ProofTestCommand.filter_key(proof.test_command)), []).append(proof)
         return list(groups.values())
