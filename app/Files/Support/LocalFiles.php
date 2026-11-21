@@ -107,6 +107,11 @@ final class LocalFiles implements Files
         return $real !== null && is_file($real);
     }
 
+    public function isLink(FilePath $path): bool
+    {
+        return is_link($this->confinement->entryPath($path));
+    }
+
     public function isFolder(FilePath $folder): bool
     {
         $real = $this->confinement->existingRealPath($folder);
@@ -163,7 +168,7 @@ final class LocalFiles implements Files
     public function makeFolder(FilePath $folder, Permissions $permissions): void
     {
         $real = $this->confinement->resolvedForWrite($folder);
-        $this->writer->makeFolder($real, $permissions->folderMode(), $folder->label());
+        $this->writer->makeFolderWithMode($real, $permissions->folderMode(), $folder->label());
     }
 
     public function delete(FilePath $file): void

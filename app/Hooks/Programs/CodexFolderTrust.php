@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Programs;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Hooks\Exceptions\FolderTrustRefused;
 
 /**
@@ -20,6 +22,7 @@ final readonly class CodexFolderTrust
      *
      * @throws FolderTrustRefused
      */
+    #[OutsideThePlaces(PlaceExemption::CommandFileSystem)]
     public static function forWorkingRoot(string $roots, string $folder): self
     {
         $isDirectChild = dirname($folder) === rtrim($roots, '/')

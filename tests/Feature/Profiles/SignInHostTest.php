@@ -11,6 +11,7 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Support\EnrolledHost;
 use App\Bus\Contracts\CommandBus;
+use App\Files\Contracts\Files;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInOutcome;
@@ -205,7 +206,7 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, FinishingProtocol::class);
 
-        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000))->runNext();
+        $ran = new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class))->runNext();
 
         $this->assertTrue($ran);
         $this->assertSame([SignInOutcome::Waiting, SignInOutcome::Verified], $host->outcomes);
@@ -222,7 +223,7 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, LingeringProtocol::class);
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000))->runNext();
+        new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000), $this->app->make(Files::class))->runNext();
 
         $this->assertSame([SignInOutcome::Waiting], $host->outcomes);
         $this->assertSame(2, $host->pollCount);
@@ -236,7 +237,7 @@ final class SignInHostTest extends TestCase
         $protocols = new SignInProtocols($this->app);
         $protocols->register('claude-code', SignInMethod::OAuth, FinishingProtocol::class);
 
-        new PrivateSignInProcesses($host, $protocols, static fn () => null)->runNext();
+        new PrivateSignInProcesses($host, $protocols, static fn () => null, $this->app->make(Files::class))->runNext();
 
         $this->assertSame([SignInOutcome::Failed], $host->outcomes);
     }
@@ -246,7 +247,7 @@ final class SignInHostTest extends TestCase
         $claimed = self::claimed('codex', SignInMethod::OAuth, $this->root.'/x');
         $host = new RecordingSignInHost($claimed);
 
-        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null)->runNext();
+        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null, $this->app->make(Files::class))->runNext();
 
         $this->assertSame([SignInOutcome::Failed], $host->outcomes);
     }

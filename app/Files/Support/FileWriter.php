@@ -87,6 +87,19 @@ final readonly class FileWriter
     }
 
     /**
+     * Makes a folder and every missing folder above it with the mode, and gives the folder itself exactly that mode
+     * even when it was there already.
+     */
+    public function makeFolderWithMode(string $real, int $mode, string $label): void
+    {
+        $this->makeFolder($real, $mode, $label);
+
+        if (! @chmod($real, $mode)) {
+            throw FileUnwritable::at($label);
+        }
+    }
+
+    /**
      * Makes a folder and every missing folder above it with the mode.
      */
     public function makeFolder(string $real, int $mode, string $label): void

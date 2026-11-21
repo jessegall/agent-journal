@@ -10,6 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
+use App\Files\Contracts\Files;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\ReconcileSignIns;
 use App\Profiles\Enums\SignInMethod;
@@ -66,7 +67,7 @@ final class SignInRestartTest extends TestCase
     {
         $host = new RecordingSignInHost(null);
 
-        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null)->reconcileAtStart();
+        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null, $this->app->make(Files::class))->reconcileAtStart();
 
         $this->assertSame([[]], $host->reconciled);
     }

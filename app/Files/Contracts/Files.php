@@ -61,6 +61,11 @@ interface Files
 
     public function isFolder(FilePath $folder): bool;
 
+    /**
+     * Whether the path itself is a link, asked without following it.
+     */
+    public function isLink(FilePath $path): bool;
+
     public function fingerprint(FilePath $file): Fingerprint;
 
     /**
@@ -102,7 +107,8 @@ interface Files
     public function append(FilePath $file, string $line): void;
 
     /**
-     * Makes the folder and the missing folders above it, entered by everyone or by the owner alone.
+     * Makes the folder and the missing folders above it, entered by everyone or by the owner alone, and gives the folder
+     * itself exactly that mode.
      */
     public function makeFolder(FilePath $folder, Permissions $permissions): void;
 
