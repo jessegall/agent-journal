@@ -7,6 +7,8 @@ const reloads: { data: Record<string, string> }[] = [];
 
 vi.mock('@inertiajs/vue3', () => ({
     router: { reload: (options: { data: Record<string, string> }) => reloads.push(options) },
+    usePage: () => ({ url: '/plans/12' }),
+    Link: { template: '<a><slot /></a>' },
 }));
 
 const { default: PhaseOutline } = await import('./PhaseOutline.vue');
@@ -67,7 +69,9 @@ describe('PhaseOutline', () => {
 
         const rows = view.findAll('ol[aria-label="Tasks of phase 1"] li');
         expect(rows).toHaveLength(60);
-        expect(document.activeElement).toBe(rows[50].element);
+        expect(document.activeElement).toBe(rows[50].get('a').element);
+        expect(rows[50].get('a').attributes('href')).toBe('/plans/12?inspect=tasks.task&task=151');
+        expect(rows[50].text()).toContain('Task 151 · Task 51 of phase 1');
         expect(view.findAll('ol[aria-label="Tasks of phase 2"] li')).toHaveLength(10);
     });
 

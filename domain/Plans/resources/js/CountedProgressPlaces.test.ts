@@ -7,6 +7,7 @@ import { progressText } from './planLooks';
 
 vi.mock('@inertiajs/vue3', () => ({
     router: { reload: vi.fn() },
+    usePage: () => ({ url: '/plans/12' }),
     useForm: () => reactive({ errors: {}, processing: false, submit: vi.fn() }),
     Link: { template: '<a><slot /></a>' },
 }));

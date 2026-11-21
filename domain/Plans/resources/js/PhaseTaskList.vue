@@ -1,19 +1,34 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import { nextTick, ref, useTemplateRef, watch } from 'vue';
 import Button from '@kit/Button';
+import { onInspectorClosed, useInspectorLink } from '@kit/inspectorLink';
 import StateBadge from '@kit/StateBadge';
 import type { PhasePages } from './usePhasePages';
 
 /**
- * A phase's tasks in their order, a page at a time: Load more appends the next page once and moves the focus to its
- * first row; when the last page brings nothing it says so to its parent, which gives the focus back to the phase's
- * heading. A failed page keeps the rows and offers Retry of the same page.
+ * A phase's tasks in their order, a page at a time, each row's link 'Task 31 · title' opening that task's reader in
+ * the inspector by its number, the phase and its cursor staying as they are; closing the reader gives the focus back
+ * to that link. Load more appends the next page once and moves the focus to its first row; when the last page brings
+ * nothing it says so to its parent, which gives the focus back to the phase's heading. A failed page keeps the rows
+ * and offers Retry of the same page.
  */
 const props = defineProps<{ pages: PhasePages; phaseName: string }>();
 const emit = defineEmits<{ loadMore: []; retry: []; ended: [] }>();
 
 const items = useTemplateRef<HTMLElement[]>('items');
 const isWaitingForMore = ref(false);
+const inspectorLink = useInspectorLink();
+const openedLink = ref<HTMLElement | null>(null);
+
+onInspectorClosed(() => {
+    openedLink.value?.focus();
+    openedLink.value = null;
+});
+
+function remember(event: MouseEvent): void {
+    openedLink.value = event.currentTarget as HTMLElement;
+}
 
 function askMore(): void {
     isWaitingForMore.value = true;
@@ -29,9 +44,12 @@ watch(
 
         isWaitingForMore.value = false;
         await nextTick();
-        const first = items.value?.[props.pages.firstNewRow];
+        const first =
+            items.value?.[props.pages.firstNewRow]?.querySelector<HTMLElement>(
+                'a',
+            ) ?? null;
 
-        if (first === undefined) {
+        if (first === null) {
             emit('ended');
 
             return;
@@ -49,15 +67,18 @@ watch(
         </template>
         <ol class="flex flex-col gap-1" :aria-label="`Tasks of ${phaseName}`">
             <template v-for="task in pages.rows" :key="task.number">
-                <li
-                    ref="items"
-                    tabindex="-1"
-                    class="flex flex-wrap items-center gap-2 rounded-control px-1 py-0.5 outline-none focus-visible:outline-2 focus-visible:outline-text"
-                >
-                    <span class="font-mono text-small tabular-nums text-text-3"
-                        >Task {{ task.number }}</span
+                <li ref="items" class="flex flex-wrap items-center gap-2 px-1 py-0.5">
+                    <Link
+                        :href="inspectorLink('tasks.task', { task: task.number })"
+                        preserve-state
+                        preserve-scroll
+                        class="min-w-0 rounded-control text-text underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text [overflow-wrap:anywhere]"
+                        @click="remember"
+                        ><span class="font-mono text-small tabular-nums text-text-3"
+                            >Task {{ task.number }}</span
+                        >
+                        · {{ task.title }}</Link
                     >
-                    <span class="[overflow-wrap:anywhere]">{{ task.title }}</span>
                     <StateBadge :label="task.stateLabel" outlined />
                 </li>
             </template>

@@ -74,6 +74,7 @@ use Domain\Plans\Resolvers\OpenPlansCount;
 use Domain\Plans\Resolvers\PhaseWindowResolver;
 use Domain\Plans\Resolvers\PlansWindowResolver;
 use Domain\Plans\Resolvers\PlanWindowResolver;
+use Domain\Plans\Resolvers\TaskPlanSection;
 use Domain\Plans\Resolvers\WaitingPlansCount;
 use Domain\Plans\Resolvers\WaitingPlansSection;
 use Domain\Plans\Skills\PlanSkill;
@@ -239,6 +240,14 @@ final class PlansDomain extends Domain implements
                 SlotContextType::Session,
                 WaitingPlansSection::class,
                 'WaitingPlansSection.vue',
+            ),
+            Section::make(
+                'task-plan',
+                'Plan',
+                'tasks.inspector',
+                SlotContextType::Record,
+                TaskPlanSection::class,
+                'TaskPlanSection.vue',
             ),
         ];
     }

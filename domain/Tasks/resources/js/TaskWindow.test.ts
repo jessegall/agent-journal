@@ -5,6 +5,7 @@ import type { TaskReaderData } from '@generated/types/tasks';
 
 vi.mock('@inertiajs/vue3', () => ({ Link: { template: '<a><slot /></a>' } }));
 vi.mock('@generated/routes/tasks', () => ({ list: { url: () => '/tasks' } }));
+vi.mock('@kit/SlotSections', () => ({ default: { template: '<div />' } }));
 
 const { default: TaskWindow } = await import('./TaskWindow.vue');
 
@@ -16,6 +17,7 @@ function reader(changes: Partial<TaskReaderData> = {}): TaskReaderData {
         revision: 1,
         brief: 'First part.\n\nSecond part,\nwith a line.',
         latestRun: 4,
+        sections: [],
         ...changes,
     } as TaskReaderData;
 }
@@ -29,7 +31,6 @@ describe('TaskWindow', () => {
         expect(text).toContain('Unassigned');
         expect(text).toContain('Run 4');
         expect(text).toContain('Nobody');
-        expect(text).toContain('Not in a plan');
     });
 
     it('shows the brief as text in order and says No brief yet when it is empty', () => {
