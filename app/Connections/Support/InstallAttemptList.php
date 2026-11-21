@@ -35,8 +35,9 @@ final readonly class InstallAttemptList
         $rows = array_map(fn (InstallAttempt $attempt) => new InstallAttemptRow(
             $attempt->reference,
             $attempt->mode->value,
-            $attempt->project_id,
+            $attempt->target_label,
             $attempt->stateAt($now)->value,
+            $attempt->version,
             (string) $attempt->created_at?->toIso8601String(),
             $attempt->binding_id,
         ), array_values($page->items()));

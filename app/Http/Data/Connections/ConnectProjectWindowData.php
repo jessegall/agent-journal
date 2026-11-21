@@ -10,7 +10,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * The Connect a project window: the server a line connects to, by name and origin, whether it may issue lines now,
- * what the current release offers, the projects a Join line can join, and every connected folder. An issued line is never part of it, so it never enters the page's history.
+ * what the current release offers, the projects a Join line can join, the owner's install attempts, and every
+ * connected folder. An issued line is never part of it, so it never enters the page's history.
  */
 #[TypeScript]
 final class ConnectProjectWindowData extends Data
@@ -26,6 +27,7 @@ final class ConnectProjectWindowData extends Data
         public readonly ReleaseOfferData $release,
         #[DataCollectionOf(JoinTargetData::class)]
         public readonly array $projects,
+        public readonly InstallAttemptListData $attempts,
         #[DataCollectionOf(ProjectBindingRowData::class)]
         public readonly array $bindings,
     ) {}

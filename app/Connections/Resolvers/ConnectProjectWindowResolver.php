@@ -10,12 +10,15 @@ use App\Agents\Support\ServerOrigin;
 use App\Connections\Models\Environment;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
+use App\Connections\Support\InstallAttemptList;
 use App\Http\Data\Connections\ConnectProjectWindowData;
+use App\Http\Data\Connections\InstallAttemptListData;
 use App\Http\Data\Connections\JoinTargetData;
 use App\Http\Data\Connections\ProjectBindingRowData;
 use App\Http\Data\Connections\ReleaseOfferData;
 use App\Ui\Contracts\PageResolver;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Request;
 
 /**
  * The Connect a project window: this server's name and origin, whether it may issue install lines, the projects a
@@ -27,6 +30,8 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         private InstallLineAvailability $availability,
         private ServerOrigin $origin,
         private PublishedReleases $releases,
+        private InstallAttemptList $attempts,
+        private Request $request,
     ) {}
 
     public function read(): ConnectProjectWindowData
@@ -40,6 +45,7 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
             'origin' => $this->origin->canonical(),
             'canIssue' => $this->availability->canIssue(),
             'release' => ReleaseOfferData::ofPublished($this->releases->currentRelease()),
+            'attempts' => InstallAttemptListData::fromPage($this->attempts->page($this->attemptsCursor())),
             'projects' => array_map(
                 fn (Project $project) => JoinTargetData::fromProject($project, $environments),
                 $projects,
@@ -49,5 +55,13 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
                 ProjectBinding::listed(),
             ),
         ]);
+    }
+
+    /**
+     * The cursor of the install attempts page the window asked for, none for the first.
+     */
+    private function attemptsCursor(): string|null
+    {
+        return $this->request->filled('attempts') ? $this->request->string('attempts')->toString() : null;
     }
 }

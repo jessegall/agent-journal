@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { JoinTargetData } from '@generated/types/connections';
+import type { InstallAttemptRowData, JoinTargetData } from '@generated/types/connections';
 import { issue, revoke as cancelLine } from '@generated/routes/connections/invitations';
 import Button from '@kit/Button';
 import FormField from '@kit/FormField';
@@ -14,7 +14,7 @@ import InstallLineField from './InstallLineField.vue';
  * then Generate, Copy, Replace and Cancel. The line lives in this component alone, never in the page's props, the URL
  * or the history, and is dropped when it expires, is replaced or cancelled, or the window closes.
  */
-const props = defineProps<{ projects: JoinTargetData[] }>();
+const props = defineProps<{ projects: JoinTargetData[]; attempts: InstallAttemptRowData[]; fresh: boolean }>();
 
 type IssuedLine = {
     installLine: string;
@@ -50,6 +50,24 @@ watch(issued, (line) => {
 });
 
 onBeforeUnmount(() => clearTimeout(expiry));
+
+// The journal's own word on this window's attempt: once it moved on (replaced elsewhere, spent, cancelled or
+// expired), the line shown here is obsolete and goes at once.
+watch(
+    () => props.attempts,
+    (rows) => {
+        const line = issued.value;
+        const row = rows.find((each) => each.reference === line?.attemptReference);
+
+        if (line === null || row === undefined) {
+            return;
+        }
+
+        if (row.state !== 'open' || row.version !== line.attemptVersion) {
+            drop(row.state === 'spent' ? 'This line was used: its folder is connected now.' : 'This line no longer works.');
+        }
+    },
+);
 
 function drop(message: string): void {
     issued.value = null;
@@ -141,7 +159,7 @@ function cancel(): void {
             </div>
         </template>
         <template v-else>
-            <InstallLineField :line="issued.installLine" :expires-at="issued.expiresAt" />
+            <InstallLineField :line="issued.installLine" :expires-at="issued.expiresAt" :is-fresh="fresh" />
             <p class="text-small text-muted">
                 If nothing installs, check the journal address and this invitation in Settings. When the installer
                 prints nothing, the folder is not confirmed as connected.

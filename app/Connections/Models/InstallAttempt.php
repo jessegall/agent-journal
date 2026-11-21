@@ -20,8 +20,10 @@ use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -43,6 +45,9 @@ use Illuminate\Support\Carbon;
  * @property int $version
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read string $target_label
+ * @property-read Project|null $project
+ * @property-read Environment|null $environment
  */
 #[Fillable([
     'reference', 'owner_user_id', 'idempotency_key', 'mode', 'project_id', 'environment_id', 'state', 'version',
@@ -137,7 +142,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         return self::query()->ofOwner($ownerUserId)
             ->where(fn (Builder $listed) => $listed->where('state', InstallAttemptState::Open)
                 ->orWhere('updated_at', '>=', $since))
-            ->with('invitations')
+            ->with(['invitations', 'project', 'environment'])
             ->orderByDesc('created_at')->orderByDesc('id')
             ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
@@ -200,6 +205,26 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         return $live->isEmpty() ? InstallAttemptState::Expired : InstallAttemptState::Open;
     }
 
+    /**
+     * The target as the owner's list names it: New project, or the project and environment it joins; a Join whose
+     * environment is gone says so.
+     */
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function targetLabel(): Attribute
+    {
+        return Attribute::get(function (): string {
+            if ($this->mode === InvitationMode::New) {
+                return 'New project';
+            }
+
+            $environment = $this->environment?->label ?? 'an environment that is gone';
+
+            return ($this->project?->label ?? 'a project').' / '.$environment;
+        });
+    }
+
     // ----------[ Relations ]----------
 
     /**
@@ -208,6 +233,22 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     public function invitations(): HasMany
     {
         return $this->hasMany(ProjectInvitation::class, 'install_attempt_id');
+    }
+
+    /**
+     * @return BelongsTo<Project, $this>
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return BelongsTo<Environment, $this>
+     */
+    public function environment(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class);
     }
 
     // ----------[ Internals ]----------

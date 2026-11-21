@@ -42,57 +42,58 @@ const { default: ConnectProjectWindow } = await import(
 const LINE =
     'curl -fsSL https://journal.example.com/install/Tk3_x-9QvZ0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0u | sh';
 
-function windowWith(canIssue: boolean) {
-    return mount(ConnectProjectWindow, {
-        props: {
-            data: {
-                serverName: 'journal.example.com',
-                origin: 'https://journal.example.com',
-                canIssue,
-                projects: [
-                    {
-                        id: 'project-1',
-                        label: 'Shop',
-                        environments: [
-                            { id: 'environment-main', label: 'Main' },
-                            { id: 'environment-research', label: 'Research' },
-                        ],
-                    },
-                ],
-                release: {
-                    release: '1.0.0',
-                    targets: [
-                        {
-                            name: 'darwin-arm64',
-                            bytes: 9_000_000,
-                            isMeasured: true,
-                            prerequisites: ['git', 'curl'],
-                            missingProviders: [],
-                            isSupported: true,
-                        },
-                        {
-                            name: 'linux-amd64',
-                            bytes: 9_000_000,
-                            isMeasured: true,
-                            prerequisites: ['git', 'curl'],
-                            missingProviders: ['codex'],
-                            isSupported: false,
-                        },
-                    ],
-                    missingCapabilities: [],
-                },
-                bindings: [
-                    {
-                        id: 'binding-1',
-                        machineLabel: 'Owner laptop',
-                        projectLabel: 'Shop',
-                        lastContactAt: null,
-                        state: 'ready',
-                    },
+function windowData(canIssue: boolean, attempts: unknown[] = []) {
+    return {
+        serverName: 'journal.example.com',
+        origin: 'https://journal.example.com',
+        canIssue,
+        projects: [
+            {
+                id: 'project-1',
+                label: 'Shop',
+                environments: [
+                    { id: 'environment-main', label: 'Main' },
+                    { id: 'environment-research', label: 'Research' },
                 ],
             },
+        ],
+        release: {
+            release: '1.0.0',
+            targets: [
+                {
+                    name: 'darwin-arm64',
+                    bytes: 9_000_000,
+                    isMeasured: true,
+                    prerequisites: ['git', 'curl'],
+                    missingProviders: [],
+                    isSupported: true,
+                },
+                {
+                    name: 'linux-amd64',
+                    bytes: 9_000_000,
+                    isMeasured: true,
+                    prerequisites: ['git', 'curl'],
+                    missingProviders: ['codex'],
+                    isSupported: false,
+                },
+            ],
+            missingCapabilities: [],
         },
-    });
+        attempts: { rows: attempts, nextCursor: null },
+        bindings: [
+            {
+                id: 'binding-1',
+                machineLabel: 'Owner laptop',
+                projectLabel: 'Shop',
+                lastContactAt: null,
+                state: 'ready',
+            },
+        ],
+    };
+}
+
+function windowWith(canIssue: boolean) {
+    return mount(ConnectProjectWindow, { props: { data: windowData(canIssue) } });
 }
 
 function button(wrapper: ReturnType<typeof windowWith>, label: string) {
@@ -220,5 +221,28 @@ describe('ConnectProjectWindow', () => {
         );
         expect(wrapper.find('input[readonly]').exists()).toBe(false);
         expect(wrapper.text()).toContain('Cancelled.');
+    });
+
+    it('drops its line at once when the journal reports its attempt spent', async () => {
+        const wrapper = windowWith(true);
+        await button(wrapper, 'Generate install line').trigger('click');
+        await flushPromises();
+
+        await wrapper.setProps({
+            data: windowData(true, [
+                {
+                    reference: 'IA-ABCDEFGH',
+                    target: 'New project',
+                    state: 'spent',
+                    version: 1,
+                    createdAt: new Date().toISOString(),
+                    bindingId: 'binding-1',
+                },
+            ]),
+        });
+
+        expect(wrapper.find('input[readonly]').exists()).toBe(false);
+        expect(wrapper.text()).toContain('This line was used');
+        expect(wrapper.find('a[href="#binding-binding-1"]').exists()).toBe(true);
     });
 });

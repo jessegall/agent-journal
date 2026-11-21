@@ -45,6 +45,8 @@ final class ConnectProjectWindowTest extends TestCase
             ->where('page.data.release.targets.0.bytes', 9_000_000)
             ->where('page.data.release.targets.0.prerequisites', ['git', 'curl'])
             ->where('page.data.release.missingCapabilities', [])
+            ->has('page.data.attempts.rows', 2)
+            ->where('page.data.attempts.rows.0.state', 'open')
             ->has('page.data.bindings', 1)
             ->where('page.data.bindings.0.projectLabel', 'Shop')
             ->where('page.data.bindings.0.machineLabel', 'Owner laptop')

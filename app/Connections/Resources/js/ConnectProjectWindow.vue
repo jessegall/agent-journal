@@ -5,8 +5,9 @@ import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';
 import { router } from '@inertiajs/vue3';
 import { keyedPost } from '@kit/keyedPost';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import BindingRow from './BindingRow.vue';
+import InstallAttemptList from './InstallAttemptList.vue';
 import InstallLinePanel from './InstallLinePanel.vue';
 import ReleasePlatforms from './ReleasePlatforms.vue';
 
@@ -18,6 +19,35 @@ import ReleasePlatforms from './ReleasePlatforms.vue';
 const props = defineProps<{ data: ConnectProjectWindowData }>();
 
 const refusal = ref<string | null>(null);
+// Whether the page was read again recently enough to trust a shown line is still the attempt's current one.
+const fresh = ref(true);
+let refreshing: ReturnType<typeof setInterval> | undefined;
+
+/**
+ * Reads the page again, as the attempts change by other tabs and devices; a read that fails marks the line stale.
+ */
+function refresh(): void {
+    if (document.visibilityState !== 'visible') {
+        return;
+    }
+
+    let answered = false;
+    router.reload({
+        only: ['page'],
+        onSuccess: () => (answered = true),
+        onFinish: () => (fresh.value = answered),
+    });
+}
+
+onMounted(() => {
+    refreshing = setInterval(refresh, 5_000);
+    window.addEventListener('focus', refresh);
+});
+
+onBeforeUnmount(() => {
+    clearInterval(refreshing);
+    window.removeEventListener('focus', refresh);
+});
 // The folders chosen to revoke together, and what came of each the last time.
 const chosen = ref<Set<string>>(new Set());
 const outcomes = ref<Record<string, string>>({});
@@ -90,13 +120,14 @@ function revokeBinding(bindingId: string): void {
                 </p>
             </template>
             <template v-else>
-                <InstallLinePanel :projects="data.projects" />
+                <InstallLinePanel :projects="data.projects" :attempts="data.attempts.rows" :fresh="fresh" />
             </template>
             <ReleasePlatforms :release="data.release" />
             <template v-if="refusal !== null">
                 <p class="text-small text-danger">{{ refusal }}</p>
             </template>
         </section>
+        <InstallAttemptList :attempts="data.attempts" :fresh="fresh" />
         <template v-if="data.bindings.length > 0">
             <div class="flex flex-wrap items-center gap-2 px-4 sm:px-0">
                 <template v-for="machine in machines" :key="machine">
