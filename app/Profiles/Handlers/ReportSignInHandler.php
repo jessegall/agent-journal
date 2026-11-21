@@ -9,10 +9,8 @@ use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Enums\SignInState;
-use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInCompletion;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Applies the runner's report to the attempt it runs: a verified sign-in goes through the completion that rechecks
@@ -22,7 +20,6 @@ final readonly class ReportSignInHandler implements CommandHandler
 {
     public function __construct(
         private SignInCompletion $completion,
-        private Dispatcher $events,
         private CommandFacts $facts,
     ) {}
 
@@ -49,6 +46,5 @@ final readonly class ReportSignInHandler implements CommandHandler
 
         $attempt->finish(SignInState::Failed);
         $this->facts->applyRequired();
-        $this->events->dispatch(new AccountsChanged($attempt->program, $attempt->account_id ?? $attempt->id));
     }
 }

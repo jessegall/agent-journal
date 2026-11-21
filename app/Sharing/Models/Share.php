@@ -6,6 +6,8 @@ namespace App\Sharing\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -13,6 +15,14 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Events\ShareActivated;
+use App\Sharing\Events\ShareCreated;
+use App\Sharing\Events\ShareExpired;
+use App\Sharing\Events\ShareFailed;
+use App\Sharing\Events\ShareRequested;
+use App\Sharing\Events\ShareRevoked;
+use App\Sharing\Events\ShareScopeChanged;
+use App\Sharing\Exceptions\ShareEndInvalid;
 use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Exceptions\ShareProposalUnavailable;
 use App\Sharing\Exceptions\ShareRetryRefused;
@@ -77,13 +87,14 @@ use PhpOption\Option;
         'terminal_at',
     ],
 )]
-final class Share extends Model implements Numbered, ReadableModel
+final class Share extends Model implements EventSource, Numbered, ReadableModel
 {
     use BelongsToOneRoot;
     use BoundedReads;
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share';
 
@@ -143,7 +154,8 @@ final class Share extends Model implements Numbered, ReadableModel
             $share = self::forRoot($root, ShareState::Proposed, $expiresAt);
             $share->requester_type = $origin->requester->type;
             $share->requester_id = $origin->requester->id;
-            $share->save();
+            $share->assertSaved($share->save());
+            $share->raise(new ShareRequested($share->fact()));
 
             return $share;
         }
@@ -155,7 +167,8 @@ final class Share extends Model implements Numbered, ReadableModel
         $share->configuration_version = $origin->configurationVersion;
         $share->token_digest = $origin->token->digest;
         $share->token_ciphertext = $origin->token->token;
-        $share->save();
+        $share->assertSaved($share->save());
+        $share->raise(new ShareCreated($share->fact()));
 
         return $share;
     }
@@ -441,19 +454,37 @@ final class Share extends Model implements Numbered, ReadableModel
         $this->configuration_version = $configuration->configuration_version;
         $this->token_digest = $token->digest;
         $this->token_ciphertext = $token->token;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareCreated($this->fact()));
     }
 
     /**
-     * Ends the share in a terminal state once: its token can no longer be read back, while its digest stays so a
-     * read with the old token is answered as denied.
+     * Ends the share as revoked or expired once and raises that fact; false, with nothing changed, when it had already
+     * ended. Its token can no longer be read back, while its digest stays so a read with the old token is denied.
+     *
+     * @throws ShareEndInvalid
      */
-    public function end(ShareState $terminal): void
+    public function end(ShareState $terminal): bool
     {
+        if ($terminal !== ShareState::Revoked && $terminal !== ShareState::Expired) {
+            throw ShareEndInvalid::for($this->id, $terminal);
+        }
+
+        if ($this->state->isTerminal()) {
+            return false;
+        }
+
+        $endedAt = CarbonImmutable::now();
         $this->state = $terminal;
-        $this->terminal_at = CarbonImmutable::now();
+        $this->terminal_at = $endedAt;
         $this->token_ciphertext = null;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(match ($terminal) {
+            ShareState::Revoked => new ShareRevoked($this->factAt($endedAt)),
+            ShareState::Expired => new ShareExpired($this->factAt($endedAt)),
+        });
+
+        return true;
     }
 
     /**
@@ -462,7 +493,8 @@ final class Share extends Model implements Numbered, ReadableModel
     public function advanceScope(): void
     {
         $this->scope_version++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareScopeChanged($this->fact()));
     }
 
     /**
@@ -499,7 +531,8 @@ final class Share extends Model implements Numbered, ReadableModel
     public function activate(): void
     {
         $this->state = ShareState::Active;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareActivated($this->fact()));
     }
 
     /**
@@ -508,7 +541,8 @@ final class Share extends Model implements Numbered, ReadableModel
     public function failActivation(): void
     {
         $this->state = ShareState::Failed;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new ShareFailed($this->fact()));
     }
 
     // ----------[ Answers ]----------
@@ -602,13 +636,7 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public function fact(): ShareFact
     {
-        return new ShareFact(
-            $this->id,
-            $this->share_gateway_configuration_id,
-            $this->state,
-            $this->scope_version,
-            CarbonImmutable::now(),
-        );
+        return $this->factAt(CarbonImmutable::now());
     }
 
     /**
@@ -783,5 +811,13 @@ final class Share extends Model implements Numbered, ReadableModel
     protected function openedByDigest(Builder $query, string $digest): void
     {
         $query->where('token_digest', $digest);
+    }
+
+    /**
+     * What a lifecycle event tells about the share as it stands, at the moment the change was made.
+     */
+    private function factAt(CarbonImmutable $at): ShareFact
+    {
+        return new ShareFact($this->id, $this->share_gateway_configuration_id, $this->state, $this->scope_version, $at);
     }
 }

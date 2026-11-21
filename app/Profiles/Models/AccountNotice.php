@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Profiles\Models;
 
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountNoticeReason;
+use App\Profiles\Events\AccountNoticeRecorded;
+use App\Profiles\Events\AccountNoticeResolved;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -30,11 +34,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['program', 'reason'])]
-final class AccountNotice extends Model implements ReadableModel
+final class AccountNotice extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     // ----------[ Constructors ]----------
 
@@ -56,7 +61,8 @@ final class AccountNotice extends Model implements ReadableModel
     public static function create(string $program, AccountNoticeReason $reason): self
     {
         $notice = new self(['program' => $program, 'reason' => $reason->value]);
-        $notice->save();
+        $notice->assertSaved($notice->save());
+        $notice->raise(new AccountNoticeRecorded($notice->program, $notice->id));
 
         return $notice;
     }
@@ -114,7 +120,8 @@ final class AccountNotice extends Model implements ReadableModel
     public function countAgain(): void
     {
         $this->times++;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AccountNoticeRecorded($this->program, $this->id));
     }
 
     /**
@@ -123,7 +130,8 @@ final class AccountNotice extends Model implements ReadableModel
     public function resolveAt(CarbonImmutable $now): void
     {
         $this->resolved_at = $now;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new AccountNoticeResolved($this->program, $this->id));
     }
 
     // ----------[ Scopes ]----------

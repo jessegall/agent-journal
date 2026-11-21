@@ -10,8 +10,6 @@ use App\Reads\Contracts\ReadMeter;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
-use App\Sharing\Events\ShareCreated;
-use App\Sharing\Events\ShareScopeChanged;
 use App\Sharing\Exceptions\ShareProposalUnavailable;
 use App\Sharing\Exceptions\ShareQuotaReached;
 use App\Sharing\Exceptions\ShareRefreshRefused;
@@ -29,7 +27,6 @@ use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareScope;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * The owner's grants: a new share, an agent's proposal approved, or a live share's members replaced, each from a
@@ -43,7 +40,6 @@ final readonly class ShareGrants
         private SharePolicy $policy,
         private ShareScope $scope,
         private ReadMeter $meter,
-        private Dispatcher $events,
     ) {}
 
     public function create(Actor $owner, string $previewId, string $previewChecksum, ShareDuration $duration): Share
@@ -63,7 +59,6 @@ final readonly class ShareGrants
         ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $share, $consumed, ShareAuditType::Created);
-        $this->events->dispatch(new ShareCreated($share->fact()));
 
         return $share;
     }
@@ -95,7 +90,6 @@ final readonly class ShareGrants
         ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);
-        $this->events->dispatch(new ShareCreated($proposal->fact()));
 
         return $proposal;
     }
@@ -123,7 +117,6 @@ final readonly class ShareGrants
         $share->advanceScope();
 
         $this->publish($owner, $share, $consumed, ShareAuditType::ScopeRefreshed);
-        $this->events->dispatch(new ShareScopeChanged($share->fact()));
 
         return $share;
     }

@@ -15,10 +15,11 @@ use Tests\Support\ScanCache\ScanCache;
 /**
  * Every place the code sends an event, found by EventCallScan with the event's class resolved, against the expected
  * producers of each event: a migrated row fact is raised only by its owning model method, and every other event is
- * sent only from the files its area's list names, so a new producer, a moved one or a duplicate fails.
+ * sent only from the files its area's list names, so a new producer, a moved one or a duplicate fails. A fact two
+ * transitions of one model establish names both as its owners.
  *
  * @phpstan-type Expectation array{
- *     role: EventRole, producers: list<string>, owner?: string, migrated?: bool, returnedBy?: list<string>,
+ *     role: EventRole, producers: list<string>, owner?: string|list<string>, migrated?: bool, returnedBy?: list<string>,
  *     sample?: Closure(): object
  * }
  */
@@ -163,10 +164,11 @@ final readonly class EventProducers
         }
 
         $isMigratedFact = ($expectation['migrated'] ?? false) && $expectation['role']->isRowFact();
-        $owner = $expectation['owner'] ?? '';
+        $owners = (array) ($expectation['owner'] ?? []);
+        $owner = implode(' or ', $owners);
 
         if ($isMigratedFact) {
-            $isOwner = $producer->isRaise() && $producer->site === $owner;
+            $isOwner = $producer->isRaise() && in_array($producer->site, $owners, true);
 
             return $isOwner || $producer->path === $busPublisher
                 ? null
@@ -196,7 +198,9 @@ final readonly class EventProducers
                 fn (EventProducer $producer) => $producer->event === $event && $producer->isRaise(),
             );
 
-            return $raisers === [] ? ["{$short}: its owner ".($expectation['owner'] ?? '').' raises it nowhere'] : [];
+            $owner = implode(' or ', (array) ($expectation['owner'] ?? []));
+
+            return $raisers === [] ? ["{$short}: its owner {$owner} raises it nowhere"] : [];
         }
 
         return array_values(array_map(

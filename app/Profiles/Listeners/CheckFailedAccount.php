@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Listeners;
 
 use App\Agents\Events\ProgramFailed;
+use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
 use App\Contracts\Listener;
 use App\Profiles\Commands\RecordAccountFailure;
 use App\Profiles\Models\Account;
@@ -17,7 +17,7 @@ use App\Profiles\Models\Account;
  */
 final readonly class CheckFailedAccount implements Listener
 {
-    public function __construct(private EntryDispatchers $dispatchers) {}
+    public function __construct(private JournalCommands $journal) {}
 
     public function handle(ProgramFailed $failed): void
     {
@@ -31,7 +31,7 @@ final readonly class CheckFailedAccount implements Listener
             return;
         }
 
-        $this->dispatchers->runAsJournal(
+        $this->journal->runAsJournal(
             CommandEntry::AccountMaintenance,
             'failed account check',
             new RecordAccountFailure($account->id, $failed->accountGeneration),

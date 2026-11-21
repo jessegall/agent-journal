@@ -6,7 +6,10 @@ namespace App\Profiles\Models;
 
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
+use App\Profiles\Events\AccountSwitched;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
@@ -32,11 +35,12 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['program'])]
-final class ActiveAccount extends Model implements ReadableModel
+final class ActiveAccount extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.active-account';
 
@@ -61,15 +65,7 @@ final class ActiveAccount extends Model implements ReadableModel
      */
     public static function lockedFor(HookProgram $program): self
     {
-        $now = Carbon::now();
-        self::query()->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'program' => $program->value,
-            'has_selected' => false,
-            'change_number' => 0,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
+        self::makeIfAbsent($program);
 
         return self::query()->ofProgram($program)->lockForUpdate()->firstOrFail();
     }
@@ -101,15 +97,7 @@ final class ActiveAccount extends Model implements ReadableModel
      */
     public static function lockedForJournal(HookProgram $program): self
     {
-        $now = Carbon::now();
-        self::query()->withoutGlobalScope(AccountOwnerScope::class)->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'program' => $program->value,
-            'has_selected' => false,
-            'change_number' => 0,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
+        self::makeIfAbsent($program);
 
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
@@ -131,6 +119,22 @@ final class ActiveAccount extends Model implements ReadableModel
     // ----------[ Mutations ]----------
 
     /**
+     * The owner's choice of the account new starts use, announced on the Accounts page when it changed anything.
+     *
+     * @throws AccountUnavailable
+     */
+    public function switchTo(Account $account): bool
+    {
+        if (! $this->select($account)) {
+            return false;
+        }
+
+        $this->raise(new AccountSwitched($this->program, $account->id));
+
+        return true;
+    }
+
+    /**
      * Makes the account the one new starts use, and answers whether that changed anything: choosing the one already
      * chosen does not. Starts already running keep the account they started with.
      *
@@ -147,7 +151,7 @@ final class ActiveAccount extends Model implements ReadableModel
         $this->account_id = $account->id;
         $this->has_selected = true;
         $this->change_number++;
-        $this->save();
+        $this->assertSaved($this->save());
 
         return true;
     }
@@ -199,5 +203,18 @@ final class ActiveAccount extends Model implements ReadableModel
     protected function ofProgram(Builder $query, HookProgram $program): void
     {
         $query->where('program', $program->value);
+    }
+
+    /**
+     * Makes the program's selection row when none exists yet; two requests that make it at once leave one row.
+     */
+    private static function makeIfAbsent(HookProgram $program): void
+    {
+        $selection = new self();
+        $selection->id = strtolower((string) Str::ulid());
+        $selection->program = $program->value;
+        $selection->has_selected = false;
+        $selection->change_number = 0;
+        $selection->insertIfAbsent();
     }
 }

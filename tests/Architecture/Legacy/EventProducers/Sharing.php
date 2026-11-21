@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Sharing\Enums\ShareState;
 use App\Sharing\Events\ShareActivated;
 use App\Sharing\Events\ShareCreated;
 use App\Sharing\Events\ShareExpired;
@@ -10,6 +11,7 @@ use App\Sharing\Events\ShareGatewayChanged;
 use App\Sharing\Events\ShareRequested;
 use App\Sharing\Events\ShareRevoked;
 use App\Sharing\Events\ShareScopeChanged;
+use App\Sharing\Support\ShareFact;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -21,67 +23,58 @@ return [
     ShareActivated::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::activate',
-        'migrated' => false,
-        'producers' => [
-            'app/Sharing/Handlers/RecordGatewayOutcomeHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareActivated(new ShareFact('share', null, ShareState::Active, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareCreated::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Share::create',
-        'migrated' => false,
-        'producers' => [
-            'app/Sharing/Actions/ShareGrants.php',
-        ],
+        'owner' => ['Share::create', 'Share::approveAs'],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareCreated(new ShareFact('share', null, ShareState::Pending, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareExpired::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::end',
-        'migrated' => false,
-        'producers' => [
-            'app/Sharing/Actions/ShareEndings.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareExpired(new ShareFact('share', null, ShareState::Expired, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareFailed::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::failActivation',
-        'migrated' => false,
-        'producers' => [
-            'app/Sharing/Handlers/RecordGatewayOutcomeHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareFailed(new ShareFact('share', null, ShareState::Failed, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareGatewayChanged::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'ShareGatewayConfiguration::configure',
-        'migrated' => false,
+        'owner' => ['ShareGatewayConfiguration::create', 'ShareGatewayConfiguration::disable'],
+        'migrated' => true,
         'returnedBy' => ['changedEvent'],
-        'producers' => [
-            'app/Sharing/Handlers/ConfigureShareGatewayHandler.php',
-            'app/Sharing/Handlers/DisableShareGatewayHandler.php',
-        ],
+        'producers' => [],
+        'sample' => fn () => new ShareGatewayChanged('configuration', 1, false, new DateTimeImmutable('2026-01-01')),
     ],
     ShareRequested::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::create',
-        'migrated' => false,
-        'producers' => [
-            'app/Sharing/Handlers/RequestShareHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareRequested(new ShareFact('share', null, ShareState::Proposed, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareRevoked::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::end',
-        'migrated' => false,
-        'producers' => [
-            'app/Sharing/Actions/ShareEndings.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareRevoked(new ShareFact('share', null, ShareState::Revoked, 1, new DateTimeImmutable('2026-01-01'))),
     ],
     ShareScopeChanged::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Share::advanceScope',
-        'migrated' => false,
-        'producers' => [
-            'app/Sharing/Actions/ShareGrants.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ShareScopeChanged(new ShareFact('share', null, ShareState::Active, 1, new DateTimeImmutable('2026-01-01'))),
     ],
 ];

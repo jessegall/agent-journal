@@ -20,6 +20,8 @@ use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Events\ShareCreated;
+use App\Sharing\Events\ShareRequested;
 use App\Sharing\Exceptions\ShareQuotaReached;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
@@ -36,6 +38,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Models\Document;
 use Illuminate\Database\ConnectionInterface;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -161,6 +164,10 @@ final class ShareProposalTest extends TestCase
 
     public function test_the_owner_approves_a_proposal_into_a_pending_grant(): void
     {
+        $facts = [];
+        Event::listen([ShareRequested::class, ShareCreated::class], function (object $fact) use (&$facts): void {
+            $facts[] = [$fact::class, $fact->share->state];
+        });
         $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1');
         $proposal = Share::query()->sole();
 
@@ -196,6 +203,11 @@ final class ShareProposalTest extends TestCase
             ShareAudit::query()->readAll('two audits')->get()->contains(
                 fn (ShareAudit $audit) => $audit->type === ShareAuditType::Approved,
             ),
+        );
+
+        $this->assertSame(
+            [[ShareRequested::class, ShareState::Proposed], [ShareCreated::class, ShareState::Pending]],
+            $facts,
         );
 
         $this->startRequestAs($this->start->agent->id, $this->start->session->id);

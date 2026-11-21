@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Models;
 
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -35,11 +37,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['gateway_key', 'configuration_version', 'settings', 'is_default', 'disabled_at'])]
-final class ShareGatewayConfiguration extends Model implements ReadableModel
+final class ShareGatewayConfiguration extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.share-gateway-configuration';
 
@@ -71,7 +74,8 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
         $configuration->configuration_version = (is_numeric($latest) ? (int) $latest : 0) + 1;
         $configuration->settings = $settings;
         $configuration->is_default = false;
-        $configuration->save();
+        $configuration->assertSaved($configuration->save());
+        $configuration->raise($configuration->changedEvent());
 
         return $configuration;
     }
@@ -159,7 +163,8 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     {
         $this->disabled_at = CarbonImmutable::now();
         $this->is_default = false;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise($this->changedEvent());
     }
 
     /**
@@ -219,19 +224,6 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
         return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
     }
 
-    /**
-     * The event that tells this revision was configured or disabled.
-     */
-    public function changedEvent(): ShareGatewayChanged
-    {
-        return new ShareGatewayChanged(
-            $this->id,
-            $this->configuration_version,
-            $this->isDisabled(),
-            CarbonImmutable::now(),
-        );
-    }
-
     public function toConfiguration(): GatewayConfiguration
     {
         return new GatewayConfiguration($this->id, $this->configuration_version, $this->settings);
@@ -264,5 +256,18 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     protected function markedDefault(Builder $query): void
     {
         $query->where('is_default', true);
+    }
+
+    /**
+     * The event that tells this revision was configured or disabled.
+     */
+    private function changedEvent(): ShareGatewayChanged
+    {
+        return new ShareGatewayChanged(
+            $this->id,
+            $this->configuration_version,
+            $this->isDisabled(),
+            CarbonImmutable::now(),
+        );
     }
 }

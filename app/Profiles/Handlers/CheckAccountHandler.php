@@ -7,12 +7,10 @@ namespace App\Profiles\Handlers;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Enums\AccountNoticeReason;
-use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Support\AccountNotices;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Applies a host's account check under the program's selection lock and then the account's, only in the generation
@@ -21,7 +19,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class CheckAccountHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events, private AccountNotices $notices) {}
+    public function __construct(private AccountNotices $notices) {}
 
     public function handle(CheckAccount $command): void
     {
@@ -35,6 +33,5 @@ final readonly class CheckAccountHandler implements CommandHandler
 
         $selection->clearIfChosen($account);
         $this->notices->record($account->program, AccountNoticeReason::NeedsSignIn);
-        $this->events->dispatch(new AccountsChanged($account->program, $account->id));
     }
 }

@@ -10,7 +10,6 @@ use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\RequestShare;
 use App\Sharing\Enums\ShareAuditType;
-use App\Sharing\Events\ShareRequested;
 use App\Sharing\Exceptions\ShareQuotaReached;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
@@ -19,7 +18,6 @@ use App\Sharing\Support\ShareProposal;
 use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Checks the root is a shareable type the agent may read now, then, under the installation lock, counts the open
@@ -30,7 +28,6 @@ final readonly class RequestShareHandler implements CommandHandler
     public function __construct(
         private RecordResolver $records,
         private ShareRecordRegistry $shareable,
-        private Dispatcher $events,
     ) {}
 
     public function handle(RequestShare $command): ShareProposalStatus
@@ -49,7 +46,6 @@ final readonly class RequestShareHandler implements CommandHandler
         $expiry = CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS);
         $proposal = Share::create($root, $expiry, new ShareProposal(ActorIdentity::of($agent)));
         ShareAudit::create($proposal, ShareAuditType::Created, ActorIdentity::of($agent), null);
-        $this->events->dispatch(new ShareRequested($proposal->fact()));
 
         return $proposal->proposalStatus();
     }

@@ -10,12 +10,15 @@ use App\Actors\Support\ActorIdentity;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
-use App\Profiles\Events\SignInAttemptFinished;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Enums\SignInType;
+use App\Profiles\Events\SignInAttemptCleanupRetried;
+use App\Profiles\Events\SignInAttemptFinished;
+use App\Profiles\Events\SignInAttemptReleased;
+use App\Profiles\Events\SignInAttemptStarted;
 use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Models\Support\KeepsCleanupTries;
@@ -68,8 +71,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     use HasActorColumns;
     use HasUlids;
     use KeepsCleanupTries;
-    use RaisesEvents;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'core.sign-in-attempt';
 
@@ -447,6 +450,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         }
 
         $this->resetCleanupTries();
+        $this->raise(new SignInAttemptCleanupRetried($this->program, $this->id));
     }
 
     /**
@@ -455,7 +459,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function releaseForHost(): void
     {
         $this->waits_for_uses = false;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SignInAttemptReleased($this->program, $this->id, $this->account_id));
     }
 
     // ----------[ Answers ]----------
@@ -493,7 +498,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function finish(SignInState $state): void
     {
         $this->end($state);
-        $this->raise(new SignInAttemptFinished($this->id, $this->account_id));
+        $this->raise(new SignInAttemptFinished($this->program, $this->id, $this->account_id));
     }
 
     public function awaitsCleanupRetry(): bool
@@ -539,7 +544,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $this->state = SignInState::Starting;
         $this->request_key = $requestKey;
         $this->expires_at = $expiresAt;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SignInAttemptStarted($this->program, $this->id, $this->account_id));
     }
 
     // ----------[ Scopes ]----------

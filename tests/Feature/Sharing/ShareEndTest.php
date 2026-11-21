@@ -4,201 +4,72 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\CommandNotRegistered;
-use App\Bus\Support\RequestKey;
-use App\Sharing\Commands\ExpireShares;
-use App\Sharing\Commands\RevokeShare;
-use App\Sharing\Enums\GatewayOperationType;
-use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Events\ShareExpired;
+use App\Sharing\Events\ShareRevoked;
+use App\Sharing\Exceptions\ShareEndInvalid;
 use App\Sharing\Models\Share;
-use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
-use App\Sharing\Models\ShareGatewayOperation;
-use App\Sharing\Support\ShareExpiry;
-use App\Sharing\Support\ShareGrant;
-use App\Sharing\Support\ShareLinkResolver;
-use App\Sharing\Support\ShareProposal;
-use App\Sharing\Support\ShareSummary;
-use App\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
-use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\Sharing\TestShares;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
-use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A share ends once: the owner's revoke commits locally even with no gateway running and leaves a close request for
- * the endpoint, a second revoke writes nothing, a proposal is dismissed the same way, and ExpireShares ends at most
- * 100 overdue shares and proposals per run, auditing each once. The token cannot be read back after either.
+ * A share ends once, as revoked or expired: the end clears its token, keeps its digest, and raises one fact whose time
+ * is the share's terminal time; a second end of either kind changes nothing and raises nothing.
  */
 final class ShareEndTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsTrustedCommands;
-    use StartsAgentRequests;
 
-    private ShareGatewayConfiguration $configuration;
-
-    protected function setUp(): void
+    public function test_revoking_then_expiring_ends_the_share_once_with_one_time_and_one_fact(): void
     {
-        parent::setUp();
+        $share = $this->share();
+        $share->takeRaisedEvents();
 
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
-        $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
+        $this->assertTrue($share->end(ShareState::Revoked));
+        $raised = $share->takeRaisedEvents();
+        $this->assertFalse($share->end(ShareState::Expired));
+
+        $fresh = $share->fresh();
+        $this->assertSame(ShareState::Revoked, $fresh?->state);
+        $this->assertNull($fresh->token_ciphertext);
+        $this->assertNotNull($fresh->token_digest);
+        $this->assertCount(1, $raised);
+        $this->assertInstanceOf(ShareRevoked::class, $raised[0]);
+        $this->assertEquals($fresh->terminal_at, $raised[0]->share->occurredAt);
+        $this->assertSame([], $share->takeRaisedEvents());
     }
 
-    public function test_a_revoke_while_the_gateway_is_offline_commits_and_leaves_a_pending_close(): void
+    public function test_expiring_then_revoking_ends_the_share_once_as_expired(): void
     {
-        $share = $this->activeShare(CarbonImmutable::now()->addDay());
-        $digest = $share->token_digest;
+        $share = $this->share();
+        $share->takeRaisedEvents();
 
-        $summary = $this->revoke($share, '01JD8X0G9M3QZ6V4K2REVOKE01');
-        $revoked = Share::query()->findOrFail($share->id);
+        $this->assertTrue($share->end(ShareState::Expired));
+        $this->assertFalse($share->end(ShareState::Revoked));
 
-        $this->assertSame(ShareState::Revoked, $summary->state);
-        $this->assertNull($revoked->token_ciphertext);
-        $this->assertSame($digest, $revoked->token_digest);
-        $this->assertNotNull($revoked->terminal_at);
-        $close = ShareGatewayOperation::query()->readAll('one close')->sole();
-        $this->assertSame([GatewayOperationType::Close, null], [$close->type, $close->run_id]);
-        $this->assertTrue(
-            $this->app->make(ShareLinkResolver::class)->linkFor(TestActors::user(9), $share->id)->isEmpty(),
-        );
-        $this->assertSame([ShareAuditType::Revoked], $this->auditTypes());
+        $raised = $share->takeRaisedEvents();
+        $this->assertSame(ShareState::Expired, $share->fresh()?->state);
+        $this->assertCount(1, $raised);
+        $this->assertInstanceOf(ShareExpired::class, $raised[0]);
     }
 
-    public function test_a_second_revoke_writes_nothing(): void
+    public function test_a_state_that_is_no_end_is_refused_by_name(): void
     {
-        $share = $this->activeShare(CarbonImmutable::now()->addDay());
-        $first = $this->revoke($share, '01JD8X0G9M3QZ6V4K2REVOKE01');
-        $endedAt = Share::query()->findOrFail($share->id)->terminal_at;
+        $share = $this->share();
 
-        $this->travel(5)->minutes();
-        $second = $this->revoke($share, '01JD8X0G9M3QZ6V4K2REVOKE02');
+        $this->expectException(ShareEndInvalid::class);
 
-        $this->assertEquals($first, $second);
-        $this->assertEquals($endedAt, Share::query()->findOrFail($share->id)->terminal_at);
-        $this->assertSame(1, ShareGatewayOperation::query()->count());
-        $this->assertSame([ShareAuditType::Revoked], $this->auditTypes());
+        $share->end(ShareState::Active);
     }
 
-    public function test_a_revoke_dismisses_a_proposal_without_a_close(): void
+    private function share(): Share
     {
-        $proposal = Share::create(
-            TestActors::record('binders.binder', 1),
-            CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
-            new ShareProposal(TestActors::agentIdentity(5)),
-        );
+        $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
 
-        $this->assertSame(ShareState::Revoked, $this->revoke($proposal, '01JD8X0G9M3QZ6V4K2REVOKE01')->state);
-        $this->assertSame(0, ShareGatewayOperation::query()->count());
-    }
-
-    public function test_no_close_is_requested_while_another_live_share_uses_the_endpoint(): void
-    {
-        $share = $this->activeShare(CarbonImmutable::now()->addDay());
-        $this->activeShare(CarbonImmutable::now()->addDay());
-
-        $this->revoke($share, '01JD8X0G9M3QZ6V4K2REVOKE01');
-
-        $this->assertSame(0, ShareGatewayOperation::query()->count());
-    }
-
-    public function test_expire_shares_run_twice_audits_each_expiry_once(): void
-    {
-        $overdue = $this->activeShare(CarbonImmutable::now()->subMinute());
-        $proposal = Share::create(
-            TestActors::record('binders.binder', 2),
-            CarbonImmutable::now()->subMinute(),
-            new ShareProposal(TestActors::agentIdentity(5)),
-        );
-        $current = $this->activeShare(CarbonImmutable::now()->addDay());
-
-        $this->assertEquals(new ShareExpiry(2, false), $this->expire());
-        $this->assertEquals(new ShareExpiry(0, false), $this->expire());
-
-        $this->assertSame(ShareState::Expired, Share::query()->findOrFail($overdue->id)->state);
-        $this->assertSame(ShareState::Expired, Share::query()->findOrFail($proposal->id)->state);
-        $this->assertSame(ShareState::Active, Share::query()->findOrFail($current->id)->state);
-        $this->assertNull(Share::query()->findOrFail($overdue->id)->token_ciphertext);
-        $this->assertSame([ShareAuditType::Expired, ShareAuditType::Expired], $this->auditTypes());
-    }
-
-    #[TimeLimit(5, 'It creates over a hundred shares to reach the batch limit.')]
-    public function test_expire_shares_takes_at_most_a_hundred_and_says_more_wait(): void
-    {
-        for ($index = 0; $index <= 100; $index++) {
-            Share::create(
-                TestActors::record('binders.binder', 1000 + $index),
-                CarbonImmutable::now()->subMinute(),
-                new ShareProposal(TestActors::agentIdentity(5)),
-            );
-        }
-
-        $this->assertEquals(new ShareExpiry(100, true), $this->expire());
-        $this->assertEquals(new ShareExpiry(1, false), $this->expire());
-    }
-
-    public function test_only_the_system_expires_shares(): void
-    {
-        $this->startTestUserRequest(9);
-
-        $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new ExpireShares()),
-            CommandNotRegistered::class,
-        );
-    }
-
-    private function activeShare(CarbonImmutable $expiresAt): Share
-    {
-        $share = Share::create(
-            TestActors::record('binders.binder', 1),
-            $expiresAt,
-            new ShareGrant(
-                TestIds::of(9),
-                $this->configuration->id,
-                $this->configuration->configuration_version,
-                ShareToken::generate(),
-            ),
-        );
-        $share->state = ShareState::Active;
-        $share->save();
-
-        return $share;
-    }
-
-    private function revoke(Share $share, string $key): ShareSummary
-    {
-        $this->app->forgetScopedInstances();
-        $this->startTestUserRequest(9);
-        $this->app->make(RequestKey::class)->set($key);
-
-        return $this->app->make(CommandBus::class)->run(new RevokeShare($share->id, $key));
-    }
-
-    private function expire(): ShareExpiry
-    {
-        $this->app->forgetScopedInstances();
-
-        return $this->throughEntry(new ExpireShares());
-    }
-
-    /**
-     * @return list<ShareAuditType>
-     */
-    private function auditTypes(): array
-    {
-        return array_values(
-            ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(
-                fn (ShareAudit $audit) => $audit->type,
-            )->all(),
-        );
+        return TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
     }
 }

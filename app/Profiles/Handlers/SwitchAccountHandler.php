@@ -6,12 +6,10 @@ namespace App\Profiles\Handlers;
 
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\SwitchAccount;
-use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Support\AccountNotices;
 use Carbon\CarbonImmutable;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Chooses the account under the program's selection lock and then the account's, the order every start takes, and
@@ -19,7 +17,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class SwitchAccountHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events, private AccountNotices $notices) {}
+    public function __construct(private AccountNotices $notices) {}
 
     public function handle(SwitchAccount $command): void
     {
@@ -29,8 +27,6 @@ final readonly class SwitchAccountHandler implements CommandHandler
 
         $this->notices->resolveOpen($program->value, CarbonImmutable::now());
 
-        if ($selection->select($account)) {
-            $this->events->dispatch(new AccountsChanged($program->value, $account->id));
-        }
+        $selection->switchTo($account);
     }
 }

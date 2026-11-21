@@ -6,19 +6,19 @@ namespace App\Profiles\Listeners;
 
 use App\Agents\Events\ProgramFailed;
 use App\Agents\Events\StartUnavailable;
+use App\Bus\Contracts\JournalCommands;
+use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
+use App\Profiles\Commands\RecordAccountNotice;
 use App\Profiles\Enums\AccountNoticeReason;
-use App\Profiles\Events\AccountsChanged;
-use App\Profiles\Support\AccountNotices;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Turns a refused start or a failure the owner can act on into a notice on the program's accounts, from the safe
- * program and reason alone.
+ * program and reason alone, through its own command after the fact committed.
  */
 final readonly class ShowAccountsNotice implements Listener
 {
-    public function __construct(private Dispatcher $events, private AccountNotices $notices) {}
+    public function __construct(private JournalCommands $journal) {}
 
     public function handle(StartUnavailable|ProgramFailed $fact): void
     {
@@ -30,7 +30,10 @@ final readonly class ShowAccountsNotice implements Listener
             return;
         }
 
-        $notice = $this->notices->record($fact->program, $reason);
-        $this->events->dispatch(new AccountsChanged($fact->program, $notice->id));
+        $this->journal->runAsJournal(
+            CommandEntry::AccountMaintenance,
+            'accounts notice',
+            new RecordAccountNotice($fact->program, $reason),
+        );
     }
 }

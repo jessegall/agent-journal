@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Profiles\Events;
+
+use App\Profiles\Contracts\ShownOnAccounts;
+
+/**
+ * A sign-in attempt started, for a new account or to sign a saved one in again.
+ */
+final readonly class SignInAttemptStarted implements ShownOnAccounts
+{
+    public function __construct(public string $program, public string $attemptId, public string|null $accountId) {}
+
+    public function program(): string
+    {
+        return $this->program;
+    }
+
+    /**
+     * The account the attempt signs in again, or the attempt itself while it adds a new account.
+     */
+    public function subjectId(): string
+    {
+        return $this->accountId ?? $this->attemptId;
+    }
+}
