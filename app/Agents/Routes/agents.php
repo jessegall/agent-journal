@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\AgentRequests\Support\CallRoutes;
 use App\Agents\Http\Controllers\Calls;
+use App\Http\Controllers\Agents\CancelLaunchController;
 use App\Http\Controllers\Agents\CheckCapacityController;
 use App\Http\Controllers\Agents\ContinueStartController;
 use App\Http\Controllers\Agents\DismissLaunchOutcomeController;
@@ -40,6 +41,11 @@ Route::middleware(['web', 'auth', 'journal.user'])
         Route::post('/retry', RetryDriverSwitchController::class)->name('retry');
         Route::post('/recheck', RecheckDriverSwitchController::class)->name('recheck');
     });
+
+Route::post('/agents/{agent}/sessions/{session}/cancel-launch', CancelLaunchController::class)
+    ->middleware(['web', 'auth', 'journal.user'])
+    ->whereUlid(['agent', 'session'])
+    ->name('agents.cancel-launch');
 
 Route::post('/agents/sessions/{session}/continue', ContinueStartController::class)
     ->middleware(['web', 'auth', 'journal.user'])

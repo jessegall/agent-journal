@@ -30,8 +30,8 @@ function agent(id: string, name: string, retired = false): AgentOptionData {
         conversations: [],
         startRefusal: null,
         status: {
-            sessionState: 'stopped',
-            label: 'Stopped',
+            sessionState: retired ? 'retired' : 'idle',
+            label: retired ? 'Retired' : 'Idle',
             reason: null,
             remedy: null,
             operation: null,
