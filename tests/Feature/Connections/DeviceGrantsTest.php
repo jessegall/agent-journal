@@ -13,6 +13,8 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Connections\Enums\BindingReadiness;
+use App\Connections\Enums\ConnectionAuditType;
+use App\Connections\Models\ConnectionAudit;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Values\InstallTicket;
@@ -183,6 +185,35 @@ final class DeviceGrantsTest extends TestCase
             'argv' => $argv,
             'stdin' => '',
         ], ['Authorization' => "Bearer {$grant}"]);
+    }
+
+    public function test_the_support_record_of_an_install_approval_and_revoke_names_ids_and_holds_no_secret(): void
+    {
+        $binding = $this->connected();
+        $start = $this->relay('/api/device-grants', ['binding' => $binding])->assertCreated();
+        $this->actingAs($this->owner)->post("/settings/project-connections/devices/{$start->json('userCode')}/approve");
+        $deviceCode = (string) $start->json('deviceCode');
+        $grant = (string) $this->relay('/api/device-grants/poll', ['deviceCode' => $deviceCode])->json('grant');
+        $this->actingAs($this->owner)->deleteJson("/settings/project-connections/bindings/{$binding}")->assertOk();
+
+        $audits = array_reverse(ConnectionAudit::newestOfBindings([$binding]));
+        $project = ProjectBinding::query()->findOrFail($binding)->project_id;
+
+        $this->assertSame(
+            [ConnectionAuditType::Redeemed, ConnectionAuditType::DeviceApproved, ConnectionAuditType::BindingRevoked],
+            array_map(fn (ConnectionAudit $audit) => $audit->type, $audits),
+        );
+        $this->assertSame(
+            [$project, $project, $project],
+            array_map(fn (ConnectionAudit $audit) => $audit->project_id, $audits),
+        );
+        $stored = (string) json_encode(array_map(fn (ConnectionAudit $audit) => $audit->getAttributes(), $audits));
+
+        $secrets = [$grant, $deviceCode, (string) $start->json('userCode'), $this->relayCredential(self::NONCE), 'the-ticket'];
+
+        foreach ($secrets as $secret) {
+            $this->assertStringNotContainsString($secret, $stored);
+        }
     }
 
     private function approvedGrant(string $binding): string

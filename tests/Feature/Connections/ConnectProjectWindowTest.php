@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Agents\Enums\ArrangementType;
+use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Models\Agent;
 use App\Agents\Models\Host;
 use App\Connections\Models\Environment;
@@ -13,6 +14,8 @@ use App\Connections\Models\ProjectBinding;
 use App\Connections\Values\BindingFolder;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
+use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Connections\ConnectsProjects;
@@ -86,6 +89,30 @@ final class ConnectProjectWindowTest extends TestCase
             ));
     }
 
+    public function test_an_ended_lease_reads_stop_unconfirmed_until_its_stop_receipt_which_counts_once(): void
+    {
+        $this->issueLine('the-ticket');
+        $binding = (string) $this->redeemLine('the-ticket', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
+        $this->reportClaudeCode('nonce-aaaaaaaaaaaaaaaa', $binding);
+        $runtime = '01JAAAAAAAAAAAAAAAAAAAAAAA';
+        ProjectBinding::query()->findOrFail($binding)->holdLease($runtime, CarbonImmutable::now()->subMinute());
+
+        $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (
+            AssertableInertia $page,
+        ) => $page
+            ->where(
+                'page.data.bindings.rows.0.stateText',
+                fn (string $text) => str_contains($text, 'Session stop unconfirmed'),
+            ));
+
+        $this->sendStopReceipt($binding, $runtime)->assertNoContent();
+        $this->sendStopReceipt($binding, $runtime)->assertNoContent();
+
+        $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (
+            AssertableInertia $page,
+        ) => $page->where('page.data.bindings.rows.0.stateText', 'Ready.'));
+    }
+
     public function test_thirty_folders_page_as_twenty_five_then_five_and_an_expired_presence_reads_offline(): void
     {
         $project = Project::create('shop', 'Shop');
@@ -96,6 +123,7 @@ final class ConnectProjectWindowTest extends TestCase
             ProjectBinding::create($host, $project, $environment, Agent::create("Shop agent {$number}", 'main-agent'),
                 new BindingFolder("root-{$number}", "/Users/owner/shop-{$number}", 'Owner laptop', "nonce-{$number}"));
         }
+
         $expired = ProjectBinding::query()->orderBy('created_at')->orderBy('id')->firstOrFail();
         ProjectBinding::query()->whereKey($expired->id)->update([
             'readiness' => 'ready',
@@ -121,5 +149,16 @@ final class ConnectProjectWindowTest extends TestCase
         $other = User::factory()->create();
 
         $this->assertFalse($this->actingAs($other)->get('/connections')->isOk());
+    }
+
+    private function sendStopReceipt(string $binding, string $runtime): TestResponse
+    {
+        return $this->signedRelayCall(
+            $this->relayCredential('nonce-aaaaaaaaaaaaaaaa'),
+            "/host/bindings/{$binding}/runtimes/{$runtime}/stopped",
+            [],
+            HostProtocolVersion::RemoteProject,
+            (string) Str::uuid(),
+        );
     }
 }

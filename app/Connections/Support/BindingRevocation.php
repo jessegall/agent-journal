@@ -10,16 +10,22 @@ use App\Connections\Models\ConnectionAudit;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Models\ProjectCommandRun;
+use App\Connections\Values\BindingOutcome;
 use Carbon\CarbonImmutable;
 
 /**
- * Revokes one locked binding inside the command that holds it: the binding, its host and its device grants, its
- * running command streams ended, and the user who did it audited. Each row changes through its own method.
+ * Revokes one locked binding inside the command that holds it, once: the binding, its host and its device grants, its
+ * running command streams ended, and the user who did it audited. A binding revoked already answers the time it was
+ * revoked and changes nothing more. Each row changes through its own method.
  */
 final readonly class BindingRevocation
 {
-    public function revoke(ProjectBinding $binding, string $userId): void
+    public function revoke(ProjectBinding $binding, string $userId): BindingOutcome
     {
+        if ($binding->isRevoked()) {
+            return new BindingOutcome($binding->id, BindingOutcome::ALREADY_REVOKED, $binding->revokedAtText());
+        }
+
         $binding->revoke();
         $binding->host->revokeAt(CarbonImmutable::now());
 
@@ -32,5 +38,7 @@ final readonly class BindingRevocation
         }
 
         ConnectionAudit::ofBinding(ConnectionAuditType::BindingRevoked, ConnectionAuditActor::User, $userId, $binding);
+
+        return new BindingOutcome($binding->id, BindingOutcome::REVOKED, $binding->revokedAtText());
     }
 }

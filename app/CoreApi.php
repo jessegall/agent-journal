@@ -315,6 +315,7 @@ use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\HelperImportReceipt;
 use App\Agents\Values\HostAccess;
 use App\Agents\Values\HostCapacity;
+use App\Agents\Values\HostCombination;
 use App\Agents\Values\LibraryEntryAnswer;
 use App\Agents\Values\MenuStep;
 use App\Agents\Values\ModelSelection;
@@ -570,6 +571,7 @@ use App\Connections\Commands\FinishProjectCommandRun;
 use App\Connections\Commands\IssueProjectInvitation;
 use App\Connections\Commands\PollDeviceGrant;
 use App\Connections\Commands\RecordBindingPresence;
+use App\Connections\Commands\RecordBindingRuntimeStop;
 use App\Connections\Commands\RecordBindingStart;
 use App\Connections\Commands\RecordProjectCommandProcess;
 use App\Connections\Commands\RecoverProjectBinding;
@@ -1741,6 +1743,7 @@ final class CoreApi
                 StartUnavailableReason::class,
                 DriverFailure::class,
                 ModelSelection::class,
+                HostCombination::class,
                 ChosenAccount::class,
                 StartProposal::class,
                 DriverSwitchTarget::class,
@@ -2350,6 +2353,7 @@ final class CoreApi
                 RevokeDeviceGrant::class,
                 AssignBindingEnvironment::class,
                 RecordBindingStart::class,
+                RecordBindingRuntimeStop::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

@@ -49,7 +49,7 @@ final class BindingRevocationTest extends TestCase
 
         $this->actingAs($this->owner)
             ->deleteJson("/settings/project-connections/bindings/{$first->id}")
-            ->assertNoContent();
+            ->assertOk();
 
         $this->relayClaim('nonce-aaaaaaaaaaaaaaaa')->assertUnauthorized();
         $revoked = ProjectBinding::query()->findOrFail($first->id);
@@ -57,6 +57,31 @@ final class BindingRevocationTest extends TestCase
         $this->assertSame(2, $revoked->authority_generation);
         $this->assertSame(2, ProjectBinding::query()->where('project_id', $first->project_id)->count());
         $this->recoverBinding('nonce-bbbbbbbbbbbbbbbb')->assertOk();
+    }
+
+    public function test_two_tabs_revoking_one_binding_get_its_one_revocation_time_and_one_audit(): void
+    {
+        $this->issueLine('ticket-one');
+        $binding = (string) $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
+
+        $first = $this->actingAs($this->owner)
+            ->deleteJson("/settings/project-connections/bindings/{$binding}")
+            ->assertOk();
+        $this->travel(5)->seconds();
+        $second = $this->actingAs($this->owner)
+            ->deleteJson("/settings/project-connections/bindings/{$binding}")
+            ->assertOk();
+
+        $revoked = ProjectBinding::query()->findOrFail($binding);
+        $this->assertSame('Revoked', $first->json('result'));
+        $this->assertSame('Already revoked', $second->json('result'));
+        $this->assertSame($first->json('revokedAt'), $second->json('revokedAt'));
+        $this->assertSame($revoked->revokedAtText(), $second->json('revokedAt'));
+        $this->assertSame(2, $revoked->authority_generation);
+        $this->assertCount(1, array_filter(
+            ConnectionAudit::newest(10),
+            fn (ConnectionAudit $audit) => $audit->type === ConnectionAuditType::BindingRevoked,
+        ));
     }
 
     public function test_several_chosen_bindings_are_revoked_at_once_each_with_its_outcome(): void
@@ -89,7 +114,7 @@ final class BindingRevocationTest extends TestCase
         preg_match('#/install/([A-Za-z0-9_-]+) #', (string) $line->json('installLine'), $match);
         $binding = $this->redeemLine($match[1], 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
         $this->recoverBinding('nonce-aaaaaaaaaaaaaaaa')->assertOk();
-        $this->actingAs($this->owner)->deleteJson("/settings/project-connections/bindings/{$binding}")->assertNoContent();
+        $this->actingAs($this->owner)->deleteJson("/settings/project-connections/bindings/{$binding}")->assertOk();
 
         $audits = array_reverse(ConnectionAudit::newest(10));
 

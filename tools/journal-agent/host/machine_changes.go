@@ -20,16 +20,40 @@ type MachineChanges struct {
 	StateFolder string
 }
 
+// The kinds of change the installer records: a startup file it added StartupStanza to, and a journal link.
+const (
+	ChangeStartup = "startup"
+	ChangeLink    = "link"
+)
+
+// MachineChange is one change the installer made outside every project, by its kind and path.
+type MachineChange struct {
+	Kind string
+	Path string
+}
+
+// MachineUndo is what undoing the machine changes did: the shared releases folder it removed, the changes it removed
+// and those it kept because they changed since, so the user sees to them.
+type MachineUndo struct {
+	Releases string
+	Removed  []MachineChange
+	Kept     []MachineChange
+}
+
 // Undo removes each recorded change that is still as the installer left it, then the releases and the record
-// itself; it answers the changes it left because they were changed since, so the user can see to them.
-func (changes MachineChanges) Undo() ([]string, error) {
-	kept := []string{}
+// itself, and answers what it removed and what it kept.
+func (changes MachineChanges) Undo() (MachineUndo, error) {
+	undo := MachineUndo{
+		Releases: filepath.Join(changes.StateFolder, "releases"),
+		Removed:  []MachineChange{},
+		Kept:     []MachineChange{},
+	}
 	file, err := os.Open(filepath.Join(changes.StateFolder, machineChangesName))
 	if errors.Is(err, os.ErrNotExist) {
-		return kept, os.RemoveAll(filepath.Join(changes.StateFolder, "releases"))
+		return undo, os.RemoveAll(undo.Releases)
 	}
 	if err != nil {
-		return nil, err
+		return undo, err
 	}
 	defer file.Close()
 
@@ -41,28 +65,30 @@ func (changes MachineChanges) Undo() ([]string, error) {
 		}
 		undone, err := undoChange(kind, path)
 		if err != nil {
-			return kept, err
+			return undo, err
 		}
-		if !undone {
-			kept = append(kept, path)
+		if undone {
+			undo.Removed = append(undo.Removed, MachineChange{Kind: kind, Path: path})
+			continue
 		}
+		undo.Kept = append(undo.Kept, MachineChange{Kind: kind, Path: path})
 	}
 	if err := lines.Err(); err != nil {
-		return kept, err
+		return undo, err
 	}
-	if err := os.RemoveAll(filepath.Join(changes.StateFolder, "releases")); err != nil {
-		return kept, err
+	if err := os.RemoveAll(undo.Releases); err != nil {
+		return undo, err
 	}
 
-	return kept, os.Remove(filepath.Join(changes.StateFolder, machineChangesName))
+	return undo, os.Remove(filepath.Join(changes.StateFolder, machineChangesName))
 }
 
 // undoChange removes one recorded change when it is unchanged, and answers whether it did.
 func undoChange(kind string, path string) (bool, error) {
-	if kind == "link" {
+	if kind == ChangeLink {
 		return removeOwnLink(path)
 	}
-	if kind == "startup" {
+	if kind == ChangeStartup {
 		return removeStanza(path)
 	}
 

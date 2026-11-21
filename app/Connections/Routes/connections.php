@@ -8,6 +8,7 @@ use App\Connections\Http\Controllers\ApproveDeviceGrantController;
 use App\Connections\Http\Controllers\AssignBindingEnvironmentController;
 use App\Connections\Http\Controllers\BindingPresenceController;
 use App\Connections\Http\Controllers\BindingRuntimeController;
+use App\Connections\Http\Controllers\BindingRuntimeStopController;
 use App\Connections\Http\Controllers\BindingStatusController;
 use App\Connections\Http\Controllers\Calls;
 use App\Connections\Http\Controllers\DeviceCommandController;
@@ -48,6 +49,11 @@ Route::post('/host/bindings/{binding}/runtimes/{runtime}/lease', RuntimeLeaseCon
     ->whereUlid(['binding', 'runtime'])
     ->name('connections.runtimes.lease');
 
+Route::post('/host/bindings/{binding}/runtimes/{runtime}/stopped', BindingRuntimeStopController::class)
+    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
+    ->whereUlid(['binding', 'runtime'])
+    ->name('connections.runtimes.stopped');
+
 Route::post('/host/deliveries', WorktreeDeliveryController::class)
     ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
     ->name('connections.deliveries.submit');
@@ -63,6 +69,7 @@ Route::middleware('journal.agent')->name('connections.commands.')->group(functio
     $calls = Container::getInstance()->make(CallRoutes::class);
     $calls->register(Calls\RunProjectCommandController::class)->name('run');
     $calls->register(Calls\CancelProjectCommandController::class)->name('cancel');
+    $calls->register(Calls\ReadProjectCommandStatusController::class)->name('status');
 });
 
 Route::post('/api/project-commands/device', DeviceCommandController::class)

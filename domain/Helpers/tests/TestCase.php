@@ -9,7 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\ConversationModeType;
-use Domain\Helpers\Support\JobLaunch;
+use Domain\Helpers\Values\JobLaunch;
 use Tests\TestCase as BaseTestCase;
 
 /**

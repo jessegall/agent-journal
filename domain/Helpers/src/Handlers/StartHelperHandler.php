@@ -9,7 +9,7 @@ use Domain\Helpers\Commands\StartHelper;
 use Domain\Helpers\Handlers\Support\HelperCommandHandler;
 use Domain\Helpers\Support\DispatchRequest;
 use Domain\Helpers\Support\HelperDispatch;
-use Domain\Helpers\Support\HelperReceipt;
+use Domain\Helpers\Values\HelperReceipt;
 
 /**
  * Dispatches new work to the best of the caller's helpers, or a new one, inside the command's transaction.

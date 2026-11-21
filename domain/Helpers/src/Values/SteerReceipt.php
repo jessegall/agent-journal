@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Helpers\Support;
+namespace Domain\Helpers\Values;
 
 /**
  * What a steer did: added to the live job, or kept as a message with the command that would carry it.

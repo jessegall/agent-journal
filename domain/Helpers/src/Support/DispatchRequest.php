@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support;
 
 use App\Actors\Support\ActorIdentity;
+use Domain\Helpers\Values\HelperWork;
 
 /**
  * One dispatch as the parent asked it: who asks, the request id that makes a repeat find the same job, the profile,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Connections\Handlers;
 
+use App\Agents\Values\HostCombination;
 use App\Connections\Commands\RecordBindingPresence;
 use App\Connections\Exceptions\PresenceRefused;
 use App\Connections\Models\ProjectBinding;
@@ -11,7 +12,8 @@ use App\Connections\Values\PresenceReceipt;
 use App\Contracts\CommandHandler;
 
 /**
- * Locks the binding, refuses a report from any host but its own or for a revoked binding, and records the report.
+ * Locks the binding, refuses a report from any host but its own or for a revoked binding, records the report on the
+ * binding and the combinations it reports on the binding's host, as what that host can start.
  */
 final readonly class RecordBindingPresenceHandler implements CommandHandler
 {
@@ -23,6 +25,12 @@ final readonly class RecordBindingPresenceHandler implements CommandHandler
             throw PresenceRefused::notTheHost($binding->id);
         }
 
-        return $binding->recordPresence($command->report);
+        $receipt = $binding->recordPresence($command->report);
+        $binding->host->recordCombinations(
+            $command->report->protocol,
+            array_map(fn (HostCombination $combination) => $combination->stored(), $command->report->combinations),
+        );
+
+        return $receipt;
     }
 }

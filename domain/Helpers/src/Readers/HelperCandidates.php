@@ -14,8 +14,6 @@ use Carbon\CarbonImmutable;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
-use Domain\Helpers\Support\CandidateQuery;
-use Domain\Helpers\Support\HelperCandidate;
 
 /**
  * The acting parent's helpers that may take new work, best first (doc 14 decisions D0, D3 and D5): its own identities

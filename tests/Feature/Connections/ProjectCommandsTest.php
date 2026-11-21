@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Connections;
 
 use App\Agents\Enums\ArrangementType;
+use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Models\Host;
 use App\Connections\Enums\BindingReadiness;
+use App\Connections\Enums\CommandRunState;
 use App\Connections\Exceptions\DeviceGrantRefused;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\Environment;
@@ -14,8 +16,10 @@ use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Models\ProjectCommandRun;
 use App\Connections\Values\BindingFolder;
+use App\Connections\Values\CommandFingerprint;
 use App\Connections\Values\CommandFrame;
 use App\Connections\Values\InstallTicket;
+use App\Connections\Values\PresenceReport;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Testing\TestResponse;
@@ -40,10 +44,15 @@ final class ProjectCommandsTest extends TestCase
         'settings_records', 'users',
     ];
 
+    /**
+     * A process id no process holds: above what the systems this runs on hand out.
+     */
+    private const int GONE_PROCESS = 4_194_305;
+
     public function test_a_repeated_request_key_answers_the_first_result_without_running_again(): void
     {
         [$start, $binding] = $this->connectedStart();
-        $run = ProjectCommandRun::create('request-1', $start->agent->id, $binding, ['comment', 'list']);
+        $run = $this->recordedRun('request-1', $start, $binding, 'live-worker');
         $run->finish([CommandFrame::output(1, 'stdout', "Tasks\n"), CommandFrame::exit(2, 3)], 3);
 
         $reply = $this->command($start, 'request-1', $binding->id, ['comment', 'list'])->assertOk();
@@ -51,6 +60,54 @@ final class ProjectCommandsTest extends TestCase
         $frames = $reply->json('frames');
         $this->assertSame("Tasks\n", $frames[0]['text']);
         $this->assertSame(['sequence' => 2, 'stream' => 'exit', 'text' => '', 'isBase64' => false, 'exitCode' => 3], $frames[1]);
+        $this->assertSame(1, ProjectCommandRun::query()->count());
+    }
+
+    public function test_a_request_id_asked_again_with_other_piped_input_is_refused_without_output(): void
+    {
+        [$start, $binding] = $this->connectedStart();
+        $run = $this->recordedRun('request-1', $start, $binding, 'live-worker');
+        $run->finish([CommandFrame::output(1, 'stdout', "Secret tasks\n"), CommandFrame::exit(2, 0)], 0);
+
+        $reply = $this->command($start, 'request-1', $binding->id, ['comment', 'list'], 'other input')->assertConflict();
+
+        $this->assertStringNotContainsString('Secret tasks', (string) $reply->getContent());
+        $this->assertNull($reply->json('frames'));
+        $this->assertSame(CommandRunState::Completed, $run->fresh()?->state);
+    }
+
+    public function test_a_run_whose_worker_died_reads_interrupted_or_unknown_and_is_never_run_again(): void
+    {
+        [$start, $binding] = $this->connectedStart();
+        $deadWorker = gethostname().':'.self::GONE_PROCESS;
+        $interrupted = $this->recordedRun('request-1', $start, $binding, $deadWorker);
+        $interrupted->recordProcess(self::GONE_PROCESS);
+        $unknown = $this->recordedRun('request-2', $start, $binding, $deadWorker);
+
+        $this->command($start, 'request-1', $binding->id, ['comment', 'list'])->assertConflict()
+            ->assertJsonPath('message', fn (string $message) => str_contains($message, 'interrupted'));
+        $this->command($start, 'request-2', $binding->id, ['comment', 'list'])->assertConflict()
+            ->assertJsonPath('message', fn (string $message) => str_contains($message, 'unknown'));
+
+        $this->assertSame(CommandRunState::Interrupted, $interrupted->fresh()?->state);
+        $this->assertSame(CommandRunState::Unknown, $unknown->fresh()?->state);
+        $this->assertSame(2, ProjectCommandRun::query()->count());
+    }
+
+    public function test_a_request_ids_status_answers_its_frames_and_exit_code_and_refuses_another_binding(): void
+    {
+        [$start, $binding] = $this->connectedStart();
+        [, $other] = $this->connectedStart();
+        $run = $this->recordedRun('request-1', $start, $binding, 'live-worker');
+        $run->finish([CommandFrame::output(1, 'stdout', "Tasks\n"), CommandFrame::exit(2, 3)], 3);
+
+        $status = $this->status($start, 'request-1', $binding->id)->assertOk();
+
+        $this->assertSame('failed', $status->json('state'));
+        $this->assertSame("Tasks\n", $status->json('frames.0.text'));
+        $this->assertSame(3, $status->json('frames.1.exitCode'));
+        $this->status($start, 'request-1', $other->id)->assertForbidden();
+        $this->assertSame('unknown', $this->status($start, 'request-9', $binding->id)->assertOk()->json('state'));
         $this->assertSame(1, ProjectCommandRun::query()->count());
     }
 
@@ -75,14 +132,14 @@ final class ProjectCommandsTest extends TestCase
     {
         [$start, $binding] = $this->connectedStart();
         [$otherStart, $other] = $this->connectedStart();
-        $stream = ProjectCommandRun::create('request-1', $start->agent->id, $binding, ['comment', 'list']);
-        $otherStream = ProjectCommandRun::create('request-2', $otherStart->agent->id, $other, ['comment', 'list']);
+        $stream = $this->recordedRun('request-1', $start, $binding, 'live-worker');
+        $otherStream = $this->recordedRun('request-2', $otherStart, $other, 'live-worker');
         $grant = DeviceGrant::create($binding, InstallTicket::digestOf('device-code'), 'ABCD-EFGH', 'start-1');
         $grant->issue(InstallTicket::digestOf('device-grant'));
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->actingAs($owner)->deleteJson("/settings/project-connections/bindings/{$binding->id}")->assertNoContent();
+        $this->actingAs($owner)->deleteJson("/settings/project-connections/bindings/{$binding->id}")->assertOk();
 
         $this->command($start, 'request-3', $binding->id, ['comment', 'list'])->assertUnauthorized();
         $this->expectException(DeviceGrantRefused::class);
@@ -121,20 +178,66 @@ final class ProjectCommandsTest extends TestCase
             $start->agent,
             new BindingFolder('root-'.bin2hex(random_bytes(4)), '/Users/owner/shop', 'Owner laptop', bin2hex(random_bytes(8))),
         );
+        $binding->recordPresence(new PresenceReport(
+            'boot-1',
+            1,
+            '1.0.0',
+            HostProtocolVersion::RemoteProject->value,
+            true,
+            false,
+            0,
+            [],
+            true,
+        ));
 
         return [$start, $binding];
     }
 
     /**
+     * A run of journal comment list with nothing piped in, kept under the request id as the given worker runs it; a
+     * worker of another server counts as alive.
+     */
+    private function recordedRun(
+        string $requestKey,
+        TestStart $start,
+        ProjectBinding $binding,
+        string $worker,
+    ): ProjectCommandRun {
+        $argv = ['comment', 'list'];
+
+        return ProjectCommandRun::create(
+            $requestKey,
+            $start->agent->id,
+            $binding,
+            $argv,
+            CommandFingerprint::of($argv, '', $binding->id, $start->agent->id),
+            $worker,
+        );
+    }
+
+    private function status(TestStart $start, string $requestKey, string $bindingId): TestResponse
+    {
+        return $this->signed($start, '/api/project-commands/status', [
+            'request_key' => $requestKey,
+            'binding' => $bindingId,
+        ]);
+    }
+
+    /**
      * @param  list<string>  $argv
      */
-    private function command(TestStart $start, string $requestKey, string $bindingId, array $argv): TestResponse
-    {
+    private function command(
+        TestStart $start,
+        string $requestKey,
+        string $bindingId,
+        array $argv,
+        string $stdin = '',
+    ): TestResponse {
         return $this->signed($start, '/api/project-commands', [
             'request_key' => $requestKey,
             'binding' => $bindingId,
             'argv' => $argv,
-            'stdin' => '',
+            'stdin' => $stdin,
         ]);
     }
 }

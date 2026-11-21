@@ -12,6 +12,7 @@ use App\Agents\Support\InstallLineAvailability;
 use App\Agents\Support\PublishedReleases;
 use App\Agents\Support\ServerOrigin;
 use App\Connections\Enums\BindingReadiness;
+use App\Connections\Models\ConnectionAudit;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\Environment;
 use App\Connections\Models\Project;
@@ -23,6 +24,7 @@ use App\Http\Data\Connections\InstallAttemptListData;
 use App\Http\Data\Connections\JoinTargetData;
 use App\Http\Data\Connections\ProjectBindingRowData;
 use App\Http\Data\Connections\ReleaseOfferData;
+use App\Http\Data\Connections\SupportRecordRowData;
 use App\Http\Data\Connections\TerminalSignInRowData;
 use App\Ui\Contracts\PageResolver;
 use Carbon\CarbonImmutable;
@@ -119,11 +121,28 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
         ));
 
         $release = $this->releases->currentRelease()[0]->version ?? 'the current one';
+        $audits = ConnectionAudit::newestOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
 
-        return array_map(fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding($binding, $now, array_map(
-            fn (DeviceGrant $grant) => TerminalSignInRowData::fromGrant($grant, $this->approverOf($grant, $labels), $now),
-            array_values(array_filter($grants, fn (DeviceGrant $grant) => $grant->binding_id === $binding->id)),
-        ), $release), $bindings);
+        return array_map(fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding(
+            $binding,
+            $now,
+            array_map(
+                fn (DeviceGrant $grant) => TerminalSignInRowData::fromGrant(
+                    $grant,
+                    $this->approverOf($grant, $labels),
+                    $now,
+                ),
+                array_values(array_filter($grants, fn (DeviceGrant $grant) => $grant->binding_id === $binding->id)),
+            ),
+            $release,
+            array_map(
+                SupportRecordRowData::fromAudit(...),
+                array_slice(array_values(array_filter(
+                    $audits,
+                    fn (ConnectionAudit $audit) => $audit->binding_id === $binding->id,
+                )), 0, ConnectionAudit::SUPPORT_RECORD_LIMIT),
+            ),
+        ), $bindings);
     }
 
     /**

@@ -15,8 +15,8 @@ use Spatie\LaravelData\Data;
 
 /**
  * A relay's presence report as journal-agent sends it (client.PresenceReport): its boot, sequence, release, protocol,
- * the combinations it can run, how setting up the folder ended, whether it takes over a live boot, and the setup
- * generation of the folder it reports for.
+ * the combinations it can run, how setting up the folder ended, whether it takes over a live boot, the setup
+ * generation of the folder it reports for, and whether this boot reported what became of its earlier sessions.
  */
 final class PresenceReportData extends Data
 {
@@ -39,6 +39,7 @@ final class PresenceReportData extends Data
         public readonly bool $takeover = false,
         #[Min(0)]
         public readonly int $setupGeneration = 0,
+        public readonly bool $reconciled = false,
     ) {}
 
     public function report(): PresenceReport
@@ -52,6 +53,7 @@ final class PresenceReportData extends Data
             $this->takeover,
             $this->setupGeneration,
             array_map(fn (HostCombinationData $combination) => $combination->combination(), $this->combinations),
+            $this->reconciled,
         );
     }
 }

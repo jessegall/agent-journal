@@ -126,8 +126,8 @@ trait ConnectsProjects
     }
 
     /**
-     * Reports the binding's relay present on a set-up folder and able to run Claude Code with isolated hooks and a
-     * lease, as a relay that set its folder up does.
+     * Reports the binding's relay present on a set-up folder, reconciled, and able to run Claude Code with isolated
+     * hooks and a lease, as a relay that set its folder up does.
      */
     private function reportClaudeCode(string $nonce, string $bindingId): void
     {
@@ -146,6 +146,7 @@ trait ConnectsProjects
                 'provisioning' => 'succeeded',
                 'takeover' => false,
                 'setupGeneration' => 1,
+                'reconciled' => true,
             ],
             HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),

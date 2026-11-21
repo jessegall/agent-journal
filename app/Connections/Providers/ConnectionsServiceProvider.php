@@ -10,6 +10,7 @@ use App\Agents\Contracts\LocalProjectHosts;
 use App\Bus\Support\EntryDispatchers;
 use App\Connections\Policies\ConnectionsPolicy;
 use App\Connections\Support\BindingHosts;
+use App\Connections\Support\CommandRunEvidence;
 use App\Connections\Support\ProjectCommands;
 use App\Operations\Enums\AccessType;
 use App\Processes\Support\JournalRoutes;
@@ -28,6 +29,7 @@ final class ConnectionsServiceProvider extends ServiceProvider
         $this->app->bind(ProjectCommands::class, fn () => new ProjectCommands(
             $this->app->make(JournalRoutes::class),
             $this->app->make(EntryDispatchers::class),
+            $this->app->make(CommandRunEvidence::class),
             base_path('artisan'),
             $this->app->make('config')->string('app.url'),
         ));

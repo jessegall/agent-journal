@@ -8,7 +8,6 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Models\Agent;
 use App\Agents\Models\Host;
-use App\Agents\Values\HostCombination;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Events\ProjectBindingCreated;
 use App\Connections\Events\ProjectBindingEnvironmentAssigned;
@@ -58,6 +57,10 @@ use Illuminate\Support\Carbon;
  * @property int $report_sequence
  * @property int $boot_generation
  * @property int $setup_generation
+ * @property string|null $reconciled_boot_id
+ * @property string|null $leased_runtime_id
+ * @property CarbonImmutable|null $lease_expires_at
+ * @property CarbonImmutable|null $revoked_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Agent $mainAgent
@@ -101,6 +104,8 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
             'report_sequence' => 'integer',
             'boot_generation' => 'integer',
             'setup_generation' => 'integer',
+            'lease_expires_at' => 'immutable_datetime',
+            'revoked_at' => 'immutable_datetime',
         ];
     }
 
@@ -225,8 +230,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     /**
      * Records a presence report by server time. A sequence of the live boot no higher than the last changes nothing;
      * a new boot replaces a live one only when it takes over, and every new boot raises the boot generation. A
-     * provisioned report on this journal's protocol makes the binding ready until its presence expires, and the
-     * combinations it reports are what its host can start.
+     * provisioned report on this journal's protocol makes the binding ready until its presence expires.
      *
      * @throws PresenceRefused
      */
@@ -255,16 +259,16 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
 
         $readiness = $this->readinessOf($report);
         $changed = $readiness !== $this->readiness;
+        if ($report->isReconciled) {
+            $this->reconciled_boot_id = $report->bootId;
+        }
+
         $this->report_sequence = $report->sequence;
         $this->setup_generation = $report->setupGeneration;
         $this->readiness = $readiness;
         $this->last_contact_at = $now;
         $this->presence_expires_at = $now->addSeconds(self::PRESENCE_SECONDS);
         $this->assertSaved($this->save());
-        $this->host->recordCombinations(
-            $report->protocol,
-            array_map(fn (HostCombination $combination) => $combination->stored(), $report->combinations),
-        );
 
         if ($changed) {
             $this->raise(new ProjectBindingReadinessChanged($this->id, $readiness, $now));
@@ -274,14 +278,46 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * Keeps which runtime holds the binding's lease and when it ends, so a lease that ends with no stop confirmed is
+     * shown.
+     */
+    public function holdLease(string $runtimeId, CarbonImmutable $expiresAt): void
+    {
+        $this->leased_runtime_id = $runtimeId;
+        $this->lease_expires_at = $expiresAt;
+        $this->assertSaved($this->save());
+    }
+
+    /**
+     * Takes the device's receipt that the runtime's session stopped; a receipt for another runtime, or one taken
+     * already, changes nothing.
+     */
+    public function confirmStop(string $runtimeId): void
+    {
+        if ($this->leased_runtime_id !== $runtimeId) {
+            return;
+        }
+
+        $this->leased_runtime_id = null;
+        $this->lease_expires_at = null;
+        $this->assertSaved($this->save());
+    }
+
+    /**
      * Ends the binding's authority: the generation rises, so every credential issued under the one before is refused.
      */
     public function revoke(): void
     {
+        if ($this->isRevoked()) {
+            return;
+        }
+
+        $now = CarbonImmutable::now();
         $this->authority_generation++;
         $this->readiness = BindingReadiness::Revoked;
+        $this->revoked_at = $now;
         $this->assertSaved($this->save());
-        $this->raise(new ProjectBindingRevoked($this->id, $this->authority_generation, CarbonImmutable::now()));
+        $this->raise(new ProjectBindingRevoked($this->id, $this->authority_generation, $now));
     }
 
     /**
@@ -301,6 +337,38 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Answers ]----------
+
+    public function isRevoked(): bool
+    {
+        return $this->readiness === BindingReadiness::Revoked;
+    }
+
+    /**
+     * When the server took the binding's revocation, in ISO 8601; empty for a binding not revoked.
+     */
+    public function revokedAtText(): string
+    {
+        return (string) $this->revoked_at?->toIso8601String();
+    }
+
+    /**
+     * Whether the relay of the binding's current boot reported what became of its earlier sessions, so starts and
+     * commands may run again.
+     */
+    public function isReconciled(): bool
+    {
+        return $this->reconciled_boot_id !== null && $this->reconciled_boot_id === $this->boot_id;
+    }
+
+    /**
+     * Whether a session's lease ended at this server time and its device has not confirmed the session stopped.
+     */
+    public function isStopUnconfirmedAt(CarbonImmutable $serverTime): bool
+    {
+        return $this->leased_runtime_id !== null
+            && $this->lease_expires_at !== null
+            && ! $serverTime->lessThan($this->lease_expires_at);
+    }
 
     /**
      * Whether the binding works in no environment yet: it starts nothing and runs no command until the owner assigns
@@ -326,7 +394,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      */
     public function isReportableBy(string $hostId): bool
     {
-        return $this->host_id === $hostId && $this->readiness !== BindingReadiness::Revoked;
+        return $this->host_id === $hostId && ! $this->isRevoked();
     }
 
     /**

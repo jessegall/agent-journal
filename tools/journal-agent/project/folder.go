@@ -68,7 +68,7 @@ func Find(start string) (Folder, Connection, error) {
 		return Folder{}, Connection{}, err
 	}
 	for {
-		connection, err := Folder{Root: folder}.connection()
+		connection, err := Folder{Root: folder}.Marker()
 		if err == nil {
 			return Folder{Root: folder}, connection, nil
 		}
@@ -158,7 +158,7 @@ func (folder Folder) SetupGeneration() int {
 // Connected is the folder's connection when the private state of this machine holds the same binding for this very
 // root; a connection.json copied elsewhere, or one the state does not know, is not connected.
 func (folder Folder) Connected(state host.ConnectionState) (Connection, error) {
-	connection, err := folder.connection()
+	connection, err := folder.Marker()
 	if err != nil {
 		return Connection{}, err
 	}
@@ -171,8 +171,8 @@ func (folder Folder) Connected(state host.ConnectionState) (Connection, error) {
 	return connection, nil
 }
 
-// connection is what the folder's connection.json holds; ErrNotConnected without one.
-func (folder Folder) connection() (Connection, error) {
+// Marker is what the folder's connection.json holds, the binding it names; ErrNotConnected without one.
+func (folder Folder) Marker() (Connection, error) {
 	content, err := os.ReadFile(folder.path(connectionName))
 	if errors.Is(err, os.ErrNotExist) {
 		return Connection{}, ErrNotConnected
@@ -252,26 +252,28 @@ func (folder Folder) ignoreJournalFolder() (string, error) {
 	return addition, file.Close()
 }
 
-// removeIgnoreRule takes the rule setup added back out of .gitignore when the file still ends with it as written,
-// and removes a .gitignore that held nothing else; a changed file keeps the rule.
-func (folder Folder) removeIgnoreRule(addition string) error {
+// ForgetIgnoreRule takes the rule setup added back out of .gitignore when the file still ends with it as written,
+// and removes a .gitignore that held nothing else, answering whether it did; a changed file keeps the rule. A folder
+// whose worktrees are kept keeps it too, by not asking.
+func (folder Folder) ForgetIgnoreRule() (bool, error) {
+	addition := folder.progress().IgnoreAddition
 	if addition == "" {
-		return nil
+		return false, nil
 	}
 	path := filepath.Join(folder.Root, ".gitignore")
 	content, err := os.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
-		return nil
+		return false, nil
 	}
 	if err != nil || !bytes.HasSuffix(content, []byte(addition)) {
-		return err
+		return false, err
 	}
 	rest := bytes.TrimSuffix(content, []byte(addition))
 	if len(rest) == 0 {
-		return os.Remove(path)
+		return true, os.Remove(path)
 	}
 
-	return os.WriteFile(path, rest, 0o644)
+	return true, os.WriteFile(path, rest, 0o644)
 }
 
 func (folder Folder) progress() setupProgress {
@@ -300,13 +302,10 @@ func writeJSON(path string, value any) error {
 	return host.WritePrivateFile(path, content)
 }
 
-// Disconnect removes what setup owns in the folder: connection.json, the hook entry points, the session state, the
-// setup record and the .gitignore rule it added, when that rule is still as written. Worktrees and their receipts
-// are left to the worktree retirement that runs before it.
+// Disconnect removes what setup owns in the folder: connection.json, the hook entry points, the session state and
+// the setup record. The .gitignore rule is ForgetIgnoreRule's, asked first; worktrees and their receipts are left to
+// the worktree retirement that runs before it.
 func (folder Folder) Disconnect() error {
-	if err := folder.removeIgnoreRule(folder.progress().IgnoreAddition); err != nil {
-		return err
-	}
 	for _, owned := range []string{connectionName, setupName, hooksFolderName, "sessions"} {
 		if err := os.RemoveAll(folder.path(owned)); err != nil {
 			return err
@@ -314,6 +313,46 @@ func (folder Folder) Disconnect() error {
 	}
 
 	return nil
+}
+
+// Identity is what a folder's own journal files say it is, against this machine's private state for its root.
+type Identity string
+
+const (
+	// IdentityNone: the folder holds no journal setup and no kept worktree.
+	IdentityNone Identity = "none"
+	// IdentityOwn: its connection.json is of the binding this machine keeps for this very root.
+	IdentityOwn Identity = "own"
+	// IdentityForeign: its connection.json or setup record belongs to no binding of this root on this machine: the
+	// folder was moved or copied, so none of that setup is resumed.
+	IdentityForeign Identity = "foreign"
+	// IdentityRetained: only worktrees or receipts a disconnect kept are left, which a new connection keeps as they are.
+	IdentityRetained Identity = "retained"
+)
+
+// IdentityAgainst compares the folder's marker and setup record with the binding this machine keeps for its root.
+func (folder Folder) IdentityAgainst(state host.ConnectionState) Identity {
+	if _, err := folder.Connected(state); err == nil {
+		return IdentityOwn
+	}
+	_, markerErr := folder.Marker()
+	if markerErr == nil || len(folder.progress().Done) > 0 {
+		return IdentityForeign
+	}
+	if len(folder.RetainedWorktrees()) > 0 {
+		return IdentityRetained
+	}
+
+	return IdentityNone
+}
+
+// RetainedWorktrees are the worktree folders and receipts left under .journal, recognized with or without a
+// connection.json; they are a kept worktree's, never a sign of an older install.
+func (folder Folder) RetainedWorktrees() []string {
+	worktrees, _ := filepath.Glob(filepath.Join(folder.journalFolder(), "worktrees", "*"))
+	receipts, _ := filepath.Glob(filepath.Join(folder.journalFolder(), "receipts", "*.json"))
+
+	return append(worktrees, receipts...)
 }
 
 // ForgetReceipts removes the worktree receipts once no kept worktree needs them to prove whose it is.

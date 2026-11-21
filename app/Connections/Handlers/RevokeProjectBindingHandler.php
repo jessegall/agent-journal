@@ -7,18 +7,22 @@ namespace App\Connections\Handlers;
 use App\Connections\Commands\RevokeProjectBinding;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Support\BindingRevocation;
+use App\Connections\Values\BindingOutcome;
 use App\Contracts\CommandHandler;
 
 /**
  * Revokes the binding, its host and its device grants and ends its running command streams in one transaction,
- * and audits who did it.
+ * and audits who did it, once; a binding revoked already answers the time it was revoked.
  */
 final readonly class RevokeProjectBindingHandler implements CommandHandler
 {
     public function __construct(private BindingRevocation $revocation) {}
 
-    public function handle(RevokeProjectBinding $command): void
+    public function handle(RevokeProjectBinding $command): BindingOutcome
     {
-        $this->revocation->revoke(ProjectBinding::lockById($command->bindingId), $command->dispatchedBy()->actorId());
+        return $this->revocation->revoke(
+            ProjectBinding::lockById($command->bindingId),
+            $command->dispatchedBy()->actorId(),
+        );
     }
 }

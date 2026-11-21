@@ -142,16 +142,12 @@ func (commands dispatcher) finishDisconnect(
 		return 0
 	}
 
-	kept, err := host.MachineChanges{StateFolder: commands.stateFolder}.Undo()
+	undo, err := host.MachineChanges{StateFolder: commands.stateFolder}.Undo()
 	if err != nil {
 		fmt.Fprintln(stderr, "journal:", err)
 		return 1
 	}
-	fmt.Fprintln(stdout, "No connected project is left on this machine; the journal's releases and the changes it made to "+
-		"your shell are removed.")
-	for _, path := range kept {
-		fmt.Fprintln(stdout, "Kept "+path+": it changed since the journal set it up, so the journal line in it is yours to remove.")
-	}
+	printMachineUndo(undo, stdout)
 
 	return 0
 }
@@ -181,9 +177,29 @@ func (commands dispatcher) disconnectStep(
 
 		return nil, errors.Join(account.Forget(), state.RemoveSignIns())
 	default:
-		return nil, errors.Join(project.Folder{Root: record.CanonicalRoot}.Disconnect(), state.Remove(),
-			os.RemoveAll(host.RelayFolder(commands.stateFolder, record.BindingID)))
+		return nil, errors.Join(
+			commands.forgetIgnoreRule(record, stdout),
+			project.Folder{Root: record.CanonicalRoot}.Disconnect(),
+			state.Remove(),
+			os.RemoveAll(host.RelayFolder(commands.stateFolder, record.BindingID)),
+		)
 	}
+}
+
+// forgetIgnoreRule takes out the .journal/ line setup added to .gitignore and says so, unless kept worktrees still
+// need it or it changed since setup added it.
+func (commands dispatcher) forgetIgnoreRule(record host.DisconnectRecord, stdout io.Writer) error {
+	if len(record.Kept) > 0 {
+		fmt.Fprintln(stdout, "Kept the .journal/ line in .gitignore: the kept worktrees need it.")
+		return nil
+	}
+	removed, err := project.Folder{Root: record.CanonicalRoot}.ForgetIgnoreRule()
+	if err != nil || !removed {
+		return err
+	}
+	fmt.Fprintln(stdout, "Removed the .journal/ line setup added to .gitignore.")
+
+	return nil
 }
 
 // disableOwnedService disables the service the record owns; a machine with no service manager has none to disable.
@@ -278,6 +294,28 @@ func (commands dispatcher) retireWorktrees(record host.DisconnectRecord) ([]host
 // unfinishedStarts are the starts of the binding's relay whose program may still run.
 func unfinishedStarts(stateFolder string, bindingID string) ([]host.StartRecord, error) {
 	return host.StartStates{Folder: filepath.Join(host.RelayFolder(stateFolder, bindingID), "starts")}.Unfinished()
+}
+
+// printMachineUndo names what the last removal did with the setup every connected folder shared: the releases, the
+// PATH lines and the journal link it removed, and those it kept because they changed since.
+func printMachineUndo(undo host.MachineUndo, stdout io.Writer) {
+	fmt.Fprintln(stdout, "No connected project is left on this machine, so the setup they shared is removed:")
+	fmt.Fprintln(stdout, "  Removed the shared journal releases at "+undo.Releases)
+	for _, change := range undo.Removed {
+		fmt.Fprintln(stdout, "  Removed "+machineChangeText(change))
+	}
+	for _, change := range undo.Kept {
+		fmt.Fprintln(stdout, "  Kept "+machineChangeText(change)+": it changed since the journal set it up, so it is yours to "+
+			"remove.")
+	}
+}
+
+func machineChangeText(change host.MachineChange) string {
+	if change.Kind == host.ChangeLink {
+		return "the journal command link " + change.Path
+	}
+
+	return "the journal's PATH lines in " + change.Path
 }
 
 func printKept(record host.DisconnectRecord, stdout io.Writer) {

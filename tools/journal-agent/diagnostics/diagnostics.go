@@ -108,8 +108,8 @@ type Install struct {
 	Protocol int
 }
 
-// Bundle is what journal diagnostics writes: the ids and versions that name the install, the relay's recent events
-// and its last failures.
+// Bundle is what journal diagnostics writes: the ids and versions that name the install, the relay's state (whether
+// it runs and its last acknowledged report), its recent events and its last failures. No credential is in it.
 type Bundle struct {
 	WrittenAt    time.Time `json:"written_at"`
 	JournalURL   string    `json:"journal_url"`
@@ -120,8 +120,10 @@ type Bundle struct {
 	Release      string    `json:"release"`
 	Protocol     int       `json:"protocol"`
 	RelayRunning bool      `json:"relay_running"`
-	RecentEvents []Event   `json:"recent_events"`
-	LastFailures []Event   `json:"last_failures"`
+	// LastReport is the relay's last presence report the journal acknowledged; zero when there was none.
+	LastReport   host.RelayReport `json:"last_report"`
+	RecentEvents []Event          `json:"recent_events"`
+	LastFailures []Event          `json:"last_failures"`
 }
 
 // Write builds the bundle of the binding and writes it, private, into the folder; every secret the binding holds is
@@ -131,6 +133,7 @@ func Write(binding host.Binding, state host.ConnectionState, install Install, fo
 	if err != nil {
 		return "", err
 	}
+	lastReport, _ := state.RelayReport()
 	bundle := Bundle{
 		WrittenAt:    time.Now().UTC(),
 		JournalURL:   binding.JournalURL,
@@ -141,6 +144,7 @@ func Write(binding host.Binding, state host.ConnectionState, install Install, fo
 		Release:      install.Release,
 		Protocol:     install.Protocol,
 		RelayRunning: state.RelayIsRunning(),
+		LastReport:   lastReport,
 		RecentEvents: events,
 		LastFailures: lastFailures(events),
 	}
@@ -164,12 +168,16 @@ func lastFailures(events []Event) []Event {
 	return failures
 }
 
-// secretsOf are the values the binding holds that no bundle may show.
+// secretsOf are the values the binding's state holds that no bundle may show: the host secret, each terminal
+// sign-in's bearer, and the staged install record's credential and nonce.
 func secretsOf(binding host.Binding, state host.ConnectionState) []string {
 	secrets := []string{binding.Secret}
 	signIns, _ := state.SignIns()
 	for _, signIn := range signIns {
 		secrets = append(secrets, signIn.Grant)
+	}
+	if staged, err := state.Staged(); err == nil {
+		secrets = append(secrets, staged.HostCredential, staged.InstallationNonce)
 	}
 
 	return secrets

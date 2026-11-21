@@ -136,3 +136,79 @@ func TestAConnectedFolderShowsItsBindingAndLeavesTheNewLineUnused(t *testing.T) 
 		}
 	}
 }
+
+// copiedFolder is a folder holding the journal setup of binding-1, copied from another place: its marker, its
+// finished setup record, a file of the user's and a worktree the original kept.
+func copiedFolder(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	for _, folder := range []string{".journal", filepath.Join(".journal", "worktrees", "feature")} {
+		if err := os.MkdirAll(filepath.Join(root, folder), 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	files := map[string]string{
+		filepath.Join(".journal", "connection.json"): `{"protocol":2,"binding":"binding-1","rootId":"root-1"}`,
+		filepath.Join(".journal", "setup.json"):      `{"done":["connection","hooks","ignore"],"generation":3}`,
+		"notes.txt": "the user's own notes",
+	}
+	for name, content := range files {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	return root
+}
+
+func TestACopiedFolderIsEnrolledFreshOnlyOnceConfirmedAndKeepsItsFilesAndWorktrees(t *testing.T) {
+	root := copiedFolder(t)
+	state := host.ConnectionState{Folder: t.TempDir(), CanonicalRoot: root}
+	target := targetFolder{root: root, isGit: true}
+
+	answeringTerminal(t, "yes\n")
+	var out bytes.Buffer
+	if err := target.checkIdentity(state, &out); !errors.Is(err, errFreshNotConfirmed) {
+		t.Fatalf("a copied folder went on without a fresh enrollment: %v", err)
+	}
+	if !strings.Contains(out.String(), "binding-1") || !strings.Contains(out.String(), "moved or copied") {
+		t.Fatalf("the mismatch was not shown: %q", out.String())
+	}
+	if _, err := os.Stat(filepath.Join(root, ".journal", "connection.json")); err != nil {
+		t.Fatalf("a refused fresh enrollment changed the folder: %v", err)
+	}
+
+	answeringTerminal(t, "fresh\n")
+	if err := target.checkIdentity(state, &bytes.Buffer{}); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, gone := range []string{"connection.json", "setup.json"} {
+		if _, err := os.Stat(filepath.Join(root, ".journal", gone)); !os.IsNotExist(err) {
+			t.Fatalf("the copied %s is still there: %v", gone, err)
+		}
+	}
+	for _, kept := range []string{"notes.txt", filepath.Join(".journal", "worktrees", "feature")} {
+		if _, err := os.Stat(filepath.Join(root, kept)); err != nil {
+			t.Fatalf("%s was not kept: %v", kept, err)
+		}
+	}
+	if (project.Folder{Root: root}).SetupGeneration() != 0 {
+		t.Fatal("the fresh enrollment would resume the copied setup's steps")
+	}
+}
+
+func TestAFolderWhoseDisconnectWasCutShortIsFinishedBeforeAnyLineIsSpent(t *testing.T) {
+	root := copiedFolder(t)
+	state := host.ConnectionState{Folder: t.TempDir(), CanonicalRoot: root}
+	if err := (host.DisconnectRecord{BindingID: "binding-1", CanonicalRoot: root}).Save(state.Folder); err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+
+	err := targetFolder{root: root, isGit: true}.checkIdentity(state, &out)
+
+	if !errors.Is(err, errDisconnectUnfinished) || !strings.Contains(out.String(), "journal disconnect --resume binding-1") {
+		t.Fatalf("an unfinished disconnect answered %v, %q", err, out.String())
+	}
+}

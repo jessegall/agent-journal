@@ -48,6 +48,13 @@ final class BindingStartRefused extends RuntimeException implements CodedRefusal
         );
     }
 
+    public static function notReconciled(string $bindingId): self
+    {
+        return new self(
+            "Binding {$bindingId} starts again once its relay has reported what became of its earlier sessions.",
+        );
+    }
+
     public static function providerUnavailable(string $bindingId, string $reason): self
     {
         return new self("Binding {$bindingId} cannot start this program: {$reason}");

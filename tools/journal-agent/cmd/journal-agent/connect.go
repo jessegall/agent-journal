@@ -104,6 +104,9 @@ func (connection projectConnection) redeemConfirmed(target targetFolder, install
 	if err := target.assertNotConnected(connection.state, os.Stdout); err != nil {
 		return host.Binding{}, err
 	}
+	if err := target.checkIdentity(connection.state, os.Stdout); err != nil {
+		return host.Binding{}, err
+	}
 	if err := target.confirm(connection.origin, os.Stdout); err != nil {
 		return host.Binding{}, err
 	}

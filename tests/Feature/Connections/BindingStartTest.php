@@ -84,6 +84,35 @@ final class BindingStartTest extends TestCase
         $this->assertSame(0, AgentRuntime::query()->count());
     }
 
+    public function test_a_new_boot_of_the_relay_starts_nothing_until_it_reported_its_earlier_sessions(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $this->signedRelayCall(
+            $this->relayCredential(self::NONCE),
+            "/host/bindings/{$binding->id}/presence",
+            [
+                'bootId' => 'boot-after-sleep',
+                'sequence' => 1,
+                'release' => '1.0.0',
+                'protocol' => HostProtocolVersion::RemoteProject->value,
+                'combinations' => [],
+                'provisioning' => 'succeeded',
+                'takeover' => true,
+                'setupGeneration' => 1,
+            ],
+            HostProtocolVersion::RemoteProject,
+            (string) Str::uuid(),
+        )->assertOk();
+
+        $refused = $this->start($binding, [])->assertForbidden();
+
+        $this->assertStringContainsString(
+            'reported what became of its earlier sessions',
+            (string) $refused->json('message'),
+        );
+        $this->assertSame(0, AgentRuntime::query()->count());
+    }
+
     /**
      * A redeemed binding whose relay reported it can run Claude Code isolated.
      */
@@ -125,6 +154,7 @@ final class BindingStartTest extends TestCase
                 'driver' => 'claude-code',
                 'driverBuild' => '2.1.323',
                 'profile' => 'main-agent',
+                'model' => 'default',
                 ...$changes,
             ],
             HostProtocolVersion::RemoteProject,

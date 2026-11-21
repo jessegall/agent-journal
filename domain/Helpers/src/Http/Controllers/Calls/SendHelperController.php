@@ -8,7 +8,7 @@ use App\Bus\Contracts\CommandBus;
 use Domain\Helpers\Calls\SendHelperCall;
 use Domain\Helpers\Commands\SendHelper;
 use Domain\Helpers\Http\Data\HelperReceiptData;
-use Domain\Helpers\Support\HelperWork;
+use Domain\Helpers\Values\HelperWork;
 
 /**
  * Gives the named helper new work and answers the receipt.

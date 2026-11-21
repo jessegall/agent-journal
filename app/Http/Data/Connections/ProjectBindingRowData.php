@@ -15,8 +15,9 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 /**
  * One connected folder as the owner sees it, read at one server time: its reference, the project and environment it
  * works in by label and id, the machine it is on, each program and whether Start is offered for it, when its relay
- * was last in contact and until when its presence holds, where it stands now with the words for that, and its
- * terminal sign-ins. Its canonical path is never shown.
+ * was last in contact and until when its presence holds, when the server took its revocation, where it stands now
+ * with the words for that, its terminal sign-ins, and its support record of who did what to it and when. Its
+ * canonical path is never shown.
  */
 #[TypeScript]
 final class ProjectBindingRowData extends Data
@@ -24,6 +25,7 @@ final class ProjectBindingRowData extends Data
     /**
      * @param  list<BindingProviderData>  $capabilities
      * @param  list<TerminalSignInRowData>  $signIns
+     * @param  list<SupportRecordRowData>  $supportRecord
      */
     public function __construct(
         public readonly string $id,
@@ -37,19 +39,24 @@ final class ProjectBindingRowData extends Data
         #[DataCollectionOf(BindingProviderData::class)]
         public readonly array $capabilities = [],
         public readonly string|null $presenceExpiresAt = null,
+        public readonly string|null $revokedAt = null,
         public readonly string $stateText = '',
         #[DataCollectionOf(TerminalSignInRowData::class)]
         public readonly array $signIns = [],
+        #[DataCollectionOf(SupportRecordRowData::class)]
+        public readonly array $supportRecord = [],
     ) {}
 
     /**
      * @param  list<TerminalSignInRowData>  $signIns
+     * @param  list<SupportRecordRowData>  $supportRecord
      */
     public static function fromBinding(
         ProjectBinding $binding,
         CarbonImmutable $serverTime,
         array $signIns = [],
         string $currentRelease = '',
+        array $supportRecord = [],
     ): self {
         $state = $binding->readinessAt($serverTime);
 
@@ -64,8 +71,13 @@ final class ProjectBindingRowData extends Data
             'environmentLabel' => $binding->environment?->label ?? 'No environment',
             'capabilities' => self::providersOf($binding, $state),
             'presenceExpiresAt' => $binding->presence_expires_at?->toIso8601String(),
-            'stateText' => self::stateTextOf($binding, $state, $currentRelease),
+            'revokedAt' => $binding->revoked_at?->toIso8601String(),
+            'stateText' => self::stateTextOf($binding, $state, $currentRelease)
+                .($binding->isStopUnconfirmedAt($serverTime)
+                    ? ' Session stop unconfirmed: its lease ended and the device has not confirmed it stopped.'
+                    : ''),
             'signIns' => $signIns,
+            'supportRecord' => $supportRecord,
         ]);
     }
 
@@ -82,6 +94,10 @@ final class ProjectBindingRowData extends Data
 
             if ($reason === '' && $state !== BindingReadiness::Ready) {
                 $reason = 'Start waits until the folder is ready.';
+            }
+
+            if ($reason === '' && ! $binding->isReconciled()) {
+                $reason = "Start waits until the folder's relay has reported what became of its earlier sessions.";
             }
 
             if ($reason === '' && $binding->isEnvironmentUnassigned()) {

@@ -13,8 +13,8 @@ use Domain\Helpers\Handlers\Support\HelperCommandHandler;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Readers\HelperRecords;
 use Domain\Helpers\Support\HelperDispatch;
-use Domain\Helpers\Support\HelperReceipt;
 use Domain\Helpers\Support\HelperStarts;
+use Domain\Helpers\Values\HelperReceipt;
 
 /**
  * Continues the parent's own unfinished job of the named helper: an ended job refuses with the send that gives the

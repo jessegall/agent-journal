@@ -82,6 +82,54 @@ func RunProjectCommand(
 	return readFrames(transport, request, write)
 }
 
+// CommandStatus mirrors App\Connections\Calls\ProjectCommandStatus: where a request id's run stands and, once it
+// settled with an outcome, the frames it recorded, ending with its exit frame.
+type CommandStatus struct {
+	State  string         `json:"state"`
+	Frames []CommandFrame `json:"frames"`
+}
+
+// The states a run's status reads in, as App\Connections\Enums\CommandRunState names them.
+const (
+	CommandRunning               = "running"
+	CommandCancellationRequested = "cancellation_requested"
+	CommandInterrupted           = "interrupted"
+	CommandUnknown               = "unknown"
+)
+
+// IsSettled is whether the run ended with an outcome whose frames the status carries.
+func (status CommandStatus) IsSettled() bool {
+	return status.State != CommandRunning && status.State != CommandCancellationRequested &&
+		status.State != CommandInterrupted && status.State != CommandUnknown
+}
+
+// ReadProjectCommandStatus reads, signed with the grant, what became of this agent's verb of the request id on the
+// binding; it starts nothing.
+func ReadProjectCommandStatus(
+	ctx context.Context,
+	transport *http.Client,
+	grant StartGrant,
+	bindingID string,
+	requestKey string,
+) (CommandStatus, error) {
+	request, err := grant.signedPost(ctx, projectCommandsTarget+"/status",
+		map[string]string{"binding": bindingID, "request_key": requestKey})
+	if err != nil {
+		return CommandStatus{}, err
+	}
+	response, err := transport.Do(request)
+	if err != nil {
+		return CommandStatus{}, errors.Join(ErrUncertain, err)
+	}
+	defer response.Body.Close()
+	if err := refusalOf(response, request.URL.Path); err != nil {
+		return CommandStatus{}, err
+	}
+	var status CommandStatus
+
+	return status, json.NewDecoder(response.Body).Decode(&status)
+}
+
 // readFrames sends the request and hands each frame of its answer to write in sequence, until the exit frame.
 func readFrames(transport *http.Client, request *http.Request, write func(CommandFrame) error) (int, error) {
 	response, err := transport.Do(request)
