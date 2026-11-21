@@ -225,22 +225,14 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
 
     /**
      * The target as the owner's list names it: New project, or the project and environment it joins; a Join whose
-     * environment is gone says so.
+     * environment was deleted, which empties its key, says so.
      */
     /**
      * @return Attribute<string, never>
      */
     protected function targetLabel(): Attribute
     {
-        return Attribute::get(function (): string {
-            if ($this->mode === InvitationMode::New) {
-                return 'New project';
-            }
-
-            $environment = $this->environment?->label ?? 'an environment that is gone';
-
-            return ($this->project?->label ?? 'a project').' / '.$environment;
-        });
+        return Attribute::get(fn (): string => $this->targetText());
     }
 
     // ----------[ Relations ]----------
@@ -270,6 +262,21 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Internals ]----------
+
+    /**
+     * The target's words: a project or environment deleted since, which empties its key, is named as gone.
+     */
+    private function targetText(): string
+    {
+        if ($this->mode === InvitationMode::New) {
+            return 'New project';
+        }
+
+        $project = $this->project_id === null ? 'a project that is gone' : $this->project->label;
+        $environment = $this->environment_id === null ? 'an environment that is gone' : $this->environment->label;
+
+        return $project.' / '.$environment;
+    }
 
     /**
      * @throws InstallAttemptRefused
