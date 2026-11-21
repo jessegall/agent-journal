@@ -10,7 +10,7 @@ import Button from '@kit/Button';
 import Modal from '@kit/Modal';
 import TextField from '@kit/TextField';
 import { formSendingHooks } from '@kit/usePageChanges';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, useId, watch } from 'vue';
 import AccountFactList from './AccountFactList.vue';
 import AccountUsageDetails from './AccountUsageDetails.vue';
 import { chosenIn } from './accountSelections';
@@ -37,7 +37,8 @@ const emit = defineEmits<{
 
 const isAskingToRemove = ref(false);
 const back = ref<InstanceType<typeof Button> | null>(null);
-const fieldId = computed(() => `account-name-${props.account.id}`);
+// The name field's id per mount, so the same account open in two windows keeps two fields.
+const fieldId = `account-name-${useId()}`;
 const { naming, refusal, canSave, saved, revert, save } = useAccountNaming(
     () => props.account,
 );

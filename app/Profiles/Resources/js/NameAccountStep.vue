@@ -4,7 +4,7 @@ import type {
     SignInMethodData,
 } from '@generated/types/accounts';
 import TextField from '@kit/TextField';
-import { computed, onMounted } from 'vue';
+import { onMounted, ref, useId } from 'vue';
 import ChosenSignIn from './ChosenSignIn.vue';
 import { useAccountNaming } from './accountNaming';
 
@@ -23,10 +23,12 @@ const emit = defineEmits<{ named: [] }>();
 const { naming, refusal, canSave, startFrom, save } = useAccountNaming(
     () => props.account,
 );
-const fieldId = computed(() => `new-account-name-${props.account.id}`);
+// Ids per mount, so the same account named in two windows keeps two fields; focus goes through this form only.
+const fieldId = `new-account-name-${useId()}`;
+const form = ref<HTMLFormElement | null>(null);
 
 onMounted(() =>
-    startFrom(document.querySelector<HTMLInputElement>(`#${fieldId.value}`)),
+    startFrom(form.value?.querySelector<HTMLInputElement>('input') ?? null),
 );
 
 function saveOrSkip(): void {
@@ -44,6 +46,7 @@ function saveOrSkip(): void {
     <ChosenSignIn :driver="driver" :method="method" />
     <form
         :id="formId"
+        ref="form"
         class="flex flex-1 flex-col gap-3"
         @submit.prevent="saveOrSkip"
     >

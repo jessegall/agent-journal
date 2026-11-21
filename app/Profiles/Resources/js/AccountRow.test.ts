@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { reactive } from 'vue';
+import { defineComponent, h, reactive } from 'vue';
 
 type SentForm = {
     submit: ReturnType<typeof vi.fn>;
@@ -490,11 +490,41 @@ describe('usage on an open page', () => {
         expect(usageLineOf(shown)).toBeUndefined();
     });
 
+    it('gives the same account in two windows two name fields of their own', async () => {
+        const props = {
+            account: account(),
+            isChosen: false,
+            now: new Date('2026-11-21T12:00:00Z'),
+        };
+        const both = mount(
+            defineComponent({
+                setup: () => () =>
+                    h('ul', [h(AccountRow, props), h(AccountRow, props)]),
+            }),
+            { attachTo: document.body },
+        );
+        for (const settings of both.findAll(
+            '[aria-label="Settings of jesse@example.com"]',
+        )) {
+            await settings.trigger('click');
+        }
+        await flushPromises();
+
+        const ids = [
+            ...document.querySelectorAll<HTMLInputElement>(
+                '[id^="account-name-"]',
+            ),
+        ].map((field) => field.id);
+        expect(ids).toHaveLength(2);
+        expect(new Set(ids).size).toBe(2);
+        both.unmount();
+    });
+
     it('keeps the open settings, a typed name and the focus when the account changes', async () => {
         const shown = row();
         await openSettings(shown);
         const field = document.querySelector<HTMLInputElement>(
-            '#account-name-acc-1',
+            '[id^="account-name-"]',
         )!;
         const naming = forms.find((form) => form.label === 'jesse@example.com');
         naming!.label = 'Typed name';

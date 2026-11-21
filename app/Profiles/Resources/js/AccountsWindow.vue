@@ -85,6 +85,34 @@ async function closeWizard(
     root.value?.querySelector<HTMLElement>(target)?.focus();
 }
 
+/**
+ * When rows go, such as the one whose settings were open, and the focus went with them, it lands on the first row
+ * left, or on Add account when none is.
+ */
+watch(
+    () => props.data.rows.map((row) => row.id),
+    async (ids, before) => {
+        if (before.every((id) => ids.includes(id))) {
+            return;
+        }
+
+        await nextTick();
+
+        if (
+            root.value === null ||
+            root.value.contains(document.activeElement)
+        ) {
+            return;
+        }
+
+        root.value
+            .querySelector<HTMLElement>(
+                '[data-account-row], [data-account-add]',
+            )
+            ?.focus();
+    },
+);
+
 function resumeOrAgain(row: AccountRowData): void {
     const running = attemptToRejoin(props.data.attempts, row.driver, row.id);
 

@@ -677,9 +677,7 @@ describe('AddAccountWizard', () => {
         await flushPromises();
 
         expect(view.text()).toContain('Name this account');
-        const field = view.find<HTMLInputElement>(
-            '#new-account-name-account-1',
-        );
+        const field = view.find<HTMLInputElement>('[id^="new-account-name-"]');
         expect(field.element.value).toBe('Claude Code API key 2');
 
         await field.setValue('Work key');
