@@ -37,6 +37,13 @@ if [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/
     done
 fi
 
+# Migrations run only when the commits since the installed one add or change one; a first install always runs them.
+migrations_changed=yes
+if [ -n "$installed" ] && git -C "$mirror" cat-file -e "$installed^{commit}" 2>/dev/null &&
+    ! git -C "$mirror" diff --name-only "$installed" "$newest" | grep -qE '(^|/)(Database/Migrations|database/migrations)/'; then
+    migrations_changed=no
+fi
+
 # A contained installation, as its .env says, also runs the contained profile and its pinned runner image.
 arrangement=$(sed -n 's/^AGENTS_ARRANGEMENT=//p' .env | tail -n 1)
 profiles=""
@@ -47,7 +54,7 @@ install() {
     docker compose --progress=quiet build app share &&
         { [ "$arrangement" != contained ] || pin_runner; } &&
         docker compose $profiles up -d --wait --wait-timeout 240 &&
-        docker compose exec -T app php artisan migrate --force &&
+        { [ "$migrations_changed" = no ] || docker compose exec -T app php artisan migrate --force; } &&
         docker compose exec -T app php artisan cache:forget installed-version &&
         docker image prune -f >/dev/null
 }
