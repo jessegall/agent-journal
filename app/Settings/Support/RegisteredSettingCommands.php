@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Reflection\Support\Reflector;
 use App\Settings\Commands\DisableSettingGroup;
 use App\Settings\Commands\EnableSettingGroup;
 use App\Settings\Commands\ResetSetting;
@@ -108,7 +109,7 @@ final readonly class RegisteredSettingCommands implements SettingCommands
         $reference = $this->settingReference($setting);
         $backing = $input->value;
 
-        if (! $input instanceof $setting->enum || ! is_string($backing)) {
+        if (! Reflector::of($setting->enum)->isInstance($input) || ! is_string($backing)) {
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 
@@ -131,7 +132,7 @@ final readonly class RegisteredSettingCommands implements SettingCommands
         $reference = $this->settingReference($setting);
         $backing = $input->value;
 
-        if (! $input instanceof $setting->enum || ! is_int($backing)) {
+        if (! Reflector::of($setting->enum)->isInstance($input) || ! is_int($backing)) {
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 

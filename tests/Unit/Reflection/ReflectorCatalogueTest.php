@@ -32,7 +32,7 @@ final class ReflectorCatalogueTest extends TestCase
 
     public function test_an_alias_a_leading_backslash_and_another_letter_case_reach_the_canonical_reflector(): void
     {
-        if (! class_exists('Tests\Fixtures\Reflection\ParcelAlias', false)) {
+        if (! Reflector::exists('Tests\Fixtures\Reflection\ParcelAlias')) {
             class_alias(Parcel::class, 'Tests\Fixtures\Reflection\ParcelAlias');
         }
 

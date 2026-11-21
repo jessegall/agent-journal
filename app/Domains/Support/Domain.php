@@ -98,7 +98,7 @@ abstract class Domain
         $fromTraits = [];
 
         foreach (self::TRAIT_OF_CAPABILITY as $capability => $trait) {
-            if ($this instanceof $capability && ! in_array($trait, $traits, true)) {
+            if (Reflector::of($capability)->isInstance($this) && ! in_array($trait, $traits, true)) {
                 throw CapabilityWithoutTrait::for(static::class, $capability, $trait);
             }
         }

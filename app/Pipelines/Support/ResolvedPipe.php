@@ -56,7 +56,7 @@ final readonly class ResolvedPipe
      */
     public function handle(object $input): object
     {
-        if ($this->takes !== null && ! $input instanceof $this->takes) {
+        if ($this->takes !== null && ! Reflector::of($this->takes)->isInstance($input)) {
             throw StepOutOfOrder::handing($this->pipe::class, $input);
         }
 

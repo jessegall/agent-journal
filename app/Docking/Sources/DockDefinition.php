@@ -8,6 +8,7 @@ use App\Docking\Cards\DockIdentity;
 use App\Docking\Exceptions\DockDefinitionInvalid;
 use App\Docking\Sources\Contracts\Dockable;
 use App\Docking\Sources\Contracts\DockableProvider;
+use App\Reflection\Support\Reflector;
 
 /**
  * One dockable type as its owner registered it: its type key, the class of its sources, the provider that reads
@@ -39,7 +40,7 @@ final readonly class DockDefinition
      */
     public function assertOwns(Dockable $source): void
     {
-        if (! $source instanceof $this->class) {
+        if (! Reflector::of($this->class)->isInstance($source)) {
             throw DockDefinitionInvalid::notOwned($this->type, $source::class);
         }
     }

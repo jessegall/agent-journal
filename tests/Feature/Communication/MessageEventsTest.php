@@ -9,11 +9,12 @@ use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\Message;
 use App\Domains\Support\FailureLoggingListener;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use ReflectionClass;
-use ReflectionNamedType;
 use Tests\Fixtures\Communication\FailingMessageListener;
 use Tests\Support\MessagingTestCase;
 
@@ -66,16 +67,18 @@ final class MessageEventsTest extends MessagingTestCase
     public function test_no_message_fact_carries_a_body_or_a_model(): void
     {
         foreach (glob(app_path('Communication/Events/*.php')) ?: [] as $file) {
-            $parameters = new ReflectionClass('App\\Communication\\Events\\'.basename($file, '.php'))
-                ->getConstructor()?->getParameters() ?? [];
+            $parameters = Reflector::of('App\\Communication\\Events\\'.basename($file, '.php'))->constructor()
+                ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+                ->getOrElse([]);
 
             foreach ($parameters as $parameter) {
-                $type = $parameter->getType();
-                $this->assertNotSame('body', $parameter->getName(), basename($file));
-                $this->assertFalse(
-                    $type instanceof ReflectionNamedType && is_subclass_of($type->getName(), Model::class),
-                    basename($file),
-                );
+                $holdsModel = $parameter->type()
+                    ->filter(fn (DeclaredType $type) => $type->isNamed())
+                    ->flatMap(fn (DeclaredType $type) => Reflector::find($type->name()))
+                    ->filter(fn (Reflector $type) => $type->isSubclassOf(Model::class))
+                    ->isDefined();
+                $this->assertNotSame('body', $parameter->name(), basename($file));
+                $this->assertFalse($holdsModel, basename($file));
             }
         }
     }

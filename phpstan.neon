@@ -29,3 +29,4 @@ rules:
     - Tests\Architecture\PhpStan\TypedClassConstantRule
     - Tests\Architecture\PhpStan\StandaloneAttributeRule
     - Tests\Architecture\PhpStan\AttributeOrderRule
+    - Tests\Architecture\PhpStan\RawReflectionRule

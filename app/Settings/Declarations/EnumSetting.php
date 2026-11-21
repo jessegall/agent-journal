@@ -60,7 +60,7 @@ final readonly class EnumSetting implements OptionSetting
             throw SettingDeclarationInvalid::notABackedEnum($key);
         }
 
-        if (! $default instanceof $enum) {
+        if (! Reflector::of($enum)->isInstance($default)) {
             throw SettingDeclarationInvalid::defaultNotAnOption($key);
         }
 

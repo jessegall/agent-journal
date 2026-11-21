@@ -13,11 +13,11 @@ use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
+use App\Reflection\Support\Reflector;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
-use ReflectionClass;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -35,7 +35,7 @@ final class AssigneeIdentityTest extends TestCase
 
     public function test_an_assignee_is_not_an_actor_by_contract(): void
     {
-        $this->assertNotContains(Actor::class, new ReflectionClass(Assignee::class)->getInterfaceNames());
+        $this->assertFalse(Reflector::of(Assignee::class)->implements(Actor::class));
     }
 
     public function test_an_agent_and_a_user_are_assigned_and_reassigned_through_the_assign_command(): void

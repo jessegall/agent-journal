@@ -18,10 +18,10 @@ use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Support\ShellParser;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
-use ReflectionClass;
-use ReflectionMethod;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -150,10 +150,10 @@ final class HookRuntimeStartTest extends TestCase
     private function hookMethods(): array
     {
         return array_values(array_map(
-            fn (ReflectionMethod $method) => $method->getName(),
+            fn (ReflectedMethod $method) => $method->name(),
             array_filter(
-                new ReflectionClass(AgentState::class)->getMethods(),
-                fn (ReflectionMethod $method) => str_starts_with($method->getName(), 'on'),
+                Reflector::of(AgentState::class)->methods(),
+                fn (ReflectedMethod $method) => str_starts_with($method->name(), 'on'),
             ),
         ));
     }

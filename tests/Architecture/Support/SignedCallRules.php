@@ -7,9 +7,9 @@ namespace Tests\Architecture\Support;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
 use App\AgentRequests\Support\CallDeclaration;
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionProperty;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\Reflector;
+use PhpOption\Option;
 
 /**
  * The checks every signed call and its controller pass, each over the classes it is given, so a test can run it on
@@ -33,12 +33,11 @@ final readonly class SignedCallRules
         $wrong = [];
 
         foreach ($controllers as $controller) {
-            $controllerMethod = new ReflectionClass($controller)->getMethod('__invoke');
-            $callParameterType = ($controllerMethod->getParameters()[0] ?? null)?->getType();
-            $returnType = $controllerMethod->getReturnType();
-            $call = $callParameterType instanceof ReflectionNamedType ? $callParameterType->getName() : '';
+            $controllerMethod = Reflector::of($controller)->method('__invoke');
+            $parameters = $controllerMethod->parameters();
+            $call = $parameters === [] ? '' : self::namedTypeOf($parameters[0]->type());
 
-            if (! is_subclass_of($call, JournalCall::class)) {
+            if (! Reflector::exists($call) || ! Reflector::of($call)->isSubclassOf(JournalCall::class)) {
                 $wrong[] = "{$controller}: its first parameter is no call";
 
                 continue;
@@ -46,7 +45,7 @@ final readonly class SignedCallRules
 
             $answer = CallDeclaration::of($call)->endpoint->answer;
 
-            if (! $returnType instanceof ReflectionNamedType || $returnType->getName() !== $answer) {
+            if (self::namedTypeOf($controllerMethod->returnType()) !== $answer) {
                 $wrong[] = "{$controller}: it does not return {$answer}";
             }
         }
@@ -65,11 +64,11 @@ final readonly class SignedCallRules
         $wrong = [];
 
         foreach ($calls as $call) {
-            $class = new ReflectionClass($call);
-            preg_match('/@implements\s+JournalCall<(\w+)>/', (string) $class->getDocComment(), $callContractMatch);
+            $docblock = Reflector::of($call)->docComment()->getOrElse('');
+            preg_match('/@implements\s+JournalCall<(\w+)>/', $docblock, $callContractMatch);
             $answer = CallDeclaration::of($call)->endpoint->answer;
 
-            if (($callContractMatch[1] ?? '') !== new ReflectionClass($answer)->getShortName()) {
+            if (($callContractMatch[1] ?? '') !== Reflector::of($answer)->shortName()) {
                 $wrong[] = $call;
             }
         }
@@ -88,9 +87,9 @@ final readonly class SignedCallRules
         $found = [];
 
         foreach ($classes as $class) {
-            foreach (new ReflectionClass($class)->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-                if (in_array($property->getName(), self::ACTOR_ID_NAMES, true)) {
-                    $found[] = "{$class}::\${$property->getName()}";
+            foreach (Reflector::of($class)->properties() as $property) {
+                if ($property->isPublic() && in_array($property->name(), self::ACTOR_ID_NAMES, true)) {
+                    $found[] = "{$class}::\${$property->name()}";
                 }
             }
         }
@@ -115,7 +114,7 @@ final readonly class SignedCallRules
 
         foreach ($commandSources as $command => $source) {
             foreach ($writes as $write) {
-                $short = new ReflectionClass($write)->getShortName();
+                $short = Reflector::of($write)->shortName();
                 $method = lcfirst(substr($short, 0, -strlen('Call')));
 
                 if (str_contains($source, $short) || str_contains($source, "->{$method}(")) {
@@ -125,5 +124,17 @@ final readonly class SignedCallRules
         }
 
         return $found;
+    }
+
+    /**
+     * The one name of a declared type; empty for none, a union or an intersection.
+     *
+     * @param  Option<DeclaredType>  $type
+     */
+    private static function namedTypeOf(Option $type): string
+    {
+        return $type->filter(fn (DeclaredType $declared) => $declared->isNamed())
+            ->map(fn (DeclaredType $declared) => $declared->name())
+            ->getOrElse('');
     }
 }

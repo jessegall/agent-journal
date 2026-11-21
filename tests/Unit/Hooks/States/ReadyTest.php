@@ -10,10 +10,11 @@ use App\Hooks\Inputs\Contracts\HookInput;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use ReflectionMethod;
 use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
@@ -68,20 +69,18 @@ final class ReadyTest extends TestCase
     private function hooksNotAnsweredBy(string $class): array
     {
         $hooks = array_filter(
-            new ReflectionClass(AgentState::class)->getMethods(ReflectionMethod::IS_PUBLIC),
-            fn (
-                ReflectionMethod $method,
-            ) => str_starts_with($method->getName(), 'on') && (string) $method->getReturnType() === Decision::class,
+            Reflector::of(AgentState::class)->methods(),
+            fn (ReflectedMethod $method) => $method->isPublic()
+                && str_starts_with($method->name(), 'on')
+                && $method->returnType()->filter(fn (DeclaredType $type) => $type->text === Decision::class)->isDefined(),
         );
+        $state = Reflector::of($class);
 
         return array_values(array_map(
-            fn (ReflectionMethod $method) => $method->getName(),
+            fn (ReflectedMethod $method) => $method->name(),
             array_filter(
                 $hooks,
-                fn (ReflectionMethod $method) => new ReflectionMethod(
-                    $class,
-                    $method->getName(),
-                )->getDeclaringClass()->getName() !== $class,
+                fn (ReflectedMethod $method) => $state->method($method->name())->declaringClass()->name() !== $class,
             ),
         ));
     }

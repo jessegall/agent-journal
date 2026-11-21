@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Bus\Support\CommandRegistry;
-use ReflectionClass;
-use ReflectionNamedType;
+use App\Reflection\Support\DeclaredType;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\Reflector;
 
 /**
  * The code each registered command runs: its handler, the module middleware it passes, and every project class they
@@ -53,19 +54,28 @@ final readonly class CommandReach
         while ($classes !== []) {
             $class = array_pop($classes);
 
-            if (isset($seen[$class]) || ! class_exists($class) || ! self::isProjectClass($class)) {
+            if (isset($seen[$class]) || ! Reflector::exists($class) || ! self::isProjectClass($class)) {
+                continue;
+            }
+
+            $declaration = Reflector::of($class);
+
+            if (! $declaration->isClass()) {
                 continue;
             }
 
             $seen[$class] = true;
-            $reflection = new ReflectionClass($class);
-            $files[] = (string) $reflection->getFileName();
+            $files[] = $declaration->fileName()->getOrElse('');
+            $parameters = $declaration->constructor()
+                ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+                ->getOrElse([]);
 
-            foreach ($reflection->getConstructor()?->getParameters() ?? [] as $parameter) {
-                $type = $parameter->getType();
+            foreach ($parameters as $parameter) {
+                $type = $parameter->type()
+                    ->filter(fn (DeclaredType $declared) => $declared->isNamed() && ! $declared->isBuiltin());
 
-                if ($type instanceof ReflectionNamedType && ! $type->isBuiltin()) {
-                    $classes[] = $type->getName();
+                if ($type->isDefined()) {
+                    $classes[] = $type->get()->name();
                 }
             }
         }

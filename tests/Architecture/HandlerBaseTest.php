@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Contracts\CommandHandler;
+use App\Reflection\Support\Reflector;
 use Illuminate\Support\Str;
-use ReflectionClass;
 use Symfony\Component\Finder\Finder;
 use Tests\TestCase;
 
@@ -24,8 +24,12 @@ final class HandlerBaseTest extends TestCase
             $domain = basename(dirname($folder, 2));
             $base = "Domain\\{$domain}\\Handlers\\Support\\".Str::singular($domain).'CommandHandler';
 
-            if (! class_exists($base) || ! new ReflectionClass($base)->isAbstract()
-                || ! is_subclass_of($base, CommandHandler::class)) {
+            $isBase = Reflector::find($base)
+                ->filter(fn (Reflector $type) => $type->isClass() && $type->isAbstract())
+                ->filter(fn (Reflector $type) => $type->isSubclassOf(CommandHandler::class))
+                ->isDefined();
+
+            if (! $isBase) {
                 $faults[] = "{$domain} has no abstract {$base} implementing CommandHandler";
 
                 continue;
@@ -34,11 +38,12 @@ final class HandlerBaseTest extends TestCase
             foreach (Finder::create()->files()->in($folder)->depth(0)->name('*Handler.php') as $file) {
                 /** @var class-string $handler */
                 $handler = "Domain\\{$domain}\\Handlers\\".$file->getBasename('.php');
-                $reflection = new ReflectionClass($handler);
-                $parent = $reflection->getParentClass();
+                $declaration = Reflector::of($handler);
+                $extendsBase = $declaration->parent()
+                    ->filter(fn (Reflector $parent) => $parent->name() === $base)
+                    ->isDefined();
 
-                if (! $reflection->isFinal() || ! $reflection->isReadOnly()
-                    || $parent === false || $parent->getName() !== $base) {
+                if (! $declaration->isFinal() || ! $declaration->isReadOnly() || ! $extendsBase) {
                     $faults[] = "{$handler} must be final readonly and extend {$base} directly";
                 }
             }

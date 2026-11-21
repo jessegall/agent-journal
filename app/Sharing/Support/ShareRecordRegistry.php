@@ -6,6 +6,7 @@ namespace App\Sharing\Support;
 
 use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Support\RecordIdentity;
+use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use App\Sharing\Contracts\Shareable;
 use App\Sharing\Contracts\ShareRecordProvider;
@@ -46,11 +47,11 @@ final class ShareRecordRegistry
         $alias = $definition->alias;
         RecordIdentity::assertKnownType($alias);
 
-        if (! is_subclass_of($definition->modelClass, Shareable::class)) {
+        if (! Reflector::isNameSubclassOf($definition->modelClass, Shareable::class)) {
             throw ShareRecordInvalid::notShareable($alias, $definition->modelClass);
         }
 
-        if (! is_subclass_of($definition->providerClass, ShareRecordProvider::class)) {
+        if (! Reflector::isNameSubclassOf($definition->providerClass, ShareRecordProvider::class)) {
             throw ShareRecordInvalid::notAProvider($alias, $definition->providerClass);
         }
 

@@ -7,6 +7,7 @@ namespace Tests\Architecture\Support;
 use App\Contracts\Event;
 use App\Domains\Support\DomainEntry;
 use App\Exports\Support\Exports;
+use App\Reflection\Support\Reflector;
 
 /**
  * Judges name uses against the domain each file belongs to, the domains it declares it requires and what each owner
@@ -366,7 +367,9 @@ final readonly class BoundaryChecker
         return stripos($name, 'App\\') === 0 && stripos(
             $name,
             'App\\Domains\\',
-        ) !== 0 && is_subclass_of($name, Event::class);
+        ) !== 0 && Reflector::find($name)
+            ->filter(fn (Reflector $type) => $type->isSubclassOf(Event::class))
+            ->isDefined();
     }
 
     /**
@@ -375,7 +378,7 @@ final readonly class BoundaryChecker
      */
     private static function isDeclared(string $name): bool
     {
-        return class_exists($name) || interface_exists($name) || enum_exists($name) || trait_exists($name);
+        return Reflector::exists($name);
     }
 
     private function isShared(string $name): bool

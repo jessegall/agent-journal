@@ -6,7 +6,7 @@ namespace Tests\Architecture\Support;
 
 use App\Domains\Support\Domain;
 use App\Domains\Support\DomainEntry;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -34,15 +34,16 @@ final readonly class DeclarationRules
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                if (! is_subclass_of($name, Domain::class)
-                    || ($reflection = new ReflectionClass($name))->isAbstract()) {
+                $declaration = Reflector::exists($name) ? Reflector::of($name) : null;
+
+                if ($declaration === null || ! $declaration->isSubclassOf(Domain::class) || $declaration->isAbstract()) {
                     continue;
                 }
 
                 if (preg_match('/^'.preg_quote($root, '/').'\\\\(\w+)\\\\\1Domain$/', $name) !== 1) {
                     $violations[] = new Violation(
                         $path,
-                        (int) $reflection->getStartLine(),
+                        $declaration->startLine(),
                         $name,
                         'none',
                         'none',

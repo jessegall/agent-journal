@@ -18,14 +18,6 @@ final readonly class ReflectionFinding
     ) {}
 
     /**
-     * What a baseline line names it by: its file, enclosing declaration and operation, never its line.
-     */
-    public function key(): string
-    {
-        return "{$this->file} | {$this->declaration} | {$this->operation}";
-    }
-
-    /**
      * The finding as a failure shows it: path:line, the operation and the wrapper call to use.
      */
     public function report(): string

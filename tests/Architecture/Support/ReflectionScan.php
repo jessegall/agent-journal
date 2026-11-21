@@ -7,8 +7,7 @@ namespace Tests\Architecture\Support;
 use Symfony\Component\Process\Process;
 
 /**
- * One PHPStan run of RawReflectionRule over the given sources, and how its findings compare with the baseline of
- * allowed existing uses.
+ * One PHPStan run of RawReflectionRule over the given sources and what it found.
  */
 final readonly class ReflectionScan
 {
@@ -63,80 +62,13 @@ final readonly class ReflectionScan
     }
 
     /**
-     * Each finding the baseline does not allow, or allows fewer times than it occurs, as a failure shows it.
-     *
-     * @param  list<string>  $baseline  lines of file | declaration | operation | count
-     * @return list<string>
-     */
-    public function unlistedFindings(array $baseline): array
-    {
-        $allowed = self::countsOf($baseline);
-        $found = $this->counts();
-
-        return array_values(array_map(
-            fn (ReflectionFinding $finding) => $finding->report(),
-            array_filter(
-                $this->findings,
-                fn (ReflectionFinding $finding) => $found[$finding->key()] > ($allowed[$finding->key()] ?? 0),
-            ),
-        ));
-    }
-
-    /**
-     * Each baseline line whose uses are gone or fewer than it says, with the count found now.
-     *
-     * @param  list<string>  $baseline
-     * @return list<string>
-     */
-    public function staleEntries(array $baseline): array
-    {
-        $found = $this->counts();
-        $stale = [];
-
-        foreach (self::countsOf($baseline) as $key => $count) {
-            if (($found[$key] ?? 0) < $count) {
-                $stale[] = "{$key} | {$count}: found ".($found[$key] ?? 0);
-            }
-        }
-
-        return $stale;
-    }
-
-    /**
-     * The baseline lines that would allow exactly the findings of this scan, sorted by path.
+     * Each finding as a failure shows it: path:line, the operation and the wrapper call to use.
      *
      * @return list<string>
      */
-    public function baselineLines(): array
+    public function reports(): array
     {
-        $lines = array_map(fn (string $key, int $count) => "{$key} | {$count}", array_keys($this->counts()), $this->counts());
-        sort($lines);
-
-        return $lines;
-    }
-
-    /**
-     * @return array<string, int>
-     */
-    private function counts(): array
-    {
-        return array_count_values(array_map(fn (ReflectionFinding $finding) => $finding->key(), $this->findings));
-    }
-
-    /**
-     * @param  list<string>  $baseline
-     * @return array<string, int>
-     */
-    private static function countsOf(array $baseline): array
-    {
-        $counts = [];
-
-        foreach ($baseline as $line) {
-            $separator = strrpos($line, ' | ');
-            $counts[substr($line, 0, (int) $separator)] = (int) substr($line, (int) $separator + 3);
-        }
-
-        return $counts;
+        return array_map(fn (ReflectionFinding $finding) => $finding->report(), $this->findings);
     }
 
     /**

@@ -12,11 +12,11 @@ use App\Bus\Support\CommandStops;
 use App\Bus\Support\OperationDeadline;
 use App\Engine\Support\MonotonicStop;
 use App\Engine\Support\SystemMonotonicClock;
+use App\Reflection\Support\Reflector;
 use Exception;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
 use PDOException;
-use ReflectionProperty;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
@@ -145,7 +145,7 @@ final class CommandStopTimeTest extends TestCase
     private static function serializationFailure(): QueryException
     {
         $cause = new PDOException('could not serialize access');
-        new ReflectionProperty(Exception::class, 'code')->setValue($cause, '40001');
+        Reflector::of(Exception::class)->property('code')->writeTo($cause, '40001');
 
         return new QueryException('pgsql', 'select 1', [], $cause);
     }

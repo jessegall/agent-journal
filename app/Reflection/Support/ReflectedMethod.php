@@ -58,6 +58,19 @@ final class ReflectedMethod
         return $this->method->isAbstract();
     }
 
+    public function isFinal(): bool
+    {
+        return $this->method->isFinal();
+    }
+
+    /**
+     * Calls the method on the object with these arguments, on every call, whatever its visibility.
+     */
+    public function invokeOn(object $target, mixed ...$arguments): mixed
+    {
+        return $this->method->invoke($target, ...$arguments);
+    }
+
     /**
      * @return list<ReflectedParameter>
      */
@@ -98,6 +111,14 @@ final class ReflectedMethod
         $comment = $this->method->getDocComment();
 
         return $comment === false ? None::create() : new Some($comment);
+    }
+
+    /**
+     * The line the method starts on in its file; 0 for one PHP declares.
+     */
+    public function startLine(): int
+    {
+        return (int) $this->method->getStartLine();
     }
 
     /**

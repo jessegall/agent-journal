@@ -45,12 +45,70 @@ final class ReflectedProperty
         return $this->property->isStatic();
     }
 
+    public function isReadOnly(): bool
+    {
+        return $this->property->isReadOnly();
+    }
+
+    public function isPrivate(): bool
+    {
+        return $this->property->isPrivate();
+    }
+
+    /**
+     * The property's current value on the object, read on every call, whatever its visibility.
+     */
+    public function readFrom(object $target): mixed
+    {
+        return $this->property->getValue($target);
+    }
+
+    /**
+     * Writes the value to the property on the object, on every call, whatever its visibility.
+     */
+    public function writeTo(object $target, mixed $value): void
+    {
+        $this->property->setValue($target, $value);
+    }
+
+    /**
+     * A static property's current value, read on every call.
+     */
+    public function readStatic(): mixed
+    {
+        return $this->property->getValue();
+    }
+
+    /**
+     * Writes the value to a static property, on every call.
+     */
+    public function writeStatic(mixed $value): void
+    {
+        $this->property->setValue(null, $value);
+    }
+
+    /**
+     * Whether the property stores nothing: every read and write goes through its hooks.
+     */
+    public function isVirtual(): bool
+    {
+        return $this->property->isVirtual();
+    }
+
     /**
      * Whether the property declares a set hook.
      */
     public function hasSetHook(): bool
     {
         return isset($this->property->getHooks()['set']);
+    }
+
+    /**
+     * The value the declaration gives the property; null when it gives none.
+     */
+    public function defaultValue(): mixed
+    {
+        return $this->property->getDefaultValue();
     }
 
     /**

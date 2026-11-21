@@ -7,6 +7,7 @@ namespace Tests\Unit\Domains;
 use App\Contracts\Event;
 use App\Domains\Support\Exports;
 use App\Exports\Support\Exports as ExportList;
+use App\Reflection\Support\Reflector;
 use Tests\Fixtures\ExportedEvents\Api\Events\DraftSaved;
 use Tests\Fixtures\ExportedEvents\Support\ReportReady;
 use Tests\TestCase;
@@ -27,7 +28,7 @@ final class EventPlacementTest extends TestCase
 
         $this->assertSame([ReportReady::class], $checked->events);
         $this->assertNotContains(DraftSaved::class, $checked->events);
-        $this->assertTrue(is_a(ReportReady::class, Event::class, true));
-        $this->assertTrue(is_a(DraftSaved::class, Event::class, true));
+        $this->assertTrue(Reflector::of(ReportReady::class)->is(Event::class));
+        $this->assertTrue(Reflector::of(DraftSaved::class)->is(Event::class));
     }
 }

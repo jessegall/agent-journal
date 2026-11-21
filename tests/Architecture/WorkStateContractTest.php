@@ -9,7 +9,7 @@ use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\StateLoading\Contracts\StateLoader;
 use App\Hooks\States\AgentState;
-use ReflectionClass;
+use App\Reflection\Support\Reflector;
 use Tests\Fixtures\Hooks\WorkStates\GatesToolsOnly;
 use Tests\Fixtures\Hooks\WorkStates\SilentWork;
 use Tests\TestCase;
@@ -53,17 +53,18 @@ final class WorkStateContractTest extends TestCase
      */
     private static function missingOf(string $class): array
     {
-        if (! is_a($class, WorkRecordState::class, true)) {
+        $state = Reflector::of($class);
+
+        if (! $state->is(WorkRecordState::class)) {
             return [];
         }
 
-        $missing = is_a($class, InstructsForeground::class, true)
+        $missing = $state->is(InstructsForeground::class)
             ? []
             : ["{$class} does not implement ".InstructsForeground::class];
-        $state = new ReflectionClass($class);
 
         foreach (self::CALLBACKS as $callback) {
-            if ($state->getMethod($callback)->getDeclaringClass()->getName() === AgentState::class) {
+            if ($state->method($callback)->declaringClass()->name() === AgentState::class) {
                 $missing[] = "{$class} does not declare {$callback}";
             }
         }

@@ -6,6 +6,7 @@ namespace App\Reflection\Support;
 
 use App\Reflection\Exceptions\ClassMissing;
 use App\Reflection\Exceptions\MethodMissing;
+use App\Reflection\Exceptions\PropertyMissing;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -118,6 +119,28 @@ final class Reflector
     }
 
     /**
+     * The Reflector of the type a name names; none when no autoloader can load it, and nothing is kept for such a
+     * name.
+     *
+     * @return Option<self<object>>
+     */
+    public static function find(string $name): Option
+    {
+        return self::exists($name) ? new Some(self::of($name)) : None::create();
+    }
+
+    /**
+     * Whether the name names a loadable type that extends or implements this type, as a strict subtype; false for a
+     * name no autoloader can load.
+     *
+     * @param  class-string  $type
+     */
+    public static function isNameSubclassOf(string $name, string $type): bool
+    {
+        return self::find($name)->filter(fn (self $found) => $found->isSubclassOf($type))->isDefined();
+    }
+
+    /**
      * The type's name as PHP declared it.
      *
      * @return class-string<T>
@@ -133,6 +156,26 @@ final class Reflector
     public function shortName(): string
     {
         return $this->type->getShortName();
+    }
+
+    /**
+     * The type's own docblock; none when it has none.
+     *
+     * @return Option<string>
+     */
+    public function docComment(): Option
+    {
+        $comment = $this->type->getDocComment();
+
+        return $comment === false ? None::create() : new Some($comment);
+    }
+
+    /**
+     * The line the declaration starts on in its file; 0 for a type PHP or an extension declares.
+     */
+    public function startLine(): int
+    {
+        return (int) $this->type->getStartLine();
     }
 
     public function namespaceName(): string
@@ -154,6 +197,16 @@ final class Reflector
         $file = $this->type->getFileName();
 
         return $this->fileName = $file === false ? None::create() : new Some($file);
+    }
+
+    /**
+     * The same questions turned around: $type->not()->is(X) answers whether it is no X.
+     *
+     * @return ReflectorNegation<T>
+     */
+    public function not(): ReflectorNegation
+    {
+        return new ReflectorNegation($this);
     }
 
     /**
@@ -338,6 +391,22 @@ final class Reflector
     public function hasProperty(string $name): bool
     {
         return $this->type->hasProperty($name);
+    }
+
+    /**
+     * The property of this name, its own or inherited, read from the kept list.
+     *
+     * @throws PropertyMissing
+     */
+    public function property(string $name): ReflectedProperty
+    {
+        $property = array_find($this->properties(), fn (ReflectedProperty $candidate) => $candidate->name() === $name);
+
+        if ($property === null) {
+            throw PropertyMissing::on($this->name(), $name);
+        }
+
+        return $property;
     }
 
     public function hasMethod(string $name): bool

@@ -9,6 +9,8 @@ use App\Comments\Support\HasComments;
 use App\Exports\Support\Exports;
 use App\Links\Support\LinkAccess;
 use App\Reads\Support\ReadBuilder;
+use App\Reflection\Support\ReflectedProperty;
+use App\Reflection\Support\Reflector;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node;
 use PhpParser\Node\Name;
@@ -17,7 +19,6 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\NodeFinder;
-use ReflectionClass;
 use Throwable;
 
 /**
@@ -101,15 +102,15 @@ final readonly class PublicContracts
             ];
         }
 
-        $class = new ReflectionClass($export);
-        $file = (string) $class->getFileName();
+        $class = Reflector::of($export);
+        $file = $class->fileName()->getOrElse('');
         $disallowedCategory = self::disallowedCategoryOf($class, $owner);
 
         if ($disallowedCategory !== null) {
             return [
                 new Violation(
                     $file,
-                    (int) $class->getStartLine(),
+                    $class->startLine(),
                     $export,
                     $owner->name,
                     $owner->name,
@@ -144,9 +145,9 @@ final readonly class PublicContracts
      * What makes an export unpublishable, or null for an interface, an enum, an immutable value without hidden state,
      * a Core trait, abstract base or Eloquent adapter, or an exception in the owner's own Exceptions folder.
      *
-     * @param  ReflectionClass<object>  $class
+     * @param  Reflector<object>  $class
      */
-    private static function disallowedCategoryOf(ReflectionClass $class, PublicOwner $owner): string|null
+    private static function disallowedCategoryOf(Reflector $class, PublicOwner $owner): string|null
     {
         if ($class->isInterface() || $class->isEnum()) {
             return null;
@@ -154,7 +155,7 @@ final readonly class PublicContracts
 
         if ($class->isSubclassOf(Throwable::class)) {
             return str_ends_with(
-                $class->getNamespaceName(),
+                $class->namespaceName(),
                 '\\Exceptions',
             ) ? null : 'an exception outside its owner\'s Exceptions folder';
         }
@@ -165,7 +166,7 @@ final readonly class PublicContracts
 
         $isCoreBase = $class->isTrait()
             || $class->isAbstract()
-            || in_array($class->getName(), self::CORE_ELOQUENT_ADAPTERS, true);
+            || in_array($class->name(), self::CORE_ELOQUENT_ADAPTERS, true);
 
         if ($owner->isCore() && $isCoreBase) {
             return null;
@@ -182,37 +183,38 @@ final readonly class PublicContracts
      * A final value whose own properties are all public and read-only or computed: a fact or a Data value, never a
      * service.
      *
-     * @param  ReflectionClass<object>  $class
+     * @param  Reflector<object>  $class
      */
-    private static function isImmutableValue(ReflectionClass $class): bool
+    private static function isImmutableValue(Reflector $class): bool
     {
         if (! $class->isFinal()) {
             return false;
         }
 
         $ownProperties = array_filter(
-            $class->getProperties(),
-            fn ($property) => $property->getDeclaringClass()->getName() === $class->getName(),
+            $class->properties(),
+            fn (ReflectedProperty $property) => $property->declaringClass() === $class,
         );
 
         return array_all(
             $ownProperties,
-            fn ($property) => $property->isPublic() && ($property->isReadOnly() || $property->isVirtual()),
+            fn (ReflectedProperty $property) => $property->isPublic()
+                && ($property->isReadOnly() || $property->isVirtual()),
         );
     }
 
     /**
      * Every class name the public members of a type and of its project parents show, with the member that shows it.
      *
-     * @param  ReflectionClass<object>  $class
+     * @param  Reflector<object>  $class
      * @return list<PublicTypePath>
      */
-    private function signatureNamesOf(ReflectionClass $class): array
+    private function signatureNamesOf(Reflector $class): array
     {
         $paths = [];
 
         foreach ($this->projectLineageOf($class) as $declaring) {
-            array_push($paths, ...self::publicNamesIn((string) $declaring->getFileName(), $declaring->getShortName()));
+            array_push($paths, ...self::publicNamesIn($declaring->fileName()->getOrElse(''), $declaring->shortName()));
         }
 
         return $paths;
@@ -221,22 +223,19 @@ final readonly class PublicContracts
     /**
      * The type itself and the parents and interfaces it takes from the project; framework parents are not judged.
      *
-     * @param  ReflectionClass<object>  $class
-     * @return list<ReflectionClass<object>>
+     * @param  Reflector<object>  $class
+     * @return list<Reflector<object>>
      */
-    private function projectLineageOf(ReflectionClass $class): array
+    private function projectLineageOf(Reflector $class): array
     {
-        $lineage = [$class];
-
-        $parent = $class->getParentClass();
-
-        while ($parent !== false) {
-            if ($this->roots->startsWithProjectNamespace($parent->getName())) {
-                $lineage[] = $parent;
-            }
-
-            $parent = $parent->getParentClass();
-        }
+        $parents = array_slice($class->lineage(), 1);
+        $lineage = [
+            $class,
+            ...array_values(array_filter(
+                $parents,
+                fn (Reflector $parent) => $this->roots->startsWithProjectNamespace($parent->name()),
+            )),
+        ];
 
         return $lineage;
     }
@@ -413,7 +412,7 @@ final readonly class PublicContracts
      */
     private static function exists(string $name): bool
     {
-        return class_exists($name) || interface_exists($name) || enum_exists($name) || trait_exists($name);
+        return Reflector::exists($name);
     }
 
     /**

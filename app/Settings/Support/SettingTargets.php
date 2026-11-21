@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Reflection\Support\Reflector;
 use App\Settings\Contracts\Setting;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Enums\SettingType;
@@ -39,7 +40,7 @@ final readonly class SettingTargets
     {
         $setting = $this->anySetting($reference);
 
-        return $setting instanceof $declaration
+        return Reflector::of($declaration)->isInstance($setting)
             ? $setting
             : throw SettingValueInvalid::for($reference->owner, $reference->key, $commandType);
     }

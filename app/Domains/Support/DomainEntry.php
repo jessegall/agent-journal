@@ -674,6 +674,6 @@ final readonly class DomainEntry
      */
     private function provided(string $contract): Option
     {
-        return $this->domain instanceof $contract ? new Some($this->domain) : None::create();
+        return Reflector::of($contract)->isInstance($this->domain) ? new Some($this->domain) : None::create();
     }
 }

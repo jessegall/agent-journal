@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
+use App\Reflection\Support\ReflectedMethod;
+use App\Reflection\Support\ReflectedParameter;
+use App\Reflection\Support\Reflector;
 use App\Text\Exceptions\ContentMissing;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Commands\CreateDocument;
@@ -15,7 +18,6 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
-use ReflectionClass;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -59,8 +61,10 @@ final class IsolationTest extends TestCase
     {
         foreach ([CreateDocument::class] as $command) {
             $parameters = array_map(
-                fn ($parameter) => $parameter->getName(),
-                new ReflectionClass($command)->getConstructor()?->getParameters() ?? [],
+                fn (ReflectedParameter $parameter) => $parameter->name(),
+                Reflector::of($command)->constructor()
+                    ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
+                    ->getOrElse([]),
             );
 
             $this->assertSame(
