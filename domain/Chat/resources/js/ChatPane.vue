@@ -12,6 +12,7 @@ import AgentPicker from './AgentPicker.vue';
 import AgentSessionActions from './AgentSessionActions.vue';
 import Composer from './Composer.vue';
 import DockStack from './dock/DockStack.vue';
+import FocusedQuestion from './FocusedQuestion.vue';
 import MessageList from './MessageList.vue';
 
 /**
@@ -98,12 +99,14 @@ let openedConversationId: string | undefined;
 
 /**
  * Reads what the conversation shows once each time the user opens a conversation, when it is first shown; showing
- * the same conversation again after a catch-up reads nothing.
+ * the same conversation again after a catch-up reads nothing, and neither does opening one question passively.
  */
 function readOnOpen(): void {
     const id = conversation.value?.id;
 
-    if (!isShown.value || id === undefined || id === openedConversationId) {
+    const opensOneQuestion = props.chat.focusedQuestionId !== undefined;
+
+    if (!isShown.value || id === undefined || id === openedConversationId || opensOneQuestion) {
         return;
     }
 
@@ -120,6 +123,13 @@ watch(
     },
 );
 watch(isShown, readOnOpen);
+
+/**
+ * Reads the chat window again for a question that failed to show; it marks nothing.
+ */
+function retryFocused(): void {
+    router.reload({ only: [props.protectedProp] });
+}
 </script>
 
 <template>
@@ -145,6 +155,14 @@ watch(isShown, readOnOpen);
                 <AgentSessionActions :agent="selected" />
             </template>
             <template v-if="isShown">
+                <template v-if="chat.focusedQuestionId !== undefined">
+                    <FocusedQuestion
+                        :key="chat.focusedQuestionId"
+                        :focused="chat.focusedQuestion"
+                        @reply="(message) => (replyingTo = message)"
+                        @retry="retryFocused"
+                    />
+                </template>
                 <MessageList
                     :messages="conversation.messages"
                     :pending="pending"
