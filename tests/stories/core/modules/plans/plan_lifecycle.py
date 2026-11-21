@@ -122,3 +122,11 @@ def test_cancelling_a_plan_of_many_tasks_cancels_each_open_task(new_story):
     story.run_listeners()
     for task in tasks:
         story.expect_success(f"task show {task}", "state: cancelled")
+
+
+def test_with_the_setting_on_the_main_agent_approves_a_plan_with_its_reason(new_story):
+    story = new_story(fixture=StartedPlan)
+    story.expect_success('plan rework 1 --reason "A new phase comes first"', "state: ready", actor=story.agent)
+    story.expect_success("setting set journal.core.plans.main-agent-approves-plans on --project", actor=story.user)
+    story.expect_refusal("plan approve 1 --environment main", "approves a plan with its reason", actor=story.agent)
+    story.expect_success('plan approve 1 --environment main --message "every phase reaches the goal"', "state: approved", actor=story.agent)
