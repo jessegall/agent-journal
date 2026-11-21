@@ -112,6 +112,18 @@ final class Environment extends Model implements EventSource, ReadableModel
             ->get()->all());
     }
 
+    /**
+     * The environments of these projects, by label, in one read.
+     *
+     * @param  list<string>  $projectIds
+     * @return list<self>
+     */
+    public static function listedOfProjects(array $projectIds): array
+    {
+        return array_values(self::query()->whereIn('project_id', $projectIds)->orderBy('label')
+            ->limit(self::LISTED_LIMIT * max(count($projectIds), 1))->get()->all());
+    }
+
     // ----------[ Scopes ]----------
 
     /**

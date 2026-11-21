@@ -37,7 +37,10 @@ final class ConnectProjectWindowTest extends TestCase
         ) => $page
             ->component('connections/ConnectProjectWindow')
             ->where('page.data.serverName', 'journal.example.com')
+            ->where('page.data.origin', 'https://journal.example.com')
             ->where('page.data.canIssue', true)
+            ->where('page.data.projects.0.label', 'Shop')
+            ->where('page.data.projects.0.environments.0.label', 'Main')
             ->where('page.data.release.targets.0.name', 'darwin-arm64')
             ->where('page.data.release.targets.0.bytes', 9_000_000)
             ->where('page.data.release.targets.0.prerequisites', ['git', 'curl'])
