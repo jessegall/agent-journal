@@ -107,7 +107,7 @@ function disable(revision: GatewayRevisionData): void {
                         </p>
                     </template>
                     <template v-if="revision.setupProblems.length > 0">
-                        <ul aria-label="Not ready because">
+                        <ul aria-label="What is still needed">
                             <template
                                 v-for="problem in revision.setupProblems"
                                 :key="problem"

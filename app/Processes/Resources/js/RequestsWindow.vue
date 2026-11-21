@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { BundleRowData, RequestListData } from '@generated/types/processes';
+import type {
+    BundleRowData,
+    RequestListData,
+} from '@generated/types/processes';
 import { Link, router } from '@inertiajs/vue3';
 import PageHeader from '@kit/PageHeader';
 import RowsTable from '@kit/RowsTable';
@@ -13,8 +16,15 @@ defineProps<{ data: RequestListData }>();
 function approveBundle(bundle: BundleRowData): void {
     router.post(
         '/processes/bundles/approval',
-        { module: bundle.module, version: bundle.version, digest: bundle.digest },
-        { headers: { 'Idempotency-Key': crypto.randomUUID() }, preserveScroll: true },
+        {
+            module: bundle.module,
+            version: bundle.version,
+            digest: bundle.digest,
+        },
+        {
+            headers: { 'Idempotency-Key': crypto.randomUUID() },
+            preserveScroll: true,
+        },
     );
 }
 </script>
@@ -22,23 +32,35 @@ function approveBundle(bundle: BundleRowData): void {
 <template>
     <div class="flex flex-col gap-4">
         <PageHeader title="Command review" />
-        <p>Classification does not grant permission.</p>
+        <p>Sorting a command into kinds does not allow it to run.</p>
         <section aria-label="Command requests">
             <h2>Requests</h2>
             <RowsTable
-                :headings="['Request', 'Line', 'Why held', 'State', 'Next step']"
+                :headings="[
+                    'Request',
+                    'Line',
+                    'Why held',
+                    'State',
+                    'Next step',
+                ]"
                 :rows="data.requests"
                 :row-key="(request) => request.id"
                 empty="No command request is waiting."
             >
                 <template #row="{ row: request }">
                     <td>
-                        <Link :href="`/processes/requests/${request.id}`">{{ request.operation }}</Link>
+                        <Link :href="`/processes/requests/${request.id}`">{{
+                            request.operation
+                        }}</Link>
                     </td>
-                    <td><code>{{ request.line }}</code></td>
+                    <td>
+                        <code>{{ request.line }}</code>
+                    </td>
                     <td>{{ request.holdReason }}</td>
                     <td>{{ request.state }}</td>
-                    <td><code>{{ request.next }}</code></td>
+                    <td>
+                        <code>{{ request.next }}</code>
+                    </td>
                 </template>
             </RowsTable>
         </section>
@@ -51,7 +73,8 @@ function approveBundle(bundle: BundleRowData): void {
                 <ul>
                     <template v-for="rule in data.rules" :key="rule.id">
                         <li>
-                            {{ rule.ruleId }} ({{ rule.owner }}) revision {{ rule.revision }}: {{ rule.state }} -
+                            {{ rule.ruleId }} ({{ rule.owner }}) revision
+                            {{ rule.revision }}: {{ rule.state }} -
                             {{ rule.reason }}
                         </li>
                     </template>
@@ -65,11 +88,23 @@ function approveBundle(bundle: BundleRowData): void {
             </template>
             <template v-else>
                 <ul>
-                    <template v-for="bundle in data.bundles" :key="`${bundle.module}@${bundle.digest}`">
+                    <template
+                        v-for="bundle in data.bundles"
+                        :key="`${bundle.module}@${bundle.digest}`"
+                    >
                         <li>
-                            <span>{{ bundle.module }} {{ bundle.version }} ({{ bundle.digest.slice(0, 12) }}):</span>
+                            <span
+                                >{{ bundle.module }} {{ bundle.version }} ({{
+                                    bundle.digest.slice(0, 12)
+                                }}):</span
+                            >
                             <span>{{ bundle.rules.join(', ') }}</span>
-                            <button type="button" @click="approveBundle(bundle)">Activate this bundle</button>
+                            <button
+                                type="button"
+                                @click="approveBundle(bundle)"
+                            >
+                                Activate this bundle
+                            </button>
                         </li>
                     </template>
                 </ul>

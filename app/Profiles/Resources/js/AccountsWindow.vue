@@ -70,7 +70,7 @@ function resumeOrAgain(row: AccountRowData): void {
                                 attemptId: waitingSignIn.id,
                             }
                         "
-                        ><Spinner />Sign-in waiting · Resume</Button
+                        ><Spinner />Finish signing in</Button
                     >
                 </template>
                 <Button

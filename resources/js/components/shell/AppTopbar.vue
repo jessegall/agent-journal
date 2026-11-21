@@ -65,7 +65,7 @@ function toggleFullScreen(): void {
         <div class="relative">
             <Button
                 variant="icon"
-                aria-label="Colour scheme"
+                aria-label="Color scheme"
                 :aria-expanded="isSchemeMenuOpen"
                 @click="isSchemeMenuOpen = !isSchemeMenuOpen"
                 ><Icon name="scheme" :size="13"

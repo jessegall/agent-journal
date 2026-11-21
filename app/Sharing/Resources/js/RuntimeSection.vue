@@ -18,13 +18,12 @@ defineProps<{ runtime: ShareDetailData['runtime'] }>();
         </template>
         <template v-else>
             <p>
-                Endpoint version {{ runtime.endpointVersion }}, last healthy
-                {{ runtime.lastHealthAt ?? 'never' }}:
                 {{
                     runtime.isHealthy
-                        ? 'healthy'
-                        : 'stale (no health report in the last 45 seconds)'
-                }}.
+                        ? 'Running'
+                        : 'Not answering: no sign of life in the last 45 seconds'
+                }}. Version {{ runtime.endpointVersion }}, last seen
+                {{ runtime.lastHealthAt ?? 'never' }}.
             </p>
         </template>
     </section>

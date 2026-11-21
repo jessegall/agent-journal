@@ -281,7 +281,7 @@ function cancelAndClose(): void {
                 </template>
                 <template v-else-if="shownProgram === 'codex'">
                     <span class="pr-2 text-small whitespace-nowrap text-text-3"
-                        >Moves on by itself</span
+                        >Continues on its own</span
                     >
                 </template>
                 <template v-else>

@@ -55,10 +55,10 @@ defineEmits<{ older: [] }>();
         </template>
         <template v-if="audit.lastPrunedAt">
             <p>
-                Pruned on {{ audit.lastPrunedAt }}:
+                Cleared old entries on {{ audit.lastPrunedAt }}:
                 {{ audit.prunedAllowedReads }} allowed and
-                {{ audit.prunedDeniedReads }} denied reads,
-                {{ audit.prunedLifecycleRows }} other entries.
+                {{ audit.prunedDeniedReads }} refused reads, and
+                {{ audit.prunedLifecycleRows }} others.
             </p>
         </template>
     </section>

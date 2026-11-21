@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { PartOutputData, PartSnapshotData, ProblemData } from '@generated/types/processes';
+import type {
+    PartOutputData,
+    PartSnapshotData,
+    ProblemData,
+} from '@generated/types/processes';
 import { computed } from 'vue';
 import PartOutput from './PartOutput.vue';
 import ProblemList from './ProblemList.vue';
@@ -24,7 +28,9 @@ const result = computed(() => {
         return `${props.part.outcome} (receipt ${props.part.receiptId})`;
     }
 
-    return props.part.assessmentId === null ? 'result unavailable: not assessed' : 'result unavailable';
+    return props.part.assessmentId === null
+        ? 'result unavailable: not assessed'
+        : 'result unavailable';
 });
 const exitText = computed(() => {
     if (props.part.receiptId !== null || props.part.problems.length === 0) {
@@ -38,13 +44,15 @@ const exitText = computed(() => {
 <template>
     <article class="flex flex-col gap-1" :aria-label="`Part ${part.operation}`">
         <h3>{{ part.operation }}</h3>
-        <p>Lifecycle: {{ part.lifecycle }}, end: {{ part.end }}</p>
+        <p>Status: {{ part.lifecycle }}, ended by {{ part.end }}</p>
         <template v-if="part.capture === 'removed'">
             <p>Output removed</p>
         </template>
-        <p>Capture: {{ part.capture }}; {{ part.elapsedSeconds }} seconds; {{ JSON.stringify(part.bytes) }} bytes</p>
+        <p>
+            Output {{ part.capture }}, after {{ part.elapsedSeconds }} seconds:
+            {{ JSON.stringify(part.bytes) }} bytes
+        </p>
         <p>Reading: {{ part.reading }}</p>
-        <p>Progress: indeterminate</p>
         <p>Result: {{ result }}</p>
         <template v-if="exitText !== ''">
             <p>{{ exitText }}</p>
@@ -53,7 +61,9 @@ const exitText = computed(() => {
             <ProblemList :problems="problems" />
         </template>
         <template v-if="part.latestLine !== null">
-            <p>Latest: <code>{{ part.latestLine }}</code></p>
+            <p>
+                Latest: <code>{{ part.latestLine }}</code>
+            </p>
         </template>
         <template v-for="output in outputs" :key="output.stream">
             <PartOutput :output="output" />

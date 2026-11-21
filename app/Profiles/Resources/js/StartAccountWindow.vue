@@ -13,7 +13,7 @@ defineProps<{ data: StartAccountData }>();
 
 <template>
     <div class="flex flex-col">
-        <PageHeader title="Start account" />
+        <PageHeader title="Account of a start" />
         <dl class="flex flex-col gap-2 px-4 py-3 text-small">
             <div class="flex gap-2">
                 <dt class="text-text-3">Account</dt>

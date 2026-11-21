@@ -99,7 +99,7 @@ final readonly class VerificationContract
             "tool {$this->tool->value}",
             $this->output->label(),
             "progress {$this->progress->type->value}",
-            ...($exits === [] ? ['exits not proven: every status is an execution error'] : $exits),
+            ...($exits === [] ? ['no exit code checked yet: every exit counts as a failure'] : $exits),
             $this->reader->label(),
         ];
     }

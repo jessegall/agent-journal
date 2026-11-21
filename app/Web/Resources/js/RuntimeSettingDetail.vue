@@ -9,8 +9,8 @@ defineProps<{ setting: RuntimeSetting }>();
 
 <template>
     <dd>
-        observed {{ setting.observed ?? 'unknown' }}, staged
-        {{ setting.staged ?? 'none' }}, requested
-        {{ setting.requested ?? 'none' }}
+        now {{ setting.observed ?? 'unknown' }}, next
+        {{ setting.staged ?? 'nothing' }}, asked for
+        {{ setting.requested ?? 'nothing' }}
     </dd>
 </template>

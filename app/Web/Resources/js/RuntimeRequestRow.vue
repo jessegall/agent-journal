@@ -62,7 +62,7 @@ function run(
                         )
                     "
                 >
-                    Resolve as arrived
+                    It arrived
                 </button>
                 <button
                     type="button"
@@ -74,7 +74,7 @@ function run(
                         )
                     "
                 >
-                    Resolve as not arrived
+                    It never arrived
                 </button>
             </template>
             <template v-if="request.canResumeScript">

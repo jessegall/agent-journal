@@ -61,7 +61,7 @@ final class ProfilesPages implements NavigationProvider, PageProvider, SectionPr
                 ),
             Page::make(
                 'account-start',
-                'Start account',
+                'Account of a start',
                 Icon::Accounts,
                 StartAccountWindowResolver::class,
                 'StartAccountWindow.vue',

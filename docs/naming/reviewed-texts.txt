@@ -1,18 +1,19 @@
 ${diagnostic.code}: ${diagnostic.message}
 ${node.line}: ${node.label}
-(an older version): open original location
+(on an older version): open where it was
 1 day
 1 hour
 30 days
 7 days
+A sample run: it shows what the command does and gives no result.
 API key
 About the whole record
 About {{ describeRange(text.range) }}
 Account
 Account added
+Account of a start
 Accounts
 Activate this bundle
-Active revision of this rule: {{ data.activeRevision === 0 ? 'none' : data.activeRevision }}
 Add a secret
 Add a window
 Add account
@@ -20,17 +21,14 @@ Add an account
 Add another
 Add as tab
 Add it as a new account
-Added against the active rule: {{ revision.addedClasses.join(', ') || 'none' }}
 Agent
 Agent 1
 Agent journal
 Agent terminal, read only
 Agents
 Alias
-Also spelled: {{ revision.spellings.join(', ') || 'no other spelling' }}
+Allow one sample run of this exact line
 Any
-Approval waits until the request awaits it: a check needs its proven reader first.
-Approve one evidence sample of this exact line
 Approve proposal {{ proposal.number }}
 Approve revision {{ proposal.currentRevision }}
 Asks
@@ -42,20 +40,19 @@ Build
 Cancel
 Cancel script
 Cancel sign-in
-Capture: {{ part.capture }}; {{ part.elapsedSeconds }} seconds; {{ JSON.stringify(part.bytes) }} bytes
+Checked reader revision
 Checking the sign-in with {{ programName(program) }}…
 Choose a way to sign in to continue.
 Choose another way
 Choose exact text in the source
 Chosen: {{ describeRange(chosen) }}.
-Classification does not grant permission.
+Cleared old entries on {{ audit.lastPrunedAt }}: {{ audit.prunedAllowedReads }} allowed and {{ audit.prunedDeniedReads }} refused reads, and {{ audit.prunedLifecycleRows }} others.
 Close
 Close all
 Close others
 Close to the right
 Code from the sign-in page
 Color scheme
-Colour scheme
 Command requests
 Command review
 Comment on a section
@@ -66,6 +63,7 @@ Configure a gateway
 Confirm
 Confirm disabling
 Continue
+Continues on its own
 Contract
 Copy code
 Copy link
@@ -83,16 +81,15 @@ Domain off
 Done
 Download it as a file
 Drag to resize; double-click to reset
+Dropped compared with the rule in use: {{ revision.removedClasses.join(', ') || 'none' }}
 Edit
 Email
 Ended
-Endpoint version {{ runtime.endpointVersion }}, last healthy {{ runtime.lastHealthAt ?? 'never' }}: {{ runtime.isHealthy ? 'healthy' : 'stale (no health report in the last 45 seconds)' }}.
 Enter a short code on OpenAI's site. The rest happens by itself.
 Enter this code there when it asks.
 Every window is open
-Evidence only: this run never gives a result.
 Examples
-Exit statuses still without a sample: {{ data.unsampledStatuses.join(', ') }}
+Exit codes not seen in a sample yet: {{ data.unsampledStatuses.join(', ') }}
 Expires
 Expires before
 Expires {{ new Date(account.expiresAt).toLocaleDateString() }}
@@ -111,7 +108,9 @@ Home
 How to sign in
 Import
 Invalid settings
+It arrived
 It is
+It never arrived
 It waits on the host until it expires. Resume it from the Accounts header, or cancel it now.
 Journal operation
 Keep it
@@ -124,9 +123,7 @@ Layout file to import
 Layout name
 Layouts
 Leave blank to keep the stored one
-Lifecycle: {{ part.lifecycle }}, end: {{ part.end }}
 Light
-Limits: {{ sample.byteCap }} bytes, {{ sample.secondsCap }} seconds
 Linked
 Linked records
 Listener port
@@ -135,13 +132,13 @@ Make it the default once it is ready
 Mermaid
 Module bundles waiting
 Move to ${titleOf(other)}
-Moves on by itself
 NOT
 Name
 Name of the layout
 Name of the new layout
 Needs sign-in
 Network
+New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
 No agent runtime is open.
 No asks to show.
 No endpoint is serving this share.
@@ -152,7 +149,7 @@ No module bundle is waiting.
 No saved accounts yet
 No session yet
 No share uses this gateway.
-Not ready because
+Not filled in yet: {{ revision.missingFields.join(', ') }}
 Not run yet.
 Not shared yet
 Nothing is open in this pane.
@@ -170,7 +167,9 @@ Open ↗
 Opening the comment's place…
 Opening the terminal…
 Ordinary
+Other ways to write it: {{ revision.spellings.join(', ') || 'none' }}
 Output removed
+Output {{ part.capture }}, after {{ part.elapsedSeconds }} seconds: {{ JSON.stringify(part.bytes) }} bytes
 Over capacity
 Package install
 Pages
@@ -189,19 +188,15 @@ Problems
 Process control
 Program
 Program version
-Progress: indeterminate
 Proposal by {{ proposal.author }}: {{ proposal.state }}, revision {{ proposal.currentRevision }}
-Proven reader revision
 Provider host
-Pruned on {{ audit.lastPrunedAt }}: {{ audit.prunedAllowedReads }} allowed and {{ audit.prunedDeniedReads }} denied reads, {{ audit.prunedLifecycleRows }} other entries.
 Public address
-Purpose: {{ revision.purpose }}, output {{ revision.outputRequirement }}
 Read
 Read before running shell commands or reading their output.
 Read before working with agent profiles.
 Read before working with skills.
 Reader proof
-Reader {{ reader.readerRevisionId }} for declaration revision {{ reader.declarationRevision }}: {{ reader.proofs.length === 0 ? 'not proven' : reader.proofs.join('; ') }}
+Reader {{ reader.readerRevisionId }} for revision {{ reader.declarationRevision }}: {{ reader.proofs.length === 0 ? 'not checked yet' : reader.proofs.join('; ') }}
 Readers
 Readers and proofs
 Ready
@@ -215,7 +210,6 @@ Remove
 Remove account
 Remove stored output ({{ storedBytes }} bytes)
 Removed
-Removed against the active rule: {{ revision.removedClasses.join(', ') || 'none' }}
 Removing
 Rename
 Rename account
@@ -223,20 +217,18 @@ Reply
 Requests
 Reset layout
 Resize
-Resolve as arrived
-Resolve as not arrived
 Resume
 Retry
 Retry cleanup
 Reveal address
 Review this proposal
 Revision {{ revision.revision }}: {{ revision.operation }} ({{ revision.owner }})
+Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.activeRevision}` }}
 Rules
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
 Runs
 Runtimes
 Samples
-Samples are evidence only.
 Save
 Save gateway
 Save layout
@@ -262,22 +254,22 @@ Sign in on Claude's site, then paste the code it gives you.
 Sign in with ChatGPT
 Sign in with Claude
 Sign out
-Sign-in waiting · Resume
 Signed in
+Sorting a command into kinds does not allow it to run, and a sample run only shows what the command does.
+Sorting a command into kinds does not allow it to run.
 Source text
 Split below
 Split right
 Split this pane in two?
 Stacked
-Start account
 Start again
 Started
 Starting the sign-in…
 State
-State: {{ data.request.state }} (held because {{ data.request.holdReason }})
-Still missing: {{ revision.missingFields.join(', ') }}
-Still required: {{ data.steps.join('; ') }}
+Status: {{ part.lifecycle }}, ended by {{ part.end }}
+Still to do: {{ data.steps.join('; ') }}
 Stop this run
+Stops after {{ sample.byteCap }} bytes or {{ sample.secondsCap }} seconds
 Suits a server.
 Tests and checks
 The address is not available.
@@ -296,12 +288,14 @@ Unfinished sign-ins
 Unknown
 Update share {{ liveShare.number }}
 Use these lines
+Used for {{ revision.purpose }}; its output is {{ revision.outputRequirement }}
 Version control
 Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }}–{{ location.anchor.lastLine }}
 Version {{ version }}, lines {{ firstLine }}–{{ lastLine }}
 Waiting
 Waiting for you to finish on OpenAI's page…
 What
+What is still needed
 What the journal is and how to read and write its records.
 When
 Where the request stands
@@ -314,6 +308,7 @@ Work
 Working
 Write
 Write a comment
+You can approve once the request is ready for review; a check first needs a checked reader.
 You can close this window: the sign-in keeps waiting on the host. Resume it from the Accounts header.
 You pay for what agents use.
 a file the user names on the command line, wherever it lies
@@ -325,7 +320,6 @@ depth
 effort
 executable parts
 exit %s: %s when %s
-exits not proven: every status is an execution error
 expected
 in the list.
 in {{ problem.stream }} bytes {{ problem.start }} to {{ problem.end }}:
@@ -334,10 +328,11 @@ known
 label
 model
 ms
+no exit code checked yet: every exit counts as a failure
 no grant
 none
+now {{ setting.observed ?? 'unknown' }}, next {{ setting.staged ?? 'nothing' }}, asked for {{ setting.requested ?? 'nothing' }}
 observed {{ age(status.observationAgeSeconds) }}{{ status.isStale ? ', stale' : '' }}
-observed {{ setting.observed ?? 'unknown' }}, staged {{ setting.staged ?? 'none' }}, requested {{ setting.requested ?? 'none' }}
 operation
 parts
 program
@@ -355,12 +350,14 @@ to
 tools
 unresolved
 updated {{ ageSeconds().toFixed(1) }} s ago
+{{ data.request.state }}: waiting because {{ data.request.holdReason }}
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
 {{ revision.gatewayKey }} version {{ revision.version }}
 {{ revision.publicOrigin }} through {{ revision.providerHost }}, program {{ revision.executableVersion }}
 {{ rule.ruleId }} ({{ rule.owner }}) revision {{ rule.revision }}: {{ rule.state }} - {{ rule.reason }}
+{{ runtime.isHealthy ? 'Running' : 'Not answering: no sign of life in the last 45 seconds' }}. Version {{ runtime.endpointVersion }}, last seen {{ runtime.lastHealthAt ?? 'never' }}.
 {{ status.watchers }} watching
 {{ title }} can sit beside this pane or join its tabs.
 · device sign-in
