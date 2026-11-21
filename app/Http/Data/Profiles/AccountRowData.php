@@ -40,6 +40,7 @@ final class AccountRowData extends Data
         public readonly CleanupProblem|null $cleanupProblem,
         public readonly bool $awaitsCleanupRetry,
         public readonly bool $isHeldForCheck,
+        public readonly bool $isCheckInconclusive,
         #[DataCollectionOf(AccountStartData::class)]
         public readonly array $recentStarts,
         public readonly AccountUsageData|Optional $usage,
@@ -70,6 +71,7 @@ final class AccountRowData extends Data
             $account->cleanup_problem,
             $account->awaitsCleanupRetry(),
             $account->isHeldForCheck(),
+            $account->isCheckInconclusive(),
             array_map(AccountStartData::fromUse(...), $recentUses),
             $usage,
         );

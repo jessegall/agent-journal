@@ -35,6 +35,10 @@ vi.mock('@inertiajs/vue3', () => ({
     Link: { template: '<a><slot /></a>' },
 }));
 vi.mock('@generated/routes/accounts', () => ({
+    recheck: ({ account }: { account: string }) => ({
+        url: `/accounts/${account}/recheck`,
+        method: 'post',
+    }),
     accountStart: ({ session }: { session: string }) => ({
         url: `/starts/${session}`,
     }),
@@ -96,6 +100,7 @@ function account(overrides: Partial<AccountRowData> = {}): AccountRowData {
         cleanupProblem: null,
         awaitsCleanupRetry: false,
         isHeldForCheck: false,
+        isCheckInconclusive: false,
         recentStarts: [],
         ...overrides,
     };
@@ -158,6 +163,35 @@ describe('an account row', () => {
         expect(line.text()).toContain('Default');
         expect(line.text()).toContain('Signed in');
         expect(row().find('li > div > div').text()).not.toContain('Default');
+    });
+
+    it('offers Recheck once the check could not tell, and only then', async () => {
+        const held = row({ account: account({ isHeldForCheck: true }) });
+        expect(held.text()).toContain(
+            'Agents cannot start with it until the check ends.',
+        );
+        expect(held.text()).not.toContain('Recheck');
+        held.unmount();
+
+        const pending = row({
+            account: account({
+                isHeldForCheck: true,
+                isCheckInconclusive: true,
+            }),
+        });
+        expect(pending.text()).toContain('Verification pending');
+        const recheckButton = pending
+            .findAll('button')
+            .find((candidate) => candidate.text() === 'Recheck');
+        await recheckButton!.trigger('click');
+        expect(
+            forms.some((form) =>
+                form.submit.mock.calls.some(
+                    ([route]) => route.url === '/accounts/acc-1/recheck',
+                ),
+            ),
+        ).toBe(true);
+        pending.unmount();
     });
 
     it('reads Checking while a renewal that did not finish waits for its check', () => {

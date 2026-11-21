@@ -7,6 +7,7 @@ namespace App\Profiles\Pages;
 use App\Profiles\Http\Controllers\ActivateAccountController;
 use App\Profiles\Http\Controllers\CancelSignInController;
 use App\Profiles\Http\Controllers\DismissAccountNoticeController;
+use App\Profiles\Http\Controllers\RecheckAccountController;
 use App\Profiles\Http\Controllers\RemoveAccountController;
 use App\Profiles\Http\Controllers\RenameAccountController;
 use App\Profiles\Http\Controllers\RetryAccountCleanupController;
@@ -51,6 +52,7 @@ final class ProfilesPages implements NavigationProvider, PageProvider, SectionPr
                     ActionRoute::post('{account}/sign-in-again', SignInAgainController::class, 'sign-in-again'),
                     ActionRoute::delete('{account}', RemoveAccountController::class, 'remove'),
                     ActionRoute::post('{account}/cleanup/retry', RetryAccountCleanupController::class, 'retry-cleanup'),
+                    ActionRoute::post('{account}/recheck', RecheckAccountController::class, 'recheck'),
                     ActionRoute::post(
                         'sign-ins/{attempt}/cleanup/retry',
                         RetryAttemptCleanupController::class,

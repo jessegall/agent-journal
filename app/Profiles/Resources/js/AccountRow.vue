@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { dateOnly } from '@kit/format';
 import type { AccountRowData } from '@generated/types/accounts';
-import { retryCleanup } from '@generated/routes/accounts';
+import { recheck, retryCleanup } from '@generated/routes/accounts';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import IconAction from '@kit/IconAction';
@@ -65,6 +65,18 @@ function retryAccountCleanup(): void {
         ...formSendingHooks(),
     });
 }
+
+const rechecking = useForm({});
+
+/**
+ * Asks the host to check a held account again after its last check could not tell.
+ */
+function recheckAccount(): void {
+    rechecking.submit(recheck({ account: props.account.id }), {
+        preserveScroll: true,
+        ...formSendingHooks(),
+    });
+}
 </script>
 
 <template>
@@ -107,6 +119,23 @@ function retryAccountCleanup(): void {
             </div>
             <template v-if="usage !== null">
                 <span class="text-small text-text-2">{{ usage }}</span>
+            </template>
+            <template v-if="account.isHeldForCheck">
+                <div class="mt-1 flex flex-wrap items-center gap-2">
+                    <span class="text-small text-text-2">{{
+                        account.isCheckInconclusive
+                            ? 'The check could not tell whether it still signs in. Agents cannot start with it until it does.'
+                            : 'Checking whether it still signs in. Agents cannot start with it until the check ends.'
+                    }}</span>
+                    <template v-if="account.isCheckInconclusive && !isStale">
+                        <Button
+                            size="small"
+                            :pending="rechecking.processing"
+                            @click="recheckAccount"
+                            >Recheck</Button
+                        >
+                    </template>
+                </div>
             </template>
             <template v-if="account.cleanupProblem !== null">
                 <div class="mt-1 flex flex-wrap items-center gap-2">

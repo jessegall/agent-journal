@@ -24,6 +24,7 @@ use App\Profiles\Events\AccountSignedIn;
 use App\Profiles\Events\AccountSignedOut;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
+use App\Profiles\Exceptions\AccountRecheckRefused;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Models\Support\KeepsCleanupTries;
 use App\Profiles\Values\AccountLabel;
@@ -70,6 +71,7 @@ use Illuminate\Support\Str;
  * @property CleanupProblem|null $cleanup_problem
  * @property int|null $check_requested_generation
  * @property CarbonImmutable|null $checked_at
+ * @property CarbonImmutable|null $check_inconclusive_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -108,6 +110,7 @@ final class Account extends Model implements EventSource, ReadableModel
             'check_requested_generation' => 'integer',
             'method' => SignInMethod::class,
             'checked_at' => 'immutable_datetime',
+            'check_inconclusive_at' => 'immutable_datetime',
             'expires_at' => 'immutable_datetime',
         ];
     }
@@ -281,12 +284,14 @@ final class Account extends Model implements EventSource, ReadableModel
 
     /**
      * The next account whose check a host runs, for the journal's host transport whoever acts; none when none waits.
+     * A held account whose last check could not tell waits for the owner's recheck.
      */
     public static function nextToCheck(): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->whereNotNull('check_requested_generation')
+            ->whereNull('check_inconclusive_at')
             ->orderBy('updated_at')
             ->lockForUpdate()
             ->first();
@@ -406,6 +411,21 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The owner asks the host to check a held account again after its last check could not tell.
+     *
+     * @throws AccountRecheckRefused when the account waits for no such check
+     */
+    public function recheck(): void
+    {
+        if (! $this->isCheckInconclusive()) {
+            throw AccountRecheckRefused::notPending($this->id);
+        }
+
+        $this->check_inconclusive_at = null;
+        $this->assertSaved($this->save());
+    }
+
+    /**
      * Asks the host to check the account after a rejected sign-in seen in this generation; a failure from an older
      * generation, such as one from before a new sign-in, asks nothing.
      */
@@ -435,6 +455,9 @@ final class Account extends Model implements EventSource, ReadableModel
         $isHeldForCheck = $this->isHeldForCheck();
 
         if ($isHeldForCheck && $check === AccountCheckResult::Unknown) {
+            $this->check_inconclusive_at = $now;
+            $this->assertSaved($this->save());
+
             return false;
         }
 
@@ -443,6 +466,7 @@ final class Account extends Model implements EventSource, ReadableModel
         }
 
         $this->check_requested_generation = null;
+        $this->check_inconclusive_at = null;
         $this->checked_at = $now;
         $isSignedOut = $check === AccountCheckResult::SignedOut && $this->state === AccountState::SignedIn;
 
@@ -717,6 +741,14 @@ final class Account extends Model implements EventSource, ReadableModel
      * Whether starts wait for the host's check after a sign-in again that did not finish: only a certain answer
      * lets them go.
      */
+    /**
+     * Whether the account is held for its check and the last check could not tell, so the owner may ask again.
+     */
+    public function isCheckInconclusive(): bool
+    {
+        return $this->isHeldForCheck() && $this->check_inconclusive_at !== null;
+    }
+
     public function isHeldForCheck(): bool
     {
         return $this->maintenance

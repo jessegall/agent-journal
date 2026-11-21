@@ -152,6 +152,7 @@ function accountRow(id: string, label: string): AccountRowData {
         cleanupProblem: null,
         awaitsCleanupRetry: false,
         isHeldForCheck: false,
+        isCheckInconclusive: false,
         recentStarts: [],
     };
 }

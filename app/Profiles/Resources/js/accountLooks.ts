@@ -18,12 +18,16 @@ export const accountStateLook: Record<
 };
 
 /**
- * How a saved account's state looks: Checking while a renewal that did not finish waits for the host's check, else
- * its state.
+ * How a saved account's state looks: Checking while a renewal that did not finish waits for the host's check,
+ * Verification pending once that check could not tell, else its state.
  */
 export function rowStateLook(
     account: AccountRowData,
 ): (typeof accountStateLook)[AccountState] {
+    if (account.isCheckInconclusive) {
+        return { label: 'Verification pending', tone: 'warn' };
+    }
+
     return account.isHeldForCheck
         ? { label: 'Checking', tone: 'busy' }
         : accountStateLook[account.state];

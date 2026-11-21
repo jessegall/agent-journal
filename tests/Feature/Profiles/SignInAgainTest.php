@@ -19,12 +19,14 @@ use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Commands\CompleteSignIn;
+use App\Profiles\Commands\RecheckAccount;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\RemoveAccount;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
+use App\Profiles\Exceptions\AccountRecheckRefused;
 use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
@@ -257,6 +259,28 @@ final class SignInAgainTest extends TestCase
         $this->assertFalse($this->account->maintenance);
         $this->assertSame(AccountState::SignedIn, $this->account->state);
         $this->assertSame($this->account->id, $this->chosen());
+    }
+
+    public function test_an_inconclusive_check_waits_for_the_owners_recheck(): void
+    {
+        $this->cancel($this->again('tab-1'));
+        $generation = $this->account->refresh()->sign_in_generation;
+
+        $this->asHost(new CheckAccount('host', $this->account->id, $generation, AccountCheckResult::Unknown));
+
+        $this->assertTrue($this->account->refresh()->isCheckInconclusive());
+        $this->assertNull(Account::nextToCheck());
+
+        $this->actAsOwner();
+        $this->app->make(CommandBus::class)->run(new RecheckAccount($this->account->id));
+
+        $this->assertFalse($this->account->refresh()->isCheckInconclusive());
+        $this->assertTrue($this->account->isHeldForCheck());
+        $this->assertSame($this->account->id, Account::nextToCheck()?->id);
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new RecheckAccount($this->account->id)),
+            AccountRecheckRefused::class,
+        );
     }
 
     public function test_a_cancelled_sign_in_that_left_the_account_signed_out_clears_the_choice(): void

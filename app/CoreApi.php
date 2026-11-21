@@ -932,6 +932,7 @@ use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\DismissAccountNotice;
 use App\Profiles\Commands\MaintainAccount;
+use App\Profiles\Commands\RecheckAccount;
 use App\Profiles\Commands\RemoveAccount;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\RetryAccountCleanup;
@@ -2208,6 +2209,7 @@ final class CoreApi
                 BeginSignInAgain::class,
                 RemoveAccount::class,
                 RetryAccountCleanup::class,
+                RecheckAccount::class,
                 RetryAttemptCleanup::class,
                 CancelSignIn::class,
                 SubmitSignInCode::class,
