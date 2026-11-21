@@ -10,6 +10,14 @@ export type CodeDirection = 'paste-back' | 'outgoing';
 
 export type SignInChallenge = { address: string | null; code: string | null };
 
+/**
+ * What the wizard is opened for: a new account, a running sign-in it rejoins, or a saved account signed in again.
+ */
+export type WizardRequest =
+    | { kind: 'new' }
+    | { kind: 'resume'; attemptId: string }
+    | { kind: 'again'; program: string; accountId: string };
+
 export function codeDirection(program: string): CodeDirection {
     return program === 'codex' ? 'outgoing' : 'paste-back';
 }
@@ -51,7 +59,9 @@ export function lastEndedAttempt(
                 attempt.program === program &&
                 attempt.accountId === accountId,
         )
-        .sort((first, second) => second.expiresAt.localeCompare(first.expiresAt))[0];
+        .sort((first, second) =>
+            second.expiresAt.localeCompare(first.expiresAt),
+        )[0];
 }
 
 const endedMessages: Record<string, string> = {

@@ -21,6 +21,13 @@ export function programName(program: string): string {
 }
 
 /**
+ * The product icon a program is marked with: the Claude spark for Claude Code, the OpenAI knot for Codex.
+ */
+export function programIcon(program: string): 'claude' | 'codex' {
+    return program === 'codex' ? 'codex' : 'claude';
+}
+
+/**
  * Why a cleanup has not finished, in words safe to show; the program's own output is never shown.
  */
 export const cleanupProblemText: Record<CleanupProblem, string> = {

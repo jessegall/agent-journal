@@ -4,9 +4,24 @@ import { describe, expect, it } from 'vitest';
 import OptionCards from './OptionCards.vue';
 
 const options = [
-    { value: 'sign-in', title: 'Sign in with Claude', aside: 'Subscription', description: 'Opens the page.' },
-    { value: 'token', title: 'Provider token', aside: 'Subscription', description: 'Paste a token.' },
-    { value: 'key', title: 'API key', aside: 'API usage', description: 'Paste a key.' },
+    {
+        value: 'sign-in',
+        title: 'Sign in with Claude',
+        aside: 'Subscription',
+        description: 'Opens the page.',
+    },
+    {
+        value: 'token',
+        title: 'Provider token',
+        aside: 'Subscription',
+        description: 'Paste a token.',
+    },
+    {
+        value: 'key',
+        title: 'API key',
+        aside: 'API usage',
+        description: 'Paste a key.',
+    },
 ];
 
 function mountCards(chosen: string | null) {
@@ -16,7 +31,8 @@ function mountCards(chosen: string | null) {
             label: 'How to sign in',
             options,
             modelValue: chosen,
-            'onUpdate:modelValue': (value: string | null) => view.setProps({ modelValue: value }),
+            'onUpdate:modelValue': (value: string | null) =>
+                view.setProps({ modelValue: value }),
         },
     });
 
@@ -31,8 +47,16 @@ describe('OptionCards', () => {
         expect(cards[0].text()).toContain('Sign in with Claude');
         expect(cards[2].text()).toContain('API usage');
         expect(cards[1].text()).toContain('Paste a token.');
-        expect(cards.map((card) => card.attributes('aria-checked'))).toEqual(['false', 'false', 'false']);
-        expect(cards.map((card) => card.attributes('tabindex'))).toEqual(['0', '-1', '-1']);
+        expect(cards.map((card) => card.attributes('aria-checked'))).toEqual([
+            'false',
+            'false',
+            'false',
+        ]);
+        expect(cards.map((card) => card.attributes('tabindex'))).toEqual([
+            '0',
+            '-1',
+            '-1',
+        ]);
         view.unmount();
     });
 

@@ -27,7 +27,13 @@ function chooseByKey(event: KeyboardEvent): void {
     }
 
     event.preventDefault();
-    emit(event.key === 'Enter' ? 'confirm' : 'choose');
+    if (event.key === 'Enter') {
+        emit('confirm');
+
+        return;
+    }
+
+    emit('choose');
 }
 </script>
 
@@ -48,7 +54,7 @@ function chooseByKey(event: KeyboardEvent): void {
     >
         <div class="flex items-start gap-2.5">
             <span class="mt-px"><slot name="icon" /></span>
-            <span class="flex-1 text-card leading-5 font-medium text-text">{{
+            <span class="flex-1 leading-5 font-medium text-card text-text">{{
                 title
             }}</span>
             <span class="text-small leading-5 whitespace-nowrap text-text-3">{{

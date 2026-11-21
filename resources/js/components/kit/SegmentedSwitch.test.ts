@@ -15,7 +15,8 @@ function mountSwitch(chosen: 'claude' | 'codex' = 'claude') {
             label: 'Program',
             options,
             modelValue: chosen,
-            'onUpdate:modelValue': (value: string) => switchView.setProps({ modelValue: value }),
+            'onUpdate:modelValue': (value: string) =>
+                switchView.setProps({ modelValue: value }),
         },
     });
 }
@@ -27,9 +28,16 @@ describe('SegmentedSwitch', () => {
         switchView = mountSwitch('claude');
         const radios = switchView.findAll('[role="radio"]');
 
-        expect(switchView.find('[role="radiogroup"]').attributes('aria-label')).toBe('Program');
-        expect(radios.map((radio) => radio.attributes('aria-checked'))).toEqual(['true', 'false']);
-        expect(radios.map((radio) => radio.attributes('tabindex'))).toEqual(['0', '-1']);
+        expect(
+            switchView.find('[role="radiogroup"]').attributes('aria-label'),
+        ).toBe('Program');
+        expect(radios.map((radio) => radio.attributes('aria-checked'))).toEqual(
+            ['true', 'false'],
+        );
+        expect(radios.map((radio) => radio.attributes('tabindex'))).toEqual([
+            '0',
+            '-1',
+        ]);
         switchView.unmount();
     });
 
@@ -38,14 +46,20 @@ describe('SegmentedSwitch', () => {
         const group = switchView.find('[role="radiogroup"]');
 
         await group.trigger('keydown', { key: 'ArrowRight' });
-        expect(switchView.emitted('update:modelValue')?.at(-1)).toEqual(['codex']);
+        expect(switchView.emitted('update:modelValue')?.at(-1)).toEqual([
+            'codex',
+        ]);
         expect(document.activeElement?.textContent).toContain('Codex');
 
         await group.trigger('keydown', { key: 'ArrowRight' });
-        expect(switchView.emitted('update:modelValue')?.at(-1)).toEqual(['claude']);
+        expect(switchView.emitted('update:modelValue')?.at(-1)).toEqual([
+            'claude',
+        ]);
 
         await group.trigger('keydown', { key: 'ArrowLeft' });
-        expect(switchView.emitted('update:modelValue')?.at(-1)).toEqual(['codex']);
+        expect(switchView.emitted('update:modelValue')?.at(-1)).toEqual([
+            'codex',
+        ]);
         switchView.unmount();
     });
 
@@ -54,7 +68,9 @@ describe('SegmentedSwitch', () => {
 
         await switchView.findAll('[role="radio"]')[1].trigger('click');
 
-        expect(switchView.emitted('update:modelValue')?.at(-1)).toEqual(['codex']);
+        expect(switchView.emitted('update:modelValue')?.at(-1)).toEqual([
+            'codex',
+        ]);
         switchView.unmount();
     });
 });

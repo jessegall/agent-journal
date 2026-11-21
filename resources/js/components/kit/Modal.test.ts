@@ -22,7 +22,9 @@ describe('Modal', () => {
         expect(modal.find('dialog').element.open).toBe(true);
         expect(modal.find('h3').text()).toBe('Add an account');
         expect(
-            modal.findAll('[data-step-bar]').map((bar) => bar.attributes('data-done')),
+            modal
+                .findAll('[data-step-bar]')
+                .map((bar) => bar.attributes('data-done')),
         ).toEqual(['true', 'true', 'false']);
         modal.unmount();
     });
@@ -56,7 +58,8 @@ describe('Modal', () => {
     it('keeps the Tab key inside the window', async () => {
         const modal = openModal();
         await modal.vm.$nextTick();
-        const close = modal.find('button[aria-label="Close"]').element as HTMLElement;
+        const close = modal.find('button[aria-label="Close"]')
+            .element as HTMLElement;
         const last = modal.find('[data-last]').element as HTMLElement;
 
         last.focus();
@@ -64,7 +67,9 @@ describe('Modal', () => {
         expect(document.activeElement).toBe(close);
 
         close.focus();
-        await modal.find('dialog').trigger('keydown', { key: 'Tab', shiftKey: true });
+        await modal
+            .find('dialog')
+            .trigger('keydown', { key: 'Tab', shiftKey: true });
         expect(document.activeElement).toBe(last);
         modal.unmount();
     });

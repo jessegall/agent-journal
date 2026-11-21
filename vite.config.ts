@@ -33,11 +33,18 @@ export default defineConfig({
             },
         }),
         // An image build generates the routes with PHP first and builds in Node alone (.docker/app/Dockerfile).
-        ...(process.env.WAYFINDER_GENERATED === '1' ? [] : [wayfinder({ formVariants: true })]),
+        ...(process.env.WAYFINDER_GENERATED === '1'
+            ? []
+            : [wayfinder({ formVariants: true })]),
     ]),
     resolve: {
         // The generated aliases name paths from the project root.
-        alias: Object.fromEntries(Object.entries(domainAliases).map(([alias, path]) => [alias, fileURLToPath(new URL(path, import.meta.url))])),
+        alias: Object.fromEntries(
+            Object.entries(domainAliases).map(([alias, path]) => [
+                alias,
+                fileURLToPath(new URL(path, import.meta.url)),
+            ]),
+        ),
     },
     server: {
         // The app container reaches the Vite container by this name for server-side rendering.
@@ -60,7 +67,11 @@ export default defineConfig({
                 '**/.claude/**',
                 '**/.cursor/**',
                 '**/.junie/**',
-                (path: string) => path.includes('/vendor/') && !watchedModuleRoots.some((root) => path.includes(`/${root}/`)),
+                (path: string) =>
+                    path.includes('/vendor/') &&
+                    !watchedModuleRoots.some((root) =>
+                        path.includes(`/${root}/`),
+                    ),
             ],
         },
     },
@@ -110,6 +121,9 @@ export default defineConfig({
         },
     },
     test: {
-        include: ['resources/js/**/*.test.ts'],
+        include: [
+            'resources/js/**/*.test.ts',
+            'app/*/Resources/js/**/*.test.ts',
+        ],
     },
 });

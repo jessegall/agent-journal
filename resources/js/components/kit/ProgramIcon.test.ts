@@ -5,7 +5,9 @@ import ProgramIcon from './ProgramIcon.vue';
 
 describe('ProgramIcon', () => {
     it("draws the Claude spark in Claude's orange in light and dark alike", () => {
-        const icon = mount(ProgramIcon, { props: { program: 'claude', size: 18 } });
+        const icon = mount(ProgramIcon, {
+            props: { program: 'claude', size: 18 },
+        });
 
         expect(icon.find('path').attributes('fill')).toBe('#D97757');
         expect(icon.attributes('width')).toBe('18');

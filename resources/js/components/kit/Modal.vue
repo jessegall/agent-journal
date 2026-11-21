@@ -72,7 +72,9 @@ function keepFocusInside(event: KeyboardEvent): void {
         return;
     }
 
-    const focusable = [...dialog.value.querySelectorAll<HTMLElement>(FOCUSABLE)];
+    const focusable = [
+        ...dialog.value.querySelectorAll<HTMLElement>(FOCUSABLE),
+    ];
 
     if (focusable.length === 0) {
         return;
@@ -120,7 +122,11 @@ function keepFocusInside(event: KeyboardEvent): void {
                         :class="bar <= step ? 'bg-brand' : 'bg-border-2'"
                     />
                 </span>
-                <Button variant="icon" aria-label="Close" @click="emit('close')">
+                <Button
+                    variant="icon"
+                    aria-label="Close"
+                    @click="emit('close')"
+                >
                     <Icon name="close" />
                 </Button>
             </header>
