@@ -7,14 +7,16 @@ namespace App\Communication\Support;
 use App\Communication\Contracts\NotificationTargetResolver;
 use App\Communication\Exceptions\NotificationTargetUnregistered;
 use App\Registries\Support\Registry;
+use Illuminate\Container\Container;
 
 /**
- * The resolver of each notification target key, such as chat.question, registered once at boot.
+ * The resolver class of each notification target key, such as chat.question, registered once at boot and made
+ * for each read, so it answers for the actor of that request.
  */
 final class NotificationTargetRegistry
 {
     /**
-     * @var Registry<NotificationTargetResolver>
+     * @var Registry<class-string<NotificationTargetResolver>>
      */
     private readonly Registry $resolvers;
 
@@ -26,9 +28,12 @@ final class NotificationTargetRegistry
         );
     }
 
-    public function register(string $key, NotificationTargetResolver $resolver): void
+    /**
+     * @param  class-string<NotificationTargetResolver>  $resolverClass
+     */
+    public function register(string $key, string $resolverClass): void
     {
-        $this->resolvers->put($key, $resolver);
+        $this->resolvers->put($key, $resolverClass);
     }
 
     /**
@@ -36,6 +41,6 @@ final class NotificationTargetRegistry
      */
     public function resolverFor(string $key): NotificationTargetResolver
     {
-        return $this->resolvers->get($key);
+        return Container::getInstance()->make($this->resolvers->get($key));
     }
 }
