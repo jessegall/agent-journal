@@ -108,7 +108,8 @@ func (Codex) Arguments(start contracts.Start) ([]string, error) {
 	if start.Mode == recording.ProcessMode {
 		arguments = append(arguments, "exec")
 	}
-	if start.Resume {
+	// codex exec resume takes none of exec's options, so a one-shot resume names the thread after them.
+	if start.Resume && start.Mode != recording.ProcessMode {
 		arguments = append(arguments, "resume", start.SessionID)
 	}
 
@@ -132,6 +133,10 @@ func (Codex) Arguments(start contracts.Start) ([]string, error) {
 	}
 	if foreignSkills := foreignSkillsSwitchedOff(start.WorkFolder); foreignSkills != "" {
 		arguments = append(arguments, "-c", foreignSkills)
+	}
+
+	if start.Resume && start.Mode == recording.ProcessMode {
+		arguments = append(arguments, "resume", start.SessionID)
 	}
 
 	if start.Prompt != "" {

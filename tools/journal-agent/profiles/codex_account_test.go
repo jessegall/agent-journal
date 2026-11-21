@@ -95,3 +95,19 @@ func TestCodexRefusesEveryArgumentThatWouldMoveAToolOffTheExecutorRoute(t *testi
 		t.Fatalf("a model choice was refused: %v", err)
 	}
 }
+
+func TestAOneShotCodexResumeNamesItsThreadAfterExecsOptions(t *testing.T) {
+	start := contracts.Start{Mode: recording.ProcessMode, Resume: true, SessionID: "thread-1", Prompt: "go on",
+		Protected: true, Account: &contracts.AccountStart{Folder: "/account"}}
+
+	arguments, err := Codex{}.Arguments(start)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resume := slices.Index(arguments, "resume")
+	if arguments[0] != "exec" || resume < slices.Index(arguments, "--sandbox") ||
+		!slices.Equal(arguments[resume:], []string{"resume", "thread-1", "go on"}) {
+		t.Fatalf("a one-shot resume put exec's options after the thread: %v", arguments)
+	}
+}
