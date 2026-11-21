@@ -3,19 +3,22 @@ import { router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import Button from '@kit/Button';
 import FormErrors from '@kit/FormErrors';
+import { useHostProp } from '@kit/hostProp';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { start as startRoute } from '@generated/routes/plans';
 import type { StartPlanData } from '@generated/types/plans';
 
 /**
  * Starts a plan the server offers to start; this form only asks and shows what came back. It sends one start at a
- * time and reloads only the props its host names. When no answer comes the outcome is unknown: it never sends again
- * by itself and offers Check plan, which reads the plan anew; a repeat of a start that landed changes nothing.
+ * time and reloads only the prop of the window or section it is drawn in. When no answer comes the outcome is
+ * unknown: it never sends again by itself and offers Check plan, which reads the plan anew; a repeat of a start that
+ * landed changes nothing.
  * Its parent keys it by plan, so switching plans never shows another plan's error. A parent may give its own
  * controls, such as menu items, through the default and unknown slots.
  */
-const props = defineProps<{ start: StartPlanData; refresh: string[] }>();
+const props = defineProps<{ start: StartPlanData }>();
 
+const refresh = [useHostProp()];
 const form = useForm({});
 const isOutcomeUnknown = ref(false);
 
@@ -32,7 +35,7 @@ function submit(): void {
 
     form.submit(startRoute({ plan: props.start.planNumber }), {
         ...formSendingHooks(),
-        only: props.refresh,
+        only: refresh,
         preserveState: true,
         preserveScroll: true,
         onHttpException: markUnknown,
@@ -42,7 +45,7 @@ function submit(): void {
 
 function checkPlan(): void {
     router.reload({
-        only: props.refresh,
+        only: refresh,
         onSuccess: () => {
             isOutcomeUnknown.value = false;
         },

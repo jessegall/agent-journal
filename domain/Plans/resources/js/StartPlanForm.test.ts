@@ -29,6 +29,7 @@ vi.mock('@inertiajs/vue3', () => ({
     },
     router: { reload: (options: { only: string[] }) => reloads.push(options) },
 }));
+vi.mock('@kit/hostProp', () => ({ useHostProp: () => 'plans' }));
 vi.mock('@kit/usePageChanges', () => ({ formSendingHooks: () => ({}) }));
 vi.mock('@generated/routes/plans', () => ({
     start: ({ plan }: { plan: string }) => ({ url: `/plans/${plan}/start`, method: 'post' }),
@@ -38,7 +39,7 @@ const { default: StartPlanForm } = await import('./StartPlanForm.vue');
 
 function startForm() {
     return mount(StartPlanForm, {
-        props: { start: { planId: '40', planNumber: '12' }, refresh: ['page'] },
+        props: { start: { planId: '40', planNumber: '12' } },
     });
 }
 
@@ -59,10 +60,10 @@ describe('StartPlanForm', () => {
         expect(view.get('button[type="submit"]').attributes('disabled')).toBeDefined();
     });
 
-    it('reloads only the props its host names and keeps the page state', async () => {
+    it('reloads only the prop of its host and keeps the page state', async () => {
         await startForm().get('form').trigger('submit');
 
-        expect(sent[0].options.only).toEqual(['page']);
+        expect(sent[0].options.only).toEqual(['plans']);
         expect(sent[0].options.preserveState).toBe(true);
         expect(sent[0].options.preserveScroll).toBe(true);
     });
@@ -80,7 +81,7 @@ describe('StartPlanForm', () => {
         const check = view.findAll('button').find((button) => button.text() === 'Check plan');
         await check?.trigger('click');
 
-        expect(reloads).toEqual([expect.objectContaining({ only: ['page'] })]);
+        expect(reloads).toEqual([expect.objectContaining({ only: ['plans'] })]);
         expect(sent).toHaveLength(1);
     });
 });

@@ -19,7 +19,6 @@ const props = defineProps<{
     card: PlanCardData;
     href: string;
     selected?: boolean;
-    refresh: string[];
 }>();
 
 const state = computed(() => stateLook[props.card.state]);
@@ -107,7 +106,6 @@ const linkName = computed(() =>
                 <StartPlanForm
                     :key="card.start.planId"
                     :start="card.start"
-                    :refresh="refresh"
                 >
                     <template #default="{ pending }">
                         <ActionsMenuItem type="submit" :pending="pending">

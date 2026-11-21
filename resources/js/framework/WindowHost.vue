@@ -15,8 +15,9 @@ const props = withDefaults(
         propName: string;
         pageKey?: string;
         askOnStart?: boolean;
+        title?: string;
     }>(),
-    { pageKey: undefined, askOnStart: true },
+    { pageKey: undefined, askOnStart: true, title: undefined },
 );
 const { result, keptData, retry } = useWindowProps(
     props.propName,
@@ -34,6 +35,7 @@ if (props.pageKey !== undefined) {
         :result="result"
         :kept-data="keptData"
         :is-window="pageKey !== undefined"
+        :title="title"
         @retry="retry"
     >
         <template #content="{ data }">

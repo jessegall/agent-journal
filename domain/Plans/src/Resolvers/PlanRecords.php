@@ -136,7 +136,11 @@ final readonly class PlanRecords implements PlanResolver
 
         $isInsideFilter = Plan::query()->matching($filters->search)->whereKey($plan->id)->exists();
 
-        return PlanSelection::found($this->cardsOf($plan->newCollection([$plan]), $focused)[0], $isInsideFilter);
+        return PlanSelection::found(
+            $this->cardsOf($plan->newCollection([$plan]), $focused)[0],
+            $isInsideFilter,
+            $plan->brief,
+        );
     }
 
     /**

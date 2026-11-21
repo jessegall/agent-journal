@@ -8,15 +8,16 @@ import { provideIsStale } from './windowFreshness';
  * Shows one result: its content with the reader's Data when ready, the Data shown before while it is asked for again
  * or after a refresh failed, so its content stays mounted read-only and keeps what the user was doing, the neutral
  * message and a retry when the first read failed, and nothing when the signed-in user may not see it. A window, unlike
- * a section, also shows a labelled skeleton while its first read runs and says when access is refused.
+ * a section, also shows a skeleton named by its title while its first read runs and says when access is refused.
  */
 const props = withDefaults(
     defineProps<{
         result: WindowResult<unknown> | null | undefined;
         keptData?: unknown;
         isWindow?: boolean;
+        title?: string;
     }>(),
-    { keptData: undefined, isWindow: false },
+    { keptData: undefined, isWindow: false, title: undefined },
 );
 defineEmits<{ retry: [] }>();
 defineSlots<{ content(slotProps: { data: unknown }): unknown }>();
@@ -84,7 +85,7 @@ provideIsStale(isStale);
     <template v-else-if="isWindow && isFirstRead">
         <div
             role="status"
-            aria-label="Loading"
+            :aria-label="title ? `Loading ${title}` : 'Loading'"
             class="flex flex-col gap-3 px-4 py-6"
         >
             <span class="h-4 w-1/3 animate-pulse rounded-button bg-line"></span>

@@ -33,7 +33,7 @@ function card(changes: Partial<PlanCardData> = {}): PlanCardData {
 }
 
 function row(changes: Partial<PlanCardData> = {}, selected = false) {
-    return mount(PlanCard, { props: { card: card(changes), href: '/plans?plan=12', selected, refresh: ['page'] } });
+    return mount(PlanCard, { props: { card: card(changes), href: '/plans?plan=12', selected } });
 }
 
 describe('PlanCard', () => {
