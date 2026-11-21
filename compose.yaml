@@ -404,12 +404,12 @@ services:
             dockerfile: .docker/updater/Dockerfile
         restart: unless-stopped
         environment:
-            JOURNAL_ROOT: ${JOURNAL_ROOT:?set JOURNAL_ROOT to this folder's absolute path}
+            JOURNAL_ROOT: ${JOURNAL_ROOT:-}
             JOURNAL_BRANCH: ${JOURNAL_BRANCH:-version-6}
             JOURNAL_REPOSITORY: ${JOURNAL_REPOSITORY:-https://github.com/jessegall/agent-journal.git}
-        working_dir: ${JOURNAL_ROOT}
+        working_dir: ${JOURNAL_ROOT:-/journal}
         volumes:
-            - .:${JOURNAL_ROOT}
+            - .:${JOURNAL_ROOT:-/journal}
             - /var/run/docker.sock:/var/run/docker.sock
             - updater-mirror:/var/lib/journal-updater
 
