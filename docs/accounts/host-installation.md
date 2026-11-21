@@ -3,6 +3,13 @@
 The protected host is `journal-agent` on the machine where agents run. It starts the pinned Claude Code and Codex
 builds on saved accounts, keeps each account's sign-in on the host, and refuses any start it cannot run protected.
 
+There are two arrangements. In the local one (a Mac, or a Linux machine without containers) the host is
+`journal-agent` installed into a sealed folder as below, and every program runs on the machine itself. In the
+contained one (a server, `AGENTS_ARRANGEMENT=contained`) the host is the `agent-host` compose service, and every
+agent runs in a container of the agent daemon; the steps for that are in
+[contained-installation.md](contained-installation.md), and the differences are listed under "The contained host"
+below.
+
 ## Install
 
 1. Write a manifest of every artifact: each one's installed name, its source file and its SHA-256, and whether it is
@@ -60,13 +67,27 @@ the account's Codex owner and every execution on it; an account the host cannot 
 | the protected arrangement is not available | `journal-agent protection` names a missing mechanism or missing native evidence | run the native evidence procedures; a missing mechanism stays until the pinned client has one |
 | the account claim may have been taken | a claim's answer was lost | the host's reconciliation settles it; nothing to retry |
 | not assigned to this host | the runtime belongs to another host | none: another host's account start is never claimed |
-| no saved-account transport into a container | a required-container start on an account | unsupported; no credential is copied into a container |
+| no saved-account transport into a container | a required-container start on an account in the local arrangement, or a Codex start in the contained one | unsupported there; in the contained arrangement a Claude Code account's own sign-in folder is mounted into its own session's container |
+
+## The contained host
+
+- The `agent-host` service runs `journal-agent serve --arrangement=contained` from the runner image, as uid 10001,
+  with its private state on the `host-state` volume. It publishes no port and never sees the server's Docker socket.
+- `agent-host-enroll` enrolls it once from the compose secret `journal_host_secret` (a file, never the environment)
+  and does nothing when `host-state` already holds the same enrollment.
+- The journal's PHP reaches the host's start socket through the `host-start-socket` volume.
+- In place of the sealed installation folder, the two images are pinned by id (`AGENT_IMAGE`, `RUNNER_IMAGE`); the
+  host checks both on the agent daemon before it serves, and the agent daemon holds no other image.
+- A Claude Code session's container gets its account's own sign-in folder, read-write, at `/home/journal/.account`,
+  and no other account. That admits Claude Code running signed in inside its container; it does not keep the
+  container's tools away from that folder, which waits on the provider transport (task 1357). Codex starts are refused
+  in this arrangement.
 
 ## The native evidence
 
 `php tools/accounts/check-claude.php` and `check-codex.php`, run on the host against journal accounts with
 `--host=<installed journal-agent> --host-state=<state folder>`, print one item per check, each pass, missing or
-fail, with the task that consumes it. Today every `host-*` item is missing: Claude Code has no native boundary for
-another session's history or for process inspection, and Codex's sandbox limits writes only
+fail, with the task that consumes it. An item stays missing until its procedure has run on this host for the pinned
+build; Codex's sandbox limits writes only, so its read items have no mechanism
 ([host-protection.md](host-protection.md)). Tasks 243 and 265 consume these results; nothing is promoted until they
 pass.

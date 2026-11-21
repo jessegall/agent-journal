@@ -28,6 +28,16 @@ How a running agent program is driven, for a reader of the code. The design is d
 5. A turn's end reports its requests applied, or uncertain when the program failed; an interrupt ends with its turn.
 6. A proven stop reports the exit, which ends the session, revokes its credential and settles every open request.
 
+## A terminal in a container
+
+In the contained arrangement the main agent's `TerminalDriver` types into a program that runs as the container's own
+process (`tools/journal-agent/host/session_container.go`). The host creates the session's container under the name
+the journal gave it (the installation and the session), with a network of the same name, starts it, and holds its
+terminal through `docker --host <agent daemon socket> attach --sig-proxy=false <name>`. After a restart of the host it
+finds the container that still runs under that name and attaches to it again; nothing starts anew. A proven stop
+removes the container and its network; the session's volumes stay. A manifest that gives the program no terminal is
+refused (`ErrSessionContainerUnattachable`).
+
 ## Watching a terminal
 
 A terminal view lets a person watch a terminal runtime's screen in the web UI, read only. It is a lease row

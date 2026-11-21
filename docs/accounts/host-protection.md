@@ -37,16 +37,19 @@ network and no account, and never looks at the host's own PATH. Its evidence is 
 ## What the pinned clients have today
 
 On macOS, Claude Code 2.1.323's sandbox (`sandbox.enabled`, a Seatbelt profile for Bash and its children) and its
-permission rules give a mechanism for account secrets, the Keychain, private sockets and protected writes. It has
-none for another session's history, which shares one projects folder, or for process inspection. On Linux the same
-sandbox runs in bubblewrap and needs `bwrap` and `socat` on the host; it adds a PID namespace.
+permission rules give a mechanism for account secrets, the Keychain, private sockets and protected writes. The host
+adds the rest: it starts each session's program under a Seatbelt profile of its own (`sandbox-exec`,
+`tools/journal-agent/host/session_sandbox.go`), so the program and every tool it starts read and write only their
+own workspace's history in the account folder and see and signal no process outside the session. On Linux outside a
+container the same Claude Code sandbox runs in bubblewrap and needs `bwrap` and `socat` on the host; it adds a PID
+namespace, and nothing tells one session's history from another's.
 
 Codex 0.165.0's `workspace-write` sandbox (Seatbelt on macOS, Landlock on Linux) limits writes only: a command can
 read `auth.json` and other threads' sessions. Only protected writes have a mechanism.
 
-So neither program's protected arrangement is available yet: Claude Code lacks a native boundary for foreign history
-and process inspection, Codex for reads. The journal keeps both arrangements refused (`ProgramCompatibility`) until a
-host reports one available.
+So Claude Code on macOS has a mechanism for every item, and its arrangement is available once native evidence for
+this build shows each one hold; Codex lacks one for reads on every platform. The journal refuses an arrangement
+(`ProgramCompatibility`) until the host reports it available.
 
 ## In a container
 
@@ -70,7 +73,21 @@ So process inspection has no native mechanism for Claude Code in a container, an
 until the provider transport (task 1357) moves the sign-in out of the agent container. The pair stays in the repository:
 it is what the agent container runs under, and it is all bubblewrap needs once a `/proc` can be mounted.
 
-The probes ran on the server's own Docker daemon, which applies both profiles. The rootless agent daemon applies the
-seccomp profile, which the agent host's Docker client sends with each container, but rootless Docker applies no
-AppArmor profile, so the AppArmor half takes effect only where the agent daemon runs with Sysbox or as root. The
-`/proc` masks are the same on every daemon.
+The probes ran on the server's own Docker daemon, which applies both profiles. The agent daemon, a rootful Docker under
+Sysbox, applies the seccomp profile, which the agent host's Docker client sends with each container; whether it
+applies the AppArmor profile inside Sysbox has not been checked. The `/proc` masks are the same on every daemon.
+
+Per item, in the agent container (platform `linux-container`, evidence per agent image):
+
+| Item | What meets it in the container |
+|---|---|
+| account-secrets | only the session's own account folder is mounted, at `/home/journal/.account`; keeping the tools away from it needs Claude Code's sandbox, which does not start, so it is unavailable until the provider transport |
+| foreign-history | each session's own history volume over the account's projects folder |
+| keychain | Claude Code's sandbox, so unavailable while it does not start |
+| control-sockets | Claude Code's sandbox, so unavailable while it does not start; the host's sockets are never mounted |
+| process-inspection | none: the `/proc` masks stop bubblewrap's PID namespace |
+| install-writes | Claude Code's sandbox, so unavailable while it does not start; the images are pinned by digest and the container holds no installation folder |
+
+While bubblewrap does not start, `journal-agent protection --arrangement=contained` reports every item unavailable
+with that one reason (`tools/journal-agent/host/sandbox_mechanisms.go`); the container's own limits (dropped
+capabilities, no-new-privileges, the budgets, the one account mount) hold regardless.
