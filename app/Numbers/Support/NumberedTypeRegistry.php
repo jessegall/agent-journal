@@ -47,7 +47,7 @@ final class NumberedTypeRegistry implements NumberedModelRegistration
         $this->declaredOfLinkType->clear();
 
         foreach ($this->declared as $declared) {
-            $numbered = Reflector::isNameSubclassOf($declared->model, Numbered::class)
+            $numbered = Reflector::factory()->isSubclassOf($declared->model, Numbered::class)
                 && in_array(HasNumber::class, class_uses_recursive($declared->model), true);
 
             if (! $numbered) {

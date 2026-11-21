@@ -72,7 +72,7 @@ final readonly class ReadCommandHandlers implements Pipe
             throw CommandDeclarationInvalid::for($command, "it is not in {$owner->name}'s Commands folder");
         }
 
-        if (! Reflector::exists($command) || ! Reflector::of($command)->isSubclassOf(Command::class)) {
+        if (! Reflector::factory()->isSubclassOf($command, Command::class)) {
             throw CommandDeclarationInvalid::for($command, 'it is no class implementing Command');
         }
 

@@ -65,8 +65,7 @@ final class StateMethods
         $returnsCommands = $returnType->filter(fn (DeclaredType $type) => $type->isNamedAs(EventCommands::class))
             ->isDefined();
         $takesEvent = $parameterClass !== null
-            && Reflector::exists($parameterClass)
-            && Reflector::of($parameterClass)->is(Event::class);
+            && Reflector::factory()->is($parameterClass, Event::class);
 
         if (Reflector::of(AgentState::class)->hasMethod($name)
             || Reflector::of(TickableState::class)->hasMethod($name)) {
@@ -87,7 +86,7 @@ final class StateMethods
 
         if ($parameterClass === null
             || ! $takesEvent
-            || ! Reflector::isNameSubclassOf($parameterClass, Event::class)
+            || ! Reflector::factory()->isSubclassOf($parameterClass, Event::class)
             || ! $this->hasRequiredArgument($method)
             || ! $this->isPublicInstanceMethod($method)) {
             throw InvalidStateMethod::for($method, 'must be a public instance method with one required concrete Event.');
@@ -122,7 +121,7 @@ final class StateMethods
      */
     private function declarationsFor(string $class): array
     {
-        if (! Reflector::isNameSubclassOf($class, AgentState::class)) {
+        if (! Reflector::factory()->isSubclassOf($class, AgentState::class)) {
             throw InvalidStateClass::for($class);
         }
 
@@ -146,10 +145,11 @@ final class StateMethods
 
         foreach ($state->methods() as $method) {
             $name = $method->name();
+            $declared = StateMethod::fromMethod($state->name(), $method);
 
             if ($hooks->hasMethod($name)) {
                 if ($this->isHookOverride($method, $hooks->method($name))) {
-                    $methods[$name] = StateMethod::fromMethod($state->name(), $method);
+                    $methods[$name] = $declared;
                 }
 
                 continue;
@@ -158,7 +158,7 @@ final class StateMethods
             $event = $this->eventFor($method);
 
             if ($event !== null) {
-                $events[$event] = StateMethod::fromMethod($state->name(), $method);
+                $events[$event] = $declared;
             }
         }
 

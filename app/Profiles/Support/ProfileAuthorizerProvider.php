@@ -20,6 +20,7 @@ use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\StartProfileAuthority;
+use App\Reflection\Contracts\ReflectorFactory;
 use Illuminate\Contracts\Auth\Access\Gate;
 
 /**
@@ -33,6 +34,7 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
         private ProfileResolver $profiles,
         private PolicyCatalogue $catalogue,
         private Gate $gate,
+        private ReflectorFactory $reflectors,
     ) {}
 
     /**
@@ -82,7 +84,7 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
     {
         return match ($authorization->type) {
             AuthorizationType::AllowsEverything => new UnrestrictedAuthorizer(),
-            AuthorizationType::Policies => new PolicyAuthorizer($authorization, $this->catalogue, $this->gate),
+            AuthorizationType::Policies => new PolicyAuthorizer($authorization, $this->catalogue, $this->gate, $this->reflectors),
         };
     }
 }

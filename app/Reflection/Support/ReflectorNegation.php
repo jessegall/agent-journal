@@ -11,7 +11,7 @@ use App\Reflection\Exceptions\QuestionNotNegatable;
  * the wrapped Reflector the same question and answers the opposite, so every question the Reflector answers with a
  * bool works here with no second copy; any other method is refused.
  *
- * @template T of object
+ * @template-covariant T of object
  *
  * @mixin Reflector<T>
  */

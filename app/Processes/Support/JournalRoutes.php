@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Processes\Attributes\JournalRoute;
-use Illuminate\Console\Command;
 use App\Reflection\Support\Reflector;
+use Illuminate\Console\Command;
 
 /**
  * The journal command routes agents may run, by their name (task:assigned), each with what it does; built once from the
@@ -28,8 +28,14 @@ final readonly class JournalRoutes
         $routes = [];
 
         foreach ($commands as $name => $command) {
-            if ($command instanceof Command && Reflector::of($command)->hasAttribute(JournalRoute::class)) {
-                $routes[$name] = Reflector::of($command)->attribute(JournalRoute::class);
+            if (! $command instanceof Command) {
+                continue;
+            }
+
+            $declaration = Reflector::of($command);
+
+            if ($declaration->hasAttribute(JournalRoute::class)) {
+                $routes[$name] = $declaration->attribute(JournalRoute::class);
             }
         }
 

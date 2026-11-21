@@ -159,6 +159,8 @@ final readonly class RuleDeclarations
      */
     private function ruleFields(string $rule): array
     {
+        $operandType = Rule::enum(OperandType::class);
+
         return [
             "{$rule}.id" => ['required', 'string', self::RULE_ID],
             ...$this->scopeFields("{$rule}.scope"),
@@ -171,10 +173,10 @@ final readonly class RuleDeclarations
             "{$rule}.arguments.options.*.names" => ['required', 'array', 'list', 'min:1'],
             "{$rule}.arguments.options.*.names.*" => ['string'],
             "{$rule}.arguments.options.*.value" => ['present', 'array', 'list', 'max:1'],
-            "{$rule}.arguments.options.*.value.*" => [Rule::enum(OperandType::class)],
+            "{$rule}.arguments.options.*.value.*" => [$operandType],
             "{$rule}.arguments.options.*.required" => ['required', 'boolean'],
             "{$rule}.arguments.operands" => ['present', 'array', 'list'],
-            "{$rule}.arguments.operands.*" => [Rule::enum(OperandType::class)],
+            "{$rule}.arguments.operands.*" => [$operandType],
             "{$rule}.arguments.repeats_last_operand" => ['required', 'boolean'],
             "{$rule}.arguments.ends_options_at_double_dash" => ['required', 'boolean'],
             "{$rule}.arguments.accepts_numeric_options" => ['required', 'boolean'],

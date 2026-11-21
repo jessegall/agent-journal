@@ -22,6 +22,8 @@ final readonly class ProcessRules
      */
     public function all(): array
     {
+        $textOperands = ArgumentGrammar::operands(OperandType::Text);
+
         $control = CommandClassSet::of(CommandClass::ProcessControl);
 
         return [
@@ -42,7 +44,7 @@ final readonly class ProcessRules
                 'core.wait',
                 new ProgramSpellings('wait'),
                 [],
-                ArgumentGrammar::operands(OperandType::Text)->repeating(),
+                $textOperands->repeating(),
                 $control,
             ),
             CommandRule::forProgram(

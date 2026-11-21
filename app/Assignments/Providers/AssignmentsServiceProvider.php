@@ -91,8 +91,10 @@ final class AssignmentsServiceProvider extends ServiceProvider
 
     public function boot(PolicyCatalogue $policies, ReadEntitlements $reads): void
     {
-        $reads->declare('assignees_list', ReadEntitlement::grant(AssignmentPolicy::class));
-        $reads->declare('assignments_read', ReadEntitlement::grant(AssignmentPolicy::class));
+        $readGrant = ReadEntitlement::grant(AssignmentPolicy::class);
+
+        $reads->declare('assignees_list', $readGrant);
+        $reads->declare('assignments_read', $readGrant);
         $policies->register('Core', new PolicyDefinition(
             AssignmentPolicy::class,
             [AccessType::Read, AccessType::Create, AccessType::Edit],

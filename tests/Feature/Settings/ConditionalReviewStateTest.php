@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
@@ -160,7 +161,7 @@ final class ConditionalReviewStateTest extends TestCase
 
     private function switchReview(bool $off, int $expectedRevision): void
     {
-        $commands = new RegisteredSettingCommands($this->app->make(SettingRegistry::class));
+        $commands = new RegisteredSettingCommands($this->app->make(SettingRegistry::class), new CatalogueReflectorFactory());
         $command = $off ? $commands->disable(
             $this->reviews->review,
             $expectedRevision,

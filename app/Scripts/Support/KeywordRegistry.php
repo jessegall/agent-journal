@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Scripts\Support;
 
 use App\Contracts\DomainAvailability;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use App\Scripts\Contracts\ScriptKeywordDefinition;
@@ -25,7 +26,7 @@ final readonly class KeywordRegistry implements ScriptKeywordRegistration
      */
     private Registry $keywords;
 
-    public function __construct(private Container $container)
+    public function __construct(private Container $container, private ReflectorFactory $reflectors)
     {
         $this->keywords = Registry::once(
             ScriptDefinitionRefused::unknown(...),
@@ -104,7 +105,7 @@ final readonly class KeywordRegistry implements ScriptKeywordRegistration
     public function statement(KeywordDefinition $keyword): ScriptStatement
     {
         if ($keyword->implementation === null
-            || ! Reflector::isNameSubclassOf($keyword->implementation, ScriptStatement::class)) {
+            || ! $this->reflectors->isSubclassOf($keyword->implementation, ScriptStatement::class)) {
             throw ScriptDefinitionRefused::invalidKeyword($keyword->token);
         }
 
@@ -142,7 +143,7 @@ final readonly class KeywordRegistry implements ScriptKeywordRegistration
     public function trigger(KeywordDefinition $keyword): ScriptTrigger
     {
         if ($keyword->implementation === null
-            || ! Reflector::isNameSubclassOf($keyword->implementation, ScriptTrigger::class)) {
+            || ! $this->reflectors->isSubclassOf($keyword->implementation, ScriptTrigger::class)) {
             throw ScriptDefinitionRefused::invalidKeyword($keyword->token);
         }
 

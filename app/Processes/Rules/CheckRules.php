@@ -42,6 +42,11 @@ final readonly class CheckRules
      */
     public function all(): array
     {
+        $noEmitOperands = ArgumentGrammar::optionWithOperands('--noEmit');
+
+        $pathOperands = ArgumentGrammar::operands(OperandType::Path);
+        $projectOption = OptionGrammar::valued(OperandType::Path, '-p', '--project');
+
         $read = CommandClassSet::of(CommandClass::Verification, CommandClass::Read);
         $fix = CommandClassSet::of(CommandClass::Verification, CommandClass::Read, CommandClass::Edit);
         $php = new ProgramSpellings('php', self::PHP_SPELLINGS);
@@ -81,7 +86,7 @@ final readonly class CheckRules
             $this->check('core.commandments.judge', new ProgramSpellings(
                 'commandments',
                 ['commandments-release', 'commandments-go'],
-            ), ['judge'], ArgumentGrammar::operands(OperandType::Path)->withOptions(
+            ), ['judge'], $pathOperands->withOptions(
                 OptionGrammar::flag('--changes'),
                 OptionGrammar::flag('--changed-files'),
                 OptionGrammar::valued(
@@ -98,8 +103,8 @@ final readonly class CheckRules
                 'core.vue-tsc',
                 new ProgramSpellings('vue-tsc'),
                 [],
-                ArgumentGrammar::optionWithOperands('--noEmit')->withOptions(
-                    OptionGrammar::valued(OperandType::Path, '-p', '--project'),
+                $noEmitOperands->withOptions(
+                    $projectOption,
                 ),
                 $read,
             ),
@@ -107,8 +112,8 @@ final readonly class CheckRules
                 'core.tsc',
                 new ProgramSpellings('tsc'),
                 [],
-                ArgumentGrammar::optionWithOperands('--noEmit')->withOptions(
-                    OptionGrammar::valued(OperandType::Path, '-p', '--project'),
+                $noEmitOperands->withOptions(
+                    $projectOption,
                 ),
                 $read,
             ),
@@ -116,7 +121,7 @@ final readonly class CheckRules
                 'core.vp.check',
                 new ProgramSpellings('vp'),
                 ['check'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating(),
+                $pathOperands->repeating(),
                 $read,
             ),
             $this->check(
@@ -130,7 +135,7 @@ final readonly class CheckRules
                 'core.vp.test',
                 new ProgramSpellings('vp'),
                 ['test', 'run'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating(),
+                $pathOperands->repeating(),
                 $read,
             ),
             $this->check('core.pytest', new ProgramSpellings('pytest'), [], $this->pytest(), $read),
@@ -138,7 +143,7 @@ final readonly class CheckRules
                 'core.go.test',
                 new ProgramSpellings('go'),
                 ['test'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
+                $pathOperands->repeating()->withOptions(
                     OptionGrammar::valued(OperandType::Pattern, '-run'),
                     OptionGrammar::flag('-v'),
                     OptionGrammar::flag('-race'),

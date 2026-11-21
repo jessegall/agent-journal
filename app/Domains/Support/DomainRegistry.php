@@ -201,7 +201,7 @@ final readonly class DomainRegistry
                 throw SettingDeclarationInvalid::ownerTwice($entry->name);
             }
 
-            $definitions[$entry->name] = $entry->settings();
+            $definitions[$entry->name] = $entry->settings;
         }
 
         return SettingRegistry::from($definitions);

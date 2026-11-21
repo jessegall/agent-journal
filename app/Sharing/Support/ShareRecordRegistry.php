@@ -47,11 +47,11 @@ final class ShareRecordRegistry
         $alias = $definition->alias;
         RecordIdentity::assertKnownType($alias);
 
-        if (! Reflector::isNameSubclassOf($definition->modelClass, Shareable::class)) {
+        if (! Reflector::factory()->isSubclassOf($definition->modelClass, Shareable::class)) {
             throw ShareRecordInvalid::notShareable($alias, $definition->modelClass);
         }
 
-        if (! Reflector::isNameSubclassOf($definition->providerClass, ShareRecordProvider::class)) {
+        if (! Reflector::factory()->isSubclassOf($definition->providerClass, ShareRecordProvider::class)) {
             throw ShareRecordInvalid::notAProvider($alias, $definition->providerClass);
         }
 
@@ -62,6 +62,7 @@ final class ShareRecordRegistry
      * Reads the relations of every registered model once and checks each names a capability some registered record
      * advertises. Run once every domain has registered, after the application booted.
      *
+     * @throws ShareRecordInvalid
      * @throws ShareRelationInvalid
      */
     public function checkRelations(): void
@@ -72,7 +73,13 @@ final class ShareRecordRegistry
         ));
 
         foreach ($this->definitions->all() as $alias => $definition) {
-            $relations = $definition->modelClass::shareRelations();
+            $model = $definition->modelClass;
+
+            if (! Reflector::factory()->isSubclassOf($model, Shareable::class)) {
+                throw ShareRecordInvalid::notShareable($alias, $model);
+            }
+
+            $relations = $model::shareRelations();
             $names = [];
 
             foreach ($relations->relations as $relation) {

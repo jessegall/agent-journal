@@ -66,7 +66,7 @@ final class ReadsServiceProvider extends ServiceProvider
 
         $this->app->booted(static function (): void {
             foreach (Relation::morphMap() as $linkType => $model) {
-                if (! Reflector::isNameSubclassOf($model, ReadableModel::class)) {
+                if (! Reflector::factory()->isSubclassOf($model, ReadableModel::class)) {
                     throw ReadPolicyMissing::for($model, $linkType);
                 }
             }

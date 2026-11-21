@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Providers;
 
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Support\RecordPolicyMappings;
 use App\Autoload\Support\Psr4ClassNames;
@@ -136,7 +137,7 @@ class DomainServiceProvider extends ServiceProvider
      */
     private function mcpCatalogue(DomainRegistry $registry, CommandRegistry $commands): McpCatalogue
     {
-        $catalogue = new McpCatalogue($commands);
+        $catalogue = new McpCatalogue($commands, $this->app->make(ReflectorFactory::class));
         CoreMcpTools::registerIn($catalogue);
         $registry->registerMcpToolsIn($catalogue);
 

@@ -57,7 +57,7 @@ final class DomainBootstrapperOrderTest extends TestCase
 
             $class = $namespace[1].'\\'.basename($file, '.php');
 
-            if (! Reflector::isNameSubclassOf($class, Domain::class)) {
+            if (! Reflector::factory()->isSubclassOf($class, Domain::class)) {
                 continue;
             }
 

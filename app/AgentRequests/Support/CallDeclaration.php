@@ -119,7 +119,7 @@ final readonly class CallDeclaration
      */
     private static function inputName(int|string|NameMapper $input, string $property): string
     {
-        $mapper = is_string($input) && Reflector::isNameOf($input, NameMapper::class) ? new $input() : $input;
+        $mapper = is_string($input) && Reflector::factory()->is($input, NameMapper::class) ? new $input() : $input;
 
         return (string) ($mapper instanceof NameMapper ? $mapper->map($property) : $mapper);
     }

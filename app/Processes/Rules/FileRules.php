@@ -24,6 +24,8 @@ final readonly class FileRules
      */
     public function all(): array
     {
+        $deleteClasses = CommandClassSet::of(CommandClass::Delete);
+
         $write = CommandClassSet::of(CommandClass::Write);
         $sedOptions = [
             OptionGrammar::valued(OperandType::Pattern, '-e', '--expression'),
@@ -105,7 +107,7 @@ final readonly class FileRules
             $this->rule(
                 'rm',
                 $this->paths(),
-                CommandClassSet::of(CommandClass::Delete),
+                $deleteClasses,
                 '-r',
                 '-R',
                 '-f',
@@ -121,7 +123,7 @@ final readonly class FileRules
             $this->rule(
                 'rmdir',
                 $this->paths(),
-                CommandClassSet::of(CommandClass::Delete),
+                $deleteClasses,
                 '-p',
                 '-v',
                 '--parents',
@@ -132,7 +134,7 @@ final readonly class FileRules
                 new ProgramSpellings('php', ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5']),
                 ['artisan', 'config:clear'],
                 ArgumentGrammar::options(['--ansi', '--no-ansi']),
-                CommandClassSet::of(CommandClass::Delete),
+                $deleteClasses,
             ),
             CommandRule::forProgram(
                 'core.sed.print',

@@ -96,7 +96,7 @@ final readonly class BindingRules
         }
 
         if (! self::exists($definition->abstract)
-            || ! Reflector::isNameOf($definition->concrete, $definition->abstract)) {
+            || ! Reflector::factory()->is($definition->concrete, $definition->abstract)) {
             return [
                 $definition->violation($userOwner, $abstractOwner, "{$definition->concrete} does not implement it"),
             ];

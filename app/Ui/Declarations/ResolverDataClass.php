@@ -30,7 +30,7 @@ final class ResolverDataClass
 
         $name = $type->get()->name();
 
-        if (! Reflector::isNameSubclassOf($name, Data::class) || Reflector::of($name)->isAbstract()) {
+        if (! Reflector::factory()->isSubclassOf($name, Data::class) || Reflector::of($name)->isAbstract()) {
             return null;
         }
 

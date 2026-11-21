@@ -23,7 +23,7 @@ final class ModelTables
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                if (! Reflector::isNameSubclassOf($name, Model::class)) {
+                if (! Reflector::factory()->isSubclassOf($name, Model::class)) {
                     continue;
                 }
 

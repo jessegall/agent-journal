@@ -155,7 +155,7 @@ final class SignedCallRulesTest extends TestCase
         foreach ($files as $file) {
             $class = self::classOf($file);
 
-            if ($class !== null && Reflector::isNameSubclassOf($class, JournalCall::class)) {
+            if ($class !== null && Reflector::factory()->isSubclassOf($class, JournalCall::class)) {
                 $calls[] = $class;
             }
         }

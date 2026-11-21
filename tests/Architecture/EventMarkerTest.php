@@ -59,7 +59,7 @@ final class EventMarkerTest extends TestCase
             }
 
             $inFolder = str_contains($file, $folder);
-            $marked = $type->get()->isSubclassOf($marker);
+            $marked = $class !== null && Reflector::factory()->isSubclassOf($class, $marker);
 
             if ($inFolder && ! $marked) {
                 $unmarked[] = $class;

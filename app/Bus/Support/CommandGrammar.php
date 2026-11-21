@@ -86,8 +86,10 @@ final readonly class CommandGrammar
             return $this->problemWithList($property, $seen);
         }
 
-        if (Reflector::exists($name) && Reflector::of($name)->isEnum()) {
-            return Reflector::of($name)->implements(BackedEnum::class)
+        $enum = Reflector::find($name)->filter(fn (Reflector $type) => $type->isEnum());
+
+        if ($enum->isDefined()) {
+            return $enum->get()->implements(BackedEnum::class)
                 ? null
                 : "is the enum {$name}, which has no values";
         }
@@ -121,13 +123,15 @@ final readonly class CommandGrammar
 
         $class = $this->classNamed($elementType, $property);
 
-        if (Reflector::exists($class) && Reflector::of($class)->isEnum()) {
-            return Reflector::of($class)->implements(BackedEnum::class)
+        $item = Reflector::find($class);
+
+        if ($item->filter(fn (Reflector $type) => $type->isEnum())->isDefined()) {
+            return $item->get()->implements(BackedEnum::class)
                 ? null
                 : "is a list of the enum {$class}, which has no values";
         }
 
-        $problem = Reflector::exists($class) && Reflector::of($class)->isClass() ? $this->problemWithValue(
+        $problem = $item->filter(fn (Reflector $type) => $type->isClass())->isDefined() ? $this->problemWithValue(
             $class,
             $seen,
         ) : "is typed {$class}, which is no class, enum or allowed type";
@@ -180,11 +184,13 @@ final readonly class CommandGrammar
      */
     private function problemWithValue(string $name, array $seen): string|null
     {
-        if (! Reflector::exists($name) || ! Reflector::of($name)->isClass()) {
+        $found = Reflector::find($name)->filter(fn (Reflector $type) => $type->isClass());
+
+        if ($found->isEmpty()) {
             return "is typed {$name}, which is no class, enum or allowed type";
         }
 
-        $declaration = Reflector::of($name);
+        $declaration = $found->get();
 
         if (! $declaration->isFinal() || ! $declaration->isReadOnly()) {
             return "holds {$name}, which is not a final readonly value";
@@ -198,7 +204,7 @@ final readonly class CommandGrammar
             return null;
         }
 
-        $problem = $this->problemWithProperties($name, $seen);
+        $problem = $this->problemWithProperties($declaration->name(), $seen);
 
         return $problem === null ? null : "holds {$name}, whose {$problem}";
     }

@@ -48,7 +48,6 @@ use App\Sharing\Contracts\ShareGatewayProvider;
 use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordDefinition;
 use App\Skills\Contracts\Skill;
-use App\Skills\Contracts\SkillConditionEvaluator;
 use App\Skills\Contracts\SkillConditionProvider;
 use App\Skills\Contracts\SkillProvider;
 use App\Skills\Values\SkillConditionDefinition;
@@ -62,7 +61,6 @@ use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
-use Spatie\LaravelData\Data;
 
 /**
  * One registered domain: its name, namespace and folder, read from its Domain class.
@@ -81,7 +79,7 @@ final readonly class DomainEntry
         public Domain $domain,
         public array $requires,
         public Exports $exports,
-        private SettingsDefinition $settings,
+        public SettingsDefinition $settings,
         private bool $switchable,
         private array $skills,
         private array $skillConditions,
@@ -92,7 +90,7 @@ final readonly class DomainEntry
      */
     public static function fromClass(string $className): self
     {
-        if (! Reflector::isNameSubclassOf($className, Domain::class)) {
+        if (! Reflector::factory()->isSubclassOf($className, Domain::class)) {
             throw NotADomain::for($className);
         }
 
@@ -249,7 +247,7 @@ final readonly class DomainEntry
     }
 
     /**
-     * @param  list<class-string<Domain>>  $requires
+     * @param  list<string>  $requires  class names, each refused unless it is another domain
      * @return list<class-string<Domain>>
      */
     private static function checkedRequirements(string $name, string $className, array $requires): array
@@ -257,7 +255,7 @@ final readonly class DomainEntry
         $seen = [];
 
         foreach ($requires as $requiredClass) {
-            if (! Reflector::exists($requiredClass) || ! Reflector::of($requiredClass)->isSubclassOf(Domain::class)) {
+            if (! Reflector::factory()->isSubclassOf($requiredClass, Domain::class)) {
                 throw NotADomain::for($requiredClass);
             }
 
@@ -278,31 +276,35 @@ final readonly class DomainEntry
     /**
      * Refuses a declared skill class that is missing, does not implement Skill or lies outside the domain's namespace.
      *
-     * @param  list<class-string<Skill>>  $skills
+     * @param  list<string>  $skills  class names, each refused unless it is a skill in the domain's own package
      * @return list<class-string<Skill>>
      */
     private static function checkedSkills(string $name, string $namespace, array $skills): array
     {
+        $checked = [];
+
         foreach ($skills as $class) {
-            if (! Reflector::exists($class) || ! Reflector::of($class)->isClass()) {
+            if (! Reflector::exists($class) || Reflector::of($class)->not()->isClass()) {
                 throw SkillDeclarationRefused::for($name, $class, 'no such class exists');
             }
 
-            if (! Reflector::of($class)->isSubclassOf(Skill::class)) {
+            if (! Reflector::factory()->isSubclassOf($class, Skill::class)) {
                 throw SkillDeclarationRefused::for($name, $class, 'it does not implement '.Skill::class);
             }
 
             if (stripos(ltrim($class, '\\'), $namespace.'\\') !== 0) {
                 throw SkillDeclarationRefused::for($name, $class, 'it lies outside the domain\'s own package');
             }
+
+            $checked[] = $class;
         }
 
-        return $skills;
+        return $checked;
     }
 
     /**
-     * Refuses a condition registration whose key lacks the domain's prefix or comes twice, or whose parameter or
-     * evaluator class is not what the contract asks.
+     * Refuses a condition registration whose key lacks the domain's prefix or comes twice, or whose version is below 1;
+     * its parameter and evaluator classes are typed by the definition itself.
      *
      * @param  list<SkillConditionDefinition>  $definitions
      * @return list<SkillConditionDefinition>
@@ -320,12 +322,6 @@ final readonly class DomainEntry
                     $key,
                 ) !== 1 => "its key does not start with {$prefix}",
                 in_array($key, $seen, true) => 'it registers that key twice',
-                ! Reflector::exists($definition->parameters)
-                    || ! Reflector::of($definition->parameters)->isSubclassOf(Data::class)
-                    => 'its parameters class is no Spatie Data class',
-                ! Reflector::exists($definition->evaluator)
-                    || ! Reflector::of($definition->evaluator)->isSubclassOf(SkillConditionEvaluator::class)
-                    => 'its evaluator does not implement App\\Skills\\Contracts\\SkillConditionEvaluator',
                 $definition->version < 1 => 'its version is below 1',
                 default => null,
             };
@@ -541,14 +537,6 @@ final readonly class DomainEntry
         foreach ($domain->searchContributions() as $contribution) {
             $registration->registerSearchContribution($contribution);
         }
-    }
-
-    /**
-     * The settings this domain declares, read once when the domain is registered; none without SettingsProvider.
-     */
-    public function settings(): SettingsDefinition
-    {
-        return $this->settings;
     }
 
     /**

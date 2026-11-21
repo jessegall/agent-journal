@@ -44,8 +44,9 @@ final readonly class RequestShareHandler implements CommandHandler
         }
 
         $expiry = CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS);
-        $proposal = Share::create($root, $expiry, new ShareProposal(ActorIdentity::of($agent)));
-        ShareAudit::create($proposal, ShareAuditType::Created, ActorIdentity::of($agent), null);
+        $actor = ActorIdentity::of($agent);
+        $proposal = Share::create($root, $expiry, new ShareProposal($actor));
+        ShareAudit::create($proposal, ShareAuditType::Created, $actor, null);
 
         return $proposal->proposalStatus();
     }

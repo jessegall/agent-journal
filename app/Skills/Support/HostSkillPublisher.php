@@ -78,11 +78,13 @@ final readonly class HostSkillPublisher implements SkillPublisher
             return;
         }
 
-        foreach ($this->files->list($folder, Depth::levels(self::STAGED_LEVEL_LIMIT)) as $entry) {
+        $depth = Depth::levels(self::STAGED_LEVEL_LIMIT);
+
+        foreach ($this->files->list($folder, $depth) as $entry) {
             $this->assertStaged($folder, $entry, $files);
         }
 
-        $this->files->deleteFolder($folder, Depth::levels(self::STAGED_LEVEL_LIMIT));
+        $this->files->deleteFolder($folder, $depth);
         $generation = $folder->parent();
 
         if ($generation->parent()->relative === self::GENERATIONS

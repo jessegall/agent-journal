@@ -50,15 +50,13 @@ final readonly class SwitchAgentDriverHandler implements CommandHandler
         $selection = $this->profiles->select($command->profile, $command->requested, $target->driver->value, null);
         $refusals = $this->preflight->refusals($selection->proposal($target->variant, $command->requested->model));
 
-        foreach ($refusals as $refusal) {
-            $switch->refuse($refusal->value);
-
-            return DriverSwitchReceipt::of($switch);
+        if ($refusals === []) {
+            $switch->markPreflighted();
+            $switch->beginStopping();
+            $this->commands->run(new StopAgent($agent->id, $session->id, $command->requestId));
+        } else {
+            $switch->refuse($refusals[0]->value);
         }
-
-        $switch->markPreflighted();
-        $switch->beginStopping();
-        $this->commands->run(new StopAgent($agent->id, $session->id, $command->requestId));
 
         return DriverSwitchReceipt::of($switch);
     }

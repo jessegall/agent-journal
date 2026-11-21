@@ -17,6 +17,7 @@ use App\Bus\Support\DeclaredCommand;
 use App\Bus\Support\SharedBindingCheck;
 use App\Operations\Enums\AccessType;
 use App\Pipelines\Contracts\Pipe;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\DeclaredType;
 use App\Reflection\Support\ReflectedMethod;
 use App\Reflection\Support\ReflectedParameter;
@@ -31,7 +32,7 @@ use PhpOption\Option;
  */
 final readonly class CheckCommandHandlers implements Pipe
 {
-    public function __construct(private PolicyCatalogue $policies) {}
+    public function __construct(private PolicyCatalogue $policies, private ReflectorFactory $reflectors) {}
 
     public function handle(CommandDeclarations $declarations): CommandDeclarations
     {
@@ -47,7 +48,7 @@ final readonly class CheckCommandHandlers implements Pipe
         $command = $declared->command;
         $handler = $declared->handler;
 
-        $declaration = Reflector::of($handler);
+        $declaration = $this->reflectors->make($handler);
 
         if (! $declaration->isFinal() || ! $declaration->isInstantiable()) {
             throw CommandDeclarationInvalid::for($handler, 'a handler is a final class that can be built');
@@ -110,8 +111,8 @@ final readonly class CheckCommandHandlers implements Pipe
             throw CommandAuthorizationInvalid::grantUnsupported($command, $unsupported);
         }
 
-        $isRecordPolicy = Reflector::of($policy)->isSubclassOf(RecordPolicy::class);
-        $isRecordCommand = Reflector::of($command)->isSubclassOf(RecordCommand::class);
+        $isRecordPolicy = $this->reflectors->make($policy)->isSubclassOf(RecordPolicy::class);
+        $isRecordCommand = $this->reflectors->make($command)->isSubclassOf(RecordCommand::class);
 
         if ($isRecordPolicy && ! $isRecordCommand) {
             throw CommandAuthorizationInvalid::recordPolicyWithoutRecord($command, $policy);
@@ -130,7 +131,7 @@ final readonly class CheckCommandHandlers implements Pipe
         }
 
         $model = $policy::model();
-        $subject = self::textOf(Reflector::of($command)->method('subject')->returnType());
+        $subject = self::textOf($this->reflectors->make($command)->method('subject')->returnType());
 
         if ($subject !== $model) {
             throw CommandAuthorizationInvalid::subjectMismatched($command, $subject, $model);
@@ -157,11 +158,13 @@ final readonly class CheckCommandHandlers implements Pipe
      */
     private static function assertPermits(string $command, string $policy, string $model): void
     {
-        if (! Reflector::of($policy)->hasMethod('permits')) {
+        $declaration = Reflector::of($policy);
+
+        if (! $declaration->hasMethod('permits')) {
             throw CommandAuthorizationInvalid::permitsMissing($command, $policy, $model);
         }
 
-        $permits = Reflector::of($policy)->method('permits');
+        $permits = $declaration->method('permits');
         $types = array_map(
             fn (ReflectedParameter $parameter) => self::textOf($parameter->type()),
             $permits->parameters(),

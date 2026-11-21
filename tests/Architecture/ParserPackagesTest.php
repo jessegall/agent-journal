@@ -22,6 +22,6 @@ final class ParserPackagesTest extends TestCase
 
     public function test_the_docblock_parser_can_be_loaded(): void
     {
-        $this->assertTrue(Reflector::exists(PhpDocParser::class));
+        $this->assertSame(PhpDocParser::class, Reflector::of(PhpDocParser::class)->name());
     }
 }

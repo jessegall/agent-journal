@@ -13,7 +13,7 @@ use App\Assignments\Contracts\AutoAssignmentActivity;
 final readonly class ActivityDefinition
 {
     /**
-     * @param  class-string<AutoAssignmentActivity>  $activityClass
+     * @param  string  $activityClass  a class name, refused unless it is an AutoAssignmentActivity
      */
     public function __construct(
         public ActorType $type,

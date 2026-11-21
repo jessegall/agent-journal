@@ -12,8 +12,8 @@ use App\Communication\Exceptions\InboxProviderInvalid;
 interface InboxRegistration
 {
     /**
-     * @param  class-string<InboxProvider>  $providerClass
-     * @param  class-string<InboxAccess>  $accessClass
+     * @param  string  $providerClass  a class name, refused unless it is an InboxProvider
+     * @param  string  $accessClass  a class name, refused unless it is an InboxAccess
      *
      * @throws InboxProviderInvalid
      */

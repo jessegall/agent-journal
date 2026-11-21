@@ -23,6 +23,17 @@ final readonly class ReadingRules
      */
     public function all(): array
     {
+        $nameOperands = ArgumentGrammar::operands(OperandType::Name);
+        $pathOperands = ArgumentGrammar::operands(OperandType::Path);
+        $patternPathOperands = ArgumentGrammar::operands(OperandType::Pattern, OperandType::Path);
+        $textOperands = ArgumentGrammar::operands(OperandType::Text);
+        $bytesOption = OptionGrammar::valued(OperandType::Count, '-c', '--bytes');
+        $maxCountOption = OptionGrammar::valued(OperandType::Count, '-m', '--max-count');
+        $maxDepthOption = OptionGrammar::valued(OperandType::Count, '-d', '--max-depth');
+        $linesOption = OptionGrammar::valued(OperandType::Count, '-n', '--lines');
+        $regexpOption = OptionGrammar::valued(OperandType::Pattern, '-e', '--regexp');
+        $colorOption = OptionGrammar::valued(OperandType::Text, '--color');
+
         $read = CommandClassSet::of(CommandClass::Read);
 
         return [
@@ -34,8 +45,8 @@ final readonly class ReadingRules
             $this->reader(
                 'head',
                 $this->paths()->acceptingNumericOptions()->withOptions(
-                    OptionGrammar::valued(OperandType::Count, '-n', '--lines'),
-                    OptionGrammar::valued(OperandType::Count, '-c', '--bytes'),
+                    $linesOption,
+                    $bytesOption,
                     ...$this->flags('-q', '-v'),
                 ),
                 $read,
@@ -43,8 +54,8 @@ final readonly class ReadingRules
             $this->reader(
                 'tail',
                 $this->paths()->acceptingNumericOptions()->withOptions(
-                    OptionGrammar::valued(OperandType::Count, '-n', '--lines'),
-                    OptionGrammar::valued(OperandType::Count, '-c', '--bytes'),
+                    $linesOption,
+                    $bytesOption,
                     ...$this->flags('-f', '-F', '--follow', '-q', '-v'),
                 ),
                 $read,
@@ -52,7 +63,7 @@ final readonly class ReadingRules
             $this->reader(
                 'ls',
                 $this->paths()->withOptions(
-                    OptionGrammar::valued(OperandType::Text, '--color'),
+                    $colorOption,
                     ...$this->flags(
                         '-l',
                         '-a',
@@ -88,14 +99,14 @@ final readonly class ReadingRules
             $this->reader('file', $this->paths()->withOptions(...$this->flags('-b', '-i', '-L', '--mime-type')), $read),
             $this->reader(
                 'echo',
-                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(
+                $textOperands->repeating()->withOptions(
                     ...$this->flags('-n', '-e', '-E'),
                 ),
                 CommandClassSet::empty(),
             ),
             $this->reader(
                 'printf',
-                ArgumentGrammar::operands(OperandType::Text)->repeating(),
+                $textOperands->repeating(),
                 CommandClassSet::empty(),
             ),
             $this->reader('grep', ArgumentGrammar::operands(
@@ -113,11 +124,7 @@ final readonly class ReadingRules
                 ),
                 OptionGrammar::valued(OperandType::Count, '-B'),
                 OptionGrammar::valued(OperandType::Count, '-C'),
-                OptionGrammar::valued(
-                    OperandType::Count,
-                    '-m',
-                    '--max-count',
-                ),
+                $maxCountOption,
                 OptionGrammar::valued(
                     OperandType::Pattern,
                     '--include',
@@ -127,7 +134,7 @@ final readonly class ReadingRules
                     OperandType::Pattern,
                     '--exclude-dir',
                 ),
-                OptionGrammar::valued(OperandType::Text, '--color'),
+                $colorOption,
                 ...$this->flags(
                     '-r',
                     '-R',
@@ -183,13 +190,9 @@ final readonly class ReadingRules
                     '--before-context',
                 ),
                 OptionGrammar::valued(OperandType::Count, '-C', '--context'),
-                OptionGrammar::valued(OperandType::Pattern, '-e', '--regexp'),
-                OptionGrammar::valued(
-                    OperandType::Count,
-                    '-m',
-                    '--max-count',
-                ),
-                OptionGrammar::valued(OperandType::Count, '-d', '--max-depth'),
+                $regexpOption,
+                $maxCountOption,
+                $maxDepthOption,
                 OptionGrammar::valued(
                     OperandType::Count,
                     '-M',
@@ -239,12 +242,12 @@ final readonly class ReadingRules
             ),
             $this->reader(
                 'which',
-                ArgumentGrammar::operands(OperandType::Name)->repeating()->withOptions(...$this->flags('-a', '-s')),
+                $nameOperands->repeating()->withOptions(...$this->flags('-a', '-s')),
                 $read,
             ),
             $this->reader(
                 'date',
-                ArgumentGrammar::operands(OperandType::Text)->withOptions(
+                $textOperands->withOptions(
                     OptionGrammar::valued(OperandType::Text, '-d', '--date'),
                     OptionGrammar::valued(OperandType::Path, '-r', '--reference'),
                     ...$this->flags('-u', '-R', '-I', '--utc', '--iso-8601', '--rfc-2822'),
@@ -253,7 +256,7 @@ final readonly class ReadingRules
             ),
             $this->reader(
                 'ps',
-                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(
+                $textOperands->repeating()->withOptions(
                     OptionGrammar::valued(OperandType::Text, '-o', '-p', '-u', '-U', '-C', '--pid', '--ppid', '--sort'),
                     ...$this->flags(
                         '-e',
@@ -283,7 +286,7 @@ final readonly class ReadingRules
             ),
             $this->reader(
                 'lsof',
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
+                $pathOperands->repeating()->withOptions(
                     OptionGrammar::valued(OperandType::Text, '-i', '-p', '-c', '-u', '-s'),
                     ...$this->flags('-n', '-P', '-t', '-a', '-nP', '-iTCP', '-sTCP:LISTEN'),
                 ),
@@ -334,7 +337,7 @@ final readonly class ReadingRules
             ),
             $this->reader(
                 'tr',
-                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(
+                $textOperands->repeating()->withOptions(
                     ...$this->flags('-d', '-s', '-c', '-cd', '-ds', '--delete', '--squeeze-repeats'),
                 ),
                 $read,
@@ -342,7 +345,7 @@ final readonly class ReadingRules
             $this->reader(
                 'du',
                 $this->paths()->withOptions(
-                    OptionGrammar::valued(OperandType::Count, '-d', '--max-depth'),
+                    $maxDepthOption,
                     ...$this->flags(
                         '-s',
                         '-h',
@@ -362,7 +365,7 @@ final readonly class ReadingRules
             ),
             $this->reader(
                 'jq',
-                ArgumentGrammar::operands(OperandType::Pattern, OperandType::Path)->repeating()->withOptions(
+                $patternPathOperands->repeating()->withOptions(
                     ...$this->flags(
                         '-r',
                         '-c',
@@ -382,29 +385,29 @@ final readonly class ReadingRules
                 ),
                 $read,
             ),
-            $this->reader('sleep', ArgumentGrammar::operands(OperandType::Text)->repeating(), CommandClassSet::empty()),
-            $this->reader('true', ArgumentGrammar::operands(OperandType::Text)->repeating(), CommandClassSet::empty()),
-            $this->reader('false', ArgumentGrammar::operands(OperandType::Text)->repeating(), CommandClassSet::empty()),
+            $this->reader('sleep', $textOperands->repeating(), CommandClassSet::empty()),
+            $this->reader('true', $textOperands->repeating(), CommandClassSet::empty()),
+            $this->reader('false', $textOperands->repeating(), CommandClassSet::empty()),
             CommandRule::forProgram(
                 'core.colon',
                 new ProgramSpellings(':'),
                 [],
-                ArgumentGrammar::operands(OperandType::Text)->repeating(),
+                $textOperands->repeating(),
                 CommandClassSet::empty(),
             ),
             $this->reader(
                 'unset',
-                ArgumentGrammar::operands(OperandType::Name)->repeating()->withOptions(...$this->flags('-v', '-f')),
+                $nameOperands->repeating()->withOptions(...$this->flags('-v', '-f')),
                 CommandClassSet::empty(),
             ),
             $this->reader(
                 'cd',
-                ArgumentGrammar::operands(OperandType::Path)->withOptions(...$this->flags('-P', '-L')),
+                $pathOperands->withOptions(...$this->flags('-P', '-L')),
                 CommandClassSet::empty(),
             ),
             $this->reader(
                 'export',
-                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(...$this->flags('-n', '-p')),
+                $textOperands->repeating()->withOptions(...$this->flags('-n', '-p')),
                 CommandClassSet::empty(),
             ),
             $this->reader(

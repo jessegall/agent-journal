@@ -219,7 +219,7 @@ final class McpToolRulesTest extends TestCase
     private function isForbidden(NameUse $use): bool
     {
         return in_array($use->name, self::FORBIDDEN_NAMES, true)
-            || Reflector::isNameSubclassOf($use->name, Model::class);
+            || Reflector::factory()->isSubclassOf($use->name, Model::class);
     }
 
     /**
@@ -244,8 +244,8 @@ final class McpToolRulesTest extends TestCase
                     array_push($found, ...$this->toolViolations($declaration));
                 }
 
-                if (Reflector::isNameSubclassOf($class, Resource::class)
-                    && ! Reflector::isNameOf($class, JournalResource::class)) {
+                if (Reflector::factory()->isSubclassOf($class, Resource::class)
+                    && ! Reflector::factory()->is($class, JournalResource::class)) {
                     $found[] = "{$class} does not extend JournalResource";
                 }
             }
@@ -268,7 +268,7 @@ final class McpToolRulesTest extends TestCase
 
         $violations = array_any(
             self::TOOL_BASES,
-            fn (string $base): bool => Reflector::exists($base) && $type->isSubclassOf($base),
+            fn (string $base): bool => $type->isSubclassOf($base),
         ) ? [] : ["{$class} extends no journal tool base"];
         $name = $type->attributes(Name::class)->first()->map(fn (Name $declared) => $declared->value)->getOrElse('');
 
