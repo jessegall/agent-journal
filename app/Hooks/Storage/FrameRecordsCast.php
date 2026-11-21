@@ -19,7 +19,7 @@ final class FrameRecordsCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): FrameRecords
     {
-        return StoredJson::read($key, $value, fn (array $stored) => StoredFrames::from($stored)->toRecords());
+        return StoredJson::read($key, $value, fn (string $stored) => StoredFrames::from($stored)->toRecords());
     }
 
     /**

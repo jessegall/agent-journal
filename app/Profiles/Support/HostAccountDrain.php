@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use TypeError;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use JsonException;
+use App\Profiles\Data\DrainReplyData;
 use App\Agents\Enums\ArrangementType;
 use App\Profiles\Contracts\AccountOwnerDrain;
 
@@ -41,9 +45,13 @@ final readonly class HostAccountDrain implements AccountOwnerDrain
         stream_set_timeout($connection, self::REPLY_SECONDS);
         $request = ['drain' => ['account' => $directory, 'accountId' => $accountId]];
         fwrite($connection, json_encode($request, JSON_THROW_ON_ERROR)."\n");
-        $reply = json_decode((string) fgets($connection), true);
+        $line = (string) fgets($connection);
         fclose($connection);
 
-        return is_array($reply) && ($reply['drained'] ?? false) === true;
+        try {
+            return DrainReplyData::from(json_decode($line, true, 512, JSON_THROW_ON_ERROR))->drained;
+        } catch (JsonException|CannotCreateData|TypeError) {
+            return false;
+        }
     }
 }

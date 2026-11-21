@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
+use App\Contracts\Attributes\DecodesAnyJson;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\AccessRequirement;
 use App\Actors\Values\PolicyRegistration;
@@ -61,8 +62,13 @@ final readonly class ConditionTree
     ) {}
 
     /**
+     * The condition its wire JSON names. The tree is checked node by node against its depth, size and parameter limits
+     * before any node is read, and each condition's parameters are that registered condition's own, so no Data class
+     * holds it.
+     *
      * @throws SkillConditionInvalid
      */
+    #[DecodesAnyJson]
     public function fromJson(string $json): SkillCondition
     {
         try {

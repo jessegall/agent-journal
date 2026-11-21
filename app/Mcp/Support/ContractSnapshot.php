@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Bus\Enums\RefusalCode;
+use App\Mcp\Data\ContractSnapshotData;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Servers\JournalServer;
 use Laravel\Mcp\Enums\ProtocolVersion;
@@ -44,20 +45,19 @@ final readonly class ContractSnapshot
      */
     public function differences(string $recorded, string $current): array
     {
-        $before = (array) json_decode($recorded, flags: JSON_THROW_ON_ERROR);
-        $after = (array) json_decode($current, flags: JSON_THROW_ON_ERROR);
-        $changes = $this->changedFields($before, $after, ['profiles', 'resources']);
-        $changes = [...$changes, ...$this->changedFields(
-            (array) $before['resources'],
-            (array) $after['resources'],
-        )];
-        $oldProfiles = (array) $before['profiles'];
-        $newProfiles = (array) $after['profiles'];
+        $before = ContractSnapshotData::from(json_decode($recorded, true, flags: JSON_THROW_ON_ERROR));
+        $after = ContractSnapshotData::from(json_decode($current, true, flags: JSON_THROW_ON_ERROR));
+        $changes = [
+            ...$this->changedFields($before->headline(), $after->headline()),
+            ...$this->changedFields($before->resources, $after->resources),
+        ];
+        $oldProfiles = $before->profiles;
+        $newProfiles = $after->profiles;
 
         foreach (array_unique([...array_keys($oldProfiles), ...array_keys($newProfiles)]) as $profile) {
             $tools = $this->changedFields(
-                (array) ($oldProfiles[$profile] ?? []),
-                (array) ($newProfiles[$profile] ?? []),
+                $oldProfiles[$profile] ?? [],
+                $newProfiles[$profile] ?? [],
             );
 
             foreach ($tools as $tool) {
@@ -71,15 +71,14 @@ final readonly class ContractSnapshot
     /**
      * @param  array<string, mixed>  $before
      * @param  array<string, mixed>  $after
-     * @param  list<string>  $skip
      * @return list<string>
      */
-    private function changedFields(array $before, array $after, array $skip = []): array
+    private function changedFields(array $before, array $after): array
     {
         $fields = array_unique([...array_keys($before), ...array_keys($after)]);
 
         return array_values(array_filter(
-            array_diff($fields, $skip),
+            $fields,
             fn (string $name): bool => json_encode($before[$name] ?? null, self::JSON_FLAGS)
                 !== json_encode($after[$name] ?? null, self::JSON_FLAGS),
         ));

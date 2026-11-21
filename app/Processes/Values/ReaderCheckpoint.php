@@ -82,7 +82,7 @@ final readonly class ReaderCheckpoint
             $fields['offsets'],
             array_map(fn (string $bytes) => (string) base64_decode($bytes, true), $fields['pending']),
             array_map(OutputRecord::fromArray(...), $fields['records']),
-            array_map(OutputProblem::fromArray(...), $fields['problems']),
+            OutputProblem::collect($fields['problems']),
         );
     }
 }

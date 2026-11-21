@@ -400,7 +400,7 @@ final readonly class HelperDispatch
         $open = HelperJob::query()
             ->ofIdentities([$identity->id])
             ->open()
-            ->readLimit(1)
+            ->limit(1)
             ->first();
 
         if ($open === null) {

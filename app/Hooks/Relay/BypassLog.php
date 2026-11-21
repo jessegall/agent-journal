@@ -28,7 +28,10 @@ final readonly class BypassLog
         return BypassReport::from(
             [
                 'bypasses' => array_values(
-                    array_map(fn (string $line) => json_decode($line, true, flags: JSON_THROW_ON_ERROR), $lines),
+                    array_map(
+                        fn (string $line) => LoggedBypass::from(json_decode($line, true, flags: JSON_THROW_ON_ERROR)),
+                        $lines,
+                    ),
                 ),
             ],
         );

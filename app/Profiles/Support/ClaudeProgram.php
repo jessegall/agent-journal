@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use TypeError;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use JsonException;
+use App\Profiles\Data\ClaudeAnswerData;
 use App\Profiles\Values\ClaudeStatus;
 use Illuminate\Contracts\Config\Repository;
 
@@ -68,9 +72,15 @@ final readonly class ClaudeProgram
         $arguments = ['-p', 'Reply with OK.', '--output-format', 'json', '--max-turns', '1', '--tools', '',
             '--no-session-persistence'];
         $process = $this->start($arguments, $directory, $variables, $readFiles);
-        $answer = json_decode($process->finish(), true);
+        $output = $process->finish();
 
-        return $process->exitCode() === 0 && is_array($answer) && ($answer['is_error'] ?? true) === false;
+        try {
+            $answer = ClaudeAnswerData::from(json_decode($output, true, 512, JSON_THROW_ON_ERROR));
+        } catch (JsonException|CannotCreateData|TypeError) {
+            return false;
+        }
+
+        return $process->exitCode() === 0 && ! $answer->isError;
     }
 
     /**

@@ -70,7 +70,7 @@ final readonly class JsonDecodeScan implements FileScan
                 if ($attribute->name->toString() === DecodesAnyJson::class) {
                     $class = $method->getAttribute('parent');
 
-                    return ($class instanceof Node\Stmt\Class_ && $class->namespacedName !== null
+                    return ($class instanceof Node\Stmt\ClassLike && $class->namespacedName !== null
                         ? $class->namespacedName->toString() : '').'::'.$method->name->toString();
                 }
             }

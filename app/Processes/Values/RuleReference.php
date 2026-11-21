@@ -22,12 +22,17 @@ final readonly class RuleReference implements StoredValue
         return StoredRuleReference::fromReference($this)->toArray();
     }
 
-    /**
-     * @param  array<string, mixed>  $fields  the shape toArray writes
-     */
-    public static function fromArray(array $fields): self
+    public static function fromJson(string $json): self
     {
-        return StoredRuleReference::from($fields)->toReference();
+        return StoredRuleReference::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->toReference();
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            fn (StoredRuleReference $stored) => $stored->toReference(),
+            StoredRuleReference::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
     }
 
     public function label(): string

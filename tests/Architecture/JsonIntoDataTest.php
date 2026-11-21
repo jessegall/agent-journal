@@ -23,13 +23,18 @@ final class JsonIntoDataTest extends TestCase
     private const array TAKERS = ['from', 'collect', 'validateAndCreate'];
 
     /**
-     * The only methods allowed #[DecodesAnyJson]: their JSON has no shape of ours to name, a value of any type kept
-     * as stored or a tool's own JSON line.
+     * The only methods allowed #[DecodesAnyJson], each because its JSON has no shape of ours to name: a value of any
+     * type kept as stored, a tool's own JSON line, a user's option or file sent on for the journal to check, a tree
+     * checked node by node against its limits, or a bare list of texts.
      */
     private const array ANY_JSON_METHODS = [
         'App\\Settings\\Storage\\EncodedValue::jsonSerialize',
         'App\\Settings\\Casts\\SettingsDocumentCast::get',
         'App\\Processes\\Support\\DeclarativeReader::lineOf',
+        'App\\AgentRequests\\Console\\Concerns\\RunsCallPipelines::jsonOption',
+        'App\\Profiles\\Console\\ImportProfileDraftCommand::readCommands',
+        'App\\Skills\\Support\\ConditionTree::fromJson',
+        'App\\Profiles\\Casts\\ProfileAuthorizationCast::deniedCommandsOf',
     ];
 
     public function test_every_decoded_json_goes_straight_into_a_data_class(): void

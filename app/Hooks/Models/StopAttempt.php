@@ -125,7 +125,7 @@ final class StopAttempt extends Model implements ReadableModel
             ->whereIn('session_id', $sessionIds)
             ->where('state', StopAttemptState::Pending->value)
             ->orderBy('created_at')
-            ->readLimit(50)
+            ->limit(50)
             ->get()
             ->all());
     }

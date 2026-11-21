@@ -22,7 +22,7 @@ final class RecordedStepsCast implements CastsAttributes
         return StoredJson::read(
             $key,
             $value,
-            fn (array $stored) => RecordedSteps::from($stored)->assertCurrentVersion(),
+            fn (string $stored) => RecordedSteps::from($stored)->assertCurrentVersion(),
         );
     }
 

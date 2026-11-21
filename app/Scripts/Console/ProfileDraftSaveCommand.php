@@ -7,10 +7,8 @@ namespace App\Scripts\Console;
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
-use App\Profiles\Exceptions\ProfileDraftRefused;
 use App\Scripts\Calls\SaveProfileDraftCall;
 use Illuminate\Console\Command;
-use JsonException;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class ProfileDraftSaveCommand extends Command
@@ -25,31 +23,18 @@ final class ProfileDraftSaveCommand extends Command
     public function handle(): int
     {
         $source = (string) $this->option('source');
+        $commands = $this->jsonOption('commands');
+
+        if ($commands === null) {
+            return self::FAILURE;
+        }
 
         return $this->runCall(SaveProfileDraftCall::from([
             'requestKey' => $this->requestKey(),
             'profile' => (string) $this->argument('profile'),
             'expectedRevision' => (int) $this->option('expected-revision'),
             'source' => $source === '-' ? (string) stream_get_contents(STDIN) : $source,
-            'commands' => self::commands((string) $this->option('commands')),
+            'commands' => $commands,
         ]));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private static function commands(string $json): array
-    {
-        try {
-            $commands = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
-        } catch (JsonException $failure) {
-            throw ProfileDraftRefused::unreadable('--commands', $failure);
-        }
-
-        if (! is_array($commands)) {
-            throw ProfileDraftRefused::unreadable('--commands');
-        }
-
-        return $commands;
     }
 }

@@ -8,8 +8,17 @@ use App\AgentRequests\Support\AgentCallReply;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Http\Middleware\Mcp\LimitMcpMessage;
+use App\Mcp\Data\BusyReplyData;
+use App\Mcp\Data\InitializeResultData;
+use App\Mcp\Data\JsonRpcIdData;
+use App\Mcp\Data\JsonRpcMessageData;
+use App\Mcp\Data\JsonRpcReplyData;
 use Carbon\CarbonImmutable;
+use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use Spatie\LaravelData\Optional;
 use Throwable;
+use TypeError;
 
 /**
  * The relay's side of a started program's stdio: newline-delimited UTF-8 frames read without buffering past what
@@ -104,11 +113,11 @@ final class RelayFrames
             return;
         }
 
-        $body = json_decode($reply->body, true);
+        $answer = self::jsonRpcReplyIn($reply->body);
 
-        if (is_array($body) && ($body['jsonrpc'] ?? null) === '2.0') {
-            $this->rememberNegotiatedVersion($frame, $body);
-            $this->write(json_encode($body, self::JSON_FLAGS));
+        if ($answer !== null && $answer->jsonrpc === '2.0') {
+            $this->rememberNegotiatedVersion($frame, $answer);
+            $this->write(json_encode($answer, self::JSON_FLAGS));
 
             return;
         }
@@ -123,7 +132,7 @@ final class RelayFrames
                 $frame,
                 RefusalCode::Busy,
                 'Too many calls; send it again after the wait.',
-                ['retry_after_seconds' => is_array($body) ? ($body['retry_after_seconds'] ?? null) : null],
+                ['retry_after_seconds' => self::retryAfterIn($reply->body)],
             ),
             $reply->status === 413, $reply->status === 400 => $this->refuse(
                 $frame,
@@ -197,7 +206,7 @@ final class RelayFrames
 
         if (strlen($line) > LimitMcpMessage::BYTE_LIMIT) {
             $this->writeError(
-                self::idIn($line),
+                JsonRpcIdData::idIn($line),
                 self::INVALID_REQUEST,
                 RefusalCode::InvalidInput,
                 'The message is larger than '.LimitMcpMessage::BYTE_LIMIT.' bytes and was not sent.',
@@ -217,31 +226,41 @@ final class RelayFrames
             return;
         }
 
-        $message = json_decode($line, true, LimitMcpMessage::MAX_DEPTH);
-
-        if (json_last_error() === JSON_ERROR_DEPTH) {
-            $this->writeError(
-                self::idIn($line),
-                self::INVALID_REQUEST,
-                RefusalCode::InvalidInput,
-                'The message is nested deeper than '.LimitMcpMessage::MAX_DEPTH.' levels and was not sent.',
+        try {
+            $message = JsonRpcMessageData::from(
+                json_decode($line, true, LimitMcpMessage::MAX_DEPTH, JSON_THROW_ON_ERROR),
             );
+        } catch (JsonException $broken) {
+            $broken->getCode() === JSON_ERROR_DEPTH ? $this->refuseTooDeep($line) : $this->refuseUnreadable();
 
             return;
-        }
-
-        if (! is_array($message) || array_is_list($message)) {
-            $this->writeError(
-                null,
-                self::PARSE_ERROR,
-                RefusalCode::InvalidInput,
-                'The message is not one JSON-RPC object and was not sent.',
-            );
+        } catch (CannotCreateData|TypeError) {
+            $this->refuseUnreadable();
 
             return;
         }
 
         $this->enqueue(new Frame($line, $message, $admittedAt));
+    }
+
+    private function refuseTooDeep(string $line): void
+    {
+        $this->writeError(
+            JsonRpcIdData::idIn($line),
+            self::INVALID_REQUEST,
+            RefusalCode::InvalidInput,
+            'The message is nested deeper than '.LimitMcpMessage::MAX_DEPTH.' levels and was not sent.',
+        );
+    }
+
+    private function refuseUnreadable(): void
+    {
+        $this->writeError(
+            null,
+            self::PARSE_ERROR,
+            RefusalCode::InvalidInput,
+            'The message is not one JSON-RPC object and was not sent.',
+        );
     }
 
     private function enqueue(Frame $frame): void
@@ -272,11 +291,15 @@ final class RelayFrames
     /**
      * @param  array<string, mixed>  $answer
      */
-    private function rememberNegotiatedVersion(Frame $frame, array $answer): void
+    private function rememberNegotiatedVersion(Frame $frame, JsonRpcReplyData $answer): void
     {
-        $version = $answer['result']['protocolVersion'] ?? null;
+        if (! $frame->isLegacyInitialize() || $answer->result instanceof Optional) {
+            return;
+        }
 
-        if ($frame->isLegacyInitialize() && is_string($version)) {
+        $version = InitializeResultData::from($answer->result)->protocolVersion;
+
+        if ($version !== null) {
             $this->negotiatedVersion = $version;
         }
     }
@@ -318,13 +341,26 @@ final class RelayFrames
     }
 
     /**
-     * The id of a message the relay refuses whole, read without the depth limit only to address the refusal.
+     * The journal's answer as a JSON-RPC reply, or null when its body is not one, such as a refusal before the call.
      */
-    private static function idIn(string $line): int|string|null
+    private static function jsonRpcReplyIn(string $body): JsonRpcReplyData|null
     {
-        $message = json_decode($line, true);
-        $id = is_array($message) ? ($message['id'] ?? null) : null;
+        try {
+            return JsonRpcReplyData::from(json_decode($body, true, 512, JSON_THROW_ON_ERROR));
+        } catch (JsonException|CannotCreateData|TypeError) {
+            return null;
+        }
+    }
 
-        return is_int($id) || is_string($id) ? $id : null;
+    /**
+     * The seconds a busy refusal asks the program to wait, when its body says.
+     */
+    private static function retryAfterIn(string $body): int|null
+    {
+        try {
+            return BusyReplyData::from(json_decode($body, true, 512, JSON_THROW_ON_ERROR))->retryAfterSeconds;
+        } catch (JsonException|CannotCreateData|TypeError) {
+            return null;
+        }
     }
 }

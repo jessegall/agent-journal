@@ -73,7 +73,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
         $matches = self::query()
             ->where('profile_key', $profile)
             ->whereNull('retired_at')
-            ->readLimit(2)
+            ->limit(2)
             ->get();
 
         if ($matches->count() !== 1) {

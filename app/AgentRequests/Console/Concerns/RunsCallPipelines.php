@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AgentRequests\Console\Concerns;
 
+use App\Contracts\Attributes\DecodesAnyJson;
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Exceptions\CommandStopped;
@@ -97,10 +98,12 @@ trait RunsCallPipelines
     }
 
     /**
-     * Reads an option written as a JSON object; a broken one prints why and answers null.
+     * Reads an option written as a JSON object; a broken one prints why and answers null. The object is sent on as
+     * the user wrote it, for the journal to check field by field with its own named errors.
      *
      * @return array<string, mixed>|null
      */
+    #[DecodesAnyJson]
     protected function jsonOption(string $name): array|null
     {
         try {

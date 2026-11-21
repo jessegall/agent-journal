@@ -32,7 +32,7 @@ final readonly class RequestListResolver implements PageResolver
     public function read(): RequestListData
     {
         $project = $this->projects->current();
-        $requests = CommandRequest::query()->ofProject($project)->readLimit(100)->get();
+        $requests = CommandRequest::query()->ofProject($project)->limit(100)->get();
         $rules = ClassificationRule::query()->ofProject($project)->readLimit(200)->get();
         $activated = $this->approved->approvedBundles();
         $waiting = array_filter(

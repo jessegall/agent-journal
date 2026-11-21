@@ -157,7 +157,7 @@ final class Account extends Model implements ReadableModel
             ->where('program', $program->value)
             ->where('subject', $identity->subject)
             ->where('state', '!=', AccountState::Removed->value)
-            ->readLimit(20)
+            ->limit(20)
             ->get()
             ->first(fn (self $account) => $account->isSamePrincipal($identity));
     }

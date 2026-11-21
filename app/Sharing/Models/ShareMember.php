@@ -157,7 +157,7 @@ final class ShareMember extends Model implements ReadableModel
             ->stillApproved()
             ->fromSource($source)
             ->targeting($target)
-            ->readLimit(1)
+            ->limit(1)
             ->pluck('link_id')
             ->all();
 

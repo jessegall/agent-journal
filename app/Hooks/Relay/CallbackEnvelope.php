@@ -7,12 +7,13 @@ namespace App\Hooks\Relay;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use JsonException;
+use Spatie\LaravelData\Data;
 
 /**
  * One native hook callback as the host sends it: its own id, the exact body and its digest, the first issue time and
  * the deadline from it. A retry sends the same envelope; a new callback gets a new one, even with the same text.
  */
-final readonly class CallbackEnvelope
+final class CallbackEnvelope extends Data
 {
     /**
      * How long after its first issue time a callback may still be answered; a retry never moves it.
@@ -20,12 +21,12 @@ final readonly class CallbackEnvelope
     public const int DEADLINE_SECONDS = 19;
 
     public function __construct(
-        public string $id,
-        public string $program,
-        public string $body,
-        public string $bodyDigest,
-        public int $issuedAt,
-        public int $deadlineAt,
+        public readonly string $id,
+        public readonly string $program,
+        public readonly string $body,
+        public readonly string $bodyDigest,
+        public readonly int $issuedAt,
+        public readonly int $deadlineAt,
     ) {}
 
     public static function forCallback(string $program, string $body, CarbonImmutable $now): self
@@ -45,16 +46,7 @@ final readonly class CallbackEnvelope
      */
     public static function fromJson(string $json): self
     {
-        $fields = json_decode($json, true, 4, JSON_THROW_ON_ERROR);
-
-        return new self(
-            $fields['id'],
-            $fields['program'],
-            $fields['body'],
-            $fields['bodyDigest'],
-            $fields['issuedAt'],
-            $fields['deadlineAt'],
-        );
+        return CallbackEnvelope::from(json_decode($json, true, 4, JSON_THROW_ON_ERROR));
     }
 
     public function deadline(): CarbonImmutable
@@ -62,8 +54,11 @@ final readonly class CallbackEnvelope
         return CarbonImmutable::createFromTimestamp($this->deadlineAt);
     }
 
-    public function toJson(): string
+    /**
+     * The envelope as the host keeps it while it waits for an answer, its slashes unescaped.
+     */
+    public function toJson($options = 0): string
     {
-        return json_encode(get_object_vars($this), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        return json_encode($this->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | $options);
     }
 }

@@ -9,16 +9,18 @@ use App\Hooks\Exceptions\ProgramReplyMalformed;
 use App\Hooks\Storage\RecordedAnswer;
 use JsonException;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * What the journal hands back to a program's hook: its standard output, standard error and exit code.
  */
-final readonly class ProgramReply
+final class ProgramReply extends Data
 {
     public function __construct(
-        public string $stdout,
-        public string $stderr,
-        public int $exitCode,
+        public readonly string $stdout,
+        public readonly string $stderr,
+        public readonly int $exitCode,
     ) {}
 
     public static function fromRecorded(RecordedAnswer $answer): self
@@ -30,19 +32,15 @@ final readonly class ProgramReply
      * The reply the journal sent for a hook call.
      *
      * @throws JsonException when the body is not JSON
-     * @throws ProgramReplyMalformed when it lacks a field of a reply
+     * @throws ProgramReplyMalformed when it is not a reply of standard output, standard error and exit code
      */
     public static function fromJournal(string $body): self
     {
-        $answer = json_decode($body, true, 4, JSON_THROW_ON_ERROR);
-
-        foreach (['stdout', 'stderr', 'exitCode'] as $field) {
-            if (! is_array($answer) || ! array_key_exists($field, $answer)) {
-                throw ProgramReplyMalformed::missing($field);
-            }
+        try {
+            return ProgramReply::from(json_decode($body, true, 4, JSON_THROW_ON_ERROR));
+        } catch (CannotCreateData|TypeError $malformed) {
+            throw ProgramReplyMalformed::because($malformed);
         }
-
-        return new self((string) $answer['stdout'], (string) $answer['stderr'], (int) $answer['exitCode']);
     }
 
     public static function emptyObject(): self

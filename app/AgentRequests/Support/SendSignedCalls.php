@@ -6,6 +6,7 @@ namespace App\AgentRequests\Support;
 
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\JournalCall;
+use App\AgentRequests\Data\RefusalAnswerData;
 use App\AgentRequests\Exceptions\AnswerUnreadable;
 use App\AgentRequests\Exceptions\CallTooLarge;
 use App\AgentRequests\Exceptions\JournalUnavailable;
@@ -13,7 +14,9 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use JsonException;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 use Throwable;
+use TypeError;
 
 /**
  * Sends a declared call: the path from its path values, each one encoded segment; the body from its other properties;
@@ -90,15 +93,36 @@ final readonly class SendSignedCalls implements CallSender
             throw CallTooLarge::answered(CallTooLarge::CODE, $message, $callId, $key, []);
         }
 
+        if (! $reply->isSuccessful()) {
+            $refusal = $this->refusalOf($declaration, $reply, $callId, $key);
+            $class = RefusalExceptions::classOf($refusal->code, $endpoint->refusals);
+
+            throw $class::answered($refusal->code, $refusal->message, $callId, $key, $refusal->details);
+        }
+
         try {
-            $answer = json_decode($reply->body, true, 64, JSON_THROW_ON_ERROR);
+            return $endpoint->answer::from($reply->body);
+        } catch (Throwable $unreadable) {
+            throw AnswerUnreadable::at($declaration->call, 'answer', $unreadable);
+        }
+    }
+
+    /**
+     * The refusal a failed call answered with, its code, message and details.
+     */
+    private function refusalOf(
+        CallDeclaration $declaration,
+        AgentCallReply $reply,
+        string $callId,
+        CallKey|null $key,
+    ): RefusalAnswerData {
+        try {
+            return RefusalAnswerData::from(json_decode($reply->body, true, 64, JSON_THROW_ON_ERROR));
         } catch (JsonException $unreadable) {
             if (in_array($reply->status, self::PROXY_STATUSES, true)) {
-                $message = 'The journal cannot answer now.';
-
                 throw JournalUnavailable::answered(
                     JournalUnavailable::CODE,
-                    $message,
+                    'The journal cannot answer now.',
                     $callId,
                     $key,
                     [],
@@ -107,27 +131,8 @@ final readonly class SendSignedCalls implements CallSender
             }
 
             throw AnswerUnreadable::at($declaration->call, 'body', $unreadable);
-        }
-
-        if (! is_array($answer)) {
-            throw AnswerUnreadable::at($declaration->call, 'body');
-        }
-
-        if (! $reply->isSuccessful()) {
-            if (! is_string($answer['code'] ?? null) || ! is_string($answer['message'] ?? null)) {
-                throw AnswerUnreadable::at($declaration->call, 'refusal');
-            }
-
-            $class = RefusalExceptions::classOf($answer['code'], $endpoint->refusals);
-            $details = is_array($answer['details'] ?? null) ? $answer['details'] : [];
-
-            throw $class::answered($answer['code'], $answer['message'], $callId, $key, $details);
-        }
-
-        try {
-            return $endpoint->answer::from($answer);
-        } catch (Throwable $unreadable) {
-            throw AnswerUnreadable::at($declaration->call, 'answer', $unreadable);
+        } catch (CannotCreateData|TypeError $unreadable) {
+            throw AnswerUnreadable::at($declaration->call, 'refusal', $unreadable);
         }
     }
 }

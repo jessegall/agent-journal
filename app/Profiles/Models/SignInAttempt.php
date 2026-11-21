@@ -258,7 +258,7 @@ final class SignInAttempt extends Model implements ReadableModel
                 ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
                 ->orWhere('updated_at', '>=', $now->subMinutes(15)))
             ->orderByDesc('created_at')
-            ->readLimit(50)
+            ->limit(50)
             ->get();
 
         return array_values($attempts->all());
@@ -332,7 +332,7 @@ final class SignInAttempt extends Model implements ReadableModel
             ->where('cleanup_pending', true)
             ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('created_at')
-            ->readLimit(50)
+            ->limit(50)
             ->get();
 
         return array_values($attempts->all());

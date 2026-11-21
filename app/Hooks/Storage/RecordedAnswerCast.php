@@ -22,7 +22,7 @@ final class RecordedAnswerCast implements CastsAttributes
         return StoredJson::read(
             $key,
             $value,
-            fn (array $stored) => RecordedAnswer::from($stored)->assertCurrentVersion(),
+            fn (string $stored) => RecordedAnswer::from($stored)->assertCurrentVersion(),
         );
     }
 
