@@ -11,10 +11,10 @@ use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
 use App\Ui\Exceptions\InvalidPageDeclaration;
 use App\Ui\Exceptions\InvalidSectionDeclaration;
+use App\Ui\Exceptions\LayoutRefused;
 use App\Ui\Layout\DeclaredLayoutData;
 use App\Ui\Layout\LayoutLimits;
 use App\Ui\Layout\LayoutPartData;
-use App\Ui\Layout\LayoutRefused;
 use App\Ui\Layout\LayoutRowData;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
@@ -77,7 +77,7 @@ final class DeclaredLayoutTest extends TestCase
     public function test_a_variant_outside_the_catalogue_is_refused(): void
     {
         $this->expectException(LayoutRefused::class);
-        $this->expectExceptionMessage('has the variant shout');
+        $this->expectExceptionMessage('has the style shout');
 
         DeclaredLayoutData::of(LayoutPartData::box('root', 'stack', LayoutPartData::text('title', 'Hi', 'shout')));
     }

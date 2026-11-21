@@ -8,7 +8,7 @@ defineProps<{ part: LayoutPartData }>();
 </script>
 
 <template>
-    <SwitchCase :value="part.variant">
+    <SwitchCase :value="part.style">
         <template #divider>
             <hr class="border-line" />
         </template>
@@ -23,7 +23,7 @@ defineProps<{ part: LayoutPartData }>();
             </div>
         </template>
         <template #default>
-            <div :data-layout-box="part.variant" class="flex flex-col gap-3">
+            <div :data-layout-box="part.style" class="flex flex-col gap-3">
                 <template v-for="child in part.children" :key="child.key">
                     <LayoutPart :part="child" />
                 </template>

@@ -8,7 +8,7 @@ defineProps<{ part: LayoutPartData }>();
 </script>
 
 <template>
-    <SwitchCase :value="part.variant">
+    <SwitchCase :value="part.style">
         <template #empty>
             <EmptyState
                 icon="info"
@@ -19,11 +19,11 @@ defineProps<{ part: LayoutPartData }>();
         <template #default>
             <div
                 :role="
-                    part.variant === 'error' || part.variant === 'refusal'
+                    part.style === 'error' || part.style === 'refusal'
                         ? 'alert'
                         : undefined
                 "
-                :data-layout-notice="part.variant"
+                :data-layout-notice="part.style"
                 class="rounded border border-line px-3 py-2"
             >
                 <p class="font-semibold text-text">{{ part.text }}</p>

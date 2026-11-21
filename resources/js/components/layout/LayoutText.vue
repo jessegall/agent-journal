@@ -2,12 +2,12 @@
 import SwitchCase from '@/components/kit/SwitchCase.vue';
 import type { LayoutPartData } from '@/generated/types/core';
 
-// A line of text of a declared layout, drawn by its variant.
+// A line of text of a declared layout, drawn by its style.
 defineProps<{ part: LayoutPartData }>();
 </script>
 
 <template>
-    <SwitchCase :value="part.variant">
+    <SwitchCase :value="part.style">
         <template #heading>
             <h2 class="font-semibold text-card text-text">
                 {{ part.text }}
@@ -22,7 +22,7 @@ defineProps<{ part: LayoutPartData }>();
             }}</span>
         </template>
         <template #default>
-            <span :data-layout-text="part.variant" class="text-text">{{
+            <span :data-layout-text="part.style" class="text-text">{{
                 part.text
             }}</span>
         </template>

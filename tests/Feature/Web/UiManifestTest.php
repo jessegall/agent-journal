@@ -22,6 +22,7 @@ use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
 use Tests\Fixtures\UiDeclarations\ShelfLayoutResolver;
 use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
+use Throwable;
 
 /**
  * The generated build files: one literal import per component under its domain's name, so two domains' Index.vue
@@ -71,6 +72,31 @@ final class UiManifestTest extends TestCase
             array_keys(require "{$this->root}/bootstrap/cache/ui-components.php"),
         );
         $this->assertSame([], glob("{$this->root}/**/*.tmp") ?: []);
+    }
+
+    public function test_a_generation_that_fails_midway_puts_every_file_it_replaced_back(): void
+    {
+        $this->manifest([$this->library(), $this->shelf()])->write($this->root);
+        $before = File::get("{$this->root}/resources/js/generated/ui-manifest.ts");
+        $next = $this->manifest([$this->library()]);
+        $nextRoot = $this->root;
+        $this->makeTemporaryFolder('ui-manifest-next');
+        File::ensureDirectoryExists("{$this->root}/resources/js/pages");
+        File::put("{$this->root}/resources/js/pages/Login.vue", '<template><div /></template>');
+        $nextHash = $next->write($this->root);
+        File::deleteDirectory($this->root);
+        $this->root = $nextRoot;
+        // The last file cannot be moved aside, so the generation fails after the others were already replaced.
+        File::ensureDirectoryExists("{$this->root}/bootstrap/cache/ui-components.php.{$nextHash}.previous/blocked");
+
+        try {
+            $next->write($this->root);
+            $this->fail('The generation was expected to fail.');
+        } catch (Throwable) {
+        }
+
+        $this->assertSame($before, File::get("{$this->root}/resources/js/generated/ui-manifest.ts"));
+        $this->assertSame([], File::glob("{$this->root}/resources/js/generated/*.tmp"));
     }
 
     public function test_a_removed_domain_leaves_the_generated_files_on_the_next_run(): void

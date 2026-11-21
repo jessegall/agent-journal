@@ -7,7 +7,7 @@ defineProps<{ part: LayoutPartData }>();
 </script>
 
 <template>
-    <SwitchCase :value="part.variant">
+    <SwitchCase :value="part.style">
         <template #facts>
             <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
                 <template v-for="row in part.rows" :key="row.key">

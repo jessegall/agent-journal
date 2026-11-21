@@ -6,7 +6,7 @@ import type { LayoutPartData } from '@/generated/types/core';
 
 function part(
     fields: Partial<LayoutPartData> &
-        Pick<LayoutPartData, 'tag' | 'key' | 'variant'>,
+        Pick<LayoutPartData, 'tag' | 'key' | 'style'>,
 ): LayoutPartData {
     return {
         size: null,
@@ -26,18 +26,18 @@ describe('a declared layout', () => {
                     root: part({
                         tag: 'box',
                         key: 'root',
-                        variant: 'stack',
+                        style: 'stack',
                         children: [
                             part({
                                 tag: 'text',
                                 key: 'title',
-                                variant: 'heading',
+                                style: 'heading',
                                 text: 'Shelf',
                             }),
                             part({
                                 tag: 'collection',
                                 key: 'facts',
-                                variant: 'facts',
+                                style: 'facts',
                                 rows: [
                                     {
                                         key: 'count',
@@ -49,7 +49,7 @@ describe('a declared layout', () => {
                             part({
                                 tag: 'notice',
                                 key: 'failed',
-                                variant: 'error',
+                                style: 'error',
                                 text: 'Not read',
                             }),
                         ],

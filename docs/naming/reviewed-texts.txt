@@ -7,10 +7,10 @@ ${option.description} ${option.billingNote}
 30 days
 7 days
 A sample run: it shows what the command does and gives no result.
-A terminal on {{ data.machineLabel }} asks to run journal commands for {{ data.projectLabel }}.
 API key
 About the whole record
 About {{ describeRange(text.range) }}
+Access
 Account
 Account of a start
 Accounts
@@ -32,10 +32,9 @@ Allow one sample run of this exact line
 Any
 Approve
 Approve a terminal
-Approve only when the terminal shows this same code. It lets that terminal run journal commands for this project for twelve hours.
+Approve only when the terminal shows this same code.
 Approve proposal {{ proposal.number }}
 Approve revision {{ proposal.currentRevision }}
-Approved. Go back to the terminal.
 Asks
 Audit
 Back
@@ -73,6 +72,7 @@ Comment on a section
 Comment on the selected paragraphs
 Comment on this
 Comments
+Compare code
 Configure a gateway
 Confirm
 Confirm disabling
@@ -89,6 +89,7 @@ Dark
 Default
 Delete
 Detach
+Device
 Disable
 Disable and revoke
 Disabling revokes these shares:
@@ -139,6 +140,7 @@ It has no email, so give it a name you'll recognise.
 It is
 It never arrived
 It waits on the host until it expires. Resume it from the Accounts header, or cancel it now.
+Journal
 Journal operation
 Keep it
 Keep me signed in
@@ -184,6 +186,7 @@ No module bundle is waiting.
 No project is connected yet, so there is nothing to join.
 No saved accounts yet
 No share uses this gateway.
+No terminal signed in to this folder yet.
 Not filled in yet: {{ revision.missingFields.join(', ') }}
 Not run yet.
 Not shared yet
@@ -262,15 +265,18 @@ Resume
 Retired
 Retry
 Retry cleanup
+Return to Settings
 Reveal address
 Review this proposal
 Revision {{ revision.revision }}: {{ revision.operation }} ({{ revision.owner }})
 Revoke
 Revoke chosen ({{ chosen.size }})
+Revoke terminal access
 Revoked
 Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.activeRevision}` }}
 Rules
 Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }} ({{ data.origin }}).
+Run permitted commands as you in {{ data.projectLabel }} for up to 12 hours
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
 Runs
 Runtimes
@@ -327,6 +333,7 @@ Switched
 Switching
 System
 Terminal
+Terminal access ({{ signIns.length }})
 Tests and checks
 That conversation belongs to another agent.
 That conversation is not one this agent can continue.
@@ -396,6 +403,7 @@ Your last answer did not arrive. Paste it again.
 Your last code did not arrive. Paste it again.
 a file the user names on the command line, wherever it lies
 a sharing gateway's program in the host's tool folders
+approved by {{ signIn.approvedBy }}
 as {{ sample.approvedClasses.join(', ') }}
 characters
 classes
@@ -427,12 +435,14 @@ recover
 script
 selected
 shapes
+since {{ dateTime(signIn.issuedAt) }}
 the classified command's own file system: its folder, tools and worktree
 the host's own account folders, written by the host tools without the application
 the host's secret file the sign-in runner is given
 to
 tools
 unresolved
+until {{ dateTime(signIn.expiresAt) }}
 updated {{ seconds(ageSeconds()) }} ago
 {{ binding.projectLabel }} on {{ binding.machineLabel }}
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}

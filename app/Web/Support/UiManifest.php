@@ -11,6 +11,7 @@ use App\Ui\Support\UiDeclarations;
 use App\Web\Exceptions\UiManifestInvalid;
 use App\Web\Types\PagePropTypes;
 use Illuminate\Contracts\View\Factory;
+use Throwable;
 
 /**
  * Writes the browser build's view of the installed domains from the checked declarations: the component map, the
@@ -238,18 +239,72 @@ final readonly class UiManifest
     }
 
     /**
-     * Writes each artifact beside its target first and only then moves them all into place.
+     * Writes each artifact beside its target first, then, one generation at a time under the manifest's lock, moves
+     * them all into place; a move that fails puts every file it replaced back, so the build reads one whole generation.
      *
      * @param  array<string, string>  $artifacts
      */
     private function replaceTogether(FilePath $base, array $artifacts, string $hash): void
     {
-        foreach ($artifacts as $path => $content) {
-            $this->files->write($base->child("{$path}.{$hash}.tmp"), $content);
+        $lock = $base->child('bootstrap/cache/ui-manifest.lock');
+
+        $this->files->locked($lock, function () use ($base, $artifacts, $hash): void {
+            foreach ($artifacts as $path => $content) {
+                $this->files->write($base->child("{$path}.{$hash}.tmp"), $content);
+            }
+
+            $replaced = [];
+
+            try {
+                foreach (array_keys($artifacts) as $path) {
+                    $this->keepPrevious($base, $path, $hash);
+                    $replaced[] = $path;
+                    $this->files->move($base->child("{$path}.{$hash}.tmp"), $base->child($path));
+                }
+            } catch (Throwable $failure) {
+                $this->restorePrevious($base, $replaced, array_keys($artifacts), $hash);
+
+                throw $failure;
+            }
+
+            foreach ($replaced as $path) {
+                $this->forgetPrevious($base, $path, $hash);
+            }
+        });
+    }
+
+    private function keepPrevious(FilePath $base, string $path, string $hash): void
+    {
+        if ($this->files->exists($base->child($path))) {
+            $this->files->move($base->child($path), $base->child("{$path}.{$hash}.previous"));
+        }
+    }
+
+    /**
+     * Puts back each file a failed generation had already moved aside, and leaves none of its staged files behind.
+     *
+     * @param  list<string>  $replaced
+     * @param  list<string>  $paths
+     */
+    private function restorePrevious(FilePath $base, array $replaced, array $paths, string $hash): void
+    {
+        foreach ($replaced as $path) {
+            if ($this->files->exists($base->child("{$path}.{$hash}.previous"))) {
+                $this->files->move($base->child("{$path}.{$hash}.previous"), $base->child($path));
+            }
         }
 
-        foreach (array_keys($artifacts) as $path) {
-            $this->files->move($base->child("{$path}.{$hash}.tmp"), $base->child($path));
+        foreach ($paths as $path) {
+            if ($this->files->exists($base->child("{$path}.{$hash}.tmp"))) {
+                $this->files->delete($base->child("{$path}.{$hash}.tmp"));
+            }
+        }
+    }
+
+    private function forgetPrevious(FilePath $base, string $path, string $hash): void
+    {
+        if ($this->files->exists($base->child("{$path}.{$hash}.previous"))) {
+            $this->files->delete($base->child("{$path}.{$hash}.previous"));
         }
     }
 

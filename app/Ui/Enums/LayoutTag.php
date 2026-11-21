@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Ui\Layout;
+namespace App\Ui\Enums;
 
 /**
  * The parts a declared layout may hold, as they cross the page wire, with what each accepts: its sizes and
- * variants, default first, and whether it holds children. The first catalogue is box, text, collection and notice.
+ * styles, default first, and whether it holds children. The first catalogue is box, text, collection and notice.
  */
 enum LayoutTag: string
 {
@@ -30,11 +30,11 @@ enum LayoutTag: string
     }
 
     /**
-     * The variants the part takes, the default first.
+     * The styles the part takes, the default first.
      *
      * @return list<string>
      */
-    public function variants(): array
+    public function styles(): array
     {
         return match ($this) {
             self::Box => ['stack', 'row', 'section', 'card', 'panel', 'header', 'group', 'divider'],
@@ -45,10 +45,10 @@ enum LayoutTag: string
     }
 
     /**
-     * Whether a part of this tag and variant holds child parts: a box does, but a divider box does not.
+     * Whether a part of this tag and style holds child parts: a box does, but a divider box does not.
      */
-    public function holdsChildren(string $variant): bool
+    public function holdsChildren(string $style): bool
     {
-        return $this === self::Box && $variant !== 'divider';
+        return $this === self::Box && $style !== 'divider';
     }
 }

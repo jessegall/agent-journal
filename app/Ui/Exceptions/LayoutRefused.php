@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Ui\Layout;
+namespace App\Ui\Exceptions;
 
+use App\Ui\Enums\LayoutTag;
 use RuntimeException;
 
 /**
@@ -17,9 +18,9 @@ final class LayoutRefused extends RuntimeException
         return new self("Layout part {$path} ({$tag->value}) has the size {$size}, which it does not take.");
     }
 
-    public static function unknownVariant(string $path, LayoutTag $tag, string $variant): self
+    public static function unknownStyle(string $path, LayoutTag $tag, string $style): self
     {
-        return new self("Layout part {$path} ({$tag->value}) has the variant {$variant}, which it does not take.");
+        return new self("Layout part {$path} ({$tag->value}) has the style {$style}, which it does not take.");
     }
 
     public static function childrenNotAllowed(string $path, LayoutTag $tag): self
@@ -37,18 +38,18 @@ final class LayoutRefused extends RuntimeException
         return new self("Layout part {$path} holds a child with an empty key.");
     }
 
-    public static function tooDeep(string $path): self
+    public static function tooDeep(string $path, int $limit): self
     {
-        return new self(sprintf('Layout part %s sits deeper than %d parts.', $path, LayoutLimits::DEPTH_LIMIT));
+        return new self(sprintf('Layout part %s sits deeper than %d parts.', $path, $limit));
     }
 
-    public static function tooManyParts(): self
+    public static function tooManyParts(int $limit): self
     {
-        return new self(sprintf('The layout holds more than %d parts.', LayoutLimits::PART_LIMIT));
+        return new self(sprintf('The layout holds more than %d parts.', $limit));
     }
 
-    public static function tooManyRows(string $path, int $rows): self
+    public static function tooManyRows(string $path, int $rows, int $limit): self
     {
-        return new self(sprintf('Collection %s holds %d rows, more than %d.', $path, $rows, LayoutLimits::ROW_LIMIT));
+        return new self(sprintf('Collection %s holds %d rows, more than %d.', $path, $rows, $limit));
     }
 }
