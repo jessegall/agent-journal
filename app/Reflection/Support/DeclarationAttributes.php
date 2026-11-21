@@ -19,7 +19,7 @@ final class DeclarationAttributes
     /**
      * @var list<AttributeOccurrence>
      */
-    private readonly array $occurrences;
+    private array $occurrences;
 
     /**
      * Each selection made, by how it matches and the lowercase class it asked for.

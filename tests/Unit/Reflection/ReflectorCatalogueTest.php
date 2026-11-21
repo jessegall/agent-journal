@@ -69,7 +69,7 @@ final class ReflectorCatalogueTest extends TestCase
 
     public function test_interfaces_traits_enums_anonymous_and_internal_classes_are_reflected(): void
     {
-        $anonymous = new class() {};
+        $anonymous = new class {};
 
         $this->assertSame(Labelled::class, Reflector::of(Labelled::class)->name());
         $this->assertSame(Stamped::class, Reflector::of(Stamped::class)->name());

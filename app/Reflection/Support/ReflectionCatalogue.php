@@ -36,33 +36,23 @@ final class ReflectionCatalogue
     }
 
     /**
-     * @template U of object
+     * The one Reflector of the type a spelling names, built by $build the first time the type is asked for.
      *
-     * @param  class-string<U>|U  $target
-     * @param  Closure(class-string<U>): Reflector<U>  $build
-     * @return Reflector<U>
+     * @param  string  $name  any spelling PHP accepts for the type
+     * @param  Closure(class-string): Reflector<object>  $build
+     * @return Reflector<object>  the Reflector of exactly the type $name names
      *
      * @throws ClassMissing
      */
-    public function reflector(string|object $target, Closure $build): Reflector
+    public function reflector(string $name, Closure $build): Reflector
     {
-        $name = $this->canonicalNameOf(is_object($target) ? $target::class : $target);
+        $canonical = $this->canonicalNameOf($name);
 
-        $reflector = $this->reflectors[$name] ??= $build($name);
-
-        /**
-         * A reflector is stored only under the canonical name it was built for.
-         *
-         * @var Reflector<U> $reflector
-         */
-        return $reflector;
+        return $this->reflectors[$canonical] ??= $build($canonical);
     }
 
     /**
-     * @template U of object
-     *
-     * @param  class-string<U>  $name
-     * @return class-string<U>
+     * @return class-string
      *
      * @throws ClassMissing
      */
@@ -71,14 +61,7 @@ final class ReflectionCatalogue
         $spelling = strtolower(ltrim($name, '\\'));
 
         if (isset($this->canonicalNames[$spelling])) {
-            /**
-             * A spelling is stored only for the type it loaded.
-             *
-             * @var class-string<U> $canonical
-             */
-            $canonical = $this->canonicalNames[$spelling];
-
-            return $canonical;
+            return $this->canonicalNames[$spelling];
         }
 
         if (! self::loads($name)) {
@@ -88,6 +71,9 @@ final class ReflectionCatalogue
         return $this->canonicalNames[$spelling] = new ReflectionClass($name)->getName();
     }
 
+    /**
+     * @phpstan-assert-if-true class-string $name
+     */
     private static function loads(string $name): bool
     {
         return class_exists($name) || interface_exists($name) || trait_exists($name) || enum_exists($name);

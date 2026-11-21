@@ -37,15 +37,15 @@ final readonly class ReflectionScan
         ], $root, timeout: 580);
         $analysis->run();
 
-        $result = json_decode($analysis->getOutput(), true);
+        $report = json_decode($analysis->getOutput(), true);
 
-        if (! $analysis->isSuccessful() || ! is_array($result)) {
+        if (! $analysis->isSuccessful() || ! is_array($report)) {
             return new self(0, ["PHPStan did not complete:\n{$analysis->getOutput()}\n{$analysis->getErrorOutput()}"], []);
         }
 
         $findings = [];
 
-        foreach ($result['findings'] as $finding) {
+        foreach ($report['findings'] as $finding) {
             $file = substr($finding['file'], strlen($root) + 1);
             $findings["{$file}:{$finding['line']}:{$finding['declaration']}:{$finding['operation']}"] = new ReflectionFinding(
                 $file,
@@ -59,7 +59,7 @@ final readonly class ReflectionScan
         $findings = array_values($findings);
         usort($findings, fn (ReflectionFinding $first, ReflectionFinding $second) => $first->sortsBefore($second));
 
-        return new self($result['analysedFiles'], array_values($result['failures']), $findings);
+        return new self($report['analysedFiles'], array_values($report['failures']), $findings);
     }
 
     /**

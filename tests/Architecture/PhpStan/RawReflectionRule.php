@@ -10,7 +10,6 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
@@ -43,6 +42,10 @@ final class RawReflectionRule implements Rule
      */
     public const array WRAPPER_FILES = [
         'app/Reflection/Support/DeclarationAttributes.php',
+        'app/Reflection/Support/DeclaredType.php',
+        'app/Reflection/Support/ReflectedMethod.php',
+        'app/Reflection/Support/ReflectedParameter.php',
+        'app/Reflection/Support/ReflectedProperty.php',
         'app/Reflection/Support/ReflectionCatalogue.php',
         'app/Reflection/Support/Reflector.php',
     ];
@@ -144,7 +147,8 @@ final class RawReflectionRule implements Rule
             $node instanceof New_ => $this->constructionErrors($node, $scope),
             $node instanceof StaticCall => $this->staticCallErrors($node, $scope),
             $node instanceof Instanceof_ => $this->instanceofErrors($node, $scope),
-            $node instanceof MethodCall, $node instanceof NullsafeMethodCall => $this->methodCallErrors($node, $scope),
+            // PHPStan hands a nullsafe call to rules as a MethodCall as well
+            $node instanceof MethodCall => $this->methodCallErrors($node, $scope),
             $node instanceof Param => $this->typeErrors($node->type, $node, $scope),
             $node instanceof FunctionLike => $this->typeErrors($node->getReturnType(), $node, $scope),
             $node instanceof Property => $this->typeErrors($node->type, $node, $scope),
@@ -199,7 +203,7 @@ final class RawReflectionRule implements Rule
     /**
      * @return list<IdentifierRuleError>
      */
-    private function methodCallErrors(MethodCall|NullsafeMethodCall $node, Scope $scope): array
+    private function methodCallErrors(MethodCall $node, Scope $scope): array
     {
         if (! $node->name instanceof Identifier) {
             return [];
@@ -243,10 +247,10 @@ final class RawReflectionRule implements Rule
      */
     private function extensionErrors(Class_ $node, Scope $scope): array
     {
-        $names = array_map(
+        $names = array_values(array_map(
             fn (Name $name) => $scope->resolveName($name),
             [...($node->extends === null ? [] : [$node->extends]), ...$node->implements],
-        );
+        ));
 
         return array_map(
             fn (string $name) => $this->error("a class extending {$name}", self::CONSTRUCTION_HINT, $node, $scope),
@@ -255,13 +259,15 @@ final class RawReflectionRule implements Rule
     }
 
     /**
-     * Inside a wrapper file: a public method or property whose native type names a native reflector.
+     * Inside a wrapper file: a public method or property whose native type names a native reflector. A constructor
+     * may take one, since it brings a native handle in and hands none out.
      *
      * @return list<IdentifierRuleError>
      */
     private function publicSignatureErrors(Node $node, Scope $scope): array
     {
         $types = match (true) {
+            $node instanceof ClassMethod && $node->isPublic() && $node->name->toLowerString() === '__construct' => [],
             $node instanceof ClassMethod && $node->isPublic() => [
                 $node->getReturnType(),
                 ...array_map(fn (Param $parameter) => $parameter->type, $node->getParams()),

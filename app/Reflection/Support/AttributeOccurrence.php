@@ -15,9 +15,9 @@ final class AttributeOccurrence
     /**
      * @var array<int|string, mixed>
      */
-    private readonly array $arguments;
+    private array $arguments;
 
-    private readonly object $instance;
+    private object $instance;
 
     private bool $building = false;
 

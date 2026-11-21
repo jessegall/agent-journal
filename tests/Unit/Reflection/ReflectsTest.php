@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reflection;
 
+use App\Reflection\Support\ReflectedProperty;
 use App\Reflection\Support\Reflector;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use Tests\Fixtures\Reflection\Parcel;
 use Tests\Fixtures\Reflection\ReadonlyReflectingParcel;
 use Tests\Fixtures\Reflection\ReflectingParcel;
@@ -35,8 +35,8 @@ final class ReflectsTest extends TestCase
         $this->assertSame(ReadonlyReflectingParcel::class, ReadonlyReflectingParcel::reflector()->name());
         $this->assertSame(ReflectingSize::class, ReflectingSize::Large->reflector()->name());
         $this->assertSame(['label'], array_map(
-            fn ($property) => $property->getName(),
-            new ReflectionClass(ReadonlyReflectingParcel::class)->getProperties(),
+            fn (ReflectedProperty $property) => $property->name(),
+            ReadonlyReflectingParcel::reflector()->properties(),
         ));
     }
 }
