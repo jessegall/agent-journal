@@ -522,6 +522,7 @@ final class EventPayloads
                 'fields' => [
                     'taskId' => 'string',
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'historyEntryId' => 'string',
                 ],
             ],
             TaskCancelled::class => [
@@ -529,6 +530,7 @@ final class EventPayloads
                 'fields' => [
                     'taskId' => 'string',
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'historyEntryId' => 'string',
                 ],
             ],
             TaskFinished::class => [
@@ -536,6 +538,7 @@ final class EventPayloads
                 'fields' => [
                     'taskId' => 'string',
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'historyEntryId' => 'string',
                 ],
             ],
             TaskStarted::class => [
@@ -544,6 +547,7 @@ final class EventPayloads
                     'taskId' => 'string',
                     'actor' => 'App\Actors\Support\ActorIdentity',
                     'previousState' => 'Domain\Tasks\Enums\TaskState',
+                    'historyEntryId' => 'string',
                 ],
             ],
         ];

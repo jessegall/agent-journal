@@ -64,7 +64,7 @@ final class StateMethodSelectorTest extends TestCase
 
         $selector = new StateMethodSelector(new StateMethods());
         $stop = new StopRequested(TestActors::hookIdentity(1, 2, '3', 'digest'), new StopDetails('turn', false));
-        $event = new TaskStarted('4', TestActors::agentIdentity(1), TaskState::Open);
+        $event = new TaskStarted('4', TestActors::agentIdentity(1), TaskState::Open, 'entry');
 
         $this->assertSelection($selector->forHook($stack, $stop), 'onStop');
         $this->assertSelection($selector->forEvent($stack, $event), 'onTaskStarted');

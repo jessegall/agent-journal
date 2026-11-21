@@ -33,6 +33,7 @@ use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Listeners\AnnounceTaskStart;
 use Domain\Tasks\Listeners\PushTaskState;
+use Domain\Tasks\Listeners\RecordTaskHistory;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Tests\Fixtures\Boundary\Events\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Events\Plans\Listeners\RequiredClaimListener;
@@ -95,6 +96,7 @@ final class RequiredListenerLaneTest extends TestCase
                 SamplePlanOfStartedTask::class,
                 AnnounceTaskStart::class,
                 PushTaskState::class,
+                RecordTaskHistory::class,
             ],
             array_map(
                 fn (mixed $listener) => explode('@', $listener instanceof AvailableListener ? $listener->listener : '')[0],

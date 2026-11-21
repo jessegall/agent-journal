@@ -22,21 +22,21 @@ return [
         'owner' => 'Task::block',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskBlocked('task', TaskState::Started),
+        'sample' => fn () => new TaskBlocked('task', TaskState::Started, 'entry'),
     ],
     TaskCancelled::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::cancel',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskCancelled('task', TaskState::Open),
+        'sample' => fn () => new TaskCancelled('task', TaskState::Open, 'entry'),
     ],
     TaskFinished::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Task::finish',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskFinished('task', TaskState::Started),
+        'sample' => fn () => new TaskFinished('task', TaskState::Started, 'entry'),
     ],
     TaskStartCommitted::class => [
         'role' => EventRole::Projection,
@@ -50,6 +50,6 @@ return [
         'owner' => 'Task::start',
         'migrated' => true,
         'producers' => [],
-        'sample' => fn () => new TaskStarted('task', ActorIdentity::system(), TaskState::Open),
+        'sample' => fn () => new TaskStarted('task', ActorIdentity::system(), TaskState::Open, 'entry'),
     ],
 ];

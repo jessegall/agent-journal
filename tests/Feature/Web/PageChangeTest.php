@@ -102,7 +102,7 @@ final class PageChangeTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {
-                $this->app->make('events')->dispatch(new TaskFinished($task->id, TaskState::Started));
+                $this->app->make('events')->dispatch(new TaskFinished($task->id, TaskState::Started, 'entry'));
 
                 throw SimulatedFailure::of('The change fails.');
             }),

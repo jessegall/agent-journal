@@ -49,10 +49,12 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -72,6 +74,7 @@ use PhpOption\Some;
  * @property TaskState $state
  * @property int $run_number
  * @property string|null $result_note
+ * @property-read string|null $stateText
  * @property string|null $block_reason
  * @property string|null $cancel_reason
  * @property string|null $environment_id
@@ -251,7 +254,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
         $previousState = $this->state;
         $this->state = TaskState::Started;
         $this->assertSaved($this->save());
-        $this->raise(new TaskStarted($this->id, $actor, $previousState));
+        $this->raise(new TaskStarted($this->id, $actor, $previousState, (string) Str::ulid()));
     }
 
     public function finish(string $note): void
@@ -260,7 +263,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
         $this->state = TaskState::Finished;
         $this->result_note = $note;
         $this->assertSaved($this->save());
-        $this->raise(new TaskFinished($this->id, $previousState));
+        $this->raise(new TaskFinished($this->id, $previousState, (string) Str::ulid()));
     }
 
     public function block(string $reason): void
@@ -269,7 +272,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
         $this->state = TaskState::Blocked;
         $this->block_reason = $reason;
         $this->assertSaved($this->save());
-        $this->raise(new TaskBlocked($this->id, $previousState));
+        $this->raise(new TaskBlocked($this->id, $previousState, (string) Str::ulid()));
     }
 
     public function cancel(string $reason): void
@@ -278,10 +281,26 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
         $this->state = TaskState::Cancelled;
         $this->cancel_reason = $reason;
         $this->assertSaved($this->save());
-        $this->raise(new TaskCancelled($this->id, $previousState));
+        $this->raise(new TaskCancelled($this->id, $previousState, (string) Str::ulid()));
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * The words the task's current state was entered with: the finish note, the block reason or the cancel reason;
+     * none for an open or started task.
+     *
+     * @return Attribute<string|null, never>
+     */
+    protected function stateText(): Attribute
+    {
+        return Attribute::get(fn () => match ($this->state) {
+            TaskState::Finished => $this->result_note,
+            TaskState::Blocked => $this->block_reason,
+            TaskState::Cancelled => $this->cancel_reason,
+            TaskState::Open, TaskState::Started => null,
+        });
+    }
 
     public function isOpenForAssignment(): bool
     {

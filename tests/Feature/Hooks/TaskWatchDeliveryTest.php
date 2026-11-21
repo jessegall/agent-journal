@@ -64,15 +64,15 @@ final class TaskWatchDeliveryTest extends TestCase
         $this->app->instance(LoggerInterface::class, $logger);
 
         $dispatcher = $this->app->make(Dispatcher::class);
-        $dispatcher->dispatch(new TaskFinished($taskId, TaskState::Started));
-        $this->dispatch(new TaskFinished(TestIds::of(43), TaskState::Started));
+        $dispatcher->dispatch(new TaskFinished($taskId, TaskState::Started, 'entry'));
+        $this->dispatch(new TaskFinished(TestIds::of(43), TaskState::Started, 'entry'));
         $this->assertSame([], $this->app->make(TaskWatchLog::class)->records);
         $this->assertSame([], $attention->wakes);
         $trace = [];
 
-        $this->dispatch(new TaskFinished($taskId, TaskState::Started));
+        $this->dispatch(new TaskFinished($taskId, TaskState::Started, 'entry'));
         $this->assertSame([], $attention->wakes);
-        $this->dispatch(new TaskCancelled($taskId, TaskState::Started));
+        $this->dispatch(new TaskCancelled($taskId, TaskState::Started, 'entry'));
 
         $actorId = $this->target->agentId;
         $this->assertSame([

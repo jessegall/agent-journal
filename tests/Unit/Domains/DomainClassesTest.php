@@ -59,6 +59,11 @@ final class DomainClassesTest extends TestCase
             'TaskDetails',
             'TaskText',
             'TaskType',
+            'TaskHolderFilter',
+            'TaskStartCommitted',
+            'TaskHistoryResolver',
+            'TaskHistoryPage',
+            'TaskTransition',
         ]];
 
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class], [

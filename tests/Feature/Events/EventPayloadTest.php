@@ -142,13 +142,13 @@ final class EventPayloadTest extends TestCase
         $this->runAsOwner(new BlockTask($blocked->id, 1, 'Waits.'));
         $this->runAsOwner(new CancelTask($cancelled->id, 'Dropped.'));
 
-        $this->assertEquals(
+        $this->assertSame(
             [
-                new TaskFinished($finished->id, TaskState::Started),
-                new TaskBlocked($blocked->id, TaskState::Started),
-                new TaskCancelled($cancelled->id, TaskState::Open),
+                [TaskFinished::class, $finished->id, TaskState::Started],
+                [TaskBlocked::class, $blocked->id, TaskState::Started],
+                [TaskCancelled::class, $cancelled->id, TaskState::Open],
             ],
-            $sent(),
+            array_map(fn (object $event) => [$event::class, $event->taskId, $event->previousState], $sent()),
         );
     }
 

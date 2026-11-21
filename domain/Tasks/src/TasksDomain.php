@@ -40,11 +40,13 @@ use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskFilters;
+use Domain\Tasks\Api\TaskHistoryPage;
 use Domain\Tasks\Api\TaskHolderFilter;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskProgress;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Api\TaskText;
+use Domain\Tasks\Api\TaskTransition;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Assignments\ActiveTaskAssignments;
 use Domain\Tasks\Assignments\NamedTaskPoolFactory;
@@ -54,6 +56,7 @@ use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
+use Domain\Tasks\Contracts\TaskHistoryResolver;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Enums\TaskState;
@@ -139,6 +142,7 @@ final class TasksDomain extends Domain implements
             )
             ->contracts(
                 TaskProgressCounter::class,
+                TaskHistoryResolver::class,
                 TaskResolver::class,
                 TaskAssignmentResolver::class,
                 AssignedTaskResolver::class,
@@ -147,6 +151,8 @@ final class TasksDomain extends Domain implements
             )
             ->values(
                 TaskProgress::class,
+                TaskHistoryPage::class,
+                TaskTransition::class,
                 TaskSummary::class,
                 TaskAssignmentCompletion::class,
                 TaskCard::class,
