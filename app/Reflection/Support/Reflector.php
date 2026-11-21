@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reflection\Support;
 
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Exceptions\ClassMissing;
 use App\Reflection\Exceptions\MethodMissing;
 use App\Reflection\Exceptions\PropertyMissing;
@@ -132,33 +133,12 @@ final class Reflector
     }
 
     /**
-     * Whether the name names a loadable type that extends or implements this type, as a strict subtype; false for a
-     * name no autoloader can load.
-     *
-     * @template S of object
-     *
-     * @param  class-string<S>  $type
-     *
-     * @phpstan-assert-if-true class-string<S> $name
+     * The process's ReflectorFactory, for code that has nothing to inject it into: a static method, a value object or
+     * a test helper. A class the container builds takes the factory in its constructor instead.
      */
-    public static function isNameSubclassOf(string $name, string $type): bool
+    public static function factory(): ReflectorFactory
     {
-        return self::find($name)->filter(fn (self $found) => $found->isSubclassOf($type))->isDefined();
-    }
-
-    /**
-     * Whether the name names a loadable type that is this type or a subtype of it; false for a name no autoloader can
-     * load.
-     *
-     * @template S of object
-     *
-     * @param  class-string<S>  $type
-     *
-     * @phpstan-assert-if-true class-string<S> $name
-     */
-    public static function isNameOf(string $name, string $type): bool
-    {
-        return self::find($name)->filter(fn (self $found) => $found->is($type))->isDefined();
+        return new CatalogueReflectorFactory();
     }
 
     /**
@@ -429,7 +409,7 @@ final class Reflector
     public function properties(): array
     {
         return $this->properties ??= array_map(
-            fn (ReflectionProperty $property) => new ReflectedProperty($property),
+            fn (ReflectionProperty $property) => new ReflectedProperty($property, self::of(...)),
             $this->type->getProperties(),
         );
     }
@@ -470,6 +450,7 @@ final class Reflector
         return $this->allMethods ??= array_map(
             fn (ReflectionMethod $method) => $this->methods[strtolower($method->getName())] ??= new ReflectedMethod(
                 $method,
+                self::of(...),
             ),
             $this->type->getMethods(),
         );
@@ -532,7 +513,10 @@ final class Reflector
             throw MethodMissing::on($this->name(), $name);
         }
 
-        return $this->methods[strtolower($name)] ??= new ReflectedMethod($this->type->getMethod($name));
+        return $this->methods[strtolower($name)] ??= new ReflectedMethod(
+            $this->type->getMethod($name),
+            self::of(...),
+        );
     }
 
     /**

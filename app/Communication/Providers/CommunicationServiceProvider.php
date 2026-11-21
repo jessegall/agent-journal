@@ -68,13 +68,15 @@ final class CommunicationServiceProvider extends ServiceProvider
         SystemEntryPolicies $system,
         ReadEntitlements $reads,
     ): void {
-        $reads->declare('messages_show', ReadEntitlement::grant(MessagePolicy::class));
-        $reads->declare('messages_read', ReadEntitlement::grant(MessagePolicy::class));
-        $reads->declare('messages_list', ReadEntitlement::grant(MessagePolicy::class));
-        $reads->declare('messages_context', ReadEntitlement::grant(MessagePolicy::class));
-        $reads->declare('inbox_history', ReadEntitlement::grant(MessagePolicy::class));
-        $reads->declare('inbox_counts', ReadEntitlement::grant(MessagePolicy::class));
-        $reads->declare('attachments_read', ReadEntitlement::grant(MessagePolicy::class));
+        $readGrant = ReadEntitlement::grant(MessagePolicy::class);
+
+        $reads->declare('messages_show', $readGrant);
+        $reads->declare('messages_read', $readGrant);
+        $reads->declare('messages_list', $readGrant);
+        $reads->declare('messages_context', $readGrant);
+        $reads->declare('inbox_history', $readGrant);
+        $reads->declare('inbox_counts', $readGrant);
+        $reads->declare('attachments_read', $readGrant);
         $system->allow(InboxNotices::SYSTEM_ENTRY, MessagePolicy::class);
         $policies->register('Core', new PolicyDefinition(
             MessagePolicy::class,

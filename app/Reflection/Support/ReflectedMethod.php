@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reflection\Support;
 
+use Closure;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -32,7 +33,10 @@ final class ReflectedMethod
 
     private readonly string $label;
 
-    public function __construct(private readonly ReflectionMethod $method)
+    /**
+     * @param  Closure(class-string): Reflector<object>  $reflectorOf  answers the Reflector of a declaring class
+     */
+    public function __construct(private readonly ReflectionMethod $method, private readonly Closure $reflectorOf)
     {
         $this->label = "method {$method->getDeclaringClass()->getName()}::{$method->getName()}()";
         $this->declaredAttributes = new DeclarationAttributes(fn () => $method->getAttributes(), $this->label);
@@ -140,7 +144,7 @@ final class ReflectedMethod
      */
     public function declaringClass(): Reflector
     {
-        return Reflector::of($this->method->getDeclaringClass()->getName());
+        return ($this->reflectorOf)($this->method->getDeclaringClass()->getName());
     }
 
     private function declaredAttributes(): DeclarationAttributes

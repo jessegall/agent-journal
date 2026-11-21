@@ -73,6 +73,6 @@ final class JsonIntoDataTest extends TestCase
     {
         return $class !== null
             && in_array($method, self::TAKERS, true)
-            && Reflector::isNameSubclassOf($class, Data::class);
+            && Reflector::factory()->isSubclassOf($class, Data::class);
     }
 }

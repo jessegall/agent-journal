@@ -24,6 +24,8 @@ final class HelperSteerCommand extends Command
 
     public function handle(HelperCalls $helpers): int
     {
+        $successReport = CommandReport::ending(self::SUCCESS);
+
         $call = SteerHelperCall::from([
             'identityId' => (string) $this->argument('identity'),
             'text' => (string) $this->argument('text'),
@@ -38,8 +40,8 @@ final class HelperSteerCommand extends Command
             $steerReceipt = $helpers->steerHelper($call->identityId, $call->text, $call->requestKey);
 
             return $steerReceipt->jobId !== null
-                ? CommandReport::ending(self::SUCCESS)->line("Steered job {$steerReceipt->jobId}.")
-                : CommandReport::ending(self::SUCCESS)
+                ? $successReport->line("Steered job {$steerReceipt->jobId}.")
+                : $successReport
                     ->line("No live job; kept as message {$steerReceipt->messageId}.")
                     ->line("Run this to carry it: {$steerReceipt->suggestedCommand}");
         });

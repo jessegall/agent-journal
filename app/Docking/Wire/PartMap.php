@@ -60,22 +60,26 @@ final class PartMap
 
     public static function standard(): self
     {
+        $openField = DestinationField::named('open');
+        $labelField = TextField::named('label');
+        $textField = TextField::named('text');
+
         $map = new self();
         $map->part(Stack::class, PartType::Stack);
         $map->part(Row::class, PartType::Row, EnumField::named('alignment', Alignment::class));
-        $map->part(Group::class, PartType::Group, TextField::named('label'));
+        $map->part(Group::class, PartType::Group, $labelField);
         $map->part(
             Disclosure::class,
             PartType::Disclosure,
             TextField::named('title'),
             EnumField::named('initial', DisclosureState::class),
         );
-        $map->part(Title::class, PartType::Title, TextField::named('text'));
-        $map->part(Subtitle::class, PartType::Subtitle, TextField::named('text'));
+        $map->part(Title::class, PartType::Title, $textField);
+        $map->part(Subtitle::class, PartType::Subtitle, $textField);
         $map->part(
             StateLabel::class,
             PartType::StateLabel,
-            TextField::named('text'),
+            $textField,
             EnumField::named('tone', Tone::class),
         );
         $map->part(
@@ -84,7 +88,7 @@ final class PartMap
             NumberField::named('completed'),
             NumberField::named('total'),
         );
-        $map->part(IndeterminateProgress::class, PartType::IndeterminateProgress, TextField::named('label'));
+        $map->part(IndeterminateProgress::class, PartType::IndeterminateProgress, $labelField);
         $map->part(
             Duration::class,
             PartType::Duration,
@@ -97,18 +101,18 @@ final class PartMap
             EnumField::named('stream', ConsoleStream::class),
             LinesField::named('lines'),
             FlagField::named('truncated'),
-            DestinationField::named('open'),
+            $openField,
         );
         $map->part(
             ChatExcerpt::class,
             PartType::ChatExcerpt,
             ExcerptField::named('messages'),
-            DestinationField::named('open'),
+            $openField,
         );
         $map->part(
             Button::class,
             PartType::Button,
-            TextField::named('label'),
+            $labelField,
             EnumField::named('emphasis', Emphasis::class),
             DestinationField::named('target'),
         );

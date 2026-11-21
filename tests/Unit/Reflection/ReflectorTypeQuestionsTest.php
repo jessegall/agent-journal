@@ -25,8 +25,8 @@ final class ReflectorTypeQuestionsTest extends TestCase
     {
         $this->assertFalse(Reflector::exists('Tests\Fixtures\Reflection\NoSuchParcel'));
         $this->assertTrue(Reflector::find('Tests\Fixtures\Reflection\NoSuchParcel')->isEmpty());
-        $this->assertFalse(Reflector::isNameSubclassOf('Tests\Fixtures\Reflection\NoSuchParcel', Parcel::class));
-        $this->assertTrue(Reflector::isNameSubclassOf(MarkedParcel::class, Parcel::class));
+        $this->assertFalse(Reflector::factory()->isSubclassOf('Tests\Fixtures\Reflection\NoSuchParcel', Parcel::class));
+        $this->assertTrue(Reflector::factory()->isSubclassOf(MarkedParcel::class, Parcel::class));
         $this->assertSame(Reflector::of(Parcel::class), Reflector::find(Parcel::class)->get());
     }
 

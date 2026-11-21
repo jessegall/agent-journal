@@ -54,15 +54,17 @@ final readonly class EnumSetting implements OptionSetting
     {
         SettingKey::require($key, $label);
 
-        if (Reflector::of($enum)->backingType()->isEmpty()) {
+        $type = Reflector::of($enum);
+
+        if ($type->backingType()->isEmpty()) {
             throw SettingDeclarationInvalid::notABackedEnum($key);
         }
 
-        if (Reflector::of($enum)->asInstance($default)->isEmpty()) {
+        if ($type->asInstance($default)->isEmpty()) {
             throw SettingDeclarationInvalid::defaultNotAnOption($key);
         }
 
-        $backing = Reflector::of($enum)->backingType()->get() === 'int'
+        $backing = $type->backingType()->get() === 'int'
             ? SettingType::Integer
             : SettingType::String;
         $options = array_map(fn (BackedEnum $case) => self::choiceOf($case), $enum::cases());

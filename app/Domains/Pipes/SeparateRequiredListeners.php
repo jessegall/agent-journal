@@ -64,13 +64,9 @@ final readonly class SeparateRequiredListeners implements Pipe
     {
         $class = explode('@', $listener, 2)[0];
 
-        if (! Reflector::exists($class) || ! Reflector::of($class)->isClass()) {
-            return null;
-        }
-
-        $declaration = Reflector::of($class);
-
-        return $declaration->hasAttribute(InCommandTransaction::class) ? $declaration : null;
+        return Reflector::find($class)
+            ->filter(fn (Reflector $type) => $type->isClass() && $type->hasAttribute(InCommandTransaction::class))
+            ->getOrElse(null);
     }
 
     /**
@@ -110,11 +106,13 @@ final readonly class SeparateRequiredListeners implements Pipe
 
     private static function isDeclaredBy(string $event, string $listener): bool
     {
-        if (! Reflector::exists($event) || ! Reflector::of($event)->isClass()) {
+        $eventType = Reflector::find($event)->filter(fn (Reflector $type) => $type->isClass());
+
+        if ($eventType->isEmpty()) {
             return false;
         }
 
-        foreach (Reflector::of($event)->attributes(RequiresListener::class) as $declaration) {
+        foreach ($eventType->get()->attributes(RequiresListener::class) as $declaration) {
             if ($declaration->listener === $listener) {
                 return true;
             }

@@ -79,7 +79,7 @@ final readonly class DomainEntry
         public Domain $domain,
         public array $requires,
         public Exports $exports,
-        private SettingsDefinition $settings,
+        public SettingsDefinition $settings,
         private bool $switchable,
         private array $skills,
         private array $skillConditions,
@@ -90,7 +90,7 @@ final readonly class DomainEntry
      */
     public static function fromClass(string $className): self
     {
-        if (! Reflector::isNameSubclassOf($className, Domain::class)) {
+        if (! Reflector::factory()->isSubclassOf($className, Domain::class)) {
             throw NotADomain::for($className);
         }
 
@@ -255,7 +255,7 @@ final readonly class DomainEntry
         $seen = [];
 
         foreach ($requires as $requiredClass) {
-            if (! Reflector::isNameSubclassOf($requiredClass, Domain::class)) {
+            if (! Reflector::factory()->isSubclassOf($requiredClass, Domain::class)) {
                 throw NotADomain::for($requiredClass);
             }
 
@@ -288,7 +288,7 @@ final readonly class DomainEntry
                 throw SkillDeclarationRefused::for($name, $class, 'no such class exists');
             }
 
-            if (! Reflector::isNameSubclassOf($class, Skill::class)) {
+            if (! Reflector::factory()->isSubclassOf($class, Skill::class)) {
                 throw SkillDeclarationRefused::for($name, $class, 'it does not implement '.Skill::class);
             }
 
@@ -537,14 +537,6 @@ final readonly class DomainEntry
         foreach ($domain->searchContributions() as $contribution) {
             $registration->registerSearchContribution($contribution);
         }
-    }
-
-    /**
-     * The settings this domain declares, read once when the domain is registered; none without SettingsProvider.
-     */
-    public function settings(): SettingsDefinition
-    {
-        return $this->settings;
     }
 
     /**

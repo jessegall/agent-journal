@@ -32,13 +32,13 @@ enum CompositionSite: string
     public function mayName(string $className): bool
     {
         return match ($this) {
-            self::Domains => Reflector::isNameSubclassOf($className, Domain::class),
-            self::Providers => Reflector::isNameSubclassOf($className, ServiceProvider::class),
+            self::Domains => Reflector::factory()->isSubclassOf($className, Domain::class),
+            self::Providers => Reflector::factory()->isSubclassOf($className, ServiceProvider::class),
             self::Application => str_contains($className, '\\Http\\Middleware\\')
                 && Reflector::exists($className)
                 && Reflector::of($className)->isClass(),
-            self::Authentication => Reflector::isNameSubclassOf($className, Authenticatable::class),
-            self::Seeders => Reflector::isNameSubclassOf($className, Seeder::class),
+            self::Authentication => Reflector::factory()->isSubclassOf($className, Authenticatable::class),
+            self::Seeders => Reflector::factory()->isSubclassOf($className, Seeder::class),
         };
     }
 

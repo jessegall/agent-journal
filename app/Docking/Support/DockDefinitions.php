@@ -32,18 +32,20 @@ final class DockDefinitions implements DockRegistration
      */
     private array $offered = [];
 
-    public function __construct(private readonly FallbackDocks $fallbacks, private readonly ReflectorFactory $reflectors)
-    {
+    public function __construct(
+        private readonly FallbackDocks $fallbacks,
+        private readonly ReflectorFactory $reflectors,
+    ) {
         $this->owned = Registry::replacing(DockDefinitionInvalid::unknown(...));
     }
 
     public function register(string $type, string $class, string $provider): DockDefinition
     {
-        if (! $this->reflectors->isNameSubclassOf($class, Dockable::class)) {
+        if (! $this->reflectors->isSubclassOf($class, Dockable::class)) {
             throw DockDefinitionInvalid::notDockable($type, $class);
         }
 
-        if (! $this->reflectors->isNameSubclassOf($provider, DockableProvider::class)) {
+        if (! $this->reflectors->isSubclassOf($provider, DockableProvider::class)) {
             throw DockDefinitionInvalid::notAProvider($type, $provider);
         }
 

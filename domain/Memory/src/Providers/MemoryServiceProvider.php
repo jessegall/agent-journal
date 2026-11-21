@@ -30,8 +30,10 @@ final class MemoryServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links, ReadEntitlements $reads): void
     {
-        $reads->declare('memories_read', ReadEntitlement::grant(MemoryPolicy::class));
-        $reads->declare('memories_list', ReadEntitlement::grant(MemoryPolicy::class));
+        $readGrant = ReadEntitlement::grant(MemoryPolicy::class);
+
+        $reads->declare('memories_read', $readGrant);
+        $reads->declare('memories_list', $readGrant);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $this->commands(
             [MemorySaveCommand::class, MemoryEditCommand::class, MemoryRemoveCommand::class, MemoryListCommand::class],

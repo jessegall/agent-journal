@@ -35,24 +35,27 @@ final readonly class CheckListenerPairs implements Pipe
     {
         [$class, $method] = array_pad(explode('@', $listener, 2), 2, 'handle');
 
-        if (Reflector::exists($class) && Reflector::of($class)->isSubclassOf(AgentState::class)) {
+        $listenerType = Reflector::find($class);
+
+        if ($listenerType->filter(fn (Reflector $type) => $type->isSubclassOf(AgentState::class))->isDefined()) {
             throw InvalidListener::stateRegisteredByHand($listener, $event);
         }
 
-        if (! Reflector::exists($class)
-            || ! Reflector::of($class)->isClass()
-            || ! Reflector::of($class)->hasMethod($method)
-            || ! $this->firstParameterAccepts(Reflector::of($class)->method($method), $event)) {
+        $handler = $listenerType->filter(fn (Reflector $type) => $type->isClass() && $type->hasMethod($method));
+
+        if ($handler->isEmpty() || ! $this->firstParameterAccepts($handler->get()->method($method), $event)) {
             throw InvalidListener::staleCache($listener, $event);
         }
 
-        if (! Reflector::exists($event)
-            || ! Reflector::of($event)->isSubclassOf(Event::class)
-            || Reflector::of($event)->isAbstract()) {
+        $isConcreteEvent = Reflector::find($event)
+            ->filter(fn (Reflector $type) => $type->isSubclassOf(Event::class) && $type->not()->isAbstract())
+            ->isDefined();
+
+        if (! $isConcreteEvent) {
             throw InvalidListener::notAConcreteEvent($listener, $event);
         }
 
-        $listenerDomain = $ownership->listenerDomain($class, $listener, $event);
+        $listenerDomain = $ownership->listenerDomain($handler->get()->name(), $listener, $event);
         $ownership->assertOwnership($event, $listener, $method, $listenerDomain);
     }
 
@@ -71,7 +74,7 @@ final readonly class CheckListenerPairs implements Pipe
             $arms,
             fn (DeclaredType $arm) => $arm->isNamed()
                 && Reflector::exists($arm->name())
-                && Reflector::isNameOf($event, $arm->name()),
+                && Reflector::factory()->is($event, $arm->name()),
         );
     }
 }

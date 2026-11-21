@@ -80,8 +80,8 @@ final readonly class SkillCatalogue implements SkillResolver
 
         $storedOwner = SkillOwner::stored();
 
-        foreach ($stored->skills() as $skill) {
-            $key = SkillKey::from($skill->key());
+        foreach ($stored->skills() as $storedSkill) {
+            $key = SkillKey::from($storedSkill->key());
 
             if (array_key_exists($key->key, $skillsByKey)) {
                 throw SkillConflict::between($key->key, $skillsByKey[$key->key]->owner, $storedOwner->name);
@@ -89,13 +89,13 @@ final readonly class SkillCatalogue implements SkillResolver
 
             $skillsByKey[$key->key] = new SkillEntry(
                 $key,
-                $skill->name(),
+                $storedSkill->name(),
                 $storedOwner->name,
                 SkillOrigin::Stored,
-                $skill->description(),
-                $skill->condition(),
-                $skill->revisionNumber(),
-                $renderer->render($skill, $storedOwner),
+                $storedSkill->description(),
+                $storedSkill->condition(),
+                $storedSkill->revisionNumber(),
+                $renderer->render($storedSkill, $storedOwner),
             );
         }
 

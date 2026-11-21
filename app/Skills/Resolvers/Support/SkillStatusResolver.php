@@ -57,8 +57,9 @@ final readonly class SkillStatusResolver
         $delivered = SkillPublication::latestDeliveredOfSession($sessionId);
         $started = SkillPublication::firstOfSession($sessionId);
         $generation = SkillGeneration::latestReady();
-        $reloadsAtNewSession = $this->adapters->supports(DriverKey::from($started->driver))
-            && $this->adapters->for(DriverKey::from($started->driver))->reloadMode() === SkillReload::NewSession;
+        $driver = DriverKey::from($started->driver);
+        $reloadsAtNewSession = $this->adapters->supports($driver)
+            && $this->adapters->for($driver)->reloadMode() === SkillReload::NewSession;
 
         return array_map(function (SkillEntry $entry) use (
             $sessionId,

@@ -58,13 +58,14 @@ final readonly class DockProjection
         $viewer = "{$identity->type->value}:{$identity->id}";
         $conversation = $peers->existingConversation();
         $conversationKey = $conversation === null ? "{$peers->ownInboxId}:{$peers->peerInboxId}" : $conversation->id;
+        $first = DockCursor::start($viewer, $conversationKey);
+        $end = DockCursor::end($viewer, $conversationKey);
         $start = $token === null
-            ? DockCursor::start($viewer, $conversationKey)
-            : DockCursor::read($this->encrypter, $token, $viewer, $conversationKey)
-                ->getOrElse(DockCursor::start($viewer, $conversationKey));
+            ? $first
+            : DockCursor::read($this->encrypter, $token, $viewer, $conversationKey)->getOrElse($first);
 
         if ($conversation === null || $start->ended) {
-            return new DockPageData([], DockCursor::end($viewer, $conversationKey)->token($this->encrypter));
+            return new DockPageData([], $end->token($this->encrypter));
         }
 
         $context = $this->gate->contextFor($actor);
@@ -81,9 +82,10 @@ final readonly class DockProjection
             foreach ($batch as $placement) {
                 $scanned++;
                 $card = $composed->find($placement->source());
+                $next = DockCursor::after($viewer, $conversationKey, $placement->assigned_at, $placement->id);
 
                 if ($card->isEmpty()) {
-                    $place = DockCursor::after($viewer, $conversationKey, $placement->assigned_at, $placement->id);
+                    $place = $next;
 
                     continue;
                 }
@@ -97,7 +99,7 @@ final readonly class DockProjection
 
                 $cards[] = $encoded;
                 $bytes += $size;
-                $place = DockCursor::after($viewer, $conversationKey, $placement->assigned_at, $placement->id);
+                $place = $next;
 
                 if (count($cards) === $wanted) {
                     return new DockPageData($cards, $place->token($this->encrypter));
@@ -105,7 +107,7 @@ final readonly class DockProjection
             }
 
             if ($batch->count() < self::BATCH_LIMIT) {
-                return new DockPageData($cards, DockCursor::end($viewer, $conversationKey)->token($this->encrypter));
+                return new DockPageData($cards, $end->token($this->encrypter));
             }
         }
 

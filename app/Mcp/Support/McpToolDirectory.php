@@ -30,7 +30,8 @@ final readonly class McpToolDirectory
 
             $class = $names->classOf($entry->fingerprint->realPath);
 
-            if (! Reflector::isNameSubclassOf($class, JournalTool::class) || Reflector::of($class)->isAbstract()) {
+            if (! Reflector::factory()->isSubclassOf($class, JournalTool::class)
+                || Reflector::of($class)->isAbstract()) {
                 continue;
             }
 

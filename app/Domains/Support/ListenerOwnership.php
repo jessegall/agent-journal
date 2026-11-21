@@ -64,7 +64,7 @@ final readonly class ListenerOwnership
         if ($domain === null) {
             $isExpanded = array_filter(
                 self::EXPANDED_INTERFACES,
-                fn (string $interface) => $this->reflectors->isNameSubclassOf($event, $interface),
+                fn (string $interface) => $this->reflectors->isSubclassOf($event, $interface),
             ) !== [];
             $isExportedUiEvent = $owner->exportsEvent($event) && $isExpanded;
 
@@ -206,6 +206,6 @@ final readonly class ListenerOwnership
             ->getOrElse('');
 
         return in_array($type, self::EXPANDED_INTERFACES, true)
-            && Reflector::isNameSubclassOf($event, $type);
+            && Reflector::factory()->isSubclassOf($event, $type);
     }
 }

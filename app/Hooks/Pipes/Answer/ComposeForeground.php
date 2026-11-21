@@ -52,11 +52,11 @@ final readonly class ComposeForeground implements Pipe
             }
 
             if (! $frame->state->workPermission()->allowed) {
-                return Some::create($frame->state->instructionText());
+                return new Some($frame->state->instructionText());
             }
 
             if ($instructing->isEmpty()) {
-                $instructing = Some::create($frame->state->instructionText());
+                $instructing = new Some($frame->state->instructionText());
             }
         }
 

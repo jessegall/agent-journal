@@ -37,7 +37,7 @@ final class ShareGatewayRegistry
             throw ShareGatewayInvalid::repeated($key);
         }
 
-        if (! $this->reflectors->isNameSubclassOf($class, ShareGateway::class)) {
+        if (! $this->reflectors->isSubclassOf($class, ShareGateway::class)) {
             throw ShareGatewayInvalid::notAGateway($key, $class);
         }
 

@@ -41,7 +41,7 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
     {
         RecordIdentity::assertKnownType($type);
 
-        if (! Reflector::isNameSubclassOf($class, RecordProvider::class)) {
+        if (! Reflector::factory()->isSubclassOf($class, RecordProvider::class)) {
             throw RecordProviderInvalid::notAProvider($type, $class);
         }
 

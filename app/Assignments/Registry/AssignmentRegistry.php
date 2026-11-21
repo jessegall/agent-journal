@@ -139,12 +139,12 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         RecordIdentity::assertKnownType($type);
         $this->requireOwner($owner);
 
-        if (! Reflector::isNameSubclassOf($providerClass, AssignableProvider::class)) {
+        if (! Reflector::factory()->isSubclassOf($providerClass, AssignableProvider::class)) {
             throw AssignmentProviderInvalid::forRecords($type, $providerClass);
         }
 
         if ($purpose === AssignmentPurpose::JournalAssigned
-            && ! Reflector::isNameSubclassOf($providerClass, JournalAssignableProvider::class)) {
+            && ! Reflector::factory()->isSubclassOf($providerClass, JournalAssignableProvider::class)) {
             throw AssignmentProviderInvalid::forRecords($type, $providerClass);
         }
 
@@ -173,11 +173,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
             throw AutoAssignmentDeclarationRefused::assignerOfAnotherOwner($type, $owner, $recordOwner);
         }
 
-        if (! Reflector::isNameSubclassOf($assignerClass, AutoAssigner::class)) {
+        if (! Reflector::factory()->isSubclassOf($assignerClass, AutoAssigner::class)) {
             throw AssignmentProviderInvalid::forAutoAssigner($type, $assignerClass);
         }
 
-        if (! Reflector::isNameSubclassOf($workProviderClass, AssignedWorkProvider::class)) {
+        if (! Reflector::factory()->isSubclassOf($workProviderClass, AssignedWorkProvider::class)) {
             throw AssignmentProviderInvalid::forAssignedWork($type, $workProviderClass);
         }
 
@@ -195,7 +195,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $this->requireOwner($owner);
 
-        if (! Reflector::isNameSubclassOf($pool->factoryClass, AssignmentPoolFactory::class)) {
+        if (! Reflector::factory()->isSubclassOf($pool->factoryClass, AssignmentPoolFactory::class)) {
             throw AssignmentProviderInvalid::forPoolFactory($pool->key, $pool->factoryClass);
         }
 
@@ -209,7 +209,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function registerAssignees(AssigneeDefinition $definition): void
     {
-        if (! Reflector::isNameSubclassOf($definition->providerClass, AssigneeProvider::class)) {
+        if (! Reflector::factory()->isSubclassOf($definition->providerClass, AssigneeProvider::class)) {
             throw AssignmentProviderInvalid::forAssignees($definition->type, $definition->providerClass);
         }
 
@@ -224,7 +224,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $type = $definition->type->value;
 
-        if (! Reflector::isNameSubclassOf($definition->activityClass, AutoAssignmentActivity::class)) {
+        if (! Reflector::factory()->isSubclassOf($definition->activityClass, AutoAssignmentActivity::class)) {
             throw AssignmentProviderInvalid::forActivity($type, $definition->activityClass);
         }
 
@@ -304,7 +304,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $class = $this->autoAssigners->get($type)->assignerClass;
 
-        if (! Reflector::isNameSubclassOf($class, AutoAssigner::class)) {
+        if (! Reflector::factory()->isSubclassOf($class, AutoAssigner::class)) {
             throw AssignmentProviderInvalid::forAutoAssigner($type, $class);
         }
 
@@ -364,7 +364,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         foreach ($this->recordProviders->keys() as $type) {
             $model = $links->modelFor($type);
 
-            if (! Reflector::isNameSubclassOf($model, Assignable::class)) {
+            if (! Reflector::factory()->isSubclassOf($model, Assignable::class)) {
                 throw AssignmentProviderInvalid::forModel($type, $model);
             }
         }

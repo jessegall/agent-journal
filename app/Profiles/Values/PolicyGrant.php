@@ -48,7 +48,7 @@ final readonly class PolicyGrant
         $policy = $fields['policy'] ?? null;
 
         if ($keys !== ['access', 'policy'] || $access === null || ! is_string($policy)
-            || ! Reflector::isNameSubclassOf($policy, Policy::class)) {
+            || ! Reflector::factory()->isSubclassOf($policy, Policy::class)) {
             throw GrantShapeInvalid::for($keys);
         }
 

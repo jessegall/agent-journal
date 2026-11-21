@@ -33,24 +33,26 @@ interface ReflectorFactory
     public function exists(string $name): bool;
 
     /**
-     * Whether the name names a loadable type that extends or implements this type, as a strict subtype.
+     * Whether the subject, a class name or an object, extends or implements this type as a strict subtype; false for
+     * a name no autoloader can load.
      *
      * @template S of object
      *
      * @param  class-string<S>  $type
      *
-     * @phpstan-assert-if-true class-string<S> $name
+     * @phpstan-assert-if-true class-string<S>|S $subject
      */
-    public function isNameSubclassOf(string $name, string $type): bool;
+    public function isSubclassOf(string|object $subject, string $type): bool;
 
     /**
-     * Whether the name names a loadable type that is this type or a subtype of it.
+     * Whether the subject, a class name or an object, is this type or a subtype of it; false for a name no autoloader
+     * can load.
      *
      * @template S of object
      *
      * @param  class-string<S>  $type
      *
-     * @phpstan-assert-if-true class-string<S> $name
+     * @phpstan-assert-if-true class-string<S>|S $subject
      */
-    public function isNameOf(string $name, string $type): bool;
+    public function is(string|object $subject, string $type): bool;
 }

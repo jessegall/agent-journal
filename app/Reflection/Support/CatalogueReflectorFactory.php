@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Reflection\Support;
 
 use App\Reflection\Contracts\ReflectorFactory;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The ReflectorFactory over the process's one catalogue, the same Reflectors Reflector::of() answers.
@@ -21,14 +23,24 @@ final readonly class CatalogueReflectorFactory implements ReflectorFactory
         return Reflector::exists($name);
     }
 
-    public function isNameSubclassOf(string $name, string $type): bool
+    public function isSubclassOf(string|object $subject, string $type): bool
     {
-        return Reflector::isNameSubclassOf($name, $type);
+        return $this->found($subject)->filter(fn (Reflector $found) => $found->isSubclassOf($type))->isDefined();
     }
 
-    public function isNameOf(string $name, string $type): bool
+    public function is(string|object $subject, string $type): bool
     {
-        return Reflector::isNameOf($name, $type);
+        return $this->found($subject)->filter(fn (Reflector $found) => $found->is($type))->isDefined();
+    }
+
+    /**
+     * The Reflector of the subject's type; none for a name no autoloader can load.
+     *
+     * @return Option<Reflector<object>>
+     */
+    private function found(string|object $subject): Option
+    {
+        return is_object($subject) ? new Some(Reflector::of($subject)) : Reflector::find($subject);
     }
 
     /**

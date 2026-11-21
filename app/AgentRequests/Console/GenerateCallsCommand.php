@@ -63,11 +63,12 @@ final class GenerateCallsCommand extends Command
             $source = CallGroups::group($files->realPath($folder), $namespace, $area);
 
             if ($source !== null) {
-                $generated["{$folder->relative}/".CallGroups::groupName($area).'.php'] = $source;
+                $groupName = CallGroups::groupName($area);
+                $generated["{$folder->relative}/{$groupName}.php"] = $source;
                 /**
                  * @var class-string $group
                  */
-                $group = $namespace.'\\'.CallGroups::groupName($area);
+                $group = $namespace.'\\'.$groupName;
                 $coreGroups[$area] = $group;
             }
         }

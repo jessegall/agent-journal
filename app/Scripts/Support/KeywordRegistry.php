@@ -105,7 +105,7 @@ final readonly class KeywordRegistry implements ScriptKeywordRegistration
     public function statement(KeywordDefinition $keyword): ScriptStatement
     {
         if ($keyword->implementation === null
-            || ! $this->reflectors->isNameSubclassOf($keyword->implementation, ScriptStatement::class)) {
+            || ! $this->reflectors->isSubclassOf($keyword->implementation, ScriptStatement::class)) {
             throw ScriptDefinitionRefused::invalidKeyword($keyword->token);
         }
 
@@ -143,7 +143,7 @@ final readonly class KeywordRegistry implements ScriptKeywordRegistration
     public function trigger(KeywordDefinition $keyword): ScriptTrigger
     {
         if ($keyword->implementation === null
-            || ! $this->reflectors->isNameSubclassOf($keyword->implementation, ScriptTrigger::class)) {
+            || ! $this->reflectors->isSubclassOf($keyword->implementation, ScriptTrigger::class)) {
             throw ScriptDefinitionRefused::invalidKeyword($keyword->token);
         }
 

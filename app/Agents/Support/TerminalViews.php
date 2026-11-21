@@ -105,7 +105,7 @@ final readonly class TerminalViews implements TerminalViewCloser
             ->latest('updated_at')->first();
 
         if ($view === null) {
-            return Some::create($this->endedView($agentId, $viewer, $now));
+            return new Some($this->endedView($agentId, $viewer, $now));
         }
 
         $runtime = $this->runtimeOf($agentId);
@@ -113,7 +113,7 @@ final readonly class TerminalViews implements TerminalViewCloser
         if ($view->watchedAnotherSession($runtime)) {
             $view->close($now);
 
-            return Some::create($this->endedView($agentId, $viewer, $now));
+            return new Some($this->endedView($agentId, $viewer, $now));
         }
 
         if (! $view->watches($runtime)) {

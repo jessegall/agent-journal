@@ -36,7 +36,7 @@ final readonly class PolicyAuthorizer implements Authorizer
             return Response::deny("The profile does not grant {$access->value} on {$policy}.");
         }
 
-        if (! $this->reflectors->isNameSubclassOf($policy, RecordPolicy::class)) {
+        if (! $this->reflectors->isSubclassOf($policy, RecordPolicy::class)) {
             return Response::allow();
         }
 
