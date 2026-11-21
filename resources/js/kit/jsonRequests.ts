@@ -1,3 +1,4 @@
+import { pressedButtons, SPINNER_AFTER_MS } from '@/framework/pressedButtons';
 import { xsrfToken } from '@kit/xsrfToken';
 
 /**
@@ -22,9 +23,15 @@ async function replyOf<T>(response: Response): Promise<JsonReply<T>> {
  * Reads a JSON answer from the journal.
  */
 export async function getJson<T>(url: string): Promise<JsonReply<T>> {
-    return replyOf<T>(
-        await fetch(url, { headers: { Accept: 'application/json' } }),
-    );
+    const hold = pressedButtons.hold(SPINNER_AFTER_MS);
+
+    try {
+        return await replyOf<T>(
+            await fetch(url, { headers: { Accept: 'application/json' } }),
+        );
+    } finally {
+        hold.release();
+    }
 }
 
 /**
@@ -63,7 +70,9 @@ function send(
     body: Record<string, unknown>,
     keepalive = false,
 ) {
-    return fetch(url, {
+    // The button that sent the change shows its spinner until the answer is read.
+    const hold = pressedButtons.hold();
+    const answered = fetch(url, {
         method,
         credentials: 'same-origin',
         keepalive,
@@ -75,6 +84,9 @@ function send(
         },
         body: JSON.stringify(body),
     });
+    void answered.finally(() => hold.release());
+
+    return answered;
 }
 
 /**

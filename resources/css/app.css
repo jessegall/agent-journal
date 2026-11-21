@@ -274,6 +274,46 @@
         color: var(--brand-text);
     }
 
+    /* Every button shows it can be pressed; a disabled one does not. */
+    button:not(:disabled),
+    [role='button']:not([aria-disabled='true']) {
+        cursor: pointer;
+    }
+
+    /* A button whose request is in flight (framework/pressedButtons.ts): its label hides behind a spinner, as in
+       version 5. The kit button draws its own spinner and so is left alone. */
+    [data-busy] {
+        position: relative;
+        pointer-events: none;
+    }
+
+    [data-busy]:not([aria-busy='true']) {
+        color: transparent !important;
+    }
+
+    [data-busy]:not([aria-busy='true']) > * {
+        visibility: hidden;
+    }
+
+    [data-busy]:not([aria-busy='true'])::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        width: 9px;
+        height: 9px;
+        margin: auto;
+        border: 1px solid var(--text-2);
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: busy-spin 0.7s linear infinite;
+    }
+
+    @keyframes busy-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
     a:hover {
         color: var(--text);
     }
