@@ -19,7 +19,7 @@ type FormMode = 'start' | 'resume' | 'switch';
 const formMode = ref<FormMode | null>(null);
 const refusal = ref<string | null>(null);
 const labels: Record<AgentAction, string> = {
-    open: 'Open',
+    open: 'Terminal',
     start: 'Start session',
     resume: 'Resume',
     switch: 'Switch',
