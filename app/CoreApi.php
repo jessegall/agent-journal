@@ -512,6 +512,7 @@ use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\AskQuestion;
 use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\HideUnseatedNotifications;
 use App\Communication\Commands\MarkNotificationRead;
 use App\Communication\Commands\MarkQuestionNotificationRead;
 use App\Communication\Commands\ReadMessages;
@@ -2280,6 +2281,7 @@ final class CoreApi
                 DismissMessage::class,
                 MarkNotificationRead::class,
                 MarkQuestionNotificationRead::class,
+                HideUnseatedNotifications::class,
                 RetireAgent::class,
                 StartAgent::class,
                 StartOwnedAgent::class,

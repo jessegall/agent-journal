@@ -13,8 +13,10 @@ use App\Communication\Models\NotificationOccurrence;
 use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
 use App\Desks\Commands\CreateDesk;
+use App\Desks\Commands\ReleaseSeat;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
+use App\Desks\Support\SeatChangeResult;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\MessagingTestCase;
@@ -34,6 +36,11 @@ final class QuestionNotificationsTest extends MessagingTestCase
 
     private DeskRecord $team;
 
+    /**
+     * @var array<string, SeatChangeResult>
+     */
+    private array $seats = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -43,7 +50,7 @@ final class QuestionNotificationsTest extends MessagingTestCase
         $seated = [$this->actorOf($this->builder), $this->actorOf($this->reviewer), ActorIdentity::of($this->owner)];
 
         foreach ($seated as $actor) {
-            $this->app->make(AssignmentTransaction::class)->run(
+            $this->seats[$actor->id] = $this->app->make(AssignmentTransaction::class)->run(
                 fn () => $this->app->make(DeskSeating::class)->seat($this->team->id, $actor),
             );
         }
@@ -89,6 +96,19 @@ final class QuestionNotificationsTest extends MessagingTestCase
 
         $this->assertSame(0, NotificationOccurrence::query()->count());
         $this->assertSame(0, NotificationReceipt::query()->count());
+    }
+
+    public function test_leaving_the_desk_hides_that_actors_question_receipts_and_keeps_the_others(): void
+    {
+        $this->runOnBus(new AskMessage($this->ownerInboxId(), $this->team->inboxId(), 'Who takes this?'));
+        $builder = $this->actorOf($this->builder);
+        $seat = $this->seats[$builder->id];
+
+        $this->runOnBus(new ReleaseSeat($this->team->id, $seat->seatId, $seat->reference));
+
+        $this->assertSame(0, $this->unreadOf($builder));
+        $this->assertSame(1, $this->unreadOf($this->actorOf($this->reviewer)));
+        $this->assertSame(1, NotificationReceipt::query()->whereNotNull('hidden_at')->count());
     }
 
     private function unreadOf(ActorIdentity $actor): int

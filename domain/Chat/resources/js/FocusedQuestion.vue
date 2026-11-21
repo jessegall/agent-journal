@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import type { FocusedQuestionData } from '@generated/types/chat';
 import type { MessageView } from '@kit/CoreTypes';
-import { useNotifications } from '@kit/notifications';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { LEASE_MILLISECONDS, useNotifications } from '@kit/notifications';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 /**
  * The one question a notification opened, shown passively: its text, whether it still waits, was answered or was
  * dismissed, and its answer once there is one. Only after it is shown does the reader's own receipt of it become
  * read; nothing else is read, taken up or answered. A question the reader may not see offers a retry and marks
- * nothing.
+ * nothing. While the tab is visible it is read again every lease, so a question the reader lost access to leaves
+ * the screen without a push.
  */
 const props = defineProps<{
     focused: FocusedQuestionData | undefined;
@@ -55,7 +56,19 @@ async function acknowledgeShown(): Promise<void> {
     void notifications.markQuestionRead(shown.id);
 }
 
-onMounted(acknowledgeShown);
+let leaseTimer: ReturnType<typeof setInterval> | undefined;
+
+function readAgainWhenVisible(): void {
+    if (document.visibilityState === 'visible') {
+        emit('retry');
+    }
+}
+
+onMounted(() => {
+    void acknowledgeShown();
+    leaseTimer = setInterval(readAgainWhenVisible, LEASE_MILLISECONDS);
+});
+onBeforeUnmount(() => clearInterval(leaseTimer));
 watch(question, acknowledgeShown);
 
 function goBack(): void {

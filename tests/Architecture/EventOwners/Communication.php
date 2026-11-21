@@ -13,6 +13,7 @@ use App\Communication\Events\MessageRead;
 use App\Communication\Events\MessageSent;
 use App\Communication\Events\MessageTakenUp;
 use App\Communication\Events\NotificationsChanged;
+use App\Communication\Events\NotificationsWithdrawn;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -81,5 +82,12 @@ return [
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new NotificationsChanged('scope'),
+    ],
+    NotificationsWithdrawn::class => [
+        'role' => EventRole::CommandFact,
+        'migrated' => false,
+        'producers' => [
+            'app/Communication/Handlers/HideUnseatedNotificationsHandler.php',
+        ],
     ],
 ];

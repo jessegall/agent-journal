@@ -89,4 +89,16 @@ final class NotificationOccurrence extends Model implements ReadableModel
     {
         $query->where('occurrence_key', $key);
     }
+
+    /**
+     * Occurrences of one target type whose target id the query lists.
+     *
+     * @param  Builder<self>  $query
+     * @param  Builder<*>  $targetIds
+     */
+    #[Scope]
+    protected function targeting(Builder $query, string $key, Builder $targetIds): void
+    {
+        $query->where('target_key', $key)->whereIn('target_id', $targetIds);
+    }
 }

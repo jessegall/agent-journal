@@ -95,6 +95,26 @@ final class NotificationReceipt extends Model implements ReadableModel
     }
 
     /**
+     * The scope's visible receipts of one target type whose target id the query lists, at most the given number.
+     *
+     * @param  Builder<*>  $targetIds
+     * @return list<self>
+     */
+    public static function visibleWithTargetIn(string $scopeId, string $targetKey, Builder $targetIds, int $limit): array
+    {
+        return array_values(self::query()
+            ->where('scope_id', $scopeId)
+            ->whereNull('hidden_at')
+            ->whereIn(
+                'occurrence_id',
+                NotificationOccurrence::query()->targeting($targetKey, $targetIds)->select('id'),
+            )
+            ->readLimit($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
      * The receipt of this id, only when it belongs to the scope.
      *
      * @return Option<self>

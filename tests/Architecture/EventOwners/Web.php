@@ -25,6 +25,7 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Web/Listeners/BroadcastProtectedViewInvalidation.php',
+            'app/Web/Listeners/PurgeWithdrawnNotifications.php',
         ],
     ],
 ];
