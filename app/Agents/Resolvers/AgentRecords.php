@@ -216,6 +216,7 @@ final readonly class AgentRecords implements AgentDirectory
                 $facts->evidence($agent->isRetired(), $resumable !== [], $canStop, $this->clock->now()),
                 $this->remedyWords,
             ),
+            $session?->driver,
         );
     }
 }

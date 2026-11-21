@@ -80,6 +80,7 @@ const idle: AgentOptionData = {
     actions: ['start'],
     conversations: [],
     startRefusal: null,
+    sessionDriver: null,
     status: {
         sessionState: 'stopped',
         label: 'Stopped',

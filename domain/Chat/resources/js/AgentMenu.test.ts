@@ -29,6 +29,7 @@ function agent(id: string, name: string, retired = false): AgentOptionData {
         actions: retired ? [] : ['start'],
         conversations: [],
         startRefusal: null,
+        sessionDriver: null,
         status: {
             sessionState: retired ? 'retired' : 'idle',
             label: retired ? 'Retired' : 'Idle',

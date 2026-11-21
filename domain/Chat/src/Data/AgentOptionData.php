@@ -46,6 +46,8 @@ final class AgentOptionData extends Data
         public readonly string|null $startRefusal,
         // What the agent is doing now, the words for it and what may be done, decided from all its evidence at once.
         public readonly AgentStatusData $status,
+        // The program the live session runs, which a switch names as its source; none without a session.
+        public readonly string|null $sessionDriver,
     ) {}
 
     public static function fromAgentOption(AgentOption $agent): self
@@ -68,6 +70,7 @@ final class AgentOptionData extends Data
             'conversations' => $agent->conversations,
             'startRefusal' => $agent->startRefusal,
             'status' => $agent->status,
+            'sessionDriver' => $agent->sessionDriver,
         ]);
     }
 }

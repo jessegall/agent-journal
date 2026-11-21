@@ -38,6 +38,7 @@ final readonly class AgentOption
         public string|null $startRefusal,
         public LaunchOutcome|null $launchOutcome,
         public AgentStatus $status,
+        public string|null $sessionDriver = null,
     ) {}
 
     /**

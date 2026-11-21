@@ -16,6 +16,7 @@ import type { DriverVariant, HookDriver } from '@kit/CoreTypes';
 import {
     accountsPage,
     cancelLaunch,
+    recheck,
     startMain,
     startReceipt,
     switchMethod,
@@ -420,18 +421,81 @@ function switchSession(): void {
     });
 }
 
+// A switch is reviewed before it is sent: its source, its target and what happens to the running session.
+const isReviewing = ref(false);
+const driverLabel = (value: string | null) => drivers.find((choice) => choice.value === value)?.label ?? 'its program';
+const sourceLabel = computed(() => driverLabel(props.agent.sessionDriver));
+const targetLabel = computed(() => driverLabel(driver.value));
+// The leg of the agent's switch the host has not confirmed, in the words of that leg; none while both are known.
+const unconfirmedLeg = computed(() => {
+    if (props.agent.switchStage === 'stop_unconfirmed') {
+        return `Couldn't confirm that ${sourceLabel.value} stopped`;
+    }
+
+    if (props.agent.switchStage === 'start_unconfirmed') {
+        return `Couldn't confirm that ${targetLabel.value} started`;
+    }
+
+    return null;
+});
+const legAction = computed(() => props.agent.status.actions[0] ?? null);
+
+/**
+ * The one action an unconfirmed leg offers: continue the switch for an actor who may reconcile it, else read the
+ * agent again; neither advances anything on a reload.
+ */
+function settleLeg(): void {
+    if (legAction.value?.type === 'recheck-switch' && props.agent.switchId !== null) {
+        switching.retry(recheck.url(props.agent.switchId), newRequestId(), 'Checking');
+
+        return;
+    }
+
+    router.reload();
+}
+
+/**
+ * Starts the choices again as a new switch, with a fresh request id, after the target's launch failed.
+ */
+function changeSettings(): void {
+    requestId = newRequestId();
+    isReviewing.value = false;
+    switching.refusal.value = null;
+}
+
 function submit(): void {
     if (!canSubmit.value) {
         return;
     }
 
+    if (props.mode === 'switch' && !isReviewing.value) {
+        isReviewing.value = true;
+
+        return;
+    }
+
     if (props.mode === 'switch') {
+        isReviewing.value = false;
         switchSession();
 
         return;
     }
 
     start();
+}
+
+watch(
+    () => switching.refusalField.value,
+    (field) => {
+        if (field !== null && field in fieldIds && switching.refusal.value !== null) {
+            refuseAt(field as FieldKey, switching.refusal.value);
+        }
+    },
+);
+
+// A switch dialog opened again follows the switch already under way by its id, never sending it again.
+if (props.mode === 'switch') {
+    switching.resume();
 }
 
 // A reload during a start shows the same start, read by its key; a restore never submits.
@@ -451,6 +515,31 @@ onBeforeUnmount(() => following?.stop());
                     {{ agent.name }} stops its current session first; the new one starts once the stop is confirmed.
                     Your draft stays.
                 </p>
+                <template v-if="isReviewing">
+                    <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-small">
+                        <dt class="text-text-3">From</dt>
+                        <dd class="text-text">{{ sourceLabel }}, {{ agent.status.label }}</dd>
+                        <dt class="text-text-3">To</dt>
+                        <dd class="text-text">{{ review }}</dd>
+                        <dt class="text-text-3">Then</dt>
+                        <dd class="text-text">The current turn is interrupted and the session ends before the new one starts.</dd>
+                    </dl>
+                </template>
+                <template v-if="unconfirmedLeg">
+                    <p class="text-small text-text">{{ unconfirmedLeg }}</p>
+                    <template v-if="agent.status.reason">
+                        <p class="text-small text-text-3">{{ agent.status.reason }}</p>
+                    </template>
+                    <template v-if="legAction">
+                        <Button variant="bordered" size="small" @click="settleLeg">{{ legAction.label }}</Button>
+                    </template>
+                </template>
+                <template v-if="agent.switchStage === 'launch_failed'">
+                    <Button variant="ghost" size="small" @click="changeSettings">Change settings</Button>
+                </template>
+                <template v-if="agent.switchStage === 'cancelled' && agent.sessionId === null">
+                    <p class="text-small text-text">{{ sourceLabel }} stopped; {{ targetLabel }} was cancelled.</p>
+                </template>
             </template>
             <template v-if="mode === 'resume'">
                 <fieldset
@@ -586,7 +675,9 @@ onBeforeUnmount(() => following?.stop());
             <template v-if="canCancelStart">
                 <Button variant="bordered" :pending="isCancelling" @click="cancelStart">Cancel start</Button>
             </template>
-            <Button variant="primary" :disabled="!canSubmit" @click="submit">{{ titles[mode] }}</Button>
+            <Button variant="primary" :disabled="!canSubmit" @click="submit">
+                {{ mode === 'switch' && isReviewing ? 'Confirm switch' : titles[mode] }}
+            </Button>
         </template>
     </Modal>
 </template>
