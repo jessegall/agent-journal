@@ -8,6 +8,7 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Models\Agent;
 use App\Agents\Models\Host;
+use App\Agents\Values\HostCombination;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Events\ProjectBindingCreated;
 use App\Connections\Events\ProjectBindingEnvironmentAssigned;
@@ -19,12 +20,15 @@ use App\Connections\Exceptions\PresenceRefused;
 use App\Connections\Values\BindingFolder;
 use App\Connections\Values\PresenceReceipt;
 use App\Connections\Values\PresenceReport;
+use App\Connections\Values\ProviderEligibility;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -59,6 +63,7 @@ use Illuminate\Support\Carbon;
  * @property-read Agent $mainAgent
  * @property-read Host $host
  * @property-read Project $project
+ * @property-read Environment|null $environment
  */
 #[Fillable([
     'host_id', 'project_id', 'main_agent_id', 'root_id', 'canonical_root', 'project_label', 'machine_label',
@@ -75,6 +80,11 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
      * How long one presence report keeps a binding ready; the relay reports again well before it ends.
      */
     public const int PRESENCE_SECONDS = 120;
+
+    /**
+     * The most connected folders one page of the list holds.
+     */
+    public const int PAGE_LIMIT = 25;
 
     // ----------[ Constructors ]----------
 
@@ -140,15 +150,26 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Every connected folder, newest first; an installation connects a handful.
+     * The binding of this host, whatever its readiness; another host's binding is refused.
      *
-     * @return list<self>
+     * @throws PresenceRefused
      */
-    public static function listed(): array
+    public static function ofHost(string $hostId, string $id): self
     {
-        return array_values(
-            self::query()->latest()->readAll('an installation connects a handful of folders')->get()->all(),
-        );
+        return self::query()->whereKey($id)->where('host_id', $hostId)
+            ->firstOr(fn () => throw PresenceRefused::notReadableBy($id));
+    }
+
+    /**
+     * One page of the connected folders, PAGE_LIMIT at a time, oldest first by creation time and then id, with the
+     * project, environment and host each names; the cursor reads the next slice in the same order.
+     *
+     * @return CursorPaginator<int, self>
+     */
+    public static function pageAfter(string|null $cursor): CursorPaginator
+    {
+        return self::query()->with(['project', 'environment', 'host'])->orderBy('created_at')->orderBy('id')
+            ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }
 
     /**
@@ -204,7 +225,8 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     /**
      * Records a presence report by server time. A sequence of the live boot no higher than the last changes nothing;
      * a new boot replaces a live one only when it takes over, and every new boot raises the boot generation. A
-     * provisioned report on this journal's protocol makes the binding ready until its presence expires.
+     * provisioned report on this journal's protocol makes the binding ready until its presence expires, and the
+     * combinations it reports are what its host can start.
      *
      * @throws PresenceRefused
      */
@@ -214,12 +236,12 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $isSameBoot = $this->boot_id === $report->bootId;
 
         if ($isSameBoot && $report->sequence <= $this->report_sequence) {
-            return $this->receipt();
+            return $this->presenceReceipt();
         }
 
         // A relay of a setup older than the one acknowledged changes nothing, as a stale sequence does.
         if ($report->setupGeneration < $this->setup_generation) {
-            return $this->receipt();
+            return $this->presenceReceipt();
         }
 
         if (! $isSameBoot && $this->hasLivePresenceAt($now) && ! $report->takesOver) {
@@ -239,12 +261,16 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $this->last_contact_at = $now;
         $this->presence_expires_at = $now->addSeconds(self::PRESENCE_SECONDS);
         $this->assertSaved($this->save());
+        $this->host->recordCombinations(
+            $report->protocol,
+            array_map(fn (HostCombination $combination) => $combination->stored(), $report->combinations),
+        );
 
         if ($changed) {
             $this->raise(new ProjectBindingReadinessChanged($this->id, $readiness, $now));
         }
 
-        return $this->receipt();
+        return $this->presenceReceipt();
     }
 
     /**
@@ -319,6 +345,48 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         return BindingReadiness::Ready;
     }
 
+    /**
+     * Whether the binding may start the program: one whose hooks run isolated per session, that its relay reported it
+     * can run with isolated hooks, start grants and a lease.
+     */
+    public function eligibilityOf(HookDriver $driver): ProviderEligibility
+    {
+        if (! $driver->isolatesHooksPerSession()) {
+            return ProviderEligibility::unavailable(
+                $driver,
+                "{$driver->displayName()} does not keep its hooks to one session yet, so a connected folder cannot run it isolated.",
+            );
+        }
+
+        if (! $this->host->declaresDriver($driver)) {
+            return ProviderEligibility::unavailable(
+                $driver,
+                "This folder's relay has not reported it can run {$driver->displayName()} with isolated hooks and a lease.",
+            );
+        }
+
+        return ProviderEligibility::eligible($driver);
+    }
+
+    /**
+     * What the journal holds of the binding's presence now, with its effective readiness and last confirmed contact.
+     */
+    public function presenceReceipt(): PresenceReceipt
+    {
+        $now = CarbonImmutable::now();
+
+        return new PresenceReceipt(
+            $this->id,
+            $this->boot_generation,
+            $this->setup_generation,
+            $now->toIso8601String(),
+            (string) $this->presence_expires_at?->toIso8601String(),
+            $this->authority_generation,
+            $this->readinessAt($now)->value,
+            $this->last_contact_at?->toIso8601String(),
+        );
+    }
+
     // ----------[ Relations ]----------
 
     /**
@@ -327,6 +395,14 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return BelongsTo<Environment, $this>
+     */
+    public function environment(): BelongsTo
+    {
+        return $this->belongsTo(Environment::class);
     }
 
     /**
@@ -366,17 +442,5 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         }
 
         return BindingReadiness::Ready;
-    }
-
-    private function receipt(): PresenceReceipt
-    {
-        return new PresenceReceipt(
-            $this->id,
-            $this->boot_generation,
-            $this->setup_generation,
-            CarbonImmutable::now()->toIso8601String(),
-            (string) $this->presence_expires_at?->toIso8601String(),
-            $this->authority_generation,
-        );
     }
 }

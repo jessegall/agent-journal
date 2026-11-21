@@ -136,12 +136,12 @@ final class DeviceGrant extends Model implements ReadableModel
     /**
      * The terminal sign-ins of these bindings, newest first, in one read; a binding has a few shells that asked.
      *
-     * @param  list<string>  $bindingIds
+     * @param  list<string>  $ids
      * @return list<self>
      */
-    public static function listedOfBindings(array $bindingIds): array
+    public static function listedOfBindings(array $ids): array
     {
-        return array_values(self::query()->whereIn('binding_id', $bindingIds)->orderByDesc('created_at')->orderByDesc('id')
+        return array_values(self::query()->whereIn('binding_id', $ids)->orderByDesc('created_at')->orderByDesc('id')
             ->readAll('a binding has a device grant per shell that asked')->get()->all());
     }
 
@@ -274,11 +274,6 @@ final class DeviceGrant extends Model implements ReadableModel
         return $this->state === DeviceGrantState::Approved;
     }
 
-    public function isPending(): bool
-    {
-        return $this->state === DeviceGrantState::Pending;
-    }
-
     /**
      * Where the request stands for the owner at this server time: pending, approved and awaiting collection, issued,
      * expired before approval, or revoked.
@@ -314,19 +309,6 @@ final class DeviceGrant extends Model implements ReadableModel
         return ! CarbonImmutable::now()->lessThan($this->code_expires_at);
     }
 
-    // ----------[ Internals ]----------
-
-    private static function newReference(): string
-    {
-        $letters = '';
-
-        for ($index = 0; $index < 8; $index++) {
-            $letters .= self::REFERENCE_LETTERS[random_int(0, strlen(self::REFERENCE_LETTERS) - 1)];
-        }
-
-        return 'TS-'.$letters;
-    }
-
     // ----------[ Relations ]----------
 
     /**
@@ -343,5 +325,18 @@ final class DeviceGrant extends Model implements ReadableModel
     public function environment(): BelongsTo
     {
         return $this->belongsTo(Environment::class);
+    }
+
+    // ----------[ Internals ]----------
+
+    private static function newReference(): string
+    {
+        $letters = '';
+
+        for ($index = 0; $index < 8; $index++) {
+            $letters .= self::REFERENCE_LETTERS[random_int(0, strlen(self::REFERENCE_LETTERS) - 1)];
+        }
+
+        return 'TS-'.$letters;
     }
 }

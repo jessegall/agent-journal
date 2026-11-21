@@ -223,6 +223,20 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
+     * Whether the host reported it can run the program at all, in any build, placement or variant.
+     */
+    public function declaresDriver(HookDriver $driver): bool
+    {
+        foreach ($this->combinations as $combination) {
+            if ($combination['driver'] === $driver->value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * The folder a start the host was not asked for in a folder runs in: the first of its start roots.
      *
      * @throws HostUnavailable

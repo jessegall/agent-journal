@@ -105,6 +105,40 @@ final class BindingPresenceTest extends TestCase
         $this->assertSame(BindingReadiness::Offline, $offline);
     }
 
+    public function test_its_host_reads_the_bindings_readiness_and_last_contact_without_reporting(): void
+    {
+        $binding = $this->connected(self::NONCE);
+        $this->report(self::NONCE, $binding, 'boot-1', 1)->assertOk();
+        $before = ProjectBinding::query()->findOrFail($binding);
+
+        $status = $this->status(self::NONCE, $binding)->assertOk();
+
+        $after = ProjectBinding::query()->findOrFail($binding);
+        $this->assertSame('ready', $status->json('readiness'));
+        $this->assertSame($before->last_contact_at?->toIso8601String(), $status->json('lastContactAt'));
+        $this->assertSame($before->report_sequence, $after->report_sequence);
+        $this->assertEquals($before->presence_expires_at, $after->presence_expires_at);
+    }
+
+    public function test_another_host_cannot_read_the_bindings_status(): void
+    {
+        $binding = $this->connected(self::NONCE);
+        $this->connected('nonce-bbbbbbbbbbbbbbbb');
+
+        $this->status('nonce-bbbbbbbbbbbbbbbb', $binding)->assertForbidden();
+    }
+
+    private function status(string $nonce, string $binding): TestResponse
+    {
+        return $this->signedRelayCall(
+            $this->relayCredential($nonce),
+            "/host/bindings/{$binding}/status",
+            [],
+            HostProtocolVersion::RemoteProject,
+            (string) Str::uuid(),
+        );
+    }
+
     private function connected(string $nonce): string
     {
         $ticket = 'ticket-'.$nonce;

@@ -7,6 +7,7 @@ namespace App\Connections\Handlers;
 use App\Connections\Commands\PollDeviceGrant;
 use App\Connections\Exceptions\DeviceGrantRefused;
 use App\Connections\Models\DeviceGrant;
+use App\Connections\Values\DevicePollOutcome;
 use App\Contracts\CommandHandler;
 
 /**
@@ -16,7 +17,7 @@ use App\Contracts\CommandHandler;
  */
 final readonly class PollDeviceGrantHandler implements CommandHandler
 {
-    public function handle(PollDeviceGrant $command): string
+    public function handle(PollDeviceGrant $command): DevicePollOutcome
     {
         $grant = DeviceGrant::lockByDeviceCode($command->deviceCodeDigest);
 
@@ -32,12 +33,13 @@ final readonly class PollDeviceGrantHandler implements CommandHandler
 
         $grant->recordPoll();
 
+        // A poll before the owner approved is kept, so the next one sooner than the interval slows down.
         if (! $grant->isApproved()) {
-            throw DeviceGrantRefused::awaitingApproval();
+            return new DevicePollOutcome(DevicePollOutcome::PENDING, (string) $grant->reference);
         }
 
         $grant->issue($command->grantDigest);
 
-        return (string) $grant->reference;
+        return new DevicePollOutcome(DevicePollOutcome::ISSUED, (string) $grant->reference);
     }
 }

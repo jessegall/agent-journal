@@ -86,6 +86,7 @@ final class EnvironmentsTest extends TestCase
         $this->issueLine($ticket);
 
         $redeemed = $this->redeemLine($ticket, $nonce)->assertCreated();
+        $this->reportClaudeCode($nonce, (string) $redeemed->json('bindingId'));
 
         return ProjectBinding::query()->findOrFail($redeemed->json('bindingId'));
     }

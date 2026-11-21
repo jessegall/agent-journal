@@ -11,11 +11,13 @@ use App\Actors\Support\ActorLabelSet;
 use App\Agents\Support\InstallLineAvailability;
 use App\Agents\Support\PublishedReleases;
 use App\Agents\Support\ServerOrigin;
+use App\Connections\Enums\BindingReadiness;
 use App\Connections\Models\DeviceGrant;
 use App\Connections\Models\Environment;
 use App\Connections\Models\Project;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Support\InstallAttemptList;
+use App\Http\Data\Connections\BindingListData;
 use App\Http\Data\Connections\ConnectProjectWindowData;
 use App\Http\Data\Connections\InstallAttemptListData;
 use App\Http\Data\Connections\JoinTargetData;
@@ -57,8 +59,42 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
                 fn (Project $project) => JoinTargetData::fromProject($project, $environments),
                 $projects,
             ),
-            'bindings' => $this->bindingRows(ProjectBinding::listed(), $now),
+            'bindings' => $this->bindingList($now),
         ]);
+    }
+
+    /**
+     * One page of the connected folders at this server time, and when the page must be read again: the earliest
+     * presence of a ready folder that expires.
+     */
+    private function bindingList(CarbonImmutable $now): BindingListData
+    {
+        $page = ProjectBinding::pageAfter($this->bindingsCursor());
+        $bindings = array_values($page->items());
+
+        $expiries = array_values(array_filter(array_map(
+            fn (ProjectBinding $binding) => $binding->readinessAt($now) === BindingReadiness::Ready
+                ? $binding->presence_expires_at?->toIso8601String()
+                : null,
+            $bindings,
+        )));
+
+        sort($expiries);
+
+        return BindingListData::from([
+            'rows' => $this->bindingRows($bindings, $now),
+            'serverTime' => $now->toIso8601String(),
+            'refreshAt' => $expiries[0] ?? null,
+            'nextCursor' => $page->nextCursor()?->encode(),
+        ]);
+    }
+
+    /**
+     * The cursor of the connected folders page the window asked for, none for the first.
+     */
+    private function bindingsCursor(): string|null
+    {
+        return $this->request->filled('bindings') ? $this->request->string('bindings')->toString() : null;
     }
 
     /**
@@ -71,18 +107,23 @@ final readonly class ConnectProjectWindowResolver implements PageResolver
     private function bindingRows(array $bindings, CarbonImmutable $now): array
     {
         $grants = DeviceGrant::listedOfBindings(array_map(fn (ProjectBinding $binding) => $binding->id, $bindings));
+
         $approvers = array_values(array_filter(array_map(
             fn (DeviceGrant $grant) => $grant->approved_by_user_id,
             $grants,
         )));
+
         $labels = $this->labels->labelsFor(array_map(
             fn (string $userId) => ActorIdentity::of(ActorContext::forUser($userId)),
             array_values(array_unique($approvers)),
         ));
+
+        $release = $this->releases->currentRelease()[0]->version ?? 'the current one';
+
         return array_map(fn (ProjectBinding $binding) => ProjectBindingRowData::fromBinding($binding, $now, array_map(
             fn (DeviceGrant $grant) => TerminalSignInRowData::fromGrant($grant, $this->approverOf($grant, $labels), $now),
             array_values(array_filter($grants, fn (DeviceGrant $grant) => $grant->binding_id === $binding->id)),
-        )), $bindings);
+        ), $release), $bindings);
     }
 
     /**

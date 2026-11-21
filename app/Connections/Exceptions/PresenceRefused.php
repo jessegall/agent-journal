@@ -27,6 +27,11 @@ final class PresenceRefused extends RuntimeException implements CodedRefusal, Co
         );
     }
 
+    public static function notReadableBy(string $bindingId): self
+    {
+        return new self("Only the host of binding {$bindingId} reads its status.");
+    }
+
     public static function anotherBootIsLive(string $bindingId): self
     {
         $refusal = new self("Another boot of binding {$bindingId} is live; take over to replace it.");

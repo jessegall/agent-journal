@@ -39,3 +39,16 @@ func TestAGrantForAnUndeclaredCombinationStartsNothing(t *testing.T) {
 		t.Fatalf("an undeclared grant gave %v, want ErrCombinationNotDeclared", err)
 	}
 }
+
+func TestARelayOffersOnlyTheCombinationsItRunsIsolatedWithALease(t *testing.T) {
+	isolated := isolatedCombinations()
+
+	if len(isolated) == 0 {
+		t.Fatal("a relay offers no combination at all")
+	}
+	for _, combination := range isolated {
+		if combination.Driver != "claude-code" || combination.Arrangement != string(host.Local) {
+			t.Fatalf("a relay offers %+v, which it cannot run isolated with a lease", combination)
+		}
+	}
+}

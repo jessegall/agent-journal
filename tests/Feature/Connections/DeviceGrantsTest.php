@@ -136,9 +136,9 @@ final class DeviceGrantsTest extends TestCase
             ->assertNoContent();
 
         $this->actingAs($this->owner)->get('/connections')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('page.data.bindings.0.signIns', 2)
-            ->where('page.data.bindings.0.signIns.1.reference', $revoked->reference)
-            ->where('page.data.bindings.0.signIns.1.state', 'revoked'));
+            ->has('page.data.bindings.rows.0.signIns', 2)
+            ->where('page.data.bindings.rows.0.signIns.1.reference', $revoked->reference)
+            ->where('page.data.bindings.rows.0.signIns.1.state', 'revoked'));
         $this->deviceCommand($first, $binding)->assertUnauthorized();
         $this->deviceCommand($second, $binding)->assertForbidden();
     }

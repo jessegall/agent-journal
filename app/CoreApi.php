@@ -571,6 +571,7 @@ use App\Connections\Commands\IssueProjectInvitation;
 use App\Connections\Commands\PollDeviceGrant;
 use App\Connections\Commands\RecordBindingPresence;
 use App\Connections\Commands\RecordProjectCommandProcess;
+use App\Connections\Commands\RecordBindingStart;
 use App\Connections\Commands\RecoverProjectBinding;
 use App\Connections\Commands\RedeemProjectInvitation;
 use App\Connections\Commands\RenewRuntimeLease;
@@ -589,6 +590,7 @@ use App\Connections\Values\CommandRunStart;
 use App\Connections\Values\DeliveryReceipt;
 use App\Connections\Values\DeliverySubmission;
 use App\Connections\Values\DeviceGrantStart;
+use App\Connections\Values\DevicePollOutcome;
 use App\Connections\Values\EnvironmentTask;
 use App\Connections\Values\EnvironmentTaskList;
 use App\Connections\Values\IssuedInvitation;
@@ -2084,6 +2086,7 @@ final class CoreApi
                 CommandFrame::class,
                 CommandRunStart::class,
                 DeviceGrantStart::class,
+                DevicePollOutcome::class,
                 GatewaySettings::class,
                 GatewayOperation::class,
                 GatewayEndpoint::class,
@@ -2344,6 +2347,7 @@ final class CoreApi
                 ApproveDeviceGrant::class,
                 RevokeDeviceGrant::class,
                 AssignBindingEnvironment::class,
+                RecordBindingStart::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

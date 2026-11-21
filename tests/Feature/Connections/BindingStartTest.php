@@ -23,8 +23,9 @@ final class BindingStartTest extends TestCase
     use ConnectsProjects;
 
     private const array TABLES = [
-        'connection_audits', 'project_invitations', 'install_attempts', 'project_bindings', 'project_environments',
-        'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records', 'users',
+        'connection_audits', 'project_invitations', 'install_attempts', 'binding_starts', 'project_bindings',
+        'project_environments', 'projects', 'agent_runtimes', 'agent_sessions', 'agents', 'hosts', 'settings_records',
+        'users',
     ];
 
     private const string NONCE = 'nonce-aaaaaaaaaaaaaaaa';
@@ -43,7 +44,58 @@ final class BindingStartTest extends TestCase
         $this->assertSame($runtimes, AgentRuntime::query()->count());
     }
 
+    public function test_a_start_asked_again_under_its_id_answers_the_one_runtime_it_opened(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+
+        $first = $this->start($binding, ['startId' => 'start-1'])->assertCreated();
+        $again = $this->start($binding, ['startId' => 'start-1'])->assertOk();
+
+        $this->assertSame($first->json('runtime_id'), $again->json('runtime_id'));
+        $this->assertSame($first->json('session_id'), $again->json('session_id'));
+        $this->assertSame(1, AgentRuntime::query()->count());
+    }
+
+    public function test_a_start_of_a_revoked_binding_cannot_be_looked_up(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $this->start($binding, ['startId' => 'start-1'])->assertCreated();
+        ProjectBinding::query()->whereKey($binding->id)->update(['readiness' => 'revoked']);
+
+        $this->start($binding, ['startId' => 'start-1'])->assertForbidden();
+    }
+
+    public function test_a_program_the_binding_may_not_start_is_refused_by_name_before_any_runtime(): void
+    {
+        $binding = $this->connected('the-ticket', self::NONCE);
+        $silent = $this->redeemed('other-ticket', 'nonce-bbbbbbbbbbbbbbbb');
+
+        $codex = $this->start($binding, ['driver' => 'codex'])->assertForbidden();
+        $unreported = $this->signedStart('nonce-bbbbbbbbbbbbbbbb', $silent, [])->assertForbidden();
+
+        $this->assertStringContainsString(
+            'Codex does not keep its hooks to one session',
+            (string) $codex->json('message'),
+        );
+        $this->assertStringContainsString(
+            'has not reported it can run Claude Code',
+            (string) $unreported->json('message'),
+        );
+        $this->assertSame(0, AgentRuntime::query()->count());
+    }
+
+    /**
+     * A redeemed binding whose relay reported it can run Claude Code isolated.
+     */
     private function connected(string $ticket, string $nonce): ProjectBinding
+    {
+        $binding = $this->redeemed($ticket, $nonce);
+        $this->reportClaudeCode($nonce, $binding->id);
+
+        return $binding;
+    }
+
+    private function redeemed(string $ticket, string $nonce): ProjectBinding
     {
         $this->issueLine($ticket);
 

@@ -35,10 +35,12 @@ final class TaskEnvironmentTest extends TestCase
         $this->assertSame('research-environment', $research->environment_id);
         $this->assertSame('production-environment', $production->environment_id);
         $this->assertNull($here->environment_id);
+
         $this->assertSame(
             [$research->id],
             Task::query()->inEnvironments(['research-environment'])->pluck('id')->all(),
         );
+
         $this->assertSame(3, Task::query()->inEnvironments([])->count());
     }
 

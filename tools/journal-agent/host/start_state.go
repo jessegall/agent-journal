@@ -101,6 +101,32 @@ func (states StartStates) Load(runtimeID string) (record StartRecord, found bool
 	return record, true, json.Unmarshal(content, &record)
 }
 
+// Unfinished are the records whose program may still run: its process group still holds a process, or the system
+// could not say. A process id that now names another program is not the child.
+func (states StartStates) Unfinished() ([]StartRecord, error) {
+	records, err := states.All()
+	if err != nil {
+		return nil, err
+	}
+	unfinished := []StartRecord{}
+	for _, record := range records {
+		if record.Stage != ExecutionKnown || record.Execution == nil {
+			continue
+		}
+		group := record.group()
+		if group.IsOwned() && group.Members() != NoMembers {
+			unfinished = append(unfinished, record)
+		}
+	}
+
+	return unfinished, nil
+}
+
+// group is the process group the program of a record with a known execution runs in.
+func (record StartRecord) group() OwnedGroup {
+	return OwnedGroup{Pid: record.Execution.ProcessID, StartIdentity: record.Execution.StartIdentity}
+}
+
 // Remove drops the runtime's record once nothing is left to report.
 func (states StartStates) Remove(runtimeID string) error {
 	return removePrivateFile(states.pathOf(runtimeID))

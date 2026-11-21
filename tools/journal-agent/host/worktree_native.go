@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 )
@@ -255,11 +256,11 @@ func (worktrees NativeWorktrees) Cleanup(
 	receipt, err := worktrees.readReceipt(claim)
 	if err != nil || !receipt.Complete || !worktrees.isRegistered(ctx, receipt.Path) {
 		return WorktreeCleanup{Outcome: CleanupAmbiguous, Path: worktrees.receiptFor(claim).Path,
-			Reason: "no completed receipt of this journal owns this worktree"}
+			Reason: "unknown ownership: no completed receipt of this journal owns this worktree"}
 	}
 	kept := WorktreeCleanup{Outcome: CleanupKept, Path: receipt.Path, Branch: receipt.Branch}
 	if leaseActive {
-		kept.Reason = "the child still holds its lease"
+		kept.Reason = "a live child still holds its lease"
 		return kept
 	}
 	status, err := worktrees.git(ctx, receipt.Path, "status", "--porcelain")
@@ -268,7 +269,7 @@ func (worktrees NativeWorktrees) Cleanup(
 		return kept
 	}
 	if !ownerChoseRemoval && !worktrees.isReachable(ctx, receipt.Path, target) {
-		kept.Reason = "its commit is not reachable from " + target
+		kept.Reason = "unpublished commits: its commit is not reachable from " + target
 		return kept
 	}
 	if _, err := worktrees.git(ctx, worktrees.Root, "worktree", "remove", receipt.Path); err != nil {
@@ -288,4 +289,42 @@ func (worktrees NativeWorktrees) isReachable(ctx context.Context, path string, t
 	_, err = worktrees.git(ctx, worktrees.Root, "merge-base", "--is-ancestor", strings.TrimSpace(head), target)
 
 	return err == nil
+}
+
+// Retire cleans up every worktree of the root when its folder is disconnected: each one a receipt names goes through
+// Cleanup against the branch the root has checked out, a running child's keeps its lease, and a folder under
+// .journal/worktrees that no receipt names is kept as of unknown ownership. Nothing is force-removed.
+func (worktrees NativeWorktrees) Retire(ctx context.Context, runningRuntimes []string) []WorktreeCleanup {
+	receipts, _ := filepath.Glob(filepath.Join(worktrees.Root, ".journal", "receipts", "*.json"))
+	folders, _ := filepath.Glob(filepath.Join(worktrees.Root, ".journal", "worktrees", "*"))
+	if len(receipts) == 0 && len(folders) == 0 {
+		return []WorktreeCleanup{}
+	}
+	destination, destinationErr := worktrees.git(ctx, worktrees.Root, "symbolic-ref", "--short", "HEAD")
+	cleanups := []WorktreeCleanup{}
+	named := map[string]bool{}
+	for _, path := range receipts {
+		var receipt WorktreeReceipt
+		content, err := os.ReadFile(path)
+		if err != nil || json.Unmarshal(content, &receipt) != nil {
+			continue
+		}
+		named[worktrees.receiptFor(receipt.WorktreeClaim).Path] = true
+		if destinationErr != nil {
+			cleanups = append(cleanups, WorktreeCleanup{Outcome: CleanupKept, Path: receipt.Path, Branch: receipt.Branch,
+				Reason: "unreachable destination: the root has no branch checked out to compare its commits with"})
+			continue
+		}
+		running := receipt.RuntimeID != "" && slices.Contains(runningRuntimes, receipt.RuntimeID)
+		cleanups = append(cleanups, worktrees.Cleanup(ctx, receipt.WorktreeClaim, running, strings.TrimSpace(destination), false))
+	}
+	for _, folder := range folders {
+		if named[folder] {
+			continue
+		}
+		cleanups = append(cleanups, WorktreeCleanup{Outcome: CleanupAmbiguous, Path: folder,
+			Reason: "unknown ownership: no receipt of this journal names this worktree"})
+	}
+
+	return cleanups
 }

@@ -36,16 +36,6 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
         return new self('This device code is unknown or expired. Run the journal command again for a new one.');
     }
 
-    public static function awaitingApproval(): self
-    {
-        $refusal = new self('The owner has not approved this device yet.');
-        $refusal->status = 428;
-        $refusal->refusalCode = RefusalCode::StateBlocked;
-        $refusal->outcome = ['outcome' => 'authorization_pending'];
-
-        return $refusal;
-    }
-
     public static function pollingTooFast(): self
     {
         $refusal = new self('Poll this device code at most once every five seconds.');
@@ -92,6 +82,7 @@ final class DeviceGrantRefused extends RuntimeException implements CodedRefusal,
         $refusal = new self(
             "Terminal sign-in {$reference} was already handed out once. Withdraw it in Settings if this terminal never got it.",
         );
+
         $refusal->status = 409;
         $refusal->refusalCode = RefusalCode::StateBlocked;
         $refusal->outcome = ['outcome' => 'already_issued', 'reference' => $reference];

@@ -8,6 +8,7 @@ use App\Agents\Contracts\HostCalls;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Support\ServerOrigin;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Support\EntryDispatchers;
 use App\Connections\Commands\PollDeviceGrant;
 use App\Connections\Commands\StartDeviceGrant;
@@ -53,10 +54,18 @@ final readonly class DeviceGrantController
         $grant = InstallTicket::generate();
         $deviceCode = InstallTicket::digestOf($request->string('deviceCode')->toString());
         $poll = new PollDeviceGrant($host->hostId, $deviceCode, $grant->digest());
-        $reference = $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $poll);
+        $polled = $dispatchers->runAsJournal(CommandEntry::HostControl, 'device grant', $poll);
+
+        if ($polled->isPending()) {
+            return new JsonResponse([
+                'code' => RefusalCode::StateBlocked->value,
+                'message' => 'The owner has not approved this device yet.',
+                'details' => ['outcome' => $polled->outcome, 'reference' => $polled->reference],
+            ], JsonResponse::HTTP_PRECONDITION_REQUIRED, ['Cache-Control' => 'no-store']);
+        }
 
         return new JsonResponse(
-            ['outcome' => 'issued', 'grant' => $grant->secret, 'reference' => $reference],
+            ['outcome' => $polled->outcome, 'grant' => $grant->secret, 'reference' => $polled->reference],
             JsonResponse::HTTP_OK,
             ['Cache-Control' => 'no-store'],
         );

@@ -28,15 +28,6 @@ final class HostCombinationsData extends Data
      */
     public function combinations(): array
     {
-        return array_map(
-            fn (HostCombinationData $combination) => new HostCombination(
-                $combination->driver,
-                $combination->build,
-                $combination->arrangement,
-                $combination->placement,
-                $combination->variant,
-            ),
-            $this->combinations,
-        );
+        return array_map(fn (HostCombinationData $combination) => $combination->combination(), $this->combinations);
     }
 }

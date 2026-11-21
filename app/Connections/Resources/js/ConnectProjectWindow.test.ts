@@ -98,16 +98,27 @@ function windowData(
             missingCapabilities: [],
         },
         attempts: { rows: attempts, nextCursor: null },
-        bindings: [
-            {
-                id: 'binding-1',
-                machineLabel: 'Owner laptop',
-                projectLabel: 'Shop',
-                lastContactAt: null,
-                state: 'ready',
-                signIns: [],
-            },
-        ],
+        bindings: {
+            rows: [
+                {
+                    id: 'binding-1',
+                    machineLabel: 'Owner laptop',
+                    projectLabel: 'Shop',
+                    lastContactAt: null,
+                    state: 'ready',
+                    projectId: 'project-1',
+                    environmentId: 'environment-main',
+                    environmentLabel: 'Main',
+                    capabilities: [],
+                    presenceExpiresAt: null,
+                    stateText: 'Ready.',
+                    signIns: [],
+                },
+            ],
+            serverTime: new Date().toISOString(),
+            refreshAt: null,
+            nextCursor: null,
+        },
     };
 }
 
@@ -289,5 +300,66 @@ describe('ConnectProjectWindow', () => {
         expect(wrapper.find('a[href="#binding-binding-1"]').exists()).toBe(
             true,
         );
+    });
+
+    it('reads each folder as project and environment, device, status, then last contact, and names Revoke by its device', () => {
+        const wrapper = windowWith(true);
+        const row = wrapper.find('#binding-binding-1');
+        const text = row.text();
+
+        expect(text.indexOf('Shop / Main')).toBeLessThan(text.indexOf('Owner laptop'));
+        expect(text.indexOf('Owner laptop')).toBeLessThan(text.indexOf('Ready'));
+        expect(text.indexOf('Ready')).toBeLessThan(text.indexOf('Not in contact yet'));
+        expect(row.find('button[aria-label^="Revoke connection for Owner laptop"]').exists()).toBe(true);
+    });
+
+    it('says when no project is connected yet', () => {
+        const data = windowData(true);
+        const wrapper = mount(ConnectProjectWindow, {
+            props: { data: { ...data, bindings: { ...data.bindings, rows: [] } } },
+        });
+
+        expect(wrapper.text()).toContain('No connected projects');
+    });
+
+    it('offers Start for an eligible program with its command and names why another is unavailable', () => {
+        const data = windowData(true);
+        const [row] = data.bindings.rows;
+        const wrapper = mount(ConnectProjectWindow, {
+            props: {
+                data: {
+                    ...data,
+                    bindings: {
+                        ...data.bindings,
+                        rows: [
+                            {
+                                ...row,
+                                capabilities: [
+                                    {
+                                        driver: 'claude-code',
+                                        label: 'Claude Code',
+                                        canStart: true,
+                                        startCommand: 'journal claude',
+                                        unavailableReason: '',
+                                    },
+                                    {
+                                        driver: 'codex',
+                                        label: 'Codex',
+                                        canStart: false,
+                                        startCommand: 'journal codex',
+                                        unavailableReason: 'Codex does not keep its hooks to one session yet.',
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                },
+            },
+        });
+        const text = wrapper.find('#binding-binding-1').text();
+
+        expect(text).toContain('journal claude');
+        expect(text).toContain('Codex unavailable: Codex does not keep its hooks to one session yet.');
+        expect(text).not.toContain('journal codex');
     });
 });

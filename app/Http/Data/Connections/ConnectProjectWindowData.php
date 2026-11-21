@@ -18,7 +18,6 @@ final class ConnectProjectWindowData extends Data
 {
     /**
      * @param  list<JoinTargetData>  $projects
-     * @param  list<ProjectBindingRowData>  $bindings
      */
     public function __construct(
         public readonly string $serverName,
@@ -28,7 +27,6 @@ final class ConnectProjectWindowData extends Data
         #[DataCollectionOf(JoinTargetData::class)]
         public readonly array $projects,
         public readonly InstallAttemptListData $attempts,
-        #[DataCollectionOf(ProjectBindingRowData::class)]
-        public readonly array $bindings,
+        public readonly BindingListData $bindings,
     ) {}
 }

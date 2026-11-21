@@ -44,6 +44,10 @@ func relay(arguments []string) error {
 	if err != nil {
 		return err
 	}
+	if state.IsFenced() {
+		log.Printf("binding %s is being disconnected, so its relay does not start", binding.BindingID)
+		return nil
+	}
 	installation, err := ownInstallation()
 	if err != nil {
 		return err
@@ -79,14 +83,17 @@ type bindingRelay struct {
 }
 
 // run holds the binding's relay lock for the whole run, serves the work the journal hands this binding and reports
-// presence beside it, until the idle window passes the last claim that handed work, the folder's binding state is
-// gone or ctx ends.
-func (binder bindingRelay) run(ctx context.Context) error {
+// presence beside it, until the idle window passes the last claim that handed work, a disconnect fences the folder,
+// the folder's binding state is gone or ctx ends. The lock is let go only once serving ended.
+func (binder bindingRelay) run(parent context.Context) error {
 	unlock, err := binder.state.LockRelay()
 	if err != nil {
 		return err
 	}
 	defer unlock()
+	ctx, stopAtFence := context.WithCancel(parent)
+	defer stopAtFence()
+	go binder.watchFence(ctx, stopAtFence)
 
 	bootID, err := newBootID()
 	if err != nil {
@@ -108,7 +115,7 @@ func (binder bindingRelay) run(ctx context.Context) error {
 	for sequence := 1; ctx.Err() == nil && time.Now().Before(idleEnds()); sequence++ {
 		receipt, err := journal.ReportPresence(ctx, binder.binding.BindingID, client.PresenceReport{
 			BootID: bootID, Sequence: sequence, Release: binder.release,
-			Protocol: client.RemoteProjectProtocolVersion, Combinations: []client.HostCombination{},
+			Protocol: client.RemoteProjectProtocolVersion, Combinations: isolatedCombinations(),
 			Provisioning: "succeeded", Takeover: sequence == 1,
 			SetupGeneration: project.Folder{Root: binder.binding.CanonicalRoot}.SetupGeneration(),
 		})
@@ -116,10 +123,6 @@ func (binder bindingRelay) run(ctx context.Context) error {
 			leases.authority.Store(int64(receipt.AuthorityGeneration))
 		}
 		if !binder.wait(ctx, binder.nextReport(receipt, err, bootID)) {
-			break
-		}
-		// A disconnected folder's state is gone: the relay stops at once rather than at its idle window.
-		if _, err := binder.state.Binding(); err != nil {
 			break
 		}
 	}
@@ -139,7 +142,7 @@ func (binder bindingRelay) serveClaims(
 	leases *relayLeases,
 	claimed func(),
 ) error {
-	folder := filepath.Join(binder.state.Folder, "relays", binder.binding.BindingID)
+	folder := host.RelayFolder(binder.state.Folder, binder.binding.BindingID)
 	if err := os.MkdirAll(folder, 0o700); err != nil {
 		return err
 	}
@@ -152,7 +155,7 @@ func (binder bindingRelay) serveClaims(
 	opener := runtimeOpener{stateFolder: folder, installationFolder: binder.installation.Folder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(),
 		hookCommand: filepath.Join(binder.installation.Folder, "bin", "journal-hook"), socket: socket,
-		declared:   combinationsOf(host.Local),
+		declared:   isolatedCombinations(),
 		worktrees:  &host.NativeWorktrees{Root: binder.binding.CanonicalRoot, Git: "git"},
 		relayState: binder.state.Folder}
 	opener.usage = host.NewUsageReports(folder)
@@ -178,6 +181,27 @@ func (binder bindingRelay) serveClaims(
 	return claims.run(ctx, claimed)
 }
 
+// fenceCheck is how often a running relay looks whether a disconnect fenced its folder.
+const fenceCheck = 250 * time.Millisecond
+
+// watchFence ends the relay's run once a disconnect fenced the folder or its binding state is gone, so it admits no
+// new work and lets go of its lock for the disconnect waiting on it.
+func (binder bindingRelay) watchFence(ctx context.Context, stop context.CancelFunc) {
+	ticker := time.NewTicker(fenceCheck)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+		if _, err := binder.state.Binding(); binder.state.IsFenced() || err != nil {
+			stop()
+			return
+		}
+	}
+}
+
 // nextReport keeps an acknowledged report and answers how long to wait before the next: half the time the
 // presence has left, or a short retry after a report the journal did not take.
 func (binder bindingRelay) nextReport(receipt client.PresenceReceipt, failure error, bootID string) time.Duration {
@@ -188,7 +212,7 @@ func (binder bindingRelay) nextReport(receipt client.PresenceReceipt, failure er
 	report := host.RelayReport{
 		BindingID: receipt.BindingID, BootID: bootID, Generation: receipt.Generation,
 		SetupGeneration: receipt.SetupGeneration, ReportedAt: time.Now(), AcknowledgedAt: receipt.ServerTime,
-		ExpiresAt: receipt.ExpiresAt,
+		ExpiresAt: receipt.ExpiresAt, Readiness: receipt.Readiness,
 	}
 	if err := binder.state.SaveRelayReport(report); err != nil {
 		log.Printf("the presence report of binding %s was not kept: %v", binder.binding.BindingID, err)

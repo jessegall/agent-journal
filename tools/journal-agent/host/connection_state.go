@@ -10,6 +10,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -61,6 +63,8 @@ type RelayReport struct {
 	ReportedAt      time.Time `json:"reported_at"`
 	AcknowledgedAt  time.Time `json:"acknowledged_at"`
 	ExpiresAt       time.Time `json:"expires_at"`
+	// Readiness is the binding's effective readiness the journal answered with the report.
+	Readiness string `json:"readiness,omitempty"`
 }
 
 // AcknowledgesSetup is whether the report is the journal's acknowledgement of this binding's setup generation,
@@ -113,6 +117,10 @@ func (state ConnectionState) LockRelay() (func(), error) {
 		file.Close()
 		return nil, ErrRelayRunning
 	}
+	// The holder's process id is written under the lock, so a disconnect that waits for the relay can name it.
+	if err := file.Truncate(0); err == nil {
+		_, _ = file.WriteAt([]byte(strconv.Itoa(os.Getpid())+"\n"), 0)
+	}
 
 	return func() {
 		_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
@@ -133,6 +141,20 @@ func RemainingBindings(stateFolder string) int {
 	}
 
 	return len(folders)
+}
+
+// RelayHolder is the process id the running relay wrote under its lock; 0 when none was written.
+func (state ConnectionState) RelayHolder() int {
+	content, err := os.ReadFile(filepath.Join(state.folder(), relayLockName))
+	if err != nil {
+		return 0
+	}
+	holder, err := strconv.Atoi(strings.TrimSpace(string(content)))
+	if err != nil {
+		return 0
+	}
+
+	return holder
 }
 
 // RelayIsRunning is whether a relay holds the binding now.
@@ -166,8 +188,6 @@ func StartRelay(program string, stateFolder string, bindingID string) error {
 
 	return command.Process.Release()
 }
-
-
 
 // SaveRelayReport keeps the relay's last acknowledged presence report.
 func (state ConnectionState) SaveRelayReport(report RelayReport) error {

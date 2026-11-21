@@ -6,6 +6,7 @@ namespace App\Http\Data\Connections;
 
 use App\Agents\Commands\OpenHostMainRuntime;
 use App\Connections\Commands\AssertBindingStart;
+use App\Drivers\Enums\HookDriver;
 use Spatie\LaravelData\Data;
 
 /**
@@ -18,10 +19,11 @@ final class BindingRuntimeRequestData extends Data
         public readonly string $rootId,
         public readonly string $folder,
         public readonly string $agentId,
-        public readonly string $driver,
+        public readonly HookDriver $driver,
         public readonly string $driverBuild,
         public readonly string $profile,
         public readonly string|null $model = null,
+        public readonly string $startId = '',
     ) {}
 
     /**
@@ -29,7 +31,7 @@ final class BindingRuntimeRequestData extends Data
      */
     public function asBindingStart(string $hostId, string $bindingId): AssertBindingStart
     {
-        return new AssertBindingStart($hostId, $bindingId, $this->rootId, $this->folder, $this->agentId);
+        return new AssertBindingStart($hostId, $bindingId, $this->rootId, $this->folder, $this->agentId, $this->driver);
     }
 
     /**
@@ -41,7 +43,7 @@ final class BindingRuntimeRequestData extends Data
             $this->agentId,
             $hostId,
             $this->folder,
-            $this->driver,
+            $this->driver->value,
             $this->driverBuild,
             $this->profile,
             $this->model,

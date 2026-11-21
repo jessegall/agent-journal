@@ -18,6 +18,7 @@ use App\Settings\Values\SettingReference;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 
 /**
@@ -122,6 +123,33 @@ trait ConnectsProjects
                 $content,
             ),
         ], content: $content);
+    }
+
+    /**
+     * Reports the binding's relay present on a set-up folder and able to run Claude Code with isolated hooks and a
+     * lease, as a relay that set its folder up does.
+     */
+    private function reportClaudeCode(string $nonce, string $bindingId): void
+    {
+        $this->signedRelayCall(
+            $this->relayCredential($nonce),
+            "/host/bindings/{$bindingId}/presence",
+            [
+                'bootId' => 'boot-'.$nonce,
+                'sequence' => 1,
+                'release' => '1.0.0',
+                'protocol' => HostProtocolVersion::RemoteProject->value,
+                'combinations' => [[
+                    'driver' => 'claude-code', 'build' => '2.1.323', 'arrangement' => 'local',
+                    'placement' => 'protected_host', 'variant' => 'terminal',
+                ]],
+                'provisioning' => 'succeeded',
+                'takeover' => false,
+                'setupGeneration' => 1,
+            ],
+            HostProtocolVersion::RemoteProject,
+            (string) Str::uuid(),
+        )->assertOk();
     }
 
     private function serverHeader(string $name): string

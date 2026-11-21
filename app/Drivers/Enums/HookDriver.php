@@ -137,6 +137,15 @@ enum HookDriver: string
         };
     }
 
+    /**
+     * Whether the program scopes its hooks to one session, as a connected project folder needs to run it isolated;
+     * Codex scopes them per installation, not per thread, so it does not yet.
+     */
+    public function isolatesHooksPerSession(): bool
+    {
+        return $this === self::ClaudeCode;
+    }
+
     public function hookCommand(): string
     {
         return "journal-hook {$this->value}";
