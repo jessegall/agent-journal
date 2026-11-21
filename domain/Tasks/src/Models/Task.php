@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use Domain\Tasks\Support\TaskReads;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
@@ -334,7 +335,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
      */
     public function details(Option $holder, TaskExecution|null $execution): TaskDetails
     {
-        return TaskDetails::fromTask($this, $holder, $execution);
+        return TaskReads::details($this, $holder, $execution);
     }
 
     /**
@@ -346,7 +347,7 @@ final class Task extends Model implements Assignable, EventSource, Numbered, Rea
     {
         return TaskDetails::from([
             ...$this->details($holder, $execution)->all(),
-            'text' => TaskText::fromTask($this),
+            'text' => TaskReads::text($this),
         ]);
     }
 

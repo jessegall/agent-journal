@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reflection\Support;
 
+use App\Reflection\Contracts\ReflectedType;
 use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Exceptions\ClassMissing;
 use App\Reflection\Exceptions\MethodMissing;
@@ -21,8 +22,10 @@ use ReflectionProperty;
  * What PHP declares about one class, interface, trait or enum, read once and kept for the life of the process.
  *
  * @template-covariant T of object
+ *
+ * @implements ReflectedType<T>
  */
-final class Reflector
+final class Reflector implements ReflectedType
 {
     use ReadsDeclaredAttributes;
 
@@ -439,6 +442,11 @@ final class Reflector
     public function hasMethod(string $name): bool
     {
         return $this->type->hasMethod($name);
+    }
+
+    public function invokeMethod(string $name, object $target, mixed ...$arguments): mixed
+    {
+        return $this->method($name)->invokeOn($target, ...$arguments);
     }
 
     /**

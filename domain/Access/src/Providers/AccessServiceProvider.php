@@ -10,7 +10,7 @@ use App\Actors\Contracts\AdmittedRecipients;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Enums\ActorType;
-use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Contracts\TypeReflections;
 use App\Web\Contracts\CurrentUserResolver;
 use Domain\Access\Actions\CreateNewUser;
 use Domain\Access\Actions\ResetUserPassword;
@@ -46,8 +46,8 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
 
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
-        $this->app->singleton(AccessSettings::class, fn (): AccessSettings => $this->app->make(ReflectorFactory::class)
-            ->make(AccessSettings::class)
+        $this->app->singleton(AccessSettings::class, fn (): AccessSettings => $this->app->make(TypeReflections::class)
+            ->of(AccessSettings::class)
             ->newLazyGhost(function (
                 AccessSettings $settings,
             ): void {

@@ -6,7 +6,6 @@ namespace Domain\Tasks\Api;
 
 use App\Assignments\Support\AssignmentHolder;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Models\Task;
 use PhpOption\Option;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -30,22 +29,4 @@ final class TaskDetails extends Data
         public readonly TaskExecution|null $execution,
         public readonly TaskText|Optional $text,
     ) {}
-
-    /**
-     * A task as a read shows it, without its long texts, with who holds it and how it runs.
-     *
-     * @param  Option<AssignmentHolder>  $holder
-     */
-    public static function fromTask(Task $task, Option $holder, TaskExecution|null $execution): self
-    {
-        return self::from([
-            'id' => $task->id,
-            'number' => $task->number,
-            'title' => $task->title,
-            'state' => $task->state,
-            'revision' => $task->revision,
-            'holder' => $holder,
-            'execution' => $execution,
-        ]);
-    }
 }

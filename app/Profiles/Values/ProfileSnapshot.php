@@ -12,7 +12,6 @@ use App\Bus\Contracts\Command;
 use App\Operations\Enums\AccessType;
 use App\Processes\Values\ProcessGrants;
 use App\Profiles\Enums\InstancePolicy;
-use App\Profiles\Models\ProfileRevision;
 use Spatie\LaravelData\Data;
 
 /**
@@ -84,25 +83,5 @@ final class ProfileSnapshot extends Data
     public function grants(string $policy, AccessType $access): bool
     {
         return $this->authorization->grants($policy, $access);
-    }
-
-    /**
-     * A profile revision as the snapshot of the profile it belongs to.
-     */
-    public static function fromProfileRevision(ProfileRevision $revision, ProfileKey $key): self
-    {
-        return self::from([
-            'key' => $key,
-            'revision' => $revision->revision,
-            'base' => $revision->base,
-            'instructions' => $revision->instructions,
-            'model' => $revision->model,
-            'skillAllowlist' => $revision->skill_allowlist,
-            'requiredSkills' => $revision->required_skills,
-            'start' => $revision->start_policy,
-            'authorization' => $revision->authorization,
-            'supervisor' => $revision->supervisor,
-            'instances' => $revision->instances,
-        ]);
     }
 }

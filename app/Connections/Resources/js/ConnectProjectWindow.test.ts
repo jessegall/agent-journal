@@ -107,7 +107,7 @@ describe('ConnectProjectWindow', () => {
 
         expect(writeText).toHaveBeenCalledWith(LINE);
         expect(
-            (wrapper.find('input').element as HTMLInputElement).value,
+            (wrapper.find('input[readonly]').element as HTMLInputElement).value,
         ).toBe(LINE);
         const keys = keyedPost.mock.calls.map((call) => call[1].issuanceKey);
         expect(keys).toHaveLength(2);
@@ -130,11 +130,11 @@ describe('ConnectProjectWindow', () => {
         first.unmount();
 
         const again = windowWith(true);
-        expect(again.find('input').exists()).toBe(false);
+        expect(again.find('input[readonly]').exists()).toBe(false);
         await button(again, 'Generate install line').trigger('click');
         await flushPromises();
 
-        expect(again.find('input').exists()).toBe(true);
+        expect(again.find('input[readonly]').exists()).toBe(true);
         expect(keyedPost.mock.calls[0][1].issuanceKey).not.toBe(
             keyedPost.mock.calls[1][1].issuanceKey,
         );

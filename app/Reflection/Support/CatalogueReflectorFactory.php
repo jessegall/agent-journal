@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 namespace App\Reflection\Support;
 
+use App\Reflection\Contracts\ReflectedType;
 use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Contracts\TypeReflections;
 use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * The ReflectorFactory over the process's one catalogue, the same Reflectors Reflector::of() answers.
+ * The ReflectorFactory over the process's one catalogue, the same Reflectors Reflector::of() answers; to a domain it
+ * answers only what TypeReflections lets it ask.
  */
-final readonly class CatalogueReflectorFactory implements ReflectorFactory
+final readonly class CatalogueReflectorFactory implements ReflectorFactory, TypeReflections
 {
+    public function of(string|object $type): ReflectedType
+    {
+        return $this->make($type);
+    }
+
     public function make(string|object $type): Reflector
     {
         return is_object($type) ? $this->makeForInstance($type) : $this->makeForClass($type);

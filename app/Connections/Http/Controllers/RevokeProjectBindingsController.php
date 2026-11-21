@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace App\Connections\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Connections\Commands\RevokeProjectBinding;
-use App\Contracts\CommandRefusal;
+use App\Connections\Commands\RevokeProjectBindings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Inertia\ResponseFactory;
 
 /**
- * Revokes the bindings the owner chose in the Connect a project window, each in its own command, and shows the
- * window again with each binding's outcome: revoked, or the reason it was refused.
+ * Revokes the bindings the owner chose in the Connect a project window in one command, and shows the window again
+ * with each binding's outcome.
  */
 final readonly class RevokeProjectBindingsController
 {
@@ -30,29 +29,10 @@ final readonly class RevokeProjectBindingsController
         Redirector $redirect,
     ): RedirectResponse {
         $request->validate(['bindings' => ['required', 'array', 'min:1', 'max:50'], 'bindings.*' => ['ulid']]);
-        $outcomes = [];
-
-        foreach ($request->array('bindings') as $binding) {
-            $outcomes[(string) $binding] = $this->outcomeOf((string) $binding, $commands);
-        }
-
-        $inertia->flash(self::OUTCOMES, $outcomes);
+        $bindingIds = array_values(array_map(strval(...), $request->array('bindings')));
+        $revoked = $commands->run(new RevokeProjectBindings($bindingIds));
+        $inertia->flash(self::OUTCOMES, $revoked->byBinding());
 
         return $redirect->back(303);
-    }
-
-    /**
-     * Revokes one binding and answers what came of it; one refusal does not stop the others, it is shown beside its
-     * binding instead.
-     */
-    private function outcomeOf(string $binding, CommandBus $commands): string
-    {
-        try {
-            $commands->run(new RevokeProjectBinding($binding));
-        } catch (CommandRefusal $refusal) {
-            return $refusal->getMessage();
-        }
-
-        return 'Revoked';
     }
 }

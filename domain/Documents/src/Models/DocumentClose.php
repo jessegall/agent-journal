@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
+use Domain\Documents\Support\RecordViews;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Contracts\EventSource;
@@ -118,6 +119,6 @@ final class DocumentClose extends Model implements EventSource, ReadableModel
 
     public function card(): CloseCard
     {
-        return CloseCard::fromDocumentClose($this);
+        return RecordViews::closeCard($this);
     }
 }

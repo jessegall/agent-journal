@@ -11,6 +11,7 @@ use App\Agents\Support\EnrolledHost;
 use App\Drivers\Enums\HookDriver;
 use App\Hooks\Compatibility\DriverCompatibility;
 use App\Hooks\Compatibility\Exceptions\DriverArrangementUnproven;
+use App\Hooks\Compatibility\Exceptions\DriverUnstartableInContainer;
 use App\Hooks\Contracts\DriverCompatibilities;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -60,7 +61,7 @@ final class ContainedProgramEvidenceTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->compatibility(HookDriver::ClaudeCode)->assertStartable(),
-            DriverArrangementUnproven::class,
+            DriverUnstartableInContainer::class,
             'claude-code 2.1.323 cannot start in a container: the agent image\'s protection report leaves '
                 ."account-secrets, process-inspection unenforced ({$reason}).",
         );

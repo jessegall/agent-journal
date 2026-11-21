@@ -483,6 +483,8 @@ use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
 use App\Bus\Support\RefusalReason;
+use App\Connections\Values\BindingOutcome;
+use App\Connections\Values\RevokedBindings;
 use App\Bus\Values\ReceiptAnswer;
 use App\Bus\Values\RecoveryCall;
 use App\Comments\Calls\ListCommentsCall;
@@ -575,6 +577,7 @@ use App\Connections\Commands\RedeemProjectInvitation;
 use App\Connections\Commands\RenewRuntimeLease;
 use App\Connections\Commands\RevokeDeviceGrant;
 use App\Connections\Commands\RevokeProjectBinding;
+use App\Connections\Commands\RevokeProjectBindings;
 use App\Connections\Commands\RevokeProjectInvitation;
 use App\Connections\Commands\StartDeviceGrant;
 use App\Connections\Commands\StartProjectCommandRun;
@@ -1036,9 +1039,9 @@ use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\ProvidesModelRecords;
 use App\Records\Support\RecordIdentity;
-use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Contracts\ReflectedType;
+use App\Reflection\Contracts\TypeReflections;
 use App\Reflection\Exceptions\ClassMissing;
-use App\Reflection\Support\Reflector;
 use App\Scripts\Attributes\ScriptMember;
 use App\Scripts\Attributes\ScriptObject;
 use App\Scripts\Contracts\ScriptKeywordDefinition;
@@ -1353,7 +1356,8 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
-                ReflectorFactory::class,
+                TypeReflections::class,
+                ReflectedType::class,
                 StartAccounts::class,
                 CallerReceipts::class,
                 DockSourceDeleted::class,
@@ -1591,6 +1595,8 @@ final class CoreApi
             ->values(
                 SeenSession::class,
                 RefusalReason::class,
+                RevokedBindings::class,
+                BindingOutcome::class,
                 EligibleAccountsData::class,
                 EligibleAccountData::class,
                 ReceiptAnswer::class,
@@ -2300,6 +2306,7 @@ final class CoreApi
                 RedeemProjectInvitation::class,
                 RecoverProjectBinding::class,
                 RevokeProjectBinding::class,
+                RevokeProjectBindings::class,
                 RecordBindingPresence::class,
                 StartProjectCommandRun::class,
                 RecordProjectCommandProcess::class,
@@ -2583,7 +2590,6 @@ final class CoreApi
                 SkillOwnerRequired::class,
             )
             ->support(
-                Reflector::class,
                 RaisesEvents::class,
                 InsertsAbsentRows::class,
                 BelongsToOneActor::class,

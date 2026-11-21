@@ -32,7 +32,7 @@ final readonly class EligibleAccounts implements StartAccounts
         return EligibleAccountsData::from([
             'driver' => $driver->value,
             'accounts' => array_values(array_map(
-                fn (Account $account) => EligibleAccountData::fromAccount($account, $account->id === $default),
+                fn (Account $account) => EligibleAccountRows::of($account, $account->id === $default),
                 $accounts,
             )),
         ]);

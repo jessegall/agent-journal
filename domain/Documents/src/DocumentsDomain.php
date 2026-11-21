@@ -75,6 +75,7 @@ use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordPageData;
+use Domain\Documents\Data\RecordReadsData;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Data\RevisionCard;
@@ -173,6 +174,7 @@ final class DocumentsDomain extends Domain implements
                 DraftState::class,
                 DocumentPageData::class,
                 RecordPageData::class,
+                RecordReadsData::class,
                 DraftView::class,
                 RevisionCard::class,
                 RevisionView::class,

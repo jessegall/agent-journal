@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Connections\Values;
+
+/**
+ * What came of revoking each chosen binding, in the order they were chosen.
+ */
+final readonly class RevokedBindings
+{
+    /**
+     * @param  list<BindingOutcome>  $outcomes
+     */
+    public function __construct(public array $outcomes) {}
+
+    /**
+     * Each binding's outcome by its id, as the window shows it beside the binding.
+     *
+     * @return array<string, string>
+     */
+    public function byBinding(): array
+    {
+        $byBinding = [];
+
+        foreach ($this->outcomes as $each) {
+            $byBinding[$each->bindingId] = $each->outcome;
+        }
+
+        return $byBinding;
+    }
+}
