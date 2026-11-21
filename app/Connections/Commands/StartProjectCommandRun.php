@@ -10,8 +10,8 @@ use App\Bus\Support\Command;
 use App\Connections\Values\CommandRunStart;
 
 /**
- * Records that a connected machine's journal verb starts under its request id, or answers the run that request id
- * already started, so a repeat never runs the verb twice.
+ * Records that a connected machine's journal verb starts under its request id, with the operation's fingerprint and
+ * the worker that runs it, or answers the run that request id already started, so a repeat never runs the verb twice.
  *
  * @extends Command<CommandRunStart>
  */
@@ -26,5 +26,7 @@ final readonly class StartProjectCommandRun extends Command
         public string $agentId,
         public string $bindingId,
         public array $argv,
+        public string $fingerprint,
+        public string $worker,
     ) {}
 }

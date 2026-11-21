@@ -10,9 +10,11 @@ use App\Connections\Calls\RunProjectCommandCall;
 use App\Connections\Commands\FinishProjectCommandRun;
 use App\Connections\Commands\RecordProjectCommandProcess;
 use App\Connections\Commands\StartProjectCommandRun;
+use App\Connections\Enums\CommandRunState;
 use App\Connections\Exceptions\VerbNotServed;
 use App\Connections\Models\ProjectBinding;
 use App\Connections\Values\CommandFrame;
+use App\Connections\Values\CommandRunStart;
 use App\Processes\Support\JournalRoutes;
 use Symfony\Component\Process\Process;
 
@@ -27,13 +29,15 @@ final readonly class ProjectCommands
     public function __construct(
         private JournalRoutes $routes,
         private EntryDispatchers $dispatchers,
+        private CommandRunEvidence $evidence,
         private string $artisanPath,
         private string $journalUrl,
     ) {}
 
     /**
      * Runs the verb for the agent, or answers the frames its request key already recorded, in order and ending with
-     * the exit frame; a verb that is no journal route or a binding that is not the agent's own is refused first.
+     * the exit frame; a verb that is no journal route or a binding that is not the agent's own is refused first, and
+     * a request key given for another operation, still running, interrupted or of unknown outcome is refused.
      *
      * @param  array<string, string>  $startEnvironment  the calling start's own credentials, without the journal's URL
      * @return list<CommandFrame>
@@ -44,18 +48,45 @@ final readonly class ProjectCommands
     {
         $this->assertServed($call, $agentId);
         $requestKey = $call->requestKey->value;
-        $start = new StartProjectCommandRun($requestKey, $agentId, $call->bindingId, $call->argv);
+        $start = new StartProjectCommandRun(
+            $requestKey,
+            $agentId,
+            $call->bindingId,
+            $call->argv,
+            $call->fingerprintFor($agentId),
+            $this->evidence->currentWorker(),
+        );
         $started = $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'project command', $start);
 
-        if ($started->isRunning && ! $started->isNew) {
+        if ($started->isNew) {
+            return $this->execute($call, ['JOURNAL_URL' => $this->journalUrl, ...$startEnvironment]);
+        }
+
+        return $this->earlierFrames($requestKey, $started);
+    }
+
+    /**
+     * The frames an earlier run of the request key kept, once it settled with an outcome.
+     *
+     * @return list<CommandFrame>
+     *
+     * @throws VerbNotServed
+     */
+    private function earlierFrames(string $requestKey, CommandRunStart $started): array
+    {
+        if ($started->state->isActive()) {
             throw VerbNotServed::stillRunning($requestKey);
         }
 
-        if (! $started->isNew) {
-            return $started->recordedFrames;
+        if ($started->state === CommandRunState::Interrupted) {
+            throw VerbNotServed::interrupted($requestKey);
         }
 
-        return $this->execute($call, ['JOURNAL_URL' => $this->journalUrl, ...$startEnvironment]);
+        if ($started->state === CommandRunState::Unknown) {
+            throw VerbNotServed::outcomeUnknown($requestKey);
+        }
+
+        return $started->recordedFrames;
     }
 
     /**

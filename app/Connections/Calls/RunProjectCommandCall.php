@@ -12,6 +12,7 @@ use App\AgentRequests\Enums\ReceiptOwner;
 use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Transformers\CallKeyTransformer;
 use App\Connections\Exceptions\VerbNotServed;
+use App\Connections\Values\CommandFingerprint;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -60,6 +61,14 @@ final class RunProjectCommandCall extends Data implements JournalCall
     public function pipedInput(): string
     {
         return (string) $this->stdin;
+    }
+
+    /**
+     * The digest that binds this request id to this operation, asked by this agent.
+     */
+    public function fingerprintFor(string $agentId): string
+    {
+        return CommandFingerprint::of($this->argv, $this->pipedInput(), $this->bindingId, $agentId);
     }
 
     /**

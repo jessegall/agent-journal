@@ -11,7 +11,8 @@ use RuntimeException;
 
 /**
  * A journal verb the server does not run for a connected machine: not a journal route, one that needs more than the
- * journal itself, a binding that is not the caller's own, or a request id still running.
+ * journal itself, a binding that is not the caller's own, a request id still running or given for another operation,
+ * or a run whose outcome was lost.
  */
 final class VerbNotServed extends RuntimeException implements CodedRefusal
 {
@@ -44,6 +45,36 @@ final class VerbNotServed extends RuntimeException implements CodedRefusal
     public static function stillRunning(string $requestKey): self
     {
         $refusal = new self("Request {$requestKey} is still running; wait for it or cancel it.");
+        $refusal->status = 409;
+
+        return $refusal;
+    }
+
+    public static function anotherOperation(string $requestKey): self
+    {
+        $refusal = new self("Request {$requestKey} was given for another command; send this one under a new request id.");
+        $refusal->status = 409;
+
+        return $refusal;
+    }
+
+    public static function interrupted(string $requestKey): self
+    {
+        $refusal = new self(
+            "Request {$requestKey} was interrupted when the server stopped running it, before its outcome was kept; "
+            .'it is not run again.',
+        );
+        $refusal->status = 409;
+
+        return $refusal;
+    }
+
+    public static function outcomeUnknown(string $requestKey): self
+    {
+        $refusal = new self(
+            "The outcome of request {$requestKey} is unknown: the server stopped before it recorded the process; it is "
+            .'not run again.',
+        );
         $refusal->status = 409;
 
         return $refusal;

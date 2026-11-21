@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Models;
 
 use App\Connections\Enums\CommandRunState;
+use App\Connections\Support\CommandRunEvidence;
 use App\Connections\Values\CommandFrame;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -16,13 +17,16 @@ use Illuminate\Support\Carbon;
 
 /**
  * One journal verb a connected machine ran on the server, by its request id: who ran it, for which binding, with
- * which arguments, its process while it runs, and its frames and exit code once it ended.
+ * which arguments, the fingerprint that binds the request id to that operation, the worker that runs it, its process
+ * while it runs, and its frames and exit code once it ended. Its intent is kept before the process starts.
  *
  * @property string $id
  * @property string $request_key
  * @property string $agent_id
  * @property string $binding_id
  * @property list<string> $argv
+ * @property string $fingerprint
+ * @property string $worker
  * @property CommandRunState $state
  * @property int|null $pid
  * @property int|null $exit_code
@@ -30,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['request_key', 'agent_id', 'binding_id', 'argv', 'state'])]
+#[Fillable(['request_key', 'agent_id', 'binding_id', 'argv', 'fingerprint', 'worker', 'state'])]
 final class ProjectCommandRun extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -54,15 +58,25 @@ final class ProjectCommandRun extends Model implements ReadableModel
     }
 
     /**
+     * Keeps the run's intent before its process starts: the request id, the operation's fingerprint and its worker.
+     *
      * @param  list<string>  $argv
      */
-    public static function create(string $requestKey, string $agentId, ProjectBinding $binding, array $argv): self
-    {
+    public static function create(
+        string $requestKey,
+        string $agentId,
+        ProjectBinding $binding,
+        array $argv,
+        string $fingerprint,
+        string $worker,
+    ): self {
         $run = new self();
         $run->request_key = $requestKey;
         $run->agent_id = $agentId;
         $run->binding_id = $binding->id;
         $run->argv = $argv;
+        $run->fingerprint = $fingerprint;
+        $run->worker = $worker;
         $run->state = CommandRunState::Running;
         $run->frames = [];
         $run->save();
@@ -83,14 +97,15 @@ final class ProjectCommandRun extends Model implements ReadableModel
     }
 
     /**
-     * The binding's running command streams, locked until the transaction ends; a binding runs a few at once.
+     * The binding's command streams that may still run, locked until the transaction ends; a binding runs a few at
+     * once.
      *
      * @return list<self>
      */
     public static function lockRunningOf(ProjectBinding $binding): array
     {
         return array_values(self::query()->where('binding_id', $binding->id)
-            ->where('state', CommandRunState::Running)->lockForUpdate()
+            ->whereIn('state', CommandRunState::active())->lockForUpdate()
             ->readAll('a binding runs a few journal verbs at once')->get()->all());
     }
 
@@ -109,21 +124,63 @@ final class ProjectCommandRun extends Model implements ReadableModel
     {
         $this->frames = array_map(fn (CommandFrame $frame) => $frame->toArray(), $frames);
         $this->exit_code = $exitCode;
-        $this->state = CommandRunState::Finished;
+        $this->state = $this->state->settledBy($exitCode);
         $this->save();
     }
 
+    /**
+     * Asks the run to stop; it reads cancelled once its process exited, not before.
+     */
+    public function requestCancellation(): void
+    {
+        $this->state = CommandRunState::CancellationRequested;
+        $this->save();
+    }
+
+    /**
+     * Ends the run for good, as when its binding is revoked: nothing of it is waited for.
+     */
     public function cancel(): void
     {
         $this->state = CommandRunState::Cancelled;
         $this->save();
     }
 
+    /**
+     * Settles a run whose worker is gone from what can still be proved: one whose recorded process still runs stays
+     * as it is, one whose process ended unrecorded is interrupted, and one that never recorded its process is unknown.
+     * A run is never started again from here.
+     */
+    public function reconcile(CommandRunEvidence $evidence): void
+    {
+        if (! $this->isRunning() || $evidence->isWorkerAlive($this->worker)) {
+            return;
+        }
+
+        if ($this->pid !== null && $evidence->isProcessAlive($this->pid)) {
+            return;
+        }
+
+        $this->state = $this->pid === null ? CommandRunState::Unknown : CommandRunState::Interrupted;
+        $this->save();
+    }
+
     // ----------[ Answers ]----------
 
+    /**
+     * Whether the run may still be running: running, or asked to cancel and not yet stopped.
+     */
     public function isRunning(): bool
     {
-        return $this->state === CommandRunState::Running;
+        return $this->state->isActive();
+    }
+
+    /**
+     * Whether the request id was given for this operation: the same arguments, piped input, binding and agent.
+     */
+    public function isOfOperation(string $fingerprint): bool
+    {
+        return hash_equals($this->fingerprint, $fingerprint);
     }
 
     /**
