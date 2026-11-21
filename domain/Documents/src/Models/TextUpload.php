@@ -88,18 +88,16 @@ final class TextUpload extends Model implements ReadableModel
         );
     }
 
-    public static function pruneExpired(): void
-    {
-        self::query()->withoutGlobalScope(self::SESSION_SCOPE)
-            ->where('expires_at', '<=', CarbonImmutable::now())
-            ->readInChunks(100, function ($uploads): void {
-                $uploads->each(fn (self $upload) => $upload->delete());
-            });
-    }
-
     // ----------[ Mutations ]----------
 
-    public function appendChunk(int $position, string $text, string $digest): void
+    /**
+     * Whether the chunk at this position was already received with this text; a chunk that does not fit next, or
+     * repeats a position with other text, is refused.
+     *
+     * @throws UploadInvalid
+     * @throws UploadChunkConflict
+     */
+    public function hasReceivedChunk(int $position, string $text, string $digest): bool
     {
         $bytes = strlen($text);
 
@@ -115,7 +113,7 @@ final class TextUpload extends Model implements ReadableModel
                 throw UploadChunkConflict::atPosition();
             }
 
-            return;
+            return true;
         }
 
         if ($position !== $this->next_index || $this->received_bytes + $bytes > $this->bytes
@@ -123,7 +121,14 @@ final class TextUpload extends Model implements ReadableModel
             throw UploadInvalid::forChunk();
         }
 
-        TextUploadChunk::create($this, $position, $text);
+        return false;
+    }
+
+    /**
+     * Counts the chunk just stored as received.
+     */
+    public function countChunk(int $bytes): void
+    {
         $this->received_bytes += $bytes;
         $this->next_index++;
         $this->save();

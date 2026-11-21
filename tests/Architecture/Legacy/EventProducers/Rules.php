@@ -16,25 +16,22 @@ return [
     RuleApproved::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Rule::approveBy',
-        'migrated' => false,
-        'producers' => [
-            'domain/Rules/src/Handlers/ApproveRuleHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RuleApproved('rule'),
     ],
     RuleDenied::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Rule::deny',
-        'migrated' => false,
-        'producers' => [
-            'domain/Rules/src/Handlers/DenyRuleHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RuleDenied('rule'),
     ],
     RuleRemoved::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Rule::remove',
-        'migrated' => false,
-        'producers' => [
-            'domain/Rules/src/Handlers/RemoveRuleHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RuleRemoved('rule'),
     ],
 ];

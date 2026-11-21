@@ -5,31 +5,31 @@ declare(strict_types=1);
 namespace Domain\Helpers\Listeners;
 
 use App\Agents\Events\LaunchEnded;
+use App\Bus\Contracts\JournalCommands;
+use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
-use Domain\Helpers\Models\HelperNotice;
-use Domain\Helpers\Support\HelperStarts;
-use Domain\Helpers\Support\JobStopEvidence;
+use Domain\Helpers\Commands\MarkHelperJobUnfinished;
+use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Support\HelperLifecycleEntry;
 
 /**
- * Records that a helper's attempt at a job ended before its stop was certified: the job stays unfinished, never
- * finished by an exit and never launched again, and the parent is told the exact command that continues it.
+ * Marks a helper job unfinished once its helper's launch ended before the job was done, through its own command,
+ * run by the journal after the launch ended.
  */
 final readonly class RecordAttemptEnded implements Listener
 {
-    public const string ENDED_REFERENCE = 'launch-ended';
-
-    public function __construct(private HelperStarts $starts) {}
+    public function __construct(private JournalCommands $journal) {}
 
     public function handle(LaunchEnded $event): void
     {
-        foreach (JobStopEvidence::openJobs($event->work) as $job) {
-            $job->markUnfinished(self::ENDED_REFERENCE);
-            HelperNotice::create($job, sprintf(
-                'Helper %s stopped before job %s was finished. Continue it with: %s',
-                $job->helper_identity_id,
-                $job->id,
-                $this->starts->continueCommand($job),
-            ));
+        if ($event->work->type !== HelperJob::LINK_TYPE) {
+            return;
         }
+
+        $this->journal->runAsJournal(
+            CommandEntry::Application,
+            HelperLifecycleEntry::NAME,
+            new MarkHelperJobUnfinished($event->work->id),
+        );
     }
 }

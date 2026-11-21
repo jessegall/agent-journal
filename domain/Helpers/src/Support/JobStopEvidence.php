@@ -5,35 +5,30 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support;
 
 use App\Hooks\Values\StopAttemptReference;
-use App\Records\Support\RecordIdentity;
 use Domain\Helpers\Models\HelperJob;
+use PhpOption\Option;
 
 /**
- * Finds the helper job a Core event about started work names, and how the job refers to the stop attempt behind it.
+ * Finds the open helper job a Core fact about started work names, and how the job refers to the stop attempt behind
+ * it.
  */
 final class JobStopEvidence
 {
     public const string ATTEMPT_PREFIX = 'stop-attempt:';
 
     /**
-     * The open job the work names, locked for its change: none for other work or for a job that already ended.
+     * The open job of this id, locked for its change; none once it ended.
      *
-     * @return list<HelperJob>
+     * @return Option<HelperJob>
      */
-    public static function openJobs(RecordIdentity $work): array
+    public static function openJob(string $jobId): Option
     {
-        if ($work->type !== HelperJob::LINK_TYPE) {
-            return [];
-        }
-
-        return array_values(HelperJob::query()
+        return Option::fromValue(HelperJob::query()
             ->acrossActors()
             ->open()
-            ->whereKey($work->id)
+            ->whereKey($jobId)
             ->lock('for update')
-            ->limit(1)
-            ->get()
-            ->all());
+            ->first());
     }
 
     public static function referenceOf(StopAttemptReference $attempt): string

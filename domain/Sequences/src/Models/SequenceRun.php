@@ -6,12 +6,16 @@ namespace Domain\Sequences\Models;
 
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Values\StackTarget;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Support\SequenceWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -37,13 +41,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'steps'])]
-final class SequenceRun extends Model implements Numbered, ReadableModel
+final class SequenceRun extends Model implements EventSource, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use BoundedReads;
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     /**
      * @var array<string, mixed>
@@ -92,12 +97,13 @@ final class SequenceRun extends Model implements Numbered, ReadableModel
 
     // ----------[ Mutations ]----------
 
-    public function startFor(ActorIdentity $follower): void
+    public function startFor(ActorIdentity $follower, string $sessionId): void
     {
         $this->current_step = 1;
         $this->state = SequenceRunState::Running;
         $this->belongTo($follower);
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new SequenceStarted($this->id, new StackTarget($follower->id, $sessionId)));
     }
 
     /**

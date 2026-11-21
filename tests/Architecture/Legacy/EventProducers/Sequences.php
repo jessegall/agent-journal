@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Agents\Values\StackTarget;
 use Domain\Sequences\Events\SequenceStarted;
 use Tests\Architecture\Support\EventRole;
 
@@ -14,9 +15,8 @@ return [
     SequenceStarted::class => [
         'role' => EventRole::RowFact,
         'owner' => 'SequenceRun::startFor',
-        'migrated' => false,
-        'producers' => [
-            'domain/Sequences/src/Handlers/StartSequenceHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new SequenceStarted('run', new StackTarget('agent', 'session')),
     ],
 ];

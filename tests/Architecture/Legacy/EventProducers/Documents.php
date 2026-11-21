@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actors\Support\ActorContext;
 use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Api\Events\DocumentDraftSaved;
@@ -20,67 +21,58 @@ use Tests\Architecture\Support\EventRole;
 return [
     DocumentClosed::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'DocumentDraft::closeInto',
-        'migrated' => false,
-        'producers' => [
-            'domain/Documents/src/Support/DraftClosing.php',
-        ],
+        'owner' => 'DocumentClose::create',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DocumentClosed('document', 1, 2),
     ],
     DocumentCreated::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Document::create',
-        'migrated' => false,
-        'producers' => [
-            'domain/Documents/src/Handlers/CreateDocumentHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DocumentCreated('document', 1, ActorContext::forUser('user')),
     ],
     DocumentDraftSaved::class => [
         'role' => EventRole::RowFact,
         'owner' => 'DocumentDraft::saveText',
-        'migrated' => false,
-        'producers' => [
-            'domain/Documents/src/Support/DraftEditing.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DocumentDraftSaved('document', 2),
     ],
     DocumentOpened::class => [
         'role' => EventRole::RowFact,
         'owner' => 'DocumentDraft::create',
-        'migrated' => false,
-        'producers' => [
-            'domain/Documents/src/Handlers/OpenDocumentHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DocumentOpened('document', 1),
     ],
     DocumentPublished::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Document::addRevision',
-        'migrated' => false,
-        'producers' => [
-            'domain/Documents/src/Support/DraftClosing.php',
-        ],
+        'owner' => 'Document::publish',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DocumentPublished('document', 1, 2),
     ],
     DraftKept::class => [
         'role' => EventRole::RowFact,
         'owner' => 'RetainedDraft::create',
-        'migrated' => false,
-        'producers' => [
-            'domain/Documents/src/Support/DraftClosing.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new DraftKept('draft', 'document', null),
     ],
     RecordSettled::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Settles::settle',
-        'migrated' => false,
-        'producers' => [
-            'domain/Documents/src/Handlers/CloseReportHandler.php',
-            'domain/Documents/src/Handlers/SettleDocumentHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new RecordSettled('documents.document', 'document'),
     ],
     ReportFiled::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Report::create',
-        'migrated' => false,
-        'producers' => [
-            'domain/Documents/src/Handlers/CreateReportHandler.php',
-        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ReportFiled('report', 1, ActorContext::forUser('user')),
     ],
 ];

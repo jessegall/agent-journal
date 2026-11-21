@@ -147,7 +147,8 @@ final class AgentVisibilityTest extends TestCase
     private function giveWorkTo(int $agent, int $session): void
     {
         $target = TestActors::stack($agent, $session);
-        SequenceRun::create("Run of agent {$agent}", ['Read the brief.'])->startFor($target->actorIdentity());
+        $run = SequenceRun::create("Run of agent {$agent}", ['Read the brief.']);
+        $run->startFor($target->actorIdentity(), $target->sessionId);
     }
 
     /**

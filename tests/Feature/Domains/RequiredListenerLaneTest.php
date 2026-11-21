@@ -18,6 +18,7 @@ use App\Profiles\Listeners\ReleaseSignInWriter;
 use App\Web\Listeners\BroadcastPageChange;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Listeners\SamplePlanOfStartedTask;
+use Domain\Sequences\Events\SequenceStarted;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Listeners\PushTaskState;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -55,11 +56,14 @@ final class RequiredListenerLaneTest extends TestCase
         }
     }
 
-    public function test_the_application_requires_the_sign_in_writer_release_and_the_task_start_work(): void
+    public function test_the_application_requires_the_sign_in_writer_release_and_the_task_and_sequence_start_work(): void
     {
         $registry = $this->app->make(RequiredListenerRegistry::class);
 
-        $this->assertEqualsCanonicalizing([TaskStarted::class, SignInAttemptFinished::class], $registry->events());
+        $this->assertEqualsCanonicalizing(
+            [TaskStarted::class, SignInAttemptFinished::class, SequenceStarted::class],
+            $registry->events(),
+        );
         $this->assertSame(
             [SamplePlanOfStartedTask::class, PushTaskState::class],
             array_map(

@@ -33,6 +33,7 @@ use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Contracts\RecordPolicy;
 use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Contracts\SeatedActor;
+use App\Actors\Contracts\SystemEntryPolicies;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
 use App\Actors\Contracts\WorkStackProvider;
@@ -419,11 +420,13 @@ use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Contracts\CommandMiddlewareProvider;
 use App\Bus\Contracts\CommandProvider;
 use App\Bus\Contracts\CommandTransaction;
+use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OperationResolver;
 use App\Bus\Contracts\RecordCommand;
 use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Contracts\RequestKey;
 use App\Bus\Enums\CommandEffectType;
+use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\ReceiptState;
@@ -1387,6 +1390,8 @@ final class CoreApi
                 Event::class,
                 EventSource::class,
                 CommandFacts::class,
+                JournalCommands::class,
+                SystemEntryPolicies::class,
                 Listener::class,
                 CommandHandler::class,
                 CommandProvider::class,
@@ -1799,6 +1804,7 @@ final class CoreApi
                 ElapsedTime::class,
                 FrameSettlement::class,
                 MiddlewareStage::class,
+                CommandEntry::class,
                 CommandScopeType::class,
                 CommandScope::class,
                 MiddlewareDeclaration::class,

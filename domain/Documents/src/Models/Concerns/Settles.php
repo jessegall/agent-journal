@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Models\Concerns;
 
 use App\Actors\Contracts\Actor;
+use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\SettlementDenied;
@@ -16,13 +17,11 @@ use Domain\Documents\Models\RecordSettlement;
 trait Settles
 {
     /**
-     * Settles the record for this reason; the same reason again changes nothing, another one is refused.
-     *
-     * Who may is decided before, by the caller.
+     * Settles the record for this reason and announces it; the same reason again changes nothing, another one is
+     * refused. Who may is decided before, and the settlement row is written beside it, by the caller.
      */
-    public function settle(Actor $actor, string $givenReason, int|null $revisionNumber): bool
+    public function settle(string $reason): bool
     {
-        $reason = trim($givenReason);
         $last = RecordSettlement::query()->onRecord(static::LINK_TYPE, $this->id)->first();
 
         if ($this->attention === AttentionState::Settled && $last?->reason === $reason) {
@@ -33,9 +32,9 @@ trait Settles
             throw SettlementDenied::settledFor((string) $last?->reason);
         }
 
-        RecordSettlement::create(static::LINK_TYPE, $this->id, $actor, $reason, $revisionNumber);
         $this->attention = AttentionState::Settled;
-        $this->save();
+        $this->assertSaved($this->save());
+        $this->raise(new RecordSettled(static::LINK_TYPE, $this->id));
 
         return true;
     }

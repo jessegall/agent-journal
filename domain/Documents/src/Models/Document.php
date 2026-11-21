@@ -6,8 +6,11 @@ namespace Domain\Documents\Models;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorContext;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Support\HasComments;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -17,9 +20,9 @@ use App\Sharing\Contracts\Shareable;
 use App\Sharing\Support\ShareRecordCard;
 use App\Text\Contracts\TextContent;
 use App\Text\Exceptions\TextVersionUnavailable;
-use App\Text\Support\MarkdownText;
 use App\Text\Values\TextVersion;
-use Carbon\CarbonImmutable;
+use Domain\Documents\Api\Events\DocumentCreated;
+use Domain\Documents\Api\Events\DocumentPublished;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\DocumentView;
@@ -52,7 +55,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  */
 #[Fillable(['creator_type', 'creator_id'])]
-final class Document extends Model implements Commentable, Numbered, ReadableModel, Shareable, TextContent
+final class Document extends Model implements Commentable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {
     use BoundedReads;
     use CreatedWithAttention;
@@ -60,6 +63,7 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     use HasNumber;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
     use Settles;
     use SharedWithComments;
 
@@ -95,15 +99,13 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     }
 
     /**
-     * A new document with the given text as its closed revision 1.
+     * A new document by its author, numbered and announced; its first revision is added next and made current.
      */
-    public static function create(string $title, string $abstract, MarkdownText $body, Actor $author): self
+    public static function create(Actor $author): self
     {
-        $document = self::query()->create([
-            'creator_type' => $author->actorType(),
-            'creator_id' => $author->actorId(),
-        ]);
-        $document->addRevision(trim($title), trim($abstract), $body->text, $author->actorType(), $author->actorId());
+        $document = new self(['creator_type' => $author->actorType(), 'creator_id' => $author->actorId()]);
+        $document->assertSaved($document->save());
+        $document->raise(new DocumentCreated($document->id, $document->number, ActorContext::of($author)));
 
         return $document;
     }
@@ -129,39 +131,30 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     // ----------[ Mutations ]----------
 
     /**
-     * Adds the next revision and makes it the document's current one.
+     * Makes the document's first revision its current one.
      */
-    public function addRevision(
-        string $title,
-        string $abstract,
-        string $body,
-        ActorType $authorType,
-        string $authorId,
-    ): DocumentRevision {
-        $revision = $this->revisions()->create([
-            'title' => $title,
-            'abstract' => $abstract,
-            'body' => $body,
-            'author_type' => $authorType,
-            'author_id' => $authorId,
-            'closed_at' => CarbonImmutable::now(),
-        ]);
+    public function startWith(DocumentRevision $revision): void
+    {
         $this->current_revision_id = $revision->id;
-        $this->save();
+        $this->assertSaved($this->save());
         $this->setRelation('currentRevision', $revision);
-
-        return $revision;
     }
 
     /**
-     * A settled document asks for attention again once a changed revision is published; its settlements stay.
+     * Makes a closed draft's new revision the document's current one, brings a settled document back to attention
+     * with its settlements kept, and announces the publication.
      */
-    public function reactivate(): void
+    public function publish(DocumentRevision $revision): void
     {
+        $this->current_revision_id = $revision->id;
+
         if ($this->attention === AttentionState::Settled) {
             $this->attention = AttentionState::Active;
-            $this->save();
         }
+
+        $this->assertSaved($this->save());
+        $this->setRelation('currentRevision', $revision);
+        $this->raise(new DocumentPublished($this->id, $this->number, $revision->number));
     }
 
     // ----------[ Answers ]----------

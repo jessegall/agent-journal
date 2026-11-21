@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Numbers\Support\RecordReference;
-use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Commands\CloseReport;
 use Domain\Documents\Handlers\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordChanges;
-use Illuminate\Contracts\Events\Dispatcher;
+use Domain\Documents\Support\RecordSettling;
 
 final readonly class CloseReportHandler extends DocumentCommandHandler
 {
-    public function __construct(private RecordChanges $changes, private Dispatcher $events) {}
+    public function __construct(private RecordChanges $changes, private RecordSettling $settling) {}
 
     public function handle(CloseReport $command): void
     {
@@ -22,8 +21,6 @@ final readonly class CloseReportHandler extends DocumentCommandHandler
 
         $this->changes->requireChangeOf($report);
 
-        if ($report->settle($command->dispatchedBy(), $command->reason, null)) {
-            $this->events->dispatch(new RecordSettled(Report::LINK_TYPE, $report->id));
-        }
+        $this->settling->settle($report, $command->dispatchedBy(), $command->reason, null);
     }
 }

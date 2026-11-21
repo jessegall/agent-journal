@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Models;
 
-use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Contracts\EventSource;
+use App\Contracts\Support\RaisesEvents;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Text\Support\MarkdownText;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Api\DraftReference;
+use Domain\Documents\Api\Events\DocumentDraftSaved;
+use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Data\DraftView;
-use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Support\DraftText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -54,11 +56,12 @@ use Illuminate\Support\Str;
         'opened_at',
     ],
 )]
-final class DocumentDraft extends Model implements ReadableModel
+final class DocumentDraft extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
     use Linkable;
+    use RaisesEvents;
 
     public const string LINK_TYPE = 'documents.draft';
 
@@ -81,7 +84,7 @@ final class DocumentDraft extends Model implements ReadableModel
      */
     public static function create(Document $document, DocumentRevision $baseRevision, ActorIdentity $editor): self
     {
-        return self::query()->create([
+        $draft = new self([
             'document_id' => $document->id,
             'token' => Str::random(40),
             'author_type' => $editor->type,
@@ -92,6 +95,10 @@ final class DocumentDraft extends Model implements ReadableModel
             'body' => $baseRevision->body,
             'opened_at' => CarbonImmutable::now(),
         ]);
+        $draft->assertSaved($draft->save());
+        $draft->raise(new DocumentOpened($document->id, $document->number));
+
+        return $draft;
     }
 
     // ----------[ Mutations ]----------
@@ -105,37 +112,8 @@ final class DocumentDraft extends Model implements ReadableModel
         $this->abstract = $text->abstract;
         $this->body = $text->body->text;
         $this->version++;
-        $this->save();
-    }
-
-    /**
-     * Closes the draft inside the caller's transaction, under the document's lock: a revision with the next number
-     * when the text changed, a close record either way, and the draft gone.
-     */
-    public function closeInto(
-        Document $document,
-        DocumentRevision $baseRevision,
-        CloseCause $cause,
-        Actor|null $closer,
-        string|null $reason,
-    ): DocumentClose {
-        $published = $this->hasChangesFrom($baseRevision);
-        $resultNumber = $published ? $document->addRevision(
-            $this->title,
-            $this->abstract,
-            $this->body,
-            $this->author_type,
-            $this->author_id,
-        )->number : $baseRevision->number;
-        $close = DocumentClose::create($this, $resultNumber, $cause, $closer, $reason, $published);
-
-        if ($published) {
-            $document->reactivate();
-        }
-
-        $this->delete();
-
-        return $close;
+        $this->assertSaved($this->save());
+        $this->raise(new DocumentDraftSaved($this->document_id, $this->version));
     }
 
     // ----------[ Answers ]----------
