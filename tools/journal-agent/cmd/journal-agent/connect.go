@@ -15,6 +15,7 @@ import (
 
 	"journal-agent/client"
 	"journal-agent/host"
+	"journal-agent/project"
 )
 
 // errTicketMissing is returned when standard input holds no install line ticket.
@@ -29,7 +30,7 @@ func connect(arguments []string) error {
 	flags := flag.NewFlagSet("connect", flag.ContinueOnError)
 	ticketStdin := flags.Bool("ticket-stdin", false, "read the install line's ticket from standard input")
 	origin := flags.String("origin", "", "the journal's canonical https origin")
-	stateFolder := flags.String("state", defaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -55,8 +56,26 @@ func connect(arguments []string) error {
 	if err != nil {
 		return err
 	}
+	installation, err := ownInstallation()
+	if err != nil {
+		return err
+	}
+	if err := connection.setUp(binding, installation); err != nil {
+		return err
+	}
+	program, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	if err := host.StartRelay(program, *stateFolder, binding.BindingID); err != nil {
+		return err
+	}
+	if !awaitReady(connection.state, relayReadyWait) {
+		fmt.Println("Connected, setup pending: this folder's relay has not reported yet. Run the install line again to finish.")
+		return nil
+	}
 
-	fmt.Printf("Connected to %s: project %s, binding %s\n", binding.JournalURL, binding.ProjectID, binding.BindingID)
+	fmt.Printf("Connected to %s · %s · %s\n", binding.JournalURL, filepath.Base(root), host.MachineLabel())
 
 	return nil
 }
@@ -104,13 +123,42 @@ func (connection projectConnection) redeem(ctx context.Context, ticket string) (
 		Secret:     pending.HostCredential,
 	}
 	binding = host.Binding{
-		Enrollment: enrollment,
-		ProjectID:  redemption.ProjectID,
-		BindingID:  redemption.BindingID,
-		RootID:     pending.RootID,
+		Enrollment:    enrollment,
+		ProjectID:     redemption.ProjectID,
+		BindingID:     redemption.BindingID,
+		RootID:        pending.RootID,
+		CanonicalRoot: pending.CanonicalRoot,
 	}
 
 	return binding, connection.state.SaveBinding(binding)
+}
+
+// setUp writes the folder's .journal setup for the binding under the root's lock; a rerun finishes what an
+// interrupted one left.
+func (connection projectConnection) setUp(binding host.Binding, installation host.Installation) error {
+	unlock, err := connection.state.Lock()
+	if err != nil {
+		return err
+	}
+	defer unlock()
+
+	folder := project.Folder{Root: connection.state.CanonicalRoot}
+
+	return folder.SetUp(project.ConnectionOf(binding, client.RemoteProjectProtocolVersion), installation)
+}
+
+// ownInstallation is the sealed installation this program runs from: the folder above its bin folder.
+func ownInstallation() (host.Installation, error) {
+	program, err := os.Executable()
+	if err != nil {
+		return host.Installation{}, err
+	}
+	program, err = filepath.EvalSymlinks(program)
+	if err != nil {
+		return host.Installation{}, err
+	}
+
+	return host.Installation{Folder: filepath.Dir(filepath.Dir(program))}, nil
 }
 
 // recover asks for the binding the staged nonce made after a redemption that failed: a lost reply, or a ticket an
@@ -134,11 +182,6 @@ func (connection projectConnection) recover(
 }
 
 func redeemRequest(ticket string, pending host.PendingConnection) client.RedeemRequest {
-	machine, err := os.Hostname()
-	if err != nil {
-		machine = "this machine"
-	}
-
 	return client.RedeemRequest{
 		Ticket:            ticket,
 		InstallationNonce: pending.InstallationNonce,
@@ -146,7 +189,7 @@ func redeemRequest(ticket string, pending host.PendingConnection) client.RedeemR
 		RootID:            pending.RootID,
 		CanonicalRoot:     pending.CanonicalRoot,
 		ProjectLabel:      filepath.Base(pending.CanonicalRoot),
-		MachineLabel:      machine,
+		MachineLabel:      host.MachineLabel(),
 		Protocol:          client.RemoteProjectProtocolVersion,
 	}
 }

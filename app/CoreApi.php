@@ -558,12 +558,15 @@ use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
 use App\Connections\Commands\IssueProjectInvitation;
+use App\Connections\Commands\RecordBindingPresence;
 use App\Connections\Commands\RecoverProjectBinding;
 use App\Connections\Commands\RedeemProjectInvitation;
 use App\Connections\Commands\RevokeProjectBinding;
 use App\Connections\Commands\RevokeProjectInvitation;
 use App\Connections\Values\BindingFolder;
 use App\Connections\Values\IssuedInvitation;
+use App\Connections\Values\PresenceReceipt;
+use App\Connections\Values\PresenceReport;
 use App\Connections\Values\Redemption;
 use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Attributes\RequiresListener;
@@ -2007,6 +2010,8 @@ final class CoreApi
                 IssuedInvitation::class,
                 Redemption::class,
                 BindingFolder::class,
+                PresenceReport::class,
+                PresenceReceipt::class,
                 GatewaySettings::class,
                 GatewayOperation::class,
                 GatewayEndpoint::class,
@@ -2252,6 +2257,7 @@ final class CoreApi
                 RedeemProjectInvitation::class,
                 RecoverProjectBinding::class,
                 RevokeProjectBinding::class,
+                RecordBindingPresence::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

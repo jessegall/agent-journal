@@ -20,7 +20,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Admits a call from an enrolled host that SignedHostCalls verifies, speaking the enrolled hosts' protocol. The host is
+ * Admits a call from an enrolled host that SignedHostCalls verifies, speaking the enrolled hosts' protocol or the one
+ * the route names, such as journal.host:2 for a connected project's relay. The host is
  * bound for this request only (Octane), never kept on a singleton.
  */
 final readonly class AuthenticateHost
@@ -35,10 +36,12 @@ final readonly class AuthenticateHost
     /**
      * @param  Closure(Request): Response  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string|null $protocol = null): Response
     {
+        $speaks = $protocol === null ? HostProtocolVersion::current() : HostProtocolVersion::from((int) $protocol);
+
         try {
-            $context = $this->calls->verify($request, HostProtocolVersion::current());
+            $context = $this->calls->verify($request, $speaks);
         } catch (HostCredentialRejected|CallSignatureInvalid $rejection) {
             return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
         } catch (HostProtocolMismatch $mismatch) {

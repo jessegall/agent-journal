@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
+	"time"
 )
 
 // RedeemRequest mirrors App\Http\Requests\Connections\RedeemProjectInvitationRequest: an install line's ticket, the
@@ -58,6 +60,34 @@ func (client *Client) Recover(ctx context.Context, installationNonce string) (Re
 	err := client.call(ctx, recoverTarget, map[string]string{"installationNonce": installationNonce}, &answer)
 
 	return answer, err
+}
+
+// PresenceReport mirrors App\Http\Data\Connections\PresenceReportData: the boot of the relay, its rising sequence,
+// the release and protocol it runs, the combinations it can run, how setting up the folder ended and whether it takes
+// over a live boot.
+type PresenceReport struct {
+	BootID       string            `json:"bootId"`
+	Sequence     int               `json:"sequence"`
+	Release      string            `json:"release"`
+	Protocol     int               `json:"protocol"`
+	Combinations []HostCombination `json:"combinations"`
+	Provisioning string            `json:"provisioning"`
+	Takeover     bool              `json:"takeover"`
+}
+
+// PresenceReceipt is the journal's answer to a presence report: the boot generation it holds and when the presence
+// expires, by server time.
+type PresenceReceipt struct {
+	Generation int       `json:"generation"`
+	ExpiresAt  time.Time `json:"presenceExpiresAt"`
+}
+
+// ReportPresence tells the journal the binding's relay is present, with no provider session needed.
+func (client *Client) ReportPresence(ctx context.Context, bindingID string, report PresenceReport) (PresenceReceipt, error) {
+	receipt := PresenceReceipt{}
+	err := client.call(ctx, "/host/bindings/"+url.PathEscape(bindingID)+"/presence", report, &receipt)
+
+	return receipt, err
 }
 
 // post sends an unsigned JSON call and decodes its answer.

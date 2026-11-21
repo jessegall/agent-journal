@@ -66,7 +66,7 @@ func TestTheStatusLineEndsAtOnceWithoutItsRelayAndStillRendersTheOneItReplaced(t
 	if time.Since(began) > 2*time.Second {
 		t.Fatal("the reader waited on a relay that is gone")
 	}
-	if printed.String() != `{"model":` + " shown\n" {
+	if printed.String() != `{"model":`+" shown\n" {
 		t.Fatalf("the replaced status line printed %q", printed.String())
 	}
 }

@@ -1,6 +1,7 @@
 package release
 
 import (
+	"crypto/ed25519"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,6 +11,9 @@ import (
 	"journal-agent/profiles/contracts"
 )
 
+// SecondStageName is the installer the first-stage script checks against the manifest and runs.
+const SecondStageName = "scripts/install-relay.sh"
+
 // HookEntryPlaceholder stands in a hook template for the sealed absolute path of the installed hook adapter; the
 // project setup replaces it once the installation folder is known.
 const HookEntryPlaceholder = "{{hook-entry}}"
@@ -18,10 +22,12 @@ const HookEntryPlaceholder = "{{hook-entry}}"
 // against the release manifest and imported into the sealed installation.
 const OfficialInstallImport = "official-install-import"
 
-// Sources are the folders a release is built from: the repository and the journal-agent module inside it.
+// Sources are the folders a release is built from, the repository and the journal-agent module inside it, and the
+// public key every program it builds pins.
 type Sources struct {
 	Repository string
 	Module     string
+	PinnedKey  ed25519.PublicKey
 }
 
 // FileSource writes one file of a profile for a target to the path given.
@@ -62,6 +68,7 @@ var RemoteProject = Profile{
 		{Name: "bin/journal-hook", Source: GoProgram{Package: "./cmd/journal-hook"}, Executable: true},
 		{Name: "bin/journal-account", Source: GoProgram{Package: "./cmd/journal-account"}, Executable: true},
 		{Name: "journal/tools/accounts/no-keychain/security", Source: RepositoryFile{Path: "tools/accounts/no-keychain/security"}, Executable: true},
+		{Name: SecondStageName, Source: RepositoryFile{Path: "tools/journal-agent/scripts/install-relay.sh"}},
 		{Name: "hooks/claude-code/settings.json", Source: HookTemplate{Profile: profiles.ClaudeCode{}, File: "settings.json"}},
 		{Name: "hooks/codex/hooks.json", Source: HookTemplate{Profile: profiles.Codex{}, File: "hooks.json"}},
 	},
@@ -89,7 +96,7 @@ type GoProgram struct {
 }
 
 func (program GoProgram) write(sources Sources, target Target, path string) error {
-	build := exec.Command("go", "build", "-trimpath", "-o", path, program.Package)
+	build := exec.Command("go", "build", "-trimpath", "-ldflags", pinnedKeyFlag(sources.PinnedKey), "-o", path, program.Package)
 	build.Dir = sources.Module
 	build.Env = append(os.Environ(), "GOOS="+target.OS, "GOARCH="+target.Arch, "CGO_ENABLED=0")
 	if printed, err := build.CombinedOutput(); err != nil {

@@ -445,6 +445,7 @@ case	HookEvent::SessionStart
 case	HookEvent::Stop
 case	HookEvent::StopFailure
 case	HookEvent::UserPromptSubmit
+case	HostCapabilityType::AccountIsolation
 case	HostCapabilityType::AccountTransport
 case	HostCapabilityType::CallbackSeparation
 case	HostCapabilityType::CompletionFence
@@ -489,6 +490,8 @@ case	LaunchCandidateRank::CompatibleConversation
 case	LaunchCandidateRank::ExactConversation
 case	LaunchCandidateRank::OtherPurpose
 case	LaunchCandidateRank::SamePurpose
+case	LaunchProfileType::ProtectedAccount
+case	LaunchProfileType::Standard
 case	LifecycleStage::Enter
 case	LifecycleStage::Event
 case	LifecycleStage::Exit
@@ -1671,6 +1674,7 @@ class	BindDispatcher
 class	BindingDefinition
 class	BindingDefinitionScan
 class	BindingFolder
+class	BindingPresenceController
 class	BindingRules
 class	BindingUnrecoverable
 class	BlockBody
@@ -3045,6 +3049,7 @@ class	LaunchCandidateQuery
 class	LaunchEnded
 class	LaunchLimits
 class	LaunchProfileKey
+class	LaunchProfiles
 class	Layout
 class	LayoutData
 class	LayoutRequest
@@ -3695,6 +3700,10 @@ class	PreparedAgentCall
 class	PreparedCall
 class	PreparedStart
 class	PresencePolicy
+class	PresenceReceipt
+class	PresenceRefused
+class	PresenceReport
+class	PresenceReportData
 class	PresenceWindow
 class	PresentList
 class	PresentUserCounter
@@ -3802,6 +3811,7 @@ class	Project
 class	ProjectAccountsChanged
 class	ProjectBinding
 class	ProjectBindingCreated
+class	ProjectBindingReadinessChanged
 class	ProjectBindingRevoked
 class	ProjectBindingRowData
 class	ProjectCreated
@@ -4075,6 +4085,8 @@ class	RecordAccountFailureHandler
 class	RecordAccountNotice
 class	RecordAccountNoticeHandler
 class	RecordAttemptEnded
+class	RecordBindingPresence
+class	RecordBindingPresenceHandler
 class	RecordCalls
 class	RecordCard
 class	RecordChanges
@@ -6381,6 +6393,7 @@ constant	ProfileStartPolicy::WORKSPACE
 constant	Profiles::TYPE
 constant	Profiles::VERSION
 constant	ProfilesUnavailable::CODE
+constant	ProjectBinding::PRESENCE_SECONDS
 constant	ProjectInvitation::LIFETIME_MINUTES
 constant	PropertyRules::LOOKUP_RULES
 constant	PropertyRules::TYPE_RULES
@@ -6843,6 +6856,7 @@ enum	JobState
 enum	JournalRouteType
 enum	KeywordCategory
 enum	LaunchCandidateRank
+enum	LaunchProfileType
 enum	LifecycleStage
 enum	LifecycleState
 enum	MenuEntryState
@@ -9036,6 +9050,7 @@ method	BindingDefinition::violation()
 method	BindingDefinitionScan::findingsIn()
 method	BindingDefinitionScan::key()
 method	BindingFolder::__construct()
+method	BindingPresenceController::__invoke()
 method	BindingRules::__construct()
 method	BindingRules::attributeDefinitions()
 method	BindingRules::bindTargetOf()
@@ -12963,6 +12978,7 @@ method	HostCalls::verify()
 method	HostCapabilities::capability()
 method	HostCapability::__construct()
 method	HostCapability::assertSupported()
+method	HostCapability::isSupported()
 method	HostCapabilityQuery::__construct()
 method	HostCapabilityQuery::describe()
 method	HostCapabilityType::refusalFor()
@@ -14324,6 +14340,7 @@ method	MountRules::accountMounts()
 method	MountRules::assertContainedSource()
 method	MountRules::assertLocal()
 method	MountRules::assertPermits()
+method	MountRules::bindsAccount()
 method	MountRules::contained()
 method	MountRules::isDaemonFolder()
 method	MountRules::local()
@@ -15563,6 +15580,14 @@ method	PreparedCall::restored()
 method	PreparedStart::__construct()
 method	PreparedStart::hostDriver()
 method	PresencePolicy::model()
+method	PresenceReceipt::__construct()
+method	PresenceRefused::anotherBootIsLive()
+method	PresenceRefused::notTheHost()
+method	PresenceRefused::refusalCode()
+method	PresenceRefused::status()
+method	PresenceReport::__construct()
+method	PresenceReportData::__construct()
+method	PresenceReportData::report()
 method	PresenceWindow::__construct()
 method	PresentList::keyword()
 method	PresentList::parameters()
@@ -16010,14 +16035,20 @@ method	ProjectAccountsChanged::__construct()
 method	ProjectAccountsChanged::handle()
 method	ProjectBinding::casts()
 method	ProjectBinding::create()
+method	ProjectBinding::hasLivePresenceAt()
 method	ProjectBinding::host()
+method	ProjectBinding::isReportableBy()
 method	ProjectBinding::listed()
 method	ProjectBinding::lockById()
 method	ProjectBinding::mainAgent()
 method	ProjectBinding::ofHostByNonce()
 method	ProjectBinding::readinessAt()
+method	ProjectBinding::readinessOf()
+method	ProjectBinding::receipt()
+method	ProjectBinding::recordPresence()
 method	ProjectBinding::revoke()
 method	ProjectBindingCreated::__construct()
+method	ProjectBindingReadinessChanged::__construct()
 method	ProjectBindingRevoked::__construct()
 method	ProjectBindingRowData::__construct()
 method	ProjectBindingRowData::fromBinding()
@@ -16762,6 +16793,8 @@ method	RecordAccountNoticeHandler::__construct()
 method	RecordAccountNoticeHandler::handle()
 method	RecordAttemptEnded::__construct()
 method	RecordAttemptEnded::handle()
+method	RecordBindingPresence::__construct()
+method	RecordBindingPresenceHandler::handle()
 method	RecordCalls::__construct()
 method	RecordCalls::addLink()
 method	RecordCalls::removeLink()
@@ -22331,6 +22364,7 @@ parameter	$bodyDigest
 parameter	$bodyFields
 parameter	$bodyHtml
 parameter	$bold
+parameter	$bootId
 parameter	$bottom
 parameter	$bound
 parameter	$boundary
@@ -22755,6 +22789,7 @@ parameter	$driverName
 parameter	$driverPinned
 parameter	$driverSource
 parameter	$driverVersion
+parameter	$drivers
 parameter	$due
 parameter	$duration
 parameter	$durationMilliseconds
@@ -23174,6 +23209,7 @@ parameter	$isNewJob
 parameter	$isOffline
 parameter	$isOpen
 parameter	$isProposal
+parameter	$isProvisioned
 parameter	$isQuestion
 parameter	$isQuoted
 parameter	$isRead
@@ -23264,6 +23300,8 @@ parameter	$latest
 parameter	$latestLine
 parameter	$latestThread
 parameter	$launch
+parameter	$launchProfile
+parameter	$launchProfiles
 parameter	$launchReference
 parameter	$launches
 parameter	$layout
@@ -23869,6 +23907,7 @@ parameter	$reader
 parameter	$readerRevision
 parameter	$readerRevisionId
 parameter	$readers
+parameter	$readiness
 parameter	$reading
 parameter	$readings
 parameter	$reads
@@ -24426,6 +24465,7 @@ parameter	$takeover
 parameter	$takes
 parameter	$takesAssignments
 parameter	$takesOnlyEvents
+parameter	$takesOver
 parameter	$target
 parameter	$targetBefore
 parameter	$targetBranch
@@ -24503,6 +24543,7 @@ parameter	$transport
 parameter	$transportProfile
 parameter	$tree
 parameter	$treeDigest
+parameter	$trialDrivers
 parameter	$trigger
 parameter	$truncated
 parameter	$trust
@@ -26286,6 +26327,7 @@ property	ContainerManifest::$attachable
 property	ContainerManifest::$budgets
 property	ContainerManifest::$capabilities
 property	ContainerManifest::$image
+property	ContainerManifest::$launchProfile
 property	ContainerManifest::$mounts
 property	ContainerManifest::$network
 property	ContainerManifest::$noNewPrivileges
@@ -28029,6 +28071,9 @@ property	LaunchEnded::$work
 property	LaunchLimits::$clock
 property	LaunchLimits::$requests
 property	LaunchProfileKey::$key
+property	LaunchProfiles::$arrangement
+property	LaunchProfiles::$capabilities
+property	LaunchProfiles::$trialDrivers
 property	LayoutData::$id
 property	LayoutData::$name
 property	LayoutData::$shape
@@ -29341,6 +29386,22 @@ property	PreparedStart::$selectedDriver
 property	PreparedStart::$sessionId
 property	PreparedStart::$startId
 property	PreparedStart::$workspace
+property	PresenceReceipt::$expiresAt
+property	PresenceReceipt::$generation
+property	PresenceRefused::$status
+property	PresenceReport::$bootId
+property	PresenceReport::$isProvisioned
+property	PresenceReport::$protocol
+property	PresenceReport::$release
+property	PresenceReport::$sequence
+property	PresenceReport::$takesOver
+property	PresenceReportData::$bootId
+property	PresenceReportData::$combinations
+property	PresenceReportData::$protocol
+property	PresenceReportData::$provisioning
+property	PresenceReportData::$release
+property	PresenceReportData::$sequence
+property	PresenceReportData::$takeover
 property	PresenceWindow::$heartbeatSeconds
 property	PresenceWindow::$presenceSeconds
 property	PresenceWindow::$signedCallRefreshSeconds
@@ -29547,6 +29608,9 @@ property	ProjectBindingCreated::$bindingId
 property	ProjectBindingCreated::$hostId
 property	ProjectBindingCreated::$occurredAt
 property	ProjectBindingCreated::$projectId
+property	ProjectBindingReadinessChanged::$bindingId
+property	ProjectBindingReadinessChanged::$occurredAt
+property	ProjectBindingReadinessChanged::$readiness
 property	ProjectBindingRevoked::$authorityGeneration
 property	ProjectBindingRevoked::$bindingId
 property	ProjectBindingRevoked::$occurredAt
@@ -30060,6 +30124,9 @@ property	RecordAccountNotice::$driver
 property	RecordAccountNotice::$reason
 property	RecordAccountNoticeHandler::$notices
 property	RecordAttemptEnded::$journal
+property	RecordBindingPresence::$bindingId
+property	RecordBindingPresence::$hostId
+property	RecordBindingPresence::$report
 property	RecordCalls::$sender
 property	RecordCard::$abstract
 property	RecordCard::$id
@@ -31497,6 +31564,7 @@ property	ServerOrigin::$configured
 property	SessionClosed::$agentId
 property	SessionClosed::$sessionId
 property	SessionContainers::$arrangement
+property	SessionContainers::$launchProfiles
 property	SessionContainers::$policies
 property	SessionEndDetails::$reason
 property	SessionEnded::$end
@@ -34239,6 +34307,7 @@ variable	$isRequired
 variable	$isReturned
 variable	$isRowOfOwnClass
 variable	$isSameAgent
+variable	$isSameBoot
 variable	$isSameFailure
 variable	$isScoped
 variable	$isServed
@@ -34692,6 +34761,7 @@ variable	$reader
 variable	$readerId
 variable	$readerStillSeated
 variable	$readers
+variable	$readiness
 variable	$reading
 variable	$reads
 variable	$readsAgain
@@ -34949,6 +35019,7 @@ variable	$sourceRoot
 variable	$sources
 variable	$span
 variable	$speaking
+variable	$speaks
 variable	$special
 variable	$sql
 variable	$sqlite
@@ -34969,6 +35040,7 @@ variable	$startedEntry
 variable	$starter
 variable	$starting
 variable	$starts
+variable	$startsAsProfile
 variable	$startsExpansion
 variable	$startsOwnQuery
 variable	$startup

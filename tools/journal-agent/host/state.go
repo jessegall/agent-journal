@@ -17,6 +17,24 @@ const (
 	enrollmentName  = "enrollment.json"
 )
 
+// DefaultStateFolder is the host's private folder unless --state names another.
+func DefaultStateFolder() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ".journal-agent"
+	}
+	return filepath.Join(home, ".journal-agent")
+}
+
+// MachineLabel is the name this machine goes by, or "this machine" when it has none.
+func MachineLabel() string {
+	machine, err := os.Hostname()
+	if err != nil || machine == "" {
+		return "this machine"
+	}
+	return machine
+}
+
 // Enrollment is what agents:host-enroll handed this host; the client signs its calls with it.
 type Enrollment = client.Enrollment
 
@@ -73,7 +91,7 @@ func writePrivateJSON(path string, value any) error {
 	if err != nil {
 		return err
 	}
-	return writePrivateFile(path, content)
+	return WritePrivateFile(path, content)
 }
 
 // removePrivateFile removes a private file; one that is already gone counts as removed.
@@ -85,9 +103,9 @@ func removePrivateFile(path string) error {
 	return err
 }
 
-// writePrivateFile replaces a file readable by its owner alone in one step: the content goes to a new file beside it,
+// WritePrivateFile replaces a file readable by its owner alone in one step: the content goes to a new file beside it,
 // is synced, and is renamed over the old one, so a crash leaves the old file or the new one, never half of either.
-func writePrivateFile(path string, content []byte) error {
+func WritePrivateFile(path string, content []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), stateFolderMode); err != nil {
 		return err
 	}

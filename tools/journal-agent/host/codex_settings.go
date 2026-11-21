@@ -40,7 +40,7 @@ func CodexPreparationOf(installation Installation) CodexPreparation {
 // PrepareRoot writes the account's hooks.json, has the entrypoint make the empty root and trust exactly it beside
 // every entry the account's config.toml already holds, and answers the root's path.
 func (preparation CodexPreparation) PrepareRoot(ctx context.Context, request CodexRootRequest) (string, error) {
-	if err := writePrivateFile(filepath.Join(request.Account, "hooks.json"), request.Hooks); err != nil {
+	if err := WritePrivateFile(filepath.Join(request.Account, "hooks.json"), request.Hooks); err != nil {
 		return "", err
 	}
 	transport := request.Transport

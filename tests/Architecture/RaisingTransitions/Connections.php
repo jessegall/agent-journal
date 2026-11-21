@@ -9,6 +9,7 @@ declare(strict_types=1);
 return [
     'Project::create',
     'ProjectBinding::create',
+    'ProjectBinding::recordPresence',
     'ProjectBinding::revoke',
     'ProjectInvitation::issue',
     'ProjectInvitation::issueForNewProject',

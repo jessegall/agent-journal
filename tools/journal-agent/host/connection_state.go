@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"syscall"
+	"time"
 )
 
 const (
@@ -17,6 +19,8 @@ const (
 	pendingName           = "pending.json"
 	bindingName           = "binding.json"
 	lockName              = "lock"
+	relayLockName         = "relay.lock"
+	relayReportName       = "relay.json"
 	// credentialBytes gives a credential of 64 base64url characters, as strong as the secret Host makes.
 	credentialBytes = 48
 	nonceBytes      = 16
@@ -38,9 +42,19 @@ type PendingConnection struct {
 // binding it belongs to.
 type Binding struct {
 	Enrollment
-	ProjectID string `json:"project_id"`
-	BindingID string `json:"binding_id"`
-	RootID    string `json:"root_id"`
+	ProjectID     string `json:"project_id"`
+	BindingID     string `json:"binding_id"`
+	RootID        string `json:"root_id"`
+	CanonicalRoot string `json:"canonical_root"`
+}
+
+// RelayReport is what the binding's relay last had acknowledged: its boot, the generation the journal holds for it
+// and when that presence expires. connect waits for the first one.
+type RelayReport struct {
+	BootID     string    `json:"boot_id"`
+	Generation int       `json:"generation"`
+	ReportedAt time.Time `json:"reported_at"`
+	ExpiresAt  time.Time `json:"expires_at"`
 }
 
 // ConnectionState is the private state of one project folder's connection, inside the host's state folder and
@@ -52,6 +66,97 @@ type ConnectionState struct {
 
 // ErrNotConnected is returned for a folder whose connection holds no binding yet.
 var ErrNotConnected = errors.New("this folder is not connected to a journal")
+
+// ErrRelayRunning is returned when another relay already holds the binding.
+var ErrRelayRunning = errors.New("a relay already runs for this binding")
+
+// ConnectionOfBinding is the private state of the folder that redeemed this binding.
+func ConnectionOfBinding(stateFolder string, bindingID string) (ConnectionState, Binding, error) {
+	folders, err := filepath.Glob(filepath.Join(stateFolder, connectionsFolderName, "*", bindingName))
+	if err != nil {
+		return ConnectionState{}, Binding{}, err
+	}
+	for _, path := range folders {
+		var binding Binding
+		content, err := os.ReadFile(path)
+		if err != nil || json.Unmarshal(content, &binding) != nil || binding.BindingID != bindingID {
+			continue
+		}
+
+		return ConnectionState{Folder: stateFolder, CanonicalRoot: binding.CanonicalRoot}, binding, nil
+	}
+
+	return ConnectionState{}, Binding{}, ErrNotConnected
+}
+
+// LockRelay holds the binding for one relay until the returned unlock runs; a second relay gets ErrRelayRunning at
+// once instead of waiting.
+func (state ConnectionState) LockRelay() (func(), error) {
+	file, err := os.OpenFile(filepath.Join(state.folder(), relayLockName), os.O_CREATE|os.O_RDWR, secretFileMode)
+	if err != nil {
+		return nil, err
+	}
+	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		file.Close()
+		return nil, ErrRelayRunning
+	}
+
+	return func() {
+		_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+		file.Close()
+	}, nil
+}
+
+// RelayIsRunning is whether a relay holds the binding now.
+func (state ConnectionState) RelayIsRunning() bool {
+	unlock, err := state.LockRelay()
+	if err != nil {
+		return true
+	}
+	unlock()
+
+	return false
+}
+
+// StartRelay starts the binding's relay detached with the journal-agent program given, as this user, its output in
+// the private state folder.
+func StartRelay(program string, stateFolder string, bindingID string) error {
+	logPath := filepath.Join(stateFolder, "relay-"+bindingID+".log")
+	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, secretFileMode)
+	if err != nil {
+		return err
+	}
+	defer logFile.Close()
+
+	command := exec.Command(program, "relay", "--binding", bindingID, "--state", stateFolder)
+	command.Stdout = logFile
+	command.Stderr = logFile
+	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	if err := command.Start(); err != nil {
+		return err
+	}
+
+	return command.Process.Release()
+}
+
+// SaveRelayReport keeps the relay's last acknowledged presence report.
+func (state ConnectionState) SaveRelayReport(report RelayReport) error {
+	return writePrivateJSON(filepath.Join(state.folder(), relayReportName), report)
+}
+
+// RelayReport is the relay's last acknowledged presence report; ErrNotConnected while it has none.
+func (state ConnectionState) RelayReport() (RelayReport, error) {
+	content, err := os.ReadFile(filepath.Join(state.folder(), relayReportName))
+	if errors.Is(err, os.ErrNotExist) {
+		return RelayReport{}, ErrNotConnected
+	}
+	if err != nil {
+		return RelayReport{}, err
+	}
+	var report RelayReport
+
+	return report, json.Unmarshal(content, &report)
+}
 
 // Lock holds the folder's connection for this process alone until the returned unlock runs: two runs for one root
 // never stage or redeem at once.

@@ -25,6 +25,7 @@ func Build(profile Profile, sources Sources, folder string, version string, key 
 		return Manifest{}, err
 	}
 
+	sources.PinnedKey = key.Public().(ed25519.PublicKey)
 	manifest := Manifest{
 		Version:             version,
 		HostProtocolVersion: client.RemoteProjectProtocolVersion,

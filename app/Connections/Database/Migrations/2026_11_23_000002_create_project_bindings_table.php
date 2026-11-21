@@ -28,6 +28,8 @@ return new class extends Migration
             $table->timestampTz('presence_expires_at')->nullable();
             $table->string('boot_id')->nullable();
             $table->unsignedBigInteger('report_sequence')->default(0);
+            // Raised by every new boot of the relay, so a report of an older boot is told apart.
+            $table->unsignedInteger('boot_generation')->default(0);
             $table->timestampsTz();
             $table->unique(['host_id', 'root_id']);
         });

@@ -16,7 +16,7 @@ func protection(arguments []string) error {
 	flags := flag.NewFlagSet("protection", flag.ContinueOnError)
 	program := flags.String("program", "", "the agent program: claude or codex")
 	build := flags.String("build", "", "the pinned build the arrangement is for")
-	stateFolder := flags.String("state", defaultStateFolder(), "the host's private state folder")
+	stateFolder := flags.String("state", host.DefaultStateFolder(), "the host's private state folder")
 	arrangementFlag := flags.String("arrangement", string(host.Local), "where agents run: local, contained or local-project")
 	dockerSocket := flags.String("docker", "", "the agent daemon's socket a contained host starts containers through")
 	installationName := flags.String("installation-name", "", "the prefix of a contained host's containers")

@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Connections\Enums\BindingReadiness;
 use App\Connections\Events\ProjectBindingCreated;
+use App\Connections\Events\ProjectBindingReadinessChanged;
 use App\Connections\Events\ProjectBindingRevoked;
 use App\Connections\Events\ProjectCreated;
 use App\Connections\Events\ProjectInvitationIssued;
@@ -16,6 +18,13 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    ProjectBindingReadinessChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectBinding::recordPresence',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectBindingReadinessChanged('binding', BindingReadiness::Ready, new DateTimeImmutable('2026-01-01')),
+    ],
     ProjectCreated::class => [
         'role' => EventRole::RowFact,
         'owner' => 'Project::create',
