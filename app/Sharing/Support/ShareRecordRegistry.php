@@ -62,6 +62,7 @@ final class ShareRecordRegistry
      * Reads the relations of every registered model once and checks each names a capability some registered record
      * advertises. Run once every domain has registered, after the application booted.
      *
+     * @throws ShareRecordInvalid
      * @throws ShareRelationInvalid
      */
     public function checkRelations(): void
@@ -72,7 +73,13 @@ final class ShareRecordRegistry
         ));
 
         foreach ($this->definitions->all() as $alias => $definition) {
-            $relations = $definition->modelClass::shareRelations();
+            $model = $definition->modelClass;
+
+            if (! Reflector::isNameSubclassOf($model, Shareable::class)) {
+                throw ShareRecordInvalid::notShareable($alias, $model);
+            }
+
+            $relations = $model::shareRelations();
             $names = [];
 
             foreach ($relations->relations as $relation) {

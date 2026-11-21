@@ -12,7 +12,7 @@ use App\Assignments\Contracts\AssigneeProvider;
 final readonly class AssigneeDefinition
 {
     /**
-     * @param  class-string<AssigneeProvider>  $providerClass
+     * @param  string  $providerClass  a class name, refused unless it is an AssigneeProvider
      */
     public function __construct(
         public string $type,

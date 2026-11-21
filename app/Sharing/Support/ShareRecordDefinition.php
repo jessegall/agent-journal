@@ -14,8 +14,8 @@ use App\Sharing\Contracts\ShareRecordProvider;
 final readonly class ShareRecordDefinition
 {
     /**
-     * @param  class-string<Shareable>  $modelClass
-     * @param  class-string<ShareRecordProvider>  $providerClass
+     * @param  string  $modelClass  a class name, refused unless it is a Shareable model
+     * @param  string  $providerClass  a class name, refused unless it is a ShareRecordProvider
      * @param  list<string>  $capabilities
      */
     public function __construct(

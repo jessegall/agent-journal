@@ -238,7 +238,7 @@ final readonly class EventProducers
                 ->getOrElse('');
             $holds = array_filter(
                 self::UNSERIALIZABLE,
-                fn (string $kind) => Reflector::exists($kind) && Reflector::isNameOf($class, $kind),
+                fn (string $kind) => Reflector::isNameOf($class, $kind),
             );
 
             if ($holds !== [] || str_contains($class, 'EventUnit')) {

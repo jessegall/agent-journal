@@ -129,7 +129,7 @@ final readonly class DomainUi
      */
     public function assertImplements(string $declaration, string $className, string $interface): void
     {
-        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf($interface)) {
+        if (! Reflector::isNameSubclassOf($className, $interface)) {
             throw UiResolverInvalid::notA($declaration, $className, $interface);
         }
     }

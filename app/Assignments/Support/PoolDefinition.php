@@ -12,7 +12,7 @@ use App\Assignments\Contracts\AssignmentPoolFactory;
 final readonly class PoolDefinition
 {
     /**
-     * @param  class-string<AssignmentPoolFactory>  $factoryClass
+     * @param  string  $factoryClass  a class name, refused unless it is an AssignmentPoolFactory
      */
     public function __construct(
         public string $key,

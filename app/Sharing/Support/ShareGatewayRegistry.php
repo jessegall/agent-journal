@@ -26,7 +26,7 @@ final class ShareGatewayRegistry
     public function __construct(private readonly Container $container) {}
 
     /**
-     * @param  class-string<ShareGateway>  $class
+     * @param  string  $class  a class name, refused unless it is a ShareGateway
      *
      * @throws ShareGatewayInvalid
      */

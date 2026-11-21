@@ -27,7 +27,7 @@ interface AssignmentRegistration
     public function registerOwner(string $owner, array $requires): void;
 
     /**
-     * @param  class-string<AssignableProvider>  $providerClass
+     * @param  string  $providerClass  a class name, refused unless it is an AssignableProvider
      */
     public function registerRecord(
         string $type,

@@ -54,9 +54,7 @@ final readonly class EnumSetting implements OptionSetting
     {
         SettingKey::require($key, $label);
 
-        if (! Reflector::exists($enum)
-            || ! Reflector::of($enum)->isEnum()
-            || Reflector::of($enum)->backingType()->isEmpty()) {
+        if (Reflector::of($enum)->backingType()->isEmpty()) {
             throw SettingDeclarationInvalid::notABackedEnum($key);
         }
 

@@ -268,7 +268,7 @@ final class McpToolRulesTest extends TestCase
 
         $violations = array_any(
             self::TOOL_BASES,
-            fn (string $base): bool => Reflector::exists($base) && $type->isSubclassOf($base),
+            fn (string $base): bool => $type->isSubclassOf($base),
         ) ? [] : ["{$class} extends no journal tool base"];
         $name = $type->attributes(Name::class)->first()->map(fn (Name $declared) => $declared->value)->getOrElse('');
 

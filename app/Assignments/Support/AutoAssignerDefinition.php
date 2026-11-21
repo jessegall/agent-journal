@@ -13,8 +13,8 @@ use App\Assignments\Contracts\AutoAssigner;
 final readonly class AutoAssignerDefinition
 {
     /**
-     * @param  class-string<AutoAssigner>  $assignerClass
-     * @param  class-string<AssignedWorkProvider>  $workProviderClass
+     * @param  string  $assignerClass  a class name, refused unless it is an AutoAssigner
+     * @param  string  $workProviderClass  a class name, refused unless it is an AssignedWorkProvider
      */
     public function __construct(
         public string $type,

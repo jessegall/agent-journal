@@ -25,7 +25,7 @@ final readonly class ObjectReflection
      */
     public function describe(string $class, string $owner): ObjectDefinition
     {
-        if (! Reflector::exists($class) || ! Reflector::of($class)->isClass()) {
+        if (Reflector::of($class)->not()->isClass()) {
             throw ScriptDefinitionRefused::invalidObject($class);
         }
 
