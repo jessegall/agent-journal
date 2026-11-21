@@ -47,7 +47,7 @@ final class UsageReportData extends Data
     public function commandFor(string $hostId): Command
     {
         $start = new ReportedStart($hostId, $this->startKey, $this->generation);
-        $source = new UsageSource($this->sourceId, $this->sourceOrder, $this->observedAt);
+        $source = UsageSource::of($this->sourceId, $this->sourceOrder, $this->observedAt);
 
         return $this->measurement->commandFor($start, $source);
     }

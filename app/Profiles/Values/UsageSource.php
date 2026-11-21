@@ -8,21 +8,26 @@ use Carbon\CarbonImmutable;
 
 /**
  * Where and when a usage reading was observed: the source that made it, its place in that source's order and the
- * UTC time, to the second, it was seen. Of two readings the later time wins, then the higher order, then the source.
+ * Unix second it was seen. Of two readings the later second wins, then the higher order, then the source.
  */
 final readonly class UsageSource
 {
-    public CarbonImmutable $observedAt;
+    public function __construct(public string $id, public int $order, public int $observedAt) {}
 
-    public function __construct(public string $id, public int $order, CarbonImmutable $observedAt)
+    public static function of(string $id, int $order, CarbonImmutable $observedAt): self
     {
-        $this->observedAt = $observedAt->utc()->startOfSecond();
+        return new self($id, $order, $observedAt->getTimestamp());
+    }
+
+    public function observedTime(): CarbonImmutable
+    {
+        return CarbonImmutable::createFromTimestampUTC($this->observedAt);
     }
 
     public function isNewerThan(self $other): bool
     {
-        if (! $this->observedAt->equalTo($other->observedAt)) {
-            return $this->observedAt->greaterThan($other->observedAt);
+        if ($this->observedAt !== $other->observedAt) {
+            return $this->observedAt > $other->observedAt;
         }
 
         if ($this->order !== $other->order) {

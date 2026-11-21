@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
+use App\Actors\Values\OwnerAuthority;
 use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\UsageWindowSlot;
-use App\Profiles\Events\AccountUsageChanged;
 use App\Profiles\Exceptions\UsageCostConflict;
 use App\Profiles\Exceptions\UsdAmountInvalid;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountUsageCost;
 use App\Profiles\Models\AccountUsageTokens;
 use App\Profiles\Models\AccountUsageWindow;
+use App\Profiles\Support\UsageReadings;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\ThreadTokens;
 use App\Profiles\Values\UsageCost;
@@ -20,13 +23,14 @@ use App\Profiles\Values\UsageSource;
 use App\Profiles\Values\UsageWindowReading;
 use App\Profiles\Values\UsdAmount;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Event;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
  * A saved account keeps the newest reading of each limit window of its current sign-in, every result's cost once,
- * and the latest token count of each thread; replays change nothing and a conflicting cost is refused.
+ * and the latest token count of each thread; replays change nothing and a conflicting cost is refused. The owner
+ * reads them.
  */
 final class AccountUsageTest extends TestCase
 {
@@ -38,6 +42,10 @@ final class AccountUsageTest extends TestCase
     {
         parent::setUp();
 
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
         $this->account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Work'), '/journal/accounts/work');
     }
 
@@ -45,14 +53,12 @@ final class AccountUsageTest extends TestCase
     {
         $this->recordWindow(UsageWindowSlot::SevenDay, 40.0, '2026-11-24T10:00:00Z', 1);
         $this->recordWindow(UsageWindowSlot::FiveHour, 10.0, '2026-11-21T15:00:00Z', 2);
-        Event::fake([AccountUsageChanged::class]);
 
         $this->recordWindow(UsageWindowSlot::SevenDay, 40.0, '2026-11-24T10:00:00Z', 1);
         $this->recordWindow(UsageWindowSlot::SevenDay, 99.0, '2026-11-24T10:00:00Z', 0);
-        Event::assertNotDispatched(AccountUsageChanged::class);
+        $this->assertSame(40.0, $this->windowOf(UsageWindowSlot::SevenDay)->used_percent);
 
         $this->recordWindow(UsageWindowSlot::SevenDay, 42.5, null, 3);
-        Event::assertDispatchedTimes(AccountUsageChanged::class, 1);
 
         $windows = AccountUsageWindow::query()->withoutGlobalScopes()->orderBy('slot')->get();
         $slots = [$windows[0]->slot, $windows[1]->slot];
@@ -66,7 +72,8 @@ final class AccountUsageTest extends TestCase
     {
         $reading = $this->window(UsageWindowSlot::SevenDay, 40.0, null, 1);
 
-        AccountUsageWindow::record($this->account, $this->account->sign_in_generation - 1, $reading);
+        $earlier = $this->account->sign_in_generation - 1;
+        $this->app->make(UsageReadings::class)->recordWindow($this->account, $earlier, $reading);
 
         $this->assertSame(0, AccountUsageWindow::query()->withoutGlobalScopes()->count());
     }
@@ -74,7 +81,7 @@ final class AccountUsageTest extends TestCase
     public function test_a_cost_is_kept_once_and_a_different_cost_under_its_source_is_refused(): void
     {
         $observedAt = CarbonImmutable::parse('2026-11-21T10:00:00.250Z');
-        $cost = new UsageCost('result-1', UsdAmount::from('0.0128'), $observedAt);
+        $cost = UsageCost::of('result-1', UsdAmount::from('0.0128'), $observedAt);
         AccountUsageCost::add($this->account, 1, $cost);
         AccountUsageCost::add($this->account, 1, $cost);
 
@@ -128,31 +135,37 @@ final class AccountUsageTest extends TestCase
         $this->assertSame(2, AccountUsageTokens::query()->withoutGlobalScopes()->count());
     }
 
+    private function windowOf(UsageWindowSlot $slot): AccountUsageWindow
+    {
+        return AccountUsageWindow::query()->withoutGlobalScopes()->where('slot', $slot->value)->sole();
+    }
+
     private function recordWindow(UsageWindowSlot $slot, float $percent, string|null $reset, int $order): void
     {
-        AccountUsageWindow::record($this->account, 1, $this->window($slot, $percent, $reset, $order));
+        $reading = $this->window($slot, $percent, $reset, $order);
+        $this->app->make(UsageReadings::class)->recordWindow($this->account, 1, $reading);
     }
 
     private function window(UsageWindowSlot $slot, float $percent, string|null $reset, int $order): UsageWindowReading
     {
-        $resetsAt = $reset === null ? null : CarbonImmutable::parse($reset);
+        $resetsAt = $reset === null ? null : CarbonImmutable::parse($reset)->getTimestamp();
         $observedAt = CarbonImmutable::parse('2026-11-21T10:00:00Z')->addMinutes($order);
-        $source = new UsageSource('start-1', $order, $observedAt);
+        $source = UsageSource::of('start-1', $order, $observedAt);
 
         return new UsageWindowReading('claude', $slot, $percent, null, $resetsAt, $source);
     }
 
     private function addCost(Account $account, int $generation, string $source, string $usd, string $at): void
     {
-        $cost = new UsageCost($source, UsdAmount::from($usd), CarbonImmutable::parse($at));
+        $cost = UsageCost::of($source, UsdAmount::from($usd), CarbonImmutable::parse($at));
         AccountUsageCost::add($account, $generation, $cost);
     }
 
     private function recordTokens(string $thread, int $total, string $at): void
     {
-        $source = new UsageSource('owner-1', 1, CarbonImmutable::parse($at));
+        $source = UsageSource::of('owner-1', 1, CarbonImmutable::parse($at));
         $tokens = new ThreadTokens($thread, $total, null, null, null, null, null, $source);
 
-        AccountUsageTokens::record($this->account, 1, $tokens);
+        $this->app->make(UsageReadings::class)->recordTokens($this->account, 1, $tokens);
     }
 }

@@ -42,6 +42,7 @@ use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Resolvers\AccountsWindowResolver;
 use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignInProtocols;
+use App\Profiles\Support\UsageReadings;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\CleanupProgress;
@@ -379,13 +380,13 @@ final class AccountRemovalTest extends TestCase
     private function keepUsage(): void
     {
         $generation = $this->account->sign_in_generation;
-        $source = new UsageSource('start-1', 1, CarbonImmutable::now());
+        $source = UsageSource::of('start-1', 1, CarbonImmutable::now());
         $window = new UsageWindowReading('claude', UsageWindowSlot::SevenDay, 40.0, null, null, $source);
-        AccountUsageWindow::record($this->account, $generation, $window);
+        $this->app->make(UsageReadings::class)->recordWindow($this->account, $generation, $window);
         $cost = new UsageCost('result-1', UsdAmount::from('1'), $source->observedAt);
         AccountUsageCost::add($this->account, $generation, $cost);
         $tokens = new ThreadTokens('thread-1', 10, null, null, null, null, null, $source);
-        AccountUsageTokens::record($this->account, $generation, $tokens);
+        $this->app->make(UsageReadings::class)->recordTokens($this->account, $generation, $tokens);
         $this->assertSame(1, AccountUsageWindow::query()->withoutGlobalScopes()->count());
     }
 

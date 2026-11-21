@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Values;
 
 use App\Profiles\Exceptions\UsdAmountInvalid;
+use Brick\Math\BigDecimal;
 
 /**
  * An exact, nonnegative amount of US dollars with at most twelve decimals, kept as its decimal text with all twelve,
@@ -21,13 +22,10 @@ final readonly class UsdAmount
      */
     public static function from(string $text): self
     {
-        if (preg_match('/^(\d{1,12})(?:\.(\d{1,12}))?$/', $text, $parts) !== 1) {
+        if (preg_match('/^\d{1,12}(\.\d{1,12})?$/', $text) !== 1) {
             throw UsdAmountInvalid::for($text);
         }
 
-        $whole = ltrim($parts[1], '0');
-        $fraction = str_pad($parts[2] ?? '', self::MOST_DECIMALS, '0');
-
-        return new self(($whole === '' ? '0' : $whole).'.'.$fraction);
+        return new self(BigDecimal::of($text)->toScale(self::MOST_DECIMALS)->toString());
     }
 }

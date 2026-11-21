@@ -6,9 +6,11 @@ namespace App\Profiles\Models;
 
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Profiles\Enums\UsageWindowSlot;
 use App\Profiles\Events\AccountUsageChanged;
 use App\Profiles\Models\Concerns\KeepsNewestReading;
+use App\Profiles\Models\Concerns\RemovedWithAccount;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Values\UsageWindowReading;
 use App\Reads\Contracts\ReadableModel;
@@ -43,7 +45,9 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
     use BoundedReads;
     use HasUlids;
     use KeepsNewestReading;
+    use Linkable;
     use RaisesEvents;
+    use RemovedWithAccount;
 
     // ----------[ Constructors ]----------
 
@@ -64,34 +68,9 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
     }
 
     /**
-     * Keeps the reading as its window's newest in the account's current sign-in generation; a reading of an earlier
-     * generation, or one no newer than the window holds, changes nothing.
+     * A new window of the account in the generation, holding its first reading.
      */
-    public static function record(Account $account, int $generation, UsageWindowReading $reading): void
-    {
-        if (! $account->isGeneration($generation)) {
-            return;
-        }
-
-        $window = self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_id', $account->id)
-            ->where('sign_in_generation', $generation)
-            ->where('limit_id', $reading->limitId)
-            ->where('slot', $reading->slot->value)
-            ->lockForUpdate()
-            ->first();
-
-        if ($window === null) {
-            self::create($account, $generation, $reading);
-
-            return;
-        }
-
-        $window->replaceWith($account->driver, $reading);
-    }
-
-    private static function create(Account $account, int $generation, UsageWindowReading $reading): void
+    public static function create(Account $account, int $generation, UsageWindowReading $reading): void
     {
         $window = new self([
             'account_id' => $account->id,
@@ -105,6 +84,21 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The account's window of the reading's limit and slot in the generation, locked; none before its first reading.
+     */
+    public static function lockedFor(Account $account, int $generation, UsageWindowReading $reading): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('account_id', $account->id)
+            ->where('sign_in_generation', $generation)
+            ->where('limit_id', $reading->limitId)
+            ->where('slot', $reading->slot->value)
+            ->lockForUpdate()
+            ->first();
+    }
 
     /**
      * The windows of each account in its current sign-in generation, by account id.
@@ -141,21 +135,8 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
      */
     public function replaceWith(string $driver, UsageWindowReading $reading): void
     {
-        if (! $reading->source->isNewerThan($this->heldSource())) {
-            return;
-        }
-
         $this->fillWith($reading);
-        $this->assertSaved($this->save());
-        $this->raise(new AccountUsageChanged($driver, $this->account_id));
-    }
-
-    /**
-     * Deletes every window of the account, whose removal finished.
-     */
-    public static function forgetAccount(string $accountId): void
-    {
-        self::query()->withoutGlobalScope(AccountOwnerScope::class)->where('account_id', $accountId)->delete();
+        $this->saveReading($driver);
     }
 
     // ----------[ Internals ]----------
@@ -164,8 +145,8 @@ final class AccountUsageWindow extends Model implements EventSource, ReadableMod
     {
         $this->used_percent = $reading->usedPercent;
         $this->duration_minutes = $reading->durationMinutes;
-        $this->resets_at = $reading->resetsAt;
-        $this->observed_at = $reading->source->observedAt;
+        $this->resets_at = $reading->resetTime();
+        $this->observed_at = $reading->source->observedTime();
         $this->source_id = $reading->source->id;
         $this->source_order = $reading->source->order;
     }

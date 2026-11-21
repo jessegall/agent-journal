@@ -45,7 +45,7 @@ final class UsageWindowData extends UsageMeasurementData
             $this->slot,
             $this->usedPercent,
             $this->windowMinutes,
-            $this->resetsAt,
+            $this->resetsAt?->getTimestamp(),
             $source,
         );
 

@@ -7,10 +7,8 @@ namespace App\Profiles\Handlers;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\CleanAccount;
 use App\Profiles\Models\Account;
-use App\Profiles\Models\AccountUsageCost;
-use App\Profiles\Models\AccountUsageTokens;
-use App\Profiles\Models\AccountUsageWindow;
 use App\Profiles\Models\ActiveAccount;
+use App\Profiles\Support\AccountUsagePurge;
 
 /**
  * Applies a host's cleanup proofs under the program's selection lock, then the account's, only in the generation the
@@ -19,6 +17,8 @@ use App\Profiles\Models\ActiveAccount;
  */
 final readonly class CleanAccountHandler implements CommandHandler
 {
+    public function __construct(private AccountUsagePurge $usage) {}
+
     public function handle(CleanAccount $command): bool
     {
         ActiveAccount::lockedForJournal(Account::driverForJournal($command->accountId));
@@ -27,9 +27,7 @@ final readonly class CleanAccountHandler implements CommandHandler
         $isRemoved = $account->applyCleanup($command->generation, $command->progress);
 
         if ($isRemoved) {
-            AccountUsageWindow::forgetAccount($account->id);
-            AccountUsageCost::forgetAccount($account->id);
-            AccountUsageTokens::forgetAccount($account->id);
+            $this->usage->forgetAccount($account->id);
         }
 
         return $isRemoved;

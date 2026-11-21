@@ -6,8 +6,10 @@ namespace App\Profiles\Models;
 
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Profiles\Events\AccountUsageChanged;
 use App\Profiles\Models\Concerns\KeepsNewestReading;
+use App\Profiles\Models\Concerns\RemovedWithAccount;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Values\ThreadTokens;
 use App\Reads\Contracts\ReadableModel;
@@ -44,7 +46,9 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
     use BoundedReads;
     use HasUlids;
     use KeepsNewestReading;
+    use Linkable;
     use RaisesEvents;
+    use RemovedWithAccount;
 
     // ----------[ Constructors ]----------
 
@@ -67,28 +71,9 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
     }
 
     /**
-     * Keeps the count as its thread's latest in the generation; a count no newer than the kept one changes nothing.
+     * A new count of the thread on the account in the generation.
      */
-    public static function record(Account $account, int $generation, ThreadTokens $tokens): void
-    {
-        $kept = self::query()
-            ->withoutGlobalScope(AccountOwnerScope::class)
-            ->where('account_id', $account->id)
-            ->where('sign_in_generation', $generation)
-            ->where('thread_id', $tokens->threadId)
-            ->lockForUpdate()
-            ->first();
-
-        if ($kept === null) {
-            self::create($account, $generation, $tokens);
-
-            return;
-        }
-
-        $kept->replaceWith($account->driver, $tokens);
-    }
-
-    private static function create(Account $account, int $generation, ThreadTokens $tokens): void
+    public static function create(Account $account, int $generation, ThreadTokens $tokens): void
     {
         $snapshot = new self([
             'account_id' => $account->id,
@@ -101,6 +86,20 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The thread's count on the account in the generation, locked; none before its first count.
+     */
+    public static function lockedFor(Account $account, int $generation, ThreadTokens $tokens): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(AccountOwnerScope::class)
+            ->where('account_id', $account->id)
+            ->where('sign_in_generation', $generation)
+            ->where('thread_id', $tokens->threadId)
+            ->lockForUpdate()
+            ->first();
+    }
 
     /**
      * The newest thread count of each account in its current sign-in generation, by account id; an account with
@@ -140,21 +139,8 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
      */
     public function replaceWith(string $driver, ThreadTokens $tokens): void
     {
-        if (! $tokens->source->isNewerThan($this->heldSource())) {
-            return;
-        }
-
         $this->fillWith($tokens);
-        $this->assertSaved($this->save());
-        $this->raise(new AccountUsageChanged($driver, $this->account_id));
-    }
-
-    /**
-     * Deletes every thread count of the account, whose removal finished.
-     */
-    public static function forgetAccount(string $accountId): void
-    {
-        self::query()->withoutGlobalScope(AccountOwnerScope::class)->where('account_id', $accountId)->delete();
+        $this->saveReading($driver);
     }
 
     // ----------[ Internals ]----------
@@ -167,7 +153,7 @@ final class AccountUsageTokens extends Model implements EventSource, ReadableMod
         $this->output = $tokens->output;
         $this->reasoning_output = $tokens->reasoningOutput;
         $this->last_turn_total = $tokens->lastTurnTotal;
-        $this->observed_at = $tokens->source->observedAt;
+        $this->observed_at = $tokens->source->observedTime();
         $this->source_id = $tokens->source->id;
         $this->source_order = $tokens->source->order;
     }

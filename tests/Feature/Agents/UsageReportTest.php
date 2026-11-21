@@ -96,13 +96,14 @@ final class UsageReportTest extends TestCase
     public function test_an_identical_retry_is_acknowledged_again_and_keeps_one_cost(): void
     {
         $key = $this->claimedStart($this->account);
-        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
         Event::fake([AccountUsageChanged::class]);
+        $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
+        Event::assertDispatchedTimes(AccountUsageChanged::class, 1);
 
         $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.5'])->assertNoContent();
         $this->report($key, 'result-1', ['type' => 'result_cost', 'usd' => '0.6'])->assertConflict();
 
-        Event::assertNotDispatched(AccountUsageChanged::class);
+        Event::assertDispatchedTimes(AccountUsageChanged::class, 1);
         $this->assertSame(1, AccountUsageCost::query()->withoutGlobalScopes()->count());
     }
 

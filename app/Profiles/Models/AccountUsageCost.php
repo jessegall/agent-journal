@@ -6,8 +6,10 @@ namespace App\Profiles\Models;
 
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Profiles\Events\AccountUsageChanged;
 use App\Profiles\Exceptions\UsageCostConflict;
+use App\Profiles\Models\Concerns\RemovedWithAccount;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Values\MonthCost;
 use App\Profiles\Values\UsageCost;
@@ -39,7 +41,9 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
+    use RemovedWithAccount;
 
     // ----------[ Constructors ]----------
 
@@ -83,7 +87,7 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
             'sign_in_generation' => $generation,
             'source_id' => $cost->sourceId,
             'usd' => $cost->usd->amount,
-            'observed_at' => $cost->observedAt,
+            'observed_at' => $cost->observedTime(),
         ]);
         $entry->assertSaved($entry->save());
         $entry->raise(new AccountUsageChanged($account->driver, $account->id));
@@ -95,37 +99,27 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
      * What each account cost in the UTC calendar month of the instant, across all its sign-ins, by account id; an
      * account with no cost observed that month is left out.
      *
-     * @param  list<string>  $accountIds
+     * @param  list<string>  $ids
      * @return array<string, MonthCost>
      */
-    public static function monthTotals(array $accountIds, CarbonImmutable $instant): array
+    public static function monthTotals(array $ids, CarbonImmutable $instant): array
     {
         $monthStart = $instant->utc()->startOfMonth();
         $totals = self::query()
-            ->whereIn('account_id', $accountIds)
+            ->whereIn('account_id', $ids)
             ->where('observed_at', '>=', $monthStart)
             ->where('observed_at', '<', $monthStart->addMonth())
             ->selectRaw('account_id, sum(usd) as usd, count(*) as observations, max(observed_at) as observed_at')
             ->groupBy('account_id')
-            ->readExactly(count($accountIds))
+            ->readExactly(count($ids))
             ->get();
         $costs = [];
 
         foreach ($totals as $total) {
-            $costs[$total->account_id] = $total->monthCost();
+            $costs[$total->account_id] = $total->monthCost($monthStart);
         }
 
         return $costs;
-    }
-
-    // ----------[ Mutations ]----------
-
-    /**
-     * Deletes every cost of the account, whose removal finished.
-     */
-    public static function forgetAccount(string $accountId): void
-    {
-        self::query()->withoutGlobalScope(AccountOwnerScope::class)->where('account_id', $accountId)->delete();
     }
 
     // ----------[ Internals ]----------
@@ -135,15 +129,15 @@ final class AccountUsageCost extends Model implements EventSource, ReadableModel
      */
     private function assertRecords(UsageCost $cost): void
     {
-        if ($this->usd === $cost->usd->amount && $this->observed_at->equalTo($cost->observedAt)) {
+        if ($this->usd === $cost->usd->amount && $this->observed_at->getTimestamp() === $cost->observedAt) {
             return;
         }
 
         throw UsageCostConflict::for($cost->sourceId);
     }
 
-    private function monthCost(): MonthCost
+    private function monthCost(CarbonImmutable $start): MonthCost
     {
-        return new MonthCost(UsdAmount::from($this->usd), $this->observations, $this->observed_at);
+        return new MonthCost($start, UsdAmount::from($this->usd), $this->observations, $this->observed_at);
     }
 }

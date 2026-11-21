@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Models\Concerns;
 
+use App\Profiles\Events\AccountUsageChanged;
 use App\Profiles\Models\Account;
 use App\Profiles\Values\UsageSource;
 use Carbon\CarbonImmutable;
@@ -11,8 +12,8 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * A usage row that keeps only the newest reading of its account's sign-in generation: the source that reading came
- * from, and the scope that reads each account's current generation.
+ * A usage row that keeps only the newest reading of its account's sign-in generation: whether a reading is newer
+ * than the one it holds, saving a new one, and the scope that reads each account's current generation.
  *
  * @property string $account_id
  * @property int $sign_in_generation
@@ -22,9 +23,23 @@ use Illuminate\Database\Eloquent\Builder;
  */
 trait KeepsNewestReading
 {
-    private function heldSource(): UsageSource
+    /**
+     * Whether the reading the row holds is older than one from the given source, so that one replaces it.
+     */
+    public function isOlderThan(UsageSource $source): bool
     {
-        return new UsageSource($this->source_id, $this->source_order, $this->observed_at);
+        $held = new UsageSource($this->source_id, $this->source_order, $this->observed_at->getTimestamp());
+
+        return $source->isNewerThan($held);
+    }
+
+    /**
+     * Saves the row with its new reading and says the account's usage changed.
+     */
+    private function saveReading(string $driver): void
+    {
+        $this->assertSaved($this->save());
+        $this->raise(new AccountUsageChanged($driver, $this->account_id));
     }
 
     /**

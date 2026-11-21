@@ -8,14 +8,19 @@ use Carbon\CarbonImmutable;
 
 /**
  * The estimated cost one result of a program reported, in US dollars, under the source that identifies that result
- * for good, and the UTC time, to the second, it was observed.
+ * for good, and the Unix second it was observed.
  */
 final readonly class UsageCost
 {
-    public CarbonImmutable $observedAt;
+    public function __construct(public string $sourceId, public UsdAmount $usd, public int $observedAt) {}
 
-    public function __construct(public string $sourceId, public UsdAmount $usd, CarbonImmutable $observedAt)
+    public static function of(string $sourceId, UsdAmount $usd, CarbonImmutable $observedAt): self
     {
-        $this->observedAt = $observedAt->utc()->startOfSecond();
+        return new self($sourceId, $usd, $observedAt->getTimestamp());
+    }
+
+    public function observedTime(): CarbonImmutable
+    {
+        return CarbonImmutable::createFromTimestampUTC($this->observedAt);
     }
 }

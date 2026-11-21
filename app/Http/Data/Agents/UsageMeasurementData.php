@@ -25,7 +25,11 @@ abstract class UsageMeasurementData extends Data implements PropertyMorphableDat
      */
     public static function morph(array $properties): string
     {
-        return $properties['type']->dataClass();
+        return match ($properties['type']) {
+            UsageMeasurementType::Window => UsageWindowData::class,
+            UsageMeasurementType::ResultCost => UsageCostData::class,
+            UsageMeasurementType::ThreadTokens => ThreadTokensData::class,
+        };
     }
 
     /**

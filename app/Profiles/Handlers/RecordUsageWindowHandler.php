@@ -6,7 +6,7 @@ namespace App\Profiles\Handlers;
 
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\RecordUsageWindow;
-use App\Profiles\Models\AccountUsageWindow;
+use App\Profiles\Support\UsageReadings;
 use App\Profiles\Support\UsageReportAccounts;
 
 /**
@@ -15,12 +15,12 @@ use App\Profiles\Support\UsageReportAccounts;
  */
 final readonly class RecordUsageWindowHandler implements CommandHandler
 {
-    public function __construct(private UsageReportAccounts $accounts) {}
+    public function __construct(private UsageReportAccounts $accounts, private UsageReadings $readings) {}
 
     public function handle(RecordUsageWindow $command): void
     {
         $account = $this->accounts->accountOf($command->start);
 
-        AccountUsageWindow::record($account, $command->start->generation, $command->reading);
+        $this->readings->recordWindow($account, $command->start->generation, $command->reading);
     }
 }
