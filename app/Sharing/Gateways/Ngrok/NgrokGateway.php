@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sharing\Gateways\Ngrok;
 
+use App\Files\Contracts\Files;
+use App\Files\Enums\Permissions;
+use App\Files\Enums\Place;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Enums\GatewayAddressCheck;
 use App\Sharing\Exceptions\GatewayOpenFailed;
@@ -49,6 +52,7 @@ final readonly class NgrokGateway implements ShareGateway
         private string $configFolder,
         #[Config('sharing.ngrok.control_port')]
         private int $controlPort,
+        private Files $files,
     ) {}
 
     public function setupCheck(GatewayConfiguration $configuration): GatewaySetupCheck
@@ -69,7 +73,7 @@ final readonly class NgrokGateway implements ShareGateway
             $problems[] = 'The ngrok authtoken is not stored for the journal.';
         }
 
-        if (! is_dir($this->configFolder)) {
+        if (! $this->files->isFolder($this->files->pathIn(Place::SharingTunnels, $this->configFolder))) {
             $problems[] = "The journal's ngrok configuration folder does not exist.";
         }
 
@@ -171,19 +175,18 @@ final readonly class NgrokGateway implements ShareGateway
      */
     private function writeConfiguration(string $authtoken): string
     {
-        $file = "{$this->configFolder}/ngrok.yml";
+        $file = $this->files->pathIn(Place::SharingTunnels, $this->configFolder)->child('ngrok.yml');
         $quotedAuthtoken = json_encode($authtoken, JSON_THROW_ON_ERROR);
-        file_put_contents($file, <<<YAML
+        $this->files->write($file, <<<YAML
             version: "2"
             authtoken: {$quotedAuthtoken}
             web_addr: 127.0.0.1:{$this->controlPort}
             inspect_db_size: -1
             log: false
 
-            YAML);
-        chmod($file, 0600);
+            YAML, Permissions::OwnerOnly);
 
-        return $file;
+        return $this->files->realPath($file);
     }
 
     private function authtokenReference(GatewayConfiguration $configuration): string|null

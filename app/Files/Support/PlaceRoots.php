@@ -51,13 +51,14 @@ final readonly class PlaceRoots
      */
     public function pathIn(Place $place, string $absolutePath): FilePath
     {
+        $root = $this->root($place);
         $real = $this->realPathOf($absolutePath);
 
         if (! $this->isWithin($real, $place)) {
             throw FileOutsidePlaces::given();
         }
 
-        return FilePath::in($place, ltrim(substr($real, strlen($this->root($place))), '/'));
+        return FilePath::in($place, ltrim(substr($real, strlen($root)), '/'));
     }
 
     /**

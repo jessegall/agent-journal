@@ -42,6 +42,7 @@ final class TunlerGatewayTest extends TestCase
         config([
             'sharing.tunler.binary' => $this->folder.'/tunler',
             'sharing.tunler.config_dir' => $this->folder.'/config',
+            'sharing.tunnels_dir' => $this->folder,
             'sharing.tunler.subdomain' => 'docs',
             'sharing.rate_limit_store' => 'array',
         ]);

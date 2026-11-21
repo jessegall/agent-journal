@@ -64,9 +64,9 @@ enum Place: string
         return match ($this) {
             self::Accounts => 'accounts.root',
             self::SharingSecrets => 'sharing.secrets_dir',
+            self::SharingTunnels => 'sharing.tunnels_dir',
             self::ProcessOutput => 'filesystems.disks.process-output.root',
-            self::Project, self::SharingTunnels, self::HostSkills, self::Temporary,
-            self::HookRuntime => "files.places.{$this->value}",
+            self::Project, self::HostSkills, self::Temporary, self::HookRuntime => "files.places.{$this->value}",
         };
     }
 }

@@ -41,6 +41,7 @@ final class NgrokGatewayTest extends TestCase
         config([
             'sharing.ngrok.binary' => $this->folder.'/ngrok',
             'sharing.ngrok.config_dir' => $this->folder.'/config',
+            'sharing.tunnels_dir' => $this->folder,
             'sharing.ngrok.control_port' => 4041,
             'sharing.secrets_dir' => $this->folder.'/secrets',
             'sharing.rate_limit_store' => 'array',
