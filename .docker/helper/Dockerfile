@@ -14,7 +14,8 @@ COPY tools/journal-agent/go.mod tools/journal-agent/go.sum ./
 RUN go mod download
 COPY tools/journal-agent/ ./
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-init ./cmd/journal-init \
-    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-exec ./cmd/journal-exec
+    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-exec ./cmd/journal-exec \
+    && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -o /out/journal-shell ./cmd/journal-shell
 
 FROM ${BASE}
 
@@ -33,8 +34,10 @@ RUN apt-get update \
 # database; and the protected stop checks.
 COPY --chown=root:root bin/journal-hook bin/journal-mcp /opt/journal/bin/
 COPY --chown=root:root tools/journal-check/journal-check /opt/journal/bin/journal-check
-COPY --from=protected-start --chown=root:root /out/journal-init /out/journal-exec /opt/journal/bin/
-RUN chmod 0555 /opt/journal/bin/*
+COPY --from=protected-start --chown=root:root /out/journal-init /out/journal-exec /out/journal-shell /opt/journal/bin/
+# Claude Code takes a shell only by the name bash: the shell bridge under that name hands every command to the executor.
+COPY --from=protected-start --chown=root:root /out/journal-shell /opt/journal/shell/bash
+RUN chmod 0555 /opt/journal/bin/* /opt/journal/shell/bash
 
 # The program's user 10001 alone reads the sign-in; under the protected-account profile the commands the model runs go
 # through the executor's user 10002, and the init drops to 10003. The program and the executor share the workspace

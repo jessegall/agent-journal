@@ -64,6 +64,33 @@ Every file the program wrote lies inside `CLAUDE_CONFIG_DIR`: `.claude.json` (mo
 `--no-session-persistence` no `projects/` transcript folder was made; a persisted session writes its transcript under
 `projectsDirectory`.
 
+## Shell handoff
+
+Observed on 21 November in the agent image (`.docker/helper/Dockerfile`, Claude Code 2.1.323, linux/amd64), with no
+sign-in: `claude -p` ran as uid 10001 against a local fake Messages API that asked for one Bash tool call, the command
+`GREETING=hello; echo "$GREETING $HOME" > /workspace/redirected.txt; echo piped | tr a-z A-Z; sleep 1 & id -u; pwd`.
+`CLAUDE_CODE_SHELL_PREFIX` and `CLAUDE_CODE_SHELL` each pointed at a script that recorded its arguments, working folder
+and parent.
+
+- **The shell must be named `bash`.** A `CLAUDE_CODE_SHELL` script under another name was never called; the same
+  script installed as `.../bash` was.
+- **The shell is started as a login shell, twice per session.** First `bash -c env` (the environment snapshot), then for
+  the tool call `bash -c -l "<prefix> '<script>'"`, in the session's working folder, as uid 10001.
+- **The prefix gets one argument, the whole script.** `CLAUDE_CODE_SHELL_PREFIX` is called with argc 1:
+  `{ \builtin shopt -u extglob || \builtin setopt NO_EXTENDED_GLOB ...; } >/dev/null 2>&1 || true && { \builtin unalias
+  -- 'which'; ... } && eval '<the model's command>' < /dev/null && pwd -P >| /tmp/claude-<id>-cwd`. The model's command
+  arrives single-quoted inside `eval`, unexpanded.
+- **So a prefix alone does not protect.** The login shell named by `CLAUDE_CODE_SHELL` reads its startup files and
+  parses the line `<prefix> '<script>'` as uid 10001 before the prefix runs. The bridge therefore takes the shell's
+  place: `/opt/journal/shell/bash` is `cmd/journal-shell`, which reads the `-c` string (`shellbridge.CommandOf`), parses
+  nothing, and hands it to the executor, which runs `/bin/bash -c <string>` as uid 10002 in the workspace with its own
+  fixed environment and no startup files. A prefix set anywhere then also runs inside the executor.
+- **Through the bridge**, the same tool call printed `PIPED`, `10002` and `/workspace`; `redirected.txt` was owned by
+  10002 with group journal-work (10010), mode 0660, holding `hello /home/journal-tools`; Claude Code read the output and
+  exit code 0, and its `pwd -P` file under `/tmp` was written without an error.
+- A protected-account container sets `CLAUDE_CODE_SHELL=/opt/journal/shell/bash` (`host/container.go`); the managed
+  settings must keep a project's settings from naming another shell (task 1760).
+
 ## Checked and unchecked
 
 | Claim | State | How |
@@ -77,5 +104,6 @@ Every file the program wrote lies inside `CLAUDE_CONFIG_DIR`: `.claude.json` (mo
 | Account A and B use separate Keychain entries, and deleting one leaves the other | unchecked: needs sign-in | task 250's native procedure |
 | `authMethod claude.ai` and `configDirectory` of a signed-in account | unchecked: needs sign-in | task 250 |
 | Parallel starts on one account share a refresh safely | unchecked: needs sign-in | task 250 |
+| Bash tool commands run as the executor user, not the program user | checked for one-shot | section Shell handoff, fake API in the agent image |
 | An agent reads its own saved output but no other session's or the credentials | unchecked: needs sign-in and the protected host | task 250 and the starter |
 | Model commands cannot read the Keychain entry | unchecked: needs sign-in | task 250 |
