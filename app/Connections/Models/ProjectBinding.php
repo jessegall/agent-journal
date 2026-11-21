@@ -8,7 +8,6 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Models\Agent;
 use App\Agents\Models\Host;
-use App\Agents\Values\HostCombination;
 use App\Connections\Enums\BindingReadiness;
 use App\Connections\Events\ProjectBindingCreated;
 use App\Connections\Events\ProjectBindingEnvironmentAssigned;
@@ -225,8 +224,7 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     /**
      * Records a presence report by server time. A sequence of the live boot no higher than the last changes nothing;
      * a new boot replaces a live one only when it takes over, and every new boot raises the boot generation. A
-     * provisioned report on this journal's protocol makes the binding ready until its presence expires, and the
-     * combinations it reports are what its host can start.
+     * provisioned report on this journal's protocol makes the binding ready until its presence expires.
      *
      * @throws PresenceRefused
      */
@@ -261,10 +259,6 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         $this->last_contact_at = $now;
         $this->presence_expires_at = $now->addSeconds(self::PRESENCE_SECONDS);
         $this->assertSaved($this->save());
-        $this->host->recordCombinations(
-            $report->protocol,
-            array_map(fn (HostCombination $combination) => $combination->stored(), $report->combinations),
-        );
 
         if ($changed) {
             $this->raise(new ProjectBindingReadinessChanged($this->id, $readiness, $now));

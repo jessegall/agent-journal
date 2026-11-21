@@ -211,7 +211,7 @@ func (commands dispatcher) claude(binding host.Binding, folder project.Folder, s
 	state := host.ConnectionState{Folder: commands.stateFolder, CanonicalRoot: folder.Root}
 	opened, err := openMainRuntime(journal, state, client.BindingRuntimeRequest{
 		RootID: binding.RootID, Folder: folder.Root, AgentID: binding.MainAgentID,
-		Driver: "claude-code", DriverBuild: profiles.ClaudeCode{}.Build(), Profile: "main-agent",
+		Driver: "claude-code", DriverBuild: profiles.ClaudeCode{}.Build(), Profile: "main-agent", Model: "default",
 	}, binding.BindingID)
 	if err != nil {
 		fmt.Fprintln(stderr, "journal:", err)

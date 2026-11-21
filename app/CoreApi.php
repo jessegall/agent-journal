@@ -315,6 +315,7 @@ use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\HelperImportReceipt;
 use App\Agents\Values\HostAccess;
 use App\Agents\Values\HostCapacity;
+use App\Agents\Values\HostCombination;
 use App\Agents\Values\LibraryEntryAnswer;
 use App\Agents\Values\MenuStep;
 use App\Agents\Values\ModelSelection;
@@ -1741,6 +1742,7 @@ final class CoreApi
                 StartUnavailableReason::class,
                 DriverFailure::class,
                 ModelSelection::class,
+                HostCombination::class,
                 ChosenAccount::class,
                 StartProposal::class,
                 DriverSwitchTarget::class,

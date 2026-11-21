@@ -96,6 +96,7 @@ final class ConnectProjectWindowTest extends TestCase
             ProjectBinding::create($host, $project, $environment, Agent::create("Shop agent {$number}", 'main-agent'),
                 new BindingFolder("root-{$number}", "/Users/owner/shop-{$number}", 'Owner laptop', "nonce-{$number}"));
         }
+
         $expired = ProjectBinding::query()->orderBy('created_at')->orderBy('id')->firstOrFail();
         ProjectBinding::query()->whereKey($expired->id)->update([
             'readiness' => 'ready',

@@ -125,6 +125,7 @@ final class BindingStartTest extends TestCase
                 'driver' => 'claude-code',
                 'driverBuild' => '2.1.323',
                 'profile' => 'main-agent',
+                'model' => 'default',
                 ...$changes,
             ],
             HostProtocolVersion::RemoteProject,

@@ -115,6 +115,7 @@ final class EnvironmentsTest extends TestCase
                 'driver' => 'claude-code',
                 'driverBuild' => '2.1.323',
                 'profile' => 'main-agent',
+                'model' => 'default',
             ],
             HostProtocolVersion::RemoteProject,
             (string) Str::uuid(),
