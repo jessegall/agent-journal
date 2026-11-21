@@ -15,6 +15,7 @@ use App\Connections\Http\Controllers\RecoverBindingController;
 use App\Connections\Http\Controllers\RedeemProjectInvitationController;
 use App\Connections\Http\Controllers\RevokeDeviceGrantController;
 use App\Connections\Http\Controllers\RevokeProjectBindingController;
+use App\Connections\Http\Controllers\RevokeProjectBindingsController;
 use App\Connections\Http\Controllers\RevokeProjectInvitationController;
 use App\Connections\Http\Controllers\RuntimeLeaseController;
 use App\Connections\Http\Controllers\WorktreeDeliveryController;
@@ -84,6 +85,8 @@ Route::middleware(['web', 'auth', 'journal.user', 'throttle:20,1'])
             ->name('devices.approve');
 
         Route::delete('/devices/{grant}', RevokeDeviceGrantController::class)->whereUlid('grant')->name('devices.revoke');
+
+        Route::post('/bindings/revoke', RevokeProjectBindingsController::class)->name('bindings.revoke-chosen');
 
         Route::delete('/bindings/{binding}', RevokeProjectBindingController::class)
             ->whereUlid('binding')

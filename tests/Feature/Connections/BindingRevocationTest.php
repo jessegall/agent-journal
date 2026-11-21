@@ -59,6 +59,30 @@ final class BindingRevocationTest extends TestCase
         $this->recoverBinding('nonce-bbbbbbbbbbbbbbbb')->assertOk();
     }
 
+    public function test_several_chosen_bindings_are_revoked_at_once_each_with_its_outcome(): void
+    {
+        $this->issueLine('ticket-one');
+        $first = (string) $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
+        ProjectInvitation::issueToJoin(
+            Project::query()->sole(),
+            InstallTicket::digestOf('ticket-two'),
+            $this->owner->id,
+            'join-action',
+        );
+        $second = (string) $this->redeemLine('ticket-two', 'nonce-bbbbbbbbbbbbbbbb')->assertCreated()->json('bindingId');
+
+        $this->actingAs($this->owner)
+            ->from('/connections')
+            ->post('/settings/project-connections/bindings/revoke', ['bindings' => [$first, $second]])
+            ->assertRedirect('/connections');
+
+        $this->assertSame(
+            [BindingReadiness::Revoked, BindingReadiness::Revoked],
+            ProjectBinding::query()->orderBy('created_at')->get()
+                ->map(fn (ProjectBinding $binding) => $binding->readiness)->all(),
+        );
+    }
+
     public function test_every_step_is_audited_with_its_actor_and_no_secret(): void
     {
         $this->issueByOwner('action-1');

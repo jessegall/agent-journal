@@ -246,10 +246,19 @@ func (commands dispatcher) disconnect(
 	}
 
 	fmt.Fprintln(stdout, "Disconnected "+folder.Root+".")
-	if host.RemainingBindings(commands.stateFolder) == 0 {
-		fmt.Fprintln(stdout, "No connected project is left on this machine. You may remove "+
-			filepath.Join(commands.stateFolder, "releases")+", the journal lines in your shell startup file and the "+
-			"/.journal/ line in .gitignore when you have not changed them.")
+	if host.RemainingBindings(commands.stateFolder) > 0 {
+		return 0
+	}
+
+	kept, err = host.MachineChanges{StateFolder: commands.stateFolder}.Undo()
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	fmt.Fprintln(stdout, "No connected project is left on this machine; the journal's releases and the changes it made to "+
+		"your shell are removed.")
+	for _, path := range kept {
+		fmt.Fprintln(stdout, "Kept "+path+": it changed since the journal set it up, so the journal line in it is yours to remove.")
 	}
 
 	return 0

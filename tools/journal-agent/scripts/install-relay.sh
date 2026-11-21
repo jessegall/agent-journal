@@ -125,13 +125,19 @@ chmod 700 "$program"
 (cd "$root" && printf '%s\n' "$ticket" | "$installation/bin/journal-agent" connect --ticket-stdin --origin "$origin") ||
     exit 1
 
+# Each change made outside the project is recorded, so disconnecting the last project can undo it when unchanged.
+changes="$HOME/.journal-agent/machine-changes"
+mkdir -p "$HOME/.journal-agent" && chmod 700 "$HOME/.journal-agent"
+
 if [ -n "$link_folder" ]; then
+    [ -e "$link_folder/journal" ] || [ -L "$link_folder/journal" ] || printf 'link\t%s\n' "$link_folder/journal" >>"$changes"
     mkdir -p "$link_folder"
     ln -sf "$dispatcher" "$link_folder/journal"
 fi
 
 if [ -n "$startup_file" ] && ! grep -qF '# journal: the journal command' "$startup_file" 2>/dev/null; then
     printf '\n# journal: the journal command\nexport PATH="$HOME/.local/bin:$PATH"\n' >>"$startup_file"
+    printf 'startup\t%s\n' "$startup_file" >>"$changes"
 fi
 
 echo "journal: connected. In this terminal run: \"$dispatcher\" status"

@@ -21,6 +21,7 @@ vi.mock('@generated/routes/connections/bindings', () => ({
     revoke: ({ binding }: { binding: string }) => ({
         url: `/settings/project-connections/bindings/${binding}`,
     }),
+    revokeChosen: () => ({ url: '/settings/project-connections/bindings/revoke' }),
 }));
 
 const { default: ConnectProjectWindow } = await import(
@@ -149,5 +150,24 @@ describe('ConnectProjectWindow', () => {
             '/settings/project-connections/bindings/binding-1',
             expect.objectContaining({ only: ['page'], preserveState: true }),
         );
+    });
+    it('revokes every folder chosen on one machine in one action and shows each outcome', async () => {
+        keyedPost.mockImplementationOnce((_url, _body, _key, outcome) => {
+            outcome.onAccepted({ revokedBindings: { 'binding-1': 'Revoked' } });
+        });
+        const wrapper = windowWith(true);
+
+        await button(wrapper, 'Choose all on Owner laptop').trigger('click');
+        await button(wrapper, 'Revoke chosen (1)').trigger('click');
+        await flushPromises();
+
+        expect(keyedPost).toHaveBeenLastCalledWith(
+            '/settings/project-connections/bindings/revoke',
+            { bindings: ['binding-1'] },
+            expect.any(String),
+            expect.any(Object),
+            ['page'],
+        );
+        expect(wrapper.text()).toContain('Revoked');
     });
 });

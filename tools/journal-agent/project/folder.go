@@ -90,6 +90,8 @@ type Folder struct {
 // setupProgress is .journal/setup.json: the steps a setup finished, so a rerun finishes what an interrupted one left.
 type setupProgress struct {
 	Done []string `json:"done"`
+	// IgnoreAddition is the exact text setup appended to .gitignore, so disconnecting can take it out unchanged.
+	IgnoreAddition string `json:"ignoreAddition,omitempty"`
 }
 
 // SetUp writes the connection, the hook entry points of the verified installation and the ignore rule, each step
@@ -107,7 +109,12 @@ func (folder Folder) SetUp(connection Connection, installation host.Installation
 	}{
 		{stepConnection, func() error { return folder.writeConnection(connection) }},
 		{stepHooks, func() error { return folder.writeHooks(installation) }},
-		{stepIgnore, folder.ignoreJournalFolder},
+		{stepIgnore, func() error {
+			addition, err := folder.ignoreJournalFolder()
+			progress.IgnoreAddition = addition
+
+			return err
+		}},
 	}
 	for _, step := range steps {
 		if slices.Contains(progress.Done, step.name) {
@@ -187,18 +194,18 @@ func (folder Folder) writeHooks(installation host.Installation) error {
 
 // ignoreJournalFolder appends /.journal/ to the root's .gitignore, in its own line endings, unless Git already
 // ignores .journal there, later negations included. A folder outside Git needs no rule.
-func (folder Folder) ignoreJournalFolder() error {
+func (folder Folder) ignoreJournalFolder() (string, error) {
 	if exec.Command("git", "-C", folder.Root, "rev-parse", "--git-dir").Run() != nil {
-		return nil
+		return "", nil
 	}
 	if exec.Command("git", "-C", folder.Root, "check-ignore", "-q", journalFolderName+"/").Run() == nil {
-		return nil
+		return "", nil
 	}
 
 	path := filepath.Join(folder.Root, ".gitignore")
 	existing, err := os.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return err
+		return "", err
 	}
 
 	ending := "\n"
@@ -212,14 +219,36 @@ func (folder Folder) ignoreJournalFolder() error {
 
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if _, err := file.WriteString(addition); err != nil {
 		file.Close()
-		return err
+		return "", err
 	}
 
-	return file.Close()
+	return addition, file.Close()
+}
+
+// removeIgnoreRule takes the rule setup added back out of .gitignore when the file still ends with it as written,
+// and removes a .gitignore that held nothing else; a changed file keeps the rule.
+func (folder Folder) removeIgnoreRule(addition string) error {
+	if addition == "" {
+		return nil
+	}
+	path := filepath.Join(folder.Root, ".gitignore")
+	content, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil || !bytes.HasSuffix(content, []byte(addition)) {
+		return err
+	}
+	rest := bytes.TrimSuffix(content, []byte(addition))
+	if len(rest) == 0 {
+		return os.Remove(path)
+	}
+
+	return os.WriteFile(path, rest, 0o644)
 }
 
 func (folder Folder) progress() setupProgress {
@@ -248,11 +277,14 @@ func writeJSON(path string, value any) error {
 	return host.WritePrivateFile(path, content)
 }
 
-// Disconnect removes what setup owns in the folder: connection.json, the hook entry points, the session state and
-// the setup record. Every linked worktree under .journal/worktrees with uncommitted work is kept, and its path is
+// Disconnect removes what setup owns in the folder: connection.json, the hook entry points, the session state, the
+// setup record and the .gitignore rule it added, when that rule is still as written. Every linked worktree under .journal/worktrees with uncommitted work is kept, and its path is
 // answered so the work can be recovered; a clean one is removed by Git first.
 func (folder Folder) Disconnect() ([]string, error) {
 	kept := []string{}
+	if err := folder.removeIgnoreRule(folder.progress().IgnoreAddition); err != nil {
+		return kept, err
+	}
 	worktrees, err := os.ReadDir(filepath.Join(folder.journalFolder(), "worktrees"))
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return nil, err

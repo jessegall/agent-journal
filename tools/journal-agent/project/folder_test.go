@@ -166,3 +166,18 @@ func TestACopyOfAConnectedFolderElsewhereReadsAsNotConnected(t *testing.T) {
 		t.Fatalf("the copy reads %v, want ErrNotConnected", err)
 	}
 }
+
+func TestDisconnectTakesOutTheIgnoreRuleOnlyWhileItIsUnchanged(t *testing.T) {
+	folder := gitFolder(t, "node_modules/\n")
+	if err := folder.SetUp(connection, installation(t)); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := folder.Disconnect(); err != nil {
+		t.Fatal(err)
+	}
+
+	if content, _ := os.ReadFile(filepath.Join(folder.Root, ".gitignore")); string(content) != "node_modules/\n" {
+		t.Fatalf("the .gitignore reads %q", content)
+	}
+}
