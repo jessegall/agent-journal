@@ -52,7 +52,7 @@ final class UiDeclarationValuesTest extends TestCase
                     'new',
                 ),
             )
-            ->slots(Slot::record('inspector', 'plan'))
+            ->slots(Slot::record('inspector', 'plan', 'plan'))
             ->actions(ActionRoute::post('start', LooseResolver::class, 'start'));
 
         $this->assertSame('{plan}', $page->path);

@@ -16,6 +16,7 @@ use App\Web\Data\UnavailableWindow;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Inertia\ResponseFactory;
+use PhpOption\Option;
 use Spatie\LaravelData\Data;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -45,14 +46,23 @@ final readonly class PageProps
     {
         $props = ['page' => fn () => $this->ownPageResult($page, $request)];
 
+        $route = $request->route() instanceof Route ? $request->route() : null;
+
         foreach ($this->sectionsOf($page) as $section) {
             $props[$section->propName] = $this->inertia->defer(
-                fn () => $this->sectionResult($section, $request),
+                fn () => $this->sectionResult($section, $request, $route),
                 $section->propName,
             );
         }
 
         $props['inspector'] = $this->inertia->optional(fn () => $this->inspectorResult($request));
+
+        // The record open in the inspector mounts its own sections, read with its route rather than the page's.
+        foreach ($this->inspectedPage($request)->map($this->sectionsOf(...))->getOrElse([]) as $section) {
+            $props["inspector_{$section->propName}"] = $this->inertia->optional(
+                fn () => $this->sectionResult($section, $request, $this->inspectedRoute($section->host, $request)),
+            );
+        }
 
         // Home also offers every window as its own optional prop.
         return $page->isHome() ? [...$props, ...$this->forHome($request)] : $props;
@@ -89,7 +99,7 @@ final readonly class PageProps
             }
 
             foreach ($this->sectionsOf($page) as $section) {
-                $loadSection = fn () => $this->sectionResult($section, $request);
+                $loadSection = fn () => $this->sectionResult($section, $request, null);
                 $props[$section->propName] = $this->inertia->optional($loadSection);
             }
         }
@@ -136,17 +146,34 @@ final readonly class PageProps
      */
     private function inspectorResult(DeclaredPageRequest $request): Data|null
     {
-        $page = $this->declarations->pageOrNone($request->inspectedPage())->filter(
-            fn (
-                RegisteredPage $found,
-            ) => $found->page->opensIn === PageDestination::Inspector && $this->owners->isAvailable($found->owner),
-        );
+        $page = $this->inspectedPage($request);
 
         if ($page->isEmpty()) {
             return null;
         }
 
-        $record = $page->get();
+        return $this->pageResult($page->get(), $request, [], $this->inspectedRoute($page->get(), $request));
+    }
+
+    /**
+     * The record page the visit opens in the inspector: an inspector page of an available owner, or none.
+     *
+     * @return Option<RegisteredPage>
+     */
+    private function inspectedPage(DeclaredPageRequest $request): Option
+    {
+        return $this->declarations->pageOrNone($request->inspectedPage())->filter(
+            fn (
+                RegisteredPage $found,
+            ) => $found->page->opensIn === PageDestination::Inspector && $this->owners->isAvailable($found->owner),
+        );
+    }
+
+    /**
+     * The inspected record page's own route, bound to the route arguments the query names for it.
+     */
+    private function inspectedRoute(RegisteredPage $record, DeclaredPageRequest $request): Route
+    {
         $routeArguments = array_map($request->parameter(...), $record->path->parameters);
         $route = new Route(['GET'], $record->uri, []);
 
@@ -162,14 +189,21 @@ final readonly class PageProps
             ),
         );
 
-        return $this->pageResult($record, $request, [], $route);
+        return $route;
     }
 
-    private function sectionResult(RegisteredSection $section, DeclaredPageRequest $request): Data|null
-    {
-        $context = $this->contexts->for($section->slot, $request);
+    /**
+     * A section's result, read in the context its slot hands it from the route of the page it is mounted on; nothing
+     * open gives no result, and a record the user may not read reads as unavailable.
+     */
+    private function sectionResult(
+        RegisteredSection $section,
+        DeclaredPageRequest $request,
+        Route|null $route,
+    ): Data|null {
+        $argument = $this->contexts->argumentFor($section->slot, $request, $route);
 
-        if ($context->isEmpty()) {
+        if ($argument->isEmpty()) {
             return null;
         }
 
@@ -181,7 +215,7 @@ final readonly class PageProps
                 $section->key,
                 $section->resolver,
                 $request,
-            )->read($context->get()),
+            )->read($this->contexts->contextFor($section->slot, $argument->get())),
         );
     }
 

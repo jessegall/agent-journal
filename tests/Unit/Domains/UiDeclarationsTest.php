@@ -233,7 +233,7 @@ final class UiDeclarationsTest extends TestCase
 
         RegisteredPage::of(
             DomainEntry::fromClass(LibraryDomain::class)->declaring(),
-            $this->page('books')->slots(Slot::record('inspector', 'book')),
+            $this->page('books')->slots(Slot::record('inspector', 'book', 'book')),
         );
     }
 

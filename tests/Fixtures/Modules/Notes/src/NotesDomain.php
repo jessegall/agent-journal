@@ -171,7 +171,7 @@ final class NotesDomain extends Domain implements
             Page::make('index', 'Notes', Icon::Docs, NotesWindowResolver::class, 'Index.vue')->at(''),
             Page::make('collection', 'Collection', Icon::Docs, CollectionWindowResolver::class, 'Collection.vue')
                 ->at('collections/{collection}')
-                ->slots(Slot::record('note', 'collection')),
+                ->slots(Slot::record('note', 'collection', 'collection')),
         ];
     }
 

@@ -318,7 +318,7 @@ final class DocumentsDomain extends Domain implements
                     ActionRoute::post('docs/{document}/settle', SettleDocumentPageController::class, 'settle-document'),
                     ActionRoute::post('docs/{document}/recover', RecoverDocumentPageController::class, 'recover-draft'),
                 )
-                ->slots(Slot::record('inspector', 'document')),
+                ->slots(Slot::record('inspector', 'document', 'doc')),
             Page::make('revision', 'Revision', Icon::Docs, RevisionWindowResolver::class, 'RevisionWindow.vue')
                 ->at('docs/{document}/revisions/{revision}'),
             Page::make('report', 'Report', Icon::Docs, ReportWindowResolver::class, 'ReportWindow.vue')

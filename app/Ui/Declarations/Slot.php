@@ -16,6 +16,7 @@ final readonly class Slot
         public string $key,
         public SlotContextType $takes,
         public string|null $recordParameter,
+        public string|null $recordType,
     ) {}
 
     /**
@@ -27,14 +28,15 @@ final readonly class Slot
             throw InvalidPageDeclaration::recordSlotWithoutParameter($key);
         }
 
-        return new self($key, $takes, null);
+        return new self($key, $takes, null, null);
     }
 
     /**
-     * A slot that hands its sections the record named by the given route parameter of its page.
+     * A slot that hands its sections the record whose number the given route parameter of its page holds, named by
+     * the word people use for that type of record, such as doc for /docs/12.
      */
-    public static function record(string $key, string $parameter): self
+    public static function record(string $key, string $parameter, string $type): self
     {
-        return new self($key, SlotContextType::Record, $parameter);
+        return new self($key, SlotContextType::Record, $parameter, $type);
     }
 }

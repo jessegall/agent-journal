@@ -223,7 +223,7 @@ final class PlansDomain extends Domain implements
             Page::make('plan', 'Plan', Icon::Plan, PlanWindowResolver::class, 'PlanWindow.vue')
                 ->at('{plan}')
                 ->inInspector()
-                ->slots(Slot::record('inspector', 'plan')),
+                ->slots(Slot::record('inspector', 'plan', 'plan')),
             Page::make('phase', 'Phase', Icon::Plan, PhaseWindowResolver::class, 'PhaseWindow.vue')
                 ->at('{plan}/phases/{phase}'),
         ];

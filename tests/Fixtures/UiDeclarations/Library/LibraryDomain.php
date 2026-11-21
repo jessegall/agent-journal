@@ -47,7 +47,7 @@ final class LibraryDomain extends Domain implements NavigationProvider, PageProv
             Page::make('book', 'Book', Icon::Docs, BooksResolver::class, 'Book/Reader.vue')
                 ->at('{book}')
                 ->inInspector()
-                ->slots(Slot::record('book-inspector', 'book')),
+                ->slots(Slot::record('book-inspector', 'book', 'book')),
         ];
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainEntry;
 use App\Http\Requests\Web\DeclaredPageRequest;
 use App\Http\Support\Web\PageProps;
@@ -16,13 +17,18 @@ use App\Ui\Support\UiDeclarations;
 use App\Web\Data\DeniedWindow;
 use App\Web\Data\FailedWindow;
 use App\Web\Data\ReadyWindow;
+use App\Web\Data\UnavailableWindow;
+use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Models\Document;
 use Illuminate\Validation\ValidationException;
 use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\UiDeclarations\Library\NobodySees;
 use Tests\Fixtures\UiDeclarations\Shelf\BrokenResolver;
 use Tests\Fixtures\UiDeclarations\Shelf\ReaderCalls;
+use Tests\Fixtures\UiDeclarations\Shelf\RecordNotesResolver;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -34,6 +40,7 @@ use Tests\TestCase;
  */
 final class PagePropsTest extends TestCase
 {
+    use RefreshHookDatabase;
     use StartsAgentRequests;
 
     private ReaderCalls $calls;
@@ -120,6 +127,29 @@ final class PagePropsTest extends TestCase
         $this->assertSame('7', $inspector->windowFields['titles'][1]);
     }
 
+    public function test_a_section_on_the_inspected_record_reads_that_record_by_its_number(): void
+    {
+        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Design\n"));
+        $document = Document::query()->where('number', 1)->sole();
+
+        $section = ($this->pageProps('/shelf?inspect=shelf.shelf&shelf=1')['inspector_section_shelf_margin_shelf_record'])();
+
+        $this->assertInstanceOf(ReadyWindow::class, $section);
+        $this->assertSame([(string) $document->id], $section->windowFields['titles']);
+    }
+
+    public function test_a_section_on_a_record_the_user_cannot_read_is_unavailable(): void
+    {
+        $section = ($this->pageProps('/shelf?inspect=shelf.shelf&shelf=7')['inspector_section_shelf_margin_shelf_record'])();
+
+        $this->assertInstanceOf(UnavailableWindow::class, $section);
+    }
+
+    public function test_a_page_with_no_record_open_mounts_no_record_section(): void
+    {
+        $this->assertArrayNotHasKey('inspector_section_shelf_margin_shelf_record', $this->pageProps('/shelf'));
+    }
+
     public function test_two_users_in_a_row_each_get_their_own_result(): void
     {
         $first = $this->homeProp('/', 'window_shelf_shelves');
@@ -162,7 +192,8 @@ final class PagePropsTest extends TestCase
                 ->visibleWhen(NobodySees::class),
             Page::make('shelf', 'Shelf', Icon::Docs, ShelfResolver::class, 'Record/Reader.vue')
                 ->at('{shelf}')
-                ->inInspector(),
+                ->inInspector()
+                ->slots(Slot::record('margin', 'shelf', 'doc')),
         ], sections: [
             Section::make(
                 'broken',
@@ -173,6 +204,14 @@ final class PagePropsTest extends TestCase
                 'Aside.vue',
             ),
             Section::make('notes', 'Notes', 'shelf.aside', SlotContextType::Nothing, NotesResolver::class, 'Aside.vue'),
+            Section::make(
+                'record',
+                'Record',
+                'shelf.margin',
+                SlotContextType::Record,
+                RecordNotesResolver::class,
+                'Aside.vue',
+            ),
             Section::make(
                 'secret',
                 'Secret',
