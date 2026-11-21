@@ -58,10 +58,18 @@ final class ContainedProgramEvidenceTest extends TestCase
         $items = $this->items(['account-secrets', 'process-inspection'], $reason);
         $this->report($this->containedHost(), 'claude-code', '2.1.323', $items)->assertNoContent();
 
-        $this->expectException(ProgramArrangementUnproven::class);
-        $this->expectExceptionMessage("leaves account-secrets, process-inspection unenforced: {$reason}");
-
-        $this->compatibility(HookProgram::ClaudeCode)->assertStartable();
+        $this->assertThrows(
+            fn () => $this->compatibility(HookProgram::ClaudeCode)->assertStartable(),
+            ProgramArrangementUnproven::class,
+            'claude-code 2.1.323 cannot start in a container: the agent image\'s protection report leaves '
+                ."account-secrets, process-inspection unenforced ({$reason}).",
+        );
+        $this->assertThrows(
+            fn () => $this->compatibility(HookProgram::Codex)->assertStartable(),
+            ProgramArrangementUnproven::class,
+            'codex 0.165.0 cannot start in a container: no contained host has reported the protection of codex '
+                .'0.165.0 in the agent image (journal-agent protection --arrangement=contained).',
+        );
     }
 
     public function test_a_report_with_every_item_enforced_admits_a_contained_start(): void

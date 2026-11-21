@@ -19,6 +19,7 @@ final readonly class ProgramCompatibility
     /**
      * @param  list<string>  $startFlags  the checked flags every account start passes
      * @param  array<string, string>  $settings  the checked settings each account's own configuration holds
+     * @param  string|null  $containedShortfall  what keeps a contained start back; null where starts are not contained
      */
     public function __construct(
         public HookProgram $program,
@@ -29,6 +30,7 @@ final readonly class ProgramCompatibility
         public AuthenticationArrangement $arrangement,
         public ProgramEvidence $arrangementEvidence,
         public string $evidenceOwner,
+        public string|null $containedShortfall = null,
     ) {}
 
     /**
@@ -71,12 +73,32 @@ final readonly class ProgramCompatibility
     }
 
     /**
+     * The same compatibility held back in a container by what its protection report lacks there.
+     */
+    public function withContainedShortfall(string $shortfall): self
+    {
+        return clone ($this, [
+            'arrangementEvidence' => ProgramEvidence::PrerequisiteMissing,
+            'evidenceOwner' => "a contained host's protection report with every item enforced",
+            'containedShortfall' => $shortfall,
+        ]);
+    }
+
+    /**
      * Refuses an account start whose way of sharing the sign-in the real program has not shown.
      *
      * @throws ProgramArrangementUnproven
      */
     public function assertStartable(): void
     {
+        if ($this->containedShortfall !== null) {
+            throw ProgramArrangementUnproven::inContainer(
+                $this->program->value,
+                $this->version,
+                $this->containedShortfall,
+            );
+        }
+
         if (! $this->arrangementEvidence->isNativeShown()) {
             throw ProgramArrangementUnproven::for(
                 $this->program->value,
