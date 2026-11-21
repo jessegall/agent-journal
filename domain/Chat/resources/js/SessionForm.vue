@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import Button from '@kit/Button';
 import FormField from '@kit/FormField';
 import Modal from '@kit/Modal';
-import { getJson } from '@kit/jsonRequests';
 import { followPage } from '@kit/followPage';
 import { keyedPost } from '@kit/keyedPost';
 import { newRequestId } from '@kit/requestId';
 import { useSwitchOperation } from './composables/useSwitchOperation';
-import type { AgentOptionData } from '@generated/types/chat';
+import type { AgentOptionData, ChatData } from '@generated/types/chat';
+import type { WindowResult } from '@kit/PageTypes';
 import type { DriverVariant, HookDriver } from '@kit/CoreTypes';
 import {
     accountsPage,
-    eligibleAccounts,
     startMain,
     switchMethod,
     type EligibleAccountData,
@@ -86,15 +85,38 @@ const canSubmit = computed(
 const shownProgress = computed(() => (props.mode === 'switch' ? switching.progress.value : progress.value));
 const shownRefusal = computed(() => (props.mode === 'switch' ? switching.refusal.value : null) ?? refusal.value);
 
-async function readAccounts(chosen: HookDriver): Promise<void> {
-    const reply = await getJson<EligibleAccountsData>(eligibleAccounts.url(chosen));
-    accounts.value = reply.ok ? reply.value.accounts : [];
-    refusal.value = reply.ok ? null : reply.message;
+// The chat window's own prop: the page on Chat's own page, the window's part of Home elsewhere.
+const page = usePage();
+const ownPage = page.component === 'chat/ChatWindow';
+const chatProp = ownPage ? 'page' : 'window_chat_conversation';
+
+/**
+ * Asks the chat window, read again, for the driver's eligible accounts; they arrive as part of its data.
+ */
+function readAccounts(chosen: HookDriver): void {
+    router.reload({
+        only: [chatProp],
+        data: ownPage ? { accountsFor: chosen } : { window: { 'chat.conversation': { accountsFor: chosen } } },
+        onError: (errors) => (refusal.value = Object.values(errors)[0] ?? 'The accounts could not be read.'),
+    });
+}
+
+function showAccounts(read: EligibleAccountsData | undefined): void {
+    if (read === undefined) {
+        return;
+    }
+
+    accounts.value = read.accounts;
+    refusal.value = null;
     const preferred = accounts.value.find((choice) => choice.isDefault && choice.unavailableReason === null)
         ?? accounts.value.find((choice) => choice.unavailableReason === null);
     accountId.value = preferred?.id ?? null;
 }
 
+watch(
+    () => (page.props[chatProp] as WindowResult<ChatData> | undefined),
+    (shown) => showAccounts(shown?.state === 'ready' ? shown.data.eligibleAccounts : undefined),
+);
 watch(driver, readAccounts, { immediate: true });
 
 function sessionChoice(): SessionChoice {

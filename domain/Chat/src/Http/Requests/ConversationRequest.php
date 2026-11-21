@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Requests;
 
+use App\Drivers\Enums\HookDriver;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -19,7 +21,21 @@ final class ConversationRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['agent' => ['nullable', 'string', 'ulid'], 'dock' => ['nullable', 'string', 'max:2048']];
+        return [
+            'agent' => ['nullable', 'string', 'ulid'],
+            'dock' => ['nullable', 'string', 'max:2048'],
+            'accountsFor' => ['nullable', Rule::enum(HookDriver::class)],
+        ];
+    }
+
+    /**
+     * The driver whose eligible accounts a start or switch form asked for, none or one.
+     *
+     * @return list<HookDriver>
+     */
+    public function askedAccountsDriver(): array
+    {
+        return $this->filled('accountsFor') ? [$this->enum('accountsFor', HookDriver::class)] : [];
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Domain\Chat\Data;
 
 use App\Ui\Data\SlotSectionData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use App\Http\Data\Profiles\EligibleAccountsData;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -30,5 +31,7 @@ final class ChatData extends Data
         #[DataCollectionOf(SlotSectionData::class)]
         public readonly array $dockSections = [],
         public readonly ConversationData|Optional $conversation = new Optional(),
+        // The accounts a start or switch form asked for, read only when it asked.
+        public readonly EligibleAccountsData|Optional $eligibleAccounts = new Optional(),
     ) {}
 }

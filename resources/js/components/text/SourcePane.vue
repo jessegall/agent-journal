@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { getJson } from '@kit/jsonRequests';
-import { computed, onMounted, ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, onMounted, ref, watch } from 'vue';
 import type { TextPart } from '@/generated/types/core';
-import { read } from '@/routes/text';
 import Button from '@/components/kit/Button.vue';
 import { describeRange, quoteIn, type TextRangeChoice } from './textRange';
 
@@ -10,7 +9,7 @@ import { describeRange, quoteIn, type TextRangeChoice } from './textRange';
  * A window of a record's source text at one pinned version, with its real line numbers. The reader selects exact
  * text in it, or types a span of lines, and confirms the place before it is used; nothing is searched for.
  */
-const props = defineProps<{ target: string; version: string; firstLine: number; lastLine: number }>();
+const props = defineProps<{ target: string; version: string; firstLine: number; lastLine: number; found?: TextPart }>();
 
 const emit = defineEmits<{ choose: [range: TextRangeChoice]; close: [] }>();
 
@@ -23,18 +22,23 @@ const typedFirst = ref(props.firstLine);
 const typedLast = ref(props.lastLine);
 const hasMarkdown = computed(() => chosen.value?.type === 'quote' && /[*_`[\]]/.test(chosen.value.quote));
 
-onMounted(async () => {
-    const reply = await getJson<TextPart>(
-        read.url({
-            query: { target: props.target, version: props.version, first_line: props.firstLine, last_line: props.lastLine },
-        }),
-    );
+// The record page answers the lines it was asked for beside the record.
+watch(
+    () => props.found,
+    (found) => {
+        if (found !== undefined) {
+            part.value = found;
+        }
+    },
+    { immediate: true },
+);
 
-    if (reply.ok) {
-        part.value = reply.value;
-    } else {
-        failure.value = reply.message;
-    }
+onMounted(() => {
+    router.reload({
+        only: ['page'],
+        data: { textVersion: props.version, firstLine: props.firstLine, lastLine: props.lastLine },
+        onError: (errors) => (failure.value = Object.values(errors)[0] ?? 'The text could not be read.'),
+    });
 });
 
 /**

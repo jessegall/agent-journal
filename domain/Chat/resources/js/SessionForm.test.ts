@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
+import { reactive } from 'vue';
 import type { AgentOptionData } from '@generated/types/chat';
 
 
@@ -8,10 +9,23 @@ const posted: { url: string; body: Record<string, unknown> }[] = [];
 type PostOptions = { onFinish?: () => void; onSuccess: (page: { flash: Record<string, unknown> }) => void };
 const postOptions: PostOptions[] = [];
 
+// The chat window's prop on Home; asking it for a driver's accounts answers them as part of its data.
+const shownPage = reactive<{ component: string; props: Record<string, unknown> }>({ component: 'Home', props: {} });
+const accountsAnswer = {
+    driver: 'claude-code',
+    accounts: [
+        { id: 'expired', label: 'Old account', unavailableReason: 'needs-sign-in', unavailableSentence: 'its account needs to sign in again', expiresAt: null, signInRevision: 1, isDefault: true },
+        { id: 'ready', label: 'Work account', unavailableReason: null, unavailableSentence: null, expiresAt: null, signInRevision: 4, isDefault: false },
+    ],
+};
+
 vi.mock('@inertiajs/vue3', () => ({
     Link: { template: '<a><slot /></a>' },
+    usePage: () => shownPage,
     router: {
-        reload: () => undefined,
+        reload: (options: { only: string[] }) => {
+            shownPage.props = { [options.only[0]]: { state: 'ready', data: { eligibleAccounts: accountsAnswer } } };
+        },
         on: () => () => undefined,
         post: (url: string, body: Record<string, unknown>, options: PostOptions) => {
             posted.push({ url, body });
@@ -23,21 +37,8 @@ vi.mock('@inertiajs/vue3', () => ({
 vi.mock('@kit/Modal', () => ({
     default: { template: '<div><slot /><slot name="footer" /></div>' },
 }));
-vi.mock('@kit/jsonRequests', () => ({
-    getJson: async () => ({
-        ok: true,
-        value: {
-            driver: 'claude-code',
-            accounts: [
-                { id: 'expired', label: 'Old account', unavailableReason: 'needs-sign-in', unavailableSentence: 'its account needs to sign in again', expiresAt: null, signInRevision: 1, isDefault: true },
-                { id: 'ready', label: 'Work account', unavailableReason: null, unavailableSentence: null, expiresAt: null, signInRevision: 4, isDefault: false },
-            ],
-        },
-    }),
-}));
 vi.mock('@kit/sessionStarts', () => ({
     accountsPage: { url: () => '/accounts' },
-    eligibleAccounts: { url: (driver: string) => `/eligible/${driver}` },
     startMain: { url: (profile: string) => `/profiles/${profile}/start-main` },
     switchMethod: { url: (profile: string) => `/profiles/${profile}/switch` },
 }));

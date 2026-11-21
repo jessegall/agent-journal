@@ -24,6 +24,8 @@ use App\Operations\Enums\AccessType;
 use App\Processes\Contracts\CommandPermissionResolver;
 use App\Profiles\Contracts\OperationNames;
 use App\Profiles\Contracts\ProfileResolver;
+use App\Profiles\Contracts\StartAccounts;
+use App\Profiles\Support\EligibleAccounts;
 use App\Profiles\Contracts\ProfileScripts;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\SignInMethod;
@@ -79,6 +81,7 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->scoped(OperationPolicy::class, ProfileOperationPolicy::class);
         $this->app->bind(OperationNames::class, ConfiguredOperations::class);
         $this->app->bind(ProfileResolver::class, ProfileRecords::class);
+        $this->app->bind(StartAccounts::class, EligibleAccounts::class);
         $this->app->bind(ProfileScripts::class, ProfileRecords::class);
         $this->app->bind(ProfileSelections::class, ProfileDrivers::class);
         $this->app->bind(StartProfileAdmission::class, ProfileStartAdmission::class);

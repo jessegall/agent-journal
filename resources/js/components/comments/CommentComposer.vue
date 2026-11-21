@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { getJson } from '@kit/jsonRequests';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
-import type { Section, TextSections } from '@/generated/types/core';
+import type { RecordReadsData } from '@/generated/types/documents';
+import type { Section } from '@/generated/types/core';
 import { post } from '@/routes/comments';
-import { sections } from '@/routes/text';
 import Button from '@/components/kit/Button.vue';
 import SwitchItem from '@/components/kit/SwitchItem.vue';
 import { formSendingHooks } from '@/composables/usePageChanges';
@@ -19,7 +18,7 @@ import { renderedLineRange } from '@/components/text/useRenderedSelection';
  * version) offers no such choice. A retry of the same draft keeps its submission key; a failed post keeps the text and
  * the chosen place.
  */
-const props = defineProps<{ target: string; version?: string }>();
+const props = defineProps<{ target: string; version?: string; reads?: RecordReadsData }>();
 
 const form = useForm({ target: props.target, body: '', submission_key: crypto.randomUUID() });
 const subject = ref<CommentSubject>({ type: 'record' });
@@ -44,12 +43,18 @@ function openSource(): void {
     sourceWindow.value = renderedLineRange(window.getSelection()) ?? { firstLine: 1, lastLine: 40 };
 }
 
-async function loadSections(): Promise<void> {
-    const reply = await getJson<TextSections>(
-        sections.url({ query: { target: props.target, version: props.version ?? '', per_page: 100 } }),
-    );
+// The record page answers the sections it was asked for beside the record.
+watch(
+    () => props.reads?.textSections,
+    (sections) => {
+        if (sections !== undefined) {
+            sectionList.value = sections.items;
+        }
+    },
+);
 
-    sectionList.value = reply.ok ? reply.value.items : [];
+function loadSections(): void {
+    router.reload({ only: ['page'], data: { sectionsVersion: props.version ?? '' } });
 }
 
 function send(): void {
@@ -84,7 +89,7 @@ function send(): void {
                 </SwitchItem>
             </p>
             <template v-if="sourceWindow && version">
-                <SourcePane :target="target" :version="version" :first-line="sourceWindow.firstLine" :last-line="sourceWindow.lastLine" @choose="choose" @close="sourceWindow = null" />
+                <SourcePane :target="target" :version="version" :first-line="sourceWindow.firstLine" :last-line="sourceWindow.lastLine" :found="reads?.textPart" @choose="choose" @close="sourceWindow = null" />
             </template>
         </template>
         <template #actions>

@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { getJson } from '@kit/jsonRequests';
-import { onMounted, ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { onMounted, ref, watch } from 'vue';
 import type { RecordCommentLocation, TextCommentLocation } from '@/generated/types/core';
-import { location } from '@/routes/comments';
 import Button from '@/components/kit/Button.vue';
 import SwitchItem from '@/components/kit/SwitchItem.vue';
 import CommentSource from './CommentSource.vue';
 
 /**
  * Where one comment leads: a whole-record comment opens its record and shows no text; a text comment shows the
- * version it was left on with its exact place marked. A refused or missing source says so and shows no text.
+ * version it was left on with its exact place marked. The record page reads it when asked, beside the record; a
+ * refused or missing source says so and shows no text.
  */
-const props = defineProps<{ target: string; commentId: string }>();
+const props = defineProps<{ target: string; commentId: string; found?: RecordCommentLocation | TextCommentLocation }>();
 
 defineEmits<{ close: [] }>();
 
@@ -19,12 +19,24 @@ type Loaded = { state: 'loading' } | { state: 'unavailable'; message: string } |
 
 const loaded = ref<Loaded>({ state: 'loading' });
 
-onMounted(async () => {
-    const reply = await getJson<RecordCommentLocation | TextCommentLocation>(
-        location.url({ query: { target: props.target, comment: props.commentId } }),
-    );
+// The page answers the location it was asked for beside the record.
+watch(
+    () => props.found,
+    (place) => {
+        if (place !== undefined) {
+            loaded.value = { state: 'found', place };
+        }
+    },
+);
 
-    loaded.value = reply.ok ? { state: 'found', place: reply.value } : { state: 'unavailable', message: reply.message };
+onMounted(() => {
+    router.reload({
+        only: ['page'],
+        data: { commentLocation: props.commentId },
+        onError: (errors) => {
+            loaded.value = { state: 'unavailable', message: Object.values(errors)[0] ?? 'it could not be read' };
+        },
+    });
 });
 </script>
 

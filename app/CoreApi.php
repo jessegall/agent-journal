@@ -1034,6 +1034,9 @@ use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\ProvidesModelRecords;
 use App\Records\Support\RecordIdentity;
 use App\Reflection\Contracts\ReflectorFactory;
+use App\Http\Data\Profiles\EligibleAccountData;
+use App\Http\Data\Profiles\EligibleAccountsData;
+use App\Profiles\Contracts\StartAccounts;
 use App\Reflection\Exceptions\ClassMissing;
 use App\Reflection\Support\Reflector;
 use App\Scripts\Attributes\ScriptMember;
@@ -1351,6 +1354,7 @@ final class CoreApi
             )
             ->contracts(
                 ReflectorFactory::class,
+                StartAccounts::class,
                 CallerReceipts::class,
                 DockSourceDeleted::class,
                 DockedSources::class,
@@ -1587,6 +1591,8 @@ final class CoreApi
             ->values(
                 SeenSession::class,
                 RefusalReason::class,
+                EligibleAccountsData::class,
+                EligibleAccountData::class,
                 ReceiptAnswer::class,
                 DockOfferData::class,
                 DockDestinationOptionData::class,

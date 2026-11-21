@@ -23,6 +23,6 @@ const number = props.data.label.replace('report ', '');
         <template v-if="data.publiclyShared">
             <p class="text-text-3">This report is shared publicly: a comment you leave here will be public.</p>
         </template>
-        <CommentsPanel :comments="data.comments" :target="data.label" version="1" />
+        <CommentsPanel :comments="data.comments" :target="data.label" version="1" :reads="data.reads" />
     </div>
 </template>

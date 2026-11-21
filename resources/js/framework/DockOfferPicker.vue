@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { DockOfferData } from '@/generated/types/core';
-import { postJson } from './jsonRequests';
+import { keyedPost } from './keyedPost';
 
 /**
  * The offer to dock the source a window shows: the action opens a picker of the viewer's destinations, shows the one
@@ -24,21 +24,32 @@ function cancel(): void {
     answer.value = null;
 }
 
-async function confirm(): Promise<void> {
+/**
+ * Docks through the chat page's own action; what came of it arrives as the answer's one-time flash, and a refusal as
+ * its errors.
+ */
+function confirm(): void {
     if (chosen.value === null) {
         return;
     }
 
-    const reply = await postJson<{ outcome: string }>(props.offer.url, {
-        [props.offer.destinationField]: chosen.value,
-        type: props.offer.type,
-        id: props.offer.id,
-    });
-    answer.value = reply.ok ? (answers[reply.value.outcome] ?? reply.value.outcome) : reply.message;
+    keyedPost(
+        props.offer.url,
+        { [props.offer.destinationField]: chosen.value, type: props.offer.type, id: props.offer.id },
+        crypto.randomUUID(),
+        {
+            onAccepted: (flash) => {
+                const outcome = typeof flash.dockOutcome === 'string' ? flash.dockOutcome : 'unavailable';
+                answer.value = answers[outcome] ?? outcome;
 
-    if (reply.ok && reply.value.outcome !== 'unavailable') {
-        choosing.value = false;
-    }
+                if (outcome !== 'unavailable') {
+                    choosing.value = false;
+                }
+            },
+            onRefused: (reason) => (answer.value = reason ?? answers.unavailable),
+            onUncertain: () => (answer.value = 'The journal did not answer; add it again to be sure.'),
+        },
+    );
 }
 </script>
 

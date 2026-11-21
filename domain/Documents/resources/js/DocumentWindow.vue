@@ -57,6 +57,6 @@ function open(): void {
         <template v-if="data.record.publiclyShared">
             <p class="text-text-3">This document is shared publicly: a comment you leave here will be public.</p>
         </template>
-        <CommentsPanel :comments="data.record.comments" :target="data.record.label" :version="data.record.revision" />
+        <CommentsPanel :comments="data.record.comments" :target="data.record.label" :version="data.record.revision" :reads="data.record.reads" />
     </div>
 </template>

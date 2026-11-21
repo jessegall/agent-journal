@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { getJson } from '@kit/jsonRequests';
+import { router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import type { CommentList, RecordCommentView, TextCommentView } from '@/generated/types/core';
-import { list } from '@/routes/comments';
+import type { RecordReadsData } from '@/generated/types/documents';
 import Button from '@/components/kit/Button.vue';
 import CommentComposer from './CommentComposer.vue';
 import CommentItem from './CommentItem.vue';
@@ -10,37 +10,43 @@ import CommentLocation from './CommentLocation.vue';
 
 /**
  * A record's comments, oldest first, read on a page at a time, and the form that writes one. The record's version is
- * given only for a record with text; without it the form offers no text choices. A refused read clears what was shown.
+ * given only for a record with text; without it the form offers no text choices. More comments come as the page read
+ * again with the comment to go on after.
  */
-const props = defineProps<{ target: string; comments: CommentList; version?: string }>();
+const props = defineProps<{ target: string; comments: CommentList; version?: string; reads?: RecordReadsData }>();
 
 const items = ref<(RecordCommentView | TextCommentView)[]>([...props.comments.items]);
 const nextAfter = ref<string | null>(props.comments.nextAfter);
 const failure = ref('');
 const openedId = ref<string | null>(null);
 
+// Set while the page is read again for the comments after the last one shown, so that read adds to the list.
+let isReadingMore = false;
+
 watch(
     () => props.comments,
     (fresh) => {
-        items.value = [...fresh.items];
+        items.value = isReadingMore ? [...items.value, ...fresh.items] : [...fresh.items];
         nextAfter.value = fresh.nextAfter;
+        isReadingMore = false;
     },
 );
 
-async function readMore(): Promise<void> {
-    const reply = await getJson<CommentList>(list.url({ query: { target: props.target, after: nextAfter.value ?? '' } }));
-
-    if (!reply.ok) {
-        items.value = [];
-        nextAfter.value = null;
-        failure.value = reply.message;
-
-        return;
-    }
-
-    const page = reply.value;
-    items.value = [...items.value, ...page.items];
-    nextAfter.value = page.nextAfter;
+/**
+ * Reads the next comments as the page itself: the page is read again with the comment to go on after, and only the
+ * page's own prop comes back.
+ */
+function readMore(): void {
+    isReadingMore = true;
+    failure.value = '';
+    router.reload({
+        only: ['page'],
+        data: { commentsAfter: nextAfter.value ?? '' },
+        onError: () => {
+            isReadingMore = false;
+            failure.value = 'The next comments could not be read.';
+        },
+    });
 }
 </script>
 
@@ -59,8 +65,8 @@ async function readMore(): Promise<void> {
             </div>
         </template>
         <template v-if="openedId">
-            <CommentLocation :target="target" :comment-id="openedId" @close="openedId = null" />
+            <CommentLocation :target="target" :comment-id="openedId" :found="reads?.commentLocation" @close="openedId = null" />
         </template>
-        <CommentComposer :target="target" :version="version" />
+        <CommentComposer :target="target" :version="version" :reads="reads" />
     </section>
 </template>

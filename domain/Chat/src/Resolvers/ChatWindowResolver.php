@@ -8,6 +8,8 @@ use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Support\AgentOption;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Data\MessagePage;
+use App\Http\Data\Profiles\EligibleAccountsData;
+use App\Profiles\Contracts\StartAccounts;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SlotSections;
 use Domain\Chat\Data\ChatData;
@@ -33,6 +35,7 @@ final readonly class ChatWindowResolver implements PageResolver
         private AuthorizedConversations $conversations,
         private DockProjection $dock,
         private SlotSections $slots,
+        private StartAccounts $accounts,
     ) {}
 
     public function read(): ChatData
@@ -50,7 +53,24 @@ final readonly class ChatWindowResolver implements PageResolver
                 ->getOrElse(Optional::create()),
             'conversation' => $chosen->map($this->conversationWith(...))->getOrElse(Optional::create()),
             'dockSections' => $this->slots->sectionsIn(self::PAGE, 'dock'),
+            ...$this->askedAccounts(),
         ]);
+    }
+
+    /**
+     * The eligible accounts a start or switch form asked for, under the key ChatData reads them by.
+     *
+     * @return array<string, EligibleAccountsData>
+     */
+    private function askedAccounts(): array
+    {
+        $asked = [];
+
+        foreach ($this->request->askedAccountsDriver() as $driver) {
+            $asked['eligibleAccounts'] = $this->accounts->forDriver($driver);
+        }
+
+        return $asked;
     }
 
     private function conversationWith(AgentOption $agent): ConversationData

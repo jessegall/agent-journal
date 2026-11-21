@@ -42,6 +42,7 @@ final class RecordPageData extends Data implements DockableWindow
         public readonly bool $publiclyShared,
         public readonly string $sourceType,
         public readonly string $sourceId,
+        public readonly RecordReadsData $reads,
         public readonly string|Optional $revision = new Optional(),
     ) {}
 
@@ -55,6 +56,7 @@ final class RecordPageData extends Data implements DockableWindow
         array $settlements,
         array $links,
         bool $publiclyShared,
+        RecordReadsData $reads,
     ): self {
         return self::from([
             'label' => "doc {$document->number}",
@@ -69,6 +71,7 @@ final class RecordPageData extends Data implements DockableWindow
             'publiclyShared' => $publiclyShared,
             'sourceType' => Document::LINK_TYPE,
             'sourceId' => $document->id,
+            'reads' => $reads,
             'revision' => $document->revision,
         ]);
     }
@@ -83,6 +86,7 @@ final class RecordPageData extends Data implements DockableWindow
         array $settlements,
         array $links,
         bool $publiclyShared,
+        RecordReadsData $reads,
     ): self {
         return self::from([
             'label' => "report {$report->number}",
@@ -97,6 +101,7 @@ final class RecordPageData extends Data implements DockableWindow
             'publiclyShared' => $publiclyShared,
             'sourceType' => Report::LINK_TYPE,
             'sourceId' => $report->id,
+            'reads' => $reads,
         ]);
     }
 

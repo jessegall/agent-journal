@@ -11,6 +11,7 @@ use App\Http\Data\Profiles\EligibleAccountsData;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
+use App\Profiles\Contracts\StartAccounts;
 use App\Profiles\Models\Profile;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
 
@@ -18,7 +19,7 @@ use App\Profiles\Policies\ProfileAdministrationPolicy;
  * The accounts the owner may choose for a start of one driver, read under the authority the start itself needs, so
  * whoever may not start one learns no account label.
  */
-final readonly class EligibleAccounts
+final readonly class EligibleAccounts implements StartAccounts
 {
     public function __construct(private CurrentAuthorizer $authorizer) {}
 
