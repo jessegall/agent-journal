@@ -13,6 +13,7 @@ use App\Connections\Events\InstallAttemptSpent;
 use App\Connections\Exceptions\InstallAttemptRefused;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Reads\Values\RelationRead;
@@ -27,7 +28,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 /**
  * One owner's attempt to install a line for one target, a new project or one to join, made before any ticket is
@@ -58,6 +58,7 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
     use RaisesEvents;
 
     /**
@@ -98,32 +99,33 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      * The owner's attempt under this key, opened now when there is none: two first submissions of one key make one
      * attempt, as the key is unique per owner. A Join attempt names the environment of the project it lands in.
      */
-    public static function openFor(string $ownerUserId, string $idempotencyKey, Environment|null $joins): self
+    public static function openFor(string $userId, string $idempotencyKey, Environment|null $joins): self
     {
-        $id = (string) Str::ulid();
-        $now = CarbonImmutable::now();
-        // A second first submission under the key inserts nothing, without the error that would end the transaction.
-        self::query()->insertOrIgnore([
-            'id' => $id,
-            'reference' => self::newReference(),
-            'owner_user_id' => $ownerUserId,
-            'idempotency_key' => $idempotencyKey,
-            'mode' => ($joins === null ? InvitationMode::New : InvitationMode::Join)->value,
-            'project_id' => $joins?->project_id,
-            'environment_id' => $joins?->id,
-            'state' => InstallAttemptState::Open->value,
-            'version' => 0,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-        $attempt = self::query()->ofOwner($ownerUserId)->where('idempotency_key', $idempotencyKey)->lockForUpdate()
-            ->firstOrFail();
+        $earlier = self::query()->ofOwner($userId)->where('idempotency_key', $idempotencyKey)->lockForUpdate()
+            ->limit(1)->get()->all();
 
-        if ($attempt->id === $id) {
-            $attempt->raise(new InstallAttemptOpened($attempt->id, $attempt->reference, $now));
+        foreach ($earlier as $attempt) {
+            return $attempt;
         }
 
-        return $attempt;
+        // Only two first submissions at once reach this far; the key's unique index keeps them one attempt.
+        $attempt = self::query()->createOrFirst(
+            ['owner_user_id' => $userId, 'idempotency_key' => $idempotencyKey],
+            [
+                'reference' => self::newReference(),
+                'mode' => $joins === null ? InvitationMode::New : InvitationMode::Join,
+                'project_id' => $joins?->project_id,
+                'environment_id' => $joins?->id,
+                'state' => InstallAttemptState::Open,
+                'version' => 0,
+            ],
+        );
+
+        if ($attempt->wasRecentlyCreated) {
+            $attempt->raise(new InstallAttemptOpened($attempt->id, $attempt->reference, CarbonImmutable::now()));
+        }
+
+        return self::lockById($attempt->id);
     }
 
     // ----------[ Queries ]----------
@@ -133,9 +135,9 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      *
      * @throws InstallAttemptRefused
      */
-    public static function lockOfOwner(string $ownerUserId, string $reference): self
+    public static function lockOfOwner(string $userId, string $reference): self
     {
-        return self::query()->ofOwner($ownerUserId)->where('reference', $reference)->lockForUpdate()
+        return self::query()->ofOwner($userId)->where('reference', $reference)->lockForUpdate()
             ->firstOr(fn () => throw InstallAttemptRefused::unknown($reference));
     }
 
@@ -149,11 +151,11 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      *
      * @return CursorPaginator<int, self>
      */
-    public static function listedFor(string $ownerUserId, string|null $cursor): CursorPaginator
+    public static function listedFor(string $userId, string|null $cursor): CursorPaginator
     {
         $since = CarbonImmutable::now()->subDays(self::LISTED_DAYS);
 
-        return self::query()->ofOwner($ownerUserId)
+        return self::query()->ofOwner($userId)
             ->where(fn (Builder $listed) => $listed->where('state', InstallAttemptState::Open)
                 ->orWhere('updated_at', '>=', $since))
             ->with([
@@ -315,8 +317,8 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofOwner(Builder $query, string $ownerUserId): void
+    protected function ofOwner(Builder $query, string $userId): void
     {
-        $query->where('owner_user_id', $ownerUserId);
+        $query->where('owner_user_id', $userId);
     }
 }

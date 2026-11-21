@@ -63,7 +63,8 @@ final class DeviceGrantsTest extends TestCase
         $this->actingAs($this->owner)
             ->postJson("/settings/project-connections/devices/{$start->json('userCode')}/approve")
             ->assertNotFound();
-        $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertNotFound();
+        $expired = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(410);
+        $this->assertSame('expired_token', $expired->json('details.outcome'));
     }
 
     public function test_a_revoked_grant_is_refused_while_the_binding_stays_connected(): void
@@ -131,6 +132,52 @@ final class DeviceGrantsTest extends TestCase
             'argv' => ['overview', 'now'],
             'stdin' => '',
         ], ['Authorization' => "Bearer {$grant}"]);
+    }
+
+    public function test_a_poll_too_soon_slows_down_and_keeps_the_request_waiting(): void
+    {
+        $binding = $this->connected();
+        $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
+        $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(428);
+
+        $slow = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(429);
+
+        $this->assertSame('slow_down', $slow->json('details.outcome'));
+        $this->assertSame(DeviceGrant::POLL_SECONDS_MINIMUM, $slow->json('details.interval'));
+        $this->travel(DeviceGrant::POLL_SECONDS_MINIMUM + 1)->seconds();
+        $pending = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(428);
+        $this->assertSame('authorization_pending', $pending->json('details.outcome'));
+    }
+
+    public function test_a_lost_successful_poll_answers_already_issued_with_the_reference(): void
+    {
+        $binding = $this->connected();
+        $start = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'start-1'])->assertCreated();
+        $this->actingAs($this->owner)->post("/settings/project-connections/devices/{$start->json('userCode')}/approve");
+        $this->app['auth']->forgetGuards();
+        $issued = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertOk();
+
+        $this->travel(DeviceGrant::POLL_SECONDS_MINIMUM + 1)->seconds();
+        $again = $this->relay('/api/device-grants/poll', ['deviceCode' => $start->json('deviceCode')])->assertStatus(409);
+
+        $this->assertSame('issued', $issued->json('outcome'));
+        $this->assertSame('already_issued', $again->json('details.outcome'));
+        $this->assertSame($start->json('reference'), $again->json('details.reference'));
+        $this->assertNull($again->json('grant'));
+    }
+
+    public function test_two_terminals_get_two_references_and_a_repeated_start_finds_its_own(): void
+    {
+        $binding = $this->connected();
+
+        $first = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'terminal-a'])->assertCreated();
+        $second = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'terminal-b'])->assertCreated();
+        $again = $this->relay('/api/device-grants', ['binding' => $binding, 'startKey' => 'terminal-a'])->assertCreated();
+
+        $this->assertNotSame($first->json('reference'), $second->json('reference'));
+        $this->assertSame([1, 2], [$first->json('generation'), $second->json('generation')]);
+        $this->assertSame($first->json('reference'), $again->json('reference'));
+        $this->assertSame(2, DeviceGrant::query()->count());
     }
 
     private function connected(): string

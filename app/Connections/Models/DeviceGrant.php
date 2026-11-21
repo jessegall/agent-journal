@@ -29,6 +29,10 @@ use Illuminate\Support\Carbon;
  * @property list<string> $scopes
  * @property DeviceGrantState $state
  * @property string|null $approved_by_user_id
+ * @property string|null $reference
+ * @property int $generation
+ * @property string|null $start_key
+ * @property string|null $environment_id
  * @property CarbonImmutable $code_expires_at
  * @property string|null $grant_digest
  * @property CarbonImmutable|null $grant_expires_at
@@ -37,7 +41,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read ProjectBinding $binding
  */
-#[Fillable(['binding_id', 'device_code_digest', 'user_code', 'scopes', 'state', 'code_expires_at'])]
+#[Fillable([
+    'binding_id', 'device_code_digest', 'user_code', 'scopes', 'state', 'code_expires_at', 'reference', 'generation',
+    'start_key', 'environment_id',
+])]
 final class DeviceGrant extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -61,6 +68,11 @@ final class DeviceGrant extends Model implements ReadableModel
 
     public const array SCOPES = ['commands'];
 
+    /**
+     * The letters a reference is made of: no 0, O, 1, I or L, which read alike.
+     */
+    private const string REFERENCE_LETTERS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
     // ----------[ Constructors ]----------
 
     /**
@@ -77,10 +89,18 @@ final class DeviceGrant extends Model implements ReadableModel
         ];
     }
 
-    public static function create(ProjectBinding $binding, string $codeDigest, string $userCode): self
+    /**
+     * A terminal sign-in's grant for the binding, pending the owner's approval: a nonsecret reference, the next
+     * generation of the binding's sign-ins, the key its start came under and the binding's environment.
+     */
+    public static function create(ProjectBinding $binding, string $codeDigest, string $userCode, string $startKey): self
     {
         $grant = new self();
         $grant->binding_id = $binding->id;
+        $grant->reference = self::newReference();
+        $grant->generation = self::nextGenerationOf($binding);
+        $grant->start_key = $startKey;
+        $grant->environment_id = $binding->environment_id;
         $grant->device_code_digest = $codeDigest;
         $grant->user_code = $userCode;
         $grant->scopes = self::SCOPES;
@@ -99,6 +119,26 @@ final class DeviceGrant extends Model implements ReadableModel
     public static function ofUserCode(string $code): self
     {
         return self::query()->with('binding')->where('user_code', $code)->firstOrFail();
+    }
+
+    /**
+     * The grant a start under this key made for the binding, none or one, locked until the transaction ends: a start
+     * whose reply was lost finds it again.
+     *
+     * @return list<self>
+     */
+    public static function lockOfStart(ProjectBinding $binding, string $startKey): array
+    {
+        return array_values(self::query()->where('binding_id', $binding->id)->where('start_key', $startKey)
+            ->lockForUpdate()->limit(1)->get()->all());
+    }
+
+    /**
+     * The generation the binding's next sign-in gets: one past its newest.
+     */
+    public static function nextGenerationOf(ProjectBinding $binding): int
+    {
+        return (int) self::query()->where('binding_id', $binding->id)->max('generation') + 1;
     }
 
     /**
@@ -160,6 +200,16 @@ final class DeviceGrant extends Model implements ReadableModel
 
     // ----------[ Mutations ]----------
 
+    /**
+     * Gives a pending grant the device code of a start sent again under its key, as the one before never reached the
+     * terminal.
+     */
+    public function restartWith(string $codeDigest): void
+    {
+        $this->device_code_digest = $codeDigest;
+        $this->save();
+    }
+
     public function approveBy(string $userId): void
     {
         $this->approved_by_user_id = $userId;
@@ -176,7 +226,11 @@ final class DeviceGrant extends Model implements ReadableModel
     {
         $now = CarbonImmutable::now();
 
-        if ($this->last_polled_at !== null && $now->lessThan($this->last_polled_at->addSeconds(self::POLL_SECONDS_MINIMUM))) {
+        $tooSoon = $this->last_polled_at !== null
+            && $this->last_polled_at->addSeconds(self::POLL_SECONDS_MINIMUM)->isAfter($now);
+
+        // A poll sooner than the interval leaves the last one as it was, so polling fast never moves it on.
+        if ($tooSoon) {
             throw DeviceGrantRefused::pollingTooFast();
         }
 
@@ -208,9 +262,44 @@ final class DeviceGrant extends Model implements ReadableModel
         return $this->state === DeviceGrantState::Approved;
     }
 
+    public function isPending(): bool
+    {
+        return $this->state === DeviceGrantState::Pending;
+    }
+
+    /**
+     * Answers what a poll of a grant past its approval gets: the bearer went out once, so a repeated poll learns its
+     * reference to withdraw it, and a revoked grant says so.
+     *
+     * @throws DeviceGrantRefused
+     */
+    public function assertNotCollected(): void
+    {
+        if ($this->state === DeviceGrantState::Revoked) {
+            throw DeviceGrantRefused::revoked((string) $this->reference);
+        }
+
+        if ($this->state === DeviceGrantState::Issued) {
+            throw DeviceGrantRefused::alreadyIssued((string) $this->reference);
+        }
+    }
+
     public function isCodeExpired(): bool
     {
         return ! CarbonImmutable::now()->lessThan($this->code_expires_at);
+    }
+
+    // ----------[ Internals ]----------
+
+    private static function newReference(): string
+    {
+        $letters = '';
+
+        for ($index = 0; $index < 8; $index++) {
+            $letters .= self::REFERENCE_LETTERS[random_int(0, strlen(self::REFERENCE_LETTERS) - 1)];
+        }
+
+        return 'TS-'.$letters;
     }
 
     // ----------[ Relations ]----------

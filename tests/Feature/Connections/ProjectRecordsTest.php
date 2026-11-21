@@ -50,7 +50,7 @@ final class ProjectRecordsTest extends TestCase
     public function test_an_install_line_keeps_only_its_ticket_digest_and_expires_after_its_lifetime(): void
     {
         CarbonImmutable::setTestNow('2026-11-21 12:00:00');
-        $invitation = ProjectInvitation::issueFor(
+        $invitation = ProjectInvitation::create(
             InstallAttempt::openFor('user-1', 'issue-1', null),
             InstallTicket::digestOf('the-ticket'),
         );
@@ -69,11 +69,11 @@ final class ProjectRecordsTest extends TestCase
     {
         $project = Project::create('shop', 'Shop');
         $main = Environment::openDefaultOf($project);
-        $revoked = ProjectInvitation::issueFor(
+        $revoked = ProjectInvitation::create(
             InstallAttempt::openFor('user-1', 'issue-a', $main),
             InstallTicket::digestOf('ticket-a'),
         );
-        $spent = ProjectInvitation::issueFor(
+        $spent = ProjectInvitation::create(
             InstallAttempt::openFor('user-1', 'issue-b', $main),
             InstallTicket::digestOf('ticket-b'),
         );

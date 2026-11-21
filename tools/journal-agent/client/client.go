@@ -556,30 +556,10 @@ func (client *Client) read(ctx context.Context, target string, answer any) error
 }
 
 func (client *Client) send(ctx context.Context, method, target string, content []byte, answer any) error {
-	callID, err := newCallID()
+	request, err := client.signedRequest(ctx, method, target, content)
 	if err != nil {
 		return err
 	}
-	issuedAt := client.now().Unix()
-	signed, err := signature(client.enrollment.Secret, method, target, callID, issuedAt, content)
-	if err != nil {
-		return err
-	}
-	request, err := http.NewRequestWithContext(ctx, method, client.enrollment.JournalURL+target, bytes.NewReader(content))
-	if err != nil {
-		return err
-	}
-	request.Header.Set("Authorization", "Bearer "+client.enrollment.Secret)
-	if content != nil {
-		request.Header.Set("Content-Type", "application/json")
-	}
-	request.Header.Set("Accept", "application/json")
-	request.Header.Set(callIDHeader, callID)
-	request.Header.Set(issuedAtHeader, strconv.FormatInt(issuedAt, 10))
-	request.Header.Set(signatureHeader, signed)
-	request.Header.Set(protocolHeader, protocolVersion)
-	request.Header.Set(hostProtocolHeader, strconv.Itoa(client.protocol))
-
 	response, err := client.http.Do(request)
 	if err != nil {
 		return errors.Join(ErrUncertain, err)
@@ -592,6 +572,55 @@ func (client *Client) send(ctx context.Context, method, target string, content [
 		return nil
 	}
 	return json.NewDecoder(response.Body).Decode(answer)
+}
+
+// sendAnswering makes a signed call whose every answer of the journal carries an outcome to read, a refusal too: only
+// a server error or no answer at all is an error.
+func (client *Client) sendAnswering(ctx context.Context, method, target string, content []byte, answer any) error {
+	request, err := client.signedRequest(ctx, method, target, content)
+	if err != nil {
+		return err
+	}
+	response, err := client.http.Do(request)
+	if err != nil {
+		return errors.Join(ErrUncertain, err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode >= 500 {
+		return refusalOf(response, target)
+	}
+
+	return json.NewDecoder(response.Body).Decode(answer)
+}
+
+// signedRequest is a call signed with the host's credential: its signature covers the method, the exact target, the
+// call id, its time and the body.
+func (client *Client) signedRequest(ctx context.Context, method, target string, content []byte) (*http.Request, error) {
+	callID, err := newCallID()
+	if err != nil {
+		return nil, err
+	}
+	issuedAt := client.now().Unix()
+	signed, err := signature(client.enrollment.Secret, method, target, callID, issuedAt, content)
+	if err != nil {
+		return nil, err
+	}
+	request, err := http.NewRequestWithContext(ctx, method, client.enrollment.JournalURL+target, bytes.NewReader(content))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Authorization", "Bearer "+client.enrollment.Secret)
+	if content != nil {
+		request.Header.Set("Content-Type", "application/json")
+	}
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set(callIDHeader, callID)
+	request.Header.Set(issuedAtHeader, strconv.FormatInt(issuedAt, 10))
+	request.Header.Set(signatureHeader, signed)
+	request.Header.Set(protocolHeader, protocolVersion)
+	request.Header.Set(hostProtocolHeader, strconv.Itoa(client.protocol))
+
+	return request, nil
 }
 
 // refusalOf names what a status other than success means for the host; nil for a success.

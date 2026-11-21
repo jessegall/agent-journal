@@ -44,7 +44,7 @@ final class EnvironmentsTest extends TestCase
     public function test_a_join_line_lands_in_the_environment_it_names(): void
     {
         $first = $this->connected('new-ticket', 'nonce-aaaaaaaaaaaaaaaa');
-        $research = Environment::open(Project::query()->sole(), 'Research');
+        $research = Environment::create(Project::query()->sole(), 'Research');
         $ticket = $this->joinTicket($first->project_id, $research->id);
 
         $joined = $this->redeemLine($ticket, 'nonce-bbbbbbbbbbbbbbbb')->assertCreated();
@@ -56,7 +56,7 @@ final class EnvironmentsTest extends TestCase
     public function test_a_join_line_whose_environment_is_gone_is_refused_and_stays_unspent(): void
     {
         $first = $this->connected('new-ticket', 'nonce-aaaaaaaaaaaaaaaa');
-        $research = Environment::open(Project::query()->sole(), 'Research');
+        $research = Environment::create(Project::query()->sole(), 'Research');
         $ticket = $this->joinTicket($first->project_id, $research->id);
         $research->delete();
 

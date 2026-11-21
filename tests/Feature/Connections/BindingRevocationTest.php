@@ -41,7 +41,7 @@ final class BindingRevocationTest extends TestCase
         $first = ProjectBinding::query()->findOrFail(
             $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId'),
         );
-        ProjectInvitation::issueFor(
+        ProjectInvitation::create(
             InstallAttempt::openFor($this->owner->id, 'join-action', $this->mainOf(Project::query()->sole())),
             InstallTicket::digestOf('ticket-two'),
         );
@@ -63,7 +63,7 @@ final class BindingRevocationTest extends TestCase
     {
         $this->issueLine('ticket-one');
         $first = (string) $this->redeemLine('ticket-one', 'nonce-aaaaaaaaaaaaaaaa')->assertCreated()->json('bindingId');
-        ProjectInvitation::issueFor(
+        ProjectInvitation::create(
             InstallAttempt::openFor($this->owner->id, 'join-action', $this->mainOf(Project::query()->sole())),
             InstallTicket::digestOf('ticket-two'),
         );

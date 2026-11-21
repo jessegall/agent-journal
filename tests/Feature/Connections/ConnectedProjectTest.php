@@ -51,7 +51,7 @@ final class ConnectedProjectTest extends TestCase
     public function test_two_bindings_joined_to_one_project_read_the_same_project(): void
     {
         $first = $this->bindingOf('shop-ticket', 'nonce-aaaaaaaaaaaaaaaa');
-        ProjectInvitation::issueFor(
+        ProjectInvitation::create(
             InstallAttempt::openFor($this->owner->id, 'join-action', $this->mainOf(Project::query()->sole())),
             InstallTicket::digestOf('join-ticket'),
         );

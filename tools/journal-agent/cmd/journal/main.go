@@ -433,23 +433,45 @@ func deviceApproval(binding host.Binding, state host.ConnectionState, stderr io.
 	transport := &http.Client{Timeout: 30 * time.Second}
 	journal := client.ForRemoteProject(binding.Enrollment, transport)
 	ctx := context.Background()
-	start, err := journal.StartDeviceGrant(ctx, binding.BindingID)
+	startKey, err := newRequestKey()
 	if err != nil {
 		return "", err
 	}
-	fmt.Fprintf(stderr, "journal: open %s and approve the code %s\n", start.ApprovalURL, start.UserCode)
+	start, err := journal.StartDeviceGrant(ctx, binding.BindingID, startKey)
+	if errors.Is(err, client.ErrUncertain) {
+		// The start's reply was lost: the same key finds the grant it made.
+		start, err = journal.StartDeviceGrant(ctx, binding.BindingID, startKey)
+	}
+	if err != nil {
+		return "", err
+	}
+	fmt.Fprintf(stderr, "journal: open %s and approve the code %s (sign-in %s)\n", start.ApprovalURL, start.UserCode,
+		start.Reference)
 
+	interval := max(start.Interval, 1)
 	for {
-		time.Sleep(time.Duration(max(start.Interval, 1)) * time.Second)
-		grant, err := journal.PollDeviceGrant(ctx, start.DeviceCode)
-		if errors.Is(err, client.ErrAwaitingApproval) {
-			continue
-		}
+		time.Sleep(time.Duration(interval) * time.Second)
+		poll, err := journal.PollDeviceGrant(ctx, start.DeviceCode)
 		if err != nil {
 			return "", err
 		}
+		switch poll.Outcome {
+		case client.PollPending:
+			continue
+		case client.PollSlowDown:
+			interval = max(poll.Interval, interval+1)
+			continue
+		case client.PollIssued:
+			return poll.Grant, state.SaveDeviceGrant(poll.Grant)
+		case client.PollAlreadyIssued:
+			return "", fmt.Errorf("sign-in %s was handed out once and its answer was lost: withdraw it in Settings, then run the command again", poll.Reference)
+		case client.PollExpired:
+			return "", errors.New("the code expired before it was approved: run the command again for a new one")
+		case client.PollRevoked:
+			return "", fmt.Errorf("sign-in %s was revoked: run the command again to approve a new one", poll.Reference)
+		}
 
-		return grant, state.SaveDeviceGrant(grant)
+		return "", fmt.Errorf("the journal answered the poll with %q, which this journal command does not know", poll.Outcome)
 	}
 }
 

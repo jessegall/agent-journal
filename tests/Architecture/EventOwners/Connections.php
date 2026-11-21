@@ -9,6 +9,7 @@ use App\Connections\Events\InstallAttemptOpened;
 use App\Connections\Events\InstallAttemptReplaced;
 use App\Connections\Events\InstallAttemptSpent;
 use App\Connections\Events\ProjectBindingCreated;
+use App\Connections\Events\ProjectBindingEnvironmentAssigned;
 use App\Connections\Events\ProjectBindingReadinessChanged;
 use App\Connections\Events\ProjectBindingRevoked;
 use App\Connections\Events\ProjectCreated;
@@ -23,9 +24,16 @@ use Tests\Architecture\Support\EventRole;
  * EventProducerTest fails on any producer not listed here.
  */
 return [
+    ProjectBindingEnvironmentAssigned::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProjectBinding::assignEnvironment',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new ProjectBindingEnvironmentAssigned('binding', 'environment', new DateTimeImmutable('2026-01-01')),
+    ],
     EnvironmentOpened::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'Environment::open',
+        'owner' => 'Environment::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new EnvironmentOpened('environment', 'project', new DateTimeImmutable('2026-01-01')),
@@ -74,7 +82,7 @@ return [
     ],
     ProjectInvitationIssued::class => [
         'role' => EventRole::RowFact,
-        'owner' => 'ProjectInvitation::issueFor',
+        'owner' => 'ProjectInvitation::create',
         'migrated' => true,
         'producers' => [],
         'sample' => fn () => new ProjectInvitationIssued('invitation', new DateTimeImmutable('2026-01-01'), new DateTimeImmutable('2026-01-01')),

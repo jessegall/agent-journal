@@ -563,6 +563,7 @@ use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
 use App\Connections\Commands\ApproveDeviceGrant;
+use App\Connections\Commands\AssignBindingEnvironment;
 use App\Connections\Commands\AssertBindingStart;
 use App\Connections\Commands\CancelProjectCommandRun;
 use App\Connections\Commands\FinishProjectCommandRun;
@@ -2321,6 +2322,7 @@ final class CoreApi
                 PollDeviceGrant::class,
                 ApproveDeviceGrant::class,
                 RevokeDeviceGrant::class,
+                AssignBindingEnvironment::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

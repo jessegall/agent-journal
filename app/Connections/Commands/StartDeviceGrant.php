@@ -10,7 +10,8 @@ use App\Bus\Support\Command;
 use App\Connections\Values\DeviceGrantStart;
 
 /**
- * A shell of a connected machine asks for a device grant for its binding; only the binding's own host may.
+ * A shell of a connected machine asks for a device grant for its binding; only the binding's own host may. Asked
+ * again under the same start key, it finds the grant the first ask made.
  *
  * @extends Command<DeviceGrantStart>
  */
@@ -22,5 +23,6 @@ final readonly class StartDeviceGrant extends Command
         public string $bindingId,
         public string $deviceCodeDigest,
         public string $userCode,
+        public string $startKey,
     ) {}
 }
