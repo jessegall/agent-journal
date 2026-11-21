@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Mcp\Concerns;
 
 use App\Mcp\Support\ToolArguments;
-use Domain\Helpers\Support\HelperWork;
+use Domain\Helpers\Values\HelperWork;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
 

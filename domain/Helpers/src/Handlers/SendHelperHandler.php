@@ -9,7 +9,7 @@ use Domain\Helpers\Commands\SendHelper;
 use Domain\Helpers\Handlers\Support\HelperCommandHandler;
 use Domain\Helpers\Support\DispatchRequest;
 use Domain\Helpers\Support\HelperDispatch;
-use Domain\Helpers\Support\HelperReceipt;
+use Domain\Helpers\Values\HelperReceipt;
 
 /**
  * Dispatches new work to the helper identity the caller names, inside the command's transaction.

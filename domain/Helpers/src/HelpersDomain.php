@@ -23,7 +23,6 @@ use Domain\Helpers\Commands\ContinueHelper;
 use Domain\Helpers\Commands\SendHelper;
 use Domain\Helpers\Commands\StartHelper;
 use Domain\Helpers\Commands\SteerHelper;
-use Domain\Helpers\Contracts\HelperReader;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
@@ -39,10 +38,10 @@ use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Resolvers\HelperJobAssignments;
 use Domain\Helpers\Resolvers\HelperJobsLayoutResolver;
-use Domain\Helpers\Support\HelperReceipt;
-use Domain\Helpers\Support\HelperWork;
-use Domain\Helpers\Support\JobLaunch;
-use Domain\Helpers\Support\SteerReceipt;
+use Domain\Helpers\Values\HelperReceipt;
+use Domain\Helpers\Values\HelperWork;
+use Domain\Helpers\Values\JobLaunch;
+use Domain\Helpers\Values\SteerReceipt;
 
 final class HelpersDomain extends Domain implements
     CommandProvider,
@@ -85,7 +84,6 @@ final class HelpersDomain extends Domain implements
     public function exports(): Exports
     {
         return Exports::make()
-            ->contracts(HelperReader::class)
             ->values(
                 HelperReceipt::class,
                 HelperWork::class,

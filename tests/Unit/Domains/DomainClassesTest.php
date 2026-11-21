@@ -132,7 +132,6 @@ final class DomainClassesTest extends TestCase
             'HelperProfileMismatch',
             'HelperProfileTypeConflict',
             'HelperProfilesUnavailable',
-            'HelperReader',
             'HelperReceipt',
             'HelperRequestConflict',
             'HelperRetired',

@@ -8,8 +8,8 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use Domain\Helpers\Policies\HelperPolicy;
-use Domain\Helpers\Support\HelperReceipt;
-use Domain\Helpers\Support\HelperWork;
+use Domain\Helpers\Values\HelperReceipt;
+use Domain\Helpers\Values\HelperWork;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**

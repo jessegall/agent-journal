@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Helpers\Support;
+namespace Domain\Helpers\Readers;
 
 use App\Drivers\Enums\HookDriver;
 use App\Records\Support\RecordIdentity;

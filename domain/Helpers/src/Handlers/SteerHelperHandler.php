@@ -13,7 +13,7 @@ use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperMessage;
 use Domain\Helpers\Support\HelperStarts;
-use Domain\Helpers\Support\SteerReceipt;
+use Domain\Helpers\Values\SteerReceipt;
 
 final readonly class SteerHelperHandler extends HelperCommandHandler
 {

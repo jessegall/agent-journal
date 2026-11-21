@@ -42,8 +42,12 @@ use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
 use Domain\Helpers\Policies\HelperPolicy;
+use Domain\Helpers\Readers\CandidateQuery;
+use Domain\Helpers\Readers\HelperCandidate;
 use Domain\Helpers\Readers\HelperCandidates;
 use Domain\Helpers\Readers\HelperRecords;
+use Domain\Helpers\Values\HelperReceipt;
+use Domain\Helpers\Values\JobLaunch;
 
 /**
  * Dispatches a parent's work to a helper inside the command's transaction, in one order: the parent may delegate,
