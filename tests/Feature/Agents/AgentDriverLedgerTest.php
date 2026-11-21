@@ -51,12 +51,12 @@ use App\Agents\Models\DriverRequest;
 use App\Agents\Models\DriverTurn;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverBudgets;
-use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\NativeTurns;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\StartGrant;
+use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\ScriptProgress;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
@@ -506,7 +506,7 @@ final class AgentDriverLedgerTest extends TestCase
         $ends = [[$unavailable, 'unavailable', 'entry_unavailable'], [$unconfirmed, 'failed', 'unconfirmed']];
         $attempts = DriverRequest::query()
             ->whereKey([$unavailable->requestId, $unconfirmed->requestId])
-            ->readLimit(2)
+            ->limit(2)
             ->pluck('attempt_version', 'id');
 
         foreach ($ends as [$receipt, $progress, $outcome]) {

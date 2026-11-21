@@ -1443,6 +1443,7 @@ class	AssignmentRequest
 class	AssignmentResult
 class	AssignmentResultData
 class	AssignmentRetryExhausted
+class	AssignmentRoom
 class	AssignmentRootFinished
 class	AssignmentSet
 class	AssignmentStore
@@ -1540,6 +1541,7 @@ class	BuiltinResult
 class	BuiltinSteps
 class	BundleActivated
 class	BundleRowData
+class	BusyReplyData
 class	BypassLog
 class	BypassReport
 class	BypassReportController
@@ -1568,6 +1570,7 @@ class	CallSignatureInvalid
 class	CallToSend
 class	CallTooLarge
 class	CallbackEnvelope
+class	CallbackEnvelopeData
 class	CallerOperations
 class	CallingSessionProgram
 class	CancelAccountUses
@@ -1710,6 +1713,7 @@ class	ClassificationSummaryData
 class	ClassificationUnavailable
 class	ClaudeAccountProtection
 class	ClaudeAccountSettings
+class	ClaudeAnswerData
 class	ClaudeCodeAdapter
 class	ClaudeCodeSkills
 class	ClaudeKeySignIn
@@ -1717,6 +1721,7 @@ class	ClaudeProgram
 class	ClaudeSecretSignIn
 class	ClaudeSignIn
 class	ClaudeStatus
+class	ClaudeStatusData
 class	ClaudeTokenSignIn
 class	CleanAccount
 class	CleanAccountHandler
@@ -1755,19 +1760,26 @@ class	CloseTerminalViewController
 class	CloseTerminalViewHandler
 class	CloseWorkChain
 class	CloseWorkChainHandler
+class	ClosedAutoAssignmentAccess
 class	ClosedFolders
+class	ClosedSettingsAccess
 class	CodeFiles
 class	CodeReadOutsideProject
 class	CodeReview
 class	CodeReviewDecisions
 class	CodeReviewRefused
 class	CodeReviewType
+class	CodexAccountData
 class	CodexAccountProtection
+class	CodexAccountReadData
 class	CodexAccountSettings
 class	CodexAdapter
 class	CodexFolderTrust
 class	CodexJournalServer
 class	CodexKeySignIn
+class	CodexLoginCompletedData
+class	CodexLoginStartData
+class	CodexMessageData
 class	CodexProgram
 class	CodexSignIn
 class	CodexSkills
@@ -1940,6 +1952,7 @@ class	ContinueStartHandler
 class	ContinueStartRequest
 class	ContractSnapshot
 class	ContractSnapshotCommand
+class	ContractSnapshotData
 class	Controller
 class	ConversationChoice
 class	ConversationData
@@ -2019,6 +2032,7 @@ class	DecimalSetting
 class	DecimalValueData
 class	Decision
 class	DeclarationData
+class	DeclarationFileText
 class	DeclarationInvalid
 class	DeclarationRules
 class	DeclarativeReader
@@ -2028,6 +2042,7 @@ class	DeclaredProposal
 class	DeclaredReads
 class	DeclaredRouteKey
 class	DeclaredRoutes
+class	DecodesAnyJson
 class	DefaultUnavailable
 class	DeferredCommandHandler
 class	DeliverAgent
@@ -2036,8 +2051,6 @@ class	DeliverMessages
 class	DeliveredSkillsAccess
 class	Denied
 class	DeniedWindow
-class	DenyAllAutoAssignmentAccess
-class	DenyAllSettingsAccess
 class	DenyRule
 class	DenyRuleController
 class	DenyRuleHandler
@@ -2186,6 +2199,7 @@ class	DraftText
 class	DraftTokens
 class	DraftView
 class	DraftWriteTool
+class	DrainReplyData
 class	DriverBudgets
 class	DriverHeartbeatSource
 class	DriverReceipt
@@ -2556,14 +2570,16 @@ class	HostCapacity
 class	HostCapacityLock
 class	HostContext
 class	HostCredentialRejected
+class	HostRefusalData
 class	HostReportRefused
 class	HostRuntimes
 class	HostSecret
 class	HostSecretUnreadable
 class	HostSkillPublisher
 class	HostStartExecutor
-class	HostStartMaterial
 class	HostStartRefused
+class	HostStartReplyData
+class	HostStopReplyData
 class	HostUnavailable
 class	ImageUnverified
 class	ImportHelperCommits
@@ -2599,6 +2615,7 @@ class	IncomingWorkFailed
 class	IncomingWorkList
 class	IncomingWorkRepeated
 class	IncompleteTextAnchor
+class	InitializeResultData
 class	InputRefused
 class	InspectDocumentCall
 class	InspectDocumentController
@@ -2685,6 +2702,10 @@ class	JournalUnavailable
 class	JournalUnreachable
 class	JournalVisibility
 class	JournalWriteTool
+class	JsonDecodeScan
+class	JsonRpcIdData
+class	JsonRpcMessageData
+class	JsonRpcReplyData
 class	JudgedCall
 class	KeepNavigationAnswer
 class	KeptDigest
@@ -2784,8 +2805,10 @@ class	LoadMigrations
 class	LocalFiles
 class	LocateCommentCall
 class	LocateCommentController
+class	LockFileData
 class	LockStack
 class	LockedCall
+class	LockedPackageData
 class	LockingNumberAllocator
 class	LogCommand
 class	LoggedBypass
@@ -2955,6 +2978,7 @@ class	NameScan
 class	NameUse
 class	Named
 class	NamedCommand
+class	NamedHookEvent
 class	NamedTaskPool
 class	NamedTaskPoolFactory
 class	NamesUsed
@@ -3097,6 +3121,7 @@ class	OutputDiskCapacity
 class	OutputFrame
 class	OutputGrantController
 class	OutputGrantSeal
+class	OutputGrantSnapshot
 class	OutputGrants
 class	OutputGrantsInvalid
 class	OutputMatches
@@ -3128,6 +3153,7 @@ class	OwnerSharePolicy
 class	OwnerStartReceipt
 class	OwnerStartReceipts
 class	OwnerStartRequest
+class	PackageFileData
 class	PackageRules
 class	PackageScripts
 class	Page
@@ -3177,6 +3203,7 @@ class	PendingInboxWork
 class	PendingMessagesOverview
 class	PendingNavigationWork
 class	PendingSegment
+class	PendingStartSecrets
 class	PendingStopAttemptData
 class	PendingStopAttemptsController
 class	PendingWorkSources
@@ -3422,6 +3449,7 @@ class	ProgramNames
 class	ProgramNotContainable
 class	ProgramReplies
 class	ProgramReply
+class	ProgramReplyData
 class	ProgramReplyMalformed
 class	ProgramRequired
 class	ProgramSkillAdapters
@@ -3437,7 +3465,9 @@ class	ProjectRoots
 class	ProjectRules
 class	PromptDetails
 class	PromptSubmitted
+class	ProofManifestData
 class	ProofSample
+class	ProofSampleData
 class	PropertyRules
 class	ProposalChecks
 class	ProposalData
@@ -3530,8 +3560,8 @@ class	PurposeConflict
 class	PurposeRequired
 class	PurposeResolver
 class	PushSequenceState
-class	PushState
 class	PushTaskState
+class	PushTransition
 class	QueryInValueRead
 class	QuestionRecord
 class	QuestionType
@@ -3706,6 +3736,7 @@ class	RecordHolderData
 class	RecordHostProtection
 class	RecordHostProtectionHandler
 class	RecordIdentity
+class	RecordIdentityData
 class	RecordIds
 class	RecordImmutable
 class	RecordInspection
@@ -3778,6 +3809,7 @@ class	RefreshShareScopeRequest
 class	RefreshSkills
 class	RefreshSkillsHandler
 class	Refusal
+class	RefusalAnswerData
 class	RefusalExceptions
 class	RefusalMapper
 class	RefusalReplayed
@@ -3823,6 +3855,7 @@ class	RelayCommand
 class	RelayFrames
 class	RelayHookCommand
 class	RelaySettings
+class	RelayedToolCall
 class	ReleaseAccountRemoval
 class	ReleaseAccountRemovalHandler
 class	ReleaseAgentHold
@@ -4338,7 +4371,6 @@ class	SendMessageCommand
 class	SendMessageController
 class	SendMessageHandler
 class	SendMessageRequest
-class	SendSignedCalls
 class	SequenceCommandHandler
 class	SequencePolicy
 class	SequenceRecords
@@ -4457,6 +4489,7 @@ class	ShareContentRead
 class	ShareCreateCommand
 class	ShareCreated
 class	ShareCursor
+class	ShareCursorData
 class	ShareCursors
 class	ShareDetailData
 class	ShareDetailResolver
@@ -4637,11 +4670,11 @@ class	SignInVerification
 class	SignedCall
 class	SignedCallRefusal
 class	SignedCallRules
+class	SignedCallSender
 class	SignedInScope
 class	SignedSignInHost
 class	SimpleCommandDraft
 class	SimpleCommandParts
-class	SizeAssignmentRoom
 class	Skill
 class	SkillAgentHidden
 class	SkillAgentSelection
@@ -4791,8 +4824,6 @@ class	StartHelperCall
 class	StartHelperController
 class	StartHelperHandler
 class	StartHelperTool
-class	StartMaterial
-class	StartMaterialMissing
 class	StartOwnedAgent
 class	StartOwnedAgentHandler
 class	StartPermitRun
@@ -4825,6 +4856,8 @@ class	StartSample
 class	StartSampleCall
 class	StartSampleController
 class	StartSampleHandler
+class	StartSecrets
+class	StartSecretsMissing
 class	StartSequence
 class	StartSequenceHandler
 class	StartSessions
@@ -4928,6 +4961,7 @@ class	StopSurvivors
 class	StopSurvivorsHandler
 class	StopTrigger
 class	StoredAccessPolicy
+class	StoredCommandRule
 class	StoredEmptyRunPolicy
 class	StoredEnabledSettingsGroup
 class	StoredExecutableBinding
@@ -4936,25 +4970,38 @@ class	StoredExecutionPolicy
 class	StoredExitBranch
 class	StoredFrame
 class	StoredFrames
+class	StoredGatewaySettings
 class	StoredHostAccess
 class	StoredJson
+class	StoredNavigationScreen
 class	StoredOperationGrant
 class	StoredOutput
 class	StoredOutputContract
+class	StoredOutputProblem
+class	StoredPolicyGrant
+class	StoredPoolData
 class	StoredProcessGrants
 class	StoredProgressPolicy
+class	StoredProvenBranch
+class	StoredReaderApproval
 class	StoredResource
+class	StoredRuleExample
 class	StoredRuleReference
 class	StoredRuleScope
+class	StoredScopedRead
+class	StoredScriptBinding
+class	StoredSelectedTargetData
 class	StoredSettings
 class	StoredSettingsSnapshot
 class	StoredShareColumnInvalid
 class	StoredSkill
+class	StoredSkillSection
 class	StoredSkillSource
 class	StoredSkillWrites
 class	StoredStopCondition
 class	StoredStopConditions
 class	StoredSubject
+class	StoredSupervisorRoutes
 class	StoredValueCast
 class	StoredValueInvalid
 class	StoredValuesCast
@@ -5133,8 +5180,8 @@ class	TextUploadChunk
 class	TextVersion
 class	TextVersionCommand
 class	TextVersionController
-class	TextVersionInfo
 class	TextVersionRequest
+class	TextVersionSummary
 class	TextVersionUnavailable
 class	ThrowOnlyGuards
 class	TickBatch
@@ -5178,6 +5225,7 @@ class	TriggerPolicy
 class	TrustedEntryAuthority
 class	TunlerGateway
 class	TunlerStatus
+class	TunlerStatusData
 class	TunlerStatusUnreadable
 class	TurnReportController
 class	TypeOwners
@@ -5892,7 +5940,6 @@ constant	ScriptStopPreparation::UNCHANGED_RETURNS_TO_HOLD
 constant	SearchContribution::PAGE_SIZE
 constant	SeatLossRepair::PERSONAL_LABEL
 constant	SecureShareResponse::HEADERS
-constant	SendSignedCalls::PROXY_STATUSES
 constant	SessionOutputGrant::MOST_GRANTS
 constant	SessionOutputPaths::DOT_SEGMENT
 constant	SessionProvenance::SESSION
@@ -5966,6 +6013,7 @@ constant	SignedCall::PROTOCOL
 constant	SignedCall::PROTOCOL_HEADER
 constant	SignedCall::SIGNATURE_HEADER
 constant	SignedCallRules::ACTOR_ID_NAMES
+constant	SignedCallSender::PROXY_STATUSES
 constant	Skill::LINK_TYPE
 constant	SkillContextResolver::ENVIRONMENT
 constant	SkillGeneration::LINK_TYPE
@@ -6367,6 +6415,7 @@ interface	AgentMessageReader
 interface	AgentRequestClient
 interface	AgentResolver
 interface	AgentStack
+interface	AgentStackCommand
 interface	AgentStartCommand
 interface	AliasResolver
 interface	Answer
@@ -6461,7 +6510,6 @@ interface	EngineGrant
 interface	EngineListener
 interface	EngineTargetAccess
 interface	Event
-interface	ExpiresNavigation
 interface	FactOrigin
 interface	FileAccessPolicy
 interface	Files
@@ -6511,6 +6559,7 @@ interface	MonotonicClock
 interface	NamedInboxes
 interface	NativeTurnRecords
 interface	NavigationChildren
+interface	NavigationExpiry
 interface	NavigationProvider
 interface	NavigationReader
 interface	NavigationRecords
@@ -6659,7 +6708,6 @@ interface	StoredValue
 interface	SupervisorDefinitions
 interface	SupervisorDispatch
 interface	TargetAuthorizer
-interface	TargetsAgentStack
 interface	TaskAssignmentResolver
 interface	TaskDetailsResolver
 interface	TaskListResolver
@@ -7339,6 +7387,7 @@ method	AgentStack::topResumedSince()
 method	AgentStack::withStateOnTop()
 method	AgentStack::withoutExposedInactive()
 method	AgentStack::withoutFrame()
+method	AgentStackCommand::target()
 method	AgentStackRow::acrossEveryAgent()
 method	AgentStackRow::activeAuthorizedFor()
 method	AgentStackRow::activeFor()
@@ -7963,6 +8012,7 @@ method	AssignmentResult::hasChanges()
 method	AssignmentResultData::__construct()
 method	AssignmentResultData::of()
 method	AssignmentRetryExhausted::after()
+method	AssignmentRoom::available()
 method	AssignmentRootFinished::__construct()
 method	AssignmentRootFinished::details()
 method	AssignmentRootFinished::for()
@@ -8312,6 +8362,7 @@ method	BundleActivated::project()
 method	BundleActivated::staleReason()
 method	BundleRowData::__construct()
 method	BundleRowData::fromBundle()
+method	BusyReplyData::__construct()
 method	BypassLog::__construct()
 method	BypassLog::append()
 method	BypassLog::clear()
@@ -8377,6 +8428,8 @@ method	CallbackEnvelope::deadline()
 method	CallbackEnvelope::forCallback()
 method	CallbackEnvelope::fromJson()
 method	CallbackEnvelope::toJson()
+method	CallbackEnvelopeData::__construct()
+method	CallbackEnvelopeData::envelope()
 method	CallerOperations::operation()
 method	CallingProgram::programKey()
 method	CallingSessionProgram::__construct()
@@ -8502,7 +8555,6 @@ method	ChannelRunEvents::sendSpooled()
 method	ChannelRunEvents::skipped()
 method	ChannelRunEvents::spawnFailed()
 method	ChannelRunEvents::spooledLines()
-method	ChannelRunEvents::spooledRecords()
 method	ChannelRunEvents::staleReason()
 method	ChannelRunEvents::started()
 method	ChannelRunEvents::startedInside()
@@ -8719,6 +8771,7 @@ method	ClassificationUnavailable::status()
 method	ClassificationUnavailable::storeFailed()
 method	ClaudeAccountProtection::settingsFor()
 method	ClaudeAccountSettings::fill()
+method	ClaudeAnswerData::__construct()
 method	ClaudeCodeAdapter::__construct()
 method	ClaudeCodeAdapter::callFor()
 method	ClaudeCodeAdapter::callsJournalTools()
@@ -8789,6 +8842,7 @@ method	ClaudeStatus::__construct()
 method	ClaudeStatus::fromJson()
 method	ClaudeStatus::isSignedInBy()
 method	ClaudeStatus::reads()
+method	ClaudeStatusData::__construct()
 method	ClaudeTokenSignIn::authMethod()
 method	ClaudeTokenSignIn::install()
 method	ClaudeTokenSignIn::readFiles()
@@ -8863,9 +8917,13 @@ method	CloseTerminalViewHandler::handle()
 method	CloseWorkChain::__construct()
 method	CloseWorkChainHandler::__construct()
 method	CloseWorkChainHandler::handle()
+method	ClosedAutoAssignmentAccess::assertMayRead()
+method	ClosedAutoAssignmentAccess::assertMayWrite()
+method	ClosedAutoAssignmentAccess::mayReadTotals()
 method	ClosedFolders::__construct()
 method	ClosedFolders::assertNotClosed()
 method	ClosedFolders::closedIn()
+method	ClosedSettingsAccess::allows()
 method	CodeFiles::__construct()
 method	CodeFiles::assertProject()
 method	CodeFiles::counted()
@@ -8894,7 +8952,10 @@ method	CodeReviewDecisions::openMerge()
 method	CodeReviewRefused::notOpen()
 method	CodeReviewType::definition()
 method	CodedRefusal::refusalCode()
+method	CodexAccountData::__construct()
 method	CodexAccountProtection::settingsFor()
+method	CodexAccountReadData::__construct()
+method	CodexAccountReadData::isChatGpt()
 method	CodexAccountSettings::fill()
 method	CodexAdapter::__construct()
 method	CodexAdapter::callFor()
@@ -8921,6 +8982,10 @@ method	CodexKeySignIn::hasFinished()
 method	CodexKeySignIn::prove()
 method	CodexKeySignIn::signOut()
 method	CodexKeySignIn::verify()
+method	CodexLoginCompletedData::__construct()
+method	CodexLoginStartData::__construct()
+method	CodexMessageData::__construct()
+method	CodexMessageData::answers()
 method	CodexProgram::__construct()
 method	CodexProgram::accountFile()
 method	CodexProgram::environment()
@@ -8930,12 +8995,14 @@ method	CodexProgram::status()
 method	CodexProgram::useFileCredentialStore()
 method	CodexSignIn::__construct()
 method	CodexSignIn::acceptCode()
+method	CodexSignIn::accountIn()
 method	CodexSignIn::answerIn()
 method	CodexSignIn::begin()
 method	CodexSignIn::challengeFrom()
 method	CodexSignIn::completionIn()
 method	CodexSignIn::deviceCodeFrom()
 method	CodexSignIn::hasFinished()
+method	CodexSignIn::loginStartIn()
 method	CodexSignIn::message()
 method	CodexSignIn::messagesIn()
 method	CodexSignIn::prove()
@@ -9170,8 +9237,11 @@ method	CommandRule::digest()
 method	CommandRule::forCheck()
 method	CommandRule::forProgram()
 method	CommandRule::fromArray()
+method	CommandRule::fromJson()
+method	CommandRule::fromStored()
 method	CommandRule::hasContract()
 method	CommandRule::isSameRuleAs()
+method	CommandRule::listFromJson()
 method	CommandRule::operation()
 method	CommandRule::ownedBy()
 method	CommandRule::programFamily()
@@ -9554,6 +9624,8 @@ method	ContractSnapshot::differences()
 method	ContractSnapshot::render()
 method	ContractSnapshot::sorted()
 method	ContractSnapshotCommand::handle()
+method	ContractSnapshotData::__construct()
+method	ContractSnapshotData::headline()
 method	ConversationChoice::__construct()
 method	ConversationChoice::reusing()
 method	ConversationData::__construct()
@@ -9797,6 +9869,7 @@ method	Decision::rewrite()
 method	Decision::withPush()
 method	DeclarationData::__construct()
 method	DeclarationData::fromRevision()
+method	DeclarationFileText::__construct()
 method	DeclarationInvalid::__construct()
 method	DeclarationInvalid::fields()
 method	DeclarationInvalid::notJson()
@@ -9863,10 +9936,6 @@ method	Denied::reason()
 method	Denied::type()
 method	DeniedWindow::__construct()
 method	DeniedWindow::make()
-method	DenyAllAutoAssignmentAccess::assertMayRead()
-method	DenyAllAutoAssignmentAccess::assertMayWrite()
-method	DenyAllAutoAssignmentAccess::mayReadTotals()
-method	DenyAllSettingsAccess::allows()
 method	DenyRule::__construct()
 method	DenyRuleController::__invoke()
 method	DenyRuleHandler::__construct()
@@ -10424,6 +10493,7 @@ method	DraftTokens::of()
 method	DraftTokens::path()
 method	DraftView::__construct()
 method	DraftWriteTool::present()
+method	DrainReplyData::__construct()
 method	DriverBudgets::__construct()
 method	DriverBudgets::fitsDelivery()
 method	DriverHeartbeatSource::__construct()
@@ -10825,7 +10895,6 @@ method	ExpireSharesHandler::handle()
 method	ExpireSignInAttempt::__construct()
 method	ExpireSignInAttemptHandler::__construct()
 method	ExpireSignInAttemptHandler::handle()
-method	ExpiresNavigation::expireDue()
 method	ExplainCommandCall::__construct()
 method	ExplainCommandController::__construct()
 method	ExplainCommandController::__invoke()
@@ -11625,6 +11694,7 @@ method	HostCredentialRejected::replayed()
 method	HostCredentialRejected::revoked()
 method	HostCredentialRejected::stale()
 method	HostCredentialRejected::unknown()
+method	HostRefusalData::__construct()
 method	HostReportRefused::notOwned()
 method	HostReportRefused::staleAttempt()
 method	HostReportRefused::staleGeneration()
@@ -11649,11 +11719,10 @@ method	HostStartExecutor::__construct()
 method	HostStartExecutor::exchange()
 method	HostStartExecutor::start()
 method	HostStartExecutor::stop()
-method	HostStartMaterial::__construct()
-method	HostStartMaterial::keep()
-method	HostStartMaterial::material()
 method	HostStartRefused::because()
 method	HostStartRefused::unreachable()
+method	HostStartReplyData::__construct()
+method	HostStopReplyData::__construct()
 method	HostUnavailable::forHost()
 method	IdentityLinks::among()
 method	IdentityLinks::link()
@@ -11734,6 +11803,7 @@ method	IncomingWorkRegistration::register()
 method	IncomingWorkRepeated::forWork()
 method	IncompleteTextAnchor::missing()
 method	IncompleteTextAnchor::withoutType()
+method	InitializeResultData::__construct()
 method	InputRefused::fieldMessages()
 method	InspectDocumentCall::__construct()
 method	InspectDocumentController::__invoke()
@@ -11949,6 +12019,13 @@ method	JournalWriteTool::handle()
 method	JournalWriteTool::present()
 method	JournalWriteTool::schema()
 method	JournalWriteTool::writeSchema()
+method	JsonDecodeScan::findingsIn()
+method	JsonDecodeScan::key()
+method	JsonDecodeScan::markedMethod()
+method	JsonRpcIdData::__construct()
+method	JsonRpcIdData::idIn()
+method	JsonRpcMessageData::__construct()
+method	JsonRpcReplyData::__construct()
 method	JudgedCall::__construct()
 method	JudgedCall::forFinishedTool()
 method	JudgedCall::replyWith()
@@ -12220,9 +12297,11 @@ method	LocalFiles::writablePath()
 method	LocalFiles::write()
 method	LocateCommentCall::__construct()
 method	LocateCommentController::__invoke()
+method	LockFileData::__construct()
 method	LockStack::handle()
 method	LockedCall::__construct()
 method	LockedCall::prepared()
+method	LockedPackageData::__construct()
 method	LockingNumberAllocator::__construct()
 method	LockingNumberAllocator::allocate()
 method	LockingNumberAllocator::lockedGroup()
@@ -12791,6 +12870,7 @@ method	NamedCommand::fromDefinition()
 method	NamedCommand::isArgument()
 method	NamedCommand::jsonSerialize()
 method	NamedCommand::label()
+method	NamedHookEvent::__construct()
 method	NamedInboxes::inboxNamed()
 method	NamedTaskPool::__construct()
 method	NamedTaskPool::members()
@@ -13213,6 +13293,8 @@ method	OutputGrantController::__invoke()
 method	OutputGrantSeal::__construct()
 method	OutputGrantSeal::seal()
 method	OutputGrantSeal::verify()
+method	OutputGrantSnapshot::__construct()
+method	OutputGrantSnapshot::textPaths()
 method	OutputGrants::__construct()
 method	OutputGrants::allowsRead()
 method	OutputGrants::fromSnapshot()
@@ -13227,6 +13309,8 @@ method	OutputPolicy::lostBy()
 method	OutputPosition::__construct()
 method	OutputProblem::__construct()
 method	OutputProblem::fromArray()
+method	OutputProblem::fromJson()
+method	OutputProblem::listFromJson()
 method	OutputProblem::nextAction()
 method	OutputProblem::ofWholeOutput()
 method	OutputProblem::toArray()
@@ -13303,9 +13387,12 @@ method	OwnerStartRequest::__construct()
 method	OwnerStartRequest::executionMode()
 method	OwnerStartRequest::ownerReferenceOf()
 method	OwnerStartRequest::startRequest()
+method	PackageFileData::__construct()
+method	PackageFileData::linesOf()
 method	PackageRules::all()
 method	PackageScripts::bodyOf()
 method	PackageScripts::isHarmlessCallback()
+method	PackageScripts::packageOf()
 method	PackageScripts::scriptOf()
 method	Page::__construct()
 method	Page::actions()
@@ -13494,6 +13581,9 @@ method	PendingNavigationWork::__construct()
 method	PendingNavigationWork::pendingCount()
 method	PendingSegment::__construct()
 method	PendingSegment::allOf()
+method	PendingStartSecrets::__construct()
+method	PendingStartSecrets::keep()
+method	PendingStartSecrets::secrets()
 method	PendingStopAttemptData::__construct()
 method	PendingStopAttemptData::of()
 method	PendingStopAttemptsController::__invoke()
@@ -14130,6 +14220,7 @@ method	ProfileAuthorization::grantsAsArrays()
 method	ProfileAuthorization::holdsRead()
 method	ProfileAuthorization::readsAsArrays()
 method	ProfileAuthorization::without()
+method	ProfileAuthorizationCast::deniedCommandsOf()
 method	ProfileAuthorizationCast::get()
 method	ProfileAuthorizationCast::set()
 method	ProfileAuthorizerProvider::__construct()
@@ -14192,7 +14283,6 @@ method	ProfileDraftRefused::unreadable()
 method	ProfileDraftRevision::casts()
 method	ProfileDraftRevision::create()
 method	ProfileDraftRevision::scriptSource()
-method	ProfileDraftSaveCommand::commands()
 method	ProfileDraftSaveCommand::handle()
 method	ProfileDraftShowCommand::handle()
 method	ProfileFieldUnknown::named()
@@ -14417,7 +14507,9 @@ method	ProgramReply::fromJournal()
 method	ProgramReply::fromRecorded()
 method	ProgramReply::json()
 method	ProgramReply::recordedAs()
-method	ProgramReplyMalformed::missing()
+method	ProgramReplyData::__construct()
+method	ProgramReplyData::reply()
+method	ProgramReplyMalformed::because()
 method	ProgramRequired::forStart()
 method	ProgramRequired::reason()
 method	ProgramSkillAdapters::__construct()
@@ -14474,10 +14566,13 @@ method	PromptSubmitted::leavesAgentIdle()
 method	PromptSubmitted::methodName()
 method	PromptSubmitted::recordTurn()
 method	PromptSubmitted::recordVisit()
+method	ProofManifestData::__construct()
+method	ProofManifestData::samples()
 method	ProofSample::__construct()
 method	ProofSample::end()
-method	ProofSample::fromArray()
 method	ProofSample::provesABranch()
+method	ProofSampleData::__construct()
+method	ProofSampleData::sample()
 method	PropertyRules::__construct()
 method	PropertyRules::builtRule()
 method	PropertyRules::denormalized()
@@ -14571,7 +14666,8 @@ method	ProveReaderHandler::handle()
 method	ProvedClaimRelease::releaseAuthorizedBy()
 method	ProvedClaims::validClaimsOn()
 method	ProvenBranch::__construct()
-method	ProvenBranch::fromArray()
+method	ProvenBranch::fromJson()
+method	ProvenBranch::listFromJson()
 method	ProvenBranch::toArray()
 method	ProvenSkillRead::__construct()
 method	ProvenSkillRead::fileRead()
@@ -14703,11 +14799,11 @@ method	PurposeResolver::__construct()
 method	PurposeResolver::resolve()
 method	PushSequenceState::__construct()
 method	PushSequenceState::handle()
-method	PushState::__construct()
-method	PushState::applyTo()
-method	PushState::type()
 method	PushTaskState::__construct()
 method	PushTaskState::handle()
+method	PushTransition::__construct()
+method	PushTransition::applyTo()
+method	PushTransition::type()
 method	QueryInValueRead::during()
 method	QuestionRecord::__construct()
 method	QuestionRecord::identity()
@@ -14748,6 +14844,7 @@ method	ReadBuilder::orderForReading()
 method	ReadBuilder::paginate()
 method	ReadBuilder::pluck()
 method	ReadBuilder::readAll()
+method	ReadBuilder::readExactly()
 method	ReadBuilder::readInChunks()
 method	ReadBuilder::readLimit()
 method	ReadBuilder::readRelationCompletely()
@@ -14788,6 +14885,7 @@ method	ReadLexerNewline::handle()
 method	ReadLimitExceeded::forRelation()
 method	ReadLimitInvalid::configured()
 method	ReadLimitInvalid::rows()
+method	ReadLimitInvalid::withinPage()
 method	ReadLimitTooLarge::rows()
 method	ReadListPipeline::pipes()
 method	ReadLog::__construct()
@@ -14904,7 +15002,8 @@ method	ReadWordPipeline::pipes()
 method	ReadableModel::defaultReadLimit()
 method	ReadableModel::defaultReadOrder()
 method	ReaderApproval::__construct()
-method	ReaderApproval::fromArray()
+method	ReaderApproval::fromJson()
+method	ReaderApproval::listFromJson()
 method	ReaderApproval::toArray()
 method	ReaderAssessment::__construct()
 method	ReaderAssessment::has()
@@ -15161,6 +15260,8 @@ method	RecordHostProtectionHandler::handle()
 method	RecordIdentity::__construct()
 method	RecordIdentity::among()
 method	RecordIdentity::assertKnownType()
+method	RecordIdentityData::__construct()
+method	RecordIdentityData::identity()
 method	RecordIds::__construct()
 method	RecordImmutable::for()
 method	RecordInspection::__construct()
@@ -15353,6 +15454,7 @@ method	Refusal::__construct()
 method	Refusal::of()
 method	Refusal::resourceResponse()
 method	Refusal::toolResponse()
+method	RefusalAnswerData::__construct()
 method	RefusalCode::belongsToItsCalls()
 method	RefusalCode::isRetryable()
 method	RefusalCode::status()
@@ -15502,11 +15604,15 @@ method	RelayFrames::answer()
 method	RelayFrames::diagnose()
 method	RelayFrames::enqueue()
 method	RelayFrames::fail()
-method	RelayFrames::idIn()
+method	RelayFrames::jsonRpcReplyIn()
 method	RelayFrames::mcpHeaders()
 method	RelayFrames::next()
 method	RelayFrames::refuse()
+method	RelayFrames::refuseBroken()
+method	RelayFrames::refuseTooDeep()
+method	RelayFrames::refuseUnreadable()
 method	RelayFrames::rememberNegotiatedVersion()
+method	RelayFrames::retryAfterIn()
 method	RelayFrames::standard()
 method	RelayFrames::write()
 method	RelayFrames::writeError()
@@ -15523,6 +15629,8 @@ method	RelaySettings::processGenerationOf()
 method	RelaySettings::protectedAccountsOf()
 method	RelaySettings::runtimeFolder()
 method	RelaySettings::valueOrEmpty()
+method	RelayedToolCall::__construct()
+method	RelayedToolCall::readPath()
 method	ReleaseAccountRemoval::__construct()
 method	ReleaseAccountRemovalHandler::__construct()
 method	ReleaseAccountRemovalHandler::handle()
@@ -16168,8 +16276,11 @@ method	RuleDetailsResolver::activeCount()
 method	RuleDetailsResolver::rule()
 method	RuleExample::__construct()
 method	RuleExample::fromArray()
+method	RuleExample::fromJson()
+method	RuleExample::fromStored()
 method	RuleExample::isPositive()
 method	RuleExample::label()
+method	RuleExample::listFromJson()
 method	RuleExample::negative()
 method	RuleExample::positive()
 method	RuleExample::toArray()
@@ -16229,8 +16340,9 @@ method	RuleRecords::all()
 method	RuleRecords::list()
 method	RuleRecords::viewOf()
 method	RuleReference::__construct()
-method	RuleReference::fromArray()
+method	RuleReference::fromJson()
 method	RuleReference::label()
+method	RuleReference::listFromJson()
 method	RuleReference::names()
 method	RuleReference::toArray()
 method	RuleRejected::__construct()
@@ -16494,7 +16606,6 @@ method	ScannedSource::__construct()
 method	ScopeType::isActiveUnreviewed()
 method	ScopedRead::__construct()
 method	ScopedRead::covers()
-method	ScopedRead::fromArray()
 method	ScopedRead::toArray()
 method	ScopedReadMeter::begin()
 method	ScopedReadMeter::current()
@@ -16523,7 +16634,8 @@ method	ScreenRowData::fromRuns()
 method	ScreenRunData::__construct()
 method	ScreenStyleData::__construct()
 method	ScriptBinding::__construct()
-method	ScriptBinding::fromArray()
+method	ScriptBinding::fromJson()
+method	ScriptBinding::listFromJson()
 method	ScriptBinding::reference()
 method	ScriptBinding::toArray()
 method	ScriptBody::__construct()
@@ -16736,10 +16848,6 @@ method	SendMessageHandler::__construct()
 method	SendMessageHandler::handle()
 method	SendMessageRequest::command()
 method	SendMessageRequest::rules()
-method	SendSignedCalls::__construct()
-method	SendSignedCalls::answerOf()
-method	SendSignedCalls::pathOf()
-method	SendSignedCalls::send()
 method	SequencePolicy::model()
 method	SequenceRecords::followedBy()
 method	SequenceRecords::get()
@@ -17181,6 +17289,8 @@ method	ShareCreateCommand::handle()
 method	ShareCreated::__construct()
 method	ShareCursor::__construct()
 method	ShareCursor::belongsTo()
+method	ShareCursorData::__construct()
+method	ShareCursorData::cursor()
 method	ShareCursors::__construct()
 method	ShareCursors::decode()
 method	ShareCursors::encode()
@@ -17820,6 +17930,11 @@ method	SignedCallRules::actorIdProperties()
 method	SignedCallRules::callsAnsweringOtherThanTheyImplement()
 method	SignedCallRules::controllersNotTakingTheirCall()
 method	SignedCallRules::writesOfReadCommands()
+method	SignedCallSender::__construct()
+method	SignedCallSender::answerOf()
+method	SignedCallSender::pathOf()
+method	SignedCallSender::refusalOf()
+method	SignedCallSender::send()
 method	SignedInScope::__construct()
 method	SignedInScope::apply()
 method	SignedSignInHost::__construct()
@@ -17851,7 +17966,6 @@ method	SimpleCommandParts::withRedirect()
 method	SimpleCommandParts::withWord()
 method	SimpleTransition::applyTo()
 method	SimpleTransition::type()
-method	SizeAssignmentRoom::available()
 method	Skill::activeIn()
 method	Skill::allForMaintenance()
 method	Skill::appendRevision()
@@ -18296,8 +18410,6 @@ method	StartHelperHandler::__construct()
 method	StartHelperHandler::handle()
 method	StartHelperTool::command()
 method	StartHelperTool::present()
-method	StartMaterial::__construct()
-method	StartMaterialMissing::forRequest()
 method	StartOwnedAgent::__construct()
 method	StartOwnedAgent::startedAgentId()
 method	StartOwnedAgentHandler::__construct()
@@ -18391,6 +18503,8 @@ method	StartSampleCall::__construct()
 method	StartSampleController::__invoke()
 method	StartSampleHandler::__construct()
 method	StartSampleHandler::handle()
+method	StartSecrets::__construct()
+method	StartSecretsMissing::forRequest()
 method	StartSequence::__construct()
 method	StartSequenceHandler::__construct()
 method	StartSequenceHandler::handle()
@@ -18440,8 +18554,8 @@ method	StartTransaction::runForSession()
 method	StartUnavailable::__construct()
 method	StartUnavailableReason::sentence()
 method	StartedAgent::__construct()
-method	StartedAgent::material()
 method	StartedAgent::opened()
+method	StartedAgent::secrets()
 method	StateBelowTopPushed::for()
 method	StateClassMismatch::for()
 method	StateEventActivity::assertNotReentered()
@@ -18736,6 +18850,7 @@ method	StopTrigger::policy()
 method	StoredAccessPolicy::__construct()
 method	StoredAccessPolicy::fromAccessPolicy()
 method	StoredAccessPolicy::toAccessPolicy()
+method	StoredCommandRule::__construct()
 method	StoredEmptyRunPolicy::__construct()
 method	StoredEmptyRunPolicy::fromEmptyRunPolicy()
 method	StoredEmptyRunPolicy::toEmptyRunPolicy()
@@ -18765,10 +18880,14 @@ method	StoredFrame::toRecord()
 method	StoredFrames::__construct()
 method	StoredFrames::fromFrameRecords()
 method	StoredFrames::toRecords()
+method	StoredGatewaySettings::__construct()
+method	StoredGatewaySettings::settings()
 method	StoredHostAccess::__construct()
 method	StoredHostAccess::fromHostAccess()
 method	StoredHostAccess::toHostAccess()
 method	StoredJson::read()
+method	StoredNavigationScreen::__construct()
+method	StoredNavigationScreen::screen()
 method	StoredOperationGrant::__construct()
 method	StoredOperationGrant::fromOperationGrant()
 method	StoredOperationGrant::toOperationGrant()
@@ -18781,21 +18900,38 @@ method	StoredOutput::tail()
 method	StoredOutputContract::__construct()
 method	StoredOutputContract::fromOutputContract()
 method	StoredOutputContract::toOutputContract()
+method	StoredOutputProblem::__construct()
+method	StoredOutputProblem::problem()
+method	StoredPolicyGrant::__construct()
+method	StoredPolicyGrant::fromArray()
+method	StoredPoolData::__construct()
+method	StoredPoolData::pool()
 method	StoredProcessGrants::__construct()
 method	StoredProcessGrants::fromProcessGrants()
 method	StoredProcessGrants::toProcessGrants()
 method	StoredProgressPolicy::__construct()
 method	StoredProgressPolicy::fromProgressPolicy()
 method	StoredProgressPolicy::toProgressPolicy()
+method	StoredProvenBranch::__construct()
+method	StoredProvenBranch::branch()
+method	StoredReaderApproval::__construct()
+method	StoredReaderApproval::approval()
 method	StoredResource::__construct()
 method	StoredResource::fromResourceRequest()
 method	StoredResource::toResourceRequest()
+method	StoredRuleExample::__construct()
 method	StoredRuleReference::__construct()
 method	StoredRuleReference::fromReference()
 method	StoredRuleReference::toReference()
 method	StoredRuleScope::__construct()
 method	StoredRuleScope::fromRuleScope()
 method	StoredRuleScope::toRuleScope()
+method	StoredScopedRead::__construct()
+method	StoredScopedRead::read()
+method	StoredScriptBinding::__construct()
+method	StoredScriptBinding::binding()
+method	StoredSelectedTargetData::__construct()
+method	StoredSelectedTargetData::target()
 method	StoredSettings::__construct()
 method	StoredSettings::assertOwnSetting()
 method	StoredSettings::boolean()
@@ -18822,6 +18958,8 @@ method	StoredSkill::key()
 method	StoredSkill::name()
 method	StoredSkill::revisionNumber()
 method	StoredSkill::sections()
+method	StoredSkillSection::__construct()
+method	StoredSkillSection::section()
 method	StoredSkillSource::__construct()
 method	StoredSkillSource::skills()
 method	StoredSkillWrites::__construct()
@@ -18838,7 +18976,10 @@ method	StoredStopConditions::toStopConditions()
 method	StoredSubject::__construct()
 method	StoredSubject::fromSubjectReference()
 method	StoredSubject::toReference()
-method	StoredValue::fromArray()
+method	StoredSupervisorRoutes::__construct()
+method	StoredSupervisorRoutes::fromArray()
+method	StoredValue::fromJson()
+method	StoredValue::listFromJson()
 method	StoredValue::toArray()
 method	StoredValueCast::__construct()
 method	StoredValueCast::get()
@@ -19075,7 +19216,6 @@ method	TargetAuthorizer::authorize()
 method	TargetAuthorizer::filterActions()
 method	TargetHasNoText::for()
 method	TargetNotCommentable::for()
-method	TargetsAgentStack::target()
 method	Task::assignmentIdentity()
 method	Task::block()
 method	Task::cancel()
@@ -19401,9 +19541,9 @@ method	TextVersion::ofMarkdown()
 method	TextVersion::ofOnlyMarkdown()
 method	TextVersionCommand::handle()
 method	TextVersionController::__invoke()
-method	TextVersionInfo::__construct()
 method	TextVersionRequest::rules()
 method	TextVersionRequest::version()
+method	TextVersionSummary::__construct()
 method	TextVersionUnavailable::named()
 method	ThrowOnlyGuards::containsThrow()
 method	ThrowOnlyGuards::findingsIn()
@@ -19629,6 +19769,7 @@ method	TunlerGateway::run()
 method	TunlerGateway::setupCheck()
 method	TunlerStatus::__construct()
 method	TunlerStatus::fromOutput()
+method	TunlerStatusData::__construct()
 method	TunlerStatusUnreadable::because()
 method	TurnReportController::__invoke()
 method	TypeOwners::__construct()
@@ -20219,6 +20360,7 @@ parameter	$auditPruneSeconds
 parameter	$audits
 parameter	$auth
 parameter	$authMethod
+parameter	$authOk
 parameter	$author
 parameter	$authorId
 parameter	$authorLabel
@@ -20276,6 +20418,7 @@ parameter	$branch
 parameter	$branches
 parameter	$brief
 parameter	$broadcast
+parameter	$broken
 parameter	$budget
 parameter	$budgets
 parameter	$buffer
@@ -20497,6 +20640,7 @@ parameter	$continuation
 parameter	$continuations
 parameter	$contract
 parameter	$contractLabel
+parameter	$contractVersion
 parameter	$contracts
 parameter	$controlPort
 parameter	$controller
@@ -20612,6 +20756,7 @@ parameter	$destinationInboxLabel
 parameter	$destinations
 parameter	$detail
 parameter	$details
+parameter	$developmentPackages
 parameter	$diagnostic
 parameter	$diagnosticPosition
 parameter	$diagnostics
@@ -21033,6 +21178,7 @@ parameter	$isDirectoryRemoved
 parameter	$isDirty
 parameter	$isDisabled
 parameter	$isEffectiveTop
+parameter	$isError
 parameter	$isFound
 parameter	$isHealthy
 parameter	$isInsideFilter
@@ -21092,6 +21238,7 @@ parameter	$journalTools
 parameter	$journalUrl
 parameter	$json
 parameter	$jsonRpcCode
+parameter	$jsonrpc
 parameter	$kept
 parameter	$keptWorkspace
 parameter	$key
@@ -21186,7 +21333,10 @@ parameter	$lockKey
 parameter	$locked
 parameter	$locks
 parameter	$log
+parameter	$loggedIn
 parameter	$logger
+parameter	$loginExpiresAt
+parameter	$loginId
 parameter	$longPollMaxSeconds
 parameter	$longest
 parameter	$loop
@@ -21206,7 +21356,6 @@ parameter	$marker
 parameter	$match
 parameter	$matches
 parameter	$matchingRevision
-parameter	$material
 parameter	$matrix
 parameter	$max
 parameter	$maxRecordBytes
@@ -21459,6 +21608,7 @@ parameter	$parameter
 parameter	$parameterText
 parameter	$parameterType
 parameter	$parameters
+parameter	$params
 parameter	$parent
 parameter	$parentId
 parameter	$parentProgram
@@ -21499,6 +21649,7 @@ parameter	$pause
 parameter	$payloadDigest
 parameter	$pending
 parameter	$pendingCleanups
+parameter	$pendingSecrets
 parameter	$pendingStarts
 parameter	$pendingWork
 parameter	$perPage
@@ -21624,6 +21775,8 @@ parameter	$protected
 parameter	$protection
 parameter	$protectionSettings
 parameter	$protocol
+parameter	$protocolVersion
+parameter	$protocolVersions
 parameter	$protocols
 parameter	$proved
 parameter	$proven
@@ -21739,6 +21892,7 @@ parameter	$references
 parameter	$reflection
 parameter	$refusal
 parameter	$refusalCode
+parameter	$refusalCodes
 parameter	$refusalMessage
 parameter	$refusals
 parameter	$refused
@@ -21838,6 +21992,8 @@ parameter	$result	app/Agents/Models/MergeAttempt.php
 parameter	$result	app/Agents/Support/ProtectedMerge.php
 parameter	$result	app/Agents/Values/MergeOutcome.php
 parameter	$result	app/Hooks/Readers/SessionInspections.php
+parameter	$result	app/Mcp/Data/JsonRpcReplyData.php
+parameter	$result	app/Profiles/Data/CodexMessageData.php
 parameter	$result	app/Scripts/Data/ProfileStepData.php
 parameter	$result	app/Supervision/Commands/ResolveMergeAttempt.php
 parameter	$resultNote
@@ -22058,7 +22214,6 @@ parameter	$skillKey
 parameter	$skillKeys
 parameter	$skills
 parameter	$skillsByKey
-parameter	$skip
 parameter	$skipped
 parameter	$sleeper
 parameter	$slot
@@ -22176,6 +22331,7 @@ parameter	$submissionDigest
 parameter	$submissionKey
 parameter	$substitution
 parameter	$substitutions
+parameter	$success
 parameter	$successor
 parameter	$successors
 parameter	$suggestedCommand
@@ -22323,6 +22479,7 @@ parameter	$url
 parameter	$urls
 parameter	$use
 parameter	$user
+parameter	$userCode
 parameter	$userId
 parameter	$userIds
 parameter	$userName
@@ -22366,6 +22523,7 @@ parameter	$variableText
 parameter	$variables
 parameter	$vendorSessionId
 parameter	$verdict
+parameter	$verificationUrl
 parameter	$verified
 parameter	$version
 parameter	$versionId
@@ -23282,6 +23440,7 @@ property	BundleRowData::$digest
 property	BundleRowData::$module
 property	BundleRowData::$rules
 property	BundleRowData::$version
+property	BusyReplyData::$retryAfterSeconds
 property	BypassLog::$files
 property	BypassLog::$log
 property	BypassReport::$bypasses
@@ -23307,6 +23466,12 @@ property	CallbackEnvelope::$deadlineAt
 property	CallbackEnvelope::$id
 property	CallbackEnvelope::$issuedAt
 property	CallbackEnvelope::$program
+property	CallbackEnvelopeData::$body
+property	CallbackEnvelopeData::$bodyDigest
+property	CallbackEnvelopeData::$deadlineAt
+property	CallbackEnvelopeData::$id
+property	CallbackEnvelopeData::$issuedAt
+property	CallbackEnvelopeData::$program
 property	CallingSessionProgram::$sessions
 property	CancelAccountUses::$account
 property	CancelAccountUsesHandler::$events
@@ -23553,6 +23718,7 @@ property	ClassificationRuleRowData::$state
 property	ClassificationSummaryData::$classes
 property	ClassificationSummaryData::$known
 property	ClassificationSummaryData::$parts
+property	ClaudeAnswerData::$isError
 property	ClaudeCodeAdapter::$failures
 property	ClaudeCodeAdapter::$files
 property	ClaudeCodeAdapter::$journalTools
@@ -23570,6 +23736,11 @@ property	ClaudeStatus::$email
 property	ClaudeStatus::$expiresAt
 property	ClaudeStatus::$isLoggedIn
 property	ClaudeStatus::$isReadable
+property	ClaudeStatusData::$authMethod
+property	ClaudeStatusData::$configDirectory
+property	ClaudeStatusData::$email
+property	ClaudeStatusData::$loggedIn
+property	ClaudeStatusData::$loginExpiresAt
 property	CleanAccount::$accountId
 property	CleanAccount::$generation
 property	CleanAccount::$hostId
@@ -23638,6 +23809,9 @@ property	CodeReviewDecisions::$opening
 property	CodeReviewDecisions::$repairs
 property	CodeReviewDecisions::$router
 property	CodeReviewDecisions::$types
+property	CodexAccountData::$email
+property	CodexAccountData::$type
+property	CodexAccountReadData::$account
 property	CodexAdapter::$files
 property	CodexAdapter::$journalTools
 property	CodexAdapter::$parser
@@ -23646,6 +23820,15 @@ property	CodexFolderTrust::$folder
 property	CodexJournalServer::$command
 property	CodexJournalServer::$relay
 property	CodexKeySignIn::$codex
+property	CodexLoginCompletedData::$loginId
+property	CodexLoginCompletedData::$success
+property	CodexLoginStartData::$loginId
+property	CodexLoginStartData::$userCode
+property	CodexLoginStartData::$verificationUrl
+property	CodexMessageData::$id
+property	CodexMessageData::$method
+property	CodexMessageData::$params
+property	CodexMessageData::$result
 property	CodexProgram::$config
 property	CodexProgram::$egress
 property	CodexProgram::$files
@@ -23946,6 +24129,11 @@ property	ContinueStart::$sessionId
 property	ContinueStartHandler::$commands
 property	ContinueStartHandler::$policies
 property	ContractSnapshot::$catalogue
+property	ContractSnapshotData::$contractVersion
+property	ContractSnapshotData::$profiles
+property	ContractSnapshotData::$protocolVersions
+property	ContractSnapshotData::$refusalCodes
+property	ContractSnapshotData::$resources
 property	ConversationChoice::$isNewIdentity
 property	ConversationChoice::$mode
 property	ConversationChoice::$reason
@@ -24094,6 +24282,7 @@ property	DeclarationData::$removedClasses
 property	DeclarationData::$replaces
 property	DeclarationData::$revision
 property	DeclarationData::$spellings
+property	DeclarationFileText::$declarations
 property	DeclarationInvalid::$fields
 property	DeclarationRules::$entries
 property	DeclarationRules::$roots
@@ -24401,6 +24590,7 @@ property	DraftView::$savedAt
 property	DraftView::$title
 property	DraftView::$token
 property	DraftView::$version
+property	DrainReplyData::$drained
 property	DriverBudgets::$claimBatchMax
 property	DriverBudgets::$deliverMaxBytes
 property	DriverBudgets::$longPollMaxSeconds
@@ -25136,10 +25326,14 @@ property	HostCapacity::$memoryBytes
 property	HostCapacityLock::$databases
 property	HostContext::$call
 property	HostContext::$hostId
+property	HostRefusalData::$refusal
 property	HostSkillPublisher::$files
 property	HostSkillPublisher::$targets
 property	HostStartExecutor::$socket
-property	HostStartMaterial::$materials
+property	HostStartReplyData::$execution
+property	HostStartReplyData::$startedAt
+property	HostStopReplyData::$endedAt
+property	HostStopReplyData::$exitCode
 property	ImportHelperCommits::$certificate
 property	ImportHelperCommits::$work
 property	ImportHelperCommitsHandler::$import
@@ -25183,6 +25377,7 @@ property	InboxView::$inboxId
 property	InboxView::$label
 property	IncomingWorkList::$container
 property	IncomingWorkList::$workClasses
+property	InitializeResultData::$protocolVersion
 property	InspectDocumentCall::$number
 property	InspectMergeAttemptsHandler::$access
 property	InspectMergeAttemptsHandler::$events
@@ -25291,6 +25486,15 @@ property	JournalServer::$defaultPaginationLength
 property	JournalServer::$maxPaginationLength
 property	JournalToolCall::$reply
 property	JournalTools::$names
+property	JsonRpcIdData::$id
+property	JsonRpcMessageData::$id
+property	JsonRpcMessageData::$jsonrpc
+property	JsonRpcMessageData::$method
+property	JsonRpcMessageData::$params
+property	JsonRpcReplyData::$error
+property	JsonRpcReplyData::$id
+property	JsonRpcReplyData::$jsonrpc
+property	JsonRpcReplyData::$result
 property	JudgedCall::$input
 property	JudgedCall::$render
 property	KeptDigest::$digest
@@ -25471,8 +25675,12 @@ property	LocateCommentCall::$comment
 property	LocateCommentCall::$firstLine
 property	LocateCommentCall::$lastLine
 property	LocateCommentCall::$target
+property	LockFileData::$developmentPackages
+property	LockFileData::$packages
 property	LockedCall::$call
 property	LockedCall::$row
+property	LockedPackageData::$name
+property	LockedPackageData::$version
 property	LockingNumberAllocator::$outsideCommands
 property	LockingNumberAllocator::$transaction
 property	LockingNumberAllocator::$types
@@ -25786,6 +25994,7 @@ property	NamedCommand::$effects
 property	NamedCommand::$executable
 property	NamedCommand::$key
 property	NamedCommand::$timeoutSeconds
+property	NamedHookEvent::$hookEventName
 property	NamedTaskPool::$members
 property	NamedTaskPoolFactory::$tasks
 property	NamesUsedAnywhere::$roots
@@ -26061,6 +26270,9 @@ property	OutputFrame::$bytes
 property	OutputFrame::$offset
 property	OutputFrame::$stream
 property	OutputGrantSeal::$key
+property	OutputGrantSnapshot::$generation
+property	OutputGrantSnapshot::$paths
+property	OutputGrantSnapshot::$seal
 property	OutputGrants::$generation
 property	OutputGrants::$paths
 property	OutputMatches::$label
@@ -26140,6 +26352,7 @@ property	OwnerStartRequest::$policy
 property	OwnerStartRequest::$requestId
 property	OwnerStartRequest::$selection
 property	OwnerStartRequest::$work
+property	PackageFileData::$scripts
 property	Page::$actions
 property	Page::$afterId
 property	Page::$component
@@ -26263,6 +26476,7 @@ property	PendingMessagesOverview::$messages
 property	PendingNavigationWork::$mainDesk
 property	PendingSegment::$segment
 property	PendingSegment::$toParse
+property	PendingStartSecrets::$secrets
 property	PendingStopAttemptData::$attemptSeconds
 property	PendingStopAttemptData::$conditions
 property	PendingStopAttemptData::$id
@@ -26776,6 +26990,9 @@ property	ProgramMethodsData::$program
 property	ProgramReply::$exitCode
 property	ProgramReply::$stderr
 property	ProgramReply::$stdout
+property	ProgramReplyData::$exitCode
+property	ProgramReplyData::$stderr
+property	ProgramReplyData::$stdout
 property	ProgramSkillAdapters::$claudeCode
 property	ProgramSkillAdapters::$codex
 property	ProgramSpellings::$family
@@ -26794,9 +27011,13 @@ property	PromptDetails::$promptId
 property	PromptDetails::$text
 property	PromptSubmitted::$hook
 property	PromptSubmitted::$prompt
+property	ProofManifestData::$samples
 property	ProofSample::$exit
 property	ProofSample::$file
 property	ProofSample::$proves
+property	ProofSampleData::$exit
+property	ProofSampleData::$file
+property	ProofSampleData::$proves
 property	PropertyRules::$denormalizer
 property	ProposalChecks::$rules
 property	ProposalData::$author
@@ -27026,9 +27247,9 @@ property	PurposeChoice::$subject
 property	PurposeResolver::$visibility
 property	PushSequenceState::$runs
 property	PushSequenceState::$stacks
-property	PushState::$state
 property	PushTaskState::$tasks
 property	PushTaskState::$workStack
+property	PushTransition::$state
 property	QuestionRecord::$id
 property	QuestionRecord::$type
 property	RaiseNavigation::$attempt
@@ -27299,6 +27520,8 @@ property	RecordHostProtection::$hostId
 property	RecordHostProtection::$report
 property	RecordIdentity::$id
 property	RecordIdentity::$type
+property	RecordIdentityData::$id
+property	RecordIdentityData::$type
 property	RecordIds::$ids
 property	RecordIds::$nextAfterId
 property	RecordInspection::$attention
@@ -27449,6 +27672,9 @@ property	RefreshSkillsHandler::$targets
 property	Refusal::$code
 property	Refusal::$details
 property	Refusal::$message
+property	RefusalAnswerData::$code
+property	RefusalAnswerData::$details
+property	RefusalAnswerData::$message
 property	RefusalMapper::$exceptions
 property	RefusalReplayed::$storedCode
 property	RefusalReplayed::$storedDetails
@@ -27561,6 +27787,9 @@ property	RelaySettings::$profile
 property	RelaySettings::$startKey
 property	RelaySettings::$timeoutSeconds
 property	RelaySettings::$token
+property	RelayedToolCall::$cwd
+property	RelayedToolCall::$toolInput
+property	RelayedToolCall::$toolName
 property	ReleaseAccountRemoval::$accountId
 property	ReleaseAccountRemovalHandler::$commands
 property	ReleaseAccountRemovalHandler::$uses
@@ -28593,8 +28822,6 @@ property	SendMessageCall::$requestKey
 property	SendMessageCommand::$description
 property	SendMessageCommand::$signature
 property	SendMessageHandler::$sending
-property	SendSignedCalls::$client
-property	SendSignedCalls::$settings
 property	SequenceRun::$attributes
 property	SequenceStarted::$runId
 property	SequenceStarted::$target
@@ -28811,6 +29038,12 @@ property	ShareCursor::$path
 property	ShareCursor::$relation
 property	ShareCursor::$scopeVersion
 property	ShareCursor::$shareId
+property	ShareCursorData::$continuation
+property	ShareCursorData::$ordering
+property	ShareCursorData::$path
+property	ShareCursorData::$relation
+property	ShareCursorData::$scopeVersion
+property	ShareCursorData::$shareId
 property	ShareCursors::$key
 property	ShareDetailData::$audit
 property	ShareDetailData::$expiresAt
@@ -29102,6 +29335,8 @@ property	SignInVerification::$isSignedIn
 property	SignedCall::$bodyDigest
 property	SignedCall::$callId
 property	SignedCall::$issuedAt
+property	SignedCallSender::$client
+property	SignedCallSender::$settings
 property	SignedInScope::$actors
 property	SignedInScope::$visibility
 property	SignedSignInHost::$arrangement
@@ -29303,7 +29538,7 @@ property	StartAgentHandler::$capacityLock
 property	StartAgentHandler::$containers
 property	StartAgentHandler::$events
 property	StartAgentHandler::$images
-property	StartAgentHandler::$material
+property	StartAgentHandler::$pendingSecrets
 property	StartAgentHandler::$pendingStarts
 property	StartAgentHandler::$replyInboxes
 property	StartAgentHandler::$sessions
@@ -29346,9 +29581,6 @@ property	StartHelperCall::$requestKey
 property	StartHelperCall::$sourceSubjects
 property	StartHelperCall::$subject
 property	StartHelperHandler::$dispatch
-property	StartMaterial::$sessionId
-property	StartMaterial::$settings
-property	StartMaterial::$token
 property	StartOwnedAgent::$request
 property	StartOwnedAgentHandler::$commands
 property	StartOwnedAgentHandler::$sessions
@@ -29418,6 +29650,9 @@ property	StartSampleCall::$commandRequest
 property	StartSampleCall::$permit
 property	StartSampleCall::$requestKey
 property	StartSampleHandler::$evidence
+property	StartSecrets::$sessionId
+property	StartSecrets::$settings
+property	StartSecrets::$token
 property	StartSequence::$sequenceRunId
 property	StartSequence::$sessionId
 property	StartSequenceHandler::$events
@@ -29621,6 +29856,18 @@ property	StoredAccessPolicy::$destinations
 property	StoredAccessPolicy::$operationGrants
 property	StoredAccessPolicy::$paths
 property	StoredAccessPolicy::$processes
+property	StoredCommandRule::$arguments
+property	StoredCommandRule::$binding
+property	StoredCommandRule::$classes
+property	StoredCommandRule::$contracts
+property	StoredCommandRule::$id
+property	StoredCommandRule::$outputRequirement
+property	StoredCommandRule::$program
+property	StoredCommandRule::$purpose
+property	StoredCommandRule::$replaces
+property	StoredCommandRule::$revision
+property	StoredCommandRule::$scope
+property	StoredCommandRule::$subcommands
 property	StoredEmptyRunPolicy::$policy
 property	StoredEmptyRunPolicy::$summary
 property	StoredEnabledSettingsGroup::$group
@@ -29659,9 +29906,18 @@ property	StoredFrame::$subject
 property	StoredFrame::$typeKey
 property	StoredFrames::$frames
 property	StoredFrames::$version
+property	StoredGatewaySettings::$executableVersion
+property	StoredGatewaySettings::$gatewayKey
+property	StoredGatewaySettings::$listenerPort
+property	StoredGatewaySettings::$providerHost
+property	StoredGatewaySettings::$publicOrigin
+property	StoredGatewaySettings::$secretReferences
 property	StoredHostAccess::$access
 property	StoredHostAccess::$scope
 property	StoredHostAccess::$type
+property	StoredNavigationScreen::$generation
+property	StoredNavigationScreen::$highlight
+property	StoredNavigationScreen::$rows
 property	StoredOperationGrant::$operation
 property	StoredOperationGrant::$resources
 property	StoredOutput::$disks
@@ -29672,6 +29928,16 @@ property	StoredOutputContract::$framing
 property	StoredOutputContract::$schemaVersions
 property	StoredOutputContract::$streams
 property	StoredOutputContract::$summary
+property	StoredOutputProblem::$code
+property	StoredOutputProblem::$end
+property	StoredOutputProblem::$explanation
+property	StoredOutputProblem::$reader
+property	StoredOutputProblem::$start
+property	StoredOutputProblem::$stream
+property	StoredPolicyGrant::$grant
+property	StoredPoolData::$recordIds
+property	StoredPoolData::$target
+property	StoredPoolData::$type
 property	StoredProcessGrants::$allowed
 property	StoredProcessGrants::$allowedPatterns
 property	StoredProcessGrants::$ceiling
@@ -29680,14 +29946,33 @@ property	StoredProcessGrants::$deniedPatterns
 property	StoredProgressPolicy::$listing
 property	StoredProgressPolicy::$selectionFingerprint
 property	StoredProgressPolicy::$type
+property	StoredProvenBranch::$manifests
+property	StoredProvenBranch::$outcome
+property	StoredProvenBranch::$partRunId
+property	StoredProvenBranch::$processRunId
+property	StoredProvenBranch::$status
+property	StoredReaderApproval::$proofId
+property	StoredReaderApproval::$readerRevisionId
 property	StoredResource::$target
 property	StoredResource::$type
+property	StoredRuleExample::$classes
+property	StoredRuleExample::$line
+property	StoredRuleExample::$type
 property	StoredRuleReference::$id
 property	StoredRuleReference::$revision
 property	StoredRuleReference::$scope
 property	StoredRuleScope::$owner
 property	StoredRuleScope::$type
 property	StoredRuleScope::$version
+property	StoredScopedRead::$name
+property	StoredScopedRead::$target
+property	StoredScriptBinding::$digest
+property	StoredScriptBinding::$packageFile
+property	StoredScriptBinding::$script
+property	StoredSelectedTargetData::$id
+property	StoredSelectedTargetData::$linkId
+property	StoredSelectedTargetData::$publicationVersion
+property	StoredSelectedTargetData::$type
 property	StoredSettings::$codec
 property	StoredSettings::$document
 property	StoredSettings::$owner
@@ -29699,6 +29984,9 @@ property	StoredSettingsSnapshot::$stored
 property	StoredSkill::$condition
 property	StoredSkill::$key
 property	StoredSkill::$revision
+property	StoredSkillSection::$heading
+property	StoredSkillSection::$key
+property	StoredSkillSection::$markdown
 property	StoredSkillSource::$conditions
 property	StoredSkillWrites::$actors
 property	StoredSkillWrites::$conditions
@@ -29717,6 +30005,7 @@ property	StoredStopConditions::$attemptSeconds
 property	StoredStopConditions::$conditions
 property	StoredSubject::$id
 property	StoredSubject::$runNumber
+property	StoredSupervisorRoutes::$routes
 property	StoredValueCast::$valueClass
 property	StoredValuesCast::$valueClass
 property	StoredVerificationContract::$binding
@@ -29999,9 +30288,9 @@ property	TextVersion::$text
 property	TextVersionCommand::$description
 property	TextVersionCommand::$help
 property	TextVersionCommand::$signature
-property	TextVersionInfo::$id
-property	TextVersionInfo::$label
-property	TextVersionInfo::$lineCount
+property	TextVersionSummary::$id
+property	TextVersionSummary::$label
+property	TextVersionSummary::$lineCount
 property	TickBatch::$candidates
 property	TickCandidate::$enteredAt
 property	TickCandidate::$frameId
@@ -30108,6 +30397,9 @@ property	TunlerGateway::$starts
 property	TunlerGateway::$subdomain
 property	TunlerStatus::$host
 property	TunlerStatus::$isLoggedIn
+property	TunlerStatusData::$authOk
+property	TunlerStatusData::$host
+property	TunlerStatusData::$loggedIn
 property	TypeOwners::$owners
 property	TypedSecret::$name
 property	TypedSecret::$secretText
@@ -30741,7 +31033,6 @@ variable	$delivery
 variable	$denial
 variable	$denials
 variable	$denied
-variable	$deniedCommands
 variable	$deny
 variable	$dependency
 variable	$dependencyArea
@@ -31087,6 +31378,7 @@ variable	$isSignedOut
 variable	$isSingleton
 variable	$isSource
 variable	$isStaged
+variable	$isStatic
 variable	$isStoreRemoved
 variable	$isTextContinuation
 variable	$isTicking
@@ -31160,7 +31452,6 @@ variable	$loader
 variable	$lock
 variable	$locks
 variable	$login
-variable	$loginId
 variable	$logs
 variable	$longest
 variable	$looksSecret
@@ -31170,6 +31461,7 @@ variable	$lowLinks
 variable	$made
 variable	$main
 variable	$maintenance
+variable	$malformed
 variable	$manager
 variable	$manifest
 variable	$mapped
@@ -31817,6 +32109,7 @@ variable	$tables
 variable	$tail
 variable	$taken
 variable	$takenUp
+variable	$taker
 variable	$takesBoth
 variable	$takesEvent
 variable	$takesOver
@@ -31966,7 +32259,6 @@ variable	$word
 variable	$words
 variable	$work
 variable	$workClass
-variable	$workFolder
 variable	$workHolds
 variable	$workProviderClass
 variable	$worker

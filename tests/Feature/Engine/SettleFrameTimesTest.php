@@ -6,7 +6,7 @@ namespace Tests\Feature\Engine;
 
 use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Exceptions\EngineAccessRefused;

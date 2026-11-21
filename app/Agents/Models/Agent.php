@@ -9,8 +9,8 @@ use App\Actors\Contracts\MessageSender;
 use App\Actors\Contracts\SeatedActor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\RunningRuntime;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\RunningRuntime;
+use App\Agents\Values\StackTarget;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Links\Support\Linkable;
@@ -73,7 +73,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
         $matches = self::query()
             ->where('profile_key', $profile)
             ->whereNull('retired_at')
-            ->readLimit(2)
+            ->limit(2)
             ->get();
 
         if ($matches->count() !== 1) {
@@ -91,7 +91,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
      */
     public static function byIds(array $ids): array
     {
-        $agents = self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->get();
+        $agents = self::query()->whereKey($ids)->readExactly(max(1, count($ids)))->get();
 
         return $agents->keyBy('id')->all();
     }

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * A list of typed values in a JSON column, such as a proposal revision's examples: each written with toArray and
- * read with fromArray of the value class the cast names.
+ * read with listFromJson of the value class the cast names.
  *
  * @template TValue of StoredValue
  *
@@ -29,9 +29,7 @@ final class StoredValuesCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): array
     {
-        $rows = json_decode((string) $value, true, flags: JSON_THROW_ON_ERROR);
-
-        return array_values(array_map($this->valueClass::fromArray(...), $rows));
+        return $this->valueClass::listFromJson((string) $value);
     }
 
     /**

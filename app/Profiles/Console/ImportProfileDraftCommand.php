@@ -6,6 +6,7 @@ namespace App\Profiles\Console;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\ConsoleOwner;
+use App\Contracts\Attributes\DecodesAnyJson;
 use App\Files\Contracts\Files;
 use App\Files\Exceptions\FileMissing;
 use App\Files\Exceptions\FileUnreadable;
@@ -57,8 +58,11 @@ final class ImportProfileDraftCommand extends Command
     }
 
     /**
+     * The command definitions in the file the user names, sent on as written for the journal to check one by one.
+     *
      * @return array<string, mixed>
      */
+    #[DecodesAnyJson]
     private static function readCommands(Files $files, string $path): array
     {
         try {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Stored;
 
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Support\ExecutionPolicy;
+use App\Agents\Values\ExecutionPolicy;
 use Spatie\LaravelData\Data;
 
 /**

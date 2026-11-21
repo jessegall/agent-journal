@@ -42,7 +42,7 @@ final readonly class RecordRunEventsController
             $event->applyTo($events->at($event->sequence));
         }
 
-        foreach (PartRun::query()->endedUnassessedOf($processRun)->readLimit(100)->get() as $ended) {
+        foreach (PartRun::query()->endedUnassessedOf($processRun)->limit(100)->get() as $ended) {
             $commands->run(new AssessPartOutput($ended->id));
         }
 

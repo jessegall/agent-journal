@@ -189,7 +189,7 @@ final class ProfileRevision extends Model implements ReadableModel
                 'profile_revisions.script_source',
                 'profile_revisions.script_commands',
             ])
-            ->readLimit(count($keys))
+            ->readExactly(count($keys))
             ->get()
             ->mapWithKeys(fn (self $revision) => [
                 (string) $revision->getAttribute('profile_key') => $revision->scriptSource(),

@@ -6,7 +6,7 @@ namespace App\Engine\Support;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Assignments\Contracts\MaintenanceAdmission;
 use App\Engine\Contracts\EngineGrant;
 use App\Engine\Exceptions\EngineAccessRefused;

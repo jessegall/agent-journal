@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Inspection;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\StackInspectionQuery as StackInspectionQueryContract;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Values;
 
 use App\Files\Support\CodeFiles;
+use App\Processes\Data\LockFileData;
 use JsonException;
 
 /**
@@ -23,15 +24,12 @@ final readonly class ToolVersions
         $versions = [];
         $composer = self::lockOf("{$root}/composer.lock");
 
-        foreach ([...($composer['packages'] ?? []), ...($composer['packages-dev'] ?? [])] as $package) {
-            $versions["composer.lock: {$package['name']}"] = ltrim((string) $package['version'], 'v');
+        foreach ([...$composer->packages, ...$composer->developmentPackages] as $package) {
+            $versions["composer.lock: {$package->name}"] = ltrim($package->version, 'v');
         }
 
-        $npm = self::lockOf("{$root}/package-lock.json");
-
-        foreach ($npm['packages'] ?? [] as $path => $package) {
-            $name = substr((string) $path, strlen('node_modules/'));
-            $versions["package-lock.json: {$name}"] = (string) ($package['version'] ?? '');
+        foreach (self::lockOf("{$root}/package-lock.json")->packages as $path => $package) {
+            $versions['package-lock.json: '.substr((string) $path, strlen('node_modules/'))] = $package->version;
         }
 
         return new self($versions);
@@ -40,15 +38,14 @@ final readonly class ToolVersions
     /**
      * A lock file of the project, decoded; a missing or broken one is refused by name.
      *
-     * @return array<array-key, mixed>
-     *
      * @throws JsonException when the lock file is not JSON
      */
-    private static function lockOf(string $path): array
+    private static function lockOf(string $path): LockFileData
     {
         $code = CodeFiles::ofProcess();
+        $text = $code->file($code->projectPathOf($path));
 
-        return (array) json_decode($code->file($code->projectPathOf($path)), true, 512, JSON_THROW_ON_ERROR);
+        return LockFileData::from(json_decode($text, true, 512, JSON_THROW_ON_ERROR));
     }
 
     /**

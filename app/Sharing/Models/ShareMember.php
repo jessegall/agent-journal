@@ -138,7 +138,7 @@ final class ShareMember extends Model implements ReadableModel
      */
     public static function isApprovedInLiveShare(RecordIdentity $record): bool
     {
-        $members = self::query()->targeting($record)->stillApproved()->readLimit(Share::LIVE_LIMIT)->get(
+        $members = self::query()->targeting($record)->stillApproved()->limit(Share::LIVE_LIMIT)->get(
             ['share_id', 'scope_version'],
         );
         $scopeOfShare = Share::liveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
@@ -157,7 +157,7 @@ final class ShareMember extends Model implements ReadableModel
             ->stillApproved()
             ->fromSource($source)
             ->targeting($target)
-            ->readLimit(1)
+            ->limit(1)
             ->pluck('link_id')
             ->all();
 

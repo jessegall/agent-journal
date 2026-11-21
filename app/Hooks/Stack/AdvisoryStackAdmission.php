@@ -6,7 +6,7 @@ namespace App\Hooks\Stack;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\WorkStacks;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Profiles;
 
-use App\Agents\Support\AccountUse;
+use App\Agents\Values\AccountUse;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

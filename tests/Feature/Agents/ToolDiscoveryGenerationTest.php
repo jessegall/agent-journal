@@ -10,7 +10,7 @@ use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Models\AgentRuntime;
-use App\Agents\Support\RuntimeIntent;
+use App\Agents\Values\RuntimeIntent;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;

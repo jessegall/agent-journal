@@ -51,7 +51,7 @@ final readonly class PhaseTiming implements VerificationTiming
                 new Page($afterId, Page::LARGEST_LIMIT),
             );
             $started = Plan::query()->amongIds($page->ids)->inStates([PlanState::Started])
-                ->orderBy('id')->readLimit(count($page->ids))->get();
+                ->orderBy('id')->readExactly(count($page->ids))->get();
 
             foreach ($started as $plan) {
                 $verdict = $this->verdictOf($plan);
@@ -75,7 +75,7 @@ final readonly class PhaseTiming implements VerificationTiming
         $afterNumber = 0;
 
         do {
-            $phases = $plan->phases()->where('number', '>', $afterNumber)->readLimit(self::PHASE_BATCH_SIZE)->get();
+            $phases = $plan->phases()->where('number', '>', $afterNumber)->limit(self::PHASE_BATCH_SIZE)->get();
             $taskIdsByPhase = PhaseTask::taskIdsByPhase(array_values(array_map(strval(...), $phases->modelKeys())));
             $progressByPhase = $this->taskCounts->progressByGroup($taskIdsByPhase);
 

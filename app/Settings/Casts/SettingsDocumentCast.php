@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Casts;
 
+use App\Contracts\Attributes\DecodesAnyJson;
 use App\Settings\Exceptions\SettingsDocumentInvalid;
 use App\Settings\Storage\EncodedSetting;
 use App\Settings\Storage\EncodedToggle;
@@ -24,10 +25,13 @@ use stdClass;
 final class SettingsDocumentCast implements CastsAttributes
 {
     /**
+     * Its entry values are any JSON type, kept as stored, so the envelope is checked key by key, not by a Data class.
+     *
      * @param  array<string, mixed>  $attributes
      *
      * @throws SettingsDocumentInvalid
      */
+    #[DecodesAnyJson]
     public function get(Model $model, string $key, mixed $value, array $attributes): SettingsDocument
     {
         $owner = (string) $attributes['owner'];

@@ -16,7 +16,7 @@ final readonly class ListPhaseChecksController
     public function __invoke(ListPhaseChecksCall $call): PhaseChecks
     {
         $phase = $call->phaseOfPlan();
-        $checks = PhaseCheck::query()->ofPhase($phase)->readLimit(100)->get();
+        $checks = PhaseCheck::query()->ofPhase($phase)->limit(100)->get();
 
         return PhaseChecks::from([
             'phase' => $phase->number,

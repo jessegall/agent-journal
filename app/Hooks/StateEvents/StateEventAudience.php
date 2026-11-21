@@ -7,7 +7,7 @@ namespace App\Hooks\StateEvents;
 use App\Actors\Contracts\AuthoritySource;
 use App\Actors\Support\ActorContext;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Values\FrameGrant;
 use PhpOption\Option;
 

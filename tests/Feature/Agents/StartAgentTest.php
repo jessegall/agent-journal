@@ -18,10 +18,10 @@ use App\Agents\Exceptions\StartRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\StartRecord;
-use App\Agents\Resolvers\Support\HostStartMaterial;
-use App\Agents\Support\StartPolicy;
+use App\Agents\Resolvers\Support\PendingStartSecrets;
 use App\Agents\Support\StartReceipt;
-use App\Agents\Support\StartRequest;
+use App\Agents\Values\StartPolicy;
+use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
@@ -107,11 +107,11 @@ final class StartAgentTest extends TestCase
         $request = $this->request();
 
         $receipt = $this->start($request);
-        $material = $this->app->make(HostStartMaterial::class)->material($request->requestId);
+        $secrets = $this->app->make(PendingStartSecrets::class)->secrets($request->requestId);
 
-        $this->assertSame($receipt->sessionId, $material->sessionId);
-        $this->assertStringNotContainsString($material->token, serialize($receipt));
-        $this->assertStringNotContainsString($material->token, json_encode($receipt, JSON_THROW_ON_ERROR));
+        $this->assertSame($receipt->sessionId, $secrets->sessionId);
+        $this->assertStringNotContainsString($secrets->token, serialize($receipt));
+        $this->assertStringNotContainsString($secrets->token, json_encode($receipt, JSON_THROW_ON_ERROR));
         Event::assertDispatched(
             StartAccepted::class,
             fn (StartAccepted $accepted): bool => $accepted->sessionId === $receipt->sessionId,

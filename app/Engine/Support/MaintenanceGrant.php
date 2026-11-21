@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Engine\Support;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Engine\Contracts\EngineGrant;
 
 /**

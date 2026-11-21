@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Engine;
 
 use App\Actors\Support\ActorContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;

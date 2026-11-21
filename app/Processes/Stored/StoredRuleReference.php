@@ -9,6 +9,8 @@ use Spatie\LaravelData\Data;
 
 /**
  * One exact rule revision of one owner, as a stored project replacement names it.
+ *
+ * @method static array<int, static> collect(mixed $items) read only from decoded JSON, so always an array
  */
 final class StoredRuleReference extends Data
 {

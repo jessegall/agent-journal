@@ -7,7 +7,7 @@ namespace App\Hooks\Models;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\AgentSession;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Exceptions\StackMissing;
@@ -199,7 +199,7 @@ final class AgentStackRow extends Model implements ReadableModel
 
         return array_values(self::query()->historyOf($actor)->whereIn('session_id', $sessions)
             ->where('status', StackStatus::Active->value)
-            ->orderBy('session_id')->lockForUpdate()->readLimit(count($sessions))->get()->all());
+            ->orderBy('session_id')->lockForUpdate()->readExactly(count($sessions))->get()->all());
     }
 
     // ----------[ Mutations ]----------

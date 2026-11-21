@@ -7,6 +7,7 @@ namespace App\Processes\Values;
 use App\Processes\Contracts\StoredValue;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\ProblemCode;
+use App\Processes\Stored\StoredOutputProblem;
 
 /**
  * Why a reader could not vouch for part of a check's output: the stable code, the stream and byte range, the reader
@@ -56,9 +57,19 @@ final readonly class OutputProblem implements StoredValue
      */
     public static function fromArray(array $fields): self
     {
-        $stream = $fields['stream'] === null ? null : OutputStream::from($fields['stream']);
-        $code = ProblemCode::from($fields['code']);
+        return StoredOutputProblem::from($fields)->problem();
+    }
 
-        return new self($code, $stream, $fields['start'], $fields['end'], $fields['reader'], $fields['explanation']);
+    public static function fromJson(string $json): self
+    {
+        return StoredOutputProblem::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->problem();
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            fn (StoredOutputProblem $stored) => $stored->problem(),
+            StoredOutputProblem::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
     }
 }

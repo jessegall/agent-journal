@@ -12,7 +12,7 @@ use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\StartRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StartReceipt;
-use App\Agents\Support\StartRequest;
+use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
 use Symfony\Component\Uid\Ulid;

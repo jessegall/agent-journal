@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Agents\Contracts\ExpiresNavigation;
+use App\Agents\Contracts\NavigationExpiry as NavigationExpiryContract;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\NavigationState;
 use App\Agents\Enums\RequestOutcome;
@@ -15,7 +15,7 @@ use Carbon\CarbonImmutable;
  * Expires the navigation requests nobody answered in time, at most a bounded batch per sweep: each ends its key
  * script request entry_unavailable and releases its runtime.
  */
-final readonly class NavigationExpiry implements ExpiresNavigation
+final readonly class NavigationExpiry implements NavigationExpiryContract
 {
     /**
      * The most requests one sweep expires; the rest wait for the next pass.
@@ -30,7 +30,7 @@ final readonly class NavigationExpiry implements ExpiresNavigation
             ->expiredBefore(CarbonImmutable::now())
             ->with(['driverRequest', 'runtime'])
             ->lockForUpdate()
-            ->readLimit(self::SWEEP_LIMIT)
+            ->limit(self::SWEEP_LIMIT)
             ->get();
 
         foreach ($due as $navigation) {

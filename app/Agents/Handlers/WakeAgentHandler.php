@@ -6,7 +6,7 @@ namespace App\Agents\Handlers;
 
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Support\AgentWakes;
-use App\Agents\Support\DriverReceipt;
+use App\Agents\Values\DriverReceipt;
 use App\Contracts\CommandHandler;
 
 final readonly class WakeAgentHandler implements CommandHandler

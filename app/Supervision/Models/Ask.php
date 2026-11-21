@@ -154,7 +154,7 @@ final class Ask extends Model implements Assignable, ReadableModel
             return [];
         }
 
-        $asks = self::query()->acrossActors()->whereKey($ids)->where('open', true)->readLimit(count($ids))->get();
+        $asks = self::query()->acrossActors()->whereKey($ids)->where('open', true)->readExactly(count($ids))->get();
 
         return $asks->keyBy('id')->all();
     }

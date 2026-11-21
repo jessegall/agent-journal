@@ -42,7 +42,7 @@ final readonly class DriverHeartbeatSource
 
     private function requireCurrent(AgentSession $session, string $hostId, int $processGeneration): void
     {
-        $runtime = AgentRuntime::query()->where('agent_session_id', $session->id)->readLimit(1)->first();
+        $runtime = AgentRuntime::query()->where('agent_session_id', $session->id)->limit(1)->first();
 
         if ($runtime === null || $runtime->host_id !== $hostId) {
             throw HostReportRefused::notOwned($runtime->id ?? $session->id);

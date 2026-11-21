@@ -23,12 +23,4 @@ final readonly class ScopedRead
     {
         return ['name' => $this->name, 'target' => $this->target];
     }
-
-    /**
-     * @param  array{name: string, target: string|null}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self($fields['name'], $fields['target']);
-    }
 }

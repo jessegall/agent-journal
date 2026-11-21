@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Resolvers;
 
 use App\Agents\Contracts\ActiveAccountReader;
-use App\Agents\Support\SelectedAccount;
+use App\Agents\Values\SelectedAccount;
 use App\Profiles\Models\ActiveAccount;
 use App\Programs\Enums\HookProgram;
 

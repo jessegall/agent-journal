@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\StackTarget;
+
 /**
  * A running agent session someone may talk to: the session, its agent's display name and the stack it targets, the
  * program and model it was started with, the actual model (not reported by current adapters), and the native

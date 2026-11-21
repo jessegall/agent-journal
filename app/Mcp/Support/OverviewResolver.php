@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Decisions\StateReference;
 use App\Mcp\Data\ToolResult;

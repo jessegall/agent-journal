@@ -98,7 +98,7 @@ final class CleanupOperation extends Model implements ReadableModel
             ->where('host_id', $hostId)
             ->where('state', CleanupState::Pending)
             ->orderBy('created_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get();
 
         return array_values($pending->all());

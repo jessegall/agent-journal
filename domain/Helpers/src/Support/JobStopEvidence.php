@@ -31,7 +31,7 @@ final class JobStopEvidence
             ->open()
             ->whereKey($work->id)
             ->lock('for update')
-            ->readLimit(1)
+            ->limit(1)
             ->get()
             ->all());
     }

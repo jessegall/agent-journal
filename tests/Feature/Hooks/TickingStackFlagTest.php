@@ -10,8 +10,8 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
 use App\Agents\Support\StartedAgent;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\EngineStacks;
 use App\Hooks\Decisions\StateReference;
@@ -97,7 +97,7 @@ final class TickingStackFlagTest extends TestCase
 
         $this->assertSame(
             [$ticking->session->id],
-            AgentStackRow::query()->tickingOpen()->readLimit(10)->pluck('session_id')->all(),
+            AgentStackRow::query()->tickingOpen()->limit(10)->pluck('session_id')->all(),
         );
     }
 

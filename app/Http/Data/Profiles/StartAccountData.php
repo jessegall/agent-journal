@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Data\Profiles;
 
 use App\Agents\Enums\AccountProcessRole;
-use App\Agents\Support\AccountUse;
+use App\Agents\Values\AccountUse;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Models\Account;
 use Spatie\LaravelData\Data;

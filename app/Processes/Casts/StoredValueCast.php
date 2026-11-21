@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * One typed value in a JSON column, such as a proposal revision's CommandRule: written with toArray, read with
- * fromArray of the value class the cast names.
+ * fromJson of the value class the cast names.
  *
  * @template TValue of StoredValue
  *
@@ -29,7 +29,7 @@ final class StoredValueCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): StoredValue
     {
-        return $this->valueClass::fromArray(json_decode((string) $value, true, flags: JSON_THROW_ON_ERROR));
+        return $this->valueClass::fromJson((string) $value);
     }
 
     /**

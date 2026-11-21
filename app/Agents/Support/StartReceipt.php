@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\ConversationModeType;
+use App\Agents\Values\SelectedProgram;
 
 /**
  * What a start tells its caller: the request, the session and agent, the selection, whether the session is new,

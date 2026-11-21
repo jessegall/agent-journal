@@ -85,7 +85,7 @@ final class SignedCallRulesTest extends TestCase
 
     public function test_no_code_writes_an_agent_path_outside_the_routes_and_the_sender(): void
     {
-        $allowed = ['/Routes/', 'AgentRequests/Support/SendSignedCalls.php', 'Mcp/Servers/JournalServer.php'];
+        $allowed = ['/Routes/', 'AgentRequests/Support/SignedCallSender.php', 'Mcp/Servers/JournalServer.php'];
         $found = [];
 
         foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {

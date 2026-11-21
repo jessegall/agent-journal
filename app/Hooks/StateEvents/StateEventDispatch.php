@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\StateEvents;
 
 use App\Agents\Exceptions\StackTargetRefused;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Contracts\Event;
 use Illuminate\Support\Str;
 use PhpOption\Option;

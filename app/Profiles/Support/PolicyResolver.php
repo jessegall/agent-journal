@@ -6,9 +6,9 @@ namespace App\Profiles\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Support\ExecutionBudgets;
-use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Values\AccessPolicy;
+use App\Agents\Values\ExecutionBudgets;
+use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\HostAccess;
 use App\Agents\Values\OperationGrant;
 use App\Agents\Values\StopCondition;

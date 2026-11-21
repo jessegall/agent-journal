@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
-use App\Agents\Support\ModelSelection;
+use App\Agents\Values\ModelSelection;
 use App\Profiles\Commands\StartProfileMain;
 use App\Profiles\Values\ProfileKey;
 use Illuminate\Foundation\Http\FormRequest;

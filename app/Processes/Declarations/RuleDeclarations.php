@@ -25,6 +25,8 @@ use App\Processes\Values\DeclaredProposal;
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Validation\Rule;
 use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * Reads the text of a declaration file into typed proposals at the boundary (doc 21 revision 6, section 51): every
@@ -45,12 +47,14 @@ final readonly class RuleDeclarations
     public function read(string $text): array
     {
         try {
-            $file = json_decode($text, true, flags: JSON_THROW_ON_ERROR);
+            $file = DeclarationFileText::from(json_decode($text, true, flags: JSON_THROW_ON_ERROR));
         } catch (JsonException $broken) {
             throw DeclarationInvalid::notJson($broken);
+        } catch (CannotCreateData|TypeError) {
+            return $this->readFile([]);
         }
 
-        return $this->readFile(is_array($file) ? $file : []);
+        return $this->readFile(['declarations' => $file->declarations]);
     }
 
     /**

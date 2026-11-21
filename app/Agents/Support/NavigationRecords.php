@@ -38,7 +38,7 @@ final readonly class NavigationRecords implements NavigationReader
         $menuEntries = $this->menuQuery($owner, $program, $state)
             ->recentFirst()
             ->offset(($page - 1) * self::MENU_PAGE_SIZE)
-            ->readLimit(self::MENU_PAGE_SIZE)
+            ->limit(self::MENU_PAGE_SIZE)
             ->get();
 
         return $menuEntries->mapWithKeys(fn (MenuEntry $entry) => [$entry->id => [
@@ -99,7 +99,7 @@ final readonly class NavigationRecords implements NavigationReader
         $rounds = $roundQuery
             ->orderBy('sequence')
             ->offset($firstRound - 1)
-            ->readLimit(self::ROUND_LIMIT)
+            ->readExactly(self::ROUND_LIMIT)
             ->get();
         $nextRound = $firstRound + $rounds->count();
         $screen = $navigation->screen;

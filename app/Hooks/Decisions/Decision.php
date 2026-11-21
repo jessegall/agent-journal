@@ -90,7 +90,7 @@ final readonly class Decision
             throw ConflictingStackTransition::forTransition($this->transition->type()->value);
         }
 
-        return new self($this->answer, new PushState($state), $this->context, $this->messages);
+        return new self($this->answer, new PushTransition($state), $this->context, $this->messages);
     }
 
     public function isDelegating(): bool

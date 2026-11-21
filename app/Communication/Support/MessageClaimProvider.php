@@ -26,7 +26,7 @@ final readonly class MessageClaimProvider implements AssignableProvider
     {
         $found = Message::query()
             ->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))
-            ->readLimit(count($records))
+            ->readExactly(count($records))
             ->pluck('id')
             ->all();
 

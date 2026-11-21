@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Contracts\StartExecutor;
+use App\Agents\Data\HostRefusalData;
+use App\Agents\Data\HostStartReplyData;
+use App\Agents\Data\HostStopReplyData;
 use App\Agents\Exceptions\HostStartRefused;
 use Carbon\CarbonImmutable;
 use PhpOption\Option;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * Starts and stops prepared starts through the protected host on this machine: one JSON line to its local socket,
@@ -21,7 +26,7 @@ final readonly class HostStartExecutor implements StartExecutor
 
     public function start(PreparedStart $start): ExecutionReceipt
     {
-        $reply = $this->exchange(['start' => [
+        $line = $this->exchange(['start' => [
             'startId' => $start->startId,
             'runtimeId' => $start->runtimeId,
             'sessionId' => $start->sessionId,
@@ -31,33 +36,36 @@ final readonly class HostStartExecutor implements StartExecutor
             'workspace' => $start->workspace,
             'accountReference' => $start->accountReference,
         ]]);
+        $reply = HostStartReplyData::from(json_decode($line, true, flags: JSON_THROW_ON_ERROR));
 
         return new ExecutionReceipt(
             $start->startId,
-            new ExecutionReference((string) $reply['execution']),
+            new ExecutionReference($reply->execution),
             $start->executionMode,
-            CarbonImmutable::parse((string) $reply['startedAt']),
+            CarbonImmutable::parse($reply->startedAt),
         );
     }
 
     public function stop(ExecutionReference $execution): ExitReceipt
     {
-        $reply = $this->exchange(['stop' => ['execution' => $execution->id]]);
+        $line = $this->exchange(['stop' => ['execution' => $execution->id]]);
+        $reply = HostStopReplyData::from(json_decode($line, true, flags: JSON_THROW_ON_ERROR));
 
         return new ExitReceipt(
             $execution,
-            Option::fromValue($reply['exitCode']),
-            CarbonImmutable::parse((string) $reply['endedAt']),
+            Option::fromValue($reply->exitCode),
+            CarbonImmutable::parse($reply->endedAt),
         );
     }
 
     /**
+     * The host's reply line, refused when the host refuses.
+     *
      * @param  array<string, array<string, string>>  $request
-     * @return array<string, mixed>
      *
      * @throws HostStartRefused
      */
-    private function exchange(array $request): array
+    private function exchange(array $request): string
     {
         $connection = @stream_socket_client('unix://'.$this->socket, timeout: self::REPLY_SECONDS);
 
@@ -74,15 +82,12 @@ final readonly class HostStartExecutor implements StartExecutor
             throw HostStartRefused::unreachable($this->socket);
         }
 
-        /**
-         * @var array<string, mixed> $reply
-         */
-        $reply = json_decode($line, true, flags: JSON_THROW_ON_ERROR);
-
-        if (isset($reply['refusal'])) {
-            throw HostStartRefused::because((string) $reply['refusal']);
+        try {
+            $refusal = HostRefusalData::from(json_decode($line, true, flags: JSON_THROW_ON_ERROR));
+        } catch (CannotCreateData|TypeError) {
+            return $line;
         }
 
-        return $reply;
+        throw HostStartRefused::because($refusal->refusal);
     }
 }

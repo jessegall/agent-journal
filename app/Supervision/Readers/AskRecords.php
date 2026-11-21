@@ -40,7 +40,7 @@ final readonly class AskRecords implements AskReader
             $query->where('id', '<', $before->id);
         }
 
-        $asks = $query->readLimit(self::PAGE_SIZE + 1)->get();
+        $asks = $query->limit(self::PAGE_SIZE + 1)->get();
         $page = $asks->take(self::PAGE_SIZE);
 
         return AskInbox::from([

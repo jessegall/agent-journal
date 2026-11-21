@@ -5,9 +5,16 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Profiles\Contracts\SignInProtocol;
+use App\Profiles\Data\CodexAccountReadData;
+use App\Profiles\Data\CodexLoginCompletedData;
+use App\Profiles\Data\CodexLoginStartData;
+use App\Profiles\Data\CodexMessageData;
 use App\Profiles\Values\SignInChallenge;
 use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInVerification;
+use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * Codex's own sign-in on the host, into one private account folder: the folder as CODEX_HOME with its sign-in kept
@@ -71,19 +78,18 @@ final readonly class CodexSignIn implements SignInProtocol
     {
         $completion = self::completionIn($process->output());
 
-        if (($completion['params']['success'] ?? null) !== true) {
+        if ($completion === null || ! $completion->success) {
             return new SignInVerification(false, SignInIdentity::unproved());
         }
 
         $process->send(self::message(['method' => 'account/read', 'id' => self::ACCOUNT_REQUEST, 'params' => []]));
         $process->waitFor(fn (string $output) => self::answerIn($output, self::ACCOUNT_REQUEST) !== null);
-        $account = self::answerIn($process->output(), self::ACCOUNT_REQUEST)['result']['account'] ?? null;
+        $account = self::accountIn($process->output());
         $status = $this->verify($directory);
-        $isSignedIn = is_array($account) && ($account['type'] ?? null) === 'chatgpt'
-            && $status->isCertain && $status->isSignedIn;
-        $email = is_array($account) && is_string($account['email'] ?? null) ? $account['email'] : null;
+        $isSignedIn = $account->isChatGpt() && $status->isCertain && $status->isSignedIn;
+        $email = $isSignedIn ? $account->account?->email : null;
 
-        return new SignInVerification($isSignedIn, SignInIdentity::shown($isSignedIn ? $email : null));
+        return new SignInVerification($isSignedIn, SignInIdentity::shown($email));
     }
 
     public function verify(string $directory): SignInVerification
@@ -104,48 +110,72 @@ final readonly class CodexSignIn implements SignInProtocol
      */
     public function deviceCodeFrom(PrivateAccountProcess $process): array|null
     {
-        $answer = self::answerIn($process->output(), self::LOGIN_REQUEST);
-        $challengeFields = is_array($answer['result'] ?? null) ? $answer['result'] : [];
+        $start = self::loginStartIn($process->output());
 
-        if (! is_string($challengeFields['verificationUrl'] ?? null)
-            || ! is_string($challengeFields['userCode'] ?? null)
-        ) {
-            return null;
-        }
-
-        return ['address' => $challengeFields['verificationUrl'], 'code' => $challengeFields['userCode']];
+        return $start === null ? null : ['address' => $start->verificationUrl, 'code' => $start->userCode];
     }
 
     /**
      * The completion the program announced for the login it started, read from every line it printed.
-     *
-     * @return array<string, mixed>|null
      */
-    private static function completionIn(string $output): array|null
+    private static function completionIn(string $output): CodexLoginCompletedData|null
     {
-        $loginId = self::answerIn($output, self::LOGIN_REQUEST)['result']['loginId'] ?? null;
+        $start = self::loginStartIn($output);
+
+        if ($start === null) {
+            return null;
+        }
 
         foreach (self::messagesIn($output) as $message) {
-            if (($message['method'] ?? null) === 'account/login/completed'
-                && is_string($loginId)
-                && ($message['params']['loginId'] ?? null) === $loginId
-            ) {
-                return $message;
+            if ($message->method !== 'account/login/completed') {
+                continue;
+            }
+
+            $completion = CodexLoginCompletedData::from($message->params);
+
+            if ($completion->loginId === $start->loginId) {
+                return $completion;
             }
         }
 
         return null;
+    }
+
+    /**
+     * The program's answer to the login start, none until it answered with a device code.
+     */
+    private static function loginStartIn(string $output): CodexLoginStartData|null
+    {
+        $answer = self::answerIn($output, self::LOGIN_REQUEST);
+
+        try {
+            return $answer === null ? null : CodexLoginStartData::from($answer->result);
+        } catch (CannotCreateData|TypeError) {
+            return null;
+        }
+    }
+
+    /**
+     * The account the program's account/read answered with; signed out when it answered none it could name.
+     */
+    private static function accountIn(string $output): CodexAccountReadData
+    {
+        $answer = self::answerIn($output, self::ACCOUNT_REQUEST);
+
+        try {
+            return CodexAccountReadData::from($answer === null ? [] : $answer->result);
+        } catch (CannotCreateData|TypeError) {
+            return new CodexAccountReadData();
+        }
     }
 
     /**
      * The program's answer to one of the journal's requests, by its id.
-     *
-     * @return array<string, mixed>|null
      */
-    private static function answerIn(string $output, int $requestId): array|null
+    private static function answerIn(string $output, int $requestId): CodexMessageData|null
     {
         foreach (self::messagesIn($output) as $message) {
-            if (($message['id'] ?? null) === $requestId && ! isset($message['method'])) {
+            if ($message->answers($requestId)) {
                 return $message;
             }
         }
@@ -154,13 +184,23 @@ final readonly class CodexSignIn implements SignInProtocol
     }
 
     /**
-     * @return list<array<string, mixed>>
+     * Each line the program printed that reads as one of its messages; any other line is left out.
+     *
+     * @return list<CodexMessageData>
      */
     private static function messagesIn(string $output): array
     {
-        $messages = array_map(fn (string $line) => json_decode($line, true), explode("\n", $output));
+        $messages = [];
 
-        return array_values(array_filter($messages, is_array(...)));
+        foreach (explode("\n", $output) as $line) {
+            try {
+                $messages[] = CodexMessageData::from(json_decode($line, true, 512, JSON_THROW_ON_ERROR));
+            } catch (JsonException|CannotCreateData|TypeError) {
+                continue;
+            }
+        }
+
+        return $messages;
     }
 
     /**

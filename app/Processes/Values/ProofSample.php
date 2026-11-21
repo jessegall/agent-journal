@@ -13,14 +13,6 @@ final readonly class ProofSample
     public function __construct(public string $file, public int $exit, public string $proves) {}
 
     /**
-     * @param  array{file: string, exit: int, proves: string}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self($fields['file'], $fields['exit'], $fields['proves']);
-    }
-
-    /**
      * Whether the sample proves a clean or a findings run, the branches a reader is proven on.
      */
     public function provesABranch(): bool

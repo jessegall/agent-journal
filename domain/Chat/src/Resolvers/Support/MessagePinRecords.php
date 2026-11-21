@@ -31,7 +31,7 @@ final readonly class MessagePinRecords
             ->ownedBy(ActorIdentity::of($this->actors->actor()))
             ->orderByDesc('pinned_at')
             ->orderByDesc('id')
-            ->readLimit(max(1, min($limit, MessagePin::LARGEST_LIMIT)))
+            ->readExactly(max(1, min($limit, MessagePin::LARGEST_LIMIT)))
             ->get();
         $views = [];
 

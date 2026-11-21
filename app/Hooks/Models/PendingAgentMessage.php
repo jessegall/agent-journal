@@ -83,7 +83,7 @@ final class PendingAgentMessage extends Model implements ReadableModel
             ->orderBy('created_at')
             ->orderBy('id')
             ->lockForUpdate()
-            ->readLimit(self::DELIVERY_LIMIT)
+            ->limit(self::DELIVERY_LIMIT)
             ->get();
         self::query()->ownedBy($agent)->whereKey($messages->modelKeys())->delete();
 

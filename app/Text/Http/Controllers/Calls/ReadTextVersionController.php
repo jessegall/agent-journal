@@ -8,14 +8,14 @@ use App\Numbers\Support\RecordReference;
 use App\Records\Contracts\RecordResolver;
 use App\Text\Calls\ReadTextVersionCall;
 use App\Text\Contracts\TextResolver;
-use App\Text\Data\TextVersionInfo;
+use App\Text\Data\TextVersionSummary;
 
 /**
  * Answers a record's text version.
  */
 final readonly class ReadTextVersionController
 {
-    public function __invoke(ReadTextVersionCall $call, TextResolver $text, RecordResolver $records): TextVersionInfo
+    public function __invoke(ReadTextVersionCall $call, TextResolver $text, RecordResolver $records): TextVersionSummary
     {
         return $text->version($records->identify(RecordReference::parse($call->target)), $call->version);
     }

@@ -49,7 +49,7 @@ final readonly class StartHeartbeats implements StartHeartbeatsContract
             AgentRuntime::query()
                 ->where('agent_session_id', $session->id)
                 ->lockForUpdate()
-                ->readLimit(1)
+                ->limit(1)
                 ->get()
                 ->each(fn (AgentRuntime $runtime) => $runtime->closeAfterExit());
 

@@ -7,7 +7,7 @@ namespace Tests\Support;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Inputs\HookIdentity;
 use App\Records\Support\RecordIdentity;
 use Domain\Access\Support\AccessSettings;

@@ -147,7 +147,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
         }
 
         $ids = array_map(fn (RecordIdentity $record) => $record->id, $records);
-        $found = $this->asks->visible()->whereKey($ids)->readLimit(count($ids))->pluck('id')->all();
+        $found = $this->asks->visible()->whereKey($ids)->readExactly(count($ids))->pluck('id')->all();
 
         return RecordIdentity::among($records, $found);
     }

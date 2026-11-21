@@ -44,10 +44,10 @@ use App\Assignments\Storage\DatabaseAssignmentQuery;
 use App\Assignments\Storage\DatabaseAssignmentTransaction;
 use App\Assignments\Storage\DatabaseAutoAssignments;
 use App\Assignments\Support\AssignmentFacts;
-use App\Assignments\Support\DenyAllAutoAssignmentAccess;
+use App\Assignments\Support\AssignmentRoom;
+use App\Assignments\Support\ClosedAutoAssignmentAccess;
 use App\Assignments\Support\OrderedAssigneeLocks;
 use App\Assignments\Support\ProvedClaimRelease;
-use App\Assignments\Support\SizeAssignmentRoom;
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
@@ -64,7 +64,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(AssignmentRegistry::class);
-        $this->app->bindIf(AutoAssignmentAccess::class, DenyAllAutoAssignmentAccess::class);
+        $this->app->bindIf(AutoAssignmentAccess::class, ClosedAutoAssignmentAccess::class);
         $this->app->bind(AssignmentRegistration::class, AssignmentRegistry::class);
         $this->app->bind(AssignmentProviders::class, AssignmentRegistry::class);
         $this->app->bind(AssignmentTransaction::class, DatabaseAssignmentTransaction::class);
@@ -85,7 +85,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(AutoAssignmentResolver::class, DatabaseAutoAssignments::class);
         $this->app->scoped(AutoAssignmentTrigger::class, AssignmentTurns::class);
         $this->app->alias(DatabaseAutoAssignments::class, AutoAssignmentWriter::class);
-        $this->app->scoped(SizeAssignmentRoom::class);
+        $this->app->scoped(AssignmentRoom::class);
         $this->app->scoped(DatabaseAutoAssignments::class);
     }
 

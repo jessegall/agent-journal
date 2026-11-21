@@ -6,7 +6,7 @@ namespace App\Agents\Commands;
 
 use App\Agents\Handlers\AnswerNavigationHandler;
 use App\Agents\Policies\AgentPolicy;
-use App\Agents\Support\DriverReceipt;
+use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\NavigationAnswer;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;

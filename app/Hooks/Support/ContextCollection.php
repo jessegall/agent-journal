@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Support;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;

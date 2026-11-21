@@ -8,7 +8,7 @@ use App\Agents\Commands\StartAgent;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Support\StartReceipt;
-use App\Agents\Support\StartRequest;
+use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\StartProfileMain;

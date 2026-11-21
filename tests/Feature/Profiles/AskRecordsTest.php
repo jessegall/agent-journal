@@ -10,7 +10,7 @@ use App\Actors\Support\AttentionOrigin;
 use App\Actors\Support\AttentionOutcome;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Models\Agent;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Agents\Values\WorkReference;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ReassignRecord;

@@ -62,7 +62,7 @@ final readonly class ReportShareProvider implements ShareRecordProvider
 
     private function cardsOf(array $ids): array
     {
-        return array_values(Report::query()->sharedPublished()->whereKey($ids)->readLimit(count($ids))->get(
+        return array_values(Report::query()->sharedPublished()->whereKey($ids)->readExactly(count($ids))->get(
             self::CARD_COLUMNS,
         )
             ->map(fn (Report $report) => $report->shareCard())->all());

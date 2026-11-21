@@ -12,11 +12,11 @@ use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Contracts\AutoAssignmentTrigger;
 use App\Assignments\Contracts\MaintenanceAdmission;
 use App\Assignments\Support\AssigneeIdentity;
+use App\Assignments\Support\AssignmentRoom;
 use App\Assignments\Support\AutoAssignmentBudget;
 use App\Assignments\Support\AutoAssignmentFact;
 use App\Assignments\Support\AutoAssignmentRun;
 use App\Assignments\Support\Page;
-use App\Assignments\Support\SizeAssignmentRoom;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandStops;
 use App\Bus\Contracts\StopTime;
@@ -35,7 +35,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
         private AutoAssignmentResolver $assignments,
         private AutoAssignmentAvailability $availability,
         private AssignedWorkResolver $work,
-        private SizeAssignmentRoom $room,
+        private AssignmentRoom $room,
         private AssignmentProviders $providers,
         private CommandBus $commands,
         private CommandStops $commandStops,

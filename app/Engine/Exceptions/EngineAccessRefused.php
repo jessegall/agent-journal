@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Engine\Exceptions;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use RuntimeException;
 
 final class EngineAccessRefused extends RuntimeException

@@ -25,12 +25,12 @@ final readonly class DocumentDockResolver implements SectionResolver
             ->with('currentRevision')
             ->inAttention(AttentionState::Active)
             ->latest('id')
-            ->readLimit(self::SUGGESTIONS_SHOWN)
+            ->limit(self::SUGGESTIONS_SHOWN)
             ->get();
         $reports = Report::query()
             ->inAttention(AttentionState::Active)
             ->latest('id')
-            ->readLimit(self::SUGGESTIONS_SHOWN)
+            ->limit(self::SUGGESTIONS_SHOWN)
             ->get();
 
         return DockData::from(['suggestions' => array_slice([

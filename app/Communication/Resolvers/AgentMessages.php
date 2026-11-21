@@ -45,7 +45,7 @@ final readonly class AgentMessages implements AgentMessageReader
         $total = (clone $incoming)->count();
         $messages = $incoming->orderByDesc('created_at')->orderByDesc('id')
             ->offset(($numbered->number - 1) * $numbered->size)
-            ->readLimit($numbered->size)->get();
+            ->readExactly($numbered->size)->get();
         $selected = $this->selected();
         $source = $this->source();
 
@@ -69,7 +69,7 @@ final readonly class AgentMessages implements AgentMessageReader
     {
         $size = SearchContribution::PAGE_SIZE;
         $matching = Message::query()->matchingBody($query)->orderByDesc('created_at')->orderByDesc('id')
-            ->offset(($page - 1) * $size)->readLimit($size + 1)->get();
+            ->offset(($page - 1) * $size)->readExactly($size + 1)->get();
         $hits = $matching->take($size)->map(fn (Message $message) => SearchHit::matching(
             self::SEARCH_TYPE,
             $message->id,

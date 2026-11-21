@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Values;
 
 use App\Processes\Contracts\StoredValue;
+use App\Processes\Stored\StoredReaderApproval;
 
 /**
  * The reader revision and the reader proof a test, check or build rule was approved with (doc 21 revision 6, section
@@ -22,11 +23,16 @@ final readonly class ReaderApproval implements StoredValue
         return ['reader_revision_id' => $this->readerRevisionId, 'proof_id' => $this->proofId];
     }
 
-    /**
-     * @param  array<string, mixed>  $fields  the shape toArray writes
-     */
-    public static function fromArray(array $fields): self
+    public static function fromJson(string $json): self
     {
-        return new self($fields['reader_revision_id'], $fields['proof_id']);
+        return StoredReaderApproval::from(json_decode($json, true, flags: JSON_THROW_ON_ERROR))->approval();
+    }
+
+    public static function listFromJson(string $json): array
+    {
+        return array_values(array_map(
+            fn (StoredReaderApproval $stored) => $stored->approval(),
+            StoredReaderApproval::collect(json_decode($json, true, flags: JSON_THROW_ON_ERROR)),
+        ));
     }
 }

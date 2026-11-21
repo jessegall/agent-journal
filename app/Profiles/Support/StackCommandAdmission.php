@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Agents\Contracts\AgentStackCommand;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Contracts\TargetsAgentStack;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandAdmission;
 use App\Bus\Enums\CommandAdmissionStage;
 use App\Bus\Enums\CommandEffectType;
@@ -49,7 +49,7 @@ final readonly class StackCommandAdmission implements CommandAdmission
             );
         }
 
-        if ($command->command instanceof TargetsAgentStack) {
+        if ($command->command instanceof AgentStackCommand) {
             return $this->assessStack($command->command->target(), $command);
         }
 

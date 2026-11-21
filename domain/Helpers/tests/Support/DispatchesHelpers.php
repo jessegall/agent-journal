@@ -11,7 +11,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\StartRecord;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
-use App\Agents\Support\HostCapacity;
+use App\Agents\Values\HostCapacity;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Enums\InstancePolicy;

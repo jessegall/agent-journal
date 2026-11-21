@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Listeners;
 
 use App\Agents\Events\SessionClosed;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Contracts\Listener;
 use App\Hooks\Actions\StartStacks;
 

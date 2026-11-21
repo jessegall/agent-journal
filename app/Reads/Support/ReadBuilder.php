@@ -54,11 +54,27 @@ class ReadBuilder extends Builder
     }
 
     /**
-     * A known set larger than a page, such as the rows of 300 given ids.
+     * A fixed number of rows larger than a page, such as a sweep of 500; a number a page holds is limit()'s.
      *
      * @throws ReadLimitInvalid
      */
     public function readLimit(int $rows): static
+    {
+        $pageMax = Container::getInstance()->make('config')->integer('reads.page_max');
+
+        if ($rows <= $pageMax) {
+            throw ReadLimitInvalid::withinPage($rows, $pageMax);
+        }
+
+        return $this->readExactly($rows);
+    }
+
+    /**
+     * Exactly a known set, however many: the rows of the given ids, read as readExactly(count($ids)).
+     *
+     * @throws ReadLimitInvalid
+     */
+    public function readExactly(int $rows): static
     {
         if ($rows < 0) {
             throw ReadLimitInvalid::rows($rows);
@@ -103,7 +119,7 @@ class ReadBuilder extends Builder
     public function readRelationCompletely(int $max): void
     {
         $this->completeRelationMax = $max;
-        $this->readLimit($max + 1);
+        $this->readExactly($max + 1);
     }
 
     /**

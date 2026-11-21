@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Contracts;
 
-use App\Agents\Support\ModelSelection;
+use App\Agents\Values\ModelSelection;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSelection;

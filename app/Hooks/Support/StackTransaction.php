@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Support;
 
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;

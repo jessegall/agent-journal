@@ -126,7 +126,7 @@ final class MergeAttempt extends Model implements ReadableModel
             ->whereIn('state', MergeAttemptState::terminalValues())
             ->whereNull('acknowledged_at')
             ->orderBy('updated_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get()
             ->all());
     }
@@ -142,7 +142,7 @@ final class MergeAttempt extends Model implements ReadableModel
             ->whereNotIn('state', MergeAttemptState::terminalValues())
             ->where('updated_at', '<', $before)
             ->orderBy('updated_at')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get()
             ->all());
     }

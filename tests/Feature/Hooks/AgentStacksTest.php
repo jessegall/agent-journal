@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
+use App\Agents\Values\StackTarget;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Actions\AgentStacks;

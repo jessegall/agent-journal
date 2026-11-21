@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Enums\TransportProfileType;
-use App\Agents\Support\SelectedAccount;
+use App\Agents\Values\SelectedAccount;
 use App\Records\Contracts\IdentityLinks;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\Config\Repository;

@@ -22,7 +22,7 @@ use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\AgentRequestClient;
 use App\AgentRequests\Support\CallRoutes;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
-use App\AgentRequests\Support\SendSignedCalls;
+use App\AgentRequests\Support\SignedCallSender;
 use App\AgentRequests\Support\StartEnvironment;
 use App\Agents\Actions\ReserveStarts;
 use App\Agents\Actions\StartHeartbeats;
@@ -33,11 +33,11 @@ use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\DockerImageVerifier as DockerImageVerifierContract;
-use App\Agents\Contracts\ExpiresNavigation;
 use App\Agents\Contracts\HelperCommitImport as HelperCommitImportContract;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\MergeAdmission;
+use App\Agents\Contracts\NavigationExpiry as NavigationExpiryContract;
 use App\Agents\Contracts\NavigationReader;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\ReadGrant as ReadGrantContract;
@@ -74,7 +74,7 @@ use App\Agents\Resolvers\RuntimeRecords;
 use App\Agents\Resolvers\SessionRecords;
 use App\Agents\Resolvers\StartRecords;
 use App\Agents\Resolvers\Support\CurrentAgentRuntimes;
-use App\Agents\Resolvers\Support\HostStartMaterial;
+use App\Agents\Resolvers\Support\PendingStartSecrets;
 use App\Agents\Resolvers\UnconfiguredAccounts;
 use App\Agents\Support\AgentActivity;
 use App\Agents\Support\AgentActors;
@@ -91,7 +91,6 @@ use App\Agents\Support\DriverRuntimeStops;
 use App\Agents\Support\FrozenSessionPolicies;
 use App\Agents\Support\GrantedSessionOutputs;
 use App\Agents\Support\HelperCommitImport;
-use App\Agents\Support\HostCapacity;
 use App\Agents\Support\HostStartExecutor;
 use App\Agents\Support\NavigationExpiry;
 use App\Agents\Support\NavigationRecords;
@@ -106,6 +105,7 @@ use App\Agents\Support\SessionProvenance;
 use App\Agents\Support\SessionToolDiscovery;
 use App\Agents\Support\TerminalViews;
 use App\Agents\Support\UnavailableMergeAdmission;
+use App\Agents\Values\HostCapacity;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Enums\AssignmentPurpose;
@@ -171,13 +171,13 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(SessionResolver::class, SessionRecords::class);
         $this->app->bind(AgentRequestClientContract::class, AgentRequestClient::class);
         $this->app->bind(StartHeartbeatsContract::class, StartHeartbeats::class);
-        $this->app->bind(ExpiresNavigation::class, NavigationExpiry::class);
+        $this->app->bind(NavigationExpiryContract::class, NavigationExpiry::class);
         $this->app->scoped(CurrentAgentRuntimes::class);
         $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
-        $this->app->bind(CallSender::class, SendSignedCalls::class);
+        $this->app->bind(CallSender::class, SignedCallSender::class);
         $this->app->bind(CallRegistrar::class, CallRoutes::class);
         $this->app->bind(StartRecordResolver::class, StartRecords::class);
         $this->app->bind(ProgramConversationResolver::class, ProgramConversationRecords::class);
@@ -208,7 +208,7 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('agents.host_capacity.memory_bytes'),
             $this->app->make('config')->integer('agents.host_capacity.disk_bytes'),
         ));
-        $this->app->scoped(HostStartMaterial::class);
+        $this->app->scoped(PendingStartSecrets::class);
         $this->app->bind(
             HelperCommitImport::class,
             fn () => new HelperCommitImport($this->app->make(Factory::class), base_path()),

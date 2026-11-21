@@ -13,9 +13,9 @@ use App\Agents\Exceptions\ModelUnavailable;
 use App\Agents\Exceptions\ProgramConflict;
 use App\Agents\Exceptions\ProgramRequired;
 use App\Agents\Exceptions\ProgramUnsupported;
-use App\Agents\Support\ModelSelection;
-use App\Agents\Support\ProfileDefaults;
-use App\Agents\Support\SelectedProgram;
+use App\Agents\Values\ModelSelection;
+use App\Agents\Values\ProfileDefaults;
+use App\Agents\Values\SelectedProgram;
 use App\Programs\Enums\HookProgram;
 use Tests\TestCase;
 

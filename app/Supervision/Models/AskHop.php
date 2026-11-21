@@ -94,7 +94,7 @@ final class AskHop extends Model implements ReadableModel
         }
 
         return array_values(self::query()->currentHops()->whereIn('ask_hops.id', $hops)
-            ->readLimit(count($hops))->pluck('ask_hops.id')->map(strval(...))->all());
+            ->readExactly(count($hops))->pluck('ask_hops.id')->map(strval(...))->all());
     }
 
     public static function nextFor(ActorIdentity $holder): self|null
@@ -117,7 +117,7 @@ final class AskHop extends Model implements ReadableModel
             ->whereNull('ask_hops.result')
             ->oldest('ask_hops.accepted_at')
             ->orderBy('ask_hops.id')
-            ->readLimit($limit)
+            ->readExactly($limit)
             ->get();
 
         return array_values($hops->all());

@@ -27,7 +27,7 @@ final readonly class CleanProcessOutputHandler implements CommandHandler
      */
     public function handle(CleanProcessOutput $command): CleanPreview
     {
-        $runs = ProcessRun::query()->acrossActors()->whereKey($command->runIds)->readLimit(100)->get();
+        $runs = ProcessRun::query()->acrossActors()->whereKey($command->runIds)->limit(100)->get();
 
         foreach ($runs as $run) {
             if (! $run->lifecycle->isFinal()) {

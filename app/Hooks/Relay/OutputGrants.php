@@ -7,6 +7,9 @@ namespace App\Hooks\Relay;
 use App\Files\Attributes\OutsideThePlaces;
 use App\Files\Enums\PlaceExemption;
 use App\Hooks\Exceptions\OutputGrantsInvalid;
+use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * The exact saved outputs one start may read, as the journal sealed them for its start key and mapping generation: the
@@ -35,17 +38,16 @@ final readonly class OutputGrants
      */
     public static function fromSnapshot(string $snapshot, string $startKey, OutputGrantSeal $seal): self
     {
-        $decoded = json_decode($snapshot, true);
-
-        if (! is_array($decoded) || ! is_int($decoded['generation'] ?? null) || ! is_array($decoded['paths'] ?? null)
-            || ! is_string($decoded['seal'] ?? null)) {
-            throw OutputGrantsInvalid::malformed();
+        try {
+            $grants = OutputGrantSnapshot::from(json_decode($snapshot, true, 512, JSON_THROW_ON_ERROR));
+        } catch (JsonException|CannotCreateData|TypeError $malformed) {
+            throw OutputGrantsInvalid::malformed($malformed);
         }
 
-        $paths = array_values(array_filter($decoded['paths'], is_string(...)));
-        $seal->verify($startKey, $decoded['generation'], $paths, $decoded['seal']);
+        $paths = $grants->textPaths();
+        $seal->verify($startKey, $grants->generation, $paths, $grants->seal);
 
-        return new self($decoded['generation'], $paths);
+        return new self($grants->generation, $paths);
     }
 
     #[OutsideThePlaces(PlaceExemption::CommandFileSystem)]

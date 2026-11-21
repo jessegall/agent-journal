@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Mcp\Data\JsonRpcMessageData;
 use Carbon\CarbonImmutable;
 use Laravel\Mcp\Enums\MetaKey;
 use Laravel\Mcp\Enums\RequestHeader;
@@ -26,27 +27,20 @@ final readonly class Frame
 
     private const string INITIALIZE = 'initialize';
 
-    /**
-     * @param  array<string, mixed>  $message
-     */
     public function __construct(
         public string $bytes,
-        public array $message,
+        public JsonRpcMessageData $message,
         public CarbonImmutable $admittedAt,
     ) {}
 
     public function id(): int|string|null
     {
-        $id = $this->message['id'] ?? null;
-
-        return is_int($id) || is_string($id) ? $id : null;
+        return $this->message->id;
     }
 
     public function method(): string|null
     {
-        $method = $this->message['method'] ?? null;
-
-        return is_string($method) ? $method : null;
+        return $this->message->method;
     }
 
     /**
@@ -134,8 +128,6 @@ final readonly class Frame
      */
     private function params(): array
     {
-        $params = $this->message['params'] ?? [];
-
-        return is_array($params) ? $params : [];
+        return $this->message->params;
     }
 }

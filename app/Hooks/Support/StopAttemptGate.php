@@ -6,8 +6,8 @@ namespace App\Hooks\Support;
 
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Models\StartRecord;
-use App\Agents\Support\StackTarget;
-use App\Agents\Support\StartPolicy;
+use App\Agents\Values\StackTarget;
+use App\Agents\Values\StartPolicy;
 use App\Agents\Values\WorkReference;
 use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Contracts\StopEvidence;
