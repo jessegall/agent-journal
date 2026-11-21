@@ -69,11 +69,9 @@ describe('useAccountNaming', () => {
         save(() => undefined);
 
         expect(
-            submitted
-                .at(-1)
-                ?.projection({
-                    page: { state: 'ready', data: { step: 'name' } },
-                }),
+            submitted.at(-1)?.projection({
+                page: { state: 'ready', data: { step: 'name' } },
+            }),
         ).toEqual({});
         expect(
             submitted

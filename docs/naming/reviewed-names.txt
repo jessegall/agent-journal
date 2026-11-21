@@ -23976,6 +23976,7 @@ parameter	$isFound
 parameter	$isGuarded
 parameter	$isHealthy
 parameter	$isHeld
+parameter	$isHeldForCheck
 parameter	$isInsideFilter
 parameter	$isInspection
 parameter	$isInterface
@@ -25626,6 +25627,7 @@ property	AccountRowData::$expiresAt
 property	AccountRowData::$id
 property	AccountRowData::$identity
 property	AccountRowData::$isActive
+property	AccountRowData::$isHeldForCheck
 property	AccountRowData::$label
 property	AccountRowData::$recentStarts
 property	AccountRowData::$runningCount

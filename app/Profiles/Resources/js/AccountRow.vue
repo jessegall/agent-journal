@@ -11,7 +11,7 @@ import { useIsStale } from '@kit/windowFreshness';
 import AccountSettingsDialog from './AccountSettingsDialog.vue';
 import { usageLine } from './accountUsage';
 import {
-    accountStateLook,
+    rowStateLook,
     cleanupProblemText,
     driverIcon,
     driverName,
@@ -42,7 +42,7 @@ const billing = computed(
     () =>
         `${driverName(props.account.driver)} ${props.account.signIn.billingLabel.toLowerCase()}`,
 );
-const state = computed(() => accountStateLook[props.account.state]);
+const state = computed(() => rowStateLook(props.account));
 // The state reads in neutral text: weight marks the one that wants the user, muted red only an error.
 const stateText: Record<string, string> = {
     good: 'text-text-2',

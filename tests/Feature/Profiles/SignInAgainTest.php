@@ -20,10 +20,12 @@ use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\ReconcileAccounts;
+use App\Profiles\Commands\RemoveAccount;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
+use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
@@ -265,6 +267,44 @@ final class SignInAgainTest extends TestCase
         $this->asHost(new CheckAccount('host', $this->account->id, $generation, AccountCheckResult::SignedOut));
 
         $this->assertSame(AccountState::NeedsSignIn, $this->account->refresh()->state);
+        $this->assertNull($this->chosen());
+    }
+
+    public function test_a_failed_renewal_of_an_account_that_needed_sign_in_lets_it_go_at_once(): void
+    {
+        $this->account->forceFill(['state' => AccountState::NeedsSignIn])->save();
+        [$label, $folder] = [$this->account->label, $this->account->directory];
+
+        $this->cancel($this->again('tab-1'));
+
+        $this->account->refresh();
+        $this->assertFalse($this->account->maintenance);
+        $this->assertFalse($this->account->isHeldForCheck());
+        $this->assertNull($this->account->live_writer_attempt_id);
+        $this->assertSame([AccountState::NeedsSignIn, $label, $folder], [
+            $this->account->state,
+            $this->account->label,
+            $this->account->directory,
+        ]);
+    }
+
+    public function test_a_proof_arriving_during_removal_changes_nothing(): void
+    {
+        [$attemptId] = $this->waitingReconnect();
+        $folder = $this->account->refresh()->directory;
+        $generation = SignInAttempt::query()->whereKey($attemptId)->sole()->generation;
+
+        $this->actAsOwner();
+        $this->app->make(CommandBus::class)->run(new RemoveAccount($this->account->id));
+        $this->assertThrows(
+            fn () => $this->asHost(new CompleteSignIn($attemptId, $generation, self::proved('subject-1'))),
+            SignInAttemptStale::class,
+        );
+
+        $this->assertSame(SignInState::Cancelled, SignInAttempt::query()->whereKey($attemptId)->sole()->state);
+        $this->account->refresh();
+        $this->assertSame($folder, $this->account->directory);
+        $this->assertNotSame(AccountState::SignedIn, $this->account->state);
         $this->assertNull($this->chosen());
     }
 

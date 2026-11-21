@@ -12,7 +12,6 @@ API key
 About the whole record
 About {{ describeRange(text.range) }}
 Account
-Account added
 Account of a start
 Accounts
 Activate this bundle
@@ -50,6 +49,7 @@ Cancel sign-in
 Cancelled
 Cancelling the sign-in…
 Checked reader revision
+Checking
 Checking the new session
 Checking the sign-in with {{ driverName(driver) }}…
 Choose a chat
@@ -306,7 +306,6 @@ Stacked
 Start again
 Started
 Starting the new session
-Starting the sign-in…
 State
 Status: {{ part.lifecycle }}, ended by {{ part.end }}
 Still to do: {{ data.steps.join('; ') }}

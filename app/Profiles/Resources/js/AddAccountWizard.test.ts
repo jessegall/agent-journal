@@ -150,6 +150,7 @@ function accountRow(id: string, label: string): AccountRowData {
         expiresAt: null,
         cleanupProblem: null,
         awaitsCleanupRetry: false,
+        isHeldForCheck: false,
         recentStarts: [],
     };
 }

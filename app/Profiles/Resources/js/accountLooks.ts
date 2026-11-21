@@ -1,4 +1,8 @@
-import type { AccountState, CleanupProblem } from '@generated/types/accounts';
+import type {
+    AccountRowData,
+    AccountState,
+    CleanupProblem,
+} from '@generated/types/accounts';
 
 /**
  * How an account's state looks; keyed by the server's enum values, never by a translated label.
@@ -12,6 +16,18 @@ export const accountStateLook: Record<
     removing: { label: 'Removing', tone: 'busy' },
     removed: { label: 'Removed', tone: 'quiet' },
 };
+
+/**
+ * How a saved account's state looks: Checking while a renewal that did not finish waits for the host's check, else
+ * its state.
+ */
+export function rowStateLook(
+    account: AccountRowData,
+): (typeof accountStateLook)[AccountState] {
+    return account.isHeldForCheck
+        ? { label: 'Checking', tone: 'busy' }
+        : accountStateLook[account.state];
+}
 
 /**
  * The name a driver goes by on the page.

@@ -15,7 +15,7 @@ import AccountFactList from './AccountFactList.vue';
 import AccountUsageDetails from './AccountUsageDetails.vue';
 import { chosenIn } from './accountSelections';
 import { useAccountNaming } from './accountNaming';
-import { accountStateLook, driverName, signInAgainLabel } from './accountLooks';
+import { driverName, rowStateLook, signInAgainLabel } from './accountLooks';
 
 /**
  * Everything about one account in one dialog: its way back when it must sign in again, its name, whether it is the
@@ -91,7 +91,7 @@ const useFacts = computed(() => {
 });
 
 const signInFacts = computed(() => [
-    { term: 'State', value: accountStateLook[props.account.state].label },
+    { term: 'State', value: rowStateLook(props.account).label },
     { term: 'Program', value: driverName(props.account.driver) },
     { term: 'Method', value: props.account.signIn.title },
     { term: 'Billing', value: props.account.signIn.billingLabel },

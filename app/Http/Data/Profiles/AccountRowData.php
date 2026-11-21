@@ -39,6 +39,7 @@ final class AccountRowData extends Data
         public readonly string|null $expiresAt,
         public readonly CleanupProblem|null $cleanupProblem,
         public readonly bool $awaitsCleanupRetry,
+        public readonly bool $isHeldForCheck,
         #[DataCollectionOf(AccountStartData::class)]
         public readonly array $recentStarts,
         public readonly AccountUsageData|Optional $usage,
@@ -68,6 +69,7 @@ final class AccountRowData extends Data
             $account->expires_at?->toIso8601String(),
             $account->cleanup_problem,
             $account->awaitsCleanupRetry(),
+            $account->isHeldForCheck(),
             array_map(AccountStartData::fromUse(...), $recentUses),
             $usage,
         );

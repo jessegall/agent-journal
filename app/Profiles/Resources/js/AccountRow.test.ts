@@ -95,6 +95,7 @@ function account(overrides: Partial<AccountRowData> = {}): AccountRowData {
         expiresAt: null,
         cleanupProblem: null,
         awaitsCleanupRetry: false,
+        isHeldForCheck: false,
         recentStarts: [],
         ...overrides,
     };
@@ -157,6 +158,15 @@ describe('an account row', () => {
         expect(line.text()).toContain('Default');
         expect(line.text()).toContain('Signed in');
         expect(row().find('li > div > div').text()).not.toContain('Default');
+    });
+
+    it('reads Checking while a renewal that did not finish waits for its check', () => {
+        const view = row({ account: account({ isHeldForCheck: true }) });
+
+        expect(view.text()).toContain('Checking');
+        expect(view.text()).toContain('StateChecking');
+        expect(view.text()).not.toMatch(/StateSigned in|·Signed in/);
+        view.unmount();
     });
 
     it('never repeats who it is signed in as under its name', () => {
