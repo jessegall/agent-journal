@@ -68,7 +68,7 @@ final class ProjectBindingRowData extends Data
             'state' => $state,
             'projectId' => $binding->project_id,
             'environmentId' => $binding->environment_id,
-            'environmentLabel' => $binding->environment?->label ?? 'No environment',
+            'environmentLabel' => $binding->environment->label ?? 'No environment',
             'capabilities' => self::providersOf($binding, $state),
             'presenceExpiresAt' => $binding->presence_expires_at?->toIso8601String(),
             'revokedAt' => $binding->revoked_at?->toIso8601String(),

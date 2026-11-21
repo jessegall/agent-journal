@@ -31,7 +31,7 @@ final readonly class DeviceApprovalWindowResolver implements PageResolver
             'scopes' => $grant->scopes,
             'expiresAt' => $grant->code_expires_at->toIso8601String(),
             'journalOrigin' => $this->origin->canonical(),
-            'environmentLabel' => $grant->environment?->label ?? 'no environment yet',
+            'environmentLabel' => $grant->environment->label ?? 'no environment yet',
             'state' => $grant->approvalStateAt(CarbonImmutable::now()),
             'isBindingRevoked' => $grant->binding->readiness === BindingReadiness::Revoked,
         ]);
