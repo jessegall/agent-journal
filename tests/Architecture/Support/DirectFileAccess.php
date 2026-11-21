@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Files\Enums\PlaceExemption;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -123,8 +124,22 @@ final readonly class DirectFileAccess
         # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
         # tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed site the code no
         # longer has. Regenerate with: php tools/refactoring/direct-file-sites.php --write
+        # The exemptions:
 
-        TEXT.implode("\n", $sites)."\n";
+        TEXT.self::exemptionLines().implode("\n", $sites)."\n";
+    }
+
+    /**
+     * One comment line per exemption the user settled, with its reason.
+     */
+    private static function exemptionLines(): string
+    {
+        $lines = array_map(
+            fn (PlaceExemption $exemption) => "#   {$exemption->name}: {$exemption->description()}\n",
+            PlaceExemption::cases(),
+        );
+
+        return implode('', $lines)."\n";
     }
 
     /**
