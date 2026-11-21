@@ -148,6 +148,17 @@ final readonly class PlanRecords implements PlanResolver
     }
 
     /**
+     * The cards of these plans, with the same progress and current phase every list of plans shows.
+     *
+     * @param  EloquentCollection<int, Plan>  $plans
+     * @return list<PlanCard>
+     */
+    public function cardsOfPlans(EloquentCollection $plans): array
+    {
+        return $this->cardsOf($plans, $this->focusedPlanId());
+    }
+
+    /**
      * Builds the cards with a fixed number of queries: the phases, their task places, the task states, and the plans'
      * assignments with their holders' names through Core.
      *

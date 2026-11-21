@@ -25,16 +25,16 @@ use Tests\TestCase;
  */
 final class DockDefinitionsTest extends TestCase
 {
-    public function test_every_record_type_has_a_fallback_definition(): void
+    public function test_every_record_type_docks_and_one_with_no_owner_of_its_own_uses_the_fallback(): void
     {
         $types = $this->app->make(RecordResolver::class)->types();
 
         foreach ($types as $type) {
-            $this->assertSame(LegacyDockable::class, $this->definitions()->definition($type)->class);
             $this->assertTrue($this->definitions()->offersDock($type));
         }
 
         $this->assertContains(Message::LINK_TYPE, $types);
+        $this->assertSame(LegacyDockable::class, $this->definitions()->definition(Message::LINK_TYPE)->class);
     }
 
     public function test_an_owner_registration_wins_over_the_fallback_before_and_after_it_was_read(): void

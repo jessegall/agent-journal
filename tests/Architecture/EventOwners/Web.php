@@ -17,6 +17,7 @@ return [
         'migrated' => false,
         'producers' => [
             'app/Web/Listeners/BroadcastPageChange.php',
+            'app/Web/Listeners/BroadcastDockedSourceChange.php',
         ],
     ],
     ProtectedViewInvalidated::class => [

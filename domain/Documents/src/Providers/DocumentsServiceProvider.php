@@ -9,6 +9,7 @@ use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionProvenance;
 use App\Autoload\Support\FolderClasses;
+use App\Docking\Sources\Contracts\DockRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use App\Operations\Enums\AccessType;
 use Domain\Documents\Contracts\AttachmentReader;
@@ -36,6 +37,8 @@ use Domain\Documents\Resolvers\DraftRecords;
 use Domain\Documents\Resolvers\ReportPages;
 use Domain\Documents\Resolvers\ReportRecords;
 use Domain\Documents\Resolvers\RetainedDrafts;
+use Domain\Documents\Support\DocumentDocking;
+use Domain\Documents\Support\ReportDocking;
 use Domain\Documents\Support\UploadStore;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
@@ -59,8 +62,10 @@ final class DocumentsServiceProvider extends ServiceProvider
         $this->app->scoped(ReportReader::class, ReportPages::class);
     }
 
-    public function boot(LinkTypeRegistry $links, ReadEntitlements $reads): void
+    public function boot(LinkTypeRegistry $links, ReadEntitlements $reads, DockRegistration $docks): void
     {
+        $docks->offerDockFor($docks->register(Document::LINK_TYPE, Document::class, DocumentDocking::class));
+        $docks->offerDockFor($docks->register(Report::LINK_TYPE, Report::class, ReportDocking::class));
         $reads->declare('docs_drafts_read', ReadEntitlement::grant(DocumentPolicy::class, AccessType::Edit));
         $links->register([
             Document::LINK_TYPE => Document::class,

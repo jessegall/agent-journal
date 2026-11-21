@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Support;
 
 use App\Contracts\Event;
+use App\Docking\Sources\Contracts\DockSourceChanged;
 use App\Domains\Exceptions\InvalidListener;
 use App\Exports\Support\Exports;
 use App\Ui\Contracts\UserInterfaceUpdater;
@@ -15,6 +16,12 @@ use ReflectionClass;
  */
 final readonly class ListenerOwnership
 {
+    /**
+     * The interfaces a listener may be typed on in place of a concrete event: the facts that update the UI, and the
+     * facts that change a dockable source.
+     */
+    public const array EXPANDED_INTERFACES = [UserInterfaceUpdater::class, DockSourceChanged::class];
+
     public const string CORE = 'Core';
 
     /**
@@ -45,7 +52,11 @@ final readonly class ListenerOwnership
         }
 
         if ($domain === null) {
-            $isExportedUiEvent = $owner->exportsEvent($event) && is_subclass_of($event, UserInterfaceUpdater::class);
+            $isExpanded = array_filter(
+                self::EXPANDED_INTERFACES,
+                fn (string $interface) => is_subclass_of($event, $interface),
+            ) !== [];
+            $isExportedUiEvent = $owner->exportsEvent($event) && $isExpanded;
 
             if (! $isExportedUiEvent) {
                 throw InvalidListener::privateEvent($listener, $method, $event, $owner->name);

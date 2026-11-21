@@ -9,8 +9,10 @@ use App\Actors\Values\ReadEntitlement;
 use App\Agents\Exceptions\SessionOutdated;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Autoload\Support\FolderClasses;
+use App\Docking\Sources\Contracts\DockedSources;
 use App\Docking\Sources\Contracts\DockOffers;
 use Domain\Chat\Support\AgentDockOffers;
+use Domain\Chat\Support\PlacedSources;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -26,6 +28,7 @@ final class ChatServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(DockOffers::class, AgentDockOffers::class);
+        $this->app->bind(DockedSources::class, PlacedSources::class);
     }
 
     public function boot(ExceptionHandler $exceptions, ReadEntitlements $reads): void

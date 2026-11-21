@@ -9,6 +9,8 @@ use App\Links\Support\LinkTypeRegistry;
 use Tests\Fixtures\Modules\Notes\Support\NoteDocking;
 use Tests\Fixtures\Modules\Notes\Support\NotesTally;
 use Tests\Fixtures\Modules\Notes\Support\NotesTallyDocking;
+use Tests\Fixtures\Modules\Notes\Support\ReleaseReview;
+use Tests\Fixtures\Modules\Notes\Support\ReleaseReviewDocking;
 use Illuminate\Support\ServiceProvider;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
 use Tests\Fixtures\Modules\Notes\Models\Note;
@@ -27,6 +29,11 @@ final class NotesServiceProvider extends ServiceProvider
      */
     public const string TALLY_TYPE = 'notes.tally';
 
+    /**
+     * The type the release review docks under, the card that uses every part.
+     */
+    public const string REVIEW_TYPE = 'notes.release-review';
+
     public function register(): void
     {
         $this->app->bind(NoteResolver::class, NoteRecords::class);
@@ -36,6 +43,7 @@ final class NotesServiceProvider extends ServiceProvider
     {
         $docks->offerDockFor($docks->register(Note::LINK_TYPE, Note::class, NoteDocking::class));
         $docks->offerDockFor($docks->register(self::TALLY_TYPE, NotesTally::class, NotesTallyDocking::class));
+        $docks->offerDockFor($docks->register(self::REVIEW_TYPE, ReleaseReview::class, ReleaseReviewDocking::class));
         $links->register(
 [
 Note::LINK_TYPE => Note::class,

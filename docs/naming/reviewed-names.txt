@@ -1419,6 +1419,7 @@ class	BooleanSetting
 class	BooleanValueData
 class	BottomStateCannotFinish
 class	BottomStateDelegated
+class	BroadcastDockedSourceChange
 class	BroadcastPageChange
 class	BroadcastProtectedViewInvalidation
 class	BuildRules
@@ -2693,6 +2694,7 @@ class	NotAllowed
 class	NotAuthenticated
 class	NoteNegation
 class	NoteOptionStatement
+class	NothingDocked
 class	NotificationCall
 class	NumberChanged
 class	NumberField
@@ -4890,6 +4892,7 @@ constant	ExecutionBudgets::MOST_CPU_CORES
 constant	ExecutionBudgets::MOST_MEMORY_BYTES
 constant	ExecutionBudgets::MOST_PROCESSES
 constant	ExecutionBudgets::MOST_WORKSPACE_BYTES
+constant	ExpandUiUpdaterListeners::EXPANDED
 constant	ExpireNavigationRequests::MAINTENANCE_SCOPE
 constant	ExpireSharesHandler::MOST_PER_RUN
 constant	ExplainCommandController::NOTICE
@@ -5686,6 +5689,7 @@ interface	DockSourceChanged
 interface	Dockable
 interface	DockableProvider
 interface	DockableWindow
+interface	DockedSources
 interface	DockerImageVerifier
 interface	DomainAvailability
 interface	DomainBootstrapper
@@ -7410,6 +7414,8 @@ method	BoundedReads::mutateAttribute()
 method	BoundedReads::mutateAttributeMarkedAttribute()
 method	BoundedReads::newEloquentBuilder()
 method	BoundedReads::toArray()
+method	BroadcastDockedSourceChange::__construct()
+method	BroadcastDockedSourceChange::handle()
 method	BroadcastPageChange::__construct()
 method	BroadcastPageChange::handle()
 method	BroadcastProtectedViewInvalidation::__construct()
@@ -9099,6 +9105,7 @@ method	Dockable::identifyFor()
 method	DockableProvider::cardsFor()
 method	DockableProvider::requireReadable()
 method	DockableWindow::dockSource()
+method	DockedSources::isDocked()
 method	DockerImageData::__construct()
 method	DockerImageData::isAgentImage()
 method	DockerImageRecordData::__construct()
@@ -11703,6 +11710,7 @@ method	NotADomain::for()
 method	NotAPipelineStep::named()
 method	NoteNegation::handle()
 method	NoteOptionStatement::handle()
+method	NothingDocked::isDocked()
 method	NotificationCall::__construct()
 method	NotificationCall::replyWith()
 method	NumberChanged::for()
@@ -18331,6 +18339,7 @@ parameter	$dispatches
 parameter	$display
 parameter	$disposition
 parameter	$dockOffer
+parameter	$docked
 parameter	$document
 parameter	$documentation
 parameter	$documents
@@ -20797,6 +20806,9 @@ property	BooleanSetting::$label
 property	BooleanValueData::$enabled
 property	BooleanValueData::$type
 property	BottomStateDelegated::$visitedFrames
+property	BroadcastDockedSourceChange::$docked
+property	BroadcastDockedSourceChange::$events
+property	BroadcastDockedSourceChange::$recipients
 property	BroadcastPageChange::$events
 property	BroadcastPageChange::$recipients
 property	BroadcastProtectedViewInvalidation::$events
@@ -27677,6 +27689,7 @@ variable	$isCoreListener
 variable	$isCurrent
 variable	$isDirectChild
 variable	$isDirectoryRemoved
+variable	$isExpanded
 variable	$isExportedUiEvent
 variable	$isForeignUndeclared
 variable	$isFull

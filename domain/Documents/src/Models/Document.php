@@ -11,6 +11,18 @@ use App\Comments\Contracts\Commentable;
 use App\Comments\Support\HasComments;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Docking\Cards\Button;
+use App\Docking\Cards\DestinationArgument;
+use App\Docking\Cards\DockCard;
+use App\Docking\Cards\DockDestination;
+use App\Docking\Cards\DockIdentity;
+use App\Docking\Cards\Stack;
+use App\Docking\Cards\Subtitle;
+use App\Docking\Cards\Title;
+use App\Docking\Enums\Emphasis;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Docking\Sources\Contracts\Dockable;
+use App\Docking\Sources\DockDefinition;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -21,6 +33,7 @@ use App\Sharing\Support\ShareRecordCard;
 use App\Text\Contracts\TextContent;
 use App\Text\Exceptions\TextVersionUnavailable;
 use App\Text\Values\TextVersion;
+use Domain\Documents\Api\DocumentType;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Api\Events\DocumentPublished;
 use Domain\Documents\Data\CloseCard;
@@ -55,7 +68,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  */
 #[Fillable(['creator_type', 'creator_id'])]
-final class Document extends Model implements Commentable, EventSource, Numbered, ReadableModel, Shareable, TextContent
+final class Document extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {
     use BoundedReads;
     use CreatedWithAttention;
@@ -67,7 +80,7 @@ final class Document extends Model implements Commentable, EventSource, Numbered
     use Settles;
     use SharedWithComments;
 
-    public const string LINK_TYPE = 'documents.document';
+    public const string LINK_TYPE = DocumentType::VALUE;
 
     /**
      * The most characters a document's or a report's title holds.
@@ -300,6 +313,31 @@ final class Document extends Model implements Commentable, EventSource, Numbered
         return $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->firstOr(
             fn () => throw TextVersionUnavailable::named($version),
         );
+    }
+
+    public function identifyFor(DockDefinition $definition): DockIdentity
+    {
+        return $definition->identity($this->id);
+    }
+
+    /**
+     * Its card in a dock: what it is called and where it stands, with Open when the viewer may open it.
+     */
+    public function composeDockCard(CardContext $context): DockCard
+    {
+        $revision = $this->currentRevisionOrFail();
+        $parts = [
+            new Title('title', $revision->title),
+            new Subtitle('revision', "revision {$revision->number}"),
+            $this->attention->stateLabel(),
+        ];
+        $open = new DockDestination('documents.document', new DestinationArgument('document', (string) $this->number));
+
+        foreach ($context->permittedDestination($open) as $permitted) {
+            $parts[] = new Button('open', 'Open', Emphasis::Primary, $permitted);
+        }
+
+        return DockCard::named($revision->title, Stack::of('root', ...$parts));
     }
 
     // ----------[ Relations ]----------

@@ -11,6 +11,18 @@ use App\Comments\Contracts\Commentable;
 use App\Comments\Support\HasComments;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Docking\Cards\Button;
+use App\Docking\Cards\DestinationArgument;
+use App\Docking\Cards\DockCard;
+use App\Docking\Cards\DockDestination;
+use App\Docking\Cards\DockIdentity;
+use App\Docking\Cards\Stack;
+use App\Docking\Cards\Subtitle;
+use App\Docking\Cards\Title;
+use App\Docking\Enums\Emphasis;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Docking\Sources\Contracts\Dockable;
+use App\Docking\Sources\DockDefinition;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -55,7 +67,7 @@ use Illuminate\Support\Carbon;
  * @property AttentionState $attention
  */
 #[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'filed_at'])]
-final class Report extends Model implements Commentable, EventSource, Numbered, ReadableModel, Shareable, TextContent
+final class Report extends Model implements Commentable, Dockable, EventSource, Numbered, ReadableModel, Shareable, TextContent
 {
     use BoundedReads;
     use CreatedWithAttention;
@@ -70,6 +82,11 @@ final class Report extends Model implements Commentable, EventSource, Numbered, 
     use SharedWithComments;
 
     public const string LINK_TYPE = 'documents.report';
+
+    /**
+     * The most characters of a report's abstract its docked card shows.
+     */
+    private const int DOCK_ABSTRACT_CHARACTER_LIMIT = 120;
 
     protected $attributes = ['attention' => 'active'];
 
@@ -192,6 +209,30 @@ final class Report extends Model implements Commentable, EventSource, Numbered, 
     public function textVersion(string|null $version = null): TextVersion
     {
         return TextVersion::ofOnlyMarkdown($version, 'Report', $this->body);
+    }
+
+    public function identifyFor(DockDefinition $definition): DockIdentity
+    {
+        return $definition->identity($this->id);
+    }
+
+    /**
+     * Its card in a dock: what it is called and where it stands, with Open when the viewer may open it.
+     */
+    public function composeDockCard(CardContext $context): DockCard
+    {
+        $parts = [
+            new Title('title', $this->title),
+            $this->attention->stateLabel(),
+            new Subtitle('abstract', mb_strimwidth($this->abstract, 0, self::DOCK_ABSTRACT_CHARACTER_LIMIT, '…')),
+        ];
+        $open = new DockDestination('documents.report', new DestinationArgument('report', (string) $this->number));
+
+        foreach ($context->permittedDestination($open) as $permitted) {
+            $parts[] = new Button('open', 'Open', Emphasis::Primary, $permitted);
+        }
+
+        return DockCard::named($this->title, Stack::of('root', ...$parts));
     }
 
     // ----------[ Scopes ]----------

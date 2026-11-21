@@ -625,6 +625,7 @@ use App\Docking\Sources\Contracts\DestinationGate;
 use App\Docking\Sources\Contracts\Dockable;
 use App\Docking\Sources\Contracts\DockableProvider;
 use App\Docking\Sources\Contracts\DockableWindow;
+use App\Docking\Sources\Contracts\DockedSources;
 use App\Docking\Sources\Contracts\DockOffers;
 use App\Docking\Sources\Contracts\DockRegistration;
 use App\Docking\Sources\Contracts\DockSourceChanged;
@@ -1304,6 +1305,7 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                DockedSources::class,
                 DockOffers::class,
                 DockableWindow::class,
                 CardContext::class,

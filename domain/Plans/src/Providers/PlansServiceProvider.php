@@ -7,6 +7,7 @@ namespace Domain\Plans\Providers;
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Values\ReadEntitlement;
 use App\Autoload\Support\FolderClasses;
+use App\Docking\Sources\Contracts\DockRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use App\Processes\Contracts\VerificationTiming;
 use Domain\Plans\Contracts\PlanDetailsResolver;
@@ -18,7 +19,9 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
 use Domain\Plans\Resolvers\PlanDetailRecords;
 use Domain\Plans\Resolvers\PlanRecords;
+use Domain\Plans\Support\DockedPlan;
 use Domain\Plans\Support\PhaseTiming;
+use Domain\Plans\Support\PlanDocking;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -38,8 +41,13 @@ final class PlansServiceProvider extends ServiceProvider
         $this->app->scoped(VerificationTiming::class, PhaseTiming::class);
     }
 
-    public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions, ReadEntitlements $reads): void
-    {
+    public function boot(
+        LinkTypeRegistry $links,
+        ExceptionHandler $exceptions,
+        ReadEntitlements $reads,
+        DockRegistration $docks,
+    ): void {
+        $docks->offerDockFor($docks->register(Plan::LINK_TYPE, DockedPlan::class, PlanDocking::class));
         $reads->declare('plans_read', ReadEntitlement::grant(PlanPolicy::class));
         $reads->declare('plans_list', ReadEntitlement::grant(PlanPolicy::class));
         $reads->declare('plans_assigned', ReadEntitlement::grant(PlanPolicy::class));

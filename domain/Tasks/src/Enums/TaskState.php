@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Enums;
 
+use App\Docking\Cards\StateLabel;
+use App\Docking\Enums\Tone;
+
 /**
  * Where a task stands: open until an agent starts it, then started, blocked, finished or cancelled.
  */
@@ -14,6 +17,20 @@ enum TaskState: string
     case Blocked = 'blocked';
     case Finished = 'finished';
     case Cancelled = 'cancelled';
+
+    /**
+     * The state as a docked task card shows it.
+     */
+    public function stateLabel(): StateLabel
+    {
+        return match ($this) {
+            self::Open => new StateLabel('state', 'Open', Tone::Neutral),
+            self::Started => new StateLabel('state', 'Started', Tone::Note),
+            self::Blocked => new StateLabel('state', 'Blocked', Tone::Warn),
+            self::Finished => new StateLabel('state', 'Done', Tone::Good),
+            self::Cancelled => new StateLabel('state', 'Cancelled', Tone::Muted),
+        };
+    }
 
     /**
      * Whether the task's work is over: finished or cancelled.

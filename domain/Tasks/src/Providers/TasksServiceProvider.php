@@ -6,6 +6,7 @@ namespace Domain\Tasks\Providers;
 
 use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Values\ReadEntitlement;
+use App\Docking\Sources\Contracts\DockRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use Domain\Tasks\Console\AssignedTasksCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
@@ -23,6 +24,8 @@ use Domain\Tasks\Resolvers\TaskAssignmentRecords;
 use Domain\Tasks\Resolvers\TaskCounts;
 use Domain\Tasks\Resolvers\TaskDetailRecords;
 use Domain\Tasks\Resolvers\VisibleTasks;
+use Domain\Tasks\Support\DockedTask;
+use Domain\Tasks\Support\TaskDocking;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -41,8 +44,9 @@ final class TasksServiceProvider extends ServiceProvider
         $this->app->scoped(TaskDetailsResolver::class, TaskDetailRecords::class);
     }
 
-    public function boot(LinkTypeRegistry $links, ReadEntitlements $reads): void
+    public function boot(LinkTypeRegistry $links, ReadEntitlements $reads, DockRegistration $docks): void
     {
+        $docks->offerDockFor($docks->register(Task::LINK_TYPE, DockedTask::class, TaskDocking::class));
         $reads->declare('tasks_read', ReadEntitlement::grant(TaskPolicy::class));
         $reads->declare('tasks_list', ReadEntitlement::grant(TaskPolicy::class));
         $reads->declare('tasks_assigned', ReadEntitlement::grant(TaskPolicy::class));
