@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The journal's quiet house style: greys and one plum</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* Self-contained: no external fonts or scripts. Every colour inside .app is a version 6 token name
+   (resources/css/app.css) plus --plum, --plum-hover, --plum-press, --on-plum, --plum-dim and --danger-hover. */
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased;background:var(--page);color:var(--page-text);--page:#ececec;--page-text:#141414}
+body.dk{--page:#050505;--page-text:#e9e9e9}
+code,pre,.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace}
+.top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--page) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid color-mix(in srgb,var(--page-text) 10%,transparent)}
+.top .in{max-width:1320px;margin:0 auto;padding:10px 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.top h1{margin:0;font-size:14px;font-weight:600;margin-right:6px}
+.pick{display:flex;gap:5px;flex-wrap:wrap}
+.pick button{display:flex;align-items:center;gap:7px;font:inherit;font-size:12px;padding:5px 10px 5px 6px;border-radius:7px;border:1px solid color-mix(in srgb,var(--page-text) 14%,transparent);background:transparent;color:inherit;cursor:pointer}
+.pick button[aria-pressed=true]{border-color:var(--page-text)}
+.pick i{width:22px;height:14px;border-radius:4px;display:flex;overflow:hidden;border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent)}
+.pick i b{flex:1}
+.mode{margin-left:auto;display:flex;border:1px solid color-mix(in srgb,var(--page-text) 14%,transparent);border-radius:7px;overflow:hidden}
+.mode button{font:inherit;font-size:12px;padding:5px 12px;border:0;background:transparent;color:inherit;cursor:pointer}
+.mode button[aria-pressed=true]{background:color-mix(in srgb,var(--page-text) 12%,transparent)}
+.wrap{max-width:1320px;margin:0 auto;padding:20px 24px 80px}
+.lead{max-width:880px;margin:0 0 14px;opacity:.8}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin:0 0 18px}
+.rules div{border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent);border-radius:10px;padding:10px 12px;font-size:12px;opacity:.9}
+.rules b{display:block;font-size:12.5px;margin-bottom:2px}
+.h{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;opacity:.55;margin:26px 0 10px}
+.about{display:flex;gap:18px;align-items:baseline;margin:6px 0 8px;flex-wrap:wrap}
+.about h2{margin:0;font-size:19px;letter-spacing:-.01em}
+.about p{margin:0;opacity:.75;max-width:760px}
+.knobs{display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px;margin-bottom:12px}
+.knobs span{padding:1px 7px;border-radius:5px;border:1px solid color-mix(in srgb,var(--page-text) 14%,transparent);opacity:.8}
+
+/* ---------- The app, in tokens only ---------- */
+.app{display:flex;height:640px;border-radius:12px;overflow:hidden;border:1px solid var(--border-2);background:var(--bg);color:var(--text);position:relative}
+svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+svg.s14{width:14px;height:14px}
+.side{width:216px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:1px}
+.brand{display:flex;align-items:center;gap:8px;padding:2px 8px 14px;font-weight:600;color:var(--text)}
+.brand b{width:20px;height:20px;border-radius:6px;background:var(--plum);color:var(--on-plum);display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+.nav{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:7px;color:var(--text-3);cursor:pointer;position:relative;user-select:none}
+.nav:hover{background:var(--hover);color:var(--text-2)}
+.nav.on{background:var(--sel);color:var(--text);font-weight:500}
+.nav.on::before{content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:2px;border-radius:2px;background:var(--plum)}
+.nav .n{margin-left:auto;font-size:11.5px;color:var(--text-4);font-weight:400}
+.nav .pd{margin-left:auto;width:6px;height:6px;border-radius:50%;background:var(--plum)}
+.navlabel{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-4);padding:8px 8px 4px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+.bar{height:52px;flex:none;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line)}
+.bar h3{margin:0;font-size:15px;font-weight:600}
+.bar .sub{color:var(--text-3);font-size:12px}
+.bar .r{margin-left:auto;display:flex;gap:6px;align-items:center}
+.scroll{flex:1;overflow:auto}
+.pad{padding:16px}
+
+/* Controls */
+.btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;font:inherit;font-size:12.5px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--text-2);white-space:nowrap;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
+.btn.sm{height:24px;padding:0 9px;font-size:12px}
+.btn:hover,.btn.is-hover{background:var(--hover);color:var(--text)}
+.btn.primary{background:var(--plum);border-color:var(--plum);color:var(--on-plum)}
+.btn.primary:hover,.btn.primary.is-hover{background:var(--plum-hover);border-color:var(--plum-hover);color:var(--on-plum)}
+.btn.primary:active,.btn.primary.is-press{background:var(--plum-press);border-color:var(--plum-press)}
+.btn.bordered{border-color:var(--border-2);background:var(--bg);color:var(--text)}
+.btn.bordered:hover,.btn.bordered.is-hover{background:var(--hover)}
+.btn.bordered.is-press{background:var(--sel)}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:var(--on-danger)}
+.btn.danger.is-hover,.btn.danger:hover{background:var(--danger-hover);border-color:var(--danger-hover);color:var(--on-danger)}
+.btn.is-press:not(.primary):not(.bordered):not(.danger){background:var(--sel)}
+.btn.danger.is-press{filter:brightness(.92)}
+.btn:focus-visible,.btn.is-focus{outline:2px solid var(--ring);outline-offset:2px}
+.btn[disabled]{opacity:.42;pointer-events:none}
+.ib{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:var(--text-3);cursor:pointer}
+.ib:hover{background:var(--hover);color:var(--text)}
+.spin{width:11px;height:11px;border:1.5px solid color-mix(in srgb,currentColor 30%,transparent);border-top-color:currentColor;border-radius:50%;animation:s .9s linear infinite;flex:none;display:inline-block}
+@keyframes s{to{transform:rotate(360deg)}}
+/* Badges: never filled; an outline in a grey step, or the plum for the one that waits on you */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;line-height:17px;padding:0 6px;border-radius:5px;border:1px solid var(--border-2);color:var(--text-2);white-space:nowrap;background:transparent}
+.chip.faint{border-color:var(--line);color:var(--text-3)}
+.chip.strong{border-color:var(--border-3);color:var(--text)}
+.chip.plum{border-color:var(--plum);color:var(--text)}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);white-space:nowrap}
+.st.strong{color:var(--text);font-weight:500}
+.st .err{color:var(--danger);display:inline-flex}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--text-4);flex:none}
+.dot.plum{background:var(--plum)}
+.dot.hollow{background:transparent;border:1.5px solid var(--text-4);width:7px;height:7px}
+.dot.solid{background:var(--text-3)}
+.dot.plumring{background:transparent;border:1.5px solid var(--plum);width:7px;height:7px}
+.field{height:30px;border:1px solid var(--input);border-radius:8px;display:flex;align-items:center;padding:0 10px;color:var(--text);background:var(--bg);gap:8px}
+.field.focus{border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 18%,transparent)}
+.field.bad{border-color:var(--danger)}
+.field .ph{color:var(--text-4)}
+.errtext{color:var(--danger);font-size:12px;margin-top:5px}
+.toggle{width:30px;height:18px;border-radius:9px;background:var(--border-3);position:relative;flex:none;cursor:pointer}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--bg);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .15s}
+.toggle.on{background:var(--plum)}
+.toggle.on::after{left:14px;background:var(--on-plum)}
+.seg{display:inline-flex;border:1px solid var(--border-2);border-radius:7px;padding:2px}
+.seg span{padding:2px 10px;border-radius:5px;font-size:12px;color:var(--text-3);cursor:pointer}
+.seg span.on{background:var(--sel);color:var(--text)}
+.check{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--input);flex:none;display:inline-flex;align-items:center;justify-content:center}
+.check.on{background:var(--plum);border-color:var(--plum);color:var(--on-plum)}
+.radio{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--input);flex:none;display:inline-flex;align-items:center;justify-content:center;margin-top:2px}
+.radio.on{border-color:var(--plum)}
+.radio.on::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--plum)}
+a.lk{color:var(--text);text-decoration:underline;text-decoration-color:var(--border-3);text-underline-offset:2px;cursor:pointer}
+a.lk:hover{text-decoration-color:var(--text-2)}
+.meter{height:4px;border-radius:2px;background:var(--sel);overflow:hidden;width:100%}
+.meter i{display:block;height:100%;background:var(--text-3)}
+.meter.plum i{background:var(--plum)}
+
+/* Home */
+.agent{display:flex;align-items:center;gap:10px}
+.av{width:26px;height:26px;border-radius:8px;border:1px solid var(--border-2);color:var(--text);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
+.who{display:flex;flex-direction:column;line-height:1.25}
+.who small{color:var(--text-3);font-size:11.5px}
+.chat{display:flex;flex-direction:column;gap:14px;padding:18px 20px}
+.me{align-self:flex-end;max-width:70%;background:var(--bubble);border-radius:12px 12px 4px 12px;padding:8px 12px}
+.ag{max-width:76%}
+.ag .m{font-size:11.5px;color:var(--text-3);margin-bottom:2px}
+.rowcard{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--raised)}
+.rowcard.you{border-color:color-mix(in srgb,var(--plum) 55%,var(--line))}
+.rowcard .t{flex:1;min-width:0}
+.rowcard .t small{display:block;color:var(--text-3);font-size:11.5px}
+.composer{margin:0 16px 16px;border:1px solid var(--border-2);border-radius:14px;padding:10px 10px 8px 12px;background:var(--bg)}
+.composer.focus{border-color:var(--border-3)}
+.composer .r{display:flex;align-items:center;gap:6px;margin-top:8px}
+
+/* Lists */
+.list{border-top:1px solid var(--line)}
+.lrow{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--line);cursor:pointer;position:relative}
+.lrow:hover{background:var(--hover)}
+.lrow.sel{background:var(--sel)}
+.lrow.sel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--plum)}
+.lrow.sel .num{color:var(--text-2)}
+.num{font-size:12px;color:var(--text-4);width:44px;flex:none;font-variant-numeric:tabular-nums}
+.lrow .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow .t.dim{color:var(--text-3)}
+.lrow .who2{width:92px;color:var(--text-3);font-size:12px;flex:none}
+.filters{display:flex;gap:6px;padding:10px 16px;align-items:center}
+.filters .chip{cursor:pointer;line-height:21px;padding:0 9px;border-color:var(--line);color:var(--text-3)}
+.filters .chip.on{border-color:var(--text-3);color:var(--text)}
+.split{display:flex;flex:1;min-height:0}
+.split .l{width:44%;border-right:1px solid var(--line);overflow:auto}
+.split .rr{flex:1;overflow:auto}
+
+/* Detail */
+.detail h4{margin:0 0 6px;font-size:18px;font-weight:600;letter-spacing:-.01em}
+.facts{display:grid;grid-template-columns:110px 1fr;gap:6px 14px;margin:14px 0;font-size:12.5px}
+.facts dt{color:var(--text-3)}.facts dd{margin:0}
+.brief{background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--text-2)}
+.log{margin:14px 0 0 6px;padding:0;list-style:none;border-left:1px solid var(--border-2)}
+.log li{position:relative;padding:0 0 12px 16px;color:var(--text-2)}
+.log li::before{content:"";position:absolute;left:-4px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--bg);border:1.5px solid var(--text-4)}
+.log li.imp{color:var(--text);font-weight:500}
+.log li.imp::before{background:var(--plum);border-color:var(--plum)}
+.log li small{display:block;color:var(--text-4);font-size:11.5px;font-weight:400}
+
+/* Plans */
+.plan{border:1px solid var(--line);border-radius:12px;margin:0 0 12px;overflow:hidden;background:var(--bg)}
+.plan .ph{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.plan .ph b{font-weight:600}
+.plan .ph .r{margin-left:auto;display:flex;align-items:center;gap:10px;color:var(--text-3);font-size:12px}
+.phase{display:flex;align-items:center;gap:10px;padding:8px 14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text-2)}
+.phase .t{flex:1}
+.phase.now{background:var(--bg-2);color:var(--text)}
+.phase.now .t{font-weight:500}
+.phase.done{color:var(--text-3)}
+
+/* Docs */
+.reader{padding:22px 28px;max-width:640px}
+.reader h1{font-size:20px;margin:0 0 4px;letter-spacing:-.01em}
+.reader .ab{color:var(--text-3);margin:0 0 18px}
+.reader h2{font-size:14px;margin:20px 0 6px}
+.reader p{color:var(--text-2);margin:0 0 8px}
+.reader table{border-collapse:collapse;width:100%;font-size:12.5px;margin:8px 0}
+.reader th,.reader td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}
+.reader th{color:var(--text-3);font-weight:500}
+.reader blockquote{margin:10px 0;padding:2px 12px;border-left:2px solid var(--border-3);color:var(--text-2)}
+.reader code{background:var(--code-bg);border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:11.5px}
+
+/* Accounts */
+.acc{margin:0 auto;max-width:720px;padding:20px 16px}
+.acccard{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.arow{display:flex;align-items:center;gap:12px;padding:11px 12px 11px 16px;border-top:1px solid var(--line)}
+.arow:first-child{border-top:0}
+.arow:hover{background:var(--hover)}
+.arow .b{flex:1;min-width:0}
+.arow .mt{display:flex;flex-wrap:wrap;gap:0 6px;font-size:12px;color:var(--text-3);align-items:center}
+.sep{color:var(--text-4)}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:5}
+.scrim.open{display:flex}
+.dlg{width:480px;background:var(--bg);border:1px solid var(--border-2);border-radius:12px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.dlg header{height:52px;display:flex;align-items:center;gap:12px;padding:0 12px 0 20px;border-bottom:1px solid var(--line)}
+.dlg header h3{margin:0;flex:1;font-size:15px;font-weight:600}
+.steps{display:flex;gap:4px}.steps i{width:18px;height:3px;border-radius:2px;background:var(--border-2)}.steps i.on{background:var(--plum)}
+.dlg .body{padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border:1px solid var(--border-2);border-radius:10px;cursor:pointer}
+.opt:hover{background:var(--bg-2)}
+.opt.on{border-color:var(--plum);box-shadow:0 0 0 1px var(--plum);background:var(--plum-dim)}
+.opt b{display:block;font-weight:500}.opt small{color:var(--text-3);font-size:12px}
+.dlg footer{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px;border-top:1px solid var(--line);background:var(--bg-2)}
+.lbl{font-size:12px;color:var(--text-2);margin:6px 0 4px;display:block}
+
+/* Settings */
+.set{max-width:680px;margin:0 auto;padding:20px 16px}
+.set h4{font-size:12px;color:var(--text-3);font-weight:600;margin:20px 0 8px}
+.set h4:first-child{margin-top:0}
+.sgroup{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.srow{display:flex;align-items:center;gap:16px;padding:12px 16px;border-top:1px solid var(--line)}
+.srow:first-child{border-top:0}
+.srow .t{flex:1;min-width:0}
+.srow .t small{display:block;color:var(--text-3);font-size:12px}
+
+/* Sheet */
+.sheet{padding:18px 20px;display:flex;flex-direction:column;gap:18px}
+.sheet h5{margin:0 0 8px;font-size:12px;color:var(--text-3);font-weight:600}
+.bt{display:grid;grid-template-columns:120px repeat(6,auto);gap:10px 12px;align-items:center;justify-content:start}
+.bt .c{font-size:11px;color:var(--text-3)}
+.states{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.states div{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+.states small{margin-left:auto;color:var(--text-4);font-size:11px}
+.ladder{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.ladder div{flex:1;height:44px;display:flex;align-items:flex-end;padding:4px 6px;font-size:10.5px}
+
+/* Below the app */
+.grid8{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:1100px){.grid8{grid-template-columns:repeat(2,1fr)}}
+.mini{border-radius:12px;overflow:hidden;cursor:pointer;border:1px solid transparent}
+.mini.on{outline:2px solid var(--page-text);outline-offset:2px}
+.mini .mh{display:flex;height:120px}
+.mini .ms{width:30%;padding:8px 6px;display:flex;flex-direction:column;gap:4px}
+.mini .ms i{height:7px;border-radius:3px;display:block}
+.mini .mm{flex:1;padding:10px;display:flex;flex-direction:column;gap:6px}
+.mini .mm i{height:6px;border-radius:3px;display:block}
+.mini .mf{padding:8px 10px;font-size:12px;display:flex;justify-content:space-between;gap:6px}
+table.cr{width:100%;border-collapse:collapse;font-size:12px}
+table.cr th,table.cr td{text-align:left;padding:6px 10px;border-bottom:1px solid color-mix(in srgb,var(--page-text) 10%,transparent)}
+table.cr th{font-weight:600;opacity:.6;font-size:11px}
+.ok{font-weight:600}.no{font-weight:700;text-decoration:underline}
+.smp{display:inline-flex;min-width:44px;height:22px;align-items:center;justify-content:center;border-radius:5px;padding:0 6px;border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent)}
+pre.css{border:1px solid color-mix(in srgb,var(--page-text) 12%,transparent);border-radius:10px;padding:12px 14px;overflow:auto;max-height:300px;font-size:11px;margin:0;opacity:.9}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:1000px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="dk">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="home" viewBox="0 0 16 16"><path d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/></symbol>
+  <symbol id="todos" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></symbol>
+  <symbol id="plan" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/></symbol>
+  <symbol id="docs" viewBox="0 0 16 16"><path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3"/></symbol>
+  <symbol id="users" viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2.2"/><path d="M2.2 13c.4-2.2 1.9-3.5 3.8-3.5s3.4 1.3 3.8 3.5"/><circle cx="11.2" cy="6" r="1.8"/><path d="M11 9.6c1.6 0 2.8 1.1 3.1 3"/></symbol>
+  <symbol id="cog" viewBox="0 0 16 16"><path d="M2.75 5h3.5M9.75 5h3.5M2.75 11h1.5M7.75 11h5.5"/><circle cx="8" cy="5" r="1.75"/><circle cx="6" cy="11" r="1.75"/></symbol>
+  <symbol id="swatch" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M2.5 8h11M8 2.5v11"/></symbol>
+  <symbol id="plus" viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></symbol>
+  <symbol id="arrow" viewBox="0 0 16 16"><path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/></symbol>
+  <symbol id="close" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
+  <symbol id="tick" viewBox="0 0 16 16"><path d="M3.8 8.3l2.6 2.6 5.8-6.1"/></symbol>
+  <symbol id="alert" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 5v3.4M8 10.8v.1"/></symbol>
+  <symbol id="pause" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M6.6 6v4M9.4 6v4"/></symbol>
+  <symbol id="clip" viewBox="0 0 16 16"><path d="M10.5 4.5 5.3 9.7a1.5 1.5 0 0 0 2.1 2.1l5.4-5.4a3 3 0 0 0-4.2-4.2L3.2 7.6"/></symbol>
+  <symbol id="power" viewBox="0 0 16 16"><path d="M8 2v6"/><path d="M4.5 4.2a5 5 0 1 0 7 0"/></symbol>
+  <symbol id="caret" viewBox="0 0 16 16"><path d="M5 6.5l3 3 3-3"/></symbol>
+  <symbol id="search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/></symbol>
+  <symbol id="spark" viewBox="0 0 16 16"><path d="M8 1.5v13M1.5 8h13M3.4 3.4l9.2 9.2M12.6 3.4l-9.2 9.2" stroke-width="1.9"/></symbol>
+  <symbol id="knot" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6"/><path d="M8 2.4v5.6l4.8 2.8M8 8l-4.8 2.8"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><path d="M2.5 4.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H7l-3 2.5v-2.5a2 2 0 0 1-1.5-2z"/></symbol>
+</defs></svg>
+
+<div class="top"><div class="in">
+  <h1>Quiet house style</h1>
+  <div class="pick" id="pick"></div>
+  <div class="mode"><button id="mL">Light</button><button id="mD" aria-pressed="true">Dark</button></div>
+</div></div>
+
+<div class="wrap">
+  <p class="lead">Round two, after user messages 14122, 14125 and 14128: light mode is white and black, dark mode is black, with greys between; one plum, and one muted red for errors only. Everything is told apart by shades of the same grey and of the same plum, never by a second colour. The eight palettes differ only in the faint tint of their one grey, the contrast, how black the dark mode is, and the plum's hue and strength. Pick one at the top, then click through the pages in the sidebar: Add account on Accounts opens its dialog, and a task row opens its detail. Round one stays in <code>docs/designs/house-style/</code>.</p>
+  <div class="rules">
+    <div><b>Shades, not colours</b>Within a palette every grey is one hue at different lightness, and the accent is one plum at different strengths (plum, its hover and pressed steps, a plum ring, the faint plum-dim). Nothing is told apart by a second hue.</div>
+    <div><b>Grey tells things apart</b>Four shades of text (text, text-2, text-3, text-4) and a ladder of surface greys. No coloured text anywhere; a link is underlined text.</div>
+    <div><b>One accent: plum</b>Only on the primary button, the selection mark, a checked control, the step bar, and the dot or outline that means “this waits on you”.</div>
+    <div><b>Badges are outlines</b>No fill: a faint grey outline, a grey one, a darker grey one, and the plum outline only for the one thing that waits on you.</div>
+    <div><b>One muted red</b>Only for an error: a failed task's icon, a refused field, and the button that deletes, in its confirm step.</div>
+  </div>
+
+  <div class="about"><h2 id="aName"></h2><p id="aLine"></p></div>
+  <div class="knobs" id="aKnobs"></div>
+
+  <div class="app" id="app">
+    <nav class="side" id="side"></nav>
+    <div class="main" id="main"></div>
+    <div class="scrim" id="scrim"></div>
+  </div>
+
+  <div class="h">All eight · click one</div>
+  <div class="grid8" id="grid8"></div>
+
+  <div class="two" style="margin-top:8px">
+    <div><div class="h">Contrast of this palette (WCAG 2.1, computed here)</div><table class="cr" id="cr"></table></div>
+    <div><div class="h">As CSS for app.css</div><pre class="css" id="css"></pre></div>
+  </div>
+</div>
+
+<script>
+/* ---------- colour helpers ---------- */
+function hsl(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
+  return '#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('');}
+function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(x=>x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4));return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+
+/* ---------- the eight palettes ----------
+   g: the one grey's faint tint [hue, saturation 0-4], c: contrast (-1 soft, 0 even, 1 crisp),
+   d: dark-mode page lightness in % (0 is black), lp/dp: the one plum in light and dark as [hue, saturation, lightness]. */
+const P = {
+  graphite:{name:'Graphite and plum',line:'Round one\'s plum made quiet: pure greys, even contrast, a near-black dark mode and a mid plum.',g:[0,0],c:0,d:6,lp:[312,30,36],dp:[314,32,70],knobs:['pure greys','even contrast','dark 6%','plum, medium']},
+  ink:{name:'Ink and damson',line:'The starkest: white and true black with a deep damson that reads almost black in light mode.',g:[0,0],c:1,d:2,lp:[310,38,26],dp:[312,40,76],knobs:['pure greys','crisp contrast','dark 2%','damson, deep']},
+  stone:{name:'Stone and mulberry',line:'Greys with the faintest warmth, softer text, and a redder mulberry.',g:[30,3],c:-1,d:7,lp:[330,32,37],dp:[332,34,72],knobs:['faintly warm greys','soft contrast','dark 7%','mulberry, red-leaning']},
+  slate:{name:'Slate and violet',line:'Greys with the faintest cool tint and a bluer, quieter violet. The most technical.',g:[225,4],c:1,d:5,lp:[268,24,42],dp:[266,30,74],knobs:['faintly cool greys','crisp contrast','dark 5%','violet, low saturation']},
+  ash:{name:'Ash and heather',line:'Soft contrast and a dusty heather that is almost a grey itself. The calmest; dark mode is charcoal rather than black.',g:[290,2],c:-1,d:10,lp:[292,14,38],dp:[292,18,72],knobs:['near-pure greys','soft contrast','dark 10%','heather, desaturated']},
+  fig:{name:'Paper and fig',line:'Faintly warm greys, even contrast and a muted brown-plum fig.',g:[35,4],c:0,d:6,lp:[318,24,33],dp:[318,26,70],knobs:['faintly warm greys','even contrast','dark 6%','fig, muted']},
+  lilac:{name:'Fog and lilac',line:'Faintly cool, misty greys and a lilac closer to purple; a soft dark mode.',g:[240,3],c:-1,d:9,lp:[275,28,44],dp:[274,34,76],knobs:['faintly cool greys','soft contrast','dark 9%','lilac, purple']},
+  wine:{name:'Charcoal and wine',line:'Crisp charcoal and a wine that leans to red; deep and moody in dark mode.',g:[20,2],c:1,d:3,lp:[336,38,34],dp:[338,36,70],knobs:['faintly warm greys','crisp contrast','dark 3%','wine, saturated']},
+};
+
+/* Turns a palette into the app's tokens for one mode. Every grey shares one hue and saturation; light pages are white. */
+function make(p,mode){
+  const [h,s]=p.g, c=p.c, G=(l)=>hsl(h,s,l);
+  if(mode==='light'){
+    const t=hsl(...p.lp);
+    return {side:G(97),bg:'#ffffff',bg2:G(98.6),raised:G(98),hover:G(95.2),sel:G(92.6),chip:G(94),bubble:G(95.6),code:G(97.2),
+      line:G(91.6-c*.8),border:G(90.6),inner:G(94.4),b2:G(86-c*2),b3:G(78-c*3),input:G(56-c*2),track:G(86),
+      text:G(9-c*3),t2:G(30-c*3),t3:G(43),t4:G(58+c*2),
+      plum:t,plumHover:hsl(p.lp[0],p.lp[1],p.lp[2]-5),plumPress:hsl(p.lp[0],p.lp[1],p.lp[2]-9),onPlum:'#ffffff',
+      plumDim:hsl(p.lp[0],Math.max(8,p.lp[1]*.5),96.5),ring:t,danger:hsl(6,36,42),dangerHover:hsl(6,36,37),onDanger:'#ffffff'};
+  }
+  const d=p.d, t=hsl(...p.dp);
+  return {side:G(Math.max(0,d-2)),bg:G(d),bg2:G(Math.max(0,d-1)),raised:G(d+3),hover:G(d+5.5),sel:G(d+8.5),chip:G(d+8),bubble:G(d+6),code:G(Math.max(0,d-1)),
+    line:G(d+7+c),border:G(d+7.5),inner:G(d+5),b2:G(d+12+c*2),b3:G(d+18+c*2),input:G(d+32),track:G(d+14),
+    text:G(91+c*3),t2:G(71+c*3),t3:G(Math.max(56,d+46)),t4:G(Math.max(43,d+34)),
+    plum:t,plumHover:hsl(p.dp[0],p.dp[1],p.dp[2]+5),plumPress:hsl(p.dp[0],p.dp[1],p.dp[2]-5),onPlum:G(6),
+    plumDim:hsl(p.dp[0],Math.max(8,p.dp[1]*.4),d+7),ring:t,danger:hsl(6,38,64),dangerHover:hsl(6,38,69),onDanger:G(6)};
+}
+function tokens(k){
+  return {
+    '--side':k.side,'--bg':k.bg,'--bg-2':k.bg2,'--raised':k.raised,'--hover':k.hover,'--sel':k.sel,'--float-bar':k.hover,'--chip':k.chip,'--bubble':k.bubble,'--code-bg':k.code,
+    '--border':k.border,'--border-inner':k.inner,'--border-2':k.b2,'--border-3':k.b3,'--line':k.line,'--bar-track':k.track,'--input':k.input,
+    '--text':k.text,'--text-2':k.t2,'--text-3':k.t3,'--text-4':k.t4,
+    '--plum':k.plum,'--plum-hover':k.plumHover,'--plum-press':k.plumPress,'--on-plum':k.onPlum,'--plum-dim':k.plumDim,'--ring':k.ring,
+    '--brand':k.plum,'--brand-text':k.text,'--brand-dim':k.plumDim,'--asks':k.text,
+    '--progress':k.t3,'--read-tick':k.t3,'--tone-good':k.t3,'--created':k.t3,'--tone-warn':k.text,'--blocking':k.text,'--tone-work':k.t3,
+    '--tone-commit':k.t3,'--tone-helper':k.t3,'--paused':k.t3,'--tone-sequence':k.t3,'--tone-paused':k.t3,'--delegated':k.t3,'--open':k.t4,
+    '--danger':k.danger,'--danger-hover':k.dangerHover,'--on-danger':k.onDanger,'--danger-soft':k.danger,
+  };
+}
+
+/* ---------- pages ---------- */
+const I=(n,c='')=>`<svg class="i ${c}"><use href="#${n}"/></svg>`;
+const STATE={
+  done:`<span class="st">${I('tick','s14')}Completed</span>`,
+  work:`<span class="st" style="color:var(--text-2)"><span class="spin"></span>Working</span>`,
+  open:`<span class="st"><span class="dot hollow"></span>Open</span>`,
+  blocked:`<span class="st">${I('pause','s14')}Blocked</span>`,
+  failed:`<span class="st strong"><span class="err">${I('alert','s14')}</span>Failed</span>`,
+  you:`<span class="st strong"><span class="dot plum"></span>Waits on you</span>`,
+  testing:`<span class="st" style="color:var(--text-2)"><span class="dot plumring"></span>Testing</span>`,
+};
+const NAV=[['home','home','Home',''],['tasks','todos','Tasks','24'],['plans','plan','Plans','3'],['docs','docs','Documents',''],['accounts','users','Accounts',''],['settings','cog','Settings',''],['sheet','swatch','Buttons and badges','']];
+let page='home';
+
+function side(){
+  return `<div class="brand"><b>J</b>Journal</div>`+NAV.slice(0,5).map(([k,ic,t,n])=>`<div class="nav ${page===k?'on':''}" data-p="${k}">${I(ic)}${t}${k==='home'?'<span class="pd" title="A question waits on you"></span>':n?`<span class="n">${n}</span>`:''}</div>`).join('')
+   +`<div style="flex:1"></div><div class="navlabel">This design</div>`+NAV.slice(5).map(([k,ic,t])=>`<div class="nav ${page===k?'on':''}" data-p="${k}">${I(ic)}${t}</div>`).join('');
+}
+
+const TASKS=[
+  [1702,'Account settings dialog: Save inside the name field','work','Worker 3',['frontend']],
+  [1701,'Accounts page: smaller settings button, centred column','you','Main',['frontend']],
+  [1699,'House style: quiet palettes, round two','work','Helper 261',['design']],
+  [1698,'Recovery notice runs full width under the card','open','—',['frontend']],
+  [1695,'Sign-in check times out on a slow host','failed','Worker 2',['hosts']],
+  [1694,'Rename refused for a name in use: say why','testing','Worker 1',['accounts']],
+  [1692,'Home: agent bar chooses the agent','done','Worker 1',['home']],
+  [1690,'Plan 43 phase 244: dock tools through commands','blocked','Main',['plan-43']],
+  [1688,'Remove the info, star and trash icons','done','Worker 3',['frontend']],
+];
+function taskRows(sel,compact){return TASKS.map(([n,t,s,w,tags])=>`<div class="lrow ${n===sel?'sel':''}" data-t="${n}"><span class="num">${n}</span><span class="t ${s==='done'?'dim':''}">${t}</span>${compact?'':tags.map(x=>`<span class="chip faint">${x}</span>`).join('')+`<span class="who2">${w}</span>`}<span style="width:${compact?96:110}px;flex:none">${STATE[s]}</span></div>`).join('')}
+
+const PAGES={
+ home:()=>`<div class="bar"><div class="agent"><span class="av">1</span><div class="who"><span>Agent 1 · main</span><small>Claude Code · Opus · Work (Max)</small></div></div>
+   <span class="st" style="margin-left:12px;color:var(--text-2)"><span class="spin"></span>Working on task 1702</span>
+   <div class="r"><button class="btn sm bordered">${I('power','s14')}Stop</button><button class="btn sm">${I('caret','s14')}Session</button></div></div>
+   <div class="scroll"><div class="chat">
+     <div class="me">Can you tidy up the account settings dialog? The Save button is in the way.</div>
+     <div class="ag"><div class="m">Agent 1 · 13:42</div>I've asked a designer. The draft is in <a class="lk">doc 85</a>: Save now sits inside the name field and appears only once the name has changed. The work is <a class="lk">task 1702</a>.</div>
+     <div class="rowcard">${I('todos')}<div class="t">Account settings dialog: Save inside the name field<small>Task 1702 · Worker 3 · 2 of 5 steps</small></div>${STATE.work}</div>
+     <div class="rowcard you">${I('ask')}<div class="t">Which save behaviour for the name?<small>Question · asked 13:44</small></div><span class="chip plum">Waits on you</span><button class="btn sm primary">Answer</button></div>
+     <div class="rowcard">${I('todos')}<div class="t">Sign-in check times out on a slow host<small>Task 1695 · Worker 2 · stopped at step 3</small></div>${STATE.failed}</div>
+     <div class="me">Inside the field, Enter saves. Go.</div>
+     <div class="ag"><div class="m">Agent 1 · 13:47</div>Done. Worker 3 is on it; I'll tell you when it's ready to test.</div>
+   </div></div>
+   <div class="composer focus"><div style="color:var(--text-4)">Message Agent 1…</div><div class="r"><span class="ib">${I('clip','s14')}</span><span style="flex:1"></span><span class="chip faint">Opus</span><button class="btn sm primary">${I('arrow','s14')}Send</button></div></div>`,
+ tasks:()=>`<div class="bar"><h3>Tasks</h3><span class="sub">24 open · 3 started</span><div class="r"><div class="field" style="width:220px;height:26px">${I('search','s14')}<span class="ph">Search tasks</span></div><button class="btn sm primary">${I('plus','s14')}New task</button></div></div>
+   <div class="filters"><span class="chip on">All</span><span class="chip">Started</span><span class="chip">Waits on you</span><span class="chip">Testing</span><span class="chip">Completed</span></div>
+   <div class="scroll list">${taskRows(0)}</div>`,
+ task:()=>`<div class="bar"><h3>Tasks</h3><span class="sub">task 1702</span><div class="r"><button class="btn sm bordered">Block</button><button class="btn sm bordered">Move to testing</button><button class="btn sm primary">Close task</button></div></div>
+   <div class="split"><div class="l list">${taskRows(1702,true)}</div><div class="rr"><div class="pad detail">
+     <h4>Account settings dialog: Save inside the name field</h4>${STATE.work}
+     <dl class="facts"><dt>Started by</dt><dd>Agent 1</dd><dt>Worker</dt><dd>Worker 3</dd><dt>Complexity</dt><dd>3 · a few files in one module</dd><dt>Tags</dt><dd><span class="chip faint">frontend</span> <span class="chip faint">accounts</span></dd><dt>From</dt><dd><a class="lk">message 13507</a> · <a class="lk">doc 85</a></dd></dl>
+     <div class="brief">Drop the standing Save: the name runs full width and shows Save at its right end only once it has changed. Enter saves, Escape reverts. Done when component tests cover every state.</div>
+     <ul class="log"><li>Took the task<small>13:48 · Worker 3</small></li><li>Split startFrom: reset, and reset with focus for the wizard<small>13:55</small></li><li class="imp">Left the blur save out, as the design recommends<small>14:02 · important</small></li><li>Tests for unchanged, edited, saving, saved and refused<small>14:10</small></li></ul>
+   </div></div></div>`,
+ plans:()=>`<div class="bar"><h3>Plans</h3><span class="sub">3 started</span><div class="r"><button class="btn sm primary">${I('plus','s14')}New plan</button></div></div>
+   <div class="scroll pad">${[
+     ['Plan 43','The dock: journal and MCP tools in one place',62,[['Phase 242 · Card language and registry','done'],['Phase 243 · Placements and receipts','done'],['Phase 244 · Dock tools through commands','work',1],['Phase 245 · Add to chat everywhere','open']]],
+     ['Plan 44','Quiet house style',20,[['Phase 246 · Choose a palette','you',1],['Phase 247 · Tokens into app.css','open'],['Phase 248 · Button and badge variants','open']]],
+     ['Plan 41','Accounts, second pass',100,[['Phase 236 · One settings button','done'],['Phase 237 · Program becomes driver','done']]],
+   ].map(([n,t,pc,ph])=>`<div class="plan"><div class="ph"><span class="num" style="width:auto">${n}</span><b>${t}</b><div class="r"><span>${pc}%</span><div class="meter" style="width:90px"><i style="width:${pc}%"></i></div></div></div>${ph.map(([pt,s,now])=>`<div class="phase ${now?'now':''} ${s==='done'?'done':''}"><span class="t">${pt}</span>${STATE[s]}</div>`).join('')}</div>`).join('')}</div>`,
+ docs:()=>`<div class="bar"><h3>Documents</h3><span class="sub">88 documents</span><div class="r"><div class="field" style="width:200px;height:26px">${I('search','s14')}<span class="ph">Search documents</span></div></div></div>
+   <div class="split"><div class="l list">${[
+     [88,'Design: the journal\'s house style','rev 2 · today'],[85,'Design: account settings dialog','rev 1 · today'],[82,'Design: Accounts page touch-up','rev 1 · today'],[71,'Design: adding an account on the Accounts window','rev 15 · yesterday'],[31,'Accounts: how sign-in works','rev 4 · last week'],[12,'Version 6 deviations from version 5','rev 9 · 2 weeks ago']
+   ].map(([n,t,m],i)=>`<div class="lrow ${i===0?'sel':''}"><span class="num">${n}</span><span class="t">${t}</span><span style="color:var(--text-4);font-size:11.5px;flex:none">${m}</span></div>`).join('')}</div>
+   <div class="rr"><div class="reader"><h1>The journal's house style</h1><p class="ab">Greys first and one plum: eight quiet palettes for light and dark.</p>
+     <h2>The rule</h2><p>Things are told apart by shades of one grey and of one plum, not by colour. The plum marks the primary action, the selection and what waits on you.</p>
+     <blockquote>The muted red appears only for an error, and on the button that deletes something in its confirm step.</blockquote>
+     <h2>Palettes</h2><table><tr><th>Palette</th><th>Greys</th><th>Dark</th></tr><tr><td>Graphite and plum</td><td>pure</td><td>6%</td></tr><tr><td>Ink and damson</td><td>pure, crisp</td><td>2%</td></tr><tr><td>Stone and mulberry</td><td>faintly warm</td><td>7%</td></tr></table>
+     <p>The tokens live in <code>resources/css/app.css</code>. See <a class="lk">message 14122</a> for the request.</p></div></div></div>`,
+ accounts:()=>`<div class="bar"><h3>Accounts</h3><span class="sub">4</span><div class="r"><button class="btn sm primary" id="openAdd">${I('plus','s14')}Add account</button></div></div>
+   <div class="scroll"><div class="acc"><div class="acccard">${[
+     ['spark','Work (Max)','Claude Code subscription',true,'<span class="st"><span class="dot solid"></span>Signed in</span>','Expires 18 Dec 2026',''],
+     ['spark','Personal','Claude Code subscription',false,'<span class="st strong"><span class="dot plum"></span>Needs sign-in</span>','Expired 02 Nov 2026','<button class="btn sm bordered">Sign in again</button>'],
+     ['knot','Codex team key','Codex API key',true,'<span class="st"><span class="dot solid"></span>Signed in</span>','',''],
+     ['knot','Codex personal','Codex subscription',false,'<span class="st" style="color:var(--text-2)"><span class="spin"></span>Signing in</span>','','<button class="btn sm bordered"><span class="spin"></span>Finish signing in</button>'],
+   ].map(([ic,n,s,def,st,ex,btn])=>`<div class="arow"><span style="color:var(--text-2)">${I(ic)}</span><div class="b"><div>${n}</div><div class="mt"><span>${s}</span>${def?'<span class="sep">·</span><span class="chip faint" style="line-height:15px;font-size:11px">Default</span>':''}<span class="sep">·</span>${st}${ex?`<span class="sep">·</span><span style="color:var(--text-4)">${ex}</span>`:''}</div></div>${btn}<span class="ib">${I('cog','s14')}</span></div>`).join('')}</div>
+     <p style="color:var(--text-3);font-size:12px;margin:12px 4px">Needs sign-in carries the plum dot and heavier text because it waits on you. Signed in is a plain grey dot, and Default is a faint outline.</p></div></div>`,
+ settings:()=>`<div class="bar"><h3>Settings</h3></div><div class="scroll"><div class="set">
+   <h4>Appearance</h4><div class="sgroup">
+     <div class="srow"><div class="t">Theme<small>Follows the system unless you choose.</small></div><div class="seg"><span>Light</span><span class="on">Dark</span><span>System</span></div></div>
+     <div class="srow"><div class="t">Palette<small>The greys and the one colour.</small></div><button class="btn sm bordered" id="palBtn"><span>Graphite and plum</span>${I('caret','s14')}</button></div>
+     <div class="srow"><div class="t">Compact rows<small>Tighter lists on Tasks and Documents.</small></div><span class="toggle"></span></div></div>
+   <h4>Agents</h4><div class="sgroup">
+     <div class="srow"><div class="t">Start helpers on their own<small>Let the main agent start read-only helpers without asking.</small></div><span class="toggle on"></span></div>
+     <div class="srow"><div class="t">Worker limit<small>How many workers may run at once.</small></div><div style="text-align:right"><div class="field bad" style="width:70px;height:26px;margin-left:auto">12</div><div class="errtext">At most 8.</div></div></div>
+     <div class="srow"><div class="t">Notify me when<small>Shown in the sidebar and as a sound.</small></div><div style="display:flex;flex-direction:column;gap:6px;font-size:12.5px"><label style="display:flex;gap:8px;align-items:center"><span class="check on">${I('tick','s14')}</span>A question waits</label><label style="display:flex;gap:8px;align-items:center"><span class="check on">${I('tick','s14')}</span>A task moves to testing</label><label style="display:flex;gap:8px;align-items:center"><span class="check"></span>Every message</label></div></div></div>
+   <h4>Clearing</h4><div class="sgroup">
+     <div class="srow"><div class="t">Clear the chat history<small>Messages are deleted; tasks, plans and documents stay. You confirm first.</small></div><button class="btn sm bordered">Clear history</button></div></div>
+   </div></div>`,
+ sheet:()=>{
+   const K=[['Primary','primary','Add account'],['Bordered','bordered','Sign in again'],['Ghost','','Close'],['Danger (confirm only)','danger','Remove account']];
+   const S=[['Rest',''],['Hover','is-hover'],['Pressed','is-press'],['Focus','is-focus'],['Sending','pending'],['Disabled','disabled']];
+   let b='<span></span>'+S.map(s=>`<span class="c">${s[0]}</span>`).join('');
+   K.forEach(([n,c,l])=>{b+=`<span class="c">${n}</span>`+S.map(([,x])=>x==='pending'?`<button class="btn sm ${c}"><span class="spin"></span>${l}</button>`:x==='disabled'?`<button class="btn sm ${c}" disabled>${l}</button>`:`<button class="btn sm ${c} ${x}">${l}</button>`).join('')});
+   const lad=['bg','bg-2','raised','hover','sel','line','border-2','border-3','text-4','text-3','text-2','text'];
+   const plad=['plum-dim','plum-press','plum','plum-hover'];
+   return `<div class="bar"><h3>Buttons and badges</h3><span class="sub">every state, in this palette</span></div><div class="scroll"><div class="sheet">
+   <div><h5>The one grey, in shades: everything is told apart by these</h5><div class="ladder">${lad.map((t,i)=>`<div style="background:var(--${t});color:${i<8?'var(--text-2)':'var(--bg)'}">${t}</div>`).join('')}</div></div>
+   <div><h5>The one plum, in shades</h5><div class="ladder" style="max-width:420px">${plad.map((t,i)=>`<div style="background:var(--${t});color:${i===0?'var(--text-2)':'var(--on-plum)'}">${t}</div>`).join('')}</div></div>
+   <div><h5>Buttons</h5><div class="bt">${b}</div></div>
+   <div><h5>States: an icon, the weight, a shade of grey, or a shade of the plum</h5><div class="states">
+     <div>${STATE.done}<small>tick, text-3</small></div><div>${STATE.work}<small>spinner, text-2</small></div><div>${STATE.open}<small>hollow, text-4</small></div>
+     <div>${STATE.blocked}<small>pause ring, text-3</small></div><div>${STATE.testing}<small>plum ring</small></div><div>${STATE.you}<small>plum dot, heavier</small></div>
+     <div>${STATE.failed}<small>the one red: an error</small></div><div><span class="st"><span class="dot solid"></span>Signed in</span><small>solid dot, text-3</small></div><div><span class="st strong"><span class="dot plum"></span>Needs sign-in</span><small>waits on you</small></div>
+   </div></div>
+   <div><h5>Badges: outlines only, in shades</h5><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="chip faint">frontend</span><span class="chip faint">rev 2</span><span class="chip">Default</span><span class="chip">Opus</span><span class="chip">3 running</span><span class="chip strong">Main agent</span><span class="chip plum">Waits on you</span></div></div>
+   <div><h5>Controls with the plum, and the one error</h5><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><span class="toggle on"></span><span class="toggle"></span><span class="check on">${I('tick','s14')}</span><span class="check"></span><span class="radio on"></span><span class="radio"></span><div class="seg"><span class="on">Day</span><span>Week</span></div><div class="field focus" style="width:160px">Focused field</div><div><div class="field bad" style="width:160px">Personal</div><div class="errtext">Another account has this name.</div></div><div style="width:120px"><div class="meter plum"><i style="width:62%"></i></div></div><span style="font-size:12px">A <a class="lk">link</a> is underlined text</span></div></div>
+   </div></div>`;},
+};
+function dialog(){return `<div class="dlg"><header><h3>Add an account</h3><span class="steps"><i class="on"></i><i></i><i></i></span><span class="ib" id="closeAdd">${I('close')}</span></header>
+  <div class="body"><div class="opt on"><span class="radio on"></span><div><b>Claude subscription</b><small>Sign in with your Claude account in the browser.</small></div></div>
+  <div class="opt"><span class="radio"></span><div><b>Claude API key</b><small>Paste a key from the Claude Console.</small></div></div>
+  <div class="opt"><span class="radio"></span><div><b>Codex subscription</b><small>Sign in with ChatGPT on another screen.</small></div></div>
+  <span class="lbl">Name</span><div class="field focus">Work (Max)</div><small style="color:var(--text-3);font-size:12px">Shown in the account list and the agent bar.</small></div>
+  <footer><button class="btn" id="cancelAdd">Cancel</button><span style="flex:1"></span><button class="btn primary">Continue${I('arrow','s14')}</button></footer></div>`}
+
+/* ---------- state and drawing ---------- */
+let cur='graphite', mode='dark', taskOpen=false;
+const app=document.getElementById('app');
+function palName(){const pb=document.querySelector('#palBtn span'); if(pb) pb.textContent=P[cur].name;}
+function apply(){
+  const p=P[cur], k=make(p,mode), t=tokens(k);
+  Object.entries(t).forEach(([n,v])=>app.style.setProperty(n,v));
+  document.body.classList.toggle('dk',mode==='dark');
+  document.getElementById('mL').setAttribute('aria-pressed',mode==='light');
+  document.getElementById('mD').setAttribute('aria-pressed',mode==='dark');
+  document.getElementById('aName').textContent=p.name+(mode==='dark'?' · dark':' · light');
+  document.getElementById('aLine').textContent=p.line;
+  document.getElementById('aKnobs').innerHTML=p.knobs.map(x=>`<span>${x}</span>`).join('');
+  document.querySelectorAll('#pick button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===cur));
+  palName(); contrast(k); cssOut(); grid();
+}
+function draw(){
+  document.getElementById('side').innerHTML=side();
+  const key = page==='tasks'&&taskOpen ? 'task' : page;
+  document.getElementById('main').innerHTML=PAGES[key]();
+  document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>{page=n.dataset.p;taskOpen=false;draw()});
+  document.querySelectorAll('[data-t]').forEach(r=>r.onclick=()=>{taskOpen=true;page='tasks';draw()});
+  palName();
+  const s=document.getElementById('scrim');
+  const o=document.getElementById('openAdd'); if(o) o.onclick=()=>{s.innerHTML=dialog();s.classList.add('open');
+    ['closeAdd','cancelAdd'].forEach(id=>document.getElementById(id).onclick=()=>s.classList.remove('open'));
+    s.querySelectorAll('.opt').forEach(op=>op.onclick=()=>{s.querySelectorAll('.opt').forEach(x=>{x.classList.remove('on');x.querySelector('.radio').classList.remove('on')});op.classList.add('on');op.querySelector('.radio').classList.add('on')});};
+  if(page!=='accounts') s.classList.remove('open');
+}
+function contrast(k){
+  const rows=[['Text on the page','text','bg',4.5],['Text-2 on the page','t2','bg',4.5],['Text-3 on the page','t3','bg',4.5],['Text-3 on the sidebar','t3','side',4.5],['Text-3 on a selected row','t3','sel',4.5],
+    ['Text-4 (meta, placeholders)','t4','bg',3,'incidental text only'],['Label on the plum button','onPlum','plum',4.5],['Label on plum hover','onPlum','plumHover',4.5],['Label on plum pressed','onPlum','plumPress',4.5],
+    ['Plum against the page (dots, outlines)','plum','bg',3],['Focus ring against the page','ring','bg',3],['Field edge against the page','input','bg',3],
+    ['Muted red against the page (error text)','danger','bg',4.5],['Label on the danger button','onDanger','danger',4.5],['Label on danger hover','onDanger','dangerHover',4.5],['Text on a plum-dim choice','text','plumDim',4.5]];
+  document.getElementById('cr').innerHTML='<tr><th>Pair</th><th>Sample</th><th>Ratio</th><th>Needs</th><th></th></tr>'+rows.map(([n,f,b,need,why])=>{const r=ratio(k[f],k[b]);
+    return `<tr><td>${n}</td><td><span class="smp" style="color:${k[f]};background:${k[b]}">Aa</span></td><td class="mono">${r.toFixed(2)}</td><td class="mono">${need}</td><td class="${r>=need?'ok':'no'}">${r>=need?'Pass':'Below'}${why?` <span style="opacity:.6;font-weight:400">· ${why}</span>`:''}</td></tr>`}).join('');
+}
+function cssOut(){
+  const p=P[cur], f=m=>Object.entries(tokens(make(p,m))).map(([n,v])=>`    ${n}: ${v};`).join('\n');
+  document.getElementById('css').textContent=`/* ${p.name} */\n:root {\n${f('light')}\n}\n\n.dark {\n${f('dark')}\n}`;
+}
+function grid(){
+  document.getElementById('grid8').innerHTML=Object.entries(P).map(([key,p])=>{const k=make(p,mode);
+    return `<div class="mini ${key===cur?'on':''}" data-k="${key}" style="background:${k.bg};color:${k.text};border-color:${k.b2}">
+     <div class="mh"><div class="ms" style="background:${k.side};border-right:1px solid ${k.line}"><i style="background:${k.plum};width:30%"></i><i style="background:${k.sel}"></i><i style="background:${k.chip};width:70%"></i><i style="background:${k.chip};width:80%"></i><i style="background:${k.chip};width:60%"></i></div>
+     <div class="mm"><i style="background:${k.text};width:50%"></i><i style="background:${k.t3};width:80%"></i><i style="background:${k.t4};width:65%"></i><div style="flex:1"></div><div style="display:flex;gap:5px;align-items:center"><span style="height:16px;width:52px;border-radius:4px;background:${k.plum}"></span><span style="height:16px;width:44px;border-radius:4px;border:1px solid ${k.b2}"></span><span style="width:6px;height:6px;border-radius:50%;background:${k.plum};margin-left:4px"></span></div></div></div>
+     <div class="mf" style="border-top:1px solid ${k.line};background:${k.bg2}"><span>${p.name}</span><span style="color:${k.t3}">${p.knobs[3]}</span></div></div>`}).join('');
+  document.querySelectorAll('.mini').forEach(m=>m.onclick=()=>{cur=m.dataset.k;apply();app.scrollIntoView({behavior:'smooth',block:'center'})});
+}
+document.getElementById('pick').innerHTML=Object.entries(P).map(([key,p])=>{const l=make(p,'light'),d=make(p,'dark');
+  return `<button data-k="${key}"><i><b style="background:${l.plum}"></b><b style="background:${d.bg}"></b><b style="background:${d.plum}"></b></i>${p.name}</button>`}).join('');
+document.querySelectorAll('#pick button').forEach(b=>b.onclick=()=>{cur=b.dataset.k;apply()});
+document.getElementById('mL').onclick=()=>{mode='light';apply()};
+document.getElementById('mD').onclick=()=>{mode='dark';apply()};
+draw(); apply();
+</script>
+</body>
+</html>
