@@ -10,7 +10,6 @@ use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Enums\SignInRefusal;
 use App\Profiles\Enums\SignInState;
-use App\Profiles\Exceptions\SignInAnswerUndelivered;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
 use App\Profiles\Support\SignInCompletion;
@@ -45,22 +44,22 @@ final readonly class ReportSignInHandler implements CommandHandler
                 SignInState::Failed,
                 SignInRefusal::fromProvider($command->refusal)->text(),
             ),
-            SignInOutcome::Interrupted => $this->interrupt($attempt, $command->generation, $command->refusal),
+            SignInOutcome::Interrupted => $this->interrupt($attempt, $command->generation),
         };
     }
 
     /**
      * The host could not tell whether the program took the user's answer: a live attempt of that generation ends
-     * interrupted and its staged answer is erased, so it is never given again.
+     * interrupted and its staged answer is erased, so it is never given again. The host's own words are not kept: the
+     * state says what happened.
      */
-    private function interrupt(SignInAttempt $attempt, int $generation, string|null $reason): void
+    private function interrupt(SignInAttempt $attempt, int $generation): void
     {
         if ($attempt->generation !== $generation) {
             return;
         }
 
-        $reason ??= SignInAnswerUndelivered::toProgram()->getMessage();
-        $this->end($attempt, SignInState::Interrupted, $reason);
+        $this->end($attempt, SignInState::Interrupted, null);
     }
 
     /**

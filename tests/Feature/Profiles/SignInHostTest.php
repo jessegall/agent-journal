@@ -255,7 +255,7 @@ final class SignInHostTest extends TestCase
 
         $attempt = $this->attempt($attemptId);
         $this->assertSame(SignInState::Interrupted, $attempt->state);
-        $this->assertStringContainsString('start a fresh sign-in', (string) $attempt->refusal);
+        $this->assertNull($attempt->refusal);
         $this->assertNull($this->app->make(SignInChallenges::class)->takeCode($attempt));
     }
 

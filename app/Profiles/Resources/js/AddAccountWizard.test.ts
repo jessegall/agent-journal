@@ -45,6 +45,7 @@ vi.mock('@inertiajs/vue3', () => ({
         return form;
     },
     Link: { template: '<a><slot /></a>' },
+    router: { reload: vi.fn() },
 }));
 vi.mock('@generated/routes/accounts', () => ({
     startSignIn: () => ({ url: '/accounts/sign-ins', method: 'post' }),
@@ -455,6 +456,55 @@ describe('AddAccountWizard', () => {
         });
         await button(view, 'Show the account').trigger('click');
         expect(view.emitted('close')).toEqual([['shown', 'account-1']]);
+        view.unmount();
+    });
+
+    it('clears a key whose reply was lost and asks again only while the attempt still waits', async () => {
+        const view = openWizard();
+        await flushPromises();
+        const [, , , answer] = forms;
+
+        await view
+            .findAll('[role="radio"]')
+            .find((card) => card.text().includes('API key'))!
+            .trigger('click');
+        await button(view, 'Continue').trigger('click');
+        await view.setProps({ attempts: [attempt('waiting')] });
+        await flushPromises();
+        await view.find('input[type="password"]').setValue('sk-ant-key');
+        await view.find('form').trigger('submit');
+        answer.submit.mock.calls[0][1].onFinish();
+        await flushPromises();
+
+        expect(answer.code).toBe('');
+        expect(view.text()).toContain('Your last answer did not arrive.');
+
+        await view.setProps({ attempts: [attempt('checking')] });
+        expect(view.text()).not.toContain('Your last answer did not arrive.');
+        expect(view.text()).toContain('Checking the sign-in with Claude Code…');
+        view.unmount();
+    });
+
+    it('tells an expired and an interrupted sign-in apart, each with Start again', async () => {
+        const view = openWizard();
+
+        for (const [state, text] of [
+            ['expired', 'The sign-in took too long and was stopped.'],
+            [
+                'interrupted',
+                'The sign-in stopped before your answer reached it',
+            ],
+        ] as const) {
+            await view.setProps({
+                request: { kind: 'resume', attemptId: 'attempt-1' },
+                attempts: [attempt(state)],
+            });
+            await flushPromises();
+
+            expect(view.text()).toContain(text);
+            expect(button(view, 'Start again').exists()).toBe(true);
+        }
+
         view.unmount();
     });
 

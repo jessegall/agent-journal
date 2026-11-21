@@ -136,6 +136,11 @@ const openLink =
                     {{ method.secretSource }}
                 </p>
             </template>
+            <template v-if="actions.isAnswerLost.value">
+                <p class="text-small text-text-2" role="alert">
+                    Your last answer did not arrive. Paste it again.
+                </p>
+            </template>
             <TextField
                 :id="`sign-in-secret-${fieldId}`"
                 v-model="actions.answer.code"
@@ -228,6 +233,11 @@ const openLink =
             </template>
             <template v-else-if="copied === 'copied'">
                 <p class="text-small text-text-2" role="status">Link copied.</p>
+            </template>
+            <template v-if="actions.isAnswerLost.value">
+                <p class="text-small text-text-2" role="alert">
+                    Your last code did not arrive. Paste it again.
+                </p>
             </template>
             <TextField
                 :id="`sign-in-code-${fieldId}`"

@@ -9,7 +9,7 @@ import {
     startSignIn,
     submitCode,
 } from '@generated/routes/accounts';
-import { useForm } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import { formSendingHooks } from '@kit/usePageChanges';
 import type { Ref } from 'vue';
 import { onBeforeUnmount, ref, watch } from 'vue';
@@ -38,6 +38,12 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
     const answer = useForm({ code: '' });
     const challenge = ref<SignInChallenge>({ address: null, code: null });
     let timer: ReturnType<typeof setTimeout> | undefined;
+
+    /**
+     * Whether the last answer's reply never came: the attempt is read again, and only an attempt still waiting for
+     * an answer asks for another paste; one that took it shows Checking or its result.
+     */
+    const isAnswerLost = ref(false);
 
     /**
      * A new account's start whose reply was lost: its request key is read back until the receipt says what became of
@@ -120,6 +126,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         generation++;
         clearTimeout(timer);
         challenge.value = { address: null, code: null };
+        isAnswerLost.value = false;
         answer.reset();
         answer.clearErrors();
     }
@@ -207,15 +214,31 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
      */
     function send(attemptId: string): void {
         const sending = formSendingHooks();
+        let isAnswered = false;
+        isAnswerLost.value = false;
 
-        // A sent code or secret is never kept: it clears on success and on a refusal alike, so it is never sent again.
+        // A sent code or secret is never kept: it clears on success, on a refusal and on a lost reply alike.
         answer.submit(submitCode({ attempt: attemptId }), {
             ...KEEP_THE_WIZARD,
             headers: { 'Idempotency-Key': crypto.randomUUID() },
             ...sending,
-            onSuccess: () => answer.reset(),
-            onError: () => answer.reset('code'),
-            onFinish: sending.onFinish,
+            onSuccess: () => {
+                isAnswered = true;
+                answer.reset();
+            },
+            onError: () => {
+                isAnswered = true;
+                answer.reset('code');
+            },
+            onFinish: () => {
+                sending.onFinish();
+
+                if (!isAnswered) {
+                    answer.reset('code');
+                    isAnswerLost.value = true;
+                    router.reload(KEEP_THE_WIZARD);
+                }
+            },
         });
     }
 
@@ -252,6 +275,7 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
         challenge,
         isReconnecting,
         reconnected,
+        isAnswerLost,
         begin,
         beginAgain,
         send,
