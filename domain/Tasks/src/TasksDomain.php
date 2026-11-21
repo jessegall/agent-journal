@@ -34,6 +34,7 @@ use App\Ui\Enums\Icon;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Api\Events\TaskLogged;
 use Domain\Tasks\Api\Events\TaskStartCommitted;
 use Domain\Tasks\Api\TaskAssignmentCompletion;
 use Domain\Tasks\Api\TaskCard;
@@ -43,6 +44,8 @@ use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskHistoryPage;
 use Domain\Tasks\Api\TaskHolderFilter;
 use Domain\Tasks\Api\TaskList;
+use Domain\Tasks\Api\TaskLogLine;
+use Domain\Tasks\Api\TaskLogPage;
 use Domain\Tasks\Api\TaskProgress;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Api\TaskText;
@@ -57,6 +60,7 @@ use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Contracts\TaskHistoryResolver;
+use Domain\Tasks\Contracts\TaskLogResolver;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Enums\TaskState;
@@ -139,10 +143,12 @@ final class TasksDomain extends Domain implements
                 TaskBlocked::class,
                 TaskCancelled::class,
                 TaskStartCommitted::class,
+                TaskLogged::class,
             )
             ->contracts(
                 TaskProgressCounter::class,
                 TaskHistoryResolver::class,
+                TaskLogResolver::class,
                 TaskResolver::class,
                 TaskAssignmentResolver::class,
                 AssignedTaskResolver::class,
@@ -153,6 +159,8 @@ final class TasksDomain extends Domain implements
                 TaskProgress::class,
                 TaskHistoryPage::class,
                 TaskTransition::class,
+                TaskLogPage::class,
+                TaskLogLine::class,
                 TaskSummary::class,
                 TaskAssignmentCompletion::class,
                 TaskCard::class,
