@@ -204,11 +204,45 @@ function nextBindings(): void {
     router.reload({ only: ['page'], data: { bindings: props.data.bindings.nextCursor } });
 }
 
-function revokeBinding(bindingId: string): void {
+// The folders whose revoke was sent but whose answer was lost, so their row offers Retry while still connected.
+const unconfirmedRevokes = ref<Set<string>>(new Set());
+
+/**
+ * Revokes one folder and reads only the page again. Once the journal answered, focus goes to the folder's row, or
+ * to the list when the row left the page; a lost answer says so, reads the row's real state and keeps Retry; a
+ * refusal stays beside the device it names, with what to do next.
+ */
+function revokeBinding(bindingId: string, deviceName: string): void {
+    let answered = false;
+    const unconfirmed = new Set(unconfirmedRevokes.value);
+    unconfirmed.delete(bindingId);
+    unconfirmedRevokes.value = unconfirmed;
+
     router.delete(revoke({ binding: bindingId }).url, {
         only: ['page'],
         preserveState: true,
-        onError: (errors) => (refusal.value = Object.values(errors)[0] ?? null),
+        onSuccess: () => {
+            answered = true;
+            void nextTick(() => (document.getElementById(`binding-${bindingId}`) ?? list.value)?.focus());
+        },
+        onError: (errors) => {
+            answered = true;
+            const reason = Object.values(errors)[0] ?? 'the journal refused the revoke';
+            outcomes.value = {
+                ...outcomes.value,
+                [bindingId]: `${deviceName}: ${reason}. Read the folder's state above, then revoke it again.`,
+            };
+        },
+        onNetworkError: () => false,
+        onFinish: () => {
+            if (answered) {
+                return;
+            }
+
+            outcomes.value = { ...outcomes.value, [bindingId]: 'Revoke not confirmed: the journal did not answer.' };
+            unconfirmedRevokes.value = new Set([...unconfirmedRevokes.value, bindingId]);
+            reread();
+        },
     });
 }
 </script>
@@ -297,8 +331,9 @@ function revokeBinding(bindingId: string): void {
                         :is-chosen="chosen.has(binding.id)"
                         :is-stale="!fresh"
                         :outcome="outcomes[binding.id]"
+                        :revoke-unconfirmed="unconfirmedRevokes.has(binding.id)"
                         @choose="choose(binding.id, $event)"
-                        @revoke="revokeBinding(binding.id)"
+                        @revoke="revokeBinding(binding.id, $event)"
                     />
                 </template>
             </ul>

@@ -211,10 +211,14 @@ describe('ConnectProjectWindow', () => {
         );
     });
 
-    it('revokes a connected folder through the page, answering only the page', async () => {
+    it('revokes a connected folder through its named dialog, answering only the page', async () => {
         const wrapper = windowWith(true);
 
         await button(wrapper, 'Revoke').trigger('click');
+        await flushPromises();
+        expect(wrapper.find('dialog').text()).toContain('Revoke Owner laptop');
+        expect(destroy).not.toHaveBeenCalled();
+        await button(wrapper, 'Revoke connection').trigger('click');
         await flushPromises();
 
         expect(destroy).toHaveBeenCalledWith(
@@ -395,5 +399,35 @@ describe('ConnectProjectWindow', () => {
         expect(document.activeElement?.id).toBe('binding-binding-1');
         wrapper.unmount();
         reload.mockReset();
+    });
+
+    it('gives focus back to Revoke when the dialog is cancelled', async () => {
+        const wrapper = mount(ConnectProjectWindow, {
+            props: { data: windowData(true) },
+            attachTo: document.body,
+        });
+
+        await button(wrapper, 'Revoke').trigger('click');
+        await flushPromises();
+        await button(wrapper, 'Cancel').trigger('click');
+        await flushPromises();
+
+        expect(destroy).not.toHaveBeenCalled();
+        expect(document.activeElement?.getAttribute('aria-label')).toMatch(/^Revoke connection for Owner laptop/);
+        wrapper.unmount();
+    });
+
+    it('says a revoke whose answer was lost is not confirmed, reads the page again and offers Retry', async () => {
+        type DeleteOptions = { onFinish?: () => void };
+        destroy.mockImplementationOnce((_url: string, options: DeleteOptions) => options.onFinish?.());
+        const wrapper = windowWith(true);
+
+        await button(wrapper, 'Revoke').trigger('click');
+        await button(wrapper, 'Revoke connection').trigger('click');
+        await flushPromises();
+
+        expect(wrapper.text()).toContain('Revoke not confirmed: the journal did not answer.');
+        expect(reload).toHaveBeenCalled();
+        expect(button(wrapper, 'Retry revoke').exists()).toBe(true);
     });
 });
