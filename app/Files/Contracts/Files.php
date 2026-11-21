@@ -24,6 +24,11 @@ interface Files
      */
     public function filePathOf(string $absolutePath): FilePath;
 
+    /**
+     * The real path of a file or folder inside its place; a link out of the place or a closed folder is refused.
+     */
+    public function realPath(FilePath $path): string;
+
     public function read(FilePath $file): string;
 
     /**
@@ -128,14 +133,15 @@ interface Files
     public function locked(FilePath $lock, Closure $work): mixed;
 
     /**
-     * Runs the work with a new file path in the temporary place, removed when the work ends or throws.
+     * Runs the work with a new file path in the temporary place, ending in the extension, such as '.php' for a tool
+     * that formats only PHP files; the file is removed when the work ends or throws.
      *
      * @template T
      *
      * @param  Closure(FilePath): T  $work
      * @return T
      */
-    public function scratch(Closure $work): mixed;
+    public function scratch(Closure $work, string $extension = ''): mixed;
 
     /**
      * The bytes free on the disk that holds the place's root.

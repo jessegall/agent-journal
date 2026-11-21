@@ -44,6 +44,11 @@ final class LocalFiles implements Files
         return $this->roots->filePathOf($absolutePath);
     }
 
+    public function realPath(FilePath $path): string
+    {
+        return $this->confinement->resolved($path);
+    }
+
     public function read(FilePath $file): string
     {
         return $this->whileReading($file, function () use ($file) {
@@ -202,9 +207,9 @@ final class LocalFiles implements Files
         }
     }
 
-    public function scratch(Closure $work): mixed
+    public function scratch(Closure $work, string $extension = ''): mixed
     {
-        $file = FilePath::in(Place::Temporary, 'journal-scratch-'.bin2hex(random_bytes(8)));
+        $file = FilePath::in(Place::Temporary, 'journal-scratch-'.bin2hex(random_bytes(8)).$extension);
 
         try {
             return $work($file);

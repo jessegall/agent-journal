@@ -1,16 +1,9 @@
-# The direct file access sites outside app/Files (plan 39): 111 still waiting to move to App\Files\Contracts\Files,
-# and 8 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
+# The direct file access sites outside app/Files (plan 39): 96 still waiting to move to App\Files\Contracts\Files,
+# and 9 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
 # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
 # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
 # tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed site the code no
 # longer has. Regenerate with: php tools/refactoring/direct-file-sites.php --write
-app/AgentRequests/Console/GenerateCallsCommand.php Illuminate\Filesystem\Filesystem
-app/AgentRequests/Console/GenerateCallsCommand.php file_get_contents()
-app/AgentRequests/Console/GenerateCallsCommand.php file_put_contents()
-app/AgentRequests/Console/GenerateCallsCommand.php glob()
-app/AgentRequests/Console/GenerateCallsCommand.php is_file()
-app/AgentRequests/Console/GenerateCallsCommand.php tempnam()
-app/AgentRequests/Console/GenerateCallsCommand.php unlink()
 app/Hooks/Programs/CodexFolderTrust.php is_dir()
 app/Hooks/Programs/CodexFolderTrust.php is_link()
 app/Hooks/Programs/CodexFolderTrust.php scandir()
@@ -32,10 +25,8 @@ app/Hooks/Support/AccountConfigurationWrite.php fopen()
 app/Hooks/Support/AccountConfigurationWrite.php is_file()
 app/Hooks/Support/AccountConfigurationWrite.php rename()
 app/Hooks/Support/AccountConfigurationWrite.php unlink()
-app/Mcp/Console/ContractSnapshotCommand.php Illuminate\Filesystem\Filesystem
 app/Processes/Console/CommandTypeImportCommand.php file_get_contents()
 app/Processes/Console/CommandTypeImportCommand.php is_file()
-app/Processes/Console/ProcessExportCommand.php file_put_contents()
 app/Processes/Execution/ChannelRunEvents.php file()
 app/Processes/Execution/ChannelRunEvents.php file_put_contents()
 app/Processes/Execution/ChannelRunEvents.php is_dir()
@@ -106,12 +97,6 @@ app/Skills/Support/HostSkillPublisher.php rename()
 app/Skills/Support/HostSkillPublisher.php rmdir()
 app/Skills/Support/HostSkillPublisher.php symlink()
 app/Skills/Support/HostSkillPublisher.php unlink()
-app/Web/Support/UiManifest.php file_put_contents()
-app/Web/Support/UiManifest.php glob()
-app/Web/Support/UiManifest.php is_dir()
-app/Web/Support/UiManifest.php mkdir()
-app/Web/Support/UiManifest.php realpath()
-app/Web/Support/UiManifest.php rename()
 domain/Documents/src/Console/Concerns/ReadsRecordBody.php file_get_contents()
 domain/Documents/src/Console/Concerns/ReadsRecordBody.php is_readable()
 domain/Documents/src/Console/Support/DraftTokens.php Illuminate\Filesystem\Filesystem
@@ -123,3 +108,4 @@ exempt CommandFileSystem app/Processes/Support/ExecutableCheck.php is_file()
 exempt CommandFileSystem app/Processes/Support/PackageScripts.php file_get_contents()
 exempt CommandFileSystem app/Processes/Support/PackageScripts.php is_file()
 exempt CommandFileSystem app/Processes/Values/ExecutionContext.php realpath()
+exempt UserNamedFile app/Processes/Console/ProcessExportCommand.php file_put_contents()

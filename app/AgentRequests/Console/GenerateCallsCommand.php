@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\AgentRequests\Console;
 
 use App\AgentRequests\Support\CallGroups;
+use App\Files\Contracts\Files;
+use App\Files\Enums\Place;
+use App\Files\Values\FilePath;
 use Illuminate\Console\Command;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Process\Factory as ProcessFactory;
 
 /**
@@ -19,48 +21,49 @@ final class GenerateCallsCommand extends Command
 
     protected $description = 'Generate the typed groups of signed calls and the JournalClient';
 
-    public function handle(ProcessFactory $processes, Filesystem $filesystem): int
+    public function handle(ProcessFactory $processes, Files $files): int
     {
-        $files = self::files();
+        $generated = self::generated($files);
 
-        foreach ($files as $path => $source) {
+        foreach ($generated as $relative => $source) {
+            $file = FilePath::in(Place::Project, $relative);
+
             if (! $this->option('check')) {
-                $filesystem->ensureDirectoryExists(dirname($path));
-                $filesystem->put($path, $source);
+                $files->write($file, $source);
 
                 continue;
             }
 
-            if (! is_file($path) || $this->formatted($source, $processes) !== file_get_contents($path)) {
-                $this->error('The generated file '.$this->relative($path).' differs: run php artisan journal:calls.');
+            if (! $files->exists($file) || $this->formatted($source, $processes, $files) !== $files->read($file)) {
+                $this->error("The generated file {$relative} differs: run php artisan journal:calls.");
 
                 return self::FAILURE;
             }
         }
 
         if (! $this->option('check')) {
-            $processes->newPendingProcess()->path(base_path())->run(['vendor/bin/pint', ...array_keys($files)]);
-            $this->line(count($files).' generated files written.');
+            $processes->newPendingProcess()->path(base_path())->run(['vendor/bin/pint', ...array_keys($generated)]);
+            $this->line(count($generated).' generated files written.');
         }
 
         return self::SUCCESS;
     }
 
     /**
-     * @return array<string, string> each generated file's source, by its path
+     * @return array<string, string> each generated file's source, by its path from the project root
      */
-    private static function files(): array
+    private static function generated(Files $files): array
     {
-        $files = [];
+        $generated = [];
         $coreGroups = [];
 
-        foreach (glob(app_path('*/Calls'), GLOB_ONLYDIR) ?: [] as $folder) {
-            $area = basename(dirname($folder));
+        foreach (self::callFolders($files, 'app/*/Calls') as $folder) {
+            $area = basename(dirname($folder->relative));
             $namespace = "App\\{$area}\\Calls";
-            $source = CallGroups::group($folder, $namespace, $area);
+            $source = CallGroups::group($files->realPath($folder), $namespace, $area);
 
             if ($source !== null) {
-                $files["{$folder}/".CallGroups::groupName($area).'.php'] = $source;
+                $generated["{$folder->relative}/".CallGroups::groupName($area).'.php'] = $source;
                 /**
                  * @var class-string $group
                  */
@@ -69,36 +72,48 @@ final class GenerateCallsCommand extends Command
             }
         }
 
-        foreach (glob(base_path('domain/*/src/Calls'), GLOB_ONLYDIR) ?: [] as $folder) {
-            $domain = basename(dirname($folder, 2));
-            $source = CallGroups::group($folder, "Domain\\{$domain}\\Calls", $domain);
+        foreach (self::callFolders($files, 'domain/*/src/Calls') as $folder) {
+            $domain = basename(dirname($folder->relative, 2));
+            $source = CallGroups::group($files->realPath($folder), "Domain\\{$domain}\\Calls", $domain);
 
             if ($source !== null) {
-                $files["{$folder}/".CallGroups::groupName($domain).'.php'] = $source;
+                $generated["{$folder->relative}/".CallGroups::groupName($domain).'.php'] = $source;
             }
         }
 
-        $files[app_path('Client/Support/JournalClient.php')] = CallGroups::client($coreGroups);
+        $generated['app/Client/Support/JournalClient.php'] = CallGroups::client($coreGroups);
 
-        return $files;
+        return $generated;
+    }
+
+    /**
+     * The Calls folders a pattern names in the project.
+     *
+     * @return list<FilePath>
+     */
+    private static function callFolders(Files $files, string $pattern): array
+    {
+        $folders = [];
+
+        foreach ($files->matching(FilePath::in(Place::Project, $pattern)) as $entry) {
+            if ($entry->isFolder()) {
+                $folders[] = $entry->path;
+            }
+        }
+
+        return $folders;
     }
 
     /**
      * The source as Pint writes it, so a check compares what the generator would leave on disk.
      */
-    private function formatted(string $source, ProcessFactory $processes): string
+    private function formatted(string $source, ProcessFactory $processes, Files $files): string
     {
-        $scratch = tempnam(sys_get_temp_dir(), 'calls').'.php';
-        file_put_contents($scratch, $source);
-        $processes->newPendingProcess()->path(base_path())->run(['vendor/bin/pint', $scratch]);
-        $formatted = (string) file_get_contents($scratch);
-        unlink($scratch);
+        return $files->scratch(function (FilePath $scratch) use ($source, $processes, $files) {
+            $files->write($scratch, $source);
+            $processes->newPendingProcess()->path(base_path())->run(['vendor/bin/pint', $files->realPath($scratch)]);
 
-        return $formatted;
-    }
-
-    private function relative(string $path): string
-    {
-        return substr($path, strlen(base_path()) + 1);
+            return $files->read($scratch);
+        }, '.php');
     }
 }

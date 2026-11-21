@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Web\Support;
 
+use App\Files\Contracts\Files;
+use App\Files\Values\FilePath;
 use App\Ui\Declarations\RegisteredPage;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Exceptions\UiManifestInvalid;
@@ -32,14 +34,17 @@ final readonly class UiManifest
         private UiDeclarations $declarations,
         private Factory $views,
         private PagePropTypes $propTypes,
+        private Files $files,
     ) {}
 
     /**
      * Writes every artifact under the project root and answers with their shared hash.
      */
-    public function write(string $root): string
+    public function write(string $projectRoot): string
     {
-        $components = $this->components($root);
+        $base = $this->files->filePathOf($projectRoot);
+        $root = $this->files->realPath($base);
+        $components = $this->components($base, $root);
         $folders = $this->domainFolders($root);
         $hash = substr(sha1((string) json_encode([$components, $folders])), 0, 12);
 
@@ -102,7 +107,7 @@ final readonly class UiManifest
             }
         }
 
-        $this->replaceTogether($root, $artifacts, $hash);
+        $this->replaceTogether($base, $artifacts, $hash);
 
         return $hash;
     }
@@ -113,12 +118,12 @@ final readonly class UiManifest
      *
      * @return array<string, string>
      */
-    private function components(string $root): array
+    private function components(FilePath $base, string $root): array
     {
         $components = [];
 
-        foreach (glob("{$root}/resources/js/pages/*.vue") ?: [] as $file) {
-            $components[basename($file, '.vue')] = $this->fromRoot($root, $file);
+        foreach ($this->files->matching($base->child('resources/js/pages/*.vue')) as $page) {
+            $components[basename($page->name(), '.vue')] = $this->fromRoot($root, $page->fingerprint->realPath);
         }
 
         foreach ($this->declarations->pages() as $page) {
@@ -165,8 +170,10 @@ final readonly class UiManifest
         $folders = [];
 
         foreach ($this->declarations->owners() as $owner) {
-            if (is_dir($owner->scriptFolder)) {
-                $folders[$owner->key] = $this->fromRoot($root, (string) realpath($owner->scriptFolder));
+            $scripts = $this->files->filePathOf($owner->scriptFolder);
+
+            if ($this->files->isFolder($scripts)) {
+                $folders[$owner->key] = $this->fromRoot($root, $this->files->realPath($scripts));
             }
         }
 
@@ -234,30 +241,25 @@ final readonly class UiManifest
      *
      * @param  array<string, string>  $artifacts
      */
-    private function replaceTogether(string $root, array $artifacts, string $hash): void
+    private function replaceTogether(FilePath $base, array $artifacts, string $hash): void
     {
         foreach ($artifacts as $path => $content) {
-            $target = "{$root}/{$path}";
-
-            if (! is_dir(dirname($target))) {
-                mkdir(dirname($target), 0755, true);
-            }
-
-            file_put_contents("{$target}.{$hash}.tmp", $content);
+            $this->files->write($base->child("{$path}.{$hash}.tmp"), $content);
         }
 
         foreach (array_keys($artifacts) as $path) {
-            rename("{$root}/{$path}.{$hash}.tmp", "{$root}/{$path}");
+            $this->files->move($base->child("{$path}.{$hash}.tmp"), $base->child($path));
         }
     }
 
     /**
-     * A file's path from the project root, climbing out of the root with .. when the file lies outside it.
+     * A file's path from the project root, both real paths, climbing out of the root with .. when the file lies
+     * outside it.
      */
     private function fromRoot(string $root, string $file): string
     {
-        $from = explode('/', trim((string) realpath($root), '/'));
-        $to = explode('/', trim((string) realpath($file), '/'));
+        $from = explode('/', trim($root, '/'));
+        $to = explode('/', trim($file, '/'));
         $shared = 0;
 
         while ($shared < count($from) && $shared < count($to) && $from[$shared] === $to[$shared]) {
