@@ -61,13 +61,14 @@ final readonly class ClaudeProgram
     }
 
     /**
-     * Whether one short model call, with no tools and no saved session, answers without an error within the check's
-     * time limit: the only proof a key or token works, since the status trusts any value it is given.
+     * What one short model call, with no tools and no saved session, says against the provider: nothing when it answers
+     * without an error within the check's time limit, the provider's refusal when it does not. It is the only proof a
+     * key or token works, since the status trusts any value it is given.
      *
      * @param  array<string, string>  $variables
      * @param  array<int, string>  $readFiles
      */
-    public function answersModel(string $directory, array $variables = [], array $readFiles = []): bool
+    public function modelRefusal(string $directory, array $variables = [], array $readFiles = []): string|null
     {
         $arguments = ['-p', 'Reply with OK.', '--output-format', 'json', '--max-turns', '1', '--tools', '',
             '--no-session-persistence'];
@@ -77,10 +78,14 @@ final readonly class ClaudeProgram
         try {
             $answer = ClaudeAnswerData::from(json_decode($output, true, 512, JSON_THROW_ON_ERROR));
         } catch (JsonException|CannotCreateData|TypeError) {
-            return false;
+            return 'Claude Code gave no readable answer.';
         }
 
-        return $process->exitCode() === 0 && ! $answer->isError;
+        if ($process->exitCode() === 0 && ! $answer->isError) {
+            return null;
+        }
+
+        return $answer->result === '' ? 'Claude Code could not reach the model.' : $answer->result;
     }
 
     /**

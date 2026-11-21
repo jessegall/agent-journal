@@ -14,7 +14,8 @@ use App\Profiles\Values\SignInIdentity;
 
 /**
  * The host's sign-in runner reports a safe outcome of the attempt it runs, in the generation it ran in: waiting for
- * the user, verified by the program's own check outside any transaction, or failed. Run for an authenticated host
+ * the user, verified by the program's own check outside any transaction, or failed, with the provider's reason when
+ * it refused the proof. Run for an authenticated host
  * by the journal itself (internal, not exported).
  *
  * @extends Command<null>
@@ -29,5 +30,6 @@ final readonly class ReportSignIn extends Command
         public int $generation,
         public SignInOutcome $outcome,
         public SignInIdentity $identity,
+        public string|null $refusal = null,
     ) {}
 }

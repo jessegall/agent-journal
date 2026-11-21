@@ -65,9 +65,14 @@ const endedMessages: Record<string, string> = {
 };
 
 /**
- * What a form says about a sign-in that ended without adding or renewing an account; nothing for one that did.
+ * What a form says about a sign-in that ended without adding or renewing an account, with the provider's own reason
+ * when it refused the proof; nothing for one that did.
  */
 export function endedMessage(attempt: SignInAttemptData): string | null {
+    if (attempt.state === 'failed' && attempt.refusal !== null) {
+        return `The sign-in was refused: ${attempt.refusal}`;
+    }
+
     return endedMessages[attempt.state] ?? null;
 }
 

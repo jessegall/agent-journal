@@ -38,6 +38,11 @@ final class RecordingSignInHost implements SignInHost
     public array $identities = [];
 
     /**
+     * @var list<string|null>
+     */
+    public array $refusals = [];
+
+    /**
      * @var list<SignInChallenge>
      */
     public array $challenges = [];
@@ -111,9 +116,14 @@ final class RecordingSignInHost implements SignInHost
         return new SignInPoll($this->pollCount < $this->livePolls, null);
     }
 
-    public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, SignInIdentity $identity): void
-    {
+    public function report(
+        ClaimedSignIn $claimed,
+        SignInOutcome $outcome,
+        SignInIdentity $identity,
+        string|null $refusal = null,
+    ): void {
         $this->outcomes[] = $outcome;
         $this->identities[] = $identity->display;
+        $this->refusals[] = $refusal;
     }
 }

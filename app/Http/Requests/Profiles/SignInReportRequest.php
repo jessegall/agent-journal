@@ -11,7 +11,8 @@ use Illuminate\Validation\Rule;
 
 /**
  * The host sign-in runner's report on the attempt the route names: its safe outcome, the generation it ran in and,
- * once verified, who the program's own proof named: display text, subject and workspace apart. Never the program's output.
+ * once verified, who the program's own proof named: display text, subject and workspace apart; once refused, the
+ * provider's short reason with any key replaced. Never the program's other output.
  */
 final class SignInReportRequest extends FormRequest
 {
@@ -27,6 +28,7 @@ final class SignInReportRequest extends FormRequest
             'subject' => ['nullable', 'string', 'max:200'],
             'workspace' => ['nullable', 'string', 'max:200'],
             'expires_at' => ['nullable', 'date'],
+            'refusal' => ['nullable', 'string', 'max:300'],
         ];
     }
 
@@ -53,6 +55,11 @@ final class SignInReportRequest extends FormRequest
             $this->text('workspace'),
             $this->text('expires_at'),
         );
+    }
+
+    public function refusal(): string|null
+    {
+        return $this->text('refusal');
     }
 
     private function text(string $key): string|null

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Contracts\WorkspaceSource;
 use App\Agents\Enums\MountType;
 use App\Agents\Exceptions\ManifestRefused;
 

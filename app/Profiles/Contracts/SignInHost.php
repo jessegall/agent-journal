@@ -21,7 +21,12 @@ interface SignInHost
 {
     public function claim(): ClaimedSignIn|null;
 
-    public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, SignInIdentity $identity): void;
+    public function report(
+        ClaimedSignIn $claimed,
+        SignInOutcome $outcome,
+        SignInIdentity $identity,
+        string|null $refusal = null,
+    ): void;
 
     public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void;
 

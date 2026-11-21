@@ -77,7 +77,7 @@ final readonly class PrivateSignInProcesses
         $verification = $protocol->prove($process, $claimed->directory);
         $process->stop();
         $outcome = $verification->isSignedIn ? SignInOutcome::Verified : SignInOutcome::Failed;
-        $this->host->report($claimed, $outcome, $verification->identity);
+        $this->host->report($claimed, $outcome, $verification->identity, $verification->refusal);
 
         return true;
     }

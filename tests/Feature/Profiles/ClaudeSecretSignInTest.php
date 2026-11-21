@@ -57,6 +57,14 @@ final class ClaudeSecretSignInTest extends TestCase
         $this->assertSame('2027-05-01', $verification->identity->expiry()?->toDateString());
     }
 
+    public function test_a_key_the_provider_refuses_keeps_the_providers_reason(): void
+    {
+        $verification = $this->proofOf(ClaudeKeySignIn::class, 'revoked-key');
+
+        $this->assertFalse($verification->isSignedIn);
+        $this->assertSame('Invalid API key · Fix external API key', $verification->refusal);
+    }
+
     public function test_a_key_no_model_call_accepts_or_an_oauth_login_in_its_folder_proves_nothing(): void
     {
         $this->assertFalse($this->proofOf(ClaudeKeySignIn::class, 'revoked-key')->isSignedIn);

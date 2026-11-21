@@ -60,10 +60,14 @@ abstract readonly class ClaudeSecretSignIn implements SignInProtocol
     public function prove(PrivateAccountProcess $process, string $directory): SignInVerification
     {
         $verification = $this->verify($directory);
-        $answers = $verification->isSignedIn
-            && $this->claude->answersModel($directory, $this->variables($directory), $this->readFiles($directory));
 
-        return $answers ? $verification : new SignInVerification(false, SignInIdentity::unproved());
+        if (! $verification->isSignedIn) {
+            return $verification;
+        }
+
+        $refusal = $this->claude->modelRefusal($directory, $this->variables($directory), $this->readFiles($directory));
+
+        return $refusal === null ? $verification : SignInVerification::refused($refusal);
     }
 
     /**

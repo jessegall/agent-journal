@@ -8,7 +8,6 @@ use App\Bus\Contracts\CommandFacts;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Enums\SignInOutcome;
-use App\Profiles\Enums\SignInState;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInCompletion;
 
@@ -34,17 +33,17 @@ final readonly class ReportSignInHandler implements CommandHandler
                 $command->generation,
                 $command->identity,
             ),
-            SignInOutcome::Failed => $this->fail($attempt),
+            SignInOutcome::Failed => $this->fail($attempt, $command->refusal),
         };
     }
 
-    private function fail(SignInAttempt $attempt): void
+    private function fail(SignInAttempt $attempt, string|null $refusal): void
     {
         if (! $attempt->isLive()) {
             return;
         }
 
-        $attempt->finish(SignInState::Failed);
+        $attempt->fail($refusal);
         $this->facts->applyRequired();
     }
 }

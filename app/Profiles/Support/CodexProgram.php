@@ -8,8 +8,12 @@ use App\Files\Contracts\Files;
 use App\Files\Enums\Permissions;
 use App\Files\Enums\Place;
 use App\Files\Values\FilePath;
+use App\Profiles\Data\CodexEventData;
 use App\Profiles\Values\CodexStatus;
 use Illuminate\Contracts\Config\Repository;
+use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
+use TypeError;
 
 /**
  * Codex as every sign-in method runs it on the host: the configured program, with the account folder as its
@@ -35,6 +39,36 @@ final readonly class CodexProgram
         $command = [$this->config->string('accounts.codex_program'), ...$arguments];
 
         return PrivateAccountProcess::start($command, $this->environment($directory), $directory);
+    }
+
+    /**
+     * What one short request says against the provider: nothing when Codex's turn completes, the provider's refusal
+     * when it fails, within a minute and a half, since Codex retries a refused request ten times. Codex saves any key
+     * unchecked, so this request is the only proof the key works.
+     */
+    public function modelRefusal(string $directory): string|null
+    {
+        $secondsLimit = 90;
+        $process = $this->start(['exec', '--json', '--skip-git-repo-check', 'Reply with OK.'], $directory);
+        $process->closeInput();
+
+        foreach (explode("\n", $process->finish($secondsLimit)) as $line) {
+            try {
+                $event = CodexEventData::from(json_decode($line, true, 64, JSON_THROW_ON_ERROR));
+            } catch (JsonException|CannotCreateData|TypeError) {
+                continue;
+            }
+
+            if ($event->type === 'turn.completed') {
+                return null;
+            }
+
+            if ($event->type === 'turn.failed') {
+                return $event->error === null ? 'Codex could not reach the model.' : $event->error->message;
+            }
+        }
+
+        return 'Codex gave no readable answer.';
     }
 
     public function status(string $directory): CodexStatus

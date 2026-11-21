@@ -12,6 +12,7 @@ use App\Agents\Commands\EnrollHost;
 use App\Agents\Support\EnrolledHost;
 use App\Bus\Contracts\CommandBus;
 use App\Files\Contracts\Files;
+use App\Http\Data\Profiles\SignInAttemptData;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInOutcome;
@@ -135,6 +136,20 @@ final class SignInHostTest extends TestCase
             SignInMethodMissing::class,
         );
         $this->assertSame(1, SignInAttempt::query()->withoutGlobalScopes()->count());
+    }
+
+    public function test_a_refused_report_keeps_the_providers_reason_for_the_form(): void
+    {
+        $host = $this->enrollHost();
+        $attemptId = $this->begin();
+        $this->signed($host, '/host/sign-ins/claim')->assertOk();
+
+        $this->report($host, $attemptId, 'failed', ['refusal' => 'Invalid API key · Fix external API key'])
+            ->assertNoContent();
+
+        $attempt = $this->attempt($attemptId);
+        $this->assertSame(SignInState::Failed, $attempt->state);
+        $this->assertSame('Invalid API key · Fix external API key', SignInAttemptData::fromAttempt($attempt)->refusal);
     }
 
     public function test_another_host_and_an_unsigned_call_reach_no_attempt(): void

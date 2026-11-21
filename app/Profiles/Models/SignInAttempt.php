@@ -59,6 +59,7 @@ use Illuminate\Support\Str;
  * @property bool $store_removed
  * @property int $cleanup_tries
  * @property CleanupProblem|null $cleanup_problem
+ * @property string|null $refusal
  * @property CarbonImmutable $expires_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -502,6 +503,15 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function isExpiredAt(CarbonImmutable $now): bool
     {
         return $this->expires_at <= $now;
+    }
+
+    /**
+     * The proof failed: the attempt ends failed, keeping the provider's reason when it refused the proof.
+     */
+    public function fail(string|null $refusal): void
+    {
+        $this->refusal = $refusal;
+        $this->finish(SignInState::Failed);
     }
 
     /**

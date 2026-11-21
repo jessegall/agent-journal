@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 /**
  * Codex signed in by an API key against a stand-in program: the key reaches it only on standard input, the status
- * must say a key is configured, and a ChatGPT login in the folder is the wrong method.
+ * must say a key is configured and one request must be answered, and a ChatGPT login in the folder is the wrong method.
  */
 #[TimeLimit(seconds: 6, reason: 'It runs a stand-in program as a host process several times.')]
 final class CodexKeySignInTest extends TestCase
@@ -48,10 +48,23 @@ final class CodexKeySignInTest extends TestCase
         $this->assertTrue($protocol->verify($this->directory)->isCertain);
     }
 
+    public function test_a_key_the_provider_refuses_proves_nothing_and_keeps_its_reason_without_the_key(): void
+    {
+        $verification = $this->proofOf('sk-proj-revoked-key');
+
+        $this->assertFalse($verification->isSignedIn);
+        $this->assertSame(
+            'unexpected status 401 Unauthorized: Incorrect API key provided: the key. You can find your API key at '
+                .'https://platform.openai.com/account/api-keys.',
+            $verification->refusal,
+        );
+    }
+
     public function test_a_refused_key_or_a_chatgpt_login_proves_nothing(): void
     {
         $this->assertFalse($this->proofOf('revoked-key')->isSignedIn);
 
+        exec('rm -rf '.escapeshellarg($this->directory).'/*');
         file_put_contents($this->directory.'/auth.json', '{"tokens":"chatgpt"}');
         $this->assertFalse($this->app->make(CodexKeySignIn::class)->verify($this->directory)->isSignedIn);
     }

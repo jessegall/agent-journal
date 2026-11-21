@@ -42,7 +42,7 @@ case "$1" in
         if [ -f "$CLAUDE_CONFIG_DIR/api-key" ]; then value=$(cat "$CLAUDE_CONFIG_DIR/api-key"); fi
         case "$value" in
             valid*) echo '{"type":"result","subtype":"success","is_error":false,"result":"OK"}' ;;
-            *) echo '{"type":"result","subtype":"error","is_error":true}'; exit 1 ;;
+            *) echo '{"type":"result","subtype":"success","is_error":true,"api_error_status":401,"result":"Invalid API key · Fix external API key"}'; exit 1 ;;
         esac
         ;;
 esac

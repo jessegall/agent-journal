@@ -4,24 +4,37 @@
 case "$1" in
     --version) echo "codex-cli 0.165.0" ;;
     --help) echo "Commands: exec app-server login mcp" ;;
-    exec) echo "Options: --add-dir <DIR> --json" ;;
+    exec)
+        # exec --json sends one request: it completes when the kept key starts with valid, and fails as OpenAI refuses
+        # a wrong key otherwise, naming the key and the request's address as Codex does.
+        if [ "$2" != "--json" ]; then echo "Options: --add-dir <DIR> --json"; exit 0; fi
+        echo '{"type":"thread.started","thread_id":"t-1"}'
+        echo '{"type":"turn.started"}'
+        key=$(cat "$CODEX_HOME/api-key" 2>/dev/null)
+        case "$key" in
+            valid*) echo '{"type":"turn.completed","usage":{"input_tokens":1,"output_tokens":1}}' ;;
+            *)
+                echo '{"type":"error","message":"Reconnecting... 1/5 (unexpected status 401 Unauthorized)"}'
+                echo "{\"type\":\"turn.failed\",\"error\":{\"message\":\"unexpected status 401 Unauthorized: Incorrect API key provided: $key. You can find your API key at https://platform.openai.com/account/api-keys., url: https://api.openai.com/v1/responses, request id: req_1\"}}"
+                ;;
+        esac
+        ;;
     login)
-        # login --with-api-key reads the key on stdin and keeps it when it starts with valid; login status names how the
-        # folder is signed in.
+        # login --with-api-key reads the key on stdin and keeps any key unchecked, as Codex does; only a request checks
+        # it. login status names how the folder is signed in.
         if [ "$2" = "--with-api-key" ]; then
             read -r key
-            case "$key" in
-                valid*) echo '{"OPENAI_API_KEY":"kept"}' > "$CODEX_HOME/auth.json"; touch "$CODEX_HOME/api-key-mode" ;;
-                *) echo "Error: invalid API key" >&2; exit 1 ;;
-            esac
-            echo "API key saved."
+            echo '{"OPENAI_API_KEY":"kept"}' > "$CODEX_HOME/auth.json"
+            printf '%s' "$key" > "$CODEX_HOME/api-key"
+            touch "$CODEX_HOME/api-key-mode"
+            echo "API key saved. Authentication is checked when you send a request."
             exit 0
         fi
         if [ ! -f "$CODEX_HOME/auth.json" ]; then echo "Not logged in"; exit 1; fi
         if [ -f "$CODEX_HOME/api-key-mode" ]; then echo "API key configured - ***"; else echo "Logged in using ChatGPT"; fi
         ;;
     logout)
-        rm -f "$CODEX_HOME/auth.json" "$CODEX_HOME/api-key-mode"
+        rm -f "$CODEX_HOME/auth.json" "$CODEX_HOME/api-key-mode" "$CODEX_HOME/api-key"
         ;;
     app-server)
         # Answers the device-code start, announces another login's completion first, then signs the folder in and

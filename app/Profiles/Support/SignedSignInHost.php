@@ -55,8 +55,12 @@ final readonly class SignedSignInHost implements SignInHost
         );
     }
 
-    public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, SignInIdentity $identity): void
-    {
+    public function report(
+        ClaimedSignIn $claimed,
+        SignInOutcome $outcome,
+        SignInIdentity $identity,
+        string|null $refusal = null,
+    ): void {
         $body = (string) json_encode([
             'outcome' => $outcome->value,
             'generation' => $claimed->generation,
@@ -64,6 +68,7 @@ final readonly class SignedSignInHost implements SignInHost
             'subject' => $identity->subject,
             'workspace' => $identity->workspace,
             'expires_at' => $identity->expiresAt,
+            'refusal' => $refusal,
         ]);
         $this->send('profiles.sign-in-host.report', ['attempt' => $claimed->attemptId], $body);
     }

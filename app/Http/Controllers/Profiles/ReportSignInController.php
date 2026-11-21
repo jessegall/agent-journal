@@ -23,6 +23,7 @@ final readonly class ReportSignInController
             $request->generation(),
             $request->outcome(),
             $request->identity(),
+            $request->refusal(),
         ));
 
         return new Response(status: Response::HTTP_NO_CONTENT);

@@ -13,7 +13,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One sign-in as its owner sees it: its program, the name a new account gets or the account it signs in again, its
- * state and deadline. Never its folder, its process or its challenge, which only the no-store read gives.
+ * state and deadline, and the provider's reason when it refused the proof. Never its folder, its process or its challenge, which only the no-store read gives.
  */
 #[TypeScript]
 final class SignInAttemptData extends Data
@@ -26,6 +26,7 @@ final class SignInAttemptData extends Data
         public readonly string|null $accountId,
         public readonly SignInState $state,
         public readonly string $expiresAt,
+        public readonly string|null $refusal,
     ) {}
 
     public static function fromAttempt(SignInAttempt $attempt): self
@@ -38,6 +39,7 @@ final class SignInAttemptData extends Data
             $attempt->account_id,
             $attempt->state,
             $attempt->expires_at->toIso8601String(),
+            $attempt->refusal,
         );
     }
 }
