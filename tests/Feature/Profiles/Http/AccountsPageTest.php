@@ -11,6 +11,7 @@ use App\Profiles\Values\AccountLabel;
 use App\Ui\Support\UiDeclarations;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Illuminate\Support\Facades\Process;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -43,6 +44,20 @@ final class AccountsPageTest extends TestCase
 
         $this->assertContains('accounts', array_map(fn ($owner) => $owner->key, $declarations->owners()));
         $this->actingAs($this->owner)->get('/accounts')->assertOk();
+    }
+
+    public function test_opening_accounts_reads_stored_usage_only_and_starts_no_process(): void
+    {
+        Process::fake();
+
+        foreach (range(1, 3) as $visit) {
+            $this->actingAs($this->owner)->get('/accounts')->assertOk();
+        }
+
+        // Only the journal's own version read may run; no provider program, account process or model call.
+        Process::assertDidntRun(
+            fn ($process) => (array) $process->command !== ['git', '-C', base_path(), 'rev-parse', 'HEAD'],
+        );
     }
 
     public function test_the_owner_sees_safe_details_and_never_the_private_folder(): void

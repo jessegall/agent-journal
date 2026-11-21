@@ -166,6 +166,23 @@ describe('an account row', () => {
         expect(row().find('li > div > div').text()).not.toContain('Default');
     });
 
+    it('reads usage as term and value pairs with zoned times and no live announcements', async () => {
+        const shown = row({
+            account: account({ usage: { windows: [fiveHours, week] } }),
+        });
+        await openSettings(shown);
+        const usage = document.querySelector('[aria-label="Usage"]')!;
+
+        expect(usage.querySelector('[aria-live], [role="status"]')).toBeNull();
+        const terms = [...usage.querySelectorAll('dt')].map((term) =>
+            term.textContent?.trim(),
+        );
+        expect(terms).toEqual(expect.arrayContaining(['Week', '5-hour']));
+        const value = usage.querySelector('dd')?.textContent ?? '';
+        expect(value).toMatch(/used, resets .+, observed .+/);
+        expect(value).toMatch(/UTC|GMT|[A-Z]{3,4}/);
+    });
+
     it('offers Recheck once the check could not tell, and only then', async () => {
         const held = row({ account: account({ isHeldForCheck: true }) });
         expect(held.text()).toContain(
