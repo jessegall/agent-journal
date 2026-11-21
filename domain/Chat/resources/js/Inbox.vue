@@ -37,6 +37,8 @@ function takeNext(inboxId: string): void {
             </header>
             <MessageList
                 :messages="panel.page.messages"
+                :pending="[]"
+                :refused="[]"
                 :own-inbox-id="panel.inbox.inboxId"
             />
         </article>

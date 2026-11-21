@@ -1,3 +1,4 @@
+import type { RequestPayload } from '@inertiajs/core';
 import { router } from '@inertiajs/vue3';
 
 /**
@@ -20,7 +21,7 @@ export type KeyedPostOutcome = {
  */
 export function keyedPost(
     url: string,
-    data: Record<string, unknown>,
+    data: RequestPayload,
     key: string,
     outcome: KeyedPostOutcome,
     only: string[] = [],

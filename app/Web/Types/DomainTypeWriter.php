@@ -37,10 +37,7 @@ final readonly class DomainTypeWriter implements Writer
             array_push($files, ...new FlatModuleWriter($path)->output($types, $transformedCollection));
         }
 
-        $exports = array_map(
-            fn (string $path) => "export * from '../../".preg_replace('/\/index\.ts$/', '', $path)."';",
-            array_keys($byPath),
-        );
+        $exports = $this->compatibilityExports($byPath);
 
         return [
             ...$files,
@@ -52,6 +49,32 @@ final readonly class DomainTypeWriter implements Writer
                 )."\n",
             ),
         ];
+    }
+
+    /**
+     * One export line per owner naming its types, leaving out a name more than one owner exports: such a name means
+     * nothing unambiguous here, so a page that uses it imports it from its owner.
+     *
+     * @param  array<string, list<Transformed>>  $byPath
+     * @return list<string>
+     */
+    private function compatibilityExports(array $byPath): array
+    {
+        $names = array_map(
+            fn (array $types) => array_map(fn (Transformed $type) => (string) $type->getName(), $types),
+            $byPath,
+        );
+        $owners = array_count_values(array_merge(...array_values($names)));
+        $exports = [];
+
+        foreach ($names as $path => $ownNames) {
+            $unique = array_values(array_filter($ownNames, fn (string $name) => $owners[$name] === 1));
+            sort($unique);
+            $module = preg_replace('/\/index\.ts$/', '', $path);
+            $exports[] = 'export type { '.implode(', ', $unique)." } from '../../{$module}';";
+        }
+
+        return $exports;
     }
 
     public function resolveReference(Transformed $transformed): ModuleImportResolvedReference
