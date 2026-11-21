@@ -12,12 +12,13 @@ import TerminalAccess from './TerminalAccess.vue';
  * folders of one name apart, its outlined state with the words for it, and when its relay was last in contact, as a
  * relative time with the absolute date and zone for a reader, then each program with the command that starts it in the
  * folder, or the reason Start is not offered for it. Unless it is revoked already it has a box to choose it
- * for revoking with others and its own Revoke, named for its device; what came of a revoke shows under it, and its
- * terminal sign-ins under Terminal access.
+ * for revoking with others and its own Revoke, named for its device, both held back while the list is only last
+ * known; what came of a revoke shows under it, and its terminal sign-ins under Terminal access.
  */
 const props = defineProps<{
     binding: ProjectBindingRowData;
     isChosen: boolean;
+    isStale: boolean;
     outcome?: string;
     serverTime: string;
 }>();
@@ -42,6 +43,7 @@ const deviceName = computed(() => `${props.binding.machineLabel} ${shortReferenc
                 type="checkbox"
                 class="mt-1"
                 :checked="isChosen"
+                :disabled="isStale"
                 :aria-label="`Choose ${binding.projectLabel} on ${deviceName}`"
                 @change="emit('choose', ($event.target as HTMLInputElement).checked)"
             />
@@ -93,6 +95,7 @@ const deviceName = computed(() => `${props.binding.machineLabel} ${shortReferenc
                 variant="bordered"
                 size="small"
                 :aria-label="`Revoke connection for ${deviceName}`"
+                :disabled="isStale"
                 @click="emit('revoke')"
                 >Revoke</Button
             >

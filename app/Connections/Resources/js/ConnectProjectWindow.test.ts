@@ -362,4 +362,37 @@ describe('ConnectProjectWindow', () => {
         expect(text).toContain('Codex unavailable: Codex does not keep its hooks to one session yet.');
         expect(text).not.toContain('journal codex');
     });
+
+    it('keeps the last list when the journal is unreachable, moves focus from Revoke to Retry and back to its row', async () => {
+        type ReloadOptions = { onSuccess?: () => void; onFinish?: () => void };
+        reload.mockImplementation((options: ReloadOptions) => options.onFinish?.());
+        const wrapper = mount(ConnectProjectWindow, {
+            props: { data: windowData(true) },
+            attachTo: document.body,
+        });
+        const revoke = wrapper.find('button[aria-label^="Revoke connection for Owner laptop"]');
+        (revoke.element as HTMLButtonElement).focus();
+
+        window.dispatchEvent(new Event('focus'));
+        await flushPromises();
+
+        expect(wrapper.text()).toContain('Journal unreachable. This is the last known list');
+        expect(wrapper.text()).toContain('Shop / Main');
+        expect(revoke.attributes('disabled')).toBeDefined();
+        expect(document.activeElement?.textContent?.trim()).toBe('Retry');
+        expect(wrapper.find('#binding-binding-1').text()).toContain('Ready');
+
+        reload.mockImplementation((options: ReloadOptions) => {
+            options.onSuccess?.();
+            options.onFinish?.();
+        });
+        await button(wrapper, 'Retry').trigger('click');
+        await flushPromises();
+
+        expect(wrapper.text()).not.toContain('Journal unreachable');
+        expect(wrapper.text()).toContain('The journal answered again; the list is up to date.');
+        expect(document.activeElement?.id).toBe('binding-binding-1');
+        wrapper.unmount();
+        reload.mockReset();
+    });
 });

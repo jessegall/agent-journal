@@ -6,10 +6,11 @@ import {
 } from '@generated/routes/connections/bindings';
 import Button from '@kit/Button';
 import EmptyState from '@kit/EmptyState';
+import { dateTimeWithZone } from '@kit/format';
 import PageHeader from '@kit/PageHeader';
 import { router } from '@inertiajs/vue3';
 import { keyedPost } from '@kit/keyedPost';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import BindingRow from './BindingRow.vue';
 import InstallAttemptList from './InstallAttemptList.vue';
 import InstallLinePanel from './InstallLinePanel.vue';
@@ -18,7 +19,9 @@ import ReleasePlatforms from './ReleasePlatforms.vue';
 /**
  * The owner connects a project on another machine: the install line panel issues, replaces and cancels one line for
  * a new project or an environment to join, and keeps it to itself. Below are the connected folders, each with Revoke;
- * several are revoked at once by choosing them, or every one on a machine.
+ * several are revoked at once by choosing them, or every one on a machine. When a reread fails the window keeps the
+ * last verified list, says the journal is unreachable with when that list was read, and holds back every action that
+ * needs the journal's word until a retry answers; a folder's state is never changed by a failed read.
  */
 const props = defineProps<{ data: ConnectProjectWindowData }>();
 
@@ -28,21 +31,82 @@ const fresh = ref(true);
 let refreshing: ReturnType<typeof setInterval> | undefined;
 // The one reread due when a shown folder's presence expires, so a row turns Offline at its deadline.
 let deadline: ReturnType<typeof setTimeout> | undefined;
+// Said once when a retry reached the journal again, for a screen reader.
+const recovery = ref('');
+// The row whose Revoke had focus when the journal became unreachable, to return to once it answers again.
+let revokeRowBeforeOutage: string | null = null;
+const retryButton = ref<{ $el: HTMLElement } | null>(null);
+const list = ref<HTMLElement | null>(null);
 
 /**
- * Reads the page again, as the attempts change by other tabs and devices; a read that fails marks the line stale.
+ * Reads the page again, as the attempts change by other tabs and devices, and settles what the read showed; only a
+ * hidden tab skips the timed reads, never an asked-for retry.
  */
 function refresh(): void {
     if (document.visibilityState !== 'visible') {
         return;
     }
 
+    reread();
+}
+
+function reread(): void {
     let answered = false;
     router.reload({
         only: ['page'],
         onSuccess: () => (answered = true),
-        onFinish: () => (fresh.value = answered),
+        onNetworkError: () => false,
+        onFinish: () => settle(answered),
     });
+}
+
+/**
+ * A failed read marks the list last known and, when Revoke had focus, hands it to Retry with the row remembered; the
+ * first read that answers again clears that, says so once and puts focus back on the row, or on the list when the row
+ * is gone. Focus anywhere else is left where it is.
+ */
+function settle(answered: boolean): void {
+    if (!answered && fresh.value) {
+        revokeRowBeforeOutage = rowOfFocusedRevoke();
+        fresh.value = false;
+        recovery.value = '';
+        void nextTick(() => {
+            if (revokeRowBeforeOutage !== null) {
+                retryButton.value?.$el.focus();
+            }
+        });
+
+        return;
+    }
+
+    if (answered && !fresh.value) {
+        fresh.value = true;
+        recovery.value = 'The journal answered again; the list is up to date.';
+        void nextTick(focusAfterRecovery);
+    }
+}
+
+function rowOfFocusedRevoke(): string | null {
+    const focused = document.activeElement;
+
+    if (!(focused instanceof HTMLElement) || !focused.matches('button[aria-label^="Revoke connection for"]')) {
+        return null;
+    }
+
+    return focused.closest('li[id^="binding-"]')?.id.slice('binding-'.length) ?? null;
+}
+
+function focusAfterRecovery(): void {
+    const row = revokeRowBeforeOutage;
+    revokeRowBeforeOutage = null;
+    const lostFocus = document.activeElement === null || document.activeElement === document.body;
+
+    if (row === null && !lostFocus) {
+        return;
+    }
+
+    const surviving = row === null ? null : document.getElementById(`binding-${row}`);
+    (surviving ?? list.value)?.focus();
 }
 
 watch(
@@ -180,10 +244,19 @@ function revokeBinding(bindingId: string): void {
         </section>
         <InstallAttemptList :attempts="data.attempts" :fresh="fresh" />
         <template v-if="!fresh">
-            <p class="px-4 text-small text-tone-warn sm:px-0" role="status">
-                This list could not be read again, so what it shows may be out of date.
-            </p>
+            <div
+                role="alert"
+                class="mx-4 flex flex-wrap items-center gap-3 rounded-card border border-tone-warn px-3 py-2 text-small sm:mx-0"
+            >
+                <span class="flex-1">
+                    Journal unreachable. This is the last known list, read
+                    {{ dateTimeWithZone(data.bindings.serverTime) }}. Revoking and copying wait until the journal
+                    answers.
+                </span>
+                <Button ref="retryButton" variant="bordered" size="small" @click="reread">Retry</Button>
+            </div>
         </template>
+        <p class="sr-only" role="status">{{ recovery }}</p>
         <template v-if="data.bindings.rows.length === 0">
             <EmptyState
                 icon="connections"
@@ -197,6 +270,7 @@ function revokeBinding(bindingId: string): void {
                     <Button
                         variant="ghost"
                         size="small"
+                        :disabled="!fresh"
                         @click="chooseMachine(machine)"
                         >Choose all on {{ machine }}</Button
                     >
@@ -205,12 +279,14 @@ function revokeBinding(bindingId: string): void {
                 <Button
                     variant="danger"
                     size="small"
-                    :disabled="chosen.size === 0"
+                    :disabled="chosen.size === 0 || !fresh"
                     @click="revokeChosen"
                     >Revoke chosen ({{ chosen.size }})</Button
                 >
             </div>
             <ul
+                ref="list"
+                tabindex="-1"
                 class="border-t border-line sm:overflow-hidden sm:rounded-card sm:border sm:bg-bg"
                 aria-label="Connected projects"
             >
@@ -219,6 +295,7 @@ function revokeBinding(bindingId: string): void {
                         :binding="binding"
                         :server-time="data.bindings.serverTime"
                         :is-chosen="chosen.has(binding.id)"
+                        :is-stale="!fresh"
                         :outcome="outcomes[binding.id]"
                         @choose="choose(binding.id, $event)"
                         @revoke="revokeBinding(binding.id)"
