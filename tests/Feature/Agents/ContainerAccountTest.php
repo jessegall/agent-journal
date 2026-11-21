@@ -147,6 +147,7 @@ final class ContainerAccountTest extends TestCase
             (string) $start->refusal,
         );
         $this->assertNull($this->asSystem(new ClaimStart($host->hostId, $launch->sessionId)));
+        $this->actAsOwner();
         $agent = $this->app->make(AgentDirectory::class)->visibleAgent($start->agent_id);
         $this->assertSame(AgentPresence::Failed, $agent->presence);
         $this->assertSame($start->refusal, $agent->startRefusal);
