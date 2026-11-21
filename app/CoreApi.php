@@ -444,7 +444,10 @@ use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OperationResolver;
 use App\Bus\Contracts\RecordCommand;
 use App\Bus\Contracts\RefusalDetails;
+use App\Bus\Contracts\CallerReceipts;
 use App\Bus\Contracts\RequestKey;
+use App\Bus\Values\ReceiptAnswer;
+use App\Bus\Support\RefusalReason;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\CommandScopeType;
@@ -1030,6 +1033,8 @@ use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\ProvidesModelRecords;
 use App\Records\Support\RecordIdentity;
+use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Exceptions\ClassMissing;
 use App\Reflection\Support\Reflector;
 use App\Scripts\Attributes\ScriptMember;
 use App\Scripts\Attributes\ScriptObject;
@@ -1345,6 +1350,8 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                ReflectorFactory::class,
+                CallerReceipts::class,
                 DockSourceDeleted::class,
                 DockedSources::class,
                 DockOffers::class,
@@ -1579,6 +1586,8 @@ final class CoreApi
             )
             ->values(
                 SeenSession::class,
+                RefusalReason::class,
+                ReceiptAnswer::class,
                 DockOfferData::class,
                 DockDestinationOptionData::class,
                 ComposedCard::class,
@@ -2325,6 +2334,7 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                ClassMissing::class,
                 ActivationDeclined::class,
                 DockCardInvalid::class,
                 DockDefinitionInvalid::class,

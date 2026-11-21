@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
+use App\Bus\Contracts\CallerReceipts;
 use App\Bus\Enums\ReceiptState;
-use App\Bus\Models\CommandReceipt;
-use App\Bus\Support\ReceiptCallers;
 use App\Communication\Contracts\ConversationResolver;
 use Domain\Chat\Data\RequestOutcomeData;
 use Domain\Chat\Data\RequestOutcomeInput;
@@ -19,32 +18,36 @@ use Domain\Chat\Enums\RequestOutcome;
 final readonly class RequestOutcomes
 {
     public function __construct(
-        private ReceiptCallers $callers,
+        private CallerReceipts $receipts,
         private ConversationResolver $conversations,
     ) {}
 
     public function of(RequestOutcomeInput $request): RequestOutcomeData
     {
-        $command = $request->operation->command();
-        $caller = $this->callers->forCommand($command, $this->callers->current()->actor);
-        $receipt = CommandReceipt::readFor($caller, $command, $request->requestKey);
+        $answers = $this->receipts->answerFor(
+            $request->operation->command(),
+            $request->requestKey,
+            $request->target(),
+        );
         $notYetObservable = RequestOutcomeData::of(RequestOutcome::NotYetObservable);
         $expired = RequestOutcomeData::of(RequestOutcome::Expired);
 
-        if ($receipt === null || ! $receipt->isForTarget($request->target())) {
+        if ($answers === []) {
             return $notYetObservable;
         }
 
-        if ($receipt->isExpired()) {
+        $receipt = $answers[0];
+
+        if ($receipt->isExpired) {
             return $expired;
         }
 
         return match ($receipt->state) {
-            ReceiptState::Completed => $this->confirmed($request, (string) $receipt->result['value']),
+            ReceiptState::Completed => $this->confirmed($request, $receipt->value),
             ReceiptState::Refused => RequestOutcomeData::from([
                 'outcome' => RequestOutcome::Refused,
-                'code' => (string) $receipt->refusal_code,
-                'message' => (string) $receipt->refusal_message,
+                'code' => $receipt->refusalCode,
+                'message' => $receipt->refusalMessage,
             ]),
             ReceiptState::Taken => $notYetObservable,
             ReceiptState::Expired => $expired,

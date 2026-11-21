@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"crypto/hmac"
@@ -37,9 +36,9 @@ type StartGrant struct {
 	ProfileRevision int
 }
 
-// ProjectCommand mirrors App\Http\Requests\Connections\ProjectCommandRequest: one journal verb as typed.
+// ProjectCommand mirrors App\Connections\Calls\RunProjectCommandCall: one journal verb as typed, run once per key.
 type ProjectCommand struct {
-	RequestID string   `json:"requestId"`
+	RequestID string   `json:"request_key"`
 	Binding   string   `json:"binding"`
 	Argv      []string `json:"argv"`
 	Stdin     string   `json:"stdin"`
@@ -80,11 +79,11 @@ func RunProjectCommand(
 		return 0, err
 	}
 
-	return streamFrames(transport, request, write)
+	return readFrames(transport, request, write)
 }
 
-// streamFrames sends the request and reads its answer one frame per line until the exit frame.
-func streamFrames(transport *http.Client, request *http.Request, write func(CommandFrame) error) (int, error) {
+// readFrames sends the request and hands each frame of its answer to write in sequence, until the exit frame.
+func readFrames(transport *http.Client, request *http.Request, write func(CommandFrame) error) (int, error) {
 	response, err := transport.Do(request)
 	if err != nil {
 		return 0, errors.Join(ErrUncertain, err)
@@ -95,13 +94,13 @@ func streamFrames(transport *http.Client, request *http.Request, write func(Comm
 		return 0, err
 	}
 
-	lines := bufio.NewScanner(response.Body)
-	lines.Buffer(make([]byte, 64*1024), 16*1024*1024)
-	for lines.Scan() {
-		var frame CommandFrame
-		if err := json.Unmarshal(lines.Bytes(), &frame); err != nil {
-			return 0, err
-		}
+	var answer struct {
+		Frames []CommandFrame `json:"frames"`
+	}
+	if err := json.NewDecoder(response.Body).Decode(&answer); err != nil {
+		return 0, errors.Join(ErrUncertain, err)
+	}
+	for _, frame := range answer.Frames {
 		if frame.Stream == exitStream {
 			return frame.Code, nil
 		}
@@ -110,7 +109,7 @@ func streamFrames(transport *http.Client, request *http.Request, write func(Comm
 		}
 	}
 
-	return 0, errors.Join(ErrUncertain, ErrNoExitFrame, lines.Err())
+	return 0, errors.Join(ErrUncertain, ErrNoExitFrame)
 }
 
 // signedPost is a POST of the body as JSON, signed as the grant's agent: the version-2 envelope with the start's
@@ -144,7 +143,7 @@ func (grant StartGrant) signedPost(ctx context.Context, target string, body any)
 	}
 	request.Header.Set("Authorization", "Bearer "+grant.Token)
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Accept", "application/x-ndjson")
+	request.Header.Set("Accept", "application/json")
 	request.Header.Set(callIDHeader, callID)
 	request.Header.Set(issuedAtHeader, issuedAt)
 	request.Header.Set(signatureHeader, hex.EncodeToString(mac.Sum(nil)))

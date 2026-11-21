@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Connections;
 
-use App\AgentRequests\Support\SignedCall;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -58,20 +57,5 @@ final class ProjectCommandRequest extends FormRequest
         $argv = $this->argv();
 
         return "{$argv[0]}:{$argv[1]}";
-    }
-
-    /**
-     * The calling start's own credential and profile pin, which the verb's client signs its calls with.
-     *
-     * @return array<string, string>
-     */
-    public function startEnvironment(string $journalUrl): array
-    {
-        return [
-            'JOURNAL_URL' => $journalUrl,
-            'JOURNAL_START_TOKEN' => (string) $this->bearerToken(),
-            'JOURNAL_PROFILE' => (string) $this->header(SignedCall::PROFILE_HEADER),
-            'JOURNAL_PROFILE_REVISION' => (string) $this->header(SignedCall::PROFILE_REVISION_HEADER),
-        ];
     }
 }

@@ -34,7 +34,7 @@ final class WorkspaceReadReportRequest extends FormRequest
     /**
      * The commit the sample names: none for a version 1 report, else its HEAD or the reason there is none.
      */
-    public function commit(): CommitObservation
+    public function observedCommit(): CommitObservation
     {
         if ($this->integer('version', 1) !== 2) {
             return CommitObservation::versionOne();

@@ -162,9 +162,7 @@ func fakeCommands(t *testing.T) *httptest.Server {
 			{Sequence: 2, Stream: "stdout", Data: command.Stdin},
 			{Sequence: 3, Stream: "exit", Code: code},
 		}
-		for _, frame := range frames {
-			_ = json.NewEncoder(writer).Encode(frame)
-		}
+		_ = json.NewEncoder(writer).Encode(map[string][]client.CommandFrame{"frames": frames})
 	}))
 }
 

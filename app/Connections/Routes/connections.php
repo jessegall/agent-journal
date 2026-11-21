@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
+use App\AgentRequests\Support\CallRoutes;
 use App\Agents\Enums\HostProtocolVersion;
 use App\Connections\Http\Controllers\ApproveDeviceGrantController;
 use App\Connections\Http\Controllers\BindingPresenceController;
 use App\Connections\Http\Controllers\BindingRuntimeController;
-use App\Connections\Http\Controllers\CancelProjectCommandController;
 use App\Connections\Http\Controllers\DeviceCommandController;
 use App\Connections\Http\Controllers\DeviceGrantController;
 use App\Connections\Http\Controllers\InstallScriptController;
 use App\Connections\Http\Controllers\IssueProjectInvitationController;
-use App\Connections\Http\Controllers\ProjectCommandController;
 use App\Connections\Http\Controllers\RecoverBindingController;
 use App\Connections\Http\Controllers\RedeemProjectInvitationController;
 use App\Connections\Http\Controllers\RevokeDeviceGrantController;
@@ -19,6 +18,8 @@ use App\Connections\Http\Controllers\RevokeProjectBindingController;
 use App\Connections\Http\Controllers\RevokeProjectInvitationController;
 use App\Connections\Http\Controllers\RuntimeLeaseController;
 use App\Connections\Http\Controllers\WorktreeDeliveryController;
+use App\Connections\Http\Controllers\Calls;
+use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
 // A connected project's relay speaks the remote-project protocol and needs no runtime to report it is present.
@@ -48,12 +49,10 @@ Route::post('/api/project-connections/redeem', RedeemProjectInvitationController
     ->name('connections.redeem');
 
 // A connected machine's journal verbs, signed with the calling start's own token (the agent call envelope).
-Route::middleware('journal.agent')->group(function (): void {
-    Route::post('/api/project-commands', ProjectCommandController::class)->name('connections.commands.run');
-
-    Route::delete('/api/project-commands/{requestId}', CancelProjectCommandController::class)
-        ->where('requestId', '[A-Za-z0-9_-]+')
-        ->name('connections.commands.cancel');
+Route::middleware('journal.agent')->name('connections.commands.')->group(function (): void {
+    $calls = Container::getInstance()->make(CallRoutes::class);
+    $calls->register(Calls\RunProjectCommandController::class)->name('run');
+    $calls->register(Calls\CancelProjectCommandController::class)->name('cancel');
 });
 
 Route::post('/api/project-commands/device', DeviceCommandController::class)

@@ -57,5 +57,5 @@ func RunDeviceCommand(
 	}
 	request.Header.Set("Authorization", "Bearer "+grant)
 
-	return streamFrames(transport, request, write)
+	return readFrames(transport, request, write)
 }

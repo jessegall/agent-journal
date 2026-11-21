@@ -34,8 +34,8 @@ final class ProjectCommandsTest extends TestCase
     use SendsSignedCalls;
 
     private const array TABLES = [
-        'project_command_runs', 'device_grants', 'connection_audits', 'command_receipts', 'project_bindings', 'projects', 'agent_runtimes', 'agent_sessions', 'start_tokens',
-        'agents', 'hosts', 'settings_records', 'users',
+        'project_command_runs', 'device_grants', 'connection_audits', 'command_receipts', 'project_bindings',
+        'projects', 'agent_runtimes', 'agent_sessions', 'start_tokens', 'agents', 'hosts', 'settings_records', 'users',
     ];
 
     public function test_a_repeated_request_id_answers_the_first_result_without_running_again(): void
@@ -46,7 +46,7 @@ final class ProjectCommandsTest extends TestCase
 
         $reply = $this->command($start, 'request-1', $binding->id, ['comment', 'list'])->assertOk();
 
-        $frames = array_map(fn (string $line) => json_decode($line, true), array_filter(explode("\n", (string) $reply->streamedContent())));
+        $frames = $reply->json('frames');
         $this->assertSame("Tasks\n", $frames[0]['data']);
         $this->assertSame(['sequence' => 2, 'stream' => 'exit', 'data' => '', 'base64' => false, 'code' => 3], $frames[1]);
         $this->assertSame(1, ProjectCommandRun::query()->count());
@@ -127,7 +127,7 @@ final class ProjectCommandsTest extends TestCase
     private function command(TestStart $start, string $requestId, string $bindingId, array $argv): TestResponse
     {
         return $this->signed($start, '/api/project-commands', [
-            'requestId' => $requestId,
+            'request_key' => $requestId,
             'binding' => $bindingId,
             'argv' => $argv,
             'stdin' => '',

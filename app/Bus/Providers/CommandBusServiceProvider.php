@@ -14,7 +14,9 @@ use App\Bus\Contracts\GuardedCommandBus;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Contracts\OperationResolver;
 use App\Bus\Contracts\RefusalMapper as RefusalMapperContract;
+use App\Bus\Contracts\CallerReceipts;
 use App\Bus\Contracts\RequestKey as RequestKeyContract;
+use App\Bus\Support\CallerReceiptRecords;
 use App\Bus\Contracts\UnitOwner;
 use App\Bus\Resolvers\CallerOperations;
 use App\Bus\Support\AcceptedReceipt;
@@ -59,6 +61,7 @@ final class CommandBusServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->alias(RequestKey::class, RequestKeyContract::class);
+        $this->app->bind(CallerReceipts::class, CallerReceiptRecords::class);
         $this->app->bind(OperationResolver::class, CallerOperations::class);
         $this->app->bind(RefusalMapperContract::class, RefusalMapper::class);
         $this->app->scoped(AcceptedReceipt::class);

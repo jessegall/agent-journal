@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Support;
 
-use App\Bus\Support\RequestKey;
+use App\Bus\Contracts\RequestKey;
 use App\Communication\Contracts\ConversationResolver;
 use Domain\Chat\Exceptions\ConversationUnavailable;
 use Domain\Chat\Http\Requests\ConversationRequest;

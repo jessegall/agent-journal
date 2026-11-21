@@ -17,6 +17,7 @@ use App\Agents\Events\SessionOpened;
 use App\Agents\Events\StartAccepted;
 use App\Agents\Events\StartGrantRequested;
 use App\Agents\Events\StartSettingsRequested;
+use App\Agents\Events\StartRefused;
 use App\Agents\Events\StartUnavailable;
 use Tests\Architecture\Support\EventRole;
 
@@ -140,6 +141,13 @@ return [
         'producers' => [
             'app/Agents/Actions/StartSessions.php',
         ],
+    ],
+    StartRefused::class => [
+        'role' => EventRole::RowFact,
+        'owner' => 'ProcessStart::refuse',
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new StartRefused('agent', 'session', 'it cannot start here', new DateTimeImmutable('2026-01-01')),
     ],
     StartUnavailable::class => [
         'role' => EventRole::CommandFact,
