@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Rules;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Processes\Contracts\ProgramClassifier;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
@@ -78,6 +80,7 @@ final readonly class JournalClassifier implements ProgramClassifier
      * Whether the journal named is this installation's: the bare name, or a written path that is the trusted
      * executable.
      */
+    #[OutsideThePlaces(PlaceExemption::CommandFileSystem)]
     private function isTrusted(ProgramIdentity $program, ExecutionContext $context): bool
     {
         if (! str_contains($program->original, '/')) {

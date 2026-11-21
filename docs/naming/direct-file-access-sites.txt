@@ -1,5 +1,5 @@
-# The direct file access sites outside app/Files (plan 39): 115 still waiting to move to App\Files\Contracts\Files,
-# and 4 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
+# The direct file access sites outside app/Files (plan 39): 111 still waiting to move to App\Files\Contracts\Files,
+# and 8 exempt. One line per file and form, without line numbers. A task that moves a site removes its own
 # lines here, in the same task; the waiting part only shrinks. An 'exempt' line names a method marked
 # #[OutsideThePlaces(PlaceExemption::...)], for a reason the user settled (doc 69).
 # tests/Architecture/DirectFileAccessTest.php fails on a site that is not listed and on a listed site the code no
@@ -36,14 +36,11 @@ app/Mcp/Console/ContractSnapshotCommand.php Illuminate\Filesystem\Filesystem
 app/Processes/Console/CommandTypeImportCommand.php file_get_contents()
 app/Processes/Console/CommandTypeImportCommand.php is_file()
 app/Processes/Console/ProcessExportCommand.php file_put_contents()
-app/Processes/Execution/BuiltinSteps.php is_dir()
-app/Processes/Execution/BuiltinSteps.php realpath()
 app/Processes/Execution/ChannelRunEvents.php file()
 app/Processes/Execution/ChannelRunEvents.php file_put_contents()
 app/Processes/Execution/ChannelRunEvents.php is_dir()
 app/Processes/Execution/ChannelRunEvents.php is_file()
 app/Processes/Execution/ChannelRunEvents.php mkdir()
-app/Processes/Rules/JournalClassifier.php realpath()
 app/Processes/Support/ManifestCheck.php hash_file()
 app/Processes/Support/ManifestCheck.php is_file()
 app/Processes/Support/OutputDiskCapacity.php disk_free_space()
@@ -52,7 +49,6 @@ app/Processes/Support/SpoolRecorder.php fopen()
 app/Processes/Support/SpoolRecorder.php is_dir()
 app/Processes/Support/SpoolRecorder.php is_file()
 app/Processes/Support/SpoolRecorder.php mkdir()
-app/Processes/Values/ExecutionContext.php realpath()
 app/Processes/Values/ShippedReader.php file_get_contents()
 app/Processes/Values/ToolVersions.php file_get_contents()
 app/Profiles/Console/ImportProfileDraftCommand.php file_get_contents()
@@ -119,7 +115,11 @@ app/Web/Support/UiManifest.php rename()
 domain/Documents/src/Console/Concerns/ReadsRecordBody.php file_get_contents()
 domain/Documents/src/Console/Concerns/ReadsRecordBody.php is_readable()
 domain/Documents/src/Console/Support/DraftTokens.php Illuminate\Filesystem\Filesystem
+exempt CommandFileSystem app/Processes/Execution/BuiltinSteps.php is_dir()
+exempt CommandFileSystem app/Processes/Execution/BuiltinSteps.php realpath()
+exempt CommandFileSystem app/Processes/Rules/JournalClassifier.php realpath()
 exempt CommandFileSystem app/Processes/Support/ExecutableCheck.php hash_file()
 exempt CommandFileSystem app/Processes/Support/ExecutableCheck.php is_file()
 exempt CommandFileSystem app/Processes/Support/PackageScripts.php file_get_contents()
 exempt CommandFileSystem app/Processes/Support/PackageScripts.php is_file()
+exempt CommandFileSystem app/Processes/Values/ExecutionContext.php realpath()

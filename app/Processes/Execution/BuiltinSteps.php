@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Execution;
 
+use App\Files\Attributes\OutsideThePlaces;
+use App\Files\Enums\PlaceExemption;
 use App\Processes\Enums\StepType;
 use App\Processes\Exceptions\SupervisorRefused;
 use App\Processes\Values\ExecutionContext;
@@ -79,6 +81,7 @@ final readonly class BuiltinSteps
     /**
      * @param  list<string>  $arguments
      */
+    #[OutsideThePlaces(PlaceExemption::CommandFileSystem)]
     private function changeFolder(array $arguments, ExecutionContext $context): BuiltinResult
     {
         $target = $arguments[0] ?? ($context->environment['HOME'] ?? $context->workingFolder);
