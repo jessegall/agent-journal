@@ -109,7 +109,7 @@ final readonly class RegisteredSettingCommands implements SettingCommands
         $reference = $this->settingReference($setting);
         $backing = $input->value;
 
-        if (! Reflector::of($setting->enum)->isInstance($input) || ! is_string($backing)) {
+        if (Reflector::of($setting->enum)->asInstance($input)->isEmpty() || ! is_string($backing)) {
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 
@@ -132,7 +132,7 @@ final readonly class RegisteredSettingCommands implements SettingCommands
         $reference = $this->settingReference($setting);
         $backing = $input->value;
 
-        if (! Reflector::of($setting->enum)->isInstance($input) || ! is_int($backing)) {
+        if (Reflector::of($setting->enum)->asInstance($input)->isEmpty() || ! is_int($backing)) {
             throw SettingValueInvalid::for($reference->owner, $reference->key, $setting->type());
         }
 

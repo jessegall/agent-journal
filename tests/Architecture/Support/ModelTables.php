@@ -23,15 +23,19 @@ final class ModelTables
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                $declaration = Reflector::exists($name) ? Reflector::of($name) : null;
+                if (! Reflector::isNameSubclassOf($name, Model::class)) {
+                    continue;
+                }
 
-                if ($declaration === null || ! $declaration->isSubclassOf(Model::class) || $declaration->isAbstract()) {
+                $model = Reflector::of($name);
+
+                if ($model->isAbstract()) {
                     continue;
                 }
 
                 $uses[] = new TableUse(
                     $path,
-                    $declaration->startLine(),
+                    $model->startLine(),
                     new $name()->getTable(),
                     TableType::ModelTable,
                 );

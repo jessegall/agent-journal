@@ -60,15 +60,11 @@ final readonly class ResolverDefinition
      */
     private static function requestOf(ReflectedParameter $parameter): string|null
     {
-        $type = $parameter->type()
+        $name = $parameter->type()
             ->filter(fn (DeclaredType $declared) => $declared->isNamed())
-            ->filter(fn (DeclaredType $declared) => Reflector::exists($declared->name()))
-            ->filter(fn (DeclaredType $declared) => Reflector::of($declared->name())->isSubclassOf(FormRequest::class));
+            ->map(fn (DeclaredType $declared) => $declared->name())
+            ->getOrElse('');
 
-        if ($type->isEmpty()) {
-            return null;
-        }
-
-        return $type->get()->name();
+        return Reflector::isNameSubclassOf($name, FormRequest::class) ? $name : null;
     }
 }

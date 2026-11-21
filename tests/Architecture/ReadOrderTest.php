@@ -24,7 +24,7 @@ final class ReadOrderTest extends TestCase
         $faults = [];
 
         foreach (array_unique(array_values(Relation::morphMap())) as $class) {
-            if (! Reflector::of($class)->isSubclassOf(ReadableModel::class)) {
+            if (! Reflector::isNameSubclassOf($class, ReadableModel::class)) {
                 continue;
             }
 

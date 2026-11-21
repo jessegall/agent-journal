@@ -109,9 +109,10 @@ final class PipelineRulesTest extends TestCase
                 return true;
             }
 
-            $isClass = $givenType->filter(fn (Reflector $found) => $found->isClass())->isDefined();
-
-            if (! isset($seen[$given]) && $isClass && self::reachesPipelines($given, $seen)) {
+            if (! isset($seen[$given])
+                && Reflector::exists($given)
+                && Reflector::of($given)->isClass()
+                && self::reachesPipelines($given, $seen)) {
                 return true;
             }
         }

@@ -15,6 +15,7 @@ use Spatie\LaravelData\Data;
 final class ResolverDataClass
 {
     /**
+     * @param  class-string  $resolver
      * @return class-string<Data>|null null when the read method declares no single, non-nullable, concrete Data class
      */
     public static function of(string $resolver): string|null
@@ -29,9 +30,7 @@ final class ResolverDataClass
 
         $name = $type->get()->name();
 
-        if (! Reflector::exists($name)
-            || ! Reflector::of($name)->isSubclassOf(Data::class)
-            || Reflector::of($name)->isAbstract()) {
+        if (! Reflector::isNameSubclassOf($name, Data::class) || Reflector::of($name)->isAbstract()) {
             return null;
         }
 
