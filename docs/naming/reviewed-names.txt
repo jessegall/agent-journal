@@ -816,6 +816,12 @@ case	StartDisposition::Refused
 case	StartDisposition::Started
 case	StartOriginType::MainStart
 case	StartOriginType::OwnerRequest
+case	StartPreflightRefusal::CombinationNotDeclared
+case	StartPreflightRefusal::DriverNotContainable
+case	StartPreflightRefusal::DriverPinned
+case	StartPreflightRefusal::HostProtocolOutdated
+case	StartPreflightRefusal::ModelNotAllowed
+case	StartPreflightRefusal::NoHost
 case	StartRefusalType::AccountContainerUnsupported
 case	StartRefusalType::CapabilityUnsupported
 case	StartRefusalType::CapacityUnavailable
@@ -828,6 +834,8 @@ case	StartRefusalType::DriverUnsupported
 case	StartRefusalType::ImageUnverified
 case	StartRefusalType::ModelRequired
 case	StartRefusalType::ModelUnavailable
+case	StartUnavailableReason::ChosenAccountChanged
+case	StartUnavailableReason::ChosenAccountMissing
 case	StartUnavailableReason::Maintenance
 case	StartUnavailableReason::NeedsSignIn
 case	StartUnavailableReason::NoAccount
@@ -1467,6 +1475,7 @@ class	Choice
 class	ChoiceOption
 class	ChoiceOptions
 class	ChoiceSetting
+class	ChosenAccount
 class	ChosenStep
 class	ChunkStored
 class	ChunkedRead
@@ -1902,6 +1911,9 @@ class	Drivers
 class	Effect
 class	EffectiveCommand
 class	ElapsedTime
+class	EligibleAccountData
+class	EligibleAccounts
+class	EligibleAccountsData
 class	EmptyReason
 class	EmptyRunPolicy
 class	EmptySettingsDefinition
@@ -2231,6 +2243,9 @@ class	InstallBuiltInProfilesHandler
 class	InstallDesks
 class	InstallDesksCommand
 class	InstallDesksHandler
+class	InstallMainAgent
+class	InstallMainAgentCommand
+class	InstallMainAgentHandler
 class	InstallNumbers
 class	InstallNumbersCommand
 class	InstallNumbersHandler
@@ -2390,6 +2405,8 @@ class	LoggedMcpCall
 class	LoginController
 class	LoginInput
 class	LoginPage
+class	MainAgentDesignation
+class	MainAgentMissing
 class	MainDeskNavigation
 class	MainRuntimeRequestData
 class	MainTakeover
@@ -4081,6 +4098,8 @@ class	StartOwnedAgent
 class	StartOwnedAgentHandler
 class	StartPermitRun
 class	StartPolicy
+class	StartPreflight
+class	StartPreflightRefused
 class	StartProfile
 class	StartProfileAuthority
 class	StartProfileMain
@@ -4088,6 +4107,7 @@ class	StartProfileMainController
 class	StartProfileMainHandler
 class	StartProfileMainRequest
 class	StartProfilePin
+class	StartProposal
 class	StartReceipt
 class	StartRecord
 class	StartRecordDetails
@@ -5351,6 +5371,7 @@ enum	SlotContextType
 enum	StackStatus
 enum	StartDisposition
 enum	StartOriginType
+enum	StartPreflightRefusal
 enum	StartRefusalType
 enum	StartUnavailableReason
 enum	StateEventStage
@@ -5748,6 +5769,7 @@ method	AccessType::fromKey()
 method	Account::applyCheck()
 method	Account::applyCleanup()
 method	Account::assertAvailable()
+method	Account::assertReviewed()
 method	Account::awaitsCleanupRetry()
 method	Account::beginRemoval()
 method	Account::casts()
@@ -5768,6 +5790,7 @@ method	Account::isHeldForCheck()
 method	Account::isSamePrincipal()
 method	Account::labelIsTaken()
 method	Account::listed()
+method	Account::lockedChosenForStart()
 method	Account::lockedForChange()
 method	Account::lockedForJournal()
 method	Account::lockedForStart()
@@ -5784,6 +5807,7 @@ method	Account::requestCheck()
 method	Account::retryCleanup()
 method	Account::selectedForStart()
 method	Account::signedInAgain()
+method	Account::startUnavailableReason()
 method	Account::waitingForCleanupIds()
 method	Account::writerFor()
 method	AccountCheckRequest::accountId()
@@ -5941,6 +5965,7 @@ method	ActiveAccount::casts()
 method	ActiveAccount::chooseFirst()
 method	ActiveAccount::clear()
 method	ActiveAccount::clearIfChosen()
+method	ActiveAccount::defaultAccountIdOf()
 method	ActiveAccount::listed()
 method	ActiveAccount::lockedAccountForStart()
 method	ActiveAccount::lockedFor()
@@ -5949,7 +5974,9 @@ method	ActiveAccount::makeIfAbsent()
 method	ActiveAccount::ofDriver()
 method	ActiveAccount::select()
 method	ActiveAccount::switchTo()
+method	ActiveAccountReader::chosenForStart()
 method	ActiveAccountReader::forStart()
+method	ActiveAccountRecords::chosenForStart()
 method	ActiveAccountRecords::forStart()
 method	ActiveActorCounter::count()
 method	ActiveActorCounter::type()
@@ -6169,8 +6196,10 @@ method	Agent::currentRuntime()
 method	Agent::fenceRuntimes()
 method	Agent::isCurrentRuntime()
 method	Agent::isRetired()
+method	Agent::preferVariant()
 method	Agent::retireAt()
 method	Agent::soleActorForProfile()
+method	Agent::variantFor()
 method	AgentActivity::mayTakeWork()
 method	AgentActorRequired::forActor()
 method	AgentActors::actor()
@@ -6295,6 +6324,7 @@ method	AgentRuntime::requestEffort()
 method	AgentRuntime::requestModel()
 method	AgentRuntime::requests()
 method	AgentRuntime::runningHelpersOf()
+method	AgentRuntime::savedVariantOf()
 method	AgentRuntime::secondsSince()
 method	AgentRuntime::session()
 method	AgentRuntime::sessionOfHostRuntime()
@@ -7209,13 +7239,17 @@ method	BuiltInDesks::__construct()
 method	BuiltInDesks::install()
 method	BuiltInProfileMissing::forKey()
 method	BuiltInProfilePins::__construct()
+method	BuiltInProfilePins::defaultVariantOf()
 method	BuiltInProfilePins::pin()
+method	BuiltInProfilePins::policyFor()
 method	BuiltInProfilePins::snapshotFor()
 method	BuiltInProfilePins::snapshotOf()
 method	BuiltInProfiles::keyFor()
 method	BuiltInProfiles::profile()
 method	BuiltInProfiles::proposed()
+method	BuiltInStartProfiles::defaultVariantOf()
 method	BuiltInStartProfiles::pin()
+method	BuiltInStartProfiles::policyFor()
 method	BuiltinResult::__construct()
 method	BuiltinSteps::assignmentsIn()
 method	BuiltinSteps::changeFolder()
@@ -7478,6 +7512,7 @@ method	ChoiceSetting::label()
 method	ChoiceSetting::make()
 method	ChoiceSetting::options()
 method	ChoiceSetting::type()
+method	ChosenAccount::__construct()
 method	ChosenStep::__construct()
 method	ChosenStep::run()
 method	ChunkStored::__construct()
@@ -9119,6 +9154,11 @@ method	ElapsedTime::milliseconds()
 method	ElapsedTime::plus()
 method	ElapsedTime::seconds()
 method	ElapsedTime::zero()
+method	EligibleAccountData::__construct()
+method	EligibleAccountData::fromAccount()
+method	EligibleAccounts::__construct()
+method	EligibleAccounts::forDriver()
+method	EligibleAccountsData::__construct()
 method	EmptyReason::forDecision()
 method	EmptyRunPolicy::__construct()
 method	EmptyRunPolicy::allowedSuccess()
@@ -9977,6 +10017,7 @@ method	Host::assertEnrolledAs()
 method	Host::casts()
 method	Host::containedProtectionOf()
 method	Host::create()
+method	Host::declares()
 method	Host::forSecret()
 method	Host::hashOf()
 method	Host::isRevoked()
@@ -9985,6 +10026,9 @@ method	Host::protectionOf()
 method	Host::recordCombinations()
 method	Host::recordProtection()
 method	Host::revokeAt()
+method	Host::runsPlacement()
+method	Host::serving()
+method	Host::speaksCurrentProtocol()
 method	HostAccess::__construct()
 method	HostAccess::changesFiles()
 method	HostAccess::contains()
@@ -10152,6 +10196,9 @@ method	InstallBuiltInProfilesHandler::handle()
 method	InstallDesksCommand::handle()
 method	InstallDesksHandler::__construct()
 method	InstallDesksHandler::handle()
+method	InstallMainAgentCommand::handle()
+method	InstallMainAgentHandler::__construct()
+method	InstallMainAgentHandler::handle()
 method	InstallNumbersCommand::handle()
 method	InstallNumbersHandler::handle()
 method	InstallShippedReadersCommand::handle()
@@ -10625,6 +10672,11 @@ method	LoginInput::blank()
 method	LoginInput::filledWith()
 method	LoginPage::__construct()
 method	LoginPage::startingWith()
+method	MainAgentDesignation::agent()
+method	MainAgentDesignation::create()
+method	MainAgentDesignation::designatedAgent()
+method	MainAgentDesignation::isDesignated()
+method	MainAgentMissing::forInstallation()
 method	MainDesk::occupant()
 method	MainDesk::openRequestsFor()
 method	MainDesk::receive()
@@ -15818,6 +15870,14 @@ method	StartPolicy::__construct()
 method	StartPolicy::digest()
 method	StartPolicy::mainOnHost()
 method	StartPolicy::withoutProfile()
+method	StartPreflight::assertAdmitted()
+method	StartPreflight::hostRefusals()
+method	StartPreflight::refusals()
+method	StartPreflightRefusal::label()
+method	StartPreflightRefused::__construct()
+method	StartPreflightRefused::because()
+method	StartPreflightRefused::refusalCode()
+method	StartPreflightRefused::status()
 method	StartProfile::__construct()
 method	StartProfile::grants()
 method	StartProfile::hasKeyIn()
@@ -15840,6 +15900,10 @@ method	StartProfileMainHandler::handle()
 method	StartProfileMainRequest::command()
 method	StartProfileMainRequest::rules()
 method	StartProfilePin::__construct()
+method	StartProposal::__construct()
+method	StartProposal::isContainedCodex()
+method	StartProposal::isDriverPinnedAway()
+method	StartProposal::isModelRefused()
 method	StartReceipt::__construct()
 method	StartReceipts::receiptFor()
 method	StartRecord::accept()
@@ -15853,6 +15917,7 @@ method	StartRecord::replyInboxId()
 method	StartRecord::requestedBy()
 method	StartRecord::requireDigest()
 method	StartRecord::resumesConversation()
+method	StartRecord::savedVariantOf()
 method	StartRecord::startedAs()
 method	StartRecordDetails::__construct()
 method	StartRecordMissing::forRequest()
@@ -16960,6 +17025,7 @@ method	UnassignRecordTool::writeSchema()
 method	UnavailableMergeAdmission::requireApproval()
 method	UnavailableSupervisorDispatch::startFor()
 method	UnavailableWorkRepair::reopen()
+method	UnconfiguredAccounts::chosenForStart()
 method	UnconfiguredAccounts::forStart()
 method	UnitOwner::own()
 method	UnitOwner::within()
@@ -17538,6 +17604,7 @@ parameter	$choice
 parameter	$choiceKey
 parameter	$choices
 parameter	$choose
+parameter	$chosenAccount
 parameter	$chunk
 parameter	$chunkSize
 parameter	$chunks
@@ -17720,6 +17787,8 @@ parameter	$deepest
 parameter	$default
 parameter	$defaultEnabled
 parameter	$defaultModel
+parameter	$defaultVariant
+parameter	$defaults
 parameter	$definition
 parameter	$definitionDigest
 parameter	$definitionHash
@@ -18381,6 +18450,7 @@ parameter	$move
 parameter	$ms
 parameter	$mustExist
 parameter	$name
+parameter	$named
 parameter	$namedPaths
 parameter	$names
 parameter	$namesByType
@@ -18625,6 +18695,7 @@ parameter	$precision
 parameter	$predecessor
 parameter	$preferences
 parameter	$prefix
+parameter	$preflight
 parameter	$preparation
 parameter	$prepared
 parameter	$preparer
@@ -18649,6 +18720,7 @@ parameter	$processRunId
 parameter	$processed
 parameter	$processes
 parameter	$profile
+parameter	$profileDefault
 parameter	$profileKey
 parameter	$profileRevision
 parameter	$profiles
@@ -18907,6 +18979,7 @@ parameter	$returnToActor
 parameter	$returned
 parameter	$reused
 parameter	$review
+parameter	$reviewedSignIn
 parameter	$reviewer
 parameter	$revision
 parameter	$revisionId
@@ -18962,11 +19035,13 @@ parameter	$same
 parameter	$sample
 parameter	$sampledAt
 parameter	$samples
+parameter	$saveVariant
 parameter	$saved
 parameter	$savedAt
 parameter	$savedDirectory
 parameter	$savedPreview
 parameter	$savedRevision
+parameter	$savesVariant
 parameter	$sawThisPurpose
 parameter	$scale
 parameter	$scan
@@ -19073,6 +19148,7 @@ parameter	$shares
 parameter	$sharing
 parameter	$shortfall
 parameter	$signIn
+parameter	$signInRevision
 parameter	$signal
 parameter	$signature
 parameter	$signedAt
@@ -19306,6 +19382,7 @@ parameter	$typeKeys
 parameter	$typeParameter
 parameter	$types
 parameter	$unavailableCount
+parameter	$unavailableReason
 parameter	$unavailableRequirements
 parameter	$uncertainty
 parameter	$unchangedReturns
@@ -20362,6 +20439,8 @@ property	ChoiceSetting::$default
 property	ChoiceSetting::$key
 property	ChoiceSetting::$label
 property	ChoiceSetting::$options
+property	ChosenAccount::$accountId
+property	ChosenAccount::$reviewedSignIn
 property	ChosenStep::$condition
 property	ChosenStep::$else
 property	ChosenStep::$then
@@ -21160,6 +21239,15 @@ property	EffectiveCommand::$effect
 property	EffectiveCommand::$stage
 property	ElapsedTime::$approximate
 property	ElapsedTime::$nanoseconds
+property	EligibleAccountData::$expiresAt
+property	EligibleAccountData::$id
+property	EligibleAccountData::$isDefault
+property	EligibleAccountData::$label
+property	EligibleAccountData::$signInRevision
+property	EligibleAccountData::$unavailableReason
+property	EligibleAccounts::$authorizer
+property	EligibleAccountsData::$accounts
+property	EligibleAccountsData::$driver
 property	EmptyRunPolicy::$policy
 property	EmptyRunPolicy::$summary
 property	EnableAutoAssignment::$expectedRevision
@@ -21789,6 +21877,9 @@ property	InstallBuiltInProfilesHandler::$config
 property	InstallDesksCommand::$description
 property	InstallDesksCommand::$signature
 property	InstallDesksHandler::$desks
+property	InstallMainAgentCommand::$description
+property	InstallMainAgentCommand::$signature
+property	InstallMainAgentHandler::$commands
 property	InstallNumbersCommand::$description
 property	InstallNumbersCommand::$signature
 property	InstallShippedReadersCommand::$description
@@ -22461,9 +22552,12 @@ property	OpenAgentRuntime::$folder
 property	OpenAgentRuntime::$hostId
 property	OpenAgentRuntime::$model
 property	OpenAgentRuntime::$profile
+property	OpenAgentRuntime::$saveVariant
 property	OpenAgentRuntime::$variant
 property	OpenAgentRuntimeHandler::$accounts
 property	OpenAgentRuntimeHandler::$arrangement
+property	OpenAgentRuntimeHandler::$builtInProfiles
+property	OpenAgentRuntimeHandler::$containers
 property	OpenAgentRuntimeHandler::$pendingStarts
 property	OpenAgentRuntimeHandler::$sessions
 property	OpenAgentRuntimeHandler::$starts
@@ -22481,6 +22575,7 @@ property	OpenHostMainRuntime::$folder
 property	OpenHostMainRuntime::$hostId
 property	OpenHostMainRuntime::$model
 property	OpenHostMainRuntime::$profile
+property	OpenHostMainRuntimeHandler::$builtInProfiles
 property	OpenHostMainRuntimeHandler::$runtimes
 property	OpenHostMainRuntimeHandler::$takeover
 property	OpenLaunchCleanup::$capacity
@@ -22957,6 +23052,7 @@ property	ProfileBase::$attachable
 property	ProfileBase::$containedBudgets
 property	ProfileBase::$containerRequired
 property	ProfileBase::$coordinator
+property	ProfileBase::$defaultVariant
 property	ProfileBase::$executionMode
 property	ProfileBase::$key
 property	ProfileBase::$label
@@ -22972,6 +23068,7 @@ property	ProfileConfigurationData::$profiles
 property	ProfileConfigurationData::$revision
 property	ProfileDefaults::$allowedModels
 property	ProfileDefaults::$defaultModel
+property	ProfileDefaults::$defaultVariant
 property	ProfileDefaults::$driver
 property	ProfileDefaults::$driverPinned
 property	ProfileDefaults::$key
@@ -23053,6 +23150,7 @@ property	ProfileScriptWindowResolver::$language
 property	ProfileScriptWindowResolver::$request
 property	ProfileSelection::$authorization
 property	ProfileSelection::$base
+property	ProfileSelection::$defaults
 property	ProfileSelection::$instances
 property	ProfileSelection::$revision
 property	ProfileSelection::$selection
@@ -24357,6 +24455,7 @@ property	RuntimeIntent::$folder
 property	RuntimeIntent::$hostId
 property	RuntimeIntent::$model
 property	RuntimeIntent::$profile
+property	RuntimeIntent::$savesVariant
 property	RuntimeIntent::$variant
 property	RuntimeLivenessReportData::$evidence
 property	RuntimeLivenessReportData::$processGeneration
@@ -25380,17 +25479,28 @@ property	StartPolicy::$profileKey
 property	StartPolicy::$profileRevision
 property	StartPolicy::$requiresReview
 property	StartPolicy::$stopConditions
+property	StartPreflightRefused::$refusal
 property	StartProfile::$snapshot
 property	StartProfileAuthority::$profile
 property	StartProfileMain::$agentId
+property	StartProfileMain::$chosenAccount
 property	StartProfileMain::$driverKey
 property	StartProfileMain::$profile
 property	StartProfileMain::$requestId
 property	StartProfileMain::$requested
+property	StartProfileMain::$saveVariant
+property	StartProfileMain::$variant
 property	StartProfileMainHandler::$commands
+property	StartProfileMainHandler::$preflight
 property	StartProfileMainHandler::$profiles
 property	StartProfilePin::$key
 property	StartProfilePin::$revision
+property	StartProposal::$build
+property	StartProposal::$driver
+property	StartProposal::$model
+property	StartProposal::$placement
+property	StartProposal::$profile
+property	StartProposal::$variant
 property	StartReceipt::$actualModel
 property	StartReceipt::$agentId
 property	StartReceipt::$conversationMode
@@ -25414,6 +25524,7 @@ property	StartRecordDetails::$sessionId
 property	StartRecords::$actors
 property	StartRequest::$agentId
 property	StartRequest::$authorizedSource
+property	StartRequest::$chosenAccount
 property	StartRequest::$contextReference
 property	StartRequest::$conversationMode
 property	StartRequest::$conversationTarget
@@ -25422,7 +25533,9 @@ property	StartRequest::$ownerReference
 property	StartRequest::$parentSessionId
 property	StartRequest::$policy
 property	StartRequest::$requestId
+property	StartRequest::$savesVariant
 property	StartRequest::$selection
+property	StartRequest::$variant
 property	StartSample::$commandRequestId
 property	StartSample::$permitId
 property	StartSample::$requestKey
@@ -26512,6 +26625,7 @@ variable	$collect
 variable	$collected
 variable	$column
 variable	$columns
+variable	$combination
 variable	$command
 variable	$commandClasses
 variable	$commandOwner
@@ -26840,6 +26954,7 @@ variable	$hooks
 variable	$hop
 variable	$hops
 variable	$host
+variable	$hosts
 variable	$html
 variable	$id
 variable	$identities
@@ -27509,6 +27624,7 @@ variable	$sourceClass
 variable	$sourceRoot
 variable	$sources
 variable	$span
+variable	$speaking
 variable	$special
 variable	$sqlite
 variable	$stack
@@ -27656,6 +27772,7 @@ variable	$validator
 variable	$value	app/Scripts/Support/ObjectReader.php
 variable	$variable
 variable	$variables
+variable	$variant
 variable	$verb
 variable	$verbs
 variable	$verdict

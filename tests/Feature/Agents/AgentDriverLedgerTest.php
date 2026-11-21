@@ -363,6 +363,7 @@ final class AgentDriverLedgerTest extends TestCase
             [],
             ProfileBase::mainAgent()->isAttachable(),
         );
+        SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
         SessionPolicy::create(
             AgentSession::query()->findOrFail($opened->sessionId),
             new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), StopConditions::make([]), $execution, null, null, null),
@@ -400,6 +401,7 @@ final class AgentDriverLedgerTest extends TestCase
             [],
             true,
         );
+        SessionPolicy::query()->where('session_id', $opened->sessionId)->delete();
         SessionPolicy::create(
             AgentSession::query()->findOrFail($opened->sessionId),
             new StartPolicy(ProfileBase::mainAgent()->defaultAccess(), StopConditions::make([]), $execution, null, null, null),

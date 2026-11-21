@@ -27,6 +27,7 @@ final class SystemEntryPolicies implements SystemEntryPoliciesContract
         'built-in profiles' => [],
         'number install' => [],
         'desk install' => [],
+        'main agent install' => [],
         'account reconciliation' => [],
     ];
 

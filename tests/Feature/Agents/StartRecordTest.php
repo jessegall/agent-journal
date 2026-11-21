@@ -8,6 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
@@ -77,7 +78,7 @@ final class StartRecordTest extends TestCase
         $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            new ProfileDefaults('journal-researcher', 4, HookDriver::ClaudeCode, false, 'claude-sonnet-5-5', []),
+            new ProfileDefaults('journal-researcher', 4, HookDriver::ClaudeCode, false, 'claude-sonnet-5-5', [], DriverVariant::Headless),
             null,
         );
         $requestId = TestSelections::requestId();

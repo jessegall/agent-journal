@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Agents\Commands\OpenHostMainRuntime;
+use App\Agents\Contracts\BuiltInStartProfiles;
 use App\Agents\Contracts\MainSeatTakeover;
 use App\Agents\Models\Agent;
 use App\Agents\Support\OpenedRuntime;
@@ -15,6 +16,7 @@ final readonly class OpenHostMainRuntimeHandler implements CommandHandler
     public function __construct(
         private OpenAgentRuntimeHandler $runtimes,
         private MainSeatTakeover $takeover,
+        private BuiltInStartProfiles $builtInProfiles,
     ) {}
 
     /**
@@ -23,8 +25,11 @@ final readonly class OpenHostMainRuntimeHandler implements CommandHandler
      */
     public function handle(OpenHostMainRuntime $command): OpenedRuntime
     {
-        $opened = $this->runtimes->handle($command->asAgentRuntime()->withDispatcher($command->dispatchedBy()));
-        $this->takeover->takeOver(Agent::query()->findOrFail($command->agentId));
+        $agent = Agent::query()->findOrFail($command->agentId);
+        $variant = $agent->variantFor(null, $this->builtInProfiles->defaultVariantOf($agent->profile_key));
+        $runtime = $command->asAgentRuntime($variant)->withDispatcher($command->dispatchedBy());
+        $opened = $this->runtimes->handle($runtime);
+        $this->takeover->takeOver($agent);
 
         return $opened;
     }

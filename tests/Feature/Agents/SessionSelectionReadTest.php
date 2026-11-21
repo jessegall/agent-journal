@@ -8,6 +8,7 @@ use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Enums\DriverSourceType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -41,7 +42,7 @@ final class SessionSelectionReadTest extends TestCase
         $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            new ProfileDefaults('journal-researcher', 4, HookDriver::ClaudeCode, false, 'claude-sonnet-5-5', []),
+            new ProfileDefaults('journal-researcher', 4, HookDriver::ClaudeCode, false, 'claude-sonnet-5-5', [], DriverVariant::Headless),
             null,
         );
         $this->session = $this->app->make(StartSessions::class)->start(

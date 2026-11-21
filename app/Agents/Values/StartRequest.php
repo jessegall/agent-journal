@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Values;
 
 use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\StartOriginType;
 use App\Records\Support\RecordIdentity;
 
@@ -26,6 +27,9 @@ final readonly class StartRequest
         public StartPolicy $policy,
         public RecordIdentity|null $authorizedSource = null,
         public string|null $conversationTarget = null,
+        public DriverVariant $variant = DriverVariant::Headless,
+        public ChosenAccount|null $chosenAccount = null,
+        public bool $savesVariant = false,
     ) {}
 
     public function execution(): ExecutionPolicy
@@ -58,6 +62,10 @@ final readonly class StartRequest
             $this->policy->digest(),
             $this->authorizedSource,
             $this->conversationTarget,
+            $this->variant->value,
+            $this->chosenAccount?->accountId,
+            $this->chosenAccount?->reviewedSignIn,
+            $this->savesVariant,
         ], JSON_THROW_ON_ERROR));
     }
 }

@@ -10,13 +10,17 @@ use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Contracts\ActiveAccountReader;
+use App\Agents\Contracts\BuiltInStartProfiles;
+use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Exceptions\StartRootRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\Host;
+use App\Agents\Models\SessionPolicy;
 use App\Agents\Support\ArrangementSetting;
+use App\Agents\Support\ContainerAdmission;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\RuntimeIntent;
@@ -33,6 +37,8 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         private ActiveAccountReader $accounts,
         private RegisterPendingStart $pendingStarts,
         private ArrangementSetting $arrangement,
+        private BuiltInStartProfiles $builtInProfiles,
+        private ContainerAdmission $containers,
     ) {}
 
     public function handle(OpenAgentRuntime $command): OpenedRuntime
@@ -60,6 +66,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             $command->model,
             $command->effort,
             $command->firstMessage,
+            $command->saveVariant,
         );
 
         $selection = SelectedDriver::resolve(
@@ -72,15 +79,23 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
 
         $agent = Agent::query()->findOrFail($command->agentId);
         $this->sessions->lockForStart($agent);
+        $requestId = (string) Str::ulid();
+        $policy = $this->builtInProfiles->policyFor($agent->profile_key);
+
+        if ($policy->execution->mode === ExecutionModeType::RequiredContainer) {
+            $this->containers->admit($requestId, $selection->driver, $policy->execution);
+        }
+
         $account = $this->accounts->forStart($selection->driver);
         $started = $this->starts->start(
             $agent,
             $selection,
-            (string) Str::ulid(),
+            $requestId,
             $parent,
             $intent,
         );
         $this->pendingStarts->register($started->session, $account);
+        SessionPolicy::create($started->session, $policy);
 
         return $started->opened();
     }

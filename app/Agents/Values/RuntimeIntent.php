@@ -22,5 +22,6 @@ final readonly class RuntimeIntent
         public string|null $model,
         public string|null $effort,
         public string|null $firstMessage,
+        public bool $savesVariant = false,
     ) {}
 }

@@ -12,7 +12,9 @@ use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
+use App\Agents\Models\SessionPolicy;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
@@ -22,6 +24,7 @@ use App\Hooks\Enums\DriverEvidence;
 use App\Hooks\Relay\OutputGrantSeal;
 use App\Hooks\Resolvers\PinnedCompatibilities;
 use App\Hooks\Support\DriverCompatibility;
+use App\Profiles\Values\ProfileBase;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
@@ -59,6 +62,7 @@ final class HostStartsTest extends TestCase
         'process_starts',
         'links',
         'command_receipts',
+        'session_policies',
     ];
 
     private const string FOLDER = '/work/project';
@@ -156,6 +160,44 @@ final class HostStartsTest extends TestCase
         $this->assertSame([], $this->signed($host, 'GET', '/host/starts')->json('unresolved'));
     }
 
+    public function test_a_launch_that_saves_its_variant_keeps_it_for_the_agent_only_once_it_runs(): void
+    {
+        [$host, $opened] = $this->openRuntime(saveVariant: true);
+        $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
+        $this->assertNull($agent->variant_preference);
+
+        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
+            ->json('start_key');
+        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
+
+        $agent->refresh();
+        $this->assertSame(DriverVariant::Headless, $agent->variant_preference);
+        $this->assertSame(DriverVariant::Terminal, $agent->variantFor(DriverVariant::Terminal, DriverVariant::Headless));
+        $this->assertSame(DriverVariant::Headless, $agent->variantFor(null, DriverVariant::Terminal));
+    }
+
+    public function test_an_opened_runtime_freezes_its_agents_profile_policy(): void
+    {
+        [, $opened] = $this->openRuntime();
+
+        $policy = SessionPolicy::query()->where('session_id', $opened->sessionId)->sole();
+
+        $this->assertSame(ProfileBase::mainAgent()->key, $policy->profile_key);
+        $this->assertNotNull($policy->profile_revision);
+    }
+
+    public function test_a_one_launch_variant_leaves_the_agent_on_its_profile_default(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
+            ->json('start_key');
+        $this->signed($host, 'POST', "/host/starts/{$key}/running", ['execution_id' => 'thread-1'])->assertNoContent();
+
+        $agent = AgentSession::query()->withoutGlobalScopes()->with('agent')->findOrFail($opened->sessionId)->agent;
+        $this->assertNull($agent->variant_preference);
+        $this->assertSame(DriverVariant::Terminal, $agent->variantFor(null, DriverVariant::Terminal));
+    }
+
     public function test_after_a_restart_only_proven_exits_end_and_another_host_reaches_nothing(): void
     {
         [$host, $opened] = $this->openRuntime();
@@ -195,7 +237,7 @@ final class HostStartsTest extends TestCase
     /**
      * @return array{EnrolledHost, OpenedRuntime}
      */
-    private function openRuntime(): array
+    private function openRuntime(bool $saveVariant = false): array
     {
         $host = $this->enrollHost();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
@@ -209,6 +251,7 @@ final class HostStartsTest extends TestCase
             'claude',
             DriverVariant::Headless,
             'claude-opus-5-5',
+            saveVariant: $saveVariant,
         );
 
         return [$host, $this->app->make(CommandBus::class)->run($command)];

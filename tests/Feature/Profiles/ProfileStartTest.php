@@ -4,20 +4,34 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Agents\Contracts\AccountUses;
+use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\DriverSourceType;
+use App\Agents\Enums\DriverVariant;
+use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Enums\HostProtocolVersion;
+use App\Agents\Enums\StartPreflightRefusal;
 use App\Agents\Exceptions\DriverConflict;
+use App\Agents\Exceptions\StartPreflightRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\Host;
+use App\Agents\Models\StartRecord;
 use App\Agents\Support\StartReceipt;
+use App\Agents\Values\ChosenAccount;
+use App\Agents\Values\HostCombination;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Contracts\CommandBus;
 use App\Drivers\Enums\HookDriver;
+use App\Hooks\Support\DriverCompatibility;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\StartProfileMain;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Exceptions\ProfileCannotCoordinate;
+use App\Profiles\Models\Account;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProposedProfile;
+use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use Domain\Access\Models\User;
@@ -43,11 +57,17 @@ final class ProfileStartTest extends TestCase
 
     private Agent $main;
 
+    /**
+     * @var array<string, Account>
+     */
+    private array $accounts;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->chooseActiveAccounts();
+        $this->accounts = $this->chooseActiveAccounts();
+        $this->serveEveryCombination();
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
@@ -103,6 +123,80 @@ final class ProfileStartTest extends TestCase
         $this->assertSame(HookDriver::ClaudeCode->value, $session->driver);
     }
 
+    public function test_an_explicit_start_runs_the_chosen_account_and_variant_and_the_next_automatic_one_the_defaults(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        $chosen = Account::create(HookDriver::Codex, AccountLabel::from('Account B'), '/journal/accounts/b');
+        $requestId = strtolower((string) Str::ulid());
+
+        $explicit = $this->start('default', 'codex', $requestId, DriverVariant::Headless, $chosen);
+        $repeated = $this->start('default', 'codex', $requestId, DriverVariant::Headless, $chosen);
+        $this->main = Agent::create('Second main', 'main-agent');
+        $automatic = $this->start('default', 'codex');
+
+        $this->assertSame([$explicit->sessionId, false], [$repeated->sessionId, $repeated->newSession]);
+        $this->assertSame(
+            [HookDriver::Codex->value, DriverVariant::Headless, true, $chosen->id],
+            $this->recorded($explicit),
+        );
+        $this->assertSame(
+            [HookDriver::Codex->value, DriverVariant::Terminal, false, $this->accounts['codex']->id],
+            $this->recorded($automatic),
+        );
+    }
+
+    public function test_a_start_the_host_cannot_run_is_refused_before_a_session(): void
+    {
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
+        Host::query()->update(['combinations' => []]);
+        $sessions = AgentSession::query()->count();
+
+        try {
+            $this->start('default', null);
+            $this->fail('A start no host declared was admitted.');
+        } catch (StartPreflightRefused $refused) {
+            $this->assertSame(StartPreflightRefusal::CombinationNotDeclared, $refused->refusal);
+        }
+
+        $this->assertSame($sessions, AgentSession::query()->count());
+    }
+
+    /**
+     * The driver, variant, whether the owner chose the account, and the account the start runs with.
+     *
+     * @return array{string, DriverVariant, bool, string}
+     */
+    private function recorded(StartReceipt $receipt): array
+    {
+        $record = StartRecord::query()->where('request_id', $receipt->requestId)->sole();
+        $account = $this->app->make(AccountUses::class)->accountOf($receipt->sessionId, Account::LINK_TYPE);
+
+        return [$record->driver, $record->variant, $record->account_chosen, $account->id];
+    }
+
+    /**
+     * A local host of this protocol that declared every driver and variant on the protected host.
+     */
+    private function serveEveryCombination(): void
+    {
+        $host = Host::create('local host', 'secret', [base_path()], ArrangementType::Local);
+        $combinations = [];
+
+        foreach (HookDriver::cases() as $driver) {
+            foreach (DriverVariant::cases() as $variant) {
+                $combinations[] = new HostCombination(
+                    $driver,
+                    DriverCompatibility::pinned($driver)->version,
+                    ArrangementType::Local,
+                    ExecutionModeType::ProtectedHost,
+                    $variant,
+                )->stored();
+            }
+        }
+
+        $host->recordCombinations(HostProtocolVersion::current()->value, $combinations);
+    }
+
     private static function main(string $model, HookDriver $driver, bool $pinned): ProposedProfile
     {
         return new ProposedProfile(
@@ -135,14 +229,22 @@ final class ProfileStartTest extends TestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of($profile)));
     }
 
-    private function start(string $model, string|null $driver): StartReceipt
-    {
+    private function start(
+        string $model,
+        string|null $driver,
+        string|null $requestId = null,
+        DriverVariant|null $variant = null,
+        Account|null $chosen = null,
+    ): StartReceipt {
         $start = new StartProfileMain(
-            strtolower((string) Str::ulid()),
+            $requestId ?? strtolower((string) Str::ulid()),
             $this->main->id,
             ProfileKey::from('journal-main'),
             ModelSelection::fromInput($model),
             $driver,
+            $variant,
+            false,
+            $chosen === null ? null : new ChosenAccount($chosen->id, $chosen->sign_in_generation),
         );
 
         return $this->app->make(CommandBus::class)->run($start);

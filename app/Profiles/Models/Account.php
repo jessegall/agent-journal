@@ -244,6 +244,28 @@ final class Account extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The account the owner chose for a start, locked and checked again: only the owner reads it, it runs the
+     * driver, it accepts starts and its sign-in is still the one the owner reviewed. The saved default is untouched.
+     *
+     * @throws AccountUnavailable
+     */
+    public static function lockedChosenForStart(HookDriver $driver, string $accountId, int $reviewedSignIn): self
+    {
+        $account = self::query()
+            ->whereKey($accountId)
+            ->ofDriver($driver)
+            ->lockForUpdate()
+            ->firstOr(fn () => throw AccountUnavailable::forStart(
+                $driver->value,
+                StartUnavailableReason::ChosenAccountMissing,
+            ));
+        $account->assertAvailable();
+        $account->assertReviewed($reviewedSignIn);
+
+        return $account;
+    }
+
+    /**
      * The account locked for the journal's own maintenance or the host that signs it in, whoever acts.
      */
     public static function lockedForJournal(string $accountId): self
@@ -619,8 +641,34 @@ final class Account extends Model implements EventSource, ReadableModel
      */
     public function assertAvailable(): void
     {
-        if (! $this->state->canStart() || $this->maintenance) {
-            throw AccountUnavailable::forStart($this->driver, $this->state->startUnavailableReason());
+        $reason = $this->startUnavailableReason();
+
+        if ($reason !== null) {
+            throw AccountUnavailable::forStart($this->driver, $reason);
+        }
+    }
+
+    /**
+     * Why a start cannot use the account now, none while it is signed in and not held for maintenance.
+     */
+    public function startUnavailableReason(): StartUnavailableReason|null
+    {
+        if ($this->state->canStart() && ! $this->maintenance) {
+            return null;
+        }
+
+        return $this->state->startUnavailableReason();
+    }
+
+    /**
+     * Refuses a chosen account whose sign-in changed after the owner reviewed it.
+     *
+     * @throws AccountUnavailable
+     */
+    public function assertReviewed(int $signIn): void
+    {
+        if ($this->sign_in_generation !== $signIn) {
+            throw AccountUnavailable::forStart($this->driver, StartUnavailableReason::ChosenAccountChanged);
         }
     }
 

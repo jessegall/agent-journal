@@ -9,6 +9,7 @@ use App\Actors\Contracts\MessageSender;
 use App\Actors\Contracts\SeatedActor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Values\RunningRuntime;
 use App\Agents\Values\StackTarget;
 use App\Assignments\Contracts\Assignee;
@@ -32,6 +33,7 @@ use PhpOption\Some;
  * @property string $id
  * @property string|null $current_session_id
  * @property int $runtime_generation
+ * @property DriverVariant|null $variant_preference
  * @property string $name
  * @property string $profile_key
  * @property Carbon|null $retired_at
@@ -52,7 +54,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
      */
     protected function casts(): array
     {
-        return ['retired_at' => 'datetime'];
+        return ['retired_at' => 'datetime', 'variant_preference' => DriverVariant::class];
     }
 
     /**
@@ -99,6 +101,16 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     // ----------[ Mutations ]----------
 
     /**
+     * The variant this agent's launches use from now on when they name none, kept once a launch that asked to save it
+     * runs.
+     */
+    public function preferVariant(DriverVariant $variant): void
+    {
+        $this->variant_preference = $variant;
+        $this->save();
+    }
+
+    /**
      * Makes the session the agent's current runtime under a new generation; every earlier runtime is fenced.
      */
     public function adoptRuntime(AgentSession $session): void
@@ -125,6 +137,14 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * The variant a launch runs: the one it names, then the agent's saved preference, then its profile's default.
+     */
+    public function variantFor(DriverVariant|null $named, DriverVariant $profileDefault): DriverVariant
+    {
+        return $named ?? $this->variant_preference ?? $profileDefault;
+    }
 
     public function isCurrentRuntime(AgentSession $session): bool
     {

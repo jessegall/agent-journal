@@ -7,6 +7,7 @@ namespace App\Agents\Models;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverSourceType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
@@ -45,6 +46,9 @@ use PhpOption\Option;
  * @property string|null $context_reference
  * @property ConversationModeType $conversation_mode
  * @property string|null $conversation_target
+ * @property DriverVariant $variant
+ * @property bool $account_chosen
+ * @property bool $saves_variant
  * @property bool|null $conversation_resumed
  * @property string $payload_digest
  * @property StartDisposition $disposition
@@ -70,6 +74,9 @@ use PhpOption\Option;
     'context_reference',
     'conversation_mode',
     'conversation_target',
+    'variant',
+    'account_chosen',
+    'saves_variant',
     'conversation_resumed',
     'payload_digest',
     'disposition',
@@ -96,6 +103,9 @@ final class StartRecord extends Model implements ReadableModel
             'origin_type' => StartOriginType::class,
             'conversation_mode' => ConversationModeType::class,
             'conversation_resumed' => 'boolean',
+            'variant' => DriverVariant::class,
+            'account_chosen' => 'boolean',
+            'saves_variant' => 'boolean',
             'disposition' => StartDisposition::class,
         ];
     }
@@ -137,6 +147,9 @@ final class StartRecord extends Model implements ReadableModel
             'context_reference' => $request->contextReference,
             'conversation_mode' => $request->conversationMode,
             'conversation_target' => $request->conversationTarget,
+            'variant' => $request->variant,
+            'account_chosen' => $request->chosenAccount !== null,
+            'saves_variant' => $request->savesVariant,
             'payload_digest' => $request->digest(),
             'disposition' => StartDisposition::Accepted,
             'reply_inbox_id' => $replyInboxId->getOrElse(null),
@@ -144,6 +157,16 @@ final class StartRecord extends Model implements ReadableModel
     }
 
     // ----------[ Queries ]----------
+
+    /**
+     * The variant the start of this session asked to keep for its agent once it runs, none when it asked nothing.
+     */
+    public static function savedVariantOf(string $sessionId): DriverVariant|null
+    {
+        $record = self::query()->where('session_id', $sessionId)->where('saves_variant', true)->first();
+
+        return $record?->variant;
+    }
 
     /**
      * The start an owner made for this session, when the session began from an owner's request.

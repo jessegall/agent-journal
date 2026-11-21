@@ -58,6 +58,7 @@ install() {
         roll_app &&
         docker compose $profiles up -d --wait --wait-timeout 240 &&
         restart_changed_mounts &&
+        docker compose exec -T app php artisan agents:install &&
         docker compose exec -T app php artisan cache:forget installed-version &&
         check_front_door &&
         docker image prune -f >/dev/null

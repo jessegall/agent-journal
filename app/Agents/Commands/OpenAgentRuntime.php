@@ -36,6 +36,7 @@ final readonly class OpenAgentRuntime extends Command implements AgentStartComma
         public string|null $model = null,
         public string|null $effort = null,
         public string|null $firstMessage = null,
+        public bool $saveVariant = false,
     ) {}
 
     public function startedAgentId(): string

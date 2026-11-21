@@ -35,6 +35,7 @@ use PhpOption\Option;
  * @property string $agent_session_id
  * @property string $host_id
  * @property DriverVariant $variant
+ * @property bool $saves_variant
  * @property string $driver
  * @property string $driver_build
  * @property string $profile
@@ -91,6 +92,7 @@ final class AgentRuntime extends Model implements ReadableModel
         $runtime->agent_session_id = $session->id;
         $runtime->host_id = $intent->hostId;
         $runtime->variant = $intent->variant;
+        $runtime->saves_variant = $intent->savesVariant;
         $runtime->driver = $intent->driver;
         $runtime->driver_build = $intent->driverBuild;
         $runtime->profile = $intent->profile;

@@ -33,9 +33,9 @@ final readonly class OpenHostMainRuntime extends Command
     ) {}
 
     /**
-     * The same opening as an OpenAgentRuntime of a terminal runtime on the host.
+     * The same opening as an OpenAgentRuntime on the host, in the variant the main agent resolved.
      */
-    public function asAgentRuntime(): OpenAgentRuntime
+    public function asAgentRuntime(DriverVariant $variant): OpenAgentRuntime
     {
         return new OpenAgentRuntime(
             $this->agentId,
@@ -44,7 +44,7 @@ final readonly class OpenHostMainRuntime extends Command
             $this->driver,
             $this->driverBuild,
             $this->profile,
-            DriverVariant::Terminal,
+            $variant,
             $this->model,
         );
     }

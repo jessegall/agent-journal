@@ -49,6 +49,7 @@ use App\Agents\Contracts\SessionProvenance as SessionProvenanceContract;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Contracts\StartExecutor;
 use App\Agents\Contracts\StartHeartbeats as StartHeartbeatsContract;
+use App\Agents\Contracts\StartPreflight;
 use App\Agents\Contracts\StartReceipts;
 use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Contracts\StartReservations;
@@ -92,6 +93,7 @@ use App\Agents\Support\FrozenSessionPolicies;
 use App\Agents\Support\GrantedSessionOutputs;
 use App\Agents\Support\HelperCommitImport;
 use App\Agents\Support\HostStartExecutor;
+use App\Agents\Support\HostStartPreflight;
 use App\Agents\Support\NavigationExpiry;
 use App\Agents\Support\NavigationRecords;
 use App\Agents\Support\NavigationRequestProvider;
@@ -230,6 +232,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(StartEnvironment::class, StartEnvironment::ofThisProcess(...));
         $this->app->bind(StartTokenSource::class, EnvironmentCredentialSource::class);
         $this->app->bindIf(ActiveAccountReader::class, UnconfiguredAccounts::class);
+        $this->app->bind(StartPreflight::class, HostStartPreflight::class);
         $this->app->bind(AccountUses::class, LinkedAccountUses::class);
         $this->app->bind(SessionOutputAccess::class, GrantedSessionOutputs::class);
         $this->app->bind(
@@ -266,6 +269,7 @@ final class AgentsServiceProvider extends ServiceProvider
             ownerOnly: $maintenance,
         ));
         $systemEntries->allow('account reconciliation', AgentMaintenancePolicy::class);
+        $systemEntries->allow('main agent install', AgentPolicy::class);
         $actors->register(ActorType::Agent, AgentActors::class);
         $actors->registerLabels(ActorType::Agent, AgentLabels::class);
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);

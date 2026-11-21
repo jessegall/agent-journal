@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Profiles\Handlers;
 
 use App\Agents\Commands\StartAgent;
+use App\Agents\Contracts\StartPreflight;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
+use App\Agents\Models\Agent;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
@@ -25,6 +27,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
     public function __construct(
         private ProfileSelections $profiles,
         private CommandBus $commands,
+        private StartPreflight $preflight,
     ) {}
 
     /**
@@ -38,6 +41,10 @@ final readonly class StartProfileMainHandler implements CommandHandler
             throw ProfileCannotCoordinate::for($command->profile);
         }
 
+        $agent = Agent::query()->findOrFail($command->agentId);
+        $variant = $agent->variantFor($command->variant, $profile->base->defaultVariant);
+        $this->preflight->assertAdmitted($profile->proposal($variant, $command->requested->model));
+
         return $this->commands->run(new StartAgent(new StartRequest(
             $command->requestId,
             $command->agentId,
@@ -48,6 +55,9 @@ final readonly class StartProfileMainHandler implements CommandHandler
             ConversationModeType::New,
             null,
             $profile->startPolicy(),
+            variant: $variant,
+            chosenAccount: $command->chosenAccount,
+            savesVariant: $command->saveVariant,
         )));
     }
 }

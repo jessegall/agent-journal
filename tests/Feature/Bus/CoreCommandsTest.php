@@ -61,6 +61,7 @@ use App\Profiles\Commands\CleanSignInAttempt;
 use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Commands\InstallBuiltInProfiles;
+use App\Profiles\Commands\InstallMainAgent;
 use App\Profiles\Commands\PublishSignInChallenge;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\ReconcileSignIns;
@@ -163,6 +164,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             ReleaseSignInAgain::class,
             ReconcileAccounts::class,
             InstallBuiltInProfiles::class,
+            InstallMainAgent::class,
             ReadShare::class,
             ExpireShares::class,
             ClaimGatewayOperation::class,

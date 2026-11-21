@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Support\ArrangementSetting;
 use App\Agents\Values\ExecutionBudgets;
@@ -105,6 +106,20 @@ final class ProfileResolverTest extends TestCase
         $this->assertSame(1024 * 1024 * 1024, $main->budgets->tmpBytes);
         $this->assertSame([ExecutionModeType::RequiredContainer, $image], [$helper->mode, $helper->imageReference]);
         $this->assertEquals(ExecutionBudgets::defaults(), $helper->budgets);
+    }
+
+    public function test_the_main_agent_defaults_to_a_terminal_and_each_helper_to_headless(): void
+    {
+        $this->activate('journal-main', ProfileBase::mainAgent());
+        $this->activate('journal-reviewer', ProfileBase::readOnlyHelper());
+        $this->activate('journal-worker', ProfileBase::writingHelper());
+
+        $variants = array_map(
+            fn (string $key) => $this->resolver()->snapshotFor(ProfileKey::from($key))->base->defaultVariant,
+            ['journal-main', 'journal-reviewer', 'journal-worker'],
+        );
+
+        $this->assertSame([DriverVariant::Terminal, DriverVariant::Headless, DriverVariant::Headless], $variants);
     }
 
     public function test_locally_the_main_agent_stays_on_the_protected_host_with_the_default_budget(): void

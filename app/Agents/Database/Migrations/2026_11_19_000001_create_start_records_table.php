@@ -27,6 +27,9 @@ return new class extends Migration
             $table->string('owner_reference', 128)->nullable()->index();
             $table->string('context_reference', 128)->nullable();
             $table->string('conversation_mode', 16);
+            $table->string('variant', 16)->default('headless');
+            $table->boolean('account_chosen')->default(false);
+            $table->boolean('saves_variant')->default(false);
             $table->string('conversation_target', 200)->nullable();
             $table->boolean('conversation_resumed')->nullable();
             $table->string('payload_digest', 64);

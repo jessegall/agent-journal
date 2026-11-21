@@ -34,7 +34,7 @@ final class DriverVariantBoundaryTest extends TestCase
         foreach ($files as $file) {
             $path = substr($file->getPathname(), strlen(base_path()) + 1);
 
-            if (str_starts_with($path, 'app/Agents/') || in_array($path, self::ALLOWED, true)) {
+            if (self::mayNameVariant($path)) {
                 continue;
             }
 
@@ -44,5 +44,15 @@ final class DriverVariantBoundaryTest extends TestCase
         }
 
         $this->assertSame([], $found);
+    }
+
+    /**
+     * Agents keeps a runtime's variant and Profiles declares and chooses the default a launch runs with.
+     */
+    private static function mayNameVariant(string $path): bool
+    {
+        return str_starts_with($path, 'app/Agents/')
+            || str_starts_with($path, 'app/Profiles/')
+            || in_array($path, self::ALLOWED, true);
     }
 }

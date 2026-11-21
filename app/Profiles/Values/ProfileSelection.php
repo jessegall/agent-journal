@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
+use App\Agents\Enums\DriverVariant;
+use App\Agents\Values\ProfileDefaults;
 use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
+use App\Agents\Values\StartProposal;
+use App\Hooks\Support\DriverCompatibility;
 use App\Profiles\Enums\InstancePolicy;
 
 /**
@@ -20,6 +24,7 @@ final readonly class ProfileSelection
         public int $revision,
         public ProfileStartPolicy $start,
         public ProfileAuthorization $authorization,
+        public ProfileDefaults $defaults,
         public InstancePolicy $instances = InstancePolicy::Reusable,
     ) {}
 
@@ -27,6 +32,23 @@ final readonly class ProfileSelection
      * The policy a start from this selection freezes: the revision's access, stop conditions and execution, with the
      * profile key, revision and configuration they came from.
      */
+    /**
+     * The start this selection proposes in the variant, on the driver's pinned build and the policy's placement.
+     */
+    public function proposal(DriverVariant $variant, string|null $model): StartProposal
+    {
+        $driver = $this->selection->driver;
+
+        return new StartProposal(
+            $this->defaults,
+            $driver,
+            DriverCompatibility::pinned($driver)->version,
+            $variant,
+            $this->startPolicy()->execution->mode,
+            $model,
+        );
+    }
+
     public function startPolicy(): StartPolicy
     {
         $source = $this->selection->source;

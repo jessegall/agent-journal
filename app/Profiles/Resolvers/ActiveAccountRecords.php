@@ -7,16 +7,22 @@ namespace App\Profiles\Resolvers;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Values\SelectedAccount;
 use App\Drivers\Enums\HookDriver;
+use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 
 /**
- * The account a start runs with, read from the saved selection: the selection locked first, then the account, which
- * must accept starts.
+ * The account a start runs with: the saved selection locked first, then its account, or the account the owner chose,
+ * which must accept starts either way.
  */
 final readonly class ActiveAccountRecords implements ActiveAccountReader
 {
     public function forStart(HookDriver $driver): SelectedAccount
     {
         return ActiveAccount::lockedAccountForStart($driver)->selectedForStart();
+    }
+
+    public function chosenForStart(HookDriver $driver, string $accountId, int $reviewedSignIn): SelectedAccount
+    {
+        return Account::lockedChosenForStart($driver, $accountId, $reviewedSignIn)->selectedForStart();
     }
 }

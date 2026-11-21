@@ -53,6 +53,7 @@ Close all
 Close others
 Close to the right
 Code from the sign-in page
+Codex cannot run in a container yet: its sandbox does not keep its tools
 Color scheme
 Command requests
 Command review
@@ -145,6 +146,7 @@ Network
 New compared with the rule in use: {{ revision.addedClasses.join(', ') || 'none' }}
 No agent runtime is open.
 No asks to show.
+No connected host runs agents in this place.
 No endpoint is serving this share.
 No gateway is configured yet.
 No linked record can be shared with it.
@@ -277,6 +279,8 @@ Tests and checks
 The address is not available.
 The gateway provider can see the public address and everything a share shows.
 The gateway provider can see the public address and everything this share shows.
+The host has not said it can run this driver this way.
+The host speaks another protocol version; upgrade journal-agent.
 The place this comment points at is not available: {{ unavailable.message }}
 The project has no rule of its own yet.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
@@ -284,6 +288,8 @@ The version that runs here
 This account must sign in again.
 This is the default account for new {{ driverName(account.driver) }} starts.
 This machine and the share service must keep running for the link to work.
+This profile does not allow that model.
+This profile runs only its own driver.
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 To renew it, choose Sign in again on the account.
 Turning off traffic inspection does not hide the content from the provider.
@@ -325,6 +331,7 @@ effort
 executable parts
 exit %s: %s when %s
 expected
+from its sign-in.
 in the list.
 in {{ problem.stream }} bytes {{ problem.start }} to {{ problem.end }}:
 is saved as a {{ driverName(driver) }} account.

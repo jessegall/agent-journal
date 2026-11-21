@@ -293,6 +293,7 @@ use App\Agents\Support\TerminalViewReceipt;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\AccountUse;
+use App\Agents\Values\ChosenAccount;
 use App\Agents\Values\ClaimedRequest;
 use App\Agents\Values\DriverReceipt;
 use App\Agents\Values\EntryGoalAnswer;
@@ -1543,6 +1544,7 @@ final class CoreApi
                 StartUnavailableReason::class,
                 DriverFailure::class,
                 ModelSelection::class,
+                ChosenAccount::class,
                 SelectionSource::class,
                 ProfileDefaults::class,
                 ModelSelectionType::class,

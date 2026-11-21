@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Values\AccessPolicy;
@@ -42,6 +43,8 @@ final readonly class ProfileBase
         // Whether its program is its container's own terminal process, which the host attaches to, again after a
         // restart: the main agent's is; a helper runs without a terminal.
         public bool $attachable,
+        // How its sessions run when a start names no variant: the main agent in a terminal, a helper headless.
+        public DriverVariant $defaultVariant,
     ) {}
 
     /**
@@ -50,14 +53,28 @@ final readonly class ProfileBase
      */
     public static function mainAgent(): self
     {
-        return new self('main-agent', 'Main agent', 'opus', [
-            ...self::looking(),
-            ...self::changing(),
-            AccessType::Delegate,
-            ...self::running(),
-        ], [
-            HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
-        ], ExecutionModeType::ProtectedHost, false, [], OfflineReplyMode::Neutral, true, ExecutionBudgets::mainAgent(), true);
+        return new self(
+            'main-agent',
+            'Main agent',
+            'opus',
+            [
+                ...self::looking(),
+                ...self::changing(),
+                AccessType::Delegate,
+                ...self::running(),
+            ],
+            [
+                HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
+            ],
+            ExecutionModeType::ProtectedHost,
+            false,
+            [],
+            OfflineReplyMode::Neutral,
+            true,
+            ExecutionBudgets::mainAgent(),
+            true,
+            DriverVariant::Terminal
+        );
     }
 
     /**
@@ -82,7 +99,8 @@ final readonly class ProfileBase
             OfflineReplyMode::Refuse,
             false,
             ExecutionBudgets::defaults(),
-            false
+            false,
+            DriverVariant::Headless,
         );
     }
 
@@ -98,7 +116,7 @@ final readonly class ProfileBase
             HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
         ], ExecutionModeType::RequiredContainer, true, [
             StopCondition::cleanWorktree(),
-        ], OfflineReplyMode::Refuse, false, ExecutionBudgets::defaults(), false);
+        ], OfflineReplyMode::Refuse, false, ExecutionBudgets::defaults(), false, DriverVariant::Headless);
     }
 
     /**

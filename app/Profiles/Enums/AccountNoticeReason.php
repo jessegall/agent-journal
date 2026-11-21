@@ -21,12 +21,16 @@ enum AccountNoticeReason: string
     case SignInRejected = 'sign_in_rejected';
     case AccountLimited = 'account_limited';
 
-    public static function forStart(StartUnavailableReason $reason): self
+    /**
+     * The notice a refused start leaves, or none when the owner chose the account and was told why on the spot.
+     */
+    public static function forStart(StartUnavailableReason $reason): self|null
     {
         return match ($reason) {
             StartUnavailableReason::NoAccount => self::NoAccount,
             StartUnavailableReason::NeedsSignIn => self::NeedsSignIn,
             StartUnavailableReason::Maintenance => self::Maintenance,
+            StartUnavailableReason::ChosenAccountMissing, StartUnavailableReason::ChosenAccountChanged => null,
         };
     }
 

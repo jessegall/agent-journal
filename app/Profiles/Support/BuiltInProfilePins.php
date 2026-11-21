@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Agents\Contracts\BuiltInStartProfiles;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Values\SelectedDriver;
+use App\Agents\Values\StartPolicy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Profiles\Commands\InstallBuiltInProfiles;
@@ -39,6 +41,18 @@ final readonly class BuiltInProfilePins implements BuiltInStartProfiles
         $profile = $this->snapshotOf(ProfileKey::from($profileKey));
 
         return $selection->pinnedTo($profile->key->key, $profile->revision);
+    }
+
+    public function defaultVariantOf(string $profileKey): DriverVariant
+    {
+        return $this->snapshotOf(ProfileKey::from($profileKey))->base->defaultVariant;
+    }
+
+    public function policyFor(string $profileKey): StartPolicy
+    {
+        $profile = $this->snapshotOf(ProfileKey::from($profileKey));
+
+        return $profile->start->freeze($profile->key->key, $profile->revision);
     }
 
     /**

@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Agents\Enums\ArrangementType;
+use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\HostCredentialRejected;
+use App\Agents\Values\HostCombination;
 use App\Agents\Values\ProtectionReport;
+use App\Agents\Values\StartProposal;
 use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -119,6 +123,18 @@ final class Host extends Model implements ReadableModel
         return $host->protectionOf($driver, $build);
     }
 
+    /**
+     * The enrolled hosts that are not revoked; an installation has a handful.
+     *
+     * @return list<self>
+     */
+    public static function serving(): array
+    {
+        return array_values(
+            self::query()->whereNull('revoked_at')->readAll('an installation enrolls a handful of hosts')->get()->all(),
+        );
+    }
+
     // ----------[ Mutations ]----------
 
     public function recordProtection(ProtectionReport $report): void
@@ -148,6 +164,35 @@ final class Host extends Model implements ReadableModel
     }
 
     // ----------[ Answers ]----------
+
+    /**
+     * Whether the host runs starts of this placement: a contained host in containers, a local one on the host.
+     */
+    public function runsPlacement(ExecutionModeType $placement): bool
+    {
+        return $this->arrangement->isContained() === ($placement === ExecutionModeType::RequiredContainer);
+    }
+
+    public function speaksCurrentProtocol(): bool
+    {
+        return $this->protocol_version === HostProtocolVersion::current()->value;
+    }
+
+    /**
+     * Whether the host reported it can run the proposed driver build, in its own arrangement, placement and variant.
+     */
+    public function declares(StartProposal $proposal): bool
+    {
+        $combination = new HostCombination(
+            $proposal->driver,
+            $proposal->build,
+            $this->arrangement,
+            $proposal->placement,
+            $proposal->variant,
+        );
+
+        return in_array($combination->stored(), $this->combinations, false);
+    }
 
     public function protectionOf(HookDriver $driver, string $build): ProtectionReport
     {

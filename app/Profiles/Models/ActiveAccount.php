@@ -107,6 +107,14 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
     }
 
     /**
+     * The account new starts of the driver use, none while the owner chose none; read under the owner's scope.
+     */
+    public static function defaultAccountIdOf(HookDriver $driver): string|null
+    {
+        return self::query()->ofDriver($driver)->value('account_id');
+    }
+
+    /**
      * Each program's current choice, one row per program made so far.
      *
      * @return list<self>

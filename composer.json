@@ -91,6 +91,7 @@
             "@php artisan migrate --force",
             "@php artisan numbers:install",
             "@php artisan skill:refresh",
+            "@php artisan agents:install",
             "npm install",
             "@types:generate",
             "npm run build"

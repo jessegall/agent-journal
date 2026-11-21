@@ -19,4 +19,9 @@ final readonly class UnconfiguredAccounts implements ActiveAccountReader
     {
         throw AccountUnavailable::forStart($driver->value, StartUnavailableReason::NoAccount);
     }
+
+    public function chosenForStart(HookDriver $driver, string $accountId, int $reviewedSignIn): SelectedAccount
+    {
+        throw AccountUnavailable::forStart($driver->value, StartUnavailableReason::ChosenAccountMissing);
+    }
 }
