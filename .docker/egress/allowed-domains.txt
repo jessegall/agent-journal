@@ -1,8 +1,8 @@
-# UNVERIFIED: the first guess at the sign-in domains, replaced by the list task 1482 records on a test server.
-.claude.ai
-.claude.com
-console.anthropic.com
+# Verified on the test server (task 1482, report of 21 November): the hosts the sign-ins and their checks reached.
+# Claude Code OAuth, setup token and API key, and Codex by ChatGPT sign-in all completed with only these allowed.
 api.anthropic.com
+.claude.com
 auth.openai.com
 chatgpt.com
+# Unverified: a Codex API key was not tried (no key); its check is expected to reach this host.
 api.openai.com
