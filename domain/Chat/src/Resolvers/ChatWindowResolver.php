@@ -8,9 +8,6 @@ use App\Agents\Contracts\AgentDirectory;
 use App\Agents\Support\AgentOption;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Data\MessagePage;
-use App\Communication\Data\MessageView;
-use App\Docking\Data\SourceActionData;
-use App\Docking\Sources\Contracts\DockRegistration;
 use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SlotSections;
 use Domain\Chat\Data\ChatData;
@@ -36,7 +33,6 @@ final readonly class ChatWindowResolver implements PageResolver
         private AuthorizedConversations $conversations,
         private DockProjection $dock,
         private SlotSections $slots,
-        private DockRegistration $docking,
     ) {}
 
     public function read(): ChatData
@@ -63,17 +59,12 @@ final readonly class ChatWindowResolver implements PageResolver
         $page = $this->messages->between($peers->ownInboxId, $peers->peerInboxId, null, MessagePage::DEFAULT_LIMIT);
         $dock = $this->dock->page($peers, $this->request->dockToken());
 
-        $messageAction = $this->docking->offersDock(MessageView::LINK_TYPE)
-            ? SourceActionData::from(['label' => 'Add to chat', 'type' => MessageView::LINK_TYPE])
-            : Optional::create();
-
         return ConversationData::fromPage(
             $peers->ownInboxId,
             $peers->peerInboxId,
             $page,
             $agent,
             $dock,
-            $messageAction,
         );
     }
 }
