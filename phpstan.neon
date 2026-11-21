@@ -3,6 +3,9 @@ includes:
     - vendor/nesbot/carbon/extension.neon
 
 parameters:
+    # Each checkout keeps its own result cache: the main checkout and the workers' worktrees run in one container, and
+    # one shared cache under /tmp was corrupted by their runs at once.
+    tmpDir: %currentWorkingDirectory%/storage/framework/cache/phpstan
     paths:
         - app/
         - domain/
