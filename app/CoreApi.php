@@ -512,10 +512,6 @@ use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\AskQuestion;
 use App\Communication\Commands\DismissMessage;
-use App\Communication\Commands\HideUnseatedNotifications;
-use App\Communication\Commands\MarkNotificationRead;
-use App\Communication\Commands\MarkQuestionNotificationRead;
-use App\Communication\Commands\MarkTargetNotificationRead;
 use App\Communication\Commands\ReadMessages;
 use App\Communication\Commands\ReleaseMessageClaim;
 use App\Communication\Commands\ReplyToMessage;
@@ -2292,10 +2288,6 @@ final class CoreApi
                 ReleaseMessageClaim::class,
                 RequireMessageAnswer::class,
                 DismissMessage::class,
-                MarkNotificationRead::class,
-                MarkQuestionNotificationRead::class,
-                MarkTargetNotificationRead::class,
-                HideUnseatedNotifications::class,
                 RetireAgent::class,
                 StartAgent::class,
                 StartOwnedAgent::class,

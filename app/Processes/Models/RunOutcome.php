@@ -29,7 +29,7 @@ use PhpOption\Option;
  * @property RunResultSource $source
  * @property int $version
  * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
+ * @property CarbonImmutable $updated_at
  */
 #[Table('run_outcomes')]
 #[Fillable(['run_id', 'attempt_id', 'result', 'source', 'version'])]

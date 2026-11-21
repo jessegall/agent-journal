@@ -24,6 +24,7 @@ final class TestRunAdmissions
         ExecutionPlan|null $plan = null,
         string $workingFolder = '',
         RunRequestIntent $intent = RunRequestIntent::ExplicitRequest,
+        string|null $outcomeUserId = null,
     ): RunAdmission {
         return new RunAdmission(
             $admissionId ?? bin2hex(random_bytes(8)),
@@ -39,6 +40,7 @@ final class TestRunAdmissions
                 'tree_digest' => str_repeat('b', 64),
             ]),
             $intent,
+            $outcomeUserId,
         );
     }
 }

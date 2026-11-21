@@ -13,6 +13,7 @@ use App\Processes\Http\Controllers\StopRunPageController;
 use App\Processes\Resolvers\RequestListResolver;
 use App\Processes\Resolvers\RequestWindowResolver;
 use App\Processes\Resolvers\RunListResolver;
+use App\Processes\Resolvers\RunOutcomeWindowResolver;
 use App\Processes\Resolvers\RunWindowResolver;
 use App\Ui\Contracts\PageProvider;
 use App\Ui\Declarations\ActionRoute;
@@ -33,7 +34,7 @@ final class ProcessPages implements PageProvider
 
     public function pages(): array
     {
-        return [$this->listPage(), $this->requestPage(), $this->runsPage(), $this->runPage()];
+        return [$this->listPage(), $this->requestPage(), $this->runsPage(), $this->runPage(), $this->runOutcomePage()];
     }
 
     /**
@@ -85,6 +86,17 @@ final class ProcessPages implements PageProvider
     private function runsPage(): Page
     {
         return Page::make('runs', 'Runs', Icon::Rules, RunListResolver::class, 'RunsWindow.vue')->at('runs');
+    }
+
+    private function runOutcomePage(): Page
+    {
+        return Page::make(
+            'run-outcome',
+            'Run outcome',
+            Icon::Rules,
+            RunOutcomeWindowResolver::class,
+            'RunOutcomeView.vue',
+        )->at('runs/{run}/outcome');
     }
 
     private function runPage(): Page

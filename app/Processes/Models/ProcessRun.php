@@ -254,6 +254,15 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
         $this->save();
     }
 
+    /**
+     * The user a request on the run's behalf entitled to its outcome no longer is.
+     */
+    public function revokeOutcomeUser(): void
+    {
+        $this->outcome_user_id = null;
+        $this->save();
+    }
+
     // ----------[ Answers ]----------
 
     /**
@@ -305,17 +314,21 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
             RunLogicalResult::Stopped => false,
         };
 
-        if (! $isTold || $this->responsible_type === null || $this->responsible_id === null) {
-            return [];
+        return $isTold ? $this->outcomeAudience() : [];
+    }
+
+    /**
+     * Whether the actor is the run's responsible actor or the user its request entitled to the outcome.
+     */
+    public function hasOutcomeFor(ActorIdentity $actor): bool
+    {
+        foreach ($this->outcomeAudience() as $member) {
+            if ($member->type === $actor->type && $member->id === $actor->id) {
+                return true;
+            }
         }
 
-        $recipients = [new ActorIdentity(ActorType::from($this->responsible_type), $this->responsible_id)];
-
-        if ($this->outcome_user_id !== null) {
-            $recipients[] = new ActorIdentity(ActorType::User, $this->outcome_user_id);
-        }
-
-        return $recipients;
+        return false;
     }
 
     public function isStopped(): bool
@@ -423,6 +436,26 @@ final class ProcessRun extends Model implements Dockable, ReadableModel
     }
 
     // ----------[ Internals ]----------
+
+    /**
+     * The responsible actor and the entitled user, when the run has them.
+     *
+     * @return list<ActorIdentity>
+     */
+    private function outcomeAudience(): array
+    {
+        $audience = [];
+
+        if ($this->responsible_type !== null && $this->responsible_id !== null) {
+            $audience[] = new ActorIdentity(ActorType::from($this->responsible_type), $this->responsible_id);
+        }
+
+        if ($audience !== [] && $this->outcome_user_id !== null) {
+            $audience[] = new ActorIdentity(ActorType::User, $this->outcome_user_id);
+        }
+
+        return $audience;
+    }
 
     /**
      * Whether a run's parts have all reached a final state; a run with no part yet has not ended.

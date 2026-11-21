@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\OwnerAuthority;
 use App\Communication\Models\NotificationReceipt;
 use App\Communication\Models\NotificationScope;
+use App\Processes\Commands\RevokeRunOutcomeAccess;
 use App\Processes\Enums\RunEventType;
 use App\Processes\Enums\RunLogicalResult;
 use App\Processes\Enums\RunRequestIntent;
@@ -13,10 +19,12 @@ use App\Processes\Enums\RunResultSource;
 use App\Processes\Enums\StepType;
 use App\Processes\Events\RunOutcomeRecorded;
 use App\Processes\Execution\RecordedRunEvents;
+use App\Processes\Handlers\RevokeRunOutcomeAccessHandler;
 use App\Processes\Listeners\NotifyRunOutcome;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\RunOutcome;
 use App\Processes\Models\RunResultConflict;
+use App\Processes\Resolvers\Support\RunOutcomeSummaries;
 use App\Processes\Support\RunOutcomes;
 use App\Processes\Values\ExecutionPlan;
 use App\Processes\Values\RunEvent;
@@ -140,6 +148,48 @@ final class RunOutcomeTest extends TestCase
         );
 
         $this->assertSame(0, NotificationReceipt::query()->count());
+    }
+
+    public function test_an_entitled_user_reads_only_the_safe_summary_until_the_entitlement_is_revoked(): void
+    {
+        $atlas = TestActors::agentIdentity(3);
+        $kim = TestActors::userIdentity(4);
+        $run = ProcessRun::create($atlas, TestRunAdmissions::of(
+            projectKey: (string) config('processes.project_key'),
+            outcomeUserId: $kim->id,
+        ));
+        $this->app->make(RunOutcomes::class)->record($run, RunLogicalResult::Failed, RunResultSource::Signed);
+        $this->app->make(NotifyRunOutcome::class)
+            ->handle(new RunOutcomeRecorded($run->id, $run->attempt_id, RunLogicalResult::Failed, false));
+
+        $this->actAs($kim);
+        $summary = $this->app->make(RunOutcomeSummaries::class)->summaryOf($run->id)->get();
+
+        $this->assertSame('Run failed', $summary->label);
+        $this->assertSame(substr($run->attempt_id, -8), $summary->attemptReference);
+        $this->assertFalse($summary->mayOpenFullRun);
+        $this->assertSame(2, NotificationReceipt::query()->count());
+
+        $this->actAs($atlas);
+        $this->app->make(RevokeRunOutcomeAccessHandler::class)->handle(
+            (new RevokeRunOutcomeAccess($run->id))->withDispatcher(ActorContext::forAgent($atlas->id)),
+        );
+
+        $this->actAs($kim);
+        $this->assertTrue($this->app->make(RunOutcomeSummaries::class)->summaryOf($run->id)->isEmpty());
+        $this->assertSame(
+            0,
+            NotificationScope::query()->where('recipient_id', $kim->id)->sole()->unread_count,
+        );
+    }
+
+    private function actAs(ActorIdentity $actor): void
+    {
+        $this->app->forgetScopedInstances();
+        $context = $actor->type === ActorType::User
+            ? ActorContext::forUser($actor->id)
+            : ActorContext::forAgent($actor->id);
+        $this->app->make(CurrentActorSetter::class)->set($context, new OwnerAuthority('test'));
     }
 
     private function run(): ProcessRun
