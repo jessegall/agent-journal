@@ -69,6 +69,14 @@ code{font-family:var(--font-mono);font-size:11px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .plain{font-size:var(--t-small);color:var(--text-3);white-space:nowrap}
 
+/* ---------- program marks: monochrome, currentColor, so they follow light and dark ---------- */
+.mk{flex:none;display:block;fill:currentColor;color:var(--text)}
+.mk.s12{width:12px;height:12px}
+.mk.s14{width:14px;height:14px}
+.mk.s16{width:16px;height:16px}
+.mk.s18{width:18px;height:18px}
+.mk.dim{color:var(--text-3)}
+
 /* ---------- the modal: fixed width, fixed body height, fixed footer ---------- */
 .modal{width:480px;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--r-card);box-shadow:0 16px 48px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.06);display:flex;flex-direction:column;overflow:hidden}
 .m-head{height:52px;display:flex;align-items:center;gap:12px;padding:0 12px 0 20px;border-bottom:1px solid var(--line)}
@@ -80,21 +88,27 @@ code{font-family:var(--font-mono);font-size:11px}
 .m-foot{height:52px;display:flex;align-items:center;gap:8px;padding:0 12px 0 12px;border-top:1px solid var(--line);background:var(--bg-2)}
 .m-foot .gap{flex:1}
 .seg{display:flex;padding:2px;border-radius:var(--r-button);background:var(--chip);gap:2px}
-.seg span{flex:1;text-align:center;height:26px;line-height:26px;border-radius:5px;font-size:var(--t-field);color:var(--text-2);cursor:pointer}
+.seg span{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:28px;border-radius:5px;font-size:var(--t-field);color:var(--text-2);cursor:pointer}
+.seg span .mk{color:var(--text-3)}
 .seg span.on{background:var(--bg);color:var(--text);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg span.on .mk{color:var(--text)}
 .cards{display:flex;flex-direction:column;gap:8px}
 .card{border:1px solid var(--border-2);border-radius:var(--r-field);padding:12px 14px;display:flex;flex-direction:column;gap:4px;cursor:pointer;background:var(--bg)}
 .card:hover{background:var(--hover)}
 .card.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset}
-.card .row1{display:flex;align-items:baseline;gap:12px}
-.card .t{font-size:var(--t-card);font-weight:500;color:var(--text);flex:1}
-.card .d{font-size:var(--t-small);color:var(--text-2);line-height:1.5}
+.card .row1{display:flex;align-items:flex-start;gap:10px}
+.card .row1 .mk{margin-top:1px}
+.card .t{font-size:var(--t-card);line-height:20px;font-weight:500;color:var(--text);flex:1}
+.card .row1 .plain{line-height:20px}
+.card .d{font-size:var(--t-small);color:var(--text-2);line-height:1.5;padding-left:28px}
 .compact{gap:6px}
-.compact .card{padding:9px 12px;gap:2px}
-.compact .card .d{font-size:var(--t-meta)}
-.group{font-size:var(--t-group);text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);padding-top:4px}
+.compact .card{padding:8px 12px;gap:1px}
+.compact .card .row1 .mk{margin-top:2px}
+.compact .card .d{font-size:var(--t-meta);padding-left:26px}
+.group{display:flex;align-items:center;gap:6px;font-size:var(--t-group);text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);padding-top:6px}
 .group:first-child{padding-top:0}
 .chosen{display:flex;align-items:center;gap:8px;font-size:var(--t-small);color:var(--text-3);padding-bottom:16px;border-bottom:1px solid var(--line)}
+.chosen .mk{margin-right:2px}
 .chosen b{color:var(--text);font-weight:500}
 .chosen .plain{margin-left:auto}
 .ol{margin:0;padding-left:18px;color:var(--text-2);font-size:var(--t-field);line-height:1.75}
@@ -123,10 +137,12 @@ code{font-family:var(--font-mono);font-size:11px}
 .ph .gap{flex:1}
 .ph .acts{display:flex;gap:8px}
 .list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-.list li{display:flex;align-items:center;gap:16px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.list li{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
 .list li:last-child{border-bottom:0}
+.list li>.mk{margin-top:2px}
+.list li>.plain{line-height:20px;margin-left:4px}
 .list .who{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-.list .who .name{font-size:var(--t-card);color:var(--text);overflow-wrap:anywhere}
+.list .who .name{font-size:var(--t-card);line-height:20px;color:var(--text);overflow-wrap:anywhere}
 .list .who .sub{font-size:var(--t-small);color:var(--text-3)}
 .empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 24px;text-align:center;border-top:1px solid var(--line)}
 .empty .t{font-size:var(--t-card);color:var(--text-2)}
@@ -141,6 +157,11 @@ ul.todo{color:var(--text-2);font-size:var(--t-small);line-height:1.7;max-width:8
 </style>
 </head>
 <body>
+<!-- Program marks, monochrome, filled with currentColor. Anthropic: the 'A' glyph. OpenAI: the knot. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="m-anthropic" viewBox="0 0 24 24"><path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/></symbol>
+  <symbol id="m-openai" viewBox="0 0 24 24"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></symbol>
+</svg>
 <div class="doc">
 <div class="top">
   <div>
@@ -150,7 +171,9 @@ ul.todo{color:var(--text-2);font-size:var(--t-small);line-height:1.7;max-width:8
     the same size on every step, so nothing jumps.</p>
     <p class="lead">Drawn in the version 6 kit: <code>Button</code>, <code>TextField</code> (<code>code</code>, <code>secret</code>), <code>Spinner</code>
     and the tokens in <code>resources/css/app.css</code>. Blue is the only accent: the progress bars, the selected card, the spinner and the
-    done mark. Billing and status are plain grey text.</p>
+    done mark. Billing and status are plain grey text. Each program is marked by its own monochrome mark, drawn in
+    <code>currentColor</code>: Anthropic's 'A' for Claude Code and OpenAI's knot for Codex. The marks are 16&nbsp;px in rows and
+    chosen lines, 18&nbsp;px on cards, 14&nbsp;px in the switch and 12&nbsp;px in group headings, each set on the title's first line.</p>
   </div>
   <span class="gap"></span>
   <button class="toggle" onclick="document.documentElement.classList.toggle('dark')">Light / dark</button>
@@ -167,10 +190,10 @@ addresses wrap rather than being cut short. One header button replaces the two p
       <div class="ph"><h3>Accounts</h3><span class="count">4</span><span class="gap"></span>
         <div class="acts"><button class="btn primary small"><span class="plus">+</span>Add account</button></div></div>
       <ul class="list">
-        <li><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Uses your subscription · Chosen for new starts</span></div><span class="plain">Signed in</span></li>
-        <li><div class="who"><span class="name">Claude Code API key</span><span class="sub">Claude Code · Billed to your API account</span></div><span class="plain">Signed in</span></li>
-        <li><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Codex · Uses your subscription · Chosen for new starts</span></div><span class="plain">Signed in</span></li>
-        <li><div class="who"><span class="name">Codex API key</span><span class="sub">Codex · Billed to your API account</span></div><span class="plain">Needs sign-in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Uses your subscription · Chosen for new starts</span></div><span class="plain">Signed in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg><div class="who"><span class="name">Claude Code API key</span><span class="sub">Claude Code · Billed to your API account</span></div><span class="plain">Signed in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-openai"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Codex · Uses your subscription · Chosen for new starts</span></div><span class="plain">Signed in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-openai"/></svg><div class="who"><span class="name">Codex API key</span><span class="sub">Codex · Billed to your API account</span></div><span class="plain">Needs sign-in</span></li>
       </ul>
     </div></div></div>
   <div class="frame"><div class="cap"><b>1b</b>No accounts yet</div>
@@ -186,7 +209,7 @@ addresses wrap rather than being cut short. One header button replaces the two p
         <div class="acts"><button class="btn bordered small"><span class="spin tiny"></span>Sign-in waiting · Resume</button>
         <button class="btn primary small" disabled><span class="plus">+</span>Add account</button></div></div>
       <ul class="list">
-        <li><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Uses your subscription · Chosen for new starts</span></div><span class="plain">Signed in</span></li>
+        <li><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg><div class="who"><span class="name">jesse.gall@transport-planning.example.com</span><span class="sub">Claude Code · Uses your subscription · Chosen for new starts</span></div><span class="plain">Signed in</span></li>
       </ul>
     </div></div></div>
 </div>
@@ -202,13 +225,13 @@ user, and what it bills in grey text on the right.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="seg"><span class="on">Claude Code</span><span>Codex</span></div>
+        <div class="seg"><span class="on"><svg class="mk s14" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code</span><span><svg class="mk s14" aria-hidden="true"><use href="#m-openai"/></svg>Codex</span></div>
         <div class="cards">
-          <div class="card on"><div class="row1"><span class="t">Sign in with Claude</span><span class="plain">Subscription</span></div>
+          <div class="card on"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-anthropic"/></svg><span class="t">Sign in with Claude</span><span class="plain">Subscription</span></div>
             <span class="d">Opens Claude's sign-in page. You sign in there and paste back the code it shows.</span></div>
-          <div class="card"><div class="row1"><span class="t">Provider token</span><span class="plain">Subscription</span></div>
+          <div class="card"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-anthropic"/></svg><span class="t">Provider token</span><span class="plain">Subscription</span></div>
             <span class="d">Paste a long-lived token made with <code>claude setup-token</code>. Suits a server.</span></div>
-          <div class="card"><div class="row1"><span class="t">API key</span><span class="plain">API usage</span></div>
+          <div class="card"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-anthropic"/></svg><span class="t">API key</span><span class="plain">API usage</span></div>
             <span class="d">Paste a key from the Anthropic Console. Every request is billed to that API account.</span></div>
         </div>
       </div>
@@ -218,11 +241,11 @@ user, and what it bills in grey text on the right.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="seg"><span>Claude Code</span><span class="on">Codex</span></div>
+        <div class="seg"><span><svg class="mk s14" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code</span><span class="on"><svg class="mk s14" aria-hidden="true"><use href="#m-openai"/></svg>Codex</span></div>
         <div class="cards">
-          <div class="card"><div class="row1"><span class="t">Sign in with ChatGPT</span><span class="plain">Subscription</span></div>
+          <div class="card"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-openai"/></svg><span class="t">Sign in with ChatGPT</span><span class="plain">Subscription</span></div>
             <span class="d">Shows a short code. You enter it on OpenAI's page, and the account appears here by itself.</span></div>
-          <div class="card"><div class="row1"><span class="t">API key</span><span class="plain">API usage</span></div>
+          <div class="card"><div class="row1"><svg class="mk s18" aria-hidden="true"><use href="#m-openai"/></svg><span class="t">API key</span><span class="plain">API usage</span></div>
             <span class="d">Paste a key from the OpenAI platform. Every request is billed to that API account.</span></div>
         </div>
         <div class="spacer"></div>
@@ -234,13 +257,13 @@ user, and what it bills in grey text on the right.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body compact">
-        <div class="group">Claude Code</div>
-        <div class="card on"><div class="row1"><span class="t">Sign in with Claude</span><span class="plain">Subscription</span></div><span class="d">Sign in on Claude's page and paste back its code.</span></div>
-        <div class="card"><div class="row1"><span class="t">Provider token</span><span class="plain">Subscription</span></div><span class="d">Paste a token made with <code>claude setup-token</code>.</span></div>
-        <div class="card"><div class="row1"><span class="t">API key</span><span class="plain">API usage</span></div><span class="d">Paste a key from the Anthropic Console.</span></div>
-        <div class="group">Codex</div>
-        <div class="card"><div class="row1"><span class="t">Sign in with ChatGPT</span><span class="plain">Subscription</span></div><span class="d">Enter a short code on OpenAI's page.</span></div>
-        <div class="card"><div class="row1"><span class="t">API key</span><span class="plain">API usage</span></div><span class="d">Paste a key from the OpenAI platform.</span></div>
+        <div class="group"><svg class="mk s12 dim" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code</div>
+        <div class="card on"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg><span class="t">Sign in with Claude</span><span class="plain">Subscription</span></div><span class="d">Sign in on Claude's page and paste back its code.</span></div>
+        <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg><span class="t">Provider token</span><span class="plain">Subscription</span></div><span class="d">Paste a token made with <code>claude setup-token</code>.</span></div>
+        <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg><span class="t">API key</span><span class="plain">API usage</span></div><span class="d">Paste a key from the Anthropic Console.</span></div>
+        <div class="group"><svg class="mk s12 dim" aria-hidden="true"><use href="#m-openai"/></svg>Codex</div>
+        <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-openai"/></svg><span class="t">Sign in with ChatGPT</span><span class="plain">Subscription</span></div><span class="d">Enter a short code on OpenAI's page.</span></div>
+        <div class="card"><div class="row1"><svg class="mk s16" aria-hidden="true"><use href="#m-openai"/></svg><span class="t">API key</span><span class="plain">API usage</span></div><span class="d">Paste a key from the OpenAI platform.</span></div>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal">Cancel</button><button class="btn primary normal">Continue</button></div>
     </div></div></div>
@@ -257,7 +280,7 @@ moves the button.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
         <div class="center"><span class="spin big"></span><p>Starting the sign-in…</p></div>
       </div>
       <div class="m-foot"><button class="btn normal">← Back</button><span class="gap"></span><button class="btn primary normal" disabled>Send code</button></div>
@@ -266,7 +289,7 @@ moves the button.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
         <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code the page shows when you are done.</li><li>Paste it below and send it.</li></ol>
         <div class="linkbox"><span class="host">claude.ai <span>· sign-in page</span></span><button class="btn small">Copy link</button><button class="btn bordered small">Open ↗</button></div>
         <div class="field"><label>Code from the sign-in page</label><input class="code focus" value="QF7KX2"><span class="under">One piece of text, without spaces.</span></div>
@@ -279,7 +302,7 @@ moves the button.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
         <ol class="ol"><li>Open Claude's sign-in page and sign in.</li><li>Copy the code the page shows when you are done.</li><li>Paste it below and send it.</li></ol>
         <div class="linkbox"><span class="host">claude.ai <span>· sign-in page</span></span><button class="btn small">Copy link</button><button class="btn bordered small">Open ↗</button></div>
         <div class="field"><label>Code from the sign-in page</label><input class="code bad" value="UNABLE TO CONNECT"><span class="under err">This is not a sign-in code: it has spaces. Paste the sign-in code again.</span></div>
@@ -292,7 +315,7 @@ moves the button.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Codex · <b>Sign in with ChatGPT</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-openai"/></svg>Codex ·<b>Sign in with ChatGPT</b><span class="plain">Subscription</span></div>
         <ol class="ol"><li>Open OpenAI's page and sign in with ChatGPT.</li><li>Enter this code there when it asks.</li></ol>
         <div class="devcode">K7QD-3XMP</div>
         <div class="linkbox"><span class="host">auth.openai.com <span>· device sign-in</span></span><button class="btn small">Copy code</button><button class="btn bordered small">Open ↗</button></div>
@@ -305,7 +328,7 @@ moves the button.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Provider token</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code ·<b>Provider token</b><span class="plain">Subscription</span></div>
         <div class="where"><b>Where to get it.</b> On a computer where you are signed in to Claude Code, run <code>claude setup-token</code> in a terminal and copy the token it prints.</div>
         <div class="field"><label>Provider token</label><input type="password" class="focus" value="••••••••••••••••••••••••"><span class="under">Kept on the host only and never shown again.</span></div>
         <div class="spacer"></div>
@@ -317,7 +340,7 @@ moves the button.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>API key</b><span class="plain">API usage</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code ·<b>API key</b><span class="plain">API usage</span></div>
         <div class="where"><b>Where to get it.</b> In the Anthropic Console, open API keys and create a key. Copy it right away: the Console shows it only once.
           <br><span style="color:var(--text-3)">Codex: on the OpenAI platform, open API keys and create a secret key.</span></div>
         <div class="field"><label>API key</label><input type="password" value=""><span class="under">Kept on the host only and never shown again.</span></div>
@@ -339,7 +362,7 @@ The done mark is blue; the other marks are grey.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
         <div class="center" role="status"><span class="spin big"></span><h4>Checking the sign-in with Claude Code…</h4><p>This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.</p></div>
       </div>
       <div class="m-foot"><span class="gap"></span><button class="btn normal">Close</button></div>
@@ -348,7 +371,7 @@ The done mark is blue; the other marks are grey.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
         <div class="center"><span class="mark done">✓</span><h4>Account added</h4><p><b style="color:var(--text);font-weight:500;overflow-wrap:anywhere">jesse.gall@transport-planning.example.com</b> is saved as a Claude Code account. New Claude Code starts use it, since it is the only one.</p></div>
       </div>
       <div class="m-foot"><button class="btn normal">Add another</button><span class="gap"></span><button class="btn primary normal">Done</button></div>
@@ -357,7 +380,7 @@ The done mark is blue; the other marks are grey.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
         <div class="center"><span class="mark grey">!</span><h4>The sign-in did not finish.</h4><p>Nothing was saved. Start again for a new sign-in page, or choose another way to sign in.</p></div>
       </div>
       <div class="m-foot"><button class="btn normal">Choose another way</button><span class="gap"></span><button class="btn primary normal">Start again</button></div>
@@ -366,7 +389,7 @@ The done mark is blue; the other marks are grey.</p>
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Codex · <b>Sign in with ChatGPT</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-openai"/></svg>Codex ·<b>Sign in with ChatGPT</b><span class="plain">Subscription</span></div>
         <div class="center"><span class="mark grey">=</span><h4>This account is already added.</h4><p>It is <b style="color:var(--text);font-weight:500;overflow-wrap:anywhere">jesse.gall@transport-planning.example.com</b> in the list. To renew its login, use Sign in again on its row.</p></div>
       </div>
       <div class="m-foot"><button class="btn normal">Choose another way</button><span class="gap"></span><button class="btn primary normal">Show the account</button></div>
@@ -396,7 +419,7 @@ asks once, inside the same frame; in steps one and three the modal just closes. 
     <div class="stage"><div class="modal">
       <div class="m-head"><h3>Add an account</h3><span class="steps"><i class="on"></i><i class="on"></i><i></i></span><button class="btn icon">✕</button></div>
       <div class="m-body">
-        <div class="chosen">Claude Code · <b>Sign in with Claude</b><span class="plain">Subscription</span></div>
+        <div class="chosen"><svg class="mk s16" aria-hidden="true"><use href="#m-anthropic"/></svg>Claude Code ·<b>Sign in with Claude</b><span class="plain">Subscription</span></div>
         <div class="center"><span class="mark grey">?</span><h4>Keep the sign-in waiting?</h4><p>It waits on the host until it expires. Resume it from the Accounts header, or cancel it now.</p></div>
       </div>
       <div class="m-foot"><button class="btn normal">← Stay</button><span class="gap"></span><button class="btn bordered normal">Cancel sign-in</button><button class="btn primary normal">Keep waiting</button></div>
