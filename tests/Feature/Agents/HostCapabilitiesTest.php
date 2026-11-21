@@ -77,12 +77,15 @@ final class HostCapabilitiesTest extends TestCase
 
         foreach (HostCapabilityType::cases() as $capability) {
             foreach (HookProgram::cases() as $program) {
-                $this->assertNotSame(
-                    CapabilityStatusType::Supported,
-                    $capabilities->capability(
-                        $this->capabilityQuery($capability, $program, ExecutionModeType::RequiredContainer),
-                    )->status,
+                $row = $capabilities->capability(
+                    $this->capabilityQuery($capability, $program, ExecutionModeType::RequiredContainer),
                 );
+
+                if ($row->status !== CapabilityStatusType::Supported) {
+                    continue;
+                }
+
+                $this->assertStringStartsWith('docs/accounts/contained-capability-runs.md#', $row->evidence);
             }
         }
     }

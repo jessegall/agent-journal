@@ -47,8 +47,8 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
-            "reason": "Claude Code runs hook commands as its own child processes and talks to MCP servers on their own channel, but no container run has shown that a model-run tool cannot reach the hook relay's channel and send it a callback."
+            "evidence": "docs/accounts/contained-capability-runs.md#the-other-three",
+            "reason": "A property of a launched Claude Code session (its hook callbacks, completion or Stop hook), shown only by a signed-in Claude Code launched in an agent container by the host, which plan 37's contained start builds; no such launch has run yet."
         },
         {
             "capability": "callback-separation",
@@ -66,9 +66,9 @@
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
-            "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
-            "reason": "Hook commands run as the same user as the model's Bash tool, so the relay material is readable by model-run descendants unless a separate user or Claude Code's sandbox keeps it out; neither has been run and checked in a container."
+            "status": "unsupported",
+            "evidence": "docs/accounts/contained-capability-runs.md#relay-protection-unsupported",
+            "reason": "Claude Code's sandbox does not start in the agent container (bwrap: Can't mount proc on /newroot/proc: Operation not permitted, under the masked /proc paths), so hook commands and the Bash tool run as one user and the relay material is readable by model-run descendants."
         },
         {
             "capability": "relay-protection",
@@ -86,9 +86,9 @@
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
-            "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
-            "reason": "No container run has shown that every model-run descendant, background shells included, stays in one process group the host can see and end."
+            "status": "supported",
+            "evidence": "docs/accounts/contained-capability-runs.md#process-tracking-supported",
+            "reason": "A container stop ends every descendant through the container's PID namespace, a setsid-detached one and one that ignores TERM included; the host proves the end by the container's state, since the daemon cannot list a container's processes."
         },
         {
             "capability": "process-tracking",
@@ -107,8 +107,8 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
-            "reason": "No host exists yet (task 258) to close new action admission and keep it closed through completion, or to bump a workspace generation before a changing tool; the hook endpoint's refusals alone have not been run against a fenced session."
+            "evidence": "docs/accounts/contained-capability-runs.md#the-other-three",
+            "reason": "A property of a launched Claude Code session (its hook callbacks, completion or Stop hook), shown only by a signed-in Claude Code launched in an agent container by the host, which plan 37's contained start builds; no such launch has run yet."
         },
         {
             "capability": "completion-fence",
@@ -127,8 +127,8 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
-            "reason": "The task 89 capture saw stop_hook_active on Stop but never blocked a stop or ran past a hook timeout, so the Stop deadline and the continuation cap of 2.1.323 are not measured."
+            "evidence": "docs/accounts/contained-capability-runs.md#the-other-three",
+            "reason": "A property of a launched Claude Code session (its hook callbacks, completion or Stop hook), shown only by a signed-in Claude Code launched in an agent container by the host, which plan 37's contained start builds; no such launch has run yet."
         },
         {
             "capability": "stop-deadline",
@@ -146,9 +146,9 @@
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
-            "status": "unverified",
-            "evidence": "docs/accounts/start-handshake.md#the-protected-host",
-            "reason": "No protected host runs Docker for the journal yet (task 258), so no container runtime, rootless mode or kernel control has been checked on this host."
+            "status": "unsupported",
+            "evidence": "docs/accounts/contained-capability-runs.md#container-runtime-unsupported",
+            "reason": "The agent daemon reports cgroup driver none, so every agent container's CPU, memory and process budgets are accepted and discarded (24 processes ran under a limit of 8, 200 MB under 64 MB); the daemon itself answers on its socket with the two pinned images, and a host without it refuses to serve (task 1633)."
         },
         {
             "capability": "container-runtime",
