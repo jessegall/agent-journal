@@ -32,6 +32,12 @@ return new class extends Migration
             $table->unsignedInteger('boot_generation')->default(0);
             $table->timestampsTz();
             $table->unique(['host_id', 'root_id']);
+            $table->foreignUlid('environment_id')->nullable();
+            $table->unsignedInteger('setup_generation')->default(0);
+            $table->string('reconciled_boot_id')->nullable();
+            $table->string('leased_runtime_id')->nullable();
+            $table->timestampTz('lease_expires_at')->nullable();
+            $table->timestampTz('revoked_at')->nullable();
         });
     }
 

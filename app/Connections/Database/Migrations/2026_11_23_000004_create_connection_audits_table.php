@@ -22,6 +22,7 @@ return new class extends Migration
             $table->timestampTz('created_at');
 
             $table->index('created_at');
+            $table->string('project_id')->nullable();
         });
     }
 

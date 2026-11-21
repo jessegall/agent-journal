@@ -29,6 +29,8 @@ return new class extends Migration
 
             $table->unique(['number_group_id', 'number']);
 
+            // The environment of the connected binding a task was made through, by id alone; none for a task made here.
+            $table->string('environment_id')->nullable()->index();
         });
 
         DB::statement('ALTER TABLE tasks ADD CONSTRAINT tasks_number_positive CHECK (number > 0)');

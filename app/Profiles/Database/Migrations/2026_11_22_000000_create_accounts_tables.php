@@ -38,6 +38,8 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->index('driver');
+            $table->timestampTz('check_inconclusive_at')->nullable();
+            $table->unsignedInteger('name_revision')->default(0);
         });
 
         DB::statement("create unique index accounts_label_in_use on accounts (driver, label_key) where state <> 'removed'");
@@ -73,6 +75,9 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->index(['driver', 'state']);
+            $table->string('refusal', 300)->nullable();
+            $table->string('result_account_id', 26)->nullable();
+            $table->string('submission_key', 128)->nullable();
         });
     }
 

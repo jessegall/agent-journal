@@ -18,12 +18,13 @@ return new class extends Migration
             $table->string('mode');
             $table->foreignUlid('project_id')->nullable()->constrained('projects');
             // One owner action's key: issuing again under it replaces the line still pending under it.
-            $table->string('issuance_key')->index();
             $table->timestampTz('expires_at');
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampTz('spent_at')->nullable();
             $table->foreignUlid('binding_id')->nullable()->constrained('project_bindings');
             $table->timestampsTz();
+            $table->foreignUlid('install_attempt_id')->nullable();
+            $table->foreignUlid('environment_id')->nullable();
         });
     }
 

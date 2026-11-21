@@ -25,6 +25,11 @@ return new class extends Migration
             $table->timestampTz('grant_expires_at')->nullable();
             $table->timestampTz('last_polled_at')->nullable();
             $table->timestampsTz();
+            $table->string('reference')->nullable()->unique();
+            $table->unsignedInteger('generation')->default(1);
+            $table->string('start_key')->nullable();
+            $table->foreignUlid('environment_id')->nullable();
+            $table->unique(['binding_id', 'start_key']);
         });
     }
 

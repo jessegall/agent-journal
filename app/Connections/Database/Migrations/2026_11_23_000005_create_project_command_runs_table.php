@@ -23,6 +23,8 @@ return new class extends Migration
             $table->integer('exit_code')->nullable();
             $table->jsonb('frames')->default('[]');
             $table->timestampsTz();
+            $table->string('fingerprint', 64)->default('');
+            $table->string('worker')->default('');
         });
     }
 

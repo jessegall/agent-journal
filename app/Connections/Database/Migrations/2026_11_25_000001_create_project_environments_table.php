@@ -18,10 +18,27 @@ return new class extends Migration
             $table->timestampTz('created_at')->nullable();
             $table->unique(['project_id', 'label']);
         });
+
+        // Bindings, lines and terminal sign-ins are made before this table and name their environment through it.
+        Schema::table('project_bindings', function (Blueprint $table): void {
+            $table->foreign('environment_id')->references('id')->on('project_environments');
+        });
+
+        Schema::table('project_invitations', function (Blueprint $table): void {
+            $table->foreign('environment_id')->references('id')->on('project_environments')->nullOnDelete();
+        });
+
+        Schema::table('device_grants', function (Blueprint $table): void {
+            $table->foreign('environment_id')->references('id')->on('project_environments')->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('project_bindings', fn (Blueprint $table) => $table->dropForeign(['environment_id']));
+        Schema::table('project_invitations', fn (Blueprint $table) => $table->dropForeign(['environment_id']));
+        Schema::table('device_grants', fn (Blueprint $table) => $table->dropForeign(['environment_id']));
+
         Schema::dropIfExists('project_environments');
     }
 };

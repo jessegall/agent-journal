@@ -31,6 +31,7 @@ return new class extends Migration
 
             $table->index(['account_type', 'account_id', 'state']);
             $table->index('session_id');
+            $table->text('refusal')->nullable();
         });
     }
 

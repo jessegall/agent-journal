@@ -27,10 +27,17 @@ return new class extends Migration
             $table->unique(['owner_user_id', 'idempotency_key']);
             $table->index(['owner_user_id', 'created_at']);
         });
+
+        // A line belongs to its owner's install attempt, made before this table.
+        Schema::table('project_invitations', function (Blueprint $table): void {
+            $table->foreign('install_attempt_id')->references('id')->on('install_attempts');
+        });
     }
 
     public function down(): void
     {
+        Schema::table('project_invitations', fn (Blueprint $table) => $table->dropForeign(['install_attempt_id']));
+
         Schema::dropIfExists('install_attempts');
     }
 };

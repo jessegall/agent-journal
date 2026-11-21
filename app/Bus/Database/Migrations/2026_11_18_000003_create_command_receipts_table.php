@@ -34,6 +34,7 @@ return new class extends Migration
 
             $table->index('answers_until');
             $table->index('refuses_until');
+            $table->string('target', 160)->nullable();
         });
     }
 
