@@ -15,6 +15,7 @@ use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Reads\Values\RelationRead;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * One owner's attempt to install a line for one target, a new project or one to join, made before any ticket is
@@ -64,6 +66,11 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
     public const int LISTED_DAYS = 30;
 
     /**
+     * The most lines one attempt holds, each replacement adding one.
+     */
+    public const int LINE_LIMIT = 100;
+
+    /**
      * The most attempts one page of the list holds.
      */
     public const int PAGE_LIMIT = 25;
@@ -93,23 +100,30 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
      */
     public static function openFor(string $ownerUserId, string $idempotencyKey, Environment|null $joins): self
     {
-        $attempt = self::query()->createOrFirst(
-            ['owner_user_id' => $ownerUserId, 'idempotency_key' => $idempotencyKey],
-            [
-                'reference' => self::newReference(),
-                'mode' => $joins === null ? InvitationMode::New : InvitationMode::Join,
-                'project_id' => $joins?->project_id,
-                'environment_id' => $joins?->id,
-                'state' => InstallAttemptState::Open,
-                'version' => 0,
-            ],
-        );
+        $id = (string) Str::ulid();
+        $now = CarbonImmutable::now();
+        // A second first submission under the key inserts nothing, without the error that would end the transaction.
+        self::query()->insertOrIgnore([
+            'id' => $id,
+            'reference' => self::newReference(),
+            'owner_user_id' => $ownerUserId,
+            'idempotency_key' => $idempotencyKey,
+            'mode' => ($joins === null ? InvitationMode::New : InvitationMode::Join)->value,
+            'project_id' => $joins?->project_id,
+            'environment_id' => $joins?->id,
+            'state' => InstallAttemptState::Open->value,
+            'version' => 0,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $attempt = self::query()->ofOwner($ownerUserId)->where('idempotency_key', $idempotencyKey)->lockForUpdate()
+            ->firstOrFail();
 
-        if ($attempt->wasRecentlyCreated) {
-            $attempt->raise(new InstallAttemptOpened($attempt->id, $attempt->reference, CarbonImmutable::now()));
+        if ($attempt->id === $id) {
+            $attempt->raise(new InstallAttemptOpened($attempt->id, $attempt->reference, $now));
         }
 
-        return self::lockById($attempt->id);
+        return $attempt;
     }
 
     // ----------[ Queries ]----------
@@ -142,7 +156,11 @@ final class InstallAttempt extends Model implements EventSource, ReadableModel
         return self::query()->ofOwner($ownerUserId)
             ->where(fn (Builder $listed) => $listed->where('state', InstallAttemptState::Open)
                 ->orWhere('updated_at', '>=', $since))
-            ->with(['invitations', 'project', 'environment'])
+            ->with([
+                'invitations' => RelationRead::complete(max: self::LINE_LIMIT)->constraint(),
+                'project',
+                'environment',
+            ])
             ->orderByDesc('created_at')->orderByDesc('id')
             ->cursorPaginate(self::PAGE_LIMIT, cursor: $cursor);
     }

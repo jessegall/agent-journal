@@ -8,6 +8,8 @@ use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use RuntimeException;
 
 /**
@@ -67,6 +69,23 @@ final class InstallAttemptRefused extends RuntimeException implements CodedRefus
         $refusal->outcome = ['reference' => $reference, 'state' => 'cancelled'];
 
         return $refusal;
+    }
+
+    /**
+     * The refusal with what came of the attempt, for every caller that reads JSON, a signed-in browser too: a stale
+     * tab needs the binding a spent attempt made, or the version it is at now.
+     */
+    public function render(Request $request): JsonResponse|null
+    {
+        if (! $request->expectsJson()) {
+            return null;
+        }
+
+        return new JsonResponse([
+            'code' => $this->refusalCode()->value,
+            'message' => $this->getMessage(),
+            'details' => (object) $this->details(),
+        ], $this->status());
     }
 
     public function refusalCode(): RefusalCode
