@@ -64,6 +64,7 @@ final readonly class DomainTypeWriter implements Writer
             fn (array $types) => array_map(fn (Transformed $type) => (string) $type->getName(), $types),
             $byPath,
         );
+
         $owners = array_count_values(array_merge(...array_values($names)));
         $exports = [];
 

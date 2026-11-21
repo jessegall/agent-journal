@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Operations\Enums\AccessType;
-use App\Reflection\Contracts\ReflectorFactory;
+use App\Reflection\Contracts\TypeReflections;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +21,7 @@ final readonly class RecordChanges
     public function __construct(
         private CurrentActor $actors,
         private CurrentAuthorizer $authorizer,
-        private ReflectorFactory $reflectors,
+        private TypeReflections $reflections,
     ) {}
 
     /**
@@ -48,9 +48,9 @@ final readonly class RecordChanges
 
     private function createdByActor(Model $record): bool
     {
-        $type = $this->reflectors->make($record);
+        $type = $this->reflections->of($record);
 
         return $type->hasMethod('isCreatedBy')
-            && $type->method('isCreatedBy')->invokeOn($record, $this->actors->actor()) === true;
+            && $type->invokeMethod('isCreatedBy', $record, $this->actors->actor()) === true;
     }
 }
