@@ -1,0 +1,143 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Communication\Models;
+
+use App\Contracts\Support\InsertsAbsentRows;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * One recipient's copy of one notification occurrence: its place in the scope's sequence, and when the recipient
+ * read it or it was hidden. Only an unread receipt that is not hidden counts. Change it only through
+ * NotificationReceipts, which holds the scope's lock so the count follows.
+ *
+ * @property string $id
+ * @property string $occurrence_id
+ * @property string $scope_id
+ * @property int $sequence
+ * @property CarbonImmutable|null $read_at
+ * @property CarbonImmutable|null $hidden_at
+ * @property CarbonImmutable|null $created_at
+ */
+#[Table('notification_receipts')]
+#[Fillable(['occurrence_id', 'scope_id', 'sequence'])]
+final class NotificationReceipt extends Model implements ReadableModel
+{
+    use BoundedReads;
+    use HasUlids;
+    use InsertsAbsentRows;
+
+    public const ?string UPDATED_AT = null;
+
+    // ----------[ Constructors ]----------
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function casts(): array
+    {
+        return [
+            'sequence' => 'integer',
+            'read_at' => 'immutable_datetime',
+            'hidden_at' => 'immutable_datetime',
+            'created_at' => 'immutable_datetime',
+        ];
+    }
+
+    /**
+     * The scope's receipt of the occurrence at the scope's next sequence, inserted unless the scope already holds
+     * one; isNew() tells a replay apart.
+     */
+    public static function create(NotificationOccurrence $occurrence, NotificationScope $scope): self
+    {
+        $receipt = new self([
+            'occurrence_id' => $occurrence->id,
+            'scope_id' => $scope->id,
+            'sequence' => $scope->next_sequence,
+        ]);
+
+        $receipt->id = $receipt->newUniqueId();
+        $receipt->insertIfAbsent();
+
+        return $receipt;
+    }
+
+    // ----------[ Queries ]----------
+
+    /**
+     * The receipt under its row lock, taken after its scope's lock.
+     */
+    public static function lockedById(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    // ----------[ Mutations ]----------
+
+    /**
+     * Marks the receipt read once; a second call changes nothing and keeps the first read time.
+     */
+    public function markRead(CarbonImmutable $at): bool
+    {
+        if ($this->read_at !== null) {
+            return false;
+        }
+
+        $this->read_at = $at;
+        $this->save();
+
+        return true;
+    }
+
+    /**
+     * Hides the receipt from its recipient's list and count; hiding it again changes nothing.
+     */
+    public function hide(CarbonImmutable $at): bool
+    {
+        if ($this->hidden_at !== null) {
+            return false;
+        }
+
+        $this->hidden_at = $at;
+        $this->save();
+
+        return true;
+    }
+
+    /**
+     * Shows a hidden receipt again; a visible one stays as it is.
+     */
+    public function reveal(): bool
+    {
+        if ($this->hidden_at === null) {
+            return false;
+        }
+
+        $this->hidden_at = null;
+        $this->save();
+
+        return true;
+    }
+
+    // ----------[ Answers ]----------
+
+    public function isNew(): bool
+    {
+        return $this->wasRecentlyCreated;
+    }
+
+    /**
+     * Whether the receipt counts toward its scope's unread count: unread and not hidden.
+     */
+    public function isCounted(): bool
+    {
+        return $this->read_at === null && $this->hidden_at === null;
+    }
+}

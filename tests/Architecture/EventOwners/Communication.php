@@ -12,6 +12,7 @@ use App\Communication\Events\MessageDismissed;
 use App\Communication\Events\MessageRead;
 use App\Communication\Events\MessageSent;
 use App\Communication\Events\MessageTakenUp;
+use App\Communication\Events\NotificationsChanged;
 use Tests\Architecture\Support\EventRole;
 
 /**
@@ -68,5 +69,17 @@ return [
         'producers' => [
             'app/Communication/Support/MessageReading.php',
         ],
+    ],
+    NotificationsChanged::class => [
+        'role' => EventRole::RowFact,
+        'owner' => [
+            'NotificationScope::addReceipt',
+            'NotificationScope::addUnread',
+            'NotificationScope::removeUnread',
+            'NotificationScope::recordChange',
+        ],
+        'migrated' => true,
+        'producers' => [],
+        'sample' => fn () => new NotificationsChanged('scope'),
     ],
 ];
