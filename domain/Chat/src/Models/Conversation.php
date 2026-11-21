@@ -10,6 +10,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Domain\Chat\Exceptions\ConversationUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
@@ -92,6 +94,14 @@ final class Conversation extends Pivot implements ReadableModel
         return $this->low_inbox_id === $inboxId || $this->high_inbox_id === $inboxId;
     }
 
+    /**
+     * The other side of the conversation from one of its inboxes.
+     */
+    public function peerOf(string $inboxId): string
+    {
+        return $this->low_inbox_id === $inboxId ? $this->high_inbox_id : $this->low_inbox_id;
+    }
+
     // ----------[ Relations ]----------
 
     /**
@@ -110,5 +120,18 @@ final class Conversation extends Pivot implements ReadableModel
     private static function ordered(string $firstInboxId, string $secondInboxId): array
     {
         return $firstInboxId < $secondInboxId ? [$firstInboxId, $secondInboxId] : [$secondInboxId, $firstInboxId];
+    }
+
+    // ----------[ Scopes ]----------
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function joinedBy(Builder $query, string $inboxId): void
+    {
+        $query->where(
+            fn (Builder $sides) => $sides->where('low_inbox_id', $inboxId)->orWhere('high_inbox_id', $inboxId),
+        );
     }
 }

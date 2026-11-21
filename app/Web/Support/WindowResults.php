@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Web\Support;
 
+use App\Docking\Data\DockOfferData;
+use App\Docking\Sources\Contracts\DockableWindow;
+use App\Docking\Sources\Contracts\DockOffers;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Declarations\ResolverDefinition;
 use App\Web\Contracts\WindowResults as WindowResultsContract;
@@ -16,6 +19,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
+use PhpOption\None;
 use Psr\Log\LoggerInterface;
 use Spatie\LaravelData\Data;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -29,6 +33,7 @@ use Throwable;
 final readonly class WindowResults implements WindowResultsContract
 {
     public function __construct(
+        private DockOffers $offers,
         private VisibilityChecks $visibility,
         private LoggerInterface $log,
     ) {}
@@ -50,7 +55,12 @@ final readonly class WindowResults implements WindowResultsContract
                 throw ReaderDataMismatch::for($key, $resolver->dataClass, $windowContent::class);
             }
 
-            return ReadyWindow::of($windowContent->toArray());
+            $offer = $windowContent instanceof DockableWindow
+                ? $this->offers->offerFor($windowContent->dockSource())
+                : None::create();
+
+            return $offer->map(fn (DockOfferData $made) => ReadyWindow::offering($windowContent->toArray(), $made))
+                ->getOrCall(fn () => ReadyWindow::of($windowContent->toArray()));
         } catch (
             AuthenticationException
             |TokenMismatchException

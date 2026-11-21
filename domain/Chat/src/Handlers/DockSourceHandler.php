@@ -22,9 +22,9 @@ final readonly class DockSourceHandler extends ChatCommandHandler
      * Docks the source, or answers the placement it has there already; the locked conversation keeps two docks of
      * one source to one row.
      */
-    public function handle(DockSource $command, Conversation $conversation): DockResult
+    public function handle(DockSource $command): DockResult
     {
-        $this->requests->assertJoined($conversation);
+        $conversation = $this->requests->lockedConversation($command->chat);
         $source = new DockIdentity($command->type, $command->id);
         $this->requests->assertReadable($source, $command->presentation);
         $existing = DockPlacement::docked($conversation, $source);

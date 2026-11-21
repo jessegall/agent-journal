@@ -21,9 +21,9 @@ final readonly class UndockSourceHandler extends ChatCommandHandler
      * Removes the placement when it docks that source in this conversation; any other id is answered as nothing to
      * act on, without saying why.
      */
-    public function handle(UndockSource $command, Conversation $conversation): DockResult
+    public function handle(UndockSource $command): DockResult
     {
-        $this->requests->assertJoined($conversation);
+        $conversation = $this->requests->lockedConversation($command->chat);
         $source = new DockIdentity($command->type, $command->id);
         $this->requests->assertReadable($source);
         $placement = DockPlacement::matching($conversation, $command->placementId, $source);

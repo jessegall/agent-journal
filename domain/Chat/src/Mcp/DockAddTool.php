@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Chat\Mcp;
+
+use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Data\ToolResult;
+use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\JournalWriteTool;
+use Domain\Chat\Commands\DockSource;
+use Domain\Chat\Data\DockAnswerData;
+use Domain\Chat\Values\DockResult;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
+
+#[IsIdempotent]
+#[Name('dock_add')]
+#[Dispatches(DockSource::class)]
+#[Description('Dock a record above your conversation, for both sides of it: give type and id, and chat when you take part in several conversations. Answers added or present with the placement id.')]
+final class DockAddTool extends JournalWriteTool
+{
+    protected function writeSchema(JsonSchema $schema): array
+    {
+        return [
+            'type' => $schema->string()->max(64)->required(),
+            'id' => $schema->string()->max(255)->required(),
+            'chat' => $schema->string()->max(26),
+        ];
+    }
+
+    protected function command(ToolArguments $arguments): DockSource
+    {
+        return new DockSource(
+            $arguments->optionalText('chat'),
+            $arguments->text('type'),
+            $arguments->text('id')
+        );
+    }
+
+    /**
+     * @param  DockResult  $commandReply
+     */
+    protected function present(mixed $commandReply): ToolResult
+    {
+        return ToolResult::ok(DockAnswerData::fromDockResult($commandReply)->toArray());
+    }
+}

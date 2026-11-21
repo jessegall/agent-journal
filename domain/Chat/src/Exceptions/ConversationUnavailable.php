@@ -19,6 +19,16 @@ final class ConversationUnavailable extends RuntimeException implements CommandR
         return new self("No conversation {$id} is available.");
     }
 
+    public static function unnamed(): self
+    {
+        return new self('You take part in several conversations: name the one to use with --chat.');
+    }
+
+    public static function none(): self
+    {
+        return new self('You take part in no conversation yet: open the chat first, or name one with --chat.');
+    }
+
     public static function withPeer(Throwable $cause): self
     {
         return new self('This conversation is not available.', 0, $cause);

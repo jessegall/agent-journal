@@ -1924,9 +1924,11 @@ class	DockDefinition
 class	DockDefinitionInvalid
 class	DockDefinitions
 class	DockDestination
+class	DockDestinationOptionData
 class	DockIdentity
 class	DockLink
 class	DockNodeTypes
+class	DockOfferData
 class	DockSourceUnavailable
 class	DockerImageData
 class	DockerImageRecordData
@@ -2675,6 +2677,7 @@ class	NewMessage
 class	NextAction
 class	NextStep
 class	NgrokGateway
+class	NoDockOffers
 class	NoEngineGrant
 class	NoRefusalReason
 class	NoReplacementLine
@@ -5676,11 +5679,13 @@ interface	Desk
 interface	DestinationGate
 interface	DestinationProvider
 interface	Destinations
+interface	DockOffers
 interface	DockPart
 interface	DockRegistration
 interface	DockSourceChanged
 interface	Dockable
 interface	DockableProvider
+interface	DockableWindow
 interface	DockerImageVerifier
 interface	DomainAvailability
 interface	DomainBootstrapper
@@ -9068,12 +9073,15 @@ method	DockDefinitions::register()
 method	DockDestination::__construct()
 method	DockDestination::isDeclaredIn()
 method	DockDestination::linkIn()
+method	DockDestinationOptionData::__construct()
 method	DockIdentity::__construct()
 method	DockLink::__construct()
 method	DockLink::jsonSerialize()
 method	DockNodeTypes::__construct()
 method	DockNodeTypes::alias()
 method	DockNodeTypes::provide()
+method	DockOfferData::__construct()
+method	DockOffers::offerFor()
 method	DockPart::children()
 method	DockPart::key()
 method	DockPart::type()
@@ -9090,6 +9098,7 @@ method	Dockable::composeDockCard()
 method	Dockable::identifyFor()
 method	DockableProvider::cardsFor()
 method	DockableProvider::requireReadable()
+method	DockableWindow::dockSource()
 method	DockerImageData::__construct()
 method	DockerImageData::isAgentImage()
 method	DockerImageRecordData::__construct()
@@ -11672,6 +11681,7 @@ method	NgrokGateway::isUpstream()
 method	NgrokGateway::open()
 method	NgrokGateway::setupCheck()
 method	NgrokGateway::writeConfiguration()
+method	NoDockOffers::offerFor()
 method	NoEngineGrant::allowsMaintenance()
 method	NoEngineGrant::allowsTarget()
 method	NoEngineGrant::description()
@@ -13314,6 +13324,7 @@ method	ReadyStateLoader::stateClass()
 method	ReadyStateLoader::statesFor()
 method	ReadyWindow::__construct()
 method	ReadyWindow::of()
+method	ReadyWindow::offering()
 method	Reason::__construct()
 method	ReassignAgentRuntime::__construct()
 method	ReassignAgentRuntime::target()
@@ -18290,6 +18301,7 @@ parameter	$desk
 parameter	$deskId
 parameter	$desks
 parameter	$destination
+parameter	$destinationField
 parameter	$destinationInboxId
 parameter	$destinationInboxLabel
 parameter	$destinations
@@ -18318,6 +18330,7 @@ parameter	$dispatchers
 parameter	$dispatches
 parameter	$display
 parameter	$disposition
+parameter	$dockOffer
 parameter	$document
 parameter	$documentation
 parameter	$documents
@@ -19002,6 +19015,8 @@ parameter	$occurredAt
 parameter	$occurrence
 parameter	$of
 parameter	$ofType
+parameter	$offer
+parameter	$offers
 parameter	$offlineReply
 parameter	$offlineReplySeal
 parameter	$offset
@@ -19915,6 +19930,7 @@ parameter	$value	app/Assignments/Casts/PoolReferenceCast.php
 parameter	$value	app/Bus/Support/OneLineRule.php
 parameter	$value	app/Comments/Casts/CommentViewsCast.php
 parameter	$value	app/Docking/Cards/DestinationArgument.php
+parameter	$value	app/Docking/Data/DockDestinationOptionData.php
 parameter	$value	app/Hooks/Storage/FrameRecordsCast.php
 parameter	$value	app/Hooks/Storage/RecordedAnswerCast.php
 parameter	$value	app/Hooks/Storage/RecordedStepsCast.php
@@ -21644,11 +21660,19 @@ property	DockDefinitions::$owned
 property	DockDefinitions::$records
 property	DockDestination::$arguments
 property	DockDestination::$page
+property	DockDestinationOptionData::$label
+property	DockDestinationOptionData::$value
 property	DockIdentity::$id
 property	DockIdentity::$type
 property	DockLink::$href
 property	DockLink::$page
 property	DockNodeTypes::$parts
+property	DockOfferData::$destinationField
+property	DockOfferData::$destinations
+property	DockOfferData::$id
+property	DockOfferData::$label
+property	DockOfferData::$type
+property	DockOfferData::$url
 property	DockerImageData::$architecture
 property	DockerImageData::$builtAt
 property	DockerImageData::$claudeCode
@@ -24159,6 +24183,7 @@ property	ReadsServiceProvider::$countedConnections
 property	ReadyState::$policy
 property	ReadyState::$stops
 property	ReadyStateLoader::$container
+property	ReadyWindow::$dockOffer
 property	ReadyWindow::$state
 property	ReadyWindow::$windowFields
 property	Reason::$text
@@ -26926,6 +26951,7 @@ property	WalkedCall::$stackBefore
 property	WatchedRuntime::$intervalMs
 property	WatchedRuntime::$runtimeId
 property	WindowResults::$log
+property	WindowResults::$offers
 property	WindowResults::$visibility
 property	WithdrawAsk::$ask
 property	WithdrawAskCall::$id
@@ -27848,6 +27874,7 @@ variable	$numbered
 variable	$object
 variable	$occurrence
 variable	$ofType
+variable	$offer
 variable	$offered
 variable	$offset
 variable	$offsets

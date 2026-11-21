@@ -4,10 +4,16 @@ import type { {!! implode(', ', $names) !!} } from './{!! $owner !!}';
 export type { {!! implode(', ', $names) !!} } from './{!! $owner !!}';
 @endforeach
 
+import type { DockOfferData } from './core';
+
 /**
- * A window, section or inspector result: ready with its reader's Data, failed with a neutral message, or denied.
+ * A window, section or inspector result: ready with its reader's Data, and the offer to dock the source it shows, failed
+ * with a neutral message, or denied.
  */
-export type WindowResult<T> = { state: 'ready'; data: T } | { state: 'failed'; message: string } | { state: 'denied' };
+export type WindowResult<T> =
+    | { state: 'ready'; data: T; dockOffer?: DockOfferData }
+    | { state: 'failed'; message: string }
+    | { state: 'denied' };
 @foreach ($pages as $type => $members)
 
 export type {!! $type !!} = {

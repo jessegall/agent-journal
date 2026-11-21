@@ -607,6 +607,8 @@ use App\Docking\Cards\Stack;
 use App\Docking\Cards\StateLabel;
 use App\Docking\Cards\Subtitle;
 use App\Docking\Cards\Title;
+use App\Docking\Data\DockDestinationOptionData;
+use App\Docking\Data\DockOfferData;
 use App\Docking\Data\SourceActionData;
 use App\Docking\Enums\Alignment;
 use App\Docking\Enums\ConsoleStream;
@@ -622,6 +624,8 @@ use App\Docking\Sources\Contracts\CardContext;
 use App\Docking\Sources\Contracts\DestinationGate;
 use App\Docking\Sources\Contracts\Dockable;
 use App\Docking\Sources\Contracts\DockableProvider;
+use App\Docking\Sources\Contracts\DockableWindow;
+use App\Docking\Sources\Contracts\DockOffers;
 use App\Docking\Sources\Contracts\DockRegistration;
 use App\Docking\Sources\Contracts\DockSourceChanged;
 use App\Docking\Sources\DockDefinition;
@@ -1300,6 +1304,8 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                DockOffers::class,
+                DockableWindow::class,
                 CardContext::class,
                 DeclaredPages::class,
                 CardEncoder::class,
@@ -1524,6 +1530,8 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                DockOfferData::class,
+                DockDestinationOptionData::class,
                 ComposedCard::class,
                 Button::class,
                 ChatExcerpt::class,

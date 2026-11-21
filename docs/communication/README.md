@@ -72,5 +72,21 @@ agents). CLI: `message:send`, `ask`, `reply`, `require-answer`, `read`, `take-ne
 
 Chat shows the conversation between the person's inbox and the chosen agent's inbox, reads only what it showed, and
 replies at the shown version. It adds an Inbox page (counts, take next) and a History page (labelled inspection,
-cancel with a reason). Pins (`MessagePin`) and docked records (`DockedRecord`) are Chat's own, one per owner, inbox pair
-and target, and are left out of lists while unreadable. Owner domains only suggest records for the dock.
+cancel with a reason). Pins (`MessagePin`) are Chat's own, one per owner, inbox pair and target, and are left out of
+lists while unreadable.
+
+### The dock
+
+A conversation (`Conversation`, one row per pair of inboxes) docks sources above its composer as `DockPlacement` rows,
+one per source. Every entry point goes through the same two commands, `DockSource` and `UndockSource`, under the
+caller's request key, so a retry answers its first receipt: the chat's Add to chat and undock buttons, and the journal:
+
+```
+journal dock add tasks.task 01JD8X0G9M3QZ6V4K2TASK0001     # added, or present, with the placement id
+journal dock list                                          # placement, type, source id, title and state
+journal dock remove 01JD8X0G9M3QZ6V4K2PLACEMENT            # removed, or unavailable when nothing was there
+```
+
+A caller in one conversation uses it; a caller in several names one with `--chat <conversation id>`, and nothing is
+docked until it does. `dock list` shows only safe facts (`Resolvers/DockListing`): a source the caller may not read has
+no title and reads `unavailable`. Each card is written by its owner in the card language of `app/Docking`.

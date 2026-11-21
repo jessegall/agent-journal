@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Web\Data;
 
+use App\Docking\Data\DockOfferData;
 use App\Web\Enums\WindowState;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -22,6 +24,7 @@ final class ReadyWindow extends Data
         public readonly WindowState $state,
         #[MapName('data')]
         public readonly array $windowFields,
+        public readonly DockOfferData|Optional $dockOffer,
     ) {}
 
     /**
@@ -29,6 +32,14 @@ final class ReadyWindow extends Data
      */
     public static function of(array $fields): self
     {
-        return new self(WindowState::Ready, $fields);
+        return new self(WindowState::Ready, $fields, Optional::create());
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields
+     */
+    public static function offering(array $fields, DockOfferData $offer): self
+    {
+        return new self(WindowState::Ready, $fields, $offer);
     }
 }

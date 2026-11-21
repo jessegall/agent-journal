@@ -14,6 +14,7 @@ Account added
 Account of a start
 Accounts
 Activate this bundle
+Add
 Add a secret
 Add a window
 Add account
@@ -44,6 +45,7 @@ Cancelled
 Checked reader revision
 Checking the new session
 Checking the sign-in with {{ driverName(driver) }}…
+Choose a chat
 Choose a way to sign in to continue.
 Choose another way
 Choose exact text in the source
@@ -156,7 +158,6 @@ No linked record can be shared with it.
 No linked record is shared with it.
 No module bundle is waiting.
 No saved accounts yet
-No session
 No share uses this gateway.
 Not filled in yet: {{ revision.missingFields.join(', ') }}
 Not run yet.

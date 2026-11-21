@@ -10,6 +10,14 @@ use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\Assignable;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Support\HasComments;
+use App\Docking\Cards\DockCard;
+use App\Docking\Cards\DockIdentity;
+use App\Docking\Cards\Stack;
+use App\Docking\Cards\Subtitle;
+use App\Docking\Cards\Title;
+use App\Docking\Sources\Contracts\CardContext;
+use App\Docking\Sources\Contracts\Dockable;
+use App\Docking\Sources\DockDefinition;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -35,7 +43,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable(['text'])]
 #[Table('module_notes')]
-final class Note extends Model implements Assignable, Commentable, Numbered, ReadableModel
+final class Note extends Model implements Assignable, Commentable, Dockable, Numbered, ReadableModel
 {
     use BelongsToOneActor;
     use HasComments;
@@ -66,5 +74,15 @@ final class Note extends Model implements Assignable, Commentable, Numbered, Rea
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    public function identifyFor(DockDefinition $definition): DockIdentity
+    {
+        return $definition->identity($this->id);
+    }
+
+    public function composeDockCard(CardContext $context): DockCard
+    {
+        return DockCard::named($this->text, Stack::of('root', new Title('title', $this->text), new Subtitle('kind', 'Note')));
     }
 }

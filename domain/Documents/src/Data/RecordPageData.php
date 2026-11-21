@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Domain\Documents\Data;
 
 use App\Comments\Data\CommentList;
+use App\Docking\Cards\DockIdentity;
+use App\Docking\Sources\Contracts\DockableWindow;
 use App\Records\Data\RecordCard;
 use App\Text\Support\MarkdownText;
 use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Models\Document;
+use Domain\Documents\Models\Report;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -17,7 +21,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * One document or report on its own page: its label, title, abstract, and its body as safe HTML.
  */
 #[TypeScript]
-final class RecordPageData extends Data
+final class RecordPageData extends Data implements DockableWindow
 {
     /**
      * @param  list<SettlementCard>  $settlements
@@ -36,6 +40,8 @@ final class RecordPageData extends Data
         #[DataCollectionOf(RecordCard::class)]
         public readonly array $links,
         public readonly bool $publiclyShared,
+        public readonly string $sourceType,
+        public readonly string $sourceId,
         public readonly string|Optional $revision = new Optional(),
     ) {}
 
@@ -61,6 +67,8 @@ final class RecordPageData extends Data
             'settlements' => $settlements,
             'links' => $links,
             'publiclyShared' => $publiclyShared,
+            'sourceType' => Document::LINK_TYPE,
+            'sourceId' => $document->id,
             'revision' => $document->revision,
         ]);
     }
@@ -87,6 +95,13 @@ final class RecordPageData extends Data
             'settlements' => $settlements,
             'links' => $links,
             'publiclyShared' => $publiclyShared,
+            'sourceType' => Report::LINK_TYPE,
+            'sourceId' => $report->id,
         ]);
+    }
+
+    public function dockSource(): DockIdentity
+    {
+        return new DockIdentity($this->sourceType, $this->sourceId);
     }
 }

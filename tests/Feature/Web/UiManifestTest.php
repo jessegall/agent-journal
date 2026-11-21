@@ -94,7 +94,7 @@ final class UiManifestTest extends TestCase
         $props = File::get("{$this->root}/resources/js/generated/types/page-props.ts");
         $checks = File::get("{$this->root}/resources/js/generated/ui-prop-checks.ts");
 
-        $this->assertStringContainsString("export type WindowResult<T> = { state: 'ready'; data: T }", $props);
+        $this->assertStringContainsString("| { state: 'ready'; data: T; dockOffer?: DockOfferData }", $props);
         $this->assertStringContainsString("import type { RecentNotesData } from './shared';", $props);
         $this->assertStringContainsString(
             "export type LibraryIndexPageProps = {\n    page: WindowResult<RecentNotesData>;",

@@ -41,13 +41,63 @@ final readonly class DockRequests
     }
 
     /**
+     * The conversation a journal caller means: the one it names, which it must take part in, or else the only one it
+     * has. With several and none named it refuses, and docks nothing.
+     *
+     * @throws ConversationUnavailable
+     */
+    public function chosenConversation(string|null $chat): Conversation
+    {
+        if ($chat !== null) {
+            $named = Conversation::query()
+                ->whereKey($chat)
+                ->firstOr(fn () => throw ConversationUnavailable::missing($chat));
+            $this->assertJoined($named);
+
+            return $named;
+        }
+
+        $joined = Conversation::query()->joinedBy($this->ownInboxId())->limit(2)->get();
+
+        if ($joined->isEmpty()) {
+            throw ConversationUnavailable::none();
+        }
+
+        if ($joined->count() > 1) {
+            throw ConversationUnavailable::unnamed();
+        }
+
+        return $joined->sole();
+    }
+
+    /**
+     * The conversation a dock or undock changes, chosen as chosenConversation does, under its row lock.
+     *
+     * @throws ConversationUnavailable
+     */
+    public function lockedConversation(string|null $chat): Conversation
+    {
+        return Conversation::lockedById($this->chosenConversation($chat)->id);
+    }
+
+    /**
+     * The caller's own inbox and the other side of a conversation it takes part in.
+     */
+    public function peersIn(Conversation $conversation): ConversationPeers
+    {
+        $own = $this->ownInboxId();
+
+        return new ConversationPeers($own, $conversation->peerOf($own));
+    }
+
+    /**
      * Refuses an actor whose own inbox is not one side of the conversation, the same way as an unknown one.
      *
      * @throws ConversationUnavailable
      */
     public function assertJoined(Conversation $conversation): void
     {
-        if (! $conversation->joins($this->inboxes->preferredFor($this->actors->actor())->inboxId())) {
+        if (! $conversation->joins($this->ownInboxId())) {
             throw ConversationUnavailable::missing($conversation->id);
         }
     }
@@ -76,5 +126,10 @@ final readonly class DockRequests
          */
         $provider = $this->container->make($definition->provider);
         $definition->assertOwns($provider->requireReadable($definition, $source->id));
+    }
+
+    private function ownInboxId(): string
+    {
+        return $this->inboxes->preferredFor($this->actors->actor())->inboxId();
     }
 }

@@ -330,6 +330,95 @@
                 },
                 "title": "Capabilities Read Tool"
             },
+            "dock_add": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "chat": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "id": {
+                            "maxLength": 255,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "type": {
+                            "maxLength": 64,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "dock_add",
+                "outputSchema": null,
+                "title": "Dock Add Tool"
+            },
+            "dock_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "chat": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "limit": {
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "dock_list",
+                "outputSchema": null,
+                "title": "Dock List Tool"
+            },
+            "dock_remove": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "chat": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "placement_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "source_id": {
+                            "maxLength": 255,
+                            "type": "string"
+                        },
+                        "type": {
+                            "maxLength": 64,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "placement_id",
+                        "type",
+                        "source_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "dock_remove",
+                "outputSchema": null,
+                "title": "Dock Remove Tool"
+            },
             "docs_close": {
                 "inputSchema": {
                     "additionalProperties": false,
@@ -3678,6 +3767,95 @@
                     "type": "object"
                 },
                 "title": "Capabilities Read Tool"
+            },
+            "dock_add": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "chat": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "id": {
+                            "maxLength": 255,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "type": {
+                            "maxLength": 64,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "dock_add",
+                "outputSchema": null,
+                "title": "Dock Add Tool"
+            },
+            "dock_list": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "chat": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "limit": {
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object"
+                },
+                "name": "dock_list",
+                "outputSchema": null,
+                "title": "Dock List Tool"
+            },
+            "dock_remove": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "chat": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "placement_id": {
+                            "maxLength": 26,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "source_id": {
+                            "maxLength": 255,
+                            "type": "string"
+                        },
+                        "type": {
+                            "maxLength": 64,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "placement_id",
+                        "type",
+                        "source_id",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "dock_remove",
+                "outputSchema": null,
+                "title": "Dock Remove Tool"
             },
             "docs_close": {
                 "inputSchema": {
