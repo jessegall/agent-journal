@@ -32,7 +32,8 @@ final readonly class DeskOpening
      */
     public function installNamed(string $name, string $label, int $seatCount, bool $forwardsOccupants): DeskRecord
     {
-        return DeskRecord::query()->named($name)->first() ?? $this->openNamed($name, $label, $seatCount, $forwardsOccupants);
+        return DeskRecord::query()->named($name)->first()
+            ?? $this->openNamed($name, $label, $seatCount, $forwardsOccupants);
     }
 
     /**
@@ -75,7 +76,7 @@ final readonly class DeskOpening
         $inbox = InboxRecord::create(DeskRecord::INBOX_PROVIDER, $id);
         $desk = DeskRecord::create($id, $name, $label, $inbox->id, $seatCount, $forwardsOccupants);
 
-        foreach (range(1, $seatCount) as $number) {
+        for ($number = 1; $number <= $seatCount; $number++) {
             DeskSeat::create($desk, $number);
         }
 

@@ -10,9 +10,9 @@ use App\Hooks\Events\ToolCallFinished;
 use Tests\Architecture\Support\EventRole;
 
 /**
- * The events of Hooks with their role, owning transition and the files that send them today (doc 70, table 1).
- * Each migration slice sets migrated, names a sample, and leaves its owner the one producer; EventProducerTest fails
- * on any producer not listed here.
+ * The events of Hooks with their role, owning transition or the files that send them.
+ * Each row fact names its owning transition and a sample; every other event names the files that send it.
+ * EventProducerTest fails on any producer not listed here.
  */
 return [
     ContextStarted::class => [

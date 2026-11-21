@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Listeners;
 
 use App\Agents\Models\AgentSession;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\Listener;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Events\ContextStarted;
@@ -23,7 +24,6 @@ use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StartProgram;
 use App\Skills\Values\SelectedSkills;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * At every boundary of a session (start, clear, resume, compaction) selects its skills afresh from today's facts and
@@ -39,7 +39,7 @@ final readonly class RefreshSessionSkills implements Listener
         private SkillTargets $targets,
         private SkillResolver $skills,
         private AgentStack $stacks,
-        private Dispatcher $events,
+        private CommandFacts $facts,
         private SkillPublications $publications,
     ) {}
 
@@ -77,7 +77,7 @@ final readonly class RefreshSessionSkills implements Listener
 
         if ($publication->state->awaitsDelivery()) {
             $this->stacks->push($event->target, AwaitingSkillsStateReference::forPublication($publication));
-            $this->events->dispatch(new SessionSkillsIntended($publication->id));
+            $this->facts->publishAfterCommit(new SessionSkillsIntended($publication->id));
         }
 
         $started = SkillPublication::firstOfSession($session->id);

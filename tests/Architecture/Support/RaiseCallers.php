@@ -19,7 +19,7 @@ use Tests\Support\ScanCache\ScanCache;
  */
 final readonly class RaiseCallers
 {
-    public const string MIGRATED_LISTS = 'tests/Architecture/Legacy/RaiseCallers';
+    public const string MIGRATED_LISTS = 'tests/Architecture/RaisingTransitions';
 
     /**
      * @param  list<string>  $transitions  each migrated transition as Class::method

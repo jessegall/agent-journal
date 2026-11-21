@@ -211,9 +211,12 @@ final class ProfileRun extends Model implements ReadableModel
         return $result === null ? None::create() : new Some($result->outcome());
     }
 
-    public function recordedResult(string $reference): ProfileStepResult|null
+    /**
+     * Whether the step's result is already recorded, so a repeated report records nothing.
+     */
+    public function hasRecordedStep(string $reference): bool
     {
-        return $this->results()->where('step_reference', $reference)->first();
+        return $this->results()->where('step_reference', $reference)->exists();
     }
 
     // ----------[ Relations ]----------
@@ -224,5 +227,12 @@ final class ProfileRun extends Model implements ReadableModel
     public function results(): HasMany
     {
         return $this->hasMany(ProfileStepResult::class);
+    }
+
+    // ----------[ Internals ]----------
+
+    private function recordedResult(string $reference): ProfileStepResult|null
+    {
+        return $this->results()->where('step_reference', $reference)->first();
     }
 }

@@ -14,8 +14,8 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Models\StartRecord;
 use App\Agents\Support\AccountStartSettings;
 use App\Agents\Support\ClaimedStart;
+use App\Agents\Support\StartExtensionRequests;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Hands the host a pending start of a runtime assigned to it, with the recipe the program's adapter checked; another
@@ -24,7 +24,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class ClaimStartHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private StartExtensionRequests $extensions) {}
 
     /**
      * @throws StartClaimRefused
@@ -47,7 +47,7 @@ final readonly class ClaimStartHandler implements CommandHandler
         $program = AgentSession::query()->findOrFail($start->session_id)->selection()->program->value;
         $settings = new AccountStartSettings();
         $requested = new AccountSettingsRequested($program, $start->accountIdentity(), $start->directory, $settings);
-        $this->events->dispatch($requested);
+        $this->extensions->accountSettings($requested);
 
         return new ClaimedStart(
             $start->start_key,

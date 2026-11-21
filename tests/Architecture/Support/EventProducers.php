@@ -25,7 +25,7 @@ use Tests\Support\ScanCache\ScanCache;
  */
 final readonly class EventProducers
 {
-    public const string EXPECTED_LISTS = 'tests/Architecture/Legacy/EventProducers';
+    public const string EXPECTED_LISTS = 'tests/Architecture/EventOwners';
 
     /**
      * The kinds of property a migrated fact may not hold, since it is released after the command ends.

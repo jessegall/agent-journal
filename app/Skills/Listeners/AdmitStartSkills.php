@@ -7,6 +7,7 @@ namespace App\Skills\Listeners;
 use App\Agents\Events\SessionOpened;
 use App\Agents\Exceptions\StartRefused;
 use App\Agents\Models\AgentSession;
+use App\Bus\Contracts\CommandFacts;
 use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
 use App\Skills\Contracts\SkillResolver;
@@ -18,7 +19,6 @@ use App\Skills\Support\SkillPublications;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StartProgram;
-use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Admits a start's skills inside its transaction: a program the journal cannot hand skills to is refused, a required
@@ -34,7 +34,7 @@ final readonly class AdmitStartSkills implements Listener
         private ProgramSkillAdapters $adapters,
         private SkillTargets $targets,
         private SkillResolver $skills,
-        private Dispatcher $events,
+        private CommandFacts $facts,
         private SkillPublications $publications,
     ) {}
 
@@ -64,6 +64,6 @@ final readonly class AdmitStartSkills implements Listener
             $selected->selectedKeys(),
         );
 
-        $this->events->dispatch(new SessionSkillsIntended($publication->id));
+        $this->facts->publishAfterCommit(new SessionSkillsIntended($publication->id));
     }
 }

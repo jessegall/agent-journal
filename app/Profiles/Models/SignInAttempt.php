@@ -415,9 +415,6 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     }
 
     /**
-     * Takes the account's folder as its one writer and runs in the sign-in generation that starts.
-     */
-    /**
      * The host takes the attempt to run its program's sign-in.
      */
     public function claimOn(string $hostId): void

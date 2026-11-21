@@ -18,4 +18,4 @@ A model method changes only its own row, and the fact of that change is raised b
   `AccountsChanged` and `PlanProgressChanged`) are public listeners that derive their event from committed facts.
 
 `ModelOwnRowTest`, `EventProducerTest` and `ModelRaiseCallerTest` check this. Their lists in
-`tests/Architecture/Legacy` name each event's owner and each transition that raises.
+`tests/Architecture/EventOwners` and `tests/Architecture/RaisingTransitions` name each event's owner and each transition that raises.

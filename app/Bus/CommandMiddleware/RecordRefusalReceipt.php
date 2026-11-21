@@ -71,15 +71,8 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
             return;
         }
 
-        CommandReceipt::createRefused(
-            $caller,
-            $key,
-            $call->command(),
-            $this->registry->retentionOf($call->name()),
-            $code,
-            $failure->getMessage(),
-            $details,
-        );
+        CommandReceipt::create($caller, $key, $call->command(), $this->registry->retentionOf($call->name()))
+            ->refuse($code, $failure->getMessage(), $details);
     }
 
     /**

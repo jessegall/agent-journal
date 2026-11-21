@@ -47,6 +47,9 @@ final readonly class GatewayRuns
      */
     private function releaseAllButRun(string $runId): void
     {
-        ShareGatewayOperation::query()->unfinished()->claimedByOtherThan($runId)->update(['lease_ends_at' => CarbonImmutable::now()]);
+        ShareGatewayOperation::query()
+            ->unfinished()
+            ->claimedByOtherThan($runId)
+            ->update(['lease_ends_at' => CarbonImmutable::now()]);
     }
 }

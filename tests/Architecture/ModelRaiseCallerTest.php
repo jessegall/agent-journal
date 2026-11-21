@@ -14,7 +14,7 @@ use Tests\TestCase;
 
 /**
  * A model transition that raises a fact runs only inside a unit (plan 40): every caller of a transition the lists in
- * tests/Architecture/Legacy/RaiseCallers name is reached from a registered command's handler, is a required listener
+ * tests/Architecture/RaisingTransitions name is reached from a registered command's handler, is a required listener
  * or is a model; a public listener, a job, a console command, a controller or unreached code fails.
  */
 #[TimeLimit(seconds: 30, reason: 'It parses every PHP file of app and the domains.')]

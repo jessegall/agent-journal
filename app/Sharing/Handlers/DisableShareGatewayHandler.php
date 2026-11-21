@@ -57,8 +57,10 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
      */
     private function cancelOpensOf(ShareGatewayConfiguration $configuration): void
     {
-        ShareGatewayOperation::query()->unfinished()->ofConfiguration($configuration->id)->ofType(GatewayOperationType::Open)->update(
-            ['outcome_code' => GatewayOutcome::Failed->value],
-        );
+        ShareGatewayOperation::query()
+            ->unfinished()
+            ->ofConfiguration($configuration->id)
+            ->ofType(GatewayOperationType::Open)
+            ->update(['outcome_code' => GatewayOutcome::Failed->value]);
     }
 }
