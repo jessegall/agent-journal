@@ -1329,6 +1329,7 @@ use App\Ui\Layout\PublicationPage;
 use App\Ui\Layout\PublicationTab;
 use App\Web\Commands\RecordUserHeartbeat;
 use App\Web\Contracts\CurrentUserResolver;
+use App\Web\Exceptions\PrivateRecordMissing;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
@@ -2567,6 +2568,7 @@ final class CoreApi
                 AssignmentGroupTooLarge::class,
                 AssigneeUnavailable::class,
                 RecordUnavailable::class,
+                PrivateRecordMissing::class,
                 AssignmentRootFinished::class,
                 InvalidActorText::class,
                 AgentNotAvailable::class,
