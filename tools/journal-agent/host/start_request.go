@@ -77,9 +77,11 @@ type FolderUseReply struct {
 }
 
 // AccountFolderRequest names one account folder by its plain id, for the host to make or remove: the accounts root
-// is root's, so the sign-in service, the program's user, cannot do either itself.
+// is root's, so the sign-in service, the program's user, cannot do either itself. A make names its operation, so the
+// same make sent again after a lost reply finds its own folder, and a folder another make left is refused.
 type AccountFolderRequest struct {
-	Folder string `json:"folder"`
+	Folder    string `json:"folder"`
+	Operation string `json:"operation,omitempty"`
 }
 
 // AccountFolderReply answers whether the folder was made or removed, and why not when it was not.

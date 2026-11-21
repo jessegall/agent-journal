@@ -104,29 +104,53 @@ const accountsFolder = journalRoot + "/accounts"
 // folder to the program's user, and to remove a folder that user filled.
 var accountFolderCapabilities = []string{"--cap-add", "CHOWN", "--cap-add", "FOWNER", "--cap-add", "DAC_OVERRIDE"}
 
+// plainOperationID is the id a sign-in names its folder make by: letters, digits and dashes, such as a UUID.
+var plainOperationID = regexp.MustCompile(`^[A-Za-z0-9-]{8,64}$`)
+
+// folderOperationMark is the file in an account folder naming the make that made it.
+const folderOperationMark = ".journal-folder-operation"
+
 // MakeAccountFolder makes the account's folder, and its history folder, owned by the program's user with mode 0700,
 // and keeps the accounts root root's with mode 0755, so the program's user can neither replace one account's folder
-// nor make another. A folder that already exists is left as it is; a link in its place is refused.
-func (containers Containers) MakeAccountFolder(ctx context.Context, accountID string) error {
+// nor make another. The folder is pinned to the operation that made it: the same operation sent again finds its own
+// folder and sets its owner and mode again, a folder another operation made is refused, and a link is refused.
+func (containers Containers) MakeAccountFolder(ctx context.Context, accountID, operation string) error {
 	if !plainAccountID.MatchString(accountID) {
 		return fmt.Errorf("%w: %q is not a plain account id", ErrAccountFolderUnsafe, accountID)
 	}
 
-	user := strconv.Itoa(agentUID)
-	script := strings.Join([]string{
-		"set -e",
-		"chown 0:0 /accounts && chmod 0755 /accounts",
-		`folder=/accounts/` + accountID,
-		`[ -L "$folder" ] && { echo "the account folder is a link"; exit 1; }`,
-		`[ -e "$folder" ] || { mkdir -m 0700 "$folder"; chown ` + user + ":" + user + ` "$folder"; }`,
-		`[ -e "$folder/` + historyFolder + `" ] || { mkdir -m 0700 "$folder/` + historyFolder + `"; chown ` + user + ":" +
-			user + ` "$folder/` + historyFolder + `"; }`,
-	}, "\n")
-	if output, err := containers.runAsRoot(ctx, script); err != nil {
+	if !plainOperationID.MatchString(operation) {
+		return fmt.Errorf("%w: %q is not a plain operation id", ErrAccountFolderUnsafe, operation)
+	}
+
+	if output, err := containers.runAsRoot(ctx, makeAccountFolderScript("/accounts", accountID, operation, strconv.Itoa(agentUID))); err != nil {
 		return fmt.Errorf("making the account folder failed: %w: %s", err, output)
 	}
 
 	return nil
+}
+
+// makeAccountFolderScript is the root shell script that makes or reconciles one account folder under root.
+func makeAccountFolderScript(root, accountID, operation, user string) string {
+	owner := user + ":" + user
+
+	return strings.Join([]string{
+		"set -e",
+		"chown 0:0 " + root + " && chmod 0755 " + root,
+		`folder=` + root + `/` + accountID,
+		`mark="$folder/` + folderOperationMark + `"`,
+		`[ -L "$folder" ] && { echo "the account folder is a link"; exit 1; }`,
+		`if [ -e "$folder" ]; then`,
+		`  [ -L "$mark" ] && { echo "the folder's operation mark is a link"; exit 1; }`,
+		`  if [ -f "$mark" ] && [ "$(cat "$mark")" != "` + operation + `" ]; then echo "another sign-in made this folder"; exit 1; fi`,
+		`else`,
+		`  mkdir -m 0700 "$folder"`,
+		`fi`,
+		`chown ` + owner + ` "$folder" && chmod 0700 "$folder"`,
+		`[ -f "$mark" ] || printf '%s' "` + operation + `" > "$mark"`,
+		`[ -e "$folder/` + historyFolder + `" ] || { mkdir -m 0700 "$folder/` + historyFolder + `"; chown ` + owner + ` "$folder/` +
+			historyFolder + `"; }`,
+	}, "\n")
 }
 
 // accountFileName is a file name in an account's folder the host may write: one plain name, no folder.
@@ -168,7 +192,8 @@ func (containers Containers) RemoveAccountFolder(ctx context.Context, accountID 
 		return fmt.Errorf("%w: %q is not a plain account id", ErrAccountFolderUnsafe, accountID)
 	}
 
-	if output, err := containers.runAsRoot(ctx, `rm -rf -- /accounts/`+accountID); err != nil {
+	script := `rm -rf -- /accounts/` + accountID + ` && [ ! -e /accounts/` + accountID + ` ] && [ ! -L /accounts/` + accountID + ` ]`
+	if output, err := containers.runAsRoot(ctx, script); err != nil {
 		return fmt.Errorf("removing the account folder failed: %w: %s", err, output)
 	}
 

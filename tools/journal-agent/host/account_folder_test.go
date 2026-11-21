@@ -144,11 +144,14 @@ func TestTheHostMakesAnAccountFolderAsRootForTheProgramAndKeepsTheRootRoots(t *t
 	}
 	containers := Containers{Docker: docker, Rules: ContainerRules{AgentImage: "sha256:image"}}
 
-	if err := containers.MakeAccountFolder(context.Background(), "a1"); err != nil {
+	if err := containers.MakeAccountFolder(context.Background(), "a1", "operation-1"); err != nil {
 		t.Fatal(err)
 	}
-	if err := containers.MakeAccountFolder(context.Background(), "../a1"); !errors.Is(err, ErrAccountFolderUnsafe) {
+	if err := containers.MakeAccountFolder(context.Background(), "../a1", "operation-1"); !errors.Is(err, ErrAccountFolderUnsafe) {
 		t.Fatalf("a path for an id was answered %v", err)
+	}
+	if err := containers.MakeAccountFolder(context.Background(), "a1", "../x"); !errors.Is(err, ErrAccountFolderUnsafe) {
+		t.Fatalf("a path for an operation was answered %v", err)
 	}
 
 	content, err := os.ReadFile(log)
@@ -157,7 +160,7 @@ func TestTheHostMakesAnAccountFolderAsRootForTheProgramAndKeepsTheRootRoots(t *t
 	}
 	made := string(content)
 	for _, want := range []string{"--user 0:0", "--cap-drop ALL", "--cap-add CHOWN", "source=/srv/journal/accounts,target=/accounts",
-		"chown 0:0 /accounts && chmod 0755 /accounts", `mkdir -m 0700 "$folder"; chown 10001:10001 "$folder"`,
+		"chown 0:0 /accounts && chmod 0755 /accounts", `mkdir -m 0700 "$folder"`, `chown 10001:10001 "$folder" && chmod 0700 "$folder"`,
 		`mkdir -m 0700 "$folder/projects"`} {
 		if !strings.Contains(made, want) {
 			t.Fatalf("the folder was made without %q: %s", want, made)
@@ -202,5 +205,41 @@ func TestTheHostWritesAnAccountFileForTheProgramAndRefusesAPathForAName(t *testi
 		if !strings.Contains(written, want) {
 			t.Fatalf("the file was written without %q: %s", want, written)
 		}
+	}
+}
+
+func TestAFolderMakeSentAgainFindsItsOwnFolderAndAnotherMakeIsRefused(t *testing.T) {
+	root := t.TempDir()
+	bin := t.TempDir()
+	if err := os.WriteFile(filepath.Join(bin, "chown"), []byte("#!/bin/sh\nexit 0\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	accounts := filepath.Join(root, "accounts")
+	if err := os.Mkdir(accounts, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	run := func(operation string) (string, error) {
+		command := exec.Command("sh", "-c", makeAccountFolderScript(accounts, "a1", operation, "10001"))
+		command.Env = append(os.Environ(), "PATH="+bin+":"+os.Getenv("PATH"))
+		output, err := command.CombinedOutput()
+
+		return string(output), err
+	}
+
+	if output, err := run("operation-1"); err != nil {
+		t.Fatalf("the first make failed: %v: %s", err, output)
+	}
+	if err := os.Chmod(filepath.Join(accounts, "a1"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if output, err := run("operation-1"); err != nil {
+		t.Fatalf("the same make sent again failed: %v: %s", err, output)
+	}
+	info, err := os.Stat(filepath.Join(accounts, "a1"))
+	if err != nil || info.Mode().Perm() != 0o700 {
+		t.Fatalf("the folder sent again was left %v, %v", info, err)
+	}
+	if output, err := run("operation-2"); err == nil || !strings.Contains(output, "another sign-in made this folder") {
+		t.Fatalf("another make of the same folder was answered %v: %s", err, output)
 	}
 }

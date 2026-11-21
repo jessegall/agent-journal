@@ -153,7 +153,7 @@ func (executor *protectedExecutor) FolderUse(ctx context.Context, request host.F
 
 // accountFolders is the agent daemon's side of an account folder: made and removed by root.
 type accountFolders interface {
-	MakeAccountFolder(ctx context.Context, accountID string) error
+	MakeAccountFolder(ctx context.Context, accountID, operation string) error
 	RemoveAccountFolder(ctx context.Context, accountID string) error
 }
 
@@ -166,7 +166,7 @@ func (executor *protectedExecutor) MakeFolder(ctx context.Context, request host.
 		return host.AccountFolderReply{Reason: errNoAccountFolders}, nil
 	}
 
-	if err := executor.accountFolders.MakeAccountFolder(ctx, request.Folder); err != nil {
+	if err := executor.accountFolders.MakeAccountFolder(ctx, request.Folder, request.Operation); err != nil {
 		return host.AccountFolderReply{Reason: err.Error()}, nil
 	}
 
