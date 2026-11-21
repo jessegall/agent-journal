@@ -53,6 +53,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Agent $mainAgent
  * @property-read Host $host
+ * @property-read Project $project
  */
 #[Fillable([
     'host_id', 'project_id', 'main_agent_id', 'root_id', 'canonical_root', 'project_label', 'machine_label',
@@ -135,6 +136,17 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
         return array_values(
             self::query()->latest()->readAll('an installation connects a handful of folders')->get()->all(),
         );
+    }
+
+    /**
+     * The binding whose main agent this is, with its project, if the agent works in a connected folder: none or one.
+     *
+     * @return list<self>
+     */
+    public static function ofMainAgent(string $agentId): array
+    {
+        return array_values(self::query()->with('project')->where('main_agent_id', $agentId)
+            ->where('readiness', '!=', BindingReadiness::Revoked)->limit(1)->get()->all());
     }
 
     /**
@@ -253,6 +265,14 @@ final class ProjectBinding extends Model implements EventSource, ReadableModel
     }
 
     // ----------[ Relations ]----------
+
+    /**
+     * @return BelongsTo<Project, $this>
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 
     /**
      * @return BelongsTo<Host, $this>

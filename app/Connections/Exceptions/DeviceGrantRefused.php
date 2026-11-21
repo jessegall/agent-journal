@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Connections\Exceptions;
+
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
+use App\Bus\Exceptions\Concerns\RendersRefusal;
+use App\Contracts\CommandRefusal;
+use RuntimeException;
+
+/**
+ * A device grant step that does not go on: an unknown or expired code, a poll before the owner approved or sooner
+ * than allowed, or a grant that is revoked or expired.
+ */
+final class DeviceGrantRefused extends RuntimeException implements CodedRefusal, CommandRefusal
+{
+    use RendersRefusal;
+
+    private int $status = 404;
+
+    private RefusalCode $code = RefusalCode::RecordUnavailable;
+
+    public static function unknownCode(): self
+    {
+        return new self('This device code is unknown or expired. Run the journal command again for a new one.');
+    }
+
+    public static function awaitingApproval(): self
+    {
+        $refusal = new self('The owner has not approved this device yet.');
+        $refusal->status = 428;
+        $refusal->code = RefusalCode::StateBlocked;
+
+        return $refusal;
+    }
+
+    public static function pollingTooFast(): self
+    {
+        $refusal = new self('Poll this device code at most once every five seconds.');
+        $refusal->status = 429;
+        $refusal->code = RefusalCode::Busy;
+
+        return $refusal;
+    }
+
+    public static function notUsable(): self
+    {
+        $refusal = new self('This device grant is revoked or expired. Run the journal command again to approve a new one.');
+        $refusal->status = 401;
+        $refusal->code = RefusalCode::Unauthenticated;
+
+        return $refusal;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return $this->code;
+    }
+
+    protected function status(): int
+    {
+        return $this->status;
+    }
+}

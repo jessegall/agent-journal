@@ -557,7 +557,19 @@ use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
+use App\Connections\Commands\ApproveDeviceGrant;
+use App\Connections\Commands\AssertBindingStart;
+use App\Connections\Commands\CancelProjectCommandRun;
+use App\Connections\Commands\PollDeviceGrant;
+use App\Connections\Commands\RevokeDeviceGrant;
+use App\Connections\Commands\StartDeviceGrant;
+use App\Connections\Values\DeviceGrantStart;
+use App\Connections\Commands\FinishProjectCommandRun;
 use App\Connections\Commands\IssueProjectInvitation;
+use App\Connections\Commands\RecordProjectCommandProcess;
+use App\Connections\Commands\StartProjectCommandRun;
+use App\Connections\Values\CommandFrame;
+use App\Connections\Values\CommandRunStart;
 use App\Connections\Commands\RecordBindingPresence;
 use App\Connections\Commands\RecoverProjectBinding;
 use App\Connections\Commands\RedeemProjectInvitation;
@@ -2012,6 +2024,9 @@ final class CoreApi
                 BindingFolder::class,
                 PresenceReport::class,
                 PresenceReceipt::class,
+                CommandFrame::class,
+                CommandRunStart::class,
+                DeviceGrantStart::class,
                 GatewaySettings::class,
                 GatewayOperation::class,
                 GatewayEndpoint::class,
@@ -2258,6 +2273,15 @@ final class CoreApi
                 RecoverProjectBinding::class,
                 RevokeProjectBinding::class,
                 RecordBindingPresence::class,
+                StartProjectCommandRun::class,
+                RecordProjectCommandProcess::class,
+                FinishProjectCommandRun::class,
+                CancelProjectCommandRun::class,
+                StartDeviceGrant::class,
+                AssertBindingStart::class,
+                PollDeviceGrant::class,
+                ApproveDeviceGrant::class,
+                RevokeDeviceGrant::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

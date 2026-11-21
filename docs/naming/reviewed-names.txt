@@ -490,8 +490,6 @@ case	LaunchCandidateRank::CompatibleConversation
 case	LaunchCandidateRank::ExactConversation
 case	LaunchCandidateRank::OtherPurpose
 case	LaunchCandidateRank::SamePurpose
-case	LaunchProfileType::ProtectedAccount
-case	LaunchProfileType::Standard
 case	LifecycleStage::Enter
 case	LifecycleStage::Event
 case	LifecycleStage::Exit
@@ -6855,7 +6853,6 @@ enum	JobState
 enum	JournalRouteType
 enum	KeywordCategory
 enum	LaunchCandidateRank
-enum	LaunchProfileType
 enum	LifecycleStage
 enum	LifecycleState
 enum	MenuEntryState
@@ -14339,7 +14336,6 @@ method	MountRules::accountMounts()
 method	MountRules::assertContainedSource()
 method	MountRules::assertLocal()
 method	MountRules::assertPermits()
-method	MountRules::bindsAccount()
 method	MountRules::contained()
 method	MountRules::isDaemonFolder()
 method	MountRules::local()
@@ -26326,7 +26322,6 @@ property	ContainerManifest::$attachable
 property	ContainerManifest::$budgets
 property	ContainerManifest::$capabilities
 property	ContainerManifest::$image
-property	ContainerManifest::$launchProfile
 property	ContainerManifest::$mounts
 property	ContainerManifest::$network
 property	ContainerManifest::$noNewPrivileges
@@ -35041,7 +35036,6 @@ variable	$startedEntry
 variable	$starter
 variable	$starting
 variable	$starts
-variable	$startsAsProfile
 variable	$startsExpansion
 variable	$startsOwnQuery
 variable	$startup

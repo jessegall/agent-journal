@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Connections\Http\Middleware\ResolveConnectedProject;
 use App\Http\Middleware\Agents\AuthenticateAgent;
 use App\Http\Middleware\Agents\AuthenticateHost;
 use App\Http\Middleware\Agents\ReadRequestKey;
@@ -39,7 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateUser::class);
         $middleware->alias(['journal.user' => AuthenticateUser::class, 'journal.host' => AuthenticateHost::class]);
         // A signed agent call is authenticated first; its body's request_key then keys the write it carries.
-        $middleware->group('journal.agent', [AuthenticateAgent::class, ReadRequestKey::class]);
+        // A connected project's agent serves its own project, named by its binding (ResolveConnectedProject).
+        $middleware->group('journal.agent', [AuthenticateAgent::class, ResolveConnectedProject::class, ReadRequestKey::class]);
         // A message body is kept exactly as typed, its leading and trailing spaces and newlines included.
         $middleware->trimStrings(except: ['body']);
         // A signed agent or host call reaches its handler exactly as it was signed: an empty string stays an empty string.

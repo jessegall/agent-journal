@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Agents\Enums\HostProtocolVersion;
-use App\Connections\Http\Controllers\BindingPresenceController;
 use App\Http\Controllers\Agents\Host\ActivityReportController;
 use App\Http\Controllers\Agents\Host\ClaimRequestsController;
 use App\Http\Controllers\Agents\Host\ClaimStartController;
@@ -33,12 +31,6 @@ use App\Http\Controllers\Hooks\Host\PendingStopAttemptsController;
 use App\Http\Controllers\Hooks\Host\StopResultsController;
 use App\Http\Middleware\Agents\LimitUsageReport;
 use Illuminate\Support\Facades\Route;
-
-// A connected project's relay speaks the remote-project protocol and needs no runtime to report it is present.
-Route::post('/host/bindings/{binding}/presence', BindingPresenceController::class)
-    ->middleware('journal.host:'.HostProtocolVersion::RemoteProject->value)
-    ->whereUlid('binding')
-    ->name('agents.host.bindings.presence');
 
 Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(function (): void {
     Route::post('/claim', ClaimRequestsController::class)->name('claim');

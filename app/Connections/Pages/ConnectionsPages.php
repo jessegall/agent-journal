@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Connections\Pages;
 
 use App\Connections\Resolvers\ConnectProjectWindowResolver;
+use App\Connections\Resolvers\DeviceApprovalWindowResolver;
 use App\Connections\Support\ConnectionsOwnerCheck;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
@@ -29,6 +30,15 @@ final class ConnectionsPages implements NavigationProvider, PageProvider
                 'ConnectProjectWindow.vue',
             )
                 ->at('')
+                ->visibleWhen(ConnectionsOwnerCheck::class),
+            Page::make(
+                'device',
+                'Approve a terminal',
+                Icon::Connections,
+                DeviceApprovalWindowResolver::class,
+                'DeviceApprovalWindow.vue',
+            )
+                ->at('devices/{userCode}')
                 ->visibleWhen(ConnectionsOwnerCheck::class),
         ];
     }
