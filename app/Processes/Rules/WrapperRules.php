@@ -21,6 +21,9 @@ final readonly class WrapperRules
      */
     public function byFamily(): array
     {
+        $processControlClasses = CommandClassSet::of(CommandClass::ProcessControl);
+        $pFlag = OptionGrammar::flag('-p');
+
         $rules = [
             new WrapperRule(
                 'env',
@@ -31,7 +34,7 @@ final readonly class WrapperRules
                 CommandClassSet::empty(),
                 takesAssignments: true,
             ),
-            new WrapperRule('command', [OptionGrammar::flag('-p')], CommandClassSet::empty()),
+            new WrapperRule('command', [$pFlag], CommandClassSet::empty()),
             new WrapperRule('builtin', [], CommandClassSet::empty()),
             new WrapperRule(
                 'sudo',
@@ -47,7 +50,7 @@ final readonly class WrapperRules
             new WrapperRule(
                 'nice',
                 [OptionGrammar::valued(OperandType::Count, '-n', '--adjustment')],
-                CommandClassSet::of(CommandClass::ProcessControl),
+                $processControlClasses,
             ),
             new WrapperRule(
                 'timeout',
@@ -57,11 +60,11 @@ final readonly class WrapperRules
                     OptionGrammar::flag('--preserve-status'),
                     OptionGrammar::flag('--foreground'),
                 ],
-                CommandClassSet::of(CommandClass::ProcessControl),
+                $processControlClasses,
                 leadingOperands: 1,
             ),
-            new WrapperRule('exec', [], CommandClassSet::of(CommandClass::ProcessControl)),
-            new WrapperRule('time', [OptionGrammar::flag('-p')], CommandClassSet::empty()),
+            new WrapperRule('exec', [], $processControlClasses),
+            new WrapperRule('time', [$pFlag], CommandClassSet::empty()),
             new WrapperRule('xargs', [
                 OptionGrammar::flag('-0', '--null'), OptionGrammar::flag(
                     '-r',

@@ -24,4 +24,33 @@ interface ReflectorFactory
      * @throws ClassMissing
      */
     public function make(string|object $type): Reflector;
+
+    /**
+     * Whether any autoloader can load a class, interface, trait or enum of this name.
+     *
+     * @phpstan-assert-if-true class-string $name
+     */
+    public function exists(string $name): bool;
+
+    /**
+     * Whether the name names a loadable type that extends or implements this type, as a strict subtype.
+     *
+     * @template S of object
+     *
+     * @param  class-string<S>  $type
+     *
+     * @phpstan-assert-if-true class-string<S> $name
+     */
+    public function isNameSubclassOf(string $name, string $type): bool;
+
+    /**
+     * Whether the name names a loadable type that is this type or a subtype of it.
+     *
+     * @template S of object
+     *
+     * @param  class-string<S>  $type
+     *
+     * @phpstan-assert-if-true class-string<S> $name
+     */
+    public function isNameOf(string $name, string $type): bool;
 }

@@ -23,6 +23,8 @@ final readonly class NetworkRules
      */
     public function all(): array
     {
+        $networkWriteClasses = CommandClassSet::of(CommandClass::Network, CommandClass::Write);
+
         $curl = new ProgramSpellings('curl');
 
         return [
@@ -38,14 +40,14 @@ final readonly class NetworkRules
                 $curl,
                 [],
                 $this->curl()->withOptions(OptionGrammar::valued(OperandType::Path, '-o', '--output')->required()),
-                CommandClassSet::of(CommandClass::Network, CommandClass::Write),
+                $networkWriteClasses,
             ),
             CommandRule::forProgram(
                 'core.curl.save-remote-name',
                 $curl,
                 [],
                 $this->curl()->withOptions(OptionGrammar::flag('-O', '--remote-name')->required()),
-                CommandClassSet::of(CommandClass::Network, CommandClass::Write),
+                $networkWriteClasses,
             ),
             CommandRule::forProgram(
                 'core.curl.upload',
@@ -74,7 +76,7 @@ final readonly class NetworkRules
                     '--no-verbose',
                 ),
                 OptionGrammar::flag('--spider'),
-            ), CommandClassSet::of(CommandClass::Network, CommandClass::Write)),
+            ), $networkWriteClasses),
         ];
     }
 

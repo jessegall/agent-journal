@@ -118,15 +118,17 @@ final readonly class ToolRules
      */
     private function docker(): array
     {
+        $nameOperands = ArgumentGrammar::operands(OperandType::Name);
+
         $docker = new ProgramSpellings('docker');
         $read = CommandClassSet::of(CommandClass::Read);
         $process = CommandClassSet::of(CommandClass::ProcessControl, CommandClass::Write);
-        $listing = ArgumentGrammar::operands(OperandType::Name)->repeating()->withOptions(
+        $listing = $nameOperands->repeating()->withOptions(
             OptionGrammar::flag('-a', '--all'),
             OptionGrammar::flag('-q', '--quiet'),
             OptionGrammar::valued(OperandType::Text, '--format'),
         );
-        $logs = ArgumentGrammar::operands(OperandType::Name)->repeating()->withOptions(
+        $logs = $nameOperands->repeating()->withOptions(
             OptionGrammar::valued(OperandType::Count, '--tail', '-n'),
             OptionGrammar::valued(OperandType::Text, '--since'),
         );
@@ -136,7 +138,7 @@ final readonly class ToolRules
             OptionGrammar::flag('--no-cache'),
             OptionGrammar::valued(OperandType::Text, '--progress'),
         );
-        $up = ArgumentGrammar::operands(OperandType::Name)->repeating()->withOptions(
+        $up = $nameOperands->repeating()->withOptions(
             OptionGrammar::flag('-d', '--detach'),
             OptionGrammar::flag('--build'),
         );
@@ -183,9 +185,11 @@ final readonly class ToolRules
      */
     private function databases(): array
     {
+        $jsonFlag = OptionGrammar::flag('-json');
+
         $sqlite = new ProgramSpellings('sqlite3');
         $query = ArgumentGrammar::operands(OperandType::Path, OperandType::Text)->requiringOperands(1);
-        $readOnly = $query->withOptions(OptionGrammar::flag('-readonly')->required(), OptionGrammar::flag('-json'));
+        $readOnly = $query->withOptions(OptionGrammar::flag('-readonly')->required(), $jsonFlag);
         $login = ArgumentGrammar::operands(OperandType::Name)->requiringOperands(1)->withOptions(
             OptionGrammar::valued(OperandType::Count, '-p'),
             OptionGrammar::valued(OperandType::Path, '-i'),
@@ -205,7 +209,7 @@ final readonly class ToolRules
                 'core.sqlite3.write',
                 $sqlite,
                 [],
-                $query->withOptions(OptionGrammar::flag('-json')),
+                $query->withOptions($jsonFlag),
                 CommandClassSet::of(CommandClass::Read, CommandClass::Write),
             ),
             CommandRule::forProgram(

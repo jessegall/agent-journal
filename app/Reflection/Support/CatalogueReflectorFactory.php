@@ -16,6 +16,21 @@ final readonly class CatalogueReflectorFactory implements ReflectorFactory
         return is_object($type) ? $this->makeForInstance($type) : $this->makeForClass($type);
     }
 
+    public function exists(string $name): bool
+    {
+        return Reflector::exists($name);
+    }
+
+    public function isNameSubclassOf(string $name, string $type): bool
+    {
+        return Reflector::isNameSubclassOf($name, $type);
+    }
+
+    public function isNameOf(string $name, string $type): bool
+    {
+        return Reflector::isNameOf($name, $type);
+    }
+
     /**
      * @template T of object
      *
