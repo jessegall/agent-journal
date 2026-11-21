@@ -81,6 +81,12 @@ final readonly class SignInCompletion
         } else {
             $account = Account::lockedForJournal($attempt->account_id);
 
+            if (! $attempt->method->isSecret() && ! $account->canCompareWith($identity)) {
+                $this->endWithout($attempt, SignInState::Unverified, $now);
+
+                return;
+            }
+
             if (! $attempt->method->isSecret() && ! $account->isSamePrincipal($identity)) {
                 $this->endWithout($attempt, SignInState::DifferentAccount, $now);
 

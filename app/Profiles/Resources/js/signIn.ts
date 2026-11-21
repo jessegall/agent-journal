@@ -66,6 +66,8 @@ export function lastEndedAttempt(
 
 const endedMessages: Record<string, string> = {
     already_added: 'This account is already added.',
+    unverified:
+        'Could not verify this account. The saved login is unchanged; you can add it as a separate account.',
     different_account:
         'That sign-in was for a different account. The saved login is unchanged; you can add it as a new account.',
     failed: 'The sign-in did not finish.',

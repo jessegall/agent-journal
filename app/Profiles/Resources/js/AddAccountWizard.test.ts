@@ -122,6 +122,7 @@ function attempt(
     type: "new_account",
     accountId: null,
     resultAccountId: null,
+    isResultUnmatchable: false,
     state,
     expiresAt: "2026-11-21T12:00:00+00:00",
     refusal: null,

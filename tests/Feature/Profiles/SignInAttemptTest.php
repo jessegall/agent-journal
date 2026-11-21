@@ -147,6 +147,19 @@ final class SignInAttemptTest extends TestCase
         $this->assertSame([null, null], $this->targetAndResultOf($added));
     }
 
+    public function test_a_login_named_only_by_email_is_a_new_row_that_says_it_cannot_be_matched(): void
+    {
+        $this->completeNew('request-1', SignInIdentity::shown('same@example.test'));
+        $second = $this->completeNew('request-2', SignInIdentity::shown('same@example.test'));
+
+        $this->assertSame(2, Account::query()->count());
+        $attempt = SignInAttemptData::fromAttempt(
+            SignInAttempt::query()->whereKey($second)->with('resultAccount')->sole(),
+        );
+        $this->assertSame(SignInState::Complete, $attempt->state);
+        $this->assertTrue($attempt->isResultUnmatchable);
+    }
+
     public function test_a_starter_that_lost_its_grant_before_the_report_adds_no_account(): void
     {
         $started = $this->begin('request-1');

@@ -413,6 +413,7 @@ unresolved
 updated {{ ageSeconds().toFixed(1) }} s ago
 {{ binding.projectLabel }} on {{ binding.machineLabel }}
 {{ data.request.state }}: waiting because {{ data.request.holdReason }}
+{{ driverName(driver) }} does not say which provider account this is, so signing in to the same account again adds another one.
 {{ failure }} Choose fewer lines, or comment on the lines instead of a quote.
 {{ output.stream }}: bytes {{ output.startsAt }} to {{ output.size }} of {{ output.size }}
 {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}

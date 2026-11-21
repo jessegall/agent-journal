@@ -140,18 +140,23 @@ final class SignInAgainTest extends TestCase
         $this->assertSame($attemptId, SignInAttempt::nextToClean()?->id);
     }
 
-    public function test_another_principal_or_none_replaces_nothing_and_ends_as_a_different_account(): void
+    public function test_another_principal_ends_as_a_different_account_and_none_cannot_verify_and_both_replace_nothing(): void
     {
         $saved = (string) $this->account->directory;
 
-        foreach ([self::proved('subject-2'), SignInIdentity::shown('me@example.com')] as $identity) {
+        $outcomes = [
+            [self::proved('subject-2'), SignInState::DifferentAccount],
+            [SignInIdentity::shown('me@example.com'), SignInState::Unverified],
+        ];
+
+        foreach ($outcomes as [$identity, $expected]) {
             [$attemptId] = $this->waitingReconnect();
             $generation = SignInAttempt::query()->whereKey($attemptId)->sole()->generation;
 
             $this->asHost(new CompleteSignIn($attemptId, $generation, $identity));
 
             $state = SignInAttempt::query()->whereKey($attemptId)->sole()->state;
-            $this->assertSame(SignInState::DifferentAccount, $state);
+            $this->assertSame($expected, $state);
             $this->assertSame($saved, $this->account->refresh()->directory);
             $this->assertNull($this->account->live_writer_attempt_id);
             $this->account->forceFill(['maintenance' => false, 'check_requested_generation' => null])->save();

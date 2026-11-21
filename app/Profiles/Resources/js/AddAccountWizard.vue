@@ -358,7 +358,12 @@ function cancelAndClose(): void {
                     >Show the account</Button
                 >
             </template>
-            <template v-else-if="followed?.state === 'different_account'">
+            <template
+                v-else-if="
+                    followed?.state === 'different_account' ||
+                    followed?.state === 'unverified'
+                "
+            >
                 <span class="flex-1" />
                 <Button
                     variant="primary"

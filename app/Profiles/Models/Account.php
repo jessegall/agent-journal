@@ -611,6 +611,23 @@ final class Account extends Model implements EventSource, ReadableModel
      * Whether a verified sign-in proved the same principal this account holds: both subjects named and equal, in the
      * same workspace. The email or label never decide, and a sign-in that proved no subject is never the same.
      */
+    /**
+     * Whether the sign-in and this account both name the provider's own verified subject, so they can be compared at
+     * all; a display email is never such evidence.
+     */
+    public function canCompareWith(SignInIdentity $identity): bool
+    {
+        return $this->subject !== null && $identity->subject !== null;
+    }
+
+    /**
+     * Whether the account was added without the provider's own subject, so a later sign-in to it cannot be recognised.
+     */
+    public function lacksProviderIdentity(): bool
+    {
+        return $this->subject === null;
+    }
+
     public function isSamePrincipal(SignInIdentity $identity): bool
     {
         return $this->subject !== null

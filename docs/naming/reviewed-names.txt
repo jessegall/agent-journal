@@ -1008,6 +1008,7 @@ case	SignInState::Expired
 case	SignInState::Failed
 case	SignInState::Interrupted
 case	SignInState::Starting
+case	SignInState::Unverified
 case	SignInState::Waiting
 case	SignInType::NewAccount
 case	SignInType::SignInAgain
@@ -7660,6 +7661,7 @@ method	Account::assertAvailable()
 method	Account::assertReviewed()
 method	Account::awaitsCleanupRetry()
 method	Account::beginRemoval()
+method	Account::canCompareWith()
 method	Account::casts()
 method	Account::create()
 method	Account::directoryForStart()
@@ -7677,6 +7679,7 @@ method	Account::isGeneration()
 method	Account::isHeldForCheck()
 method	Account::isSamePrincipal()
 method	Account::labelIsTaken()
+method	Account::lacksProviderIdentity()
 method	Account::listed()
 method	Account::lockedChosenForStart()
 method	Account::lockedForChange()
@@ -23994,6 +23997,7 @@ parameter	$isQuoted
 parameter	$isRead
 parameter	$isReadable
 parameter	$isRequired
+parameter	$isResultUnmatchable
 parameter	$isRoot
 parameter	$isRunning
 parameter	$isSatisfied
@@ -33135,6 +33139,7 @@ property	SignInAttemptData::$accountId
 property	SignInAttemptData::$driver
 property	SignInAttemptData::$expiresAt
 property	SignInAttemptData::$id
+property	SignInAttemptData::$isResultUnmatchable
 property	SignInAttemptData::$method
 property	SignInAttemptData::$refusal
 property	SignInAttemptData::$resultAccountId

@@ -486,7 +486,12 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public function isPublishedIn(int $generation): bool
     {
-        $published = [SignInState::Complete, SignInState::DifferentAccount, SignInState::AlreadyAdded];
+        $published = [
+            SignInState::Complete,
+            SignInState::DifferentAccount,
+            SignInState::AlreadyAdded,
+            SignInState::Unverified,
+        ];
 
         return in_array($this->state, $published, true) && $this->generation === $generation;
     }

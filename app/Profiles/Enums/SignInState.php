@@ -22,6 +22,7 @@ enum SignInState: string
     case Interrupted = 'interrupted';
     case DifferentAccount = 'different_account';
     case AlreadyAdded = 'already_added';
+    case Unverified = 'unverified';
 
     /**
      * The states of an attempt whose sign-in process may still write the account's directory.
