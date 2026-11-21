@@ -76,6 +76,7 @@ final class PlansPageTest extends TestCase
             ->where('page.data.rows.0.start.planNumber', (string) $this->release->number)
             ->where('page.data.selected.card.title', 'Build the release page')
             ->where('page.data.selected.insideResults', true)
+            ->where('page.data.selected.brief', $this->release->brief)
             ->where('page.data.selected.card.start.planId', (string) $this->release->id));
 
         $this->actingAs($this->owner)->get(

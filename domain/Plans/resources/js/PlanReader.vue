@@ -1,32 +1,36 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import Icon from '@kit/Icon';
 import Reader from '@kit/Reader';
 import StateBadge from '@kit/StateBadge';
 import type { PlanReaderData } from '@generated/types/plans';
-import { progressText, stateLook } from './planLooks';
+import { planHeading, progressText, stateLook, typeIcon } from './planLooks';
 import StartPlanForm from './StartPlanForm.vue';
 
 /**
- * The selected plan, or why there is none: nothing chosen, or a choice that cannot be read (no title is shown).
+ * The selected plan, or why there is none: nothing chosen, or a choice that cannot be read (no title is shown). The
+ * plan's number, type and title come first, its state and holder below, then its whole brief as plain paragraphs and
+ * its progress, or No phases yet. Start, when offered, is the visible primary action.
  */
-defineProps<{
+const props = defineProps<{
     reader?: PlanReaderData;
     selectionMissing: boolean;
 }>();
+
+const paragraphs = computed(() =>
+    (props.reader?.brief ?? '')
+        .split(/\n\s*\n/)
+        .map((paragraph) => paragraph.trim())
+        .filter((paragraph) => paragraph !== ''),
+);
 </script>
 
 <template>
     <template v-if="reader">
         <Reader :title="reader.card.title">
             <template #meta>
-                <span class="tabular-nums">Plan {{ reader.card.number }}</span>
-                <StateBadge v-bind="stateLook[reader.card.state]" outlined />
-                <template v-if="reader.card.holder">
-                    <span
-                        >Held by {{ reader.card.holder.name }} ({{
-                            reader.card.holder.type
-                        }}), assignment {{ reader.card.holder.reference }}</span
-                    >
-                </template>
+                <Icon :name="typeIcon[reader.card.type]" :size="12" />
+                <span class="tabular-nums">{{ planHeading(reader.card) }}</span>
             </template>
             <template #actions>
                 <template v-if="reader.card.start">
@@ -37,15 +41,43 @@ defineProps<{
                     />
                 </template>
             </template>
+            <div
+                class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-small text-text-3"
+            >
+                <StateBadge v-bind="stateLook[reader.card.state]" outlined />
+                <template v-if="reader.card.holder">
+                    <span class="[overflow-wrap:anywhere]"
+                        >Held by {{ reader.card.holder.name }} ({{
+                            reader.card.holder.type
+                        }}), assignment {{ reader.card.holder.reference }}</span
+                    >
+                </template>
+            </div>
             <template v-if="!reader.insideResults">
                 <p class="mt-4 text-small text-text-3">
                     This plan is not among the current results; it stays open
                     until you choose another.
                 </p>
             </template>
-            <p class="mt-4 text-small text-text-3 tabular-nums">
-                {{ progressText(reader.card) }}
-            </p>
+            <section class="mt-4 flex flex-col gap-2" aria-label="Brief">
+                <template v-if="paragraphs.length === 0">
+                    <p class="text-body text-text-3">No brief yet</p>
+                </template>
+                <template v-for="(paragraph, index) in paragraphs" :key="index">
+                    <p
+                        class="text-body whitespace-pre-wrap text-text-2 [overflow-wrap:anywhere]"
+                        v-text="paragraph"
+                    />
+                </template>
+            </section>
+            <template v-if="reader.card.phase === undefined">
+                <p class="mt-4 text-small text-text-3">No phases yet</p>
+            </template>
+            <template v-else>
+                <p class="mt-4 text-small text-text-3 tabular-nums">
+                    {{ progressText(reader.card) }}
+                </p>
+            </template>
         </Reader>
     </template>
     <template v-else-if="selectionMissing">
