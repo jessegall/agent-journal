@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Support;
 
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Exceptions\ShareGatewayInvalid;
@@ -23,7 +24,7 @@ final class ShareGatewayRegistry
      */
     private array $gatewayClasses = [];
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct(private readonly Container $container, private readonly ReflectorFactory $reflectors) {}
 
     /**
      * @param  string  $class  a class name, refused unless it is a ShareGateway
@@ -36,7 +37,7 @@ final class ShareGatewayRegistry
             throw ShareGatewayInvalid::repeated($key);
         }
 
-        if (! Reflector::isNameSubclassOf($class, ShareGateway::class)) {
+        if (! $this->reflectors->isNameSubclassOf($class, ShareGateway::class)) {
             throw ShareGatewayInvalid::notAGateway($key, $class);
         }
 

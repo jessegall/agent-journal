@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
@@ -82,7 +83,7 @@ final class WriteToolTest extends CommandBusTestCase
 
     public function test_an_unregistered_command_prevents_registration_and_names_both_classes(): void
     {
-        $catalogue = new McpCatalogue(CommandRegistry::of([]));
+        $catalogue = new McpCatalogue(CommandRegistry::of([]), new CatalogueReflectorFactory());
 
         $this->assertThrows(
             fn () => $catalogue->registerTool(WriteNoteTool::class),
@@ -144,7 +145,7 @@ final class WriteToolTest extends CommandBusTestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile(self::PROFILE, ProfileBase::mainAgent()),
         )));
-        $catalogue = new McpCatalogue($this->app->make(CommandRegistry::class));
+        $catalogue = new McpCatalogue($this->app->make(CommandRegistry::class), new CatalogueReflectorFactory());
         $catalogue->registerTool(WriteNoteTool::class);
         $this->app->instance(McpCatalogue::class, $catalogue);
 

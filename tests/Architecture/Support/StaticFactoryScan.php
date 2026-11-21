@@ -28,7 +28,7 @@ final readonly class StaticFactoryScan implements FileScan
 
     public function key(): string
     {
-        return 'static-factories-2';
+        return 'static-factories-3';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -125,8 +125,10 @@ final readonly class StaticFactoryScan implements FileScan
     }
 
     /**
-     * Whether the function is an instance method of a class the container builds: one whose constructor takes
-     * dependencies, and which is neither an attribute nor a PHPStan rule.
+     * Whether the function is an instance method of a class the container builds: one whose constructor hides a
+     * service in a private or protected promoted parameter typed by a class or interface, and which is neither an
+     * attribute nor a PHPStan rule. A value object, whose constructor takes public data, scalars, arrays or closures,
+     * is made with new and keeps its static Reflector calls.
      */
     private static function isInjectableInstanceMethod(FunctionLike $function): bool
     {
@@ -142,7 +144,7 @@ final readonly class StaticFactoryScan implements FileScan
 
         $constructor = $class->getMethod('__construct');
 
-        if ($constructor === null || $constructor->params === []) {
+        if ($constructor === null || ! array_any($constructor->params, self::isHiddenService(...))) {
             return false;
         }
 
@@ -161,5 +163,17 @@ final readonly class StaticFactoryScan implements FileScan
         }
 
         return true;
+    }
+
+    /**
+     * Whether the constructor parameter is a service the class keeps to itself: promoted as private or protected and
+     * typed by a class or interface other than Closure.
+     */
+    private static function isHiddenService(Node\Param $parameter): bool
+    {
+        $hidden = ($parameter->flags & (Stmt\Class_::MODIFIER_PRIVATE | Stmt\Class_::MODIFIER_PROTECTED)) !== 0;
+        $type = $parameter->type instanceof Node\NullableType ? $parameter->type->type : $parameter->type;
+
+        return $hidden && $type instanceof Node\Name && $type->toLowerString() !== 'closure';
     }
 }

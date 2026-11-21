@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\Exceptions\CommandDeclarationInvalid;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\AttributeEntry;
 use App\Reflection\Support\ReflectedProperty;
 use App\Reflection\Support\Reflector;
@@ -59,7 +60,7 @@ final readonly class PropertyRules
         'array' => 'array',
     ];
 
-    public function __construct(private RuleDenormalizer $denormalizer) {}
+    public function __construct(private RuleDenormalizer $denormalizer, private ReflectorFactory $reflectors) {}
 
     /**
      * Each ruled property's Laravel rules, the type rule first; a property with no attribute has no entry.
@@ -95,7 +96,7 @@ final readonly class PropertyRules
     {
         $name = self::namedTypeOf($property);
 
-        if (Reflector::exists($name) && Reflector::of($name)->isEnum()) {
+        if ($this->reflectors->exists($name) && $this->reflectors->make($name)->isEnum()) {
             $problem = sprintf(
                 '%s is the enum %s, whose cases already limit it; take its validation attributes off',
                 $property->name(),
@@ -214,11 +215,11 @@ final readonly class PropertyRules
     {
         $name = self::namedTypeOf($property);
 
-        if (! Reflector::exists($name) || ! Reflector::of($name)->isClass() || in_array($name, $seen, true)) {
+        if (! $this->reflectors->exists($name) || ! $this->reflectors->make($name)->isClass() || in_array($name, $seen, true)) {
             return;
         }
 
-        foreach (Reflector::of($name)->properties() as $inside) {
+        foreach ($this->reflectors->make($name)->properties() as $inside) {
             if (count($inside->attributesImplementing(ValidationRule::class)) > 0) {
                 $problem = sprintf(
                     "%s holds %s, whose property %s has a validation attribute that is never read; check it in %s's factory",

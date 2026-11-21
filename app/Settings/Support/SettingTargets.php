@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 use App\Settings\Contracts\Setting;
 use App\Settings\Declarations\ToggleGroup;
@@ -22,7 +23,11 @@ use App\Settings\Values\SettingReference;
  */
 final readonly class SettingTargets
 {
-    public function __construct(private SettingsAccessGate $gate, private SettingRegistry $registry) {}
+    public function __construct(
+        private SettingsAccessGate $gate,
+        private SettingRegistry $registry,
+        private ReflectorFactory $reflectors,
+    ) {}
 
     /**
      * The registered setting of exactly this declaration class.
@@ -40,7 +45,7 @@ final readonly class SettingTargets
     {
         $setting = $this->anySetting($reference);
 
-        return Reflector::of($declaration)->isInstance($setting)
+        return $this->reflectors->make($declaration)->isInstance($setting)
             ? $setting
             : throw SettingValueInvalid::for($reference->owner, $reference->key, $commandType);
     }

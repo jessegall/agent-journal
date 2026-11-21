@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\DomainRegistry;
@@ -25,11 +26,11 @@ final class StateListenerOwnerTest extends TestCase
     {
         $types = new StateTypeRegistry();
         $types->register('fixture.ownerless', new OwnerlessLoader());
-        $ownership = new ListenerOwnership($this->app->make(DomainRegistry::class), CoreApi::exports(), []);
+        $ownership = new ListenerOwnership($this->app->make(DomainRegistry::class), CoreApi::exports(), [], new CatalogueReflectorFactory());
 
         $this->expectException(InvalidListener::class);
         $this->expectExceptionMessage(OwnerlessState::class.'@onPlanProgressChanged');
 
-        new StateListenerDeclarations($ownership)->declarations($types, new StateMethods());
+        new StateListenerDeclarations($ownership, new CatalogueReflectorFactory())->declarations($types, new StateMethods());
     }
 }

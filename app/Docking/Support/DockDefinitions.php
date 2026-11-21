@@ -10,6 +10,7 @@ use App\Docking\Sources\Contracts\DockableProvider;
 use App\Docking\Sources\Contracts\DockRegistration;
 use App\Docking\Sources\Contracts\FallbackDocks;
 use App\Docking\Sources\DockDefinition;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 use App\Registries\Support\Registry;
 use Illuminate\Container\Attributes\Singleton;
@@ -31,18 +32,18 @@ final class DockDefinitions implements DockRegistration
      */
     private array $offered = [];
 
-    public function __construct(private readonly FallbackDocks $fallbacks)
+    public function __construct(private readonly FallbackDocks $fallbacks, private readonly ReflectorFactory $reflectors)
     {
         $this->owned = Registry::replacing(DockDefinitionInvalid::unknown(...));
     }
 
     public function register(string $type, string $class, string $provider): DockDefinition
     {
-        if (! Reflector::isNameSubclassOf($class, Dockable::class)) {
+        if (! $this->reflectors->isNameSubclassOf($class, Dockable::class)) {
             throw DockDefinitionInvalid::notDockable($type, $class);
         }
 
-        if (! Reflector::isNameSubclassOf($provider, DockableProvider::class)) {
+        if (! $this->reflectors->isNameSubclassOf($provider, DockableProvider::class)) {
             throw DockDefinitionInvalid::notAProvider($type, $provider);
         }
 

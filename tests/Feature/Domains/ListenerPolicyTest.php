@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Providers\DomainEventServiceProvider;
@@ -83,7 +84,7 @@ final class ListenerPolicyTest extends TestCase
     {
         return new ListenerPolicy(
             $this->app->make(PipelineRunner::class),
-            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders()),
+            new ListenerOwnership($registry, CoreApi::exports(), CoreApi::listenerFolders(), new CatalogueReflectorFactory()),
         );
     }
 }

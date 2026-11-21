@@ -6,6 +6,7 @@ namespace App\Scripts\Support;
 
 use App\Agents\Values\OperationKey;
 use App\Profiles\Contracts\OperationNames;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\DeclaredType;
 use App\Reflection\Support\ReflectedProperty;
 use App\Reflection\Support\Reflector;
@@ -18,18 +19,18 @@ use App\Scripts\Values\ScriptContext;
 
 final readonly class ObjectReflection
 {
-    public function __construct(private OperationNames $operations) {}
+    public function __construct(private OperationNames $operations, private ReflectorFactory $reflectors) {}
 
     /**
      * @param  class-string  $class
      */
     public function describe(string $class, string $owner): ObjectDefinition
     {
-        if (Reflector::of($class)->not()->isClass()) {
+        if ($this->reflectors->make($class)->not()->isClass()) {
             throw ScriptDefinitionRefused::invalidObject($class);
         }
 
-        $declaration = Reflector::of($class);
+        $declaration = $this->reflectors->make($class);
         $objects = $declaration->attributes(ScriptObject::class);
 
         if (! $declaration->isInstantiable() || count($objects) !== 1) {

@@ -7,6 +7,7 @@ namespace App\Pipelines\Support;
 use App\Pipelines\Contracts\Pipe;
 use App\Pipelines\Exceptions\NotAPipelineStep;
 use App\Pipelines\Exceptions\StepOutOfOrder;
+use App\Reflection\Exceptions\ClassMissing;
 use App\Reflection\Support\DeclaredType;
 use App\Reflection\Support\Reflector;
 use PhpOption\None;
@@ -17,15 +18,16 @@ use PhpOption\None;
 final readonly class ResolvedPipe
 {
     /**
-     * @param  class-string|null  $takes  the input class handle takes, or null when it takes any object
+     * @param  Reflector<object>|null  $takes  the input class handle takes, or null when it takes any object
      */
     private function __construct(
         private Pipe $pipe,
-        private string|null $takes,
+        private Reflector|null $takes,
     ) {}
 
     /**
      * @throws NotAPipelineStep when a pipeline lists a class that is no pipe
+     * @throws ClassMissing when handle takes a class no autoloader can load
      */
     public static function of(object $pipe): self
     {
@@ -41,12 +43,9 @@ final readonly class ResolvedPipe
             return new self($pipe, null);
         }
 
-        /**
-         * @var class-string $takes
-         */
         $takes = $type->get()->name();
 
-        return new self($pipe, $takes);
+        return new self($pipe, Reflector::find($takes)->getOrThrow(ClassMissing::for($takes)));
     }
 
     /**
@@ -56,7 +55,7 @@ final readonly class ResolvedPipe
      */
     public function handle(object $input): object
     {
-        if ($this->takes !== null && ! Reflector::of($this->takes)->isInstance($input)) {
+        if ($this->takes !== null && $this->takes->not()->isInstance($input)) {
             throw StepOutOfOrder::handing($this->pipe::class, $input);
         }
 

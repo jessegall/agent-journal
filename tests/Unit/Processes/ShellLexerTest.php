@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Pipelines\Support\PipelineRunner;
 use App\Processes\Enums\AnalysisLimit;
 use App\Processes\Enums\ParseOutcome;
@@ -29,7 +30,7 @@ final class ShellLexerTest extends TestCase
     {
         parent::setUp();
 
-        $this->lexer = new ShellLexer(new LexerScan(new PipelineRunner(new Container())));
+        $this->lexer = new ShellLexer(new LexerScan(new PipelineRunner(new Container(), new CatalogueReflectorFactory())));
     }
 
     public function test_a_quoted_separator_stays_inside_one_word(): void

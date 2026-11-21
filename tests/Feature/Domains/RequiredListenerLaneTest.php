@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Agents\Events\MergeOutcomeRecorded;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\SessionOpened;
@@ -134,7 +135,7 @@ final class RequiredListenerLaneTest extends TestCase
     {
         return new ListenerPolicy(
             $this->app->make(PipelineRunner::class),
-            new ListenerOwnership($registry, CoreApi::exports(), [...CoreApi::listenerFolders(), base_path('tests/Fixtures/Listeners')]),
+            new ListenerOwnership($registry, CoreApi::exports(), [...CoreApi::listenerFolders(), base_path('tests/Fixtures/Listeners')], new CatalogueReflectorFactory()),
         );
     }
 }

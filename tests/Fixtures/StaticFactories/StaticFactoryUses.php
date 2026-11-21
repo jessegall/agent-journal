@@ -7,14 +7,15 @@ namespace Tests\Fixtures\StaticFactories;
 use App\Reflection\Exceptions\ClassMissing;
 use App\Reflection\Support\Reflector;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Container\Container;
 
 /**
- * The planted shapes of StaticFactoryScanTest: a repeated factory call, look-alikes it leaves alone, and static
- * Reflector calls inside and outside a class the container builds.
+ * The planted shapes of StaticFactoryScanTest: a repeated factory call, look-alikes it leaves alone, static
+ * Reflector calls inside and outside a class the container builds, and a value object that keeps its static call.
  */
 final class StaticFactoryUses
 {
-    public function __construct(private readonly string $name) {}
+    public function __construct(private readonly Container $container, private readonly string $name) {}
 
     public function repeats(): bool
     {
@@ -44,5 +45,18 @@ final class StaticFactoryUses
         }
 
         return Reflector::exists($name) || throw ClassMissing::for($name);
+    }
+}
+
+/**
+ * A value object made with new: its public data and no hidden service, so its static Reflector call stays.
+ */
+final readonly class StaticFactoryValue
+{
+    public function __construct(public string $name) {}
+
+    public function isFinal(): bool
+    {
+        return Reflector::of($this->name)->isFinal();
     }
 }

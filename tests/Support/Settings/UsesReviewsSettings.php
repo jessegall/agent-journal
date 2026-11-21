@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Settings;
 
+use App\Reflection\Support\CatalogueReflectorFactory;
 use App\Actors\Support\ActorContext;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\DomainSwitches;
@@ -66,6 +67,6 @@ trait UsesReviewsSettings
     {
         $this->app->instance(SettingRegistry::class, $registry);
         $this->reviews = $registry->definition('Reviews');
-        $this->commands = new RegisteredSettingCommands($registry);
+        $this->commands = new RegisteredSettingCommands($registry, new CatalogueReflectorFactory());
     }
 }

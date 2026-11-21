@@ -20,6 +20,7 @@ use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Records\Support\RecordIdentity;
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\Reflector;
 use Laravel\Mcp\Server\Attributes\Name;
 
@@ -52,7 +53,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     private array $searchContributions = [];
 
-    public function __construct(private readonly CommandRegistry $commands) {}
+    public function __construct(private readonly CommandRegistry $commands, private readonly ReflectorFactory $reflectors) {}
 
     /**
      * @throws McpClassInvalid
@@ -62,7 +63,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     public function registerTool(string $className): void
     {
-        if (! Reflector::isNameSubclassOf($className, JournalTool::class)) {
+        if (! $this->reflectors->isNameSubclassOf($className, JournalTool::class)) {
             throw McpClassInvalid::for($className, JournalTool::class);
         }
 
@@ -92,7 +93,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     public function registerResource(string $className): void
     {
-        if (! Reflector::isNameSubclassOf($className, JournalResource::class)) {
+        if (! $this->reflectors->isNameSubclassOf($className, JournalResource::class)) {
             throw McpClassInvalid::for($className, JournalResource::class);
         }
 
@@ -110,7 +111,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     public function registerOverviewContribution(string $className): void
     {
-        if (! Reflector::isNameSubclassOf($className, OverviewContribution::class)) {
+        if (! $this->reflectors->isNameSubclassOf($className, OverviewContribution::class)) {
             throw McpClassInvalid::for($className, OverviewContribution::class);
         }
 
@@ -119,11 +120,11 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
 
     public function registerSearchContribution(string $className): void
     {
-        if (! Reflector::isNameSubclassOf($className, SearchContribution::class)) {
+        if (! $this->reflectors->isNameSubclassOf($className, SearchContribution::class)) {
             throw McpClassInvalid::for($className, SearchContribution::class);
         }
 
-        $contribution = Reflector::of($className)->newInstanceWithoutConstructor();
+        $contribution = $this->reflectors->make($className)->newInstanceWithoutConstructor();
         $type = $contribution->recordType();
         RecordIdentity::assertKnownType($type);
 
@@ -235,7 +236,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     private function toolName(string $className): string
     {
-        $declaration = Reflector::of($className);
+        $declaration = $this->reflectors->make($className);
 
         if (! $declaration->hasAttribute(Name::class)) {
             throw McpToolNameInvalid::missing($className);
@@ -260,6 +261,6 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     private function definitionOf(string $className): JournalTool|JournalResource
     {
-        return Reflector::of($className)->newInstanceWithoutConstructor();
+        return $this->reflectors->make($className)->newInstanceWithoutConstructor();
     }
 }

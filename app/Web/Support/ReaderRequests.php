@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Support;
 
+use App\Reflection\Contracts\ReflectorFactory;
 use App\Reflection\Support\DeclaredType;
 use App\Reflection\Support\ReflectedMethod;
 use App\Reflection\Support\Reflector;
@@ -28,6 +29,7 @@ final readonly class ReaderRequests implements ReaderRequestsContract
     public function __construct(
         private Container $container,
         private Redirector $redirector,
+        private ReflectorFactory $reflectors,
     ) {}
 
     /**
@@ -94,7 +96,7 @@ final readonly class ReaderRequests implements ReaderRequestsContract
      */
     private function parameterFor(string $class, FormRequest $request): string
     {
-        $parameters = Reflector::of($class)->constructor()
+        $parameters = $this->reflectors->make($class)->constructor()
             ->map(fn (ReflectedMethod $constructor) => $constructor->parameters())
             ->getOrElse([]);
 
