@@ -1254,6 +1254,7 @@ case	WholeRecord::Record
 case	WindowState::Denied
 case	WindowState::Failed
 case	WindowState::Ready
+case	WindowState::Unavailable
 case	WordPlace::Argument
 case	WordPlace::ArrayAssignment
 case	WordPlace::Assignment
@@ -5955,6 +5956,7 @@ class	UnassignRecordRequest
 class	UnassignRecordTool
 class	UnavailableMergeAdmission
 class	UnavailableSupervisorDispatch
+class	UnavailableWindow
 class	UnavailableWorkRepair
 class	UnconfiguredAccounts
 class	UndockController
@@ -15571,6 +15573,7 @@ method	PageProps::__construct()
 method	PageProps::forHome()
 method	PageProps::forPage()
 method	PageProps::inspectorResult()
+method	PageProps::ownPageResult()
 method	PageProps::pageResult()
 method	PageProps::sectionResult()
 method	PageProps::sectionsOf()
@@ -22666,6 +22669,8 @@ method	UnassignRecordTool::command()
 method	UnassignRecordTool::writeSchema()
 method	UnavailableMergeAdmission::requireApproval()
 method	UnavailableSupervisorDispatch::startFor()
+method	UnavailableWindow::__construct()
+method	UnavailableWindow::make()
 method	UnavailableWorkRepair::reopen()
 method	UnconfiguredAccounts::chosenForStart()
 method	UnconfiguredAccounts::forStart()
@@ -22901,6 +22906,7 @@ method	WebServiceProvider::refusalAnswer()
 method	WebServiceProvider::register()
 method	WebServiceProvider::renderRefusals()
 method	WindowResults::__construct()
+method	WindowResults::failed()
 method	WindowResults::result()
 method	WithContext::withContext()
 method	WithContext::withMessage()
@@ -34744,6 +34750,7 @@ property	UnassignRecordCall::$requestKey
 property	UnassignRecordCommand::$description
 property	UnassignRecordCommand::$signature
 property	UnassignRecordHandler::$writer
+property	UnavailableWindow::$state
 property	UndockInput::$agent
 property	UndockInput::$id
 property	UndockInput::$placementId
@@ -36408,6 +36415,7 @@ variable	$rest
 variable	$restored
 variable	$result	app/Bus/Support/EventUnit.php
 variable	$result	app/Bus/Support/EventUnitLifecycle.php
+variable	$result	app/Http/Support/Web/PageProps.php
 variable	$result	app/Scripts/Models/ProfileRun.php
 variable	$result	app/Scripts/Models/ProfileStepResult.php
 variable	$resultBytes

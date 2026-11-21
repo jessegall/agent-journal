@@ -61,6 +61,12 @@ describe('a window result', () => {
         expect(view.text()).toBe("You don't have access to this.");
     });
 
+    it('clears what it showed and says the record is not available', () => {
+        const view = mountResult({ state: 'unavailable' }, { rows: [] });
+
+        expect(view.text()).toBe('This is not available.');
+    });
+
     it('shows nothing for a section that is loading or refused', () => {
         expect(mountResult(undefined, undefined, false).text()).toBe('');
         expect(mountResult({ state: 'denied' }, undefined, false).text()).toBe('');

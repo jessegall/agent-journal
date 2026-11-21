@@ -12,10 +12,12 @@ use App\Ui\Support\UiDeclarations;
 use App\Web\Contracts\ReaderRequests;
 use App\Web\Contracts\UiOwnerAvailability;
 use App\Web\Contracts\WindowResults;
+use App\Web\Data\UnavailableWindow;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Inertia\ResponseFactory;
 use Spatie\LaravelData\Data;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * The props of a declared page: its own result as page, each section of its slots as its own deferred prop, the
@@ -41,7 +43,7 @@ final readonly class PageProps
      */
     public function forPage(RegisteredPage $page, DeclaredPageRequest $request): array
     {
-        $props = ['page' => fn () => $this->pageResult($page, $request, $request->plainQuery())];
+        $props = ['page' => fn () => $this->ownPageResult($page, $request)];
 
         foreach ($this->sectionsOf($page) as $section) {
             $props[$section->propName] = $this->inertia->defer(
@@ -93,6 +95,21 @@ final readonly class PageProps
         }
 
         return $props;
+    }
+
+    /**
+     * A page of its own whose record is unavailable answers 404 at its address, the same for a missing record and one
+     * outside the user's scope; in a window or the inspector the same record reads as unavailable instead.
+     */
+    private function ownPageResult(RegisteredPage $page, DeclaredPageRequest $request): Data
+    {
+        $result = $this->pageResult($page, $request, $request->plainQuery());
+
+        if ($result instanceof UnavailableWindow) {
+            throw new NotFoundHttpException();
+        }
+
+        return $result;
     }
 
     /**

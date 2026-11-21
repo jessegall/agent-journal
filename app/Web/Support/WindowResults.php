@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Web\Support;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Docking\Data\DockOfferData;
 use App\Docking\Sources\Contracts\DockableWindow;
 use App\Docking\Sources\Contracts\DockOffers;
@@ -14,6 +16,7 @@ use App\Web\Contracts\WindowResults as WindowResultsContract;
 use App\Web\Data\DeniedWindow;
 use App\Web\Data\FailedWindow;
 use App\Web\Data\ReadyWindow;
+use App\Web\Data\UnavailableWindow;
 use App\Web\Exceptions\ReaderDataMismatch;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
@@ -70,13 +73,27 @@ final readonly class WindowResults implements WindowResultsContract
             |HttpExceptionInterface $control
         ) {
             throw $control;
-        } catch (Throwable $failure) {
-            $this->log->error(
-                "The window {$key} failed: {$failure->getMessage()}",
-                ['key' => $key, 'exception' => $failure],
-            );
+        } catch (CodedRefusal $refusal) {
+            if ($refusal->refusalCode() !== RefusalCode::RecordUnavailable) {
+                return $this->failed($key, $refusal);
+            }
 
-            return FailedWindow::make();
+            return UnavailableWindow::make();
+        } catch (Throwable $failure) {
+            return $this->failed($key, $failure);
         }
+    }
+
+    /**
+     * A neutral failure for the browser, with the error logged under the window's key.
+     */
+    private function failed(string $key, Throwable $failure): FailedWindow
+    {
+        $this->log->error(
+            "The window {$key} failed: {$failure->getMessage()}",
+            ['key' => $key, 'exception' => $failure],
+        );
+
+        return FailedWindow::make();
     }
 }
