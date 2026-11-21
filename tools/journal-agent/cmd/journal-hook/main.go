@@ -1,16 +1,36 @@
-// Command journal-hook is the native hook adapter of a machine connected to a server journal. Until it asks the
-// server, it blocks every call: exit status 2 is the blocking reply of both pinned providers' command hooks.
+// Command journal-hook is the native hook adapter of a machine connected to a server journal: a provider runs it on
+// every hook event, and it answers with the journal's reply through the session's relay, or with the provider's own
+// blocking reply when the journal cannot be asked in time.
 package main
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
+
+	"journal-agent/hookadapter"
 )
 
-// blockingExit is the exit status a provider reads as a blocked call, with standard error as the reason.
-const blockingExit = 2
-
 func main() {
-	fmt.Fprintln(os.Stderr, "journal-hook: this connected machine cannot ask the journal yet, so the call is blocked")
-	os.Exit(blockingExit)
+	if len(os.Args) != 2 {
+		fmt.Fprintln(os.Stderr, "usage: journal-hook <claude-code|codex>")
+		os.Exit(2)
+	}
+	native, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "journal-hook:", err)
+		os.Exit(2)
+	}
+
+	// The run folder only locates the session socket; the relay serving it holds the runtime's authority.
+	runFolder := os.Getenv("JOURNAL_SESSION_RUN")
+	adapter := hookadapter.Adapter{
+		Ask:             hookadapter.AskThroughSocket(filepath.Join(runFolder, hookadapter.SocketName), os.Args[1]),
+		PreparationFile: filepath.Join(runFolder, "prepared"),
+	}
+	reply := adapter.Answer(native)
+	fmt.Fprint(os.Stdout, reply.Stdout)
+	fmt.Fprint(os.Stderr, reply.Stderr)
+	os.Exit(reply.ExitCode)
 }

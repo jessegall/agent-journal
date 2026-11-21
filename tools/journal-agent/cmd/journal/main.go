@@ -11,17 +11,21 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"time"
 
 	"journal-agent/client"
+	"journal-agent/hookadapter"
 	"journal-agent/host"
+	"journal-agent/localsession"
+	"journal-agent/profiles"
 	"journal-agent/project"
 )
 
 // localVerbs are the verbs this machine answers itself; every other verb runs on the server.
-var localVerbs = []string{"status", "claude", "codex", "attach", "disconnect", "upgrade"}
+var localVerbs = []string{"status", "claude", "codex", "logout", "attach", "disconnect", "upgrade"}
 
 // errVerbLater refuses a local verb this connected machine does not run yet.
 var errVerbLater = errors.New("this verb arrives with the next release")
@@ -109,6 +113,17 @@ func (commands dispatcher) local(
 	folder project.Folder,
 	stdout, stderr io.Writer,
 ) int {
+	if verb == "claude" {
+		return commands.claude(binding, folder, stderr)
+	}
+	if verb == "logout" {
+		return commands.logout(binding, stdout, stderr)
+	}
+	if verb == "codex" {
+		// Local Codex sessions wait for a per-thread callback channel the pinned build does not give.
+		fmt.Fprintln(stderr, "journal:", localsession.ErrCodexWithheld)
+		return 1
+	}
 	if verb != "status" {
 		fmt.Fprintln(stderr, "journal:", verb+":", errVerbLater)
 		return 1
@@ -117,6 +132,102 @@ func (commands dispatcher) local(
 	fmt.Fprintln(stdout, status(binding, state, folder))
 
 	return 0
+}
+
+// claude opens the binding's main runtime on the journal and starts its isolated Claude Code session on this
+// terminal, from the sealed installation beside this command.
+func (commands dispatcher) claude(binding host.Binding, folder project.Folder, stderr io.Writer) int {
+	installation, err := ownInstallation()
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	journal := client.ForRemoteProject(binding.Enrollment, &http.Client{Timeout: 30 * time.Second})
+	opened, err := journal.OpenBindingRuntime(context.Background(), binding.BindingID, client.BindingRuntimeRequest{
+		RootID: binding.RootID, Folder: folder.Root, AgentID: binding.MainAgentID,
+		Driver: "claude-code", DriverBuild: profiles.ClaudeCode{}.Build(), Profile: "main-agent",
+	})
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+
+	session := localsession.Session{
+		Root: folder.Root, RuntimeID: opened.RuntimeID, SessionID: opened.SessionID, Installation: installation,
+	}
+	command, err := session.Command(os.Args[2:])
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	listener, err := hookadapter.Listen(session.RunFolder())
+	if err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	defer listener.Close()
+	go hookadapter.Serve(listener, refuseWithoutStartGrant)
+
+	account := localsession.ClaudeAccount{StateFolder: commands.stateFolder, BindingID: binding.BindingID}
+	if !account.IsSignedIn() {
+		fmt.Fprintln(stderr, "journal: sign in to Claude Code in this session; the sign-in stays with this project only.")
+	}
+	if err := account.Provide(session.ConfigFolder()); err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	defer func() {
+		if err := account.Keep(session.ConfigFolder()); err != nil {
+			fmt.Fprintln(stderr, "journal: the sign-in was not kept:", err)
+		}
+	}()
+
+	command.Stdin, command.Stdout, command.Stderr = os.Stdin, os.Stdout, os.Stderr
+	if err := command.Run(); err != nil {
+		var exited *exec.ExitError
+		if errors.As(err, &exited) {
+			return exited.ExitCode()
+		}
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+
+	return 0
+}
+
+// logout ends the binding's Claude Code sign-in generation; the next session starts signed out.
+func (commands dispatcher) logout(binding host.Binding, stdout, stderr io.Writer) int {
+	account := localsession.ClaudeAccount{StateFolder: commands.stateFolder, BindingID: binding.BindingID}
+	if err := account.Logout(); err != nil {
+		fmt.Fprintln(stderr, "journal:", err)
+		return 1
+	}
+	fmt.Fprintln(stdout, "Signed out of Claude Code for this project.")
+
+	return 0
+}
+
+// errNoStartGrant is the answer to a hook call while the session holds no start grant to ask the journal with.
+var errNoStartGrant = errors.New("this session holds no start grant to ask the journal with")
+
+// refuseWithoutStartGrant answers every hook call with a failure, so the adapter gives the provider its own
+// blocking reply until the session's start grant reaches it.
+func refuseWithoutStartGrant(context.Context, string, []byte) (hookadapter.Reply, error) {
+	return hookadapter.Reply{}, errNoStartGrant
+}
+
+// ownInstallation is the sealed installation this command runs from: the folder above its bin folder.
+func ownInstallation() (string, error) {
+	program, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	program, err = filepath.EvalSymlinks(program)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Dir(filepath.Dir(program)), nil
 }
 
 // forward runs the verb on the server, writes its frames in sequence and answers its exit code. A lost connection

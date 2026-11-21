@@ -43,7 +43,6 @@ type Adapter struct {
 	// PreparationFile records the runtime's prepared context generation: opened by SessionStart, prepared by a
 	// valid reply to it.
 	PreparationFile string
-	Now             func() time.Time
 }
 
 // Answer gives the provider its reply to the native call: the journal's, or the native blocking reply when the

@@ -29,6 +29,7 @@ type Redemption struct {
 	HostID          string `json:"hostId"`
 	ProjectID       string `json:"projectId"`
 	BindingID       string `json:"bindingId"`
+	MainAgentID     string `json:"mainAgentId"`
 	Protocol        int    `json:"protocol"`
 	CanonicalOrigin string `json:"canonicalOrigin"`
 }
@@ -88,6 +89,34 @@ func (client *Client) ReportPresence(ctx context.Context, bindingID string, repo
 	err := client.call(ctx, "/host/bindings/"+url.PathEscape(bindingID)+"/presence", report, &receipt)
 
 	return receipt, err
+}
+
+// BindingRuntimeRequest mirrors App\Http\Data\Connections\BindingRuntimeRequestData.
+type BindingRuntimeRequest struct {
+	RootID      string `json:"rootId"`
+	Folder      string `json:"folder"`
+	AgentID     string `json:"agentId"`
+	Driver      string `json:"driver"`
+	DriverBuild string `json:"driverBuild"`
+	Profile     string `json:"profile"`
+}
+
+// OpenedBindingRuntime is the session and runtime the journal opened for a binding's main agent.
+type OpenedBindingRuntime struct {
+	SessionID string `json:"session_id"`
+	RuntimeID string `json:"runtime_id"`
+}
+
+// OpenBindingRuntime asks the journal to open the binding's main runtime in its own root.
+func (client *Client) OpenBindingRuntime(
+	ctx context.Context,
+	bindingID string,
+	request BindingRuntimeRequest,
+) (OpenedBindingRuntime, error) {
+	opened := OpenedBindingRuntime{}
+	err := client.call(ctx, "/host/bindings/"+url.PathEscape(bindingID)+"/runtimes", request, &opened)
+
+	return opened, err
 }
 
 // post sends an unsigned JSON call and decodes its answer.

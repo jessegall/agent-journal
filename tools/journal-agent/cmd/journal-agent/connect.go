@@ -126,6 +126,7 @@ func (connection projectConnection) redeem(ctx context.Context, ticket string) (
 		Enrollment:    enrollment,
 		ProjectID:     redemption.ProjectID,
 		BindingID:     redemption.BindingID,
+		MainAgentID:   redemption.MainAgentID,
 		RootID:        pending.RootID,
 		CanonicalRoot: pending.CanonicalRoot,
 	}

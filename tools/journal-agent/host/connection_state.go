@@ -45,6 +45,7 @@ type Binding struct {
 	Enrollment
 	ProjectID     string `json:"project_id"`
 	BindingID     string `json:"binding_id"`
+	MainAgentID   string `json:"main_agent_id"`
 	RootID        string `json:"root_id"`
 	CanonicalRoot string `json:"canonical_root"`
 }

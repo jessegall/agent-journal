@@ -39,6 +39,7 @@ final readonly class RecoverBindingController
             'hostId' => $redemption->hostId,
             'projectId' => $redemption->projectId,
             'bindingId' => $redemption->bindingId,
+            'mainAgentId' => $redemption->mainAgentId,
             'protocol' => HostProtocolVersion::RemoteProject->value,
         ], JsonResponse::HTTP_OK, ['Cache-Control' => 'no-store, private']);
     }

@@ -213,3 +213,15 @@ func TestWithTheServerDownTheVerbFailsWithItsRequestID(t *testing.T) {
 		t.Fatalf("a verb with the server down answered %q, %d", refusal, code)
 	}
 }
+
+func TestJournalCodexNamesWhyLocalCodexIsWithheld(t *testing.T) {
+	state := realTempDir(t)
+	root := connectedFolder(t, state, realTempDir(t), "shop")
+	commands := dispatcher{stateFolder: state, wake: func(string, string) error { return nil }, grant: noGrant}
+
+	_, refusal, code := answer(commands, []string{"codex"}, root, "")
+
+	if code == 0 || !strings.Contains(refusal, "withheld") {
+		t.Fatalf("journal codex answered %q, %d", refusal, code)
+	}
+}

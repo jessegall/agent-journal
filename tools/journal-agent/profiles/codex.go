@@ -24,6 +24,16 @@ var _ contracts.ProgramProfile = Codex{}
 // codexAgentFeatures are the features of 0.165.0 that start or coordinate another agent; all of them stay off.
 var codexAgentFeatures = []string{"multi_agent", "multi_agent_mode", "multi_agent_v2", "multi_agent_v2_dynamic_tools", "agent_message_board", "runtime_agent_instances"}
 
+// CodexAgentFeaturesOff are the config.toml lines that keep every agent-spawning feature of 0.165.0 off.
+func CodexAgentFeaturesOff() []string {
+	lines := make([]string, 0, len(codexAgentFeatures))
+	for _, feature := range codexAgentFeatures {
+		lines = append(lines, feature+" = false")
+	}
+
+	return lines
+}
+
 func (Codex) Program() string {
 	return "codex"
 }
