@@ -102,10 +102,13 @@ final readonly class AttributeRuns
      */
     private function groupsOf(Node $node): array
     {
-        if (! Reflector::of($node)->hasProperty('attrGroups') || ! is_array($node->attrGroups)) {
+        $type = Reflector::of($node);
+        $groups = $type->hasProperty('attrGroups') ? $type->property('attrGroups')->readFrom($node) : null;
+
+        if (! is_array($groups)) {
             return [];
         }
 
-        return array_values($node->attrGroups);
+        return array_values(array_filter($groups, fn (mixed $group) => $group instanceof AttributeGroup));
     }
 }

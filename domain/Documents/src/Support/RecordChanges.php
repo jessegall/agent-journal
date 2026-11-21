@@ -44,6 +44,9 @@ final readonly class RecordChanges
 
     private function createdByActor(Model $record): bool
     {
-        return Reflector::of($record)->hasMethod('isCreatedBy') && $record->isCreatedBy($this->actors->actor());
+        $type = Reflector::of($record);
+
+        return $type->hasMethod('isCreatedBy')
+            && $type->method('isCreatedBy')->invokeOn($record, $this->actors->actor()) === true;
     }
 }

@@ -69,7 +69,9 @@ final readonly class CheckListenerPairs implements Pipe
 
         return array_any(
             $arms,
-            fn (DeclaredType $arm) => $arm->isNamed() && Reflector::of($event)->is($arm->name()),
+            fn (DeclaredType $arm) => $arm->isNamed()
+                && Reflector::exists($arm->name())
+                && Reflector::isNameOf($event, $arm->name()),
         );
     }
 }

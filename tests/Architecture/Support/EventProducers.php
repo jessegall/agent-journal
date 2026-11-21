@@ -144,7 +144,7 @@ final readonly class EventProducers
     {
         $class = $call->eventClass;
 
-        if ($class !== null && Reflector::exists($class) && Reflector::of($class)->isSubclassOf(Event::class)) {
+        if ($class !== null && Reflector::isNameSubclassOf($class, Event::class)) {
             return $class;
         }
 
@@ -238,7 +238,7 @@ final readonly class EventProducers
                 ->getOrElse('');
             $holds = array_filter(
                 self::UNSERIALIZABLE,
-                fn (string $kind) => $class !== '' && Reflector::exists($class) && Reflector::of($class)->is($kind),
+                fn (string $kind) => Reflector::exists($kind) && Reflector::isNameOf($class, $kind),
             );
 
             if ($holds !== [] || str_contains($class, 'EventUnit')) {

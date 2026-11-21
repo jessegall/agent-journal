@@ -94,7 +94,7 @@ final class Exports
             throw InvalidExports::eventIsACommand($this->owner, $className);
         }
 
-        return $className;
+        return $type->name();
     }
 
     /**
@@ -139,7 +139,7 @@ final class Exports
             throw InvalidExports::notAnException($this->owner, $className);
         }
 
-        return $className;
+        return $type->name();
     }
 
     /**

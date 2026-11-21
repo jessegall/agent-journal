@@ -62,7 +62,8 @@ final readonly class ListenerOwnership
         if ($domain === null) {
             $isExpanded = array_filter(
                 self::EXPANDED_INTERFACES,
-                fn (string $interface) => Reflector::exists($event) && Reflector::of($event)->isSubclassOf($interface),
+                fn (string $interface) => Reflector::exists($interface)
+                    && Reflector::isNameSubclassOf($event, $interface),
             ) !== [];
             $isExportedUiEvent = $owner->exportsEvent($event) && $isExpanded;
 
@@ -120,7 +121,7 @@ final readonly class ListenerOwnership
 
         $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsFile($file->get()));
 
-        if ($domain === null && ! str_starts_with($file, dirname(__DIR__, 2).DIRECTORY_SEPARATOR)) {
+        if ($domain === null && ! str_starts_with($file->get(), dirname(__DIR__, 2).DIRECTORY_SEPARATOR)) {
             throw InvalidListener::unknownOwner($listener, $event);
         }
 
@@ -191,14 +192,20 @@ final readonly class ListenerOwnership
      */
     private static function listensThroughCoreContract(string $event, string $listener, string $method): bool
     {
-        $parameters = Reflector::of(Str::before($listener, '@'))->method($method)->parameters();
+        $listenerClass = Str::before($listener, '@');
+
+        if (! Reflector::exists($listenerClass)) {
+            return false;
+        }
+
+        $parameters = Reflector::of($listenerClass)->method($method)->parameters();
         $type = $parameters === [] ? '' : $parameters[0]->type()
             ->filter(fn (DeclaredType $declared) => $declared->isNamed())
             ->map(fn (DeclaredType $declared) => $declared->name())
             ->getOrElse('');
 
         return in_array($type, self::EXPANDED_INTERFACES, true)
-            && Reflector::exists($event)
-            && Reflector::of($event)->isSubclassOf($type);
+            && Reflector::exists($type)
+            && Reflector::isNameSubclassOf($event, $type);
     }
 }

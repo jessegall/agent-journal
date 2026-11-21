@@ -63,8 +63,8 @@ final class RefusalExceptions
     public static function classOf(string $code, array $declared): string
     {
         foreach ($declared as $refusal) {
-            if (Reflector::of($refusal)->isSubclassOf(CallRefusal::class)
-                && Reflector::of($refusal)->isSubclassOf(CallRefused::class)
+            if (Reflector::isNameSubclassOf($refusal, CallRefusal::class)
+                && Reflector::isNameSubclassOf($refusal, CallRefused::class)
                 && $refusal::code() === $code) {
                 return $refusal;
             }

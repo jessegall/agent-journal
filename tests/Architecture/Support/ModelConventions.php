@@ -169,10 +169,14 @@ final class ModelConventions
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                $declaration = Reflector::exists($name) ? Reflector::of($name) : null;
+                if (! Reflector::isNameSubclassOf($name, Model::class)) {
+                    continue;
+                }
 
-                if ($declaration !== null && $declaration->isSubclassOf(Model::class) && ! $declaration->isAbstract()) {
-                    $models[$path][$declaration->startLine()] = $name;
+                $model = Reflector::of($name);
+
+                if ($model->not()->isAbstract()) {
+                    $models[$path][$model->startLine()] = $name;
                 }
             }
         }

@@ -238,11 +238,14 @@ final class McpToolRulesTest extends TestCase
                     continue;
                 }
 
-                if ($type->get()->isSubclassOf(Tool::class)) {
-                    array_push($found, ...$this->toolViolations($type->get()));
+                $declaration = $type->get();
+
+                if ($declaration->isSubclassOf(Tool::class)) {
+                    array_push($found, ...$this->toolViolations($declaration));
                 }
 
-                if ($type->get()->isSubclassOf(Resource::class) && ! $type->get()->is(JournalResource::class)) {
+                if (Reflector::isNameSubclassOf($class, Resource::class)
+                    && ! Reflector::isNameOf($class, JournalResource::class)) {
                     $found[] = "{$class} does not extend JournalResource";
                 }
             }
@@ -252,7 +255,7 @@ final class McpToolRulesTest extends TestCase
     }
 
     /**
-     * @param  Reflector<object>  $type
+     * @param  Reflector<Tool>  $type
      * @return list<string>
      */
     private function toolViolations(Reflector $type): array

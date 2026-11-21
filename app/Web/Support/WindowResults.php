@@ -52,7 +52,7 @@ final readonly class WindowResults implements WindowResultsContract
         try {
             $windowContent = $read();
 
-            if (! Reflector::of($resolver->dataClass)->isInstance($windowContent)) {
+            if (Reflector::of($resolver->dataClass)->asInstance($windowContent)->isEmpty()) {
                 throw ReaderDataMismatch::for($key, $resolver->dataClass, $windowContent::class);
             }
 

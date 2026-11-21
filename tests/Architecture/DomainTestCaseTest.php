@@ -24,16 +24,14 @@ final class DomainTestCaseTest extends TestCase
             $domain = basename(dirname($folder, 2));
             $base = "Domain\\{$domain}\\Tests\\TestCase";
 
-            $isBase = Reflector::find($base)->filter(fn (Reflector $type) => $type->isSubclassOf(TestCase::class));
-
-            if ($isBase->isEmpty()) {
+            if (! Reflector::isNameSubclassOf($base, TestCase::class)) {
                 $wrong[] = "{$domain} has feature tests but no {$base} extending Tests\\TestCase";
 
                 continue;
             }
 
             foreach ($this->featureTestClassesIn($folder, "Domain\\{$domain}\\Tests\\Feature") as $class) {
-                if (! Reflector::of($class)->isSubclassOf($base)) {
+                if (! Reflector::isNameSubclassOf($class, $base)) {
                     $wrong[] = "{$class} does not extend {$base}";
                 }
             }

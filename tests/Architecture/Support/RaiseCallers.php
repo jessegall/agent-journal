@@ -24,6 +24,7 @@ final readonly class RaiseCallers
     /**
      * @param  list<string>  $transitions  each migrated transition as Class::method
      * @param  array<string, list<string>>  $reach  the handlers that reach each file, by path from the root
+     * @param  class-string  $requiredListenerAttribute
      */
     public function __construct(
         private string $projectRoot,

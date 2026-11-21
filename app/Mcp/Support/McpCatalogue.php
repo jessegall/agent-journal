@@ -62,7 +62,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     public function registerTool(string $className): void
     {
-        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(JournalTool::class)) {
+        if (! Reflector::isNameSubclassOf($className, JournalTool::class)) {
             throw McpClassInvalid::for($className, JournalTool::class);
         }
 
@@ -92,7 +92,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     public function registerResource(string $className): void
     {
-        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(JournalResource::class)) {
+        if (! Reflector::isNameSubclassOf($className, JournalResource::class)) {
             throw McpClassInvalid::for($className, JournalResource::class);
         }
 
@@ -110,7 +110,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     public function registerOverviewContribution(string $className): void
     {
-        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(OverviewContribution::class)) {
+        if (! Reflector::isNameSubclassOf($className, OverviewContribution::class)) {
             throw McpClassInvalid::for($className, OverviewContribution::class);
         }
 
@@ -119,7 +119,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
 
     public function registerSearchContribution(string $className): void
     {
-        if (! Reflector::exists($className) || ! Reflector::of($className)->isSubclassOf(SearchContribution::class)) {
+        if (! Reflector::isNameSubclassOf($className, SearchContribution::class)) {
             throw McpClassInvalid::for($className, SearchContribution::class);
         }
 
