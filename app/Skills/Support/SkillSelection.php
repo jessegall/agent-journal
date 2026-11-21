@@ -65,7 +65,7 @@ final readonly class SkillSelection
             'session' => $context->sessionId,
             'environment' => $context->environment,
             'profile' => $context->profile->revisionText(),
-            'program' => $context->program?->key,
+            'driver' => $context->driver?->key,
             'provider' => $context->provider?->key,
             'skills' => array_map(fn (SkillEntry $skill) => [
                 $skill->key->key,

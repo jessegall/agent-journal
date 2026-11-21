@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Data;
 
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
 use Spatie\LaravelData\Data;
@@ -21,7 +21,7 @@ final class RuntimeStatus extends Data
         public readonly string $runtimeId,
         public readonly string $agentId,
         public readonly string $sessionId,
-        public readonly string $program,
+        public readonly string $driver,
         public readonly RuntimeActivity $activity,
         public readonly HoldReason $hold,
         public readonly RuntimeSetting $model,
@@ -30,7 +30,7 @@ final class RuntimeStatus extends Data
         public readonly bool $isStale,
         public readonly int $processGeneration,
         public readonly bool $canReleaseHold,
-        public readonly DriverType $driverType,
+        public readonly DriverVariant $variant,
         public readonly int $watchers,
     ) {}
 }

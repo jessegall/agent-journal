@@ -15,11 +15,11 @@ declare(strict_types=1);
  */
 
 use App\Agents\Enums\TransportProfileType;
-use App\Hooks\Programs\CodexFolderTrust;
-use App\Hooks\Programs\CodexJournalServer;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Drivers\CodexFolderTrust;
+use App\Hooks\Drivers\CodexJournalServer;
 use App\Hooks\Support\AccountConfigurationWrite;
-use App\Hooks\Support\ProgramCompatibility;
-use App\Programs\Enums\HookProgram;
+use App\Hooks\Support\DriverCompatibility;
 
 require __DIR__.'/../../vendor/autoload.php';
 
@@ -42,7 +42,7 @@ if (! is_dir($root) && ! mkdir($root, 0o700)) {
 
 $settings = array_map(
     static fn (string $value): string => sprintf('"%s"', addcslashes($value, '"\\')),
-    ProgramCompatibility::pinned(HookProgram::Codex)->settings,
+    DriverCompatibility::pinned(HookDriver::Codex)->settings,
 );
 new AccountConfigurationWrite()->prepare(
     (string) $request['account'],

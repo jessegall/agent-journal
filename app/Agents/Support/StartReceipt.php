@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\ConversationModeType;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 
 /**
  * What a start tells its caller: the request, the session and agent, the selection, whether the session is new,
@@ -23,7 +23,7 @@ final readonly class StartReceipt
         public string $requestId,
         public string $sessionId,
         public string $agentId,
-        public SelectedProgram $selection,
+        public SelectedDriver $selection,
         public bool $newSession,
         public ConversationModeType $conversationMode,
         public string $actualModel,

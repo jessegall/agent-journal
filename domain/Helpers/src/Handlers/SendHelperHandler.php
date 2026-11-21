@@ -25,7 +25,7 @@ final readonly class SendHelperHandler extends HelperCommandHandler
             $command->requestId,
             $command->profileKey,
             $command->model,
-            $command->programKey,
+            $command->driverKey,
             $command->work,
             $command->identityId,
         ));

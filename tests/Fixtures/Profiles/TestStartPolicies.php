@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Profiles;
 
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileStartPolicy;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 /**
  * The global default start policy of a profile type, pinned to Claude Code, as tests that only need a valid policy
@@ -18,7 +18,7 @@ final class TestStartPolicies
     {
         return ProfileStartPolicy::defaultsFor(
             $type,
-            HookProgram::ClaudeCode,
+            HookDriver::ClaudeCode,
             true,
             ['opus', 'sonnet'],
             hash('sha256', "test defaults of {$type->key}"),

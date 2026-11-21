@@ -36,7 +36,7 @@ use App\Profiles\Policies\AccountPolicy;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Policies\ProfileDraftPolicy;
 use App\Profiles\Resolvers\ActiveAccountRecords;
-use App\Profiles\Resolvers\ProfilePrograms;
+use App\Profiles\Resolvers\ProfileDrivers;
 use App\Profiles\Resolvers\ProfileRecords;
 use App\Profiles\Support\AgentImage;
 use App\Profiles\Support\BuiltInAuthorizations;
@@ -76,7 +76,7 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->bind(OperationNames::class, ConfiguredOperations::class);
         $this->app->bind(ProfileResolver::class, ProfileRecords::class);
         $this->app->bind(ProfileScripts::class, ProfileRecords::class);
-        $this->app->bind(ProfileSelections::class, ProfilePrograms::class);
+        $this->app->bind(ProfileSelections::class, ProfileDrivers::class);
         $this->app->bind(StartProfileAdmission::class, ProfileStartAdmission::class);
         $this->app->bind(BuiltInStartProfiles::class, BuiltInProfilePins::class);
         $this->app->bind(ActiveAccountReader::class, ActiveAccountRecords::class);

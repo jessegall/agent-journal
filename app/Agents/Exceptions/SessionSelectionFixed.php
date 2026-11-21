@@ -13,6 +13,6 @@ final class SessionSelectionFixed extends LogicException
 {
     public static function forSession(string $sessionId): self
     {
-        return new self("Session {$sessionId} already has its program and model; a new selection needs a new start.");
+        return new self("Session {$sessionId} already has its driver and model; a new selection needs a new start.");
     }
 }

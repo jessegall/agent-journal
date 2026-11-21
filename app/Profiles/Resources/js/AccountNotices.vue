@@ -7,10 +7,10 @@ import { dismiss as dismissRoute } from '@generated/routes/accounts';
 import { Link, useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import { formSendingHooks } from '@kit/usePageChanges';
-import { programName } from './accountLooks';
+import { driverName } from './accountLooks';
 
 /**
- * The bar's account notices on every page: what happened to a program's accounts in safe words, a link to the
+ * The bar's account notices on every page: what happened to a driver's accounts in safe words, a link to the
  * Accounts page to act on it, and dismissing it.
  */
 defineProps<{ data: AccountNoticesData }>();
@@ -39,7 +39,7 @@ function dismiss(noticeId: string): void {
             <template v-for="notice in data.notices" :key="notice.id">
                 <li class="flex items-center gap-2 text-small text-tone-warn">
                     <span
-                        >{{ programName(notice.program) }}
+                        >{{ driverName(notice.driver) }}
                         {{ sentences[notice.reason] }}</span
                     >
                     <Link href="/accounts" class="text-brand-text underline"

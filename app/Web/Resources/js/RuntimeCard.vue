@@ -7,7 +7,7 @@ import RuntimeRequestRow from './RuntimeRequestRow.vue';
 import TerminalView from './TerminalView.vue';
 
 /**
- * One agent runtime as stored: its program, activity, hold, settings and latest driver requests, with a button that
+ * One agent runtime as stored: its driver, activity, hold, settings and latest driver requests, with a button that
  * releases a hold the owner may release, and for a terminal runtime its live terminal and how many people watch it.
  */
 const props = defineProps<{
@@ -33,7 +33,7 @@ function age(seconds: number | null): string {
 <template>
     <section class="flex flex-col gap-2 rounded border border-line p-4">
         <header class="flex flex-wrap items-baseline gap-3">
-            <span class="font-mono">{{ status.program }}</span>
+            <span class="font-mono">{{ status.driver }}</span>
             <span>{{ status.activity }}</span>
             <span class="text-text-3">hold: {{ status.hold }}</span>
             <template v-if="status.canReleaseHold">
@@ -43,7 +43,7 @@ function age(seconds: number | null): string {
                 observed {{ age(status.observationAgeSeconds)
                 }}{{ status.isStale ? ', stale' : '' }}
             </span>
-            <template v-if="status.driverType === 'terminal'">
+            <template v-if="status.variant === 'terminal'">
                 <button type="button" @click="watching = !watching">
                     {{ watching ? 'Stop watching' : 'Watch terminal' }}
                 </button>

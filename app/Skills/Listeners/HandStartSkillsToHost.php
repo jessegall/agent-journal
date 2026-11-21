@@ -10,10 +10,10 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Support\StartFile;
 use App\Agents\Support\StartFolder;
 use App\Contracts\Listener;
-use App\Programs\Values\ProgramKey;
+use App\Drivers\Values\DriverKey;
+use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Models\SkillPublication;
-use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Support\PublicationFiles;
 use App\Skills\Support\SkillTargets;
 
@@ -25,7 +25,7 @@ use App\Skills\Support\SkillTargets;
 final readonly class HandStartSkillsToHost implements Listener
 {
     public function __construct(
-        private ProgramSkillAdapters $adapters,
+        private DriverSkillAdapters $adapters,
         private SkillTargets $targets,
     ) {}
 
@@ -41,7 +41,7 @@ final readonly class HandStartSkillsToHost implements Listener
             throw StartRefused::skillsNotReady($event->sessionId, $publication->error ?? $publication->state->value);
         }
 
-        $delivery = $this->adapters->for(ProgramKey::from($publication->program))->delivery();
+        $delivery = $this->adapters->for(DriverKey::from($publication->driver))->delivery();
         $files = PublicationFiles::of($publication, $this->targets, $this->adapters)->files;
         $event->additions->addFolder(new StartFolder(
             $delivery->folder,

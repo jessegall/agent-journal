@@ -18,6 +18,13 @@ const (
 	protocolHeader  = "X-Journal-Protocol"
 )
 
+// HostProtocolVersion is the version of the protocol this host speaks with the journal (App\Agents\Enums\HostProtocolVersion);
+// both change together in a release, and the journal refuses every call of a host that speaks another.
+const (
+	HostProtocolVersion = 1
+	hostProtocolHeader  = "Journal-Host-Protocol"
+)
+
 var errLineBreak = errors.New("a signed field holds a line break")
 
 // signature is the HMAC-SHA256, keyed by the secret, of the protocol, method, request target, call id, issue time and

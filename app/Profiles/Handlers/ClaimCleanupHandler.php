@@ -21,7 +21,7 @@ final readonly class ClaimCleanupHandler implements CommandHandler
             return new ClaimedCleanup(
                 CleanupTarget::Account,
                 $account->id,
-                $account->program,
+                $account->driver,
                 $account->method,
                 (string) $account->directory,
                 $account->sign_in_generation,
@@ -35,7 +35,7 @@ final readonly class ClaimCleanupHandler implements CommandHandler
         return $attempt === null ? null : new ClaimedCleanup(
             CleanupTarget::SignInAttempt,
             $attempt->id,
-            $attempt->program,
+            $attempt->driver,
             $attempt->method,
             (string) $attempt->directory,
             $attempt->generation,

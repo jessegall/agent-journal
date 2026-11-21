@@ -6,8 +6,10 @@ namespace App\Http\Middleware\Agents;
 
 use App\Actors\Support\ActorStore;
 use App\AgentRequests\Support\SignedCall;
+use App\Agents\Enums\HostProtocolVersion;
 use App\Agents\Exceptions\CallSignatureInvalid;
 use App\Agents\Exceptions\HostCredentialRejected;
+use App\Agents\Exceptions\HostProtocolMismatch;
 use App\Agents\Models\Host;
 use App\Agents\Support\HostContext;
 use App\Bus\Enums\CommandEntry;
@@ -45,6 +47,8 @@ final readonly class AuthenticateHost
             $context = $this->verified($request);
         } catch (HostCredentialRejected|CallSignatureInvalid $rejection) {
             return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
+        } catch (HostProtocolMismatch $mismatch) {
+            return new JsonResponse(['message' => $mismatch->getMessage()], Response::HTTP_UPGRADE_REQUIRED);
         }
 
         $this->container->instance(HostContext::class, $context);
@@ -86,6 +90,7 @@ final readonly class AuthenticateHost
         }
 
         $host = Host::forSecret($secret);
+        $this->assertSpeaksProtocol($request);
 
         if (! $this->cache->add("host-call:{$host->id}:{$callId}", true, self::WINDOW_SECONDS * 2)) {
             throw HostCredentialRejected::replayed($callId);
@@ -99,6 +104,22 @@ final readonly class AuthenticateHost
                 SignedCall::digestOf($request->getContent()),
             ),
         );
+    }
+
+    /**
+     * Refuses a host of another protocol version before it can claim, report or open anything.
+     *
+     * @throws HostProtocolMismatch
+     */
+    private function assertSpeaksProtocol(Request $request): void
+    {
+        $current = HostProtocolVersion::current()->value;
+        $version = $request->headers->get(SignedCall::HOST_PROTOCOL_HEADER)
+            ?? throw HostProtocolMismatch::missing($current);
+
+        if ($version !== (string) $current) {
+            throw HostProtocolMismatch::speaks($version, $current);
+        }
     }
 
     private function header(Request $request, string $name): string

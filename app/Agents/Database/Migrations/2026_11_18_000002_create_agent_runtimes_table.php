@@ -14,9 +14,9 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->ulid('agent_session_id')->unique();
             $table->ulid('host_id')->index();
-            $table->string('driver_type', 16);
-            $table->string('program', 32);
-            $table->string('program_build', 64);
+            $table->string('variant', 16);
+            $table->string('driver', 32);
+            $table->string('driver_build', 64);
             $table->string('profile', 64);
             $table->text('canonical_folder');
             $table->string('activity', 32);

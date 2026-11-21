@@ -4,11 +4,11 @@ import { retrySignInCleanup } from '@generated/routes/accounts';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import { formSendingHooks } from '@kit/usePageChanges';
-import { cleanupProblemText, programName } from './accountLooks';
+import { cleanupProblemText, driverName } from './accountLooks';
 
 /**
  * The unfinished sign-ins, of new accounts and reconnects, whose staging folder still waits for its cleanup. Each is
- * retried by its own attempt, even when its folder is already gone: the host still shows the program's sign-in is
+ * retried by its own attempt, even when its folder is already gone: the host still shows the driver's sign-in is
  * removed before the cleanup ends. A reconnect's saved account folder is never part of it.
  */
 defineProps<{ cleanups: PendingAttemptCleanupData[] }>();
@@ -35,7 +35,7 @@ function retry(attemptId: string): void {
                         class="flex items-center gap-3 border-b border-border px-4 py-3"
                     >
                         <span class="text-card text-text">{{
-                            programName(cleanup.program)
+                            driverName(cleanup.driver)
                         }}</span>
                         <span class="text-small text-text-3">{{
                             cleanup.problem === null

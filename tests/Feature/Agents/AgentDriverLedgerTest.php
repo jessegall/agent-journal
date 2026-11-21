@@ -33,7 +33,7 @@ use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Enums\DriverOperation;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RecoveryAction;
@@ -67,12 +67,12 @@ use App\Agents\Values\ScriptProgress;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopConditions;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileStartPolicy;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Spatie\LaravelData\Optional;
@@ -140,7 +140,7 @@ final class AgentDriverLedgerTest extends TestCase
                 'claude-code',
                 '2.1.323',
                 'claude',
-                DriverType::Process,
+                DriverVariant::Headless,
                 'claude-opus-5-5',
             ),
         );
@@ -347,8 +347,8 @@ final class AgentDriverLedgerTest extends TestCase
 
     public function test_a_contained_main_sessions_grant_carries_its_attachable_container(): void
     {
-        $account = Account::create(HookProgram::ClaudeCode, AccountLabel::from('Plain'), '/journal/accounts/01plain');
-        ActiveAccount::lockedFor(HookProgram::ClaudeCode)->select($account);
+        $account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Plain'), '/journal/accounts/01plain');
+        ActiveAccount::lockedFor(HookDriver::ClaudeCode)->select($account);
         [$host, $opened] = $this->openRuntime();
         $this->app->instance(
             ArrangementSetting::class,

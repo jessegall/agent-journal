@@ -72,7 +72,7 @@ vi.mock('@kit/usePageChanges', () => ({
 
 import type {
     AccountRowData,
-    ProgramMethodsData,
+    DriverMethodsData,
     SignInAttemptData,
     SignInMethodData,
     SignInState,
@@ -100,9 +100,9 @@ const claudeMethods: SignInMethodData[] = [
             'In the Anthropic Console, open API keys and create a key.',
     },
 ];
-const methods: ProgramMethodsData[] = [
-    { program: 'claude-code', methods: claudeMethods },
-    { program: 'codex', methods: [claudeMethods[0]] },
+const methods: DriverMethodsData[] = [
+    { driver: 'claude-code', methods: claudeMethods },
+    { driver: 'codex', methods: [claudeMethods[0]] },
 ];
 
 function attempt(
@@ -111,7 +111,7 @@ function attempt(
 ): SignInAttemptData {
     return {
         id: 'attempt-1',
-        program: 'claude-code',
+        driver: 'claude-code',
         method: 'api_key',
         type: 'new_account',
         accountId: null,
@@ -125,7 +125,7 @@ function attempt(
 function accountRow(id: string, label: string): AccountRowData {
     return {
         id,
-        program: 'claude-code',
+        driver: 'claude-code',
         label,
         signIn: claudeMethods[1],
         state: 'signed_in',
@@ -196,7 +196,7 @@ describe('AddAccountWizard', () => {
             expect.anything(),
         );
         expect(start.sent()).toMatchObject({
-            program: 'claude-code',
+            driver: 'claude-code',
             method: 'api_key',
         });
         expect(view.text()).toContain('Starting the sign-in…');
@@ -281,7 +281,7 @@ describe('AddAccountWizard', () => {
         await button(view, 'Start again').trigger('click');
         expect(start.submit).toHaveBeenCalledTimes(2);
         expect(start.sent()).toMatchObject({
-            program: 'claude-code',
+            driver: 'claude-code',
             method: 'api_key',
         });
 

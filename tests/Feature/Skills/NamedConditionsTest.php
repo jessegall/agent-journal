@@ -7,9 +7,9 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Domains\Support\DomainRegistry;
+use App\Drivers\Values\DriverKey;
+use App\Drivers\Values\ProviderKey;
 use App\Numbers\Models\NumberGroup;
-use App\Programs\Values\ProgramKey;
-use App\Programs\Values\ProviderKey;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\ConditionWriteRefused;
 use App\Skills\Exceptions\SkillConditionInvalid;
@@ -168,7 +168,7 @@ final class NamedConditionsTest extends TestCase
             TestIds::of(6),
             'main',
             StartProfile::profileFree(),
-            ProgramKey::from('codex'),
+            DriverKey::from('codex'),
             ProviderKey::from('openai'),
         );
     }

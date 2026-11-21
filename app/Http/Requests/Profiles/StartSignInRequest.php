@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Profiles;
 
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Support\SignInProtocols;
-use App\Programs\Enums\HookProgram;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,7 +25,7 @@ final class StartSignInRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'program' => ['required', 'string', Rule::enum(HookProgram::class)],
+            'driver' => ['required', 'string', Rule::enum(HookDriver::class)],
             'method' => ['required', 'string', Rule::enum(SignInMethod::class)],
             'request_key' => ['required', 'string', 'max:128'],
         ];
@@ -41,15 +41,15 @@ final class StartSignInRequest extends FormRequest
         return [function (Validator $validator) use ($protocols): void {
             $method = SignInMethod::tryFrom((string) $this->input('method'));
 
-            if ($method !== null && ! in_array($method, $protocols->methodsOf($this->program()), true)) {
+            if ($method !== null && ! in_array($method, $protocols->methodsOf($this->driver()), true)) {
                 $validator->errors()->add('method', 'This program has no such sign-in method here.');
             }
         }];
     }
 
-    public function program(): string
+    public function driver(): string
     {
-        return $this->string('program')->toString();
+        return $this->string('driver')->toString();
     }
 
     public function signInMethod(): SignInMethod

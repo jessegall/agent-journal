@@ -15,7 +15,7 @@ final readonly class LibraryEntryAnswer
      */
     public function __construct(
         public string $id,
-        public string $program,
+        public string $driver,
         public EntryGoalAnswer $goal,
         public array $steps,
         public string $completes,

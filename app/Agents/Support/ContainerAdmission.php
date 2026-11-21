@@ -13,7 +13,7 @@ use App\Agents\Exceptions\ImageUnverified;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\HostCapacity;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 final readonly class ContainerAdmission
 {
@@ -30,9 +30,9 @@ final readonly class ContainerAdmission
      *
      * @throws ImageUnverified
      */
-    public function admit(string $requestId, HookProgram $program, ExecutionPolicy $execution): void
+    public function admit(string $requestId, HookDriver $driver, ExecutionPolicy $execution): void
     {
-        $this->assertSupported($program);
+        $this->assertSupported($driver);
 
         if (! $this->images->isVerified((string) $execution->imageReference)) {
             throw ImageUnverified::because((string) $execution->imageReference);
@@ -42,12 +42,12 @@ final readonly class ContainerAdmission
         CapacityReservation::reserve($requestId, $execution->budgets, $this->capacity);
     }
 
-    public function assertSupported(HookProgram $program): void
+    public function assertSupported(HookDriver $driver): void
     {
         foreach ([HostCapabilityType::AccountTransport, HostCapabilityType::ContainerRuntime] as $capability) {
             $query = new HostCapabilityQuery(
                 $capability,
-                $program,
+                $driver,
                 AccountModeType::Subscription,
                 ExecutionModeType::RequiredContainer,
             );

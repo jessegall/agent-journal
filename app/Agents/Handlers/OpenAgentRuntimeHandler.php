@@ -20,7 +20,7 @@ use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\RuntimeIntent;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Contracts\CommandHandler;
 use Illuminate\Support\Str;
 
@@ -53,26 +53,26 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         $intent = new RuntimeIntent(
             $host->id,
             $command->folder,
-            $command->program,
-            $command->programBuild,
+            $command->driver,
+            $command->driverBuild,
             $command->profile,
-            $command->driverType,
+            $command->variant,
             $command->model,
             $command->effort,
             $command->firstMessage,
         );
 
-        $selection = SelectedProgram::resolve(
-            $command->program,
+        $selection = SelectedDriver::resolve(
+            $command->driver,
             ModelSelection::fromInput($command->model),
             null,
             null,
         );
-        $this->arrangement->assertContainable($selection->program);
+        $this->arrangement->assertContainable($selection->driver);
 
         $agent = Agent::query()->findOrFail($command->agentId);
         $this->sessions->lockForStart($agent);
-        $account = $this->accounts->forStart($selection->program);
+        $account = $this->accounts->forStart($selection->driver);
         $started = $this->starts->start(
             $agent,
             $selection,

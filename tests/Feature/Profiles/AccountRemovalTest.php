@@ -13,6 +13,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Bus\Support\EntryDispatchers;
+use App\Drivers\Enums\HookDriver;
 use App\Files\Contracts\Files;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\BeginSignInAgain;
@@ -40,7 +41,6 @@ use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\CleanupProgress;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -89,7 +89,7 @@ final class AccountRemovalTest extends TestCase
 
     public function test_removal_cancels_a_running_sign_in_and_leaves_no_replacement_chosen(): void
     {
-        Account::create(HookProgram::Codex, AccountLabel::from('Home'), '/journal/accounts/home');
+        Account::create(HookDriver::Codex, AccountLabel::from('Home'), '/journal/accounts/home');
         $this->asOwner(new BeginSignInAgain($this->account->id, 'again'));
         $generation = $this->account->refresh()->sign_in_generation;
 
@@ -102,7 +102,7 @@ final class AccountRemovalTest extends TestCase
         $this->assertNull($this->account->live_writer_attempt_id);
         $this->assertSame(SignInState::Cancelled, SignInAttempt::query()->withoutGlobalScopes()->sole()->state);
         $this->assertNull(
-            ActiveAccount::query()->withoutGlobalScopes()->where('program', 'codex')->value('account_id'),
+            ActiveAccount::query()->withoutGlobalScopes()->where('driver', 'codex')->value('account_id'),
         );
     }
 

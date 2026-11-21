@@ -139,11 +139,11 @@ final readonly class RelaySettings
      * The hook path, with the process generation the host gave this program when it has one, so the server can refuse
      * a call from an older process (doc 40, section 12).
      */
-    public function hookPath(string $program): string
+    public function hookPath(string $driver): string
     {
         $query = $this->processGeneration > 0 ? ['generation' => $this->processGeneration] : [];
 
-        return route('hooks.answer', ['program' => $program, ...$query], false);
+        return route('hooks.answer', ['driver' => $driver, ...$query], false);
     }
 
     public function client(): AgentClientSettings

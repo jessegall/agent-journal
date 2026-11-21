@@ -27,7 +27,7 @@ export type TerminalViewState =
 
 /**
  * Holds a viewer's lease on an agent's terminal and polls its frames: opens on mount, renews every 10 seconds,
- * polls every half second and closes on unmount or when the page is hidden. It only reads; nothing reaches the program.
+ * polls every half second and closes on unmount or when the page is hidden. It only reads; nothing reaches the driver.
  */
 export function useTerminalFrames(agentId: string) {
     const state = ref<TerminalViewState>('opening');

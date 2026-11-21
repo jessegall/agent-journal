@@ -162,14 +162,14 @@ use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\ActorGuidance;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\AgentStartCommand;
-use App\Agents\Contracts\CallingProgram;
+use App\Agents\Contracts\CallingDriver;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\DockerImageVerifier;
+use App\Agents\Contracts\DriverConversationResolver;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\NativeTurnRecords;
-use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\ReadGrant;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Contracts\SessionPolicyReader;
@@ -190,8 +190,10 @@ use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\DriverFailure;
 use App\Agents\Enums\DriverOperation;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverSourceType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
@@ -204,8 +206,6 @@ use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Enums\NavigationKey;
 use App\Agents\Enums\NavigationReason;
 use App\Agents\Enums\OfflineReplyMode;
-use App\Agents\Enums\ProgramFailure;
-use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\RecoveryAction;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
@@ -221,10 +221,10 @@ use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
+use App\Agents\Events\DriverFailed;
 use App\Agents\Events\DriverRequestRecovered;
 use App\Agents\Events\LaunchCancelled;
 use App\Agents\Events\LaunchEnded;
-use App\Agents\Events\ProgramFailed;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\StartAccepted;
 use App\Agents\Events\StartUnavailable;
@@ -243,6 +243,9 @@ use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Exceptions\ContainerUnavailable;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Exceptions\DefaultUnavailable;
+use App\Agents\Exceptions\DriverConflict;
+use App\Agents\Exceptions\DriverRequired;
+use App\Agents\Exceptions\DriverUnsupported;
 use App\Agents\Exceptions\ExecutionBudgetInvalid;
 use App\Agents\Exceptions\ExecutionPolicyInvalid;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
@@ -253,9 +256,6 @@ use App\Agents\Exceptions\ModelRequired;
 use App\Agents\Exceptions\ModelUnavailable;
 use App\Agents\Exceptions\NavigationAnswerRefused;
 use App\Agents\Exceptions\OfflineReplyModeInvalid;
-use App\Agents\Exceptions\ProgramConflict;
-use App\Agents\Exceptions\ProgramRequired;
-use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Exceptions\StartRecordMissing;
 use App\Agents\Exceptions\StartRefused;
@@ -265,6 +265,7 @@ use App\Agents\Support\AccountUseCounts;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\ContainerManifest;
+use App\Agents\Support\DriverConversationSummary;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\ExecutionReceipt;
 use App\Agents\Support\ExecutionReference;
@@ -282,7 +283,6 @@ use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\OwnerStartReceipt;
 use App\Agents\Support\OwnerStartRequest;
 use App\Agents\Support\PreparedStart;
-use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\RankedLaunchCandidate;
 use App\Agents\Support\ScreenReportAnswer;
 use App\Agents\Support\SecurityOptions;
@@ -318,7 +318,7 @@ use App\Agents\Values\ScriptGoal;
 use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
 use App\Agents\Values\SelectedAccount;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\SelectionSource;
 use App\Agents\Values\StackTarget;
 use App\Agents\Values\StartPolicy;
@@ -578,6 +578,11 @@ use App\Desks\Exceptions\SecondForwardingSeat;
 use App\Desks\Support\SeatChangeResult;
 use App\Domains\Contracts\IncomingWorkProvider;
 use App\Domains\Contracts\InternalAssignableContributor;
+use App\Drivers\Enums\HookDriver;
+use App\Drivers\Exceptions\DriverKeyInvalid;
+use App\Drivers\Exceptions\ProviderKeyInvalid;
+use App\Drivers\Values\DriverKey;
+use App\Drivers\Values\ProviderKey;
 use App\Engine\Commands\EndTerminalViews;
 use App\Engine\Commands\EnforceLaunchLimits;
 use App\Engine\Commands\ExpireNavigationRequests;
@@ -662,11 +667,11 @@ use App\Hooks\Exceptions\StateTypeRepeated;
 use App\Hooks\Exceptions\StateTypesFrozen;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEndDetails;
@@ -895,11 +900,6 @@ use App\Profiles\Values\SupervisorProfile;
 use App\Profiles\Values\SupervisorRoutes;
 use App\Profiles\Values\SupervisorTarget;
 use App\Profiles\Values\WithheldGrant;
-use App\Programs\Enums\HookProgram;
-use App\Programs\Exceptions\ProgramKeyInvalid;
-use App\Programs\Exceptions\ProviderKeyInvalid;
-use App\Programs\Values\ProgramKey;
-use App\Programs\Values\ProviderKey;
 use App\Queries\Support\TextSearch;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Contracts\ReadMeter;
@@ -1081,6 +1081,7 @@ use App\Skills\Commands\ReviseSkill;
 use App\Skills\Conditions\AllOf;
 use App\Skills\Conditions\AnyOf;
 use App\Skills\Conditions\Conditions;
+use App\Skills\Conditions\Drivers;
 use App\Skills\Conditions\Environments;
 use App\Skills\Conditions\Everyone;
 use App\Skills\Conditions\Grants;
@@ -1088,7 +1089,6 @@ use App\Skills\Conditions\Named;
 use App\Skills\Conditions\Not;
 use App\Skills\Conditions\ProfileBases;
 use App\Skills\Conditions\Profiles;
-use App\Skills\Conditions\Programs;
 use App\Skills\Conditions\Providers;
 use App\Skills\Contracts\MarkdownParts;
 use App\Skills\Contracts\Skill;
@@ -1231,7 +1231,7 @@ final class CoreApi
                 StartUnavailable::class,
                 LaunchCancelled::class,
                 LaunchEnded::class,
-                ProgramFailed::class,
+                DriverFailed::class,
                 AccountUseChanged::class,
                 AccountsChanged::class,
                 EngineTicked::class,
@@ -1258,7 +1258,7 @@ final class CoreApi
                 LaunchCandidates::class,
                 StartReservations::class,
                 StartReceipts::class,
-                CallingProgram::class,
+                CallingDriver::class,
                 ResponsibilityWriter::class,
                 ActiveAccountReader::class,
                 AgentStartCommand::class,
@@ -1291,7 +1291,7 @@ final class CoreApi
                 WorkspaceSource::class,
                 HostCapabilities::class,
                 StartRecordResolver::class,
-                ProgramConversationResolver::class,
+                DriverConversationResolver::class,
                 DockerImageVerifier::class,
                 RecordVisibility::class,
                 RuntimeResolver::class,
@@ -1522,7 +1522,7 @@ final class CoreApi
                 NextAction::class,
                 OverviewSection::class,
                 ListedPage::class,
-                HookProgram::class,
+                HookDriver::class,
                 PreparedStart::class,
                 ExecutionReceipt::class,
                 ExecutionReference::class,
@@ -1533,7 +1533,7 @@ final class CoreApi
                 ExecutionModeType::class,
                 AccountModeType::class,
                 HostCapabilityType::class,
-                SelectedProgram::class,
+                SelectedDriver::class,
                 SelectedAccount::class,
                 AccountUse::class,
                 AccountUseCounts::class,
@@ -1541,17 +1541,17 @@ final class CoreApi
                 SignInStarted::class,
                 AccountProcessRole::class,
                 StartUnavailableReason::class,
-                ProgramFailure::class,
+                DriverFailure::class,
                 ModelSelection::class,
                 SelectionSource::class,
                 ProfileDefaults::class,
                 ModelSelectionType::class,
-                ProgramSourceType::class,
+                DriverSourceType::class,
                 StartRefusalType::class,
                 StartRequest::class,
                 StartReceipt::class,
                 StartRecordDetails::class,
-                ProgramConversationSummary::class,
+                DriverConversationSummary::class,
                 ContainerManifest::class,
                 ManifestMount::class,
                 MountType::class,
@@ -1741,7 +1741,7 @@ final class CoreApi
                 StopDetails::class,
                 ToolFinished::class,
                 ToolResult::class,
-                ProgramToolInput::class,
+                DriverToolInput::class,
                 NavigationScreen::class,
                 NavigationRaiseAnswer::class,
                 LibraryEntryAnswer::class,
@@ -1912,7 +1912,7 @@ final class CoreApi
                 AutoAssignmentChange::class,
                 AutoAssignmentInput::class,
                 AutoAssignmentKey::class,
-                DriverType::class,
+                DriverVariant::class,
                 DriverReceipt::class,
                 ClaimedRequests::class,
                 ClaimedRequest::class,
@@ -1968,13 +1968,13 @@ final class CoreApi
                 ProfileActivation::class,
                 ActivatedProfile::class,
                 SkillKey::class,
-                ProgramKey::class,
+                DriverKey::class,
                 SkillOwner::class,
                 SkillOrigin::class,
                 Grants::class,
                 Profiles::class,
                 ProfileBases::class,
-                Programs::class,
+                Drivers::class,
                 Providers::class,
                 Environments::class,
                 Named::class,
@@ -2325,9 +2325,9 @@ final class CoreApi
                 ModelRequired::class,
                 ModelUnavailable::class,
                 DefaultUnavailable::class,
-                ProgramRequired::class,
-                ProgramConflict::class,
-                ProgramUnsupported::class,
+                DriverRequired::class,
+                DriverConflict::class,
+                DriverUnsupported::class,
                 StartRequestConflict::class,
                 AgentBusy::class,
                 AgentReservedForReview::class,
@@ -2359,7 +2359,7 @@ final class CoreApi
                 ProfileCannotCoordinate::class,
                 SkillDeclarationInvalid::class,
                 SkillKeyInvalid::class,
-                ProgramKeyInvalid::class,
+                DriverKeyInvalid::class,
                 ProviderKeyInvalid::class,
                 SkillConditionInvalid::class,
                 SkillRevisionConflict::class,

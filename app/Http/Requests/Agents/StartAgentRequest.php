@@ -8,7 +8,7 @@ use App\Agents\Commands\StartAgent;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Values\ModelSelection;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,7 +26,7 @@ final class StartAgentRequest extends FormRequest
     {
         return [
             'requestId' => ['required', 'ulid'],
-            'program' => ['nullable', 'string', 'max:32'],
+            'driver' => ['nullable', 'string', 'max:32'],
             'model' => ['nullable', 'string', 'max:100'],
             'actor' => ['prohibited'],
             'session' => ['prohibited'],
@@ -35,8 +35,8 @@ final class StartAgentRequest extends FormRequest
 
     public function command(): StartAgent
     {
-        $selection = SelectedProgram::resolve(
-            $this->filled('program') ? $this->string('program')->toString() : null,
+        $selection = SelectedDriver::resolve(
+            $this->filled('driver') ? $this->string('driver')->toString() : null,
             ModelSelection::fromInput($this->filled('model') ? $this->string('model')->toString() : null),
             null,
             null,

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\CoreApi;
-use App\Programs\Values\ProgramKey;
-use App\Programs\Values\ProviderKey;
+use App\Drivers\Values\DriverKey;
+use App\Drivers\Values\ProviderKey;
 use App\Skills\Conditions\Conditions;
-use App\Skills\Contracts\ProgramSkills;
+use App\Skills\Contracts\DriverSkills;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Contracts\SkillConditionProvider;
@@ -64,7 +64,7 @@ final class SkillContractsTest extends TestCase
             CanonicalRenderer::class,
             StoredSkillSource::class,
             SkillPublisher::class,
-            ProgramSkills::class,
+            DriverSkills::class,
         ] as $port) {
             $this->assertFalse($exports->has($port), "{$port} is exported.");
         }
@@ -91,7 +91,7 @@ final class SkillContractsTest extends TestCase
             TestIds::of(4),
             'main',
             StartProfile::profileFree(),
-            ProgramKey::from('codex'),
+            DriverKey::from('codex'),
             ProviderKey::from('openai'),
         );
 

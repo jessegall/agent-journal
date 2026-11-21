@@ -23,7 +23,7 @@ interface NavigationReader
      */
     public function menuEntries(
         ActorIdentity $owner,
-        string|null $program,
+        string|null $driver,
         MenuEntryState|null $state,
         int $page,
     ): array;
@@ -31,7 +31,7 @@ interface NavigationReader
     /**
      * How many of the owner's menu entries match the filters, over every page.
      */
-    public function menuEntryCount(ActorIdentity $owner, string|null $program, MenuEntryState|null $state): int;
+    public function menuEntryCount(ActorIdentity $owner, string|null $driver, MenuEntryState|null $state): int;
 
     /**
      * One menu entry of the owner, whole.

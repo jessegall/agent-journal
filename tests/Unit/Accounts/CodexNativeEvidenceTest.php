@@ -39,7 +39,7 @@ final class CodexNativeEvidenceTest extends TestCase
         $results = array_column($evidence['items'], 'result', 'item');
 
         $this->assertSame(['codex', '0.165.0', 'shared-owner'], [
-            $evidence['program'],
+            $evidence['driver'],
             $evidence['version'],
             $evidence['arrangement'],
         ]);

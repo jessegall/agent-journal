@@ -10,6 +10,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\SwitchAccount;
 use App\Profiles\Events\AccountsChanged;
@@ -19,7 +20,6 @@ use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -114,7 +114,7 @@ final class AccountSwitchingTest extends TestCase
 
     private function account(string $label): Account
     {
-        return Account::create(HookProgram::ClaudeCode, AccountLabel::from($label), '/journal/accounts/'.$label);
+        return Account::create(HookDriver::ClaudeCode, AccountLabel::from($label), '/journal/accounts/'.$label);
     }
 
     private function actAsOwner(): void

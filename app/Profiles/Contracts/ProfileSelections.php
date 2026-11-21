@@ -21,7 +21,7 @@ interface ProfileSelections
     public function select(
         ProfileKey $profile,
         ModelSelection $requested,
-        string|null $programKey,
-        string|null $parentProgram,
+        string|null $driverKey,
+        string|null $parentDriver,
     ): ProfileSelection;
 }

@@ -8,12 +8,12 @@ use App\Actors\Contracts\CurrentAuthorizer;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use App\Mcp\Support\McpInstructions;
 use App\Operations\Enums\AccessType;
@@ -88,7 +88,7 @@ final class McpInstructionsTest extends TestCase
             TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', 'call-1')),
             new SessionStartDetails('native-1', ContextStartType::Start, null),
         );
-        $capabilities = new ProgramCapabilities(
+        $capabilities = new DriverCapabilities(
             'Test program',
             'session starts',
             ['onSessionStart'],
@@ -100,10 +100,10 @@ final class McpInstructionsTest extends TestCase
             $start,
             $capabilities,
             new OperationDeadline(3000),
-            function (HookAnswer $answer) use (&$context): ProgramReply {
+            function (HookAnswer $answer) use (&$context): DriverReply {
                 $context = $answer->context;
 
-                return new ProgramReply('', '', 0);
+                return new DriverReply('', '', 0);
             },
         );
 

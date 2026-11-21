@@ -40,11 +40,11 @@ final readonly class StartRecords implements StartRecordResolver
         return new StartRecordDetails(
             $record->request_id,
             $record->agent_id,
-            $record->program,
+            $record->driver,
             $record->model,
             $record->requested_model_type,
             $record->requested_model,
-            $record->program_source,
+            $record->driver_source,
             $record->origin_type,
             $record->owner_reference,
             $record->conversation_mode,

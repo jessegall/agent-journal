@@ -73,7 +73,7 @@ final readonly class SessionContainers
 
         return new SelectedAccount(
             $start->accountIdentity(),
-            $runtime->program,
+            $runtime->driver,
             $start->directory,
             $start->account_generation,
         );

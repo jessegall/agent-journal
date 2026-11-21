@@ -6,13 +6,13 @@ namespace Tests\Feature\Hooks;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Models\HookCall;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
@@ -120,7 +120,7 @@ final class HookCompactionTest extends TestCase
             TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)),
             new CompactionDetails($callId),
         );
-        $capabilities = new ProgramCapabilities(
+        $capabilities = new DriverCapabilities(
             'Test program',
             'compaction context',
             ['onCompaction'],
@@ -131,7 +131,7 @@ final class HookCompactionTest extends TestCase
             $compaction,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0),
+            fn (HookAnswer $answer) => new DriverReply((string) json_encode($answer->context), '', 0),
         );
 
         return $reply->stdout;

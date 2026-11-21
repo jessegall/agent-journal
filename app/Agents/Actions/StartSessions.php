@@ -13,7 +13,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Support\IsolatedHookSettings;
 use App\Agents\Support\StartedAgent;
 use App\Agents\Values\RuntimeIntent;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\StartTransaction;
 use App\Records\Support\RecordIdentity;
@@ -40,7 +40,7 @@ final readonly class StartSessions
      */
     public function start(
         Agent $agent,
-        SelectedProgram $selection,
+        SelectedDriver $selection,
         string $requestId,
         AgentSession|null $parent = null,
         RuntimeIntent|null $intent = null,
@@ -60,7 +60,7 @@ final readonly class StartSessions
      */
     public function startInTransaction(
         Agent $agent,
-        SelectedProgram $selection,
+        SelectedDriver $selection,
         string $requestId,
         AgentSession|null $parent = null,
         RecordIdentity|null $authorizedSource = null,
@@ -79,14 +79,14 @@ final readonly class StartSessions
     /**
      * @throws StartRefused
      */
-    private function settingsFor(SelectedProgram $selection): IsolatedHookSettings
+    private function settingsFor(SelectedDriver $selection): IsolatedHookSettings
     {
-        $program = $selection->program->value;
+        $driver = $selection->driver->value;
         $settings = new IsolatedHookSettings();
-        $this->events->dispatch(new StartSettingsRequested($program, $settings));
+        $this->events->dispatch(new StartSettingsRequested($driver, $settings));
 
         if (! $settings->hasHooks()) {
-            throw StartRefused::withoutHooks($program);
+            throw StartRefused::withoutHooks($driver);
         }
 
         return $settings;
@@ -97,7 +97,7 @@ final readonly class StartSessions
      */
     private function open(
         Agent $agent,
-        SelectedProgram $selection,
+        SelectedDriver $selection,
         string $requestId,
         AgentSession|null $parent,
         IsolatedHookSettings $settings,
@@ -115,7 +115,7 @@ final readonly class StartSessions
             $session,
             $token,
             $settings->content(),
-            $selection->program->modelArguments($selection->model),
+            $selection->driver->modelArguments($selection->model),
             $runtime,
             $firstRequest,
         );

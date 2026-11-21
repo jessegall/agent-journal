@@ -14,7 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('actor_type', 16);
             $table->string('actor_id');
-            $table->string('program', 80);
+            $table->string('driver', 80);
             $table->string('entry_fingerprint', 80);
             $table->string('goal_script');
             $table->unsignedInteger('goal_version');
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->ulid('superseded_by_id')->nullable();
             $table->timestampsTz();
 
-            $table->index(['actor_type', 'actor_id', 'program', 'entry_fingerprint', 'goal_key', 'state']);
+            $table->index(['actor_type', 'actor_id', 'driver', 'entry_fingerprint', 'goal_key', 'state']);
         });
     }
 

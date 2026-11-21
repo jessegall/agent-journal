@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StackTarget;
 
 /**
@@ -18,7 +18,7 @@ final readonly class SessionOption
         public string $sessionId,
         public string $agentName,
         public StackTarget $target,
-        public SelectedProgram $selection,
+        public SelectedDriver $selection,
         public string $actualModel,
         public string|null $conversationNativeId,
         public int $visitCount,

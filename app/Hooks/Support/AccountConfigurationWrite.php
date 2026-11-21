@@ -6,8 +6,8 @@ namespace App\Hooks\Support;
 
 use App\Files\Attributes\OutsideThePlaces;
 use App\Files\Enums\PlaceExemption;
+use App\Hooks\Drivers\CodexFolderTrust;
 use App\Hooks\Exceptions\AccountConfigurationUnwritten;
-use App\Hooks\Programs\CodexFolderTrust;
 
 /**
  * Adds a folder's trust to a Codex account's config.toml on the host, one writer at a time under a short lock on the

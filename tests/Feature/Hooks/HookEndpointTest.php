@@ -7,8 +7,8 @@ namespace Tests\Feature\Hooks;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Enums\ProgramFailure;
-use App\Agents\Events\ProgramFailed;
+use App\Agents\Enums\DriverFailure;
+use App\Agents\Events\DriverFailed;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
 use App\Agents\Values\StackTarget;
@@ -47,7 +47,7 @@ final class HookEndpointTest extends TestCase
         'failure_receipts',
         'tasks',
         'links',
-        'program_conversations',
+        'driver_conversations',
         'conversation_visits',
         'process_events',
         'part_runs',
@@ -142,7 +142,7 @@ final class HookEndpointTest extends TestCase
 
     public function test_a_failure_notification_is_heard_once_and_answers_without_walking_the_stack(): void
     {
-        Event::fake([ProgramFailed::class]);
+        Event::fake([DriverFailed::class]);
         $body = $this->failureBody('authentication_failed');
 
         $first = $this->hook('claude-code', $body, 'call-9')->assertOk()->getContent();
@@ -151,24 +151,24 @@ final class HookEndpointTest extends TestCase
         $this->assertSame($first, $retry);
         $this->assertSame(['stdout' => '{}', 'stderr' => '', 'exitCode' => 0], json_decode((string) $first, true));
         $this->assertSame(0, HookCall::query()->authorizedFor($this->target())->count());
-        Event::assertDispatchedTimes(ProgramFailed::class, 1);
-        Event::assertDispatched(ProgramFailed::class, fn (ProgramFailed $failed) => $failed->program === 'claude-code'
+        Event::assertDispatchedTimes(DriverFailed::class, 1);
+        Event::assertDispatched(DriverFailed::class, fn (DriverFailed $failed) => $failed->driver === 'claude-code'
             && $failed->sessionId === $this->start->session->id
-            && $failed->failure === ProgramFailure::AuthenticationFailed);
+            && $failed->failure === DriverFailure::AuthenticationFailed);
     }
 
     public function test_an_unchecked_failure_code_is_unknown_and_its_details_are_never_kept(): void
     {
-        Event::fake([ProgramFailed::class]);
+        Event::fake([DriverFailed::class]);
 
         $this->hook('claude-code', $this->failureBody('token_revoked_maybe'), 'call-10')->assertOk();
 
         Event::assertDispatched(
-            ProgramFailed::class,
-            fn (ProgramFailed $failed) => $failed->failure === ProgramFailure::Unknown,
+            DriverFailed::class,
+            fn (DriverFailed $failed) => $failed->failure === DriverFailure::Unknown,
         );
         $kept = FailureReceipt::query()->withoutGlobalScopes()->sole();
-        $this->assertSame(ProgramFailure::Unknown, $kept->failure);
+        $this->assertSame(DriverFailure::Unknown, $kept->failure);
         $this->assertStringNotContainsString('secret detail', (string) json_encode($kept->getAttributes()));
     }
 
@@ -212,13 +212,13 @@ final class HookEndpointTest extends TestCase
     /**
      * @return TestResponse<Response>
      */
-    private function hook(string $program, string $body, string $callId = 'call-1'): TestResponse
+    private function hook(string $driver, string $body, string $callId = 'call-1'): TestResponse
     {
         $this->app->forgetScopedInstances();
 
-        $headers = $this->start->serverHeaders($body, $callId, target: "/hooks/{$program}");
+        $headers = $this->start->serverHeaders($body, $callId, target: "/hooks/{$driver}");
 
-        return $this->call('POST', "/hooks/{$program}", server: $headers, content: $body);
+        return $this->call('POST', "/hooks/{$driver}", server: $headers, content: $body);
     }
 
     /**
@@ -226,9 +226,9 @@ final class HookEndpointTest extends TestCase
      *
      * @return array<string, mixed>
      */
-    private function hookOutput(string $program, string $body, string $callId = 'call-1'): array
+    private function hookOutput(string $driver, string $body, string $callId = 'call-1'): array
     {
-        return (array) json_decode((string) $this->hook($program, $body, $callId)->assertOk()->json('stdout'), true);
+        return (array) json_decode((string) $this->hook($driver, $body, $callId)->assertOk()->json('stdout'), true);
     }
 
     private function asStartedAgent(\Closure $work): void

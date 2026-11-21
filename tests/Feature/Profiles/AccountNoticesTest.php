@@ -9,14 +9,15 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Enums\ConversationModeType;
-use App\Agents\Enums\ProgramFailure;
+use App\Agents\Enums\DriverFailure;
 use App\Agents\Enums\StartOriginType;
-use App\Agents\Events\ProgramFailed;
+use App\Agents\Events\DriverFailed;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Models\Agent;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Enums\HookDriver;
 use App\Http\Data\Profiles\AccountNoticesData;
 use App\Profiles\Commands\DismissAccountNotice;
 use App\Profiles\Commands\SwitchAccount;
@@ -25,7 +26,6 @@ use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountNotice;
 use App\Profiles\Resolvers\AccountNoticesSection;
 use App\Profiles\Values\AccountLabel;
-use App\Programs\Enums\HookProgram;
 use App\Ui\Declarations\SlotContext;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
@@ -77,24 +77,24 @@ final class AccountNoticesTest extends TestCase
 
     public function test_only_failures_the_owner_can_act_on_leave_a_notice(): void
     {
-        event(new ProgramFailed('agent', 'session', 'codex', ProgramFailure::ServerError));
-        event(new ProgramFailed('agent', 'session', 'codex', ProgramFailure::AuthenticationFailed));
+        event(new DriverFailed('agent', 'session', 'codex', DriverFailure::ServerError));
+        event(new DriverFailed('agent', 'session', 'codex', DriverFailure::AuthenticationFailed));
 
         $this->assertSame(AccountNoticeReason::SignInRejected, AccountNotice::query()->sole()->reason);
     }
 
     public function test_dismissing_or_choosing_a_working_account_resolves_notices_and_an_agent_sees_none(): void
     {
-        event(new ProgramFailed('agent', 'session', 'codex', ProgramFailure::RateLimit));
-        event(new ProgramFailed('agent', 'session', 'claude-code', ProgramFailure::AuthenticationFailed));
-        $codexNotice = AccountNotice::query()->where('program', 'codex')->sole();
+        event(new DriverFailed('agent', 'session', 'codex', DriverFailure::RateLimit));
+        event(new DriverFailed('agent', 'session', 'claude-code', DriverFailure::AuthenticationFailed));
+        $codexNotice = AccountNotice::query()->where('driver', 'codex')->sole();
 
         $this->app->make(CommandBus::class)->run(new DismissAccountNotice($codexNotice->id));
-        $account = Account::create(HookProgram::ClaudeCode, AccountLabel::from('Work'), '/journal/accounts/work');
+        $account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Work'), '/journal/accounts/work');
         $this->app->make(CommandBus::class)->run(new SwitchAccount($account->id));
 
         $this->assertSame([], $this->section()->notices);
-        event(new ProgramFailed('agent', 'session', 'codex', ProgramFailure::RateLimit));
+        event(new DriverFailed('agent', 'session', 'codex', DriverFailure::RateLimit));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(9)),
             TestStartAuthority::forAgent(TestIds::of(9)),

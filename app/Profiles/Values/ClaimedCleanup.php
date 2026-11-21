@@ -16,7 +16,7 @@ final readonly class ClaimedCleanup
     public function __construct(
         public CleanupTarget $target,
         public string $id,
-        public string $program,
+        public string $driver,
         public SignInMethod $method,
         public string $directory,
         public int $generation,

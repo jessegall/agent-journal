@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks\Programs;
 
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Drivers\DriverCapabilities;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\UnsupportedHook;
-use App\Hooks\Inputs\ProgramToolInput;
-use App\Hooks\Programs\ProgramCapabilities;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\States\AgentState;
@@ -53,7 +53,7 @@ final class ProgramCapabilitiesTest extends TestCase
             [],
             new AgentStack([], new InMemoryStateFactory()),
         );
-        $original = new ProgramToolInput(['command' => 'composer test']);
+        $original = new DriverToolInput(['command' => 'composer test']);
 
         $taken = $this->capabilities(RewriteSupport::WithoutApproval)->rewrites->reply($answer, $original);
         $refused = $this->capabilities(RewriteSupport::NeedsApproval)->rewrites->reply($answer, $original);
@@ -87,9 +87,9 @@ final class ProgramCapabilitiesTest extends TestCase
         $this->assertStringContainsString('No production program runs under it yet:', $evidence);
     }
 
-    private function capabilities(RewriteSupport $rewrites): ProgramCapabilities
+    private function capabilities(RewriteSupport $rewrites): DriverCapabilities
     {
-        return new ProgramCapabilities(
+        return new DriverCapabilities(
             'Test program',
             'pre-tool and stop replies, checked against documentation on 2026-11-17',
             ['onShellCommand', 'onStop'],

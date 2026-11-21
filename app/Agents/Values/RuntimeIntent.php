@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 
 /**
  * What a new runtime is opened with: the host and folder it runs in, the program build and profile, the driver,
@@ -15,10 +15,10 @@ final readonly class RuntimeIntent
     public function __construct(
         public string $hostId,
         public string $folder,
-        public string $program,
-        public string $programBuild,
+        public string $driver,
+        public string $driverBuild,
         public string $profile,
-        public DriverType $driverType,
+        public DriverVariant $variant,
         public string|null $model,
         public string|null $effort,
         public string|null $firstMessage,

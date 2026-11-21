@@ -15,7 +15,7 @@ use App\Records\Support\RecordIdentity;
 final readonly class AccountSettingsRequested implements Event
 {
     public function __construct(
-        public string $program,
+        public string $driver,
         public RecordIdentity $account,
         public string $directory,
         public AccountStartSettings $settings,

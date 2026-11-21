@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Agents\Enums\ExecutionModeType;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Data\PolicyOverrideData;
 use App\Profiles\Data\ProfileConfigurationData;
 use App\Profiles\Data\ProposedProfileData;
@@ -15,7 +16,6 @@ use App\Profiles\Exceptions\SupervisorRouteInvalid;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\SupervisorRoutes;
-use App\Programs\Enums\HookProgram;
 use Spatie\LaravelData\Exceptions\CannotCastEnum;
 use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
@@ -110,8 +110,8 @@ final readonly class ProfileProposal
             ProfileBase::of($fields->base),
             $fields->instructions,
             $fields->model,
-            $fields->program === null ? null : HookProgram::from($fields->program),
-            $fields->programPinned,
+            $fields->driver === null ? null : HookDriver::from($fields->driver),
+            $fields->driverPinned,
             $fields->allowedModels,
             $fields->skillAllowlist,
             $fields->requiredSkills,

@@ -36,12 +36,12 @@ final class MainStartTest extends TestCase
 
         $response = $this->actingAs($this->owner)->postJson(route('agents.start', $agent->id), [
             'requestId' => (string) Str::ulid(),
-            'program' => 'codex',
+            'driver' => 'codex',
             'model' => 'gpt-6-luna',
         ]);
 
         $response->assertOk();
-        $response->assertJsonPath('program', 'codex');
+        $response->assertJsonPath('driver', 'codex');
         $response->assertJsonPath('requestedModel', 'gpt-6-luna');
         $this->assertSame(1, AgentSession::query()->where('agent_id', $agent->id)->count());
     }
@@ -49,7 +49,7 @@ final class MainStartTest extends TestCase
     public function test_a_missing_program_or_model_or_the_default_model_is_refused_without_a_session(): void
     {
         $agent = Agent::create('Started by hand', 'read-only-helper');
-        $inputs = [['model' => 'gpt-6-luna'], ['program' => 'codex'], ['program' => 'codex', 'model' => 'default']];
+        $inputs = [['model' => 'gpt-6-luna'], ['driver' => 'codex'], ['driver' => 'codex', 'model' => 'default']];
 
         foreach ($inputs as $input) {
             $response = $this->actingAs($this->owner)->postJson(

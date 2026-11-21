@@ -11,11 +11,11 @@ use App\Profiles\Contracts\ShownOnAccounts;
  */
 final readonly class SignInAttemptStarted implements ShownOnAccounts
 {
-    public function __construct(public string $program, public string $attemptId, public string|null $accountId) {}
+    public function __construct(public string $driver, public string $attemptId, public string|null $accountId) {}
 
-    public function program(): string
+    public function driver(): string
     {
-        return $this->program;
+        return $this->driver;
     }
 
     /**

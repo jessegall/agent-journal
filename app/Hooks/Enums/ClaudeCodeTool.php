@@ -8,7 +8,7 @@ use App\Agents\Enums\ResourceType;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
 use App\Hooks\Exceptions\UnsupportedHook;
-use App\Hooks\Inputs\ProgramToolInput;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Operations\Enums\AccessType;
 
 /**
@@ -110,7 +110,7 @@ enum ClaudeCodeTool: string
      * The operation a read, search or web call declares: what it needs where. A shell command and a file edit are
      * judged by their own inputs; the journal's discovery tools and the program's own task list reach no resource.
      */
-    public function operation(ProgramToolInput $input): Operation
+    public function operation(DriverToolInput $input): Operation
     {
         [$access, $type, $target] = match ($this) {
             self::Read => [[AccessType::Read], ResourceType::Path, $input->firstText('file_path')],

@@ -11,11 +11,11 @@ use App\Profiles\Contracts\ShownOnAccounts;
  */
 final readonly class AccountSignedIn implements ShownOnAccounts
 {
-    public function __construct(public string $program, public string $accountId) {}
+    public function __construct(public string $driver, public string $accountId) {}
 
-    public function program(): string
+    public function driver(): string
     {
-        return $this->program;
+        return $this->driver;
     }
 
     public function subjectId(): string

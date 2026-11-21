@@ -6,14 +6,14 @@ namespace Domain\Sequences\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Commands\StartSequence;
@@ -109,7 +109,7 @@ final class SequenceStateContributionTest extends TestCase
     private function answerCompaction(string $callId): string
     {
         $this->callAs($callId);
-        $capabilities = new ProgramCapabilities(
+        $capabilities = new DriverCapabilities(
             'Test program',
             'compaction context',
             ['onCompaction'],
@@ -124,7 +124,7 @@ final class SequenceStateContributionTest extends TestCase
             $compaction,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => new ProgramReply(json_encode($answer->context) ?: '[]', '', 0),
+            fn (HookAnswer $answer) => new DriverReply(json_encode($answer->context) ?: '[]', '', 0),
         );
 
         return $reply->stdout;

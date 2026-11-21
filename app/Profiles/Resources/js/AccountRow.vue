@@ -4,19 +4,19 @@ import { retryCleanup } from '@generated/routes/accounts';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import IconAction from '@kit/IconAction';
-import ProgramIcon from '@kit/ProgramIcon';
+import DriverIcon from '@kit/DriverIcon';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { computed, ref } from 'vue';
 import AccountSettingsDialog from './AccountSettingsDialog.vue';
 import {
     accountStateLook,
     cleanupProblemText,
-    programIcon,
-    programName,
+    driverIcon,
+    driverName,
 } from './accountLooks';
 
 /**
- * One saved account in the list: its program's icon, its name, one grey line with its program, what it bills and
+ * One saved account in the list: its driver's icon, its name, one grey line with its driver, what it bills and
  * whether it is the default, and on the right its state with its expiry and one settings button that opens everything
  * else. An account that must sign in again shows its way back right-aligned under its state.
  */
@@ -31,7 +31,7 @@ const isLeaving = computed(
         props.account.state === 'removing' || props.account.state === 'removed',
 );
 const subtext = computed(() => {
-    const line = `${programName(props.account.program)} ${props.account.signIn.billingLabel.toLowerCase()}`;
+    const line = `${driverName(props.account.driver)} ${props.account.signIn.billingLabel.toLowerCase()}`;
 
     return props.isChosen && !isLeaving.value ? `${line} · Default` : line;
 });
@@ -50,8 +50,8 @@ function retryAccountCleanup(): void {
     <li
         class="flex items-start gap-3 border-b border-line px-4 py-3 last:border-b-0 hover:bg-hover"
     >
-        <ProgramIcon
-            :program="programIcon(account.program)"
+        <DriverIcon
+            :driver="driverIcon(account.driver)"
             :size="16"
             class="mt-1"
         />

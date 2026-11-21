@@ -14,10 +14,10 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -56,11 +56,11 @@ final class ContinueStartTest extends TestCase
     {
         $first = $this->startFirst();
         $session = AgentSession::query()->findOrFail($first);
-        $oldAccount = Account::query()->withoutGlobalScopes()->where('program', 'claude-code')->sole();
+        $oldAccount = Account::query()->withoutGlobalScopes()->where('driver', 'claude-code')->sole();
         $session->endAt(CarbonImmutable::now());
         $label = AccountLabel::from('Second');
-        $newAccount = Account::create(HookProgram::ClaudeCode, $label, '/journal/accounts/second');
-        ActiveAccount::lockedFor(HookProgram::ClaudeCode)->select($newAccount);
+        $newAccount = Account::create(HookDriver::ClaudeCode, $label, '/journal/accounts/second');
+        ActiveAccount::lockedFor(HookDriver::ClaudeCode)->select($newAccount);
 
         $successor = $this->bus()->run(new ContinueStart($first, $this->agent->id));
         $again = $this->bus()->run(new ContinueStart($first, $this->agent->id));

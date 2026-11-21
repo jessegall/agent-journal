@@ -13,7 +13,7 @@ use App\Contracts\Event;
 final readonly class StartSettingsRequested implements Event
 {
     public function __construct(
-        public string $program,
+        public string $driver,
         public IsolatedHookSettings $settings,
     ) {}
 }

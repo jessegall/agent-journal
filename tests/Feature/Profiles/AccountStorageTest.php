@@ -10,6 +10,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Exceptions\AccountLabelInvalid;
@@ -17,7 +18,6 @@ use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Values\AccountLabel;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
@@ -44,7 +44,7 @@ final class AccountStorageTest extends TestCase
     public function test_the_owner_reads_accounts_and_an_agent_reads_none(): void
     {
         $account = $this->account('Work');
-        ActiveAccount::lockedFor(HookProgram::ClaudeCode)->select($account);
+        ActiveAccount::lockedFor(HookDriver::ClaudeCode)->select($account);
         $this->actAsAgent();
 
         $this->assertSame(0, Account::query()->count());
@@ -60,13 +60,13 @@ final class AccountStorageTest extends TestCase
         $work = $this->account('Work');
         $home = $this->account('Home');
 
-        $selection = ActiveAccount::lockedFor(HookProgram::ClaudeCode);
+        $selection = ActiveAccount::lockedFor(HookDriver::ClaudeCode);
         $selection->select($work);
         $selection->select($work);
         $selection->select($home);
-        ActiveAccount::lockedFor(HookProgram::ClaudeCode)->clear();
+        ActiveAccount::lockedFor(HookDriver::ClaudeCode)->clear();
 
-        $row = ActiveAccount::lockedFor(HookProgram::ClaudeCode);
+        $row = ActiveAccount::lockedFor(HookDriver::ClaudeCode);
         $this->assertSame(1, ActiveAccount::query()->count());
         $this->assertNull($row->account_id);
         $this->assertTrue($row->has_selected);
@@ -104,7 +104,7 @@ final class AccountStorageTest extends TestCase
         $this->assertSame($second->id, $account->writerFor($second));
         $this->assertTrue($account->isGeneration(3));
         $this->assertFalse($account->isGeneration(2));
-        $this->assertSame($first->id, SignInAttempt::liveFor(HookProgram::ClaudeCode, $account)?->id);
+        $this->assertSame($first->id, SignInAttempt::liveFor(HookDriver::ClaudeCode, $account)?->id);
     }
 
     public function test_a_held_or_unsigned_account_refuses_starts_with_a_safe_reason(): void
@@ -161,7 +161,7 @@ final class AccountStorageTest extends TestCase
         $account = $this->account('Work');
         $attempt = SignInAttempt::create(
             ActorIdentity::system(),
-            HookProgram::Codex,
+            HookDriver::Codex,
             SignInMethod::OAuth,
             '/journal/accounts/new-home',
             'request-1',
@@ -178,7 +178,7 @@ final class AccountStorageTest extends TestCase
     {
         $directory = '/journal/accounts/'.Str::lower($label);
 
-        return Account::create(HookProgram::ClaudeCode, AccountLabel::from($label), $directory);
+        return Account::create(HookDriver::ClaudeCode, AccountLabel::from($label), $directory);
     }
 
     private function actAsOwner(): void

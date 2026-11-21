@@ -7,15 +7,15 @@ namespace Tests\Feature\Agents;
 use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Contracts\SessionResolver;
+use App\Agents\Enums\DriverSourceType;
 use App\Agents\Enums\ModelSelectionType;
-use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\ProfileDefaults;
-use App\Agents\Values\SelectedProgram;
-use App\Programs\Enums\HookProgram;
+use App\Agents\Values\SelectedDriver;
+use App\Drivers\Enums\HookDriver;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
@@ -38,10 +38,10 @@ final class SessionSelectionReadTest extends TestCase
         parent::setUp();
 
         $agent = Agent::create('Researcher', 'read-only-helper');
-        $selection = SelectedProgram::resolve(
+        $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            new ProfileDefaults('journal-researcher', 4, HookProgram::ClaudeCode, false, 'claude-sonnet-5-5', []),
+            new ProfileDefaults('journal-researcher', 4, HookDriver::ClaudeCode, false, 'claude-sonnet-5-5', []),
             null,
         );
         $this->session = $this->app->make(StartSessions::class)->start(
@@ -57,18 +57,18 @@ final class SessionSelectionReadTest extends TestCase
         $option = $this->app->make(SessionResolver::class)->active()[0];
 
         $this->assertSame(
-            [HookProgram::ClaudeCode, 'claude-sonnet-5-5', ModelSelectionType::ProfileDefault, null],
+            [HookDriver::ClaudeCode, 'claude-sonnet-5-5', ModelSelectionType::ProfileDefault, null],
             [
-                $option->selection->program,
+                $option->selection->driver,
                 $option->selection->model,
                 $option->selection->requested->type,
                 $option->selection->requested->model,
             ],
         );
         $this->assertSame(
-            [ProgramSourceType::Profile, 'journal-researcher', 4],
+            [DriverSourceType::Profile, 'journal-researcher', 4],
             [
-                $option->selection->source->programSource,
+                $option->selection->source->driverSource,
                 $option->selection->source->profileKey,
                 $option->selection->source->profileRevision,
             ],

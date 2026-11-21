@@ -43,7 +43,7 @@ final class HostStartExecutorTest extends TestCase
         $this->assertSame('execution-9', $receipt->execution->id);
         $this->assertSame('2026-11-20T01:00:00+00:00', $receipt->startedAt->toIso8601String());
         $sent = json_decode((string) file_get_contents($this->requestFile), true);
-        $this->assertSame('claude', $sent['start']['program']);
+        $this->assertSame('claude', $sent['start']['driver']);
         $this->assertSame('runtime-1', $sent['start']['runtimeId']);
         $this->assertSame('protected_host', $sent['start']['executionMode']);
     }

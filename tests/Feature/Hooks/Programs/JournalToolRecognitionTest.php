@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Programs;
 
+use App\Hooks\Contracts\DriverAdapter;
 use App\Hooks\Contracts\JournalToolNames;
-use App\Hooks\Contracts\ProgramAdapter;
+use App\Hooks\Drivers\ClaudeCodeAdapter;
+use App\Hooks\Drivers\CodexAdapter;
+use App\Hooks\Drivers\HookPayload;
+use App\Hooks\Drivers\JournalToolCall;
+use App\Hooks\Drivers\JudgedCall;
 use App\Hooks\Exceptions\UnsupportedHook;
-use App\Hooks\Programs\ClaudeCodeAdapter;
-use App\Hooks\Programs\CodexAdapter;
-use App\Hooks\Programs\HookPayload;
-use App\Hooks\Programs\JournalToolCall;
-use App\Hooks\Programs\JudgedCall;
 use App\Mcp\Support\McpCatalogue;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ChecksProgramFixtures;
@@ -34,9 +34,9 @@ final class JournalToolRecognitionTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{class-string<ProgramAdapter>, string, string, string}>
+     * @return iterable<string, array{class-string<DriverAdapter>, string, string, string}>
      */
-    public static function programs(): iterable
+    public static function drivers(): iterable
     {
         yield 'Claude Code' => [ClaudeCodeAdapter::class, 'ToolSearch', 'ReadMcpResourceTool', 'ListMcpResourcesTool'];
 
@@ -44,7 +44,7 @@ final class JournalToolRecognitionTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{class-string<ProgramAdapter>, string}>
+     * @return iterable<string, array{class-string<DriverAdapter>, string}>
      */
     public static function resourceReaders(): iterable
     {
@@ -62,20 +62,20 @@ final class JournalToolRecognitionTest extends TestCase
     }
 
     /**
-     * @param  class-string<ProgramAdapter>  $adapter
+     * @param  class-string<DriverAdapter>  $adapter
      */
-    #[DataProvider('programs')]
+    #[DataProvider('drivers')]
     public function test_a_journal_tool_call_passes_without_a_stack_walk(
         string $adapter,
         string $toolSearch,
         string $readResource,
         string $listResources,
     ): void {
-        $program = $this->app->make($adapter);
+        $driver = $this->app->make($adapter);
 
         foreach (['mcp__journal__tasks_assigned', $toolSearch, $listResources] as $toolName) {
-            $starting = $program->callFor(self::toolPayload('PreToolUse', $toolName, []), $this->hook());
-            $finished = $program->callFor(self::toolPayload('PostToolUse', $toolName, []), $this->hook());
+            $starting = $driver->callFor(self::toolPayload('PreToolUse', $toolName, []), $this->hook());
+            $finished = $driver->callFor(self::toolPayload('PostToolUse', $toolName, []), $this->hook());
 
             $this->assertInstanceOf(JournalToolCall::class, $starting);
             $this->assertInstanceOf(JournalToolCall::class, $finished);
@@ -93,17 +93,17 @@ final class JournalToolRecognitionTest extends TestCase
 
         $this->assertInstanceOf(
             JournalToolCall::class,
-            $program->callFor(self::toolPayload('PreToolUse', $readResource, $resource), $this->hook()),
+            $driver->callFor(self::toolPayload('PreToolUse', $readResource, $resource), $this->hook()),
         );
     }
 
     /**
-     * @param  class-string<ProgramAdapter>  $adapter
+     * @param  class-string<DriverAdapter>  $adapter
      */
     #[DataProvider('resourceReaders')]
     public function test_other_servers_names_and_addresses_stay_refused(string $adapter, string $readResource): void
     {
-        $program = $this->app->make($adapter);
+        $driver = $this->app->make($adapter);
         $refused = [
             ['mcp__other__x', []],
             ['mcp__journal__not_offered', []],
@@ -113,14 +113,14 @@ final class JournalToolRecognitionTest extends TestCase
 
         foreach ($refused as [$toolName, $arguments]) {
             $this->assertThrows(
-                fn () => $program->callFor(self::toolPayload('PreToolUse', $toolName, $arguments), $this->hook()),
+                fn () => $driver->callFor(self::toolPayload('PreToolUse', $toolName, $arguments), $this->hook()),
                 UnsupportedHook::class,
             );
         }
 
         $this->assertInstanceOf(
             JudgedCall::class,
-            $program->callFor(self::toolPayload('PostToolUse', 'mcp__other__x', []), $this->hook()),
+            $driver->callFor(self::toolPayload('PostToolUse', 'mcp__other__x', []), $this->hook()),
         );
     }
 

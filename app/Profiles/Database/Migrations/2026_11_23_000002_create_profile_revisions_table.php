@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('model');
             $table->json('skill_allowlist')->nullable();
             $table->json('required_skills');
-            $table->string('program', 32)->nullable();
-            $table->boolean('program_pinned');
+            $table->string('driver', 32)->nullable();
+            $table->boolean('driver_pinned');
             $table->json('allowed_models');
             $table->json('access_policy');
             $table->json('stop_conditions');

@@ -6,6 +6,7 @@ namespace App\Profiles\Handlers;
 
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Jobs\SignInDeadline;
@@ -13,7 +14,6 @@ use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\SignInStarted;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Bus\Dispatcher as JobDispatcher;
 use Illuminate\Contracts\Config\Repository;
@@ -38,14 +38,14 @@ final readonly class BeginSignInHandler implements CommandHandler
             return new SignInStarted($repeated->id, true);
         }
 
-        $program = HookProgram::from($command->program);
+        $driver = HookDriver::from($command->driver);
 
-        if (! $this->protocols->supports($program->value, $command->method)) {
-            throw SignInMethodMissing::for($program->value, $command->method->value);
+        if (! $this->protocols->supports($driver->value, $command->method)) {
+            throw SignInMethodMissing::for($driver->value, $command->method->value);
         }
 
-        ActiveAccount::lockedFor($program);
-        $running = SignInAttempt::liveFor($program, null);
+        ActiveAccount::lockedFor($driver);
+        $running = SignInAttempt::liveFor($driver, null);
 
         if ($running !== null) {
             return new SignInStarted($running->id, true);
@@ -55,7 +55,7 @@ final readonly class BeginSignInHandler implements CommandHandler
         $directory = SignInAttempt::newFolderIn($this->config->string('accounts.root'));
         $attempt = SignInAttempt::create(
             ActorIdentity::of($command->dispatchedBy()),
-            $program,
+            $driver,
             $command->method,
             $directory,
             $command->requestKey,

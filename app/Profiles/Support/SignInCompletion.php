@@ -37,8 +37,8 @@ final readonly class SignInCompletion
     public function complete(string $attemptId, int $generation, SignInIdentity $identity): void
     {
         $now = CarbonImmutable::now();
-        $program = SignInAttempt::programForJournal($attemptId);
-        $selection = ActiveAccount::lockedForJournal($program);
+        $driver = SignInAttempt::driverForJournal($attemptId);
+        $selection = ActiveAccount::lockedForJournal($driver);
         $attempt = SignInAttempt::lockedForJournal($attemptId);
 
         if ($attempt->isPublishedIn($generation)) {
@@ -64,15 +64,15 @@ final readonly class SignInCompletion
         }
 
         if ($attempt->account_id === null) {
-            if (Account::holdingPrincipal($program, $identity) !== null) {
+            if (Account::holdingPrincipal($driver, $identity) !== null) {
                 $this->endWithout($attempt, SignInState::AlreadyAdded);
 
                 return;
             }
 
-            $fallback = $attempt->method->accountNameFor($program->displayName());
+            $fallback = $attempt->method->accountNameFor($driver->displayName());
             $proposed = AccountLabel::proposedFrom($identity->display, $fallback);
-            $account = Account::create($program, Account::freeLabel($program, $proposed), $staging);
+            $account = Account::create($driver, Account::freeLabel($driver, $proposed), $staging);
             $attempt->end(SignInState::Complete);
         } else {
             $account = Account::lockedForJournal($attempt->account_id);
@@ -88,7 +88,7 @@ final readonly class SignInCompletion
 
         $account->signedInAgain($attempt, $identity, $staging, $now);
         $selection->chooseFirst($account);
-        $this->notices->resolveOpen($program->value, $now);
+        $this->notices->resolveOpen($driver->value, $now);
     }
 
     /**

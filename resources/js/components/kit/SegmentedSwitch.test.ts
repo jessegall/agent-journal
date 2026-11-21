@@ -12,7 +12,7 @@ function mountSwitch(chosen: 'claude' | 'codex' = 'claude') {
     return mount(SegmentedSwitch, {
         attachTo: document.body,
         props: {
-            label: 'Program',
+            label: 'Driver',
             options,
             modelValue: chosen,
             'onUpdate:modelValue': (value: string) =>
@@ -30,7 +30,7 @@ describe('SegmentedSwitch', () => {
 
         expect(
             switchView.find('[role="radiogroup"]').attributes('aria-label'),
-        ).toBe('Program');
+        ).toBe('Driver');
         expect(radios.map((radio) => radio.attributes('aria-checked'))).toEqual(
             ['true', 'false'],
         );

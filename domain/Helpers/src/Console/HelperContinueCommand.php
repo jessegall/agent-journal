@@ -20,7 +20,7 @@ final class HelperContinueCommand extends Command
     use PrintsHelperReceipts;
     use RunsCallPipelines;
 
-    protected $signature = 'helper:continue {identity} {--job= : The unfinished job} {--model= : The model, or default} {--program= : The program, when the profile allows several} {--key= : The request key, to retry the same request} {--json : Print the receipt as JSON}';
+    protected $signature = 'helper:continue {identity} {--job= : The unfinished job} {--model= : The model, or default} {--driver= : The driver, when the profile allows several} {--key= : The request key, to retry the same request} {--json : Print the receipt as JSON}';
 
     protected $description = 'Continue the unfinished job of a helper';
 
@@ -38,7 +38,7 @@ final class HelperContinueCommand extends Command
             'identityId' => (string) $this->argument('identity'),
             'jobId' => (string) $this->option('job'),
             'model' => $model,
-            'programKey' => $this->textOption('program'),
+            'driverKey' => $this->textOption('driver'),
             'requestKey' => CallKey::fromOption($this->textOption('key')),
         ]);
 
@@ -50,7 +50,7 @@ final class HelperContinueCommand extends Command
             $call->identityId,
             $call->jobId,
             $call->model,
-            $call->programKey,
+            $call->driverKey,
             $call->requestKey,
         )));
     }

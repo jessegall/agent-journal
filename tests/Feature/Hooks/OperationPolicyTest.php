@@ -13,11 +13,11 @@ use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\ClaudeCodeTool;
 use App\Hooks\Enums\FileOperation;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\States\ReadyState;
 use App\Operations\Enums\AccessType;
@@ -53,8 +53,8 @@ final class OperationPolicyTest extends TestCase
     public function test_a_reader_reads_and_searches_its_workspace(): void
     {
         $ready = $this->ready(ProfileBase::readOnlyHelper()->defaultAccess());
-        $read = ClaudeCodeTool::Read->operation(new ProgramToolInput(['file_path' => 'app/Models/Task.php']));
-        $search = ClaudeCodeTool::Grep->operation(new ProgramToolInput(['pattern' => 'Task']));
+        $read = ClaudeCodeTool::Read->operation(new DriverToolInput(['file_path' => 'app/Models/Task.php']));
+        $search = ClaudeCodeTool::Grep->operation(new DriverToolInput(['pattern' => 'Task']));
 
         $this->assertSame(
             [AnswerType::Allow, AnswerType::Allow],
@@ -82,7 +82,7 @@ final class OperationPolicyTest extends TestCase
 
     public function test_a_web_fetch_needs_a_granted_internet_destination(): void
     {
-        $fetch = ClaudeCodeTool::WebFetch->operation(new ProgramToolInput(['url' => 'https://example.com']));
+        $fetch = ClaudeCodeTool::WebFetch->operation(new DriverToolInput(['url' => 'https://example.com']));
         $main = ProfileBase::mainAgent()->defaultAccess();
         $researcher = new AccessPolicy(
             $main->paths,

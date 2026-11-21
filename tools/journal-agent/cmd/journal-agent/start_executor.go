@@ -57,7 +57,7 @@ func (executor *protectedExecutor) Start(ctx context.Context, request host.Start
 		refusal := host.RequireContainerTransport(request.AccountReference)
 		return host.StartReply{StartID: request.StartID, Refusal: refusal.Error()}, nil
 	}
-	if err := executor.arrangement.AssertContainable(request.Program); err != nil {
+	if err := executor.arrangement.AssertContainable(request.Driver); err != nil {
 		return host.StartReply{StartID: request.StartID, Refusal: err.Error()}, nil
 	}
 	prepared, err := executor.preparation.Prepare(ctx, request.RuntimeID)

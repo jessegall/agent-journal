@@ -22,7 +22,7 @@ final class SkillEditCommand extends Command
     use PrintsSkillRefusals;
     use ReadsAudienceOptions;
 
-    protected $signature = 'skill:edit {number : The skill number or key} {--expected-revision= : The revision you read} {--name=} {--description=} {--body= : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=*} {--base=*} {--program=*} {--provider=*} {--ability=*} {--request-id= : Send again under the id a failed attempt printed}';
+    protected $signature = 'skill:edit {number : The skill number or key} {--expected-revision= : The revision you read} {--name=} {--description=} {--body= : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=*} {--base=*} {--driver=*} {--provider=*} {--ability=*} {--request-id= : Send again under the id a failed attempt printed}';
 
     protected $description = 'Save a new revision of a stored skill';
 

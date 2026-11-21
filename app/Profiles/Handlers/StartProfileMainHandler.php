@@ -32,7 +32,7 @@ final readonly class StartProfileMainHandler implements CommandHandler
      */
     public function handle(StartProfileMain $command): StartReceipt
     {
-        $profile = $this->profiles->select($command->profile, $command->requested, $command->programKey, null);
+        $profile = $this->profiles->select($command->profile, $command->requested, $command->driverKey, null);
 
         if (! $profile->base->isCoordinator()) {
             throw ProfileCannotCoordinate::for($command->profile);

@@ -33,7 +33,7 @@ final readonly class SendHelper extends Command
         public string $profileKey,
         #[Required]
         public string $model,
-        public string|null $programKey,
+        public string|null $driverKey,
         public HelperWork $work,
     ) {}
 }

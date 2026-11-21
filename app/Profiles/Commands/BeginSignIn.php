@@ -24,7 +24,7 @@ use App\Profiles\Values\SignInStarted;
 final readonly class BeginSignIn extends Command
 {
     public function __construct(
-        public string $program,
+        public string $driver,
         public SignInMethod $method,
         public string $requestKey,
     ) {}

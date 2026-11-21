@@ -138,8 +138,8 @@ esac`)
 		t.Fatal(err)
 	}
 
-	if len(reports) != 2 || reports[0].Program != "claude-code" || reports[0].Build != "2.1.323" ||
-		reports[1].Program != "codex" || reports[1].Build != "0.165.0" {
+	if len(reports) != 2 || reports[0].Driver != "claude-code" || reports[0].Build != "2.1.323" ||
+		reports[1].Driver != "codex" || reports[1].Build != "0.165.0" {
 		t.Fatalf("got reports %+v, want claude-code 2.1.323 and codex 0.165.0", reports)
 	}
 

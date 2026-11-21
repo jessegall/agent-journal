@@ -175,6 +175,10 @@ func serve(arguments []string) error {
 			log.Printf("the protection of the agent image was not reported: %v", err)
 		}
 	}
+	// The journal refuses every call of a host of another protocol, so this report fails first when the versions differ.
+	if err := journal.ReportCombinations(ctx, combinationsOf(arrangement)); err != nil {
+		return fmt.Errorf("the journal did not take this host's combinations: %w", err)
+	}
 	outcomes, err := host.ReconcileOnBoot(ctx, journal, preparation.States, reports, sessions)
 	if err != nil {
 		return err
@@ -239,11 +243,11 @@ const (
 
 func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) (serving.Runtime, error) {
 	grant := prepared.Grant
-	profile, known := profileFor[grant.Runtime.Program]
+	profile, known := profileFor[grant.Runtime.Driver]
 	if !known {
-		return nil, fmt.Errorf("runtime %s runs %q, which has no pinned profile", runtimeID, grant.Runtime.Program)
+		return nil, fmt.Errorf("runtime %s runs %q, which has no pinned profile", runtimeID, grant.Runtime.Driver)
 	}
-	if err := pinnedBuild(profile, grant.Runtime.ProgramBuild); err != nil {
+	if err := pinnedBuild(profile, grant.Runtime.DriverBuild); err != nil {
 		return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
 	}
 	environment, err := cleanEnvironmentOf(opener.stateFolder, opener.installationFolder, runtimeID, prepared)
@@ -260,15 +264,15 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if profile.Program() == "codex" {
 		return opener.codexRuntime(runtimeID, prepared, environment)
 	}
-	switch grant.Runtime.DriverType {
-	case drivers.ProcessDriverType:
+	switch grant.Runtime.Variant {
+	case drivers.HeadlessVariant:
 		return opener.processRuntime(runtimeID, prepared, profile, environment)
-	case drivers.TerminalDriverType:
+	case drivers.TerminalVariant:
 		return opener.terminalRuntime(runtimeID, prepared, profile, environment)
 	}
 
 	return nil, fmt.Errorf("runtime %s runs under the %s driver, which this host has no driver for", runtimeID,
-		grant.Runtime.DriverType)
+		grant.Runtime.Variant)
 }
 
 // containedRuntime opens a contained runtime in its session's own container by its driver type: a terminal runtime's
@@ -279,16 +283,16 @@ func (opener runtimeOpener) containedRuntime(
 	profile contracts.ProgramProfile,
 	manifest host.ContainerManifest,
 ) (serving.Runtime, error) {
-	driverType := prepared.Grant.Runtime.DriverType
+	driverType := prepared.Grant.Runtime.Variant
 	if opener.installation == "" {
 		return nil, fmt.Errorf("runtime %s runs contained under the %s driver, which this host runs in no container",
 			runtimeID, driverType)
 	}
 
 	switch driverType {
-	case drivers.TerminalDriverType:
+	case drivers.TerminalVariant:
 		return opener.containedTerminalRuntime(runtimeID, prepared, profile, manifest)
-	case drivers.ProcessDriverType:
+	case drivers.HeadlessVariant:
 		return opener.containedProcessRuntime(runtimeID, prepared, profile, manifest)
 	}
 
@@ -589,13 +593,13 @@ func startPreparation(journal *client.Client, stateFolder, installationFolder st
 var errNoInstallation = errors.New("this host has no protected installation, so it starts no saved account")
 
 func protectedStartAllowed(stateFolder, installationFolder string, grant client.Grant, claim client.ClaimedStart) error {
-	profile, known := profileFor[grant.Runtime.Program]
+	profile, known := profileFor[grant.Runtime.Driver]
 	if !known {
-		return fmt.Errorf("%q has no pinned profile", grant.Runtime.Program)
+		return fmt.Errorf("%q has no pinned profile", grant.Runtime.Driver)
 	}
-	if claim.Recipe.ProgramVersion != grant.Runtime.ProgramBuild {
+	if claim.Recipe.DriverVersion != grant.Runtime.DriverBuild {
 		return fmt.Errorf("the account recipe is for %s %s, the runtime for %s", profile.Program(),
-			claim.Recipe.ProgramVersion, grant.Runtime.ProgramBuild)
+			claim.Recipe.DriverVersion, grant.Runtime.DriverBuild)
 	}
 	if installationFolder == "" {
 		return errNoInstallation
@@ -603,14 +607,14 @@ func protectedStartAllowed(stateFolder, installationFolder string, grant client.
 	if _, err := (host.Installation{Folder: installationFolder}).Verify(); err != nil {
 		return err
 	}
-	capability, err := host.InspectProtection(host.LocalPlatform(), profile.Program(), claim.Recipe.ProgramVersion,
+	capability, err := host.InspectProtection(host.LocalPlatform(), profile.Program(), claim.Recipe.DriverVersion,
 		host.NativeEvidence{Folder: stateFolder})
 	if err != nil {
 		return err
 	}
 	if !capability.Available {
 		return fmt.Errorf("the protected arrangement of %s %s is not available on this host: journal-agent protection "+
-			"names what is missing", profile.Program(), claim.Recipe.ProgramVersion)
+			"names what is missing", profile.Program(), claim.Recipe.DriverVersion)
 	}
 	return nil
 }
@@ -637,7 +641,7 @@ func openMainRuntime(
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	opened, err := journal.OpenMainRuntime(ctx, client.MainRuntimeRequest{AgentID: agentID, Folder: absolute, Program: profile.Program(), ProgramBuild: profile.Build(), Profile: program})
+	opened, err := journal.OpenMainRuntime(ctx, client.MainRuntimeRequest{AgentID: agentID, Folder: absolute, Driver: profile.Program(), DriverBuild: profile.Build(), Profile: program})
 	if err != nil {
 		return host.AttachRequest{}, err
 	}

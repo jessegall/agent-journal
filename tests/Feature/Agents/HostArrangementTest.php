@@ -10,11 +10,11 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Enums\ArrangementType;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Exceptions\ArrangementUnknown;
+use App\Agents\Exceptions\DriverNotContainable;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\InstallationNameMissing;
-use App\Agents\Exceptions\ProgramNotContainable;
 use App\Agents\Models\Agent;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\ArrangementSetting;
@@ -135,8 +135,8 @@ final class HostArrangementTest extends TestCase
         try {
             $this->openOn(ArrangementType::Contained, 'codex');
             $this->fail('a contained Codex start was not refused');
-        } catch (ProgramNotContainable $refusal) {
-            $this->assertSame(ProgramNotContainable::codex()->getMessage(), $refusal->getMessage());
+        } catch (DriverNotContainable $refusal) {
+            $this->assertSame(DriverNotContainable::codex()->getMessage(), $refusal->getMessage());
         }
 
         $this->assertSame(0, ProcessStart::query()->count());
@@ -153,12 +153,12 @@ final class HostArrangementTest extends TestCase
         $this->app->instance(ArrangementSetting::class, ArrangementSetting::fromConfig($arrangement->value, 'journal', '{}'));
     }
 
-    private function openOn(ArrangementType $arrangement, string $program = 'claude-code'): OpenedRuntime
+    private function openOn(ArrangementType $arrangement, string $driver = 'claude-code'): OpenedRuntime
     {
         $host = $this->asSystem(new EnrollHost('test host '.Str::random(6), [self::FOLDER], $arrangement));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $agent = Agent::create('Started agent '.Str::random(6), 'main-agent');
-        [$build, $profile, $model] = $program === 'codex'
+        [$build, $profile, $model] = $driver === 'codex'
             ? ['0.165.0', 'codex', 'gpt-5.5']
             : ['2.1.323', 'claude', 'claude-opus-5-5'];
 
@@ -166,10 +166,10 @@ final class HostArrangementTest extends TestCase
             $agent->id,
             $host->hostId,
             self::FOLDER,
-            $program,
+            $driver,
             $build,
             $profile,
-            DriverType::Process,
+            DriverVariant::Headless,
             $model,
         ));
     }

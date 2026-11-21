@@ -39,7 +39,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $operation_key
  * @property string $actor_type
  * @property string $actor_id
- * @property string $program
+ * @property string $driver
  * @property string $build
  * @property string $fingerprint
  * @property string $goal_script
@@ -65,7 +65,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'agent_runtime_id',
     'driver_request_id',
     'operation_key',
-    'program',
+    'driver',
     'build',
     'goal_script',
     'goal_version',
@@ -142,8 +142,8 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         $navigation->driver_request_id = $request->id;
         $navigation->agent_runtime_id = $request->agent_runtime_id;
         $navigation->operation_key = $operationKey;
-        $navigation->program = $request->runtime->program;
-        $navigation->build = $request->runtime->program_build;
+        $navigation->driver = $request->runtime->driver;
+        $navigation->build = $request->runtime->driver_build;
         $navigation->fingerprint = $uncertainty->fingerprint;
         $navigation->goal_script = $goal->script;
         $navigation->goal_version = $goal->version;
@@ -181,8 +181,8 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     ): bool {
         return self::query()->ownedBy($owner)->open()
             ->where('agent_runtime_id', '!=', $runtime->id)
-            ->where('program', $runtime->program)
-            ->where('build', $runtime->program_build)
+            ->where('driver', $runtime->driver)
+            ->where('build', $runtime->driver_build)
             ->where('fingerprint', $fingerprint)
             ->where('goal_key', $goal->key())
             ->exists();

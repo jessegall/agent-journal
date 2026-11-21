@@ -24,7 +24,7 @@ final class StartProfileMainRequest extends FormRequest
             'requestId' => ['required', 'ulid'],
             'agentId' => ['required', 'ulid'],
             'model' => ['required', 'string', 'max:100'],
-            'program' => ['nullable', 'string', 'max:32'],
+            'driver' => ['nullable', 'string', 'max:32'],
             'actor' => ['prohibited'],
             'session' => ['prohibited'],
         ];
@@ -37,7 +37,7 @@ final class StartProfileMainRequest extends FormRequest
             $this->string('agentId')->lower()->toString(),
             ProfileKey::from((string) $this->route('profile')),
             ModelSelection::fromInput($this->string('model')->toString()),
-            $this->filled('program') ? $this->string('program')->toString() : null,
+            $this->filled('driver') ? $this->string('driver')->toString() : null,
         );
     }
 }

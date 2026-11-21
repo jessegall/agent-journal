@@ -11,14 +11,14 @@ use App\Bus\Contracts\CommandFacts;
 use App\Contracts\Attributes\InCommandTransaction;
 use App\Contracts\Listener;
 use App\Skills\Contracts\SkillResolver;
+use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Events\SessionSkillsIntended;
 use App\Skills\Models\SkillGeneration;
-use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\SkillPublications;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
-use App\Skills\Support\StartProgram;
+use App\Skills\Support\StartDriver;
 
 /**
  * Admits a start's skills inside its transaction: a program the journal cannot hand skills to is refused, a required
@@ -31,7 +31,7 @@ final readonly class AdmitStartSkills implements Listener
     public function __construct(
         private SkillContextResolver $contexts,
         private SkillSelection $selection,
-        private ProgramSkillAdapters $adapters,
+        private DriverSkillAdapters $adapters,
         private SkillTargets $targets,
         private SkillResolver $skills,
         private CommandFacts $facts,
@@ -41,10 +41,10 @@ final readonly class AdmitStartSkills implements Listener
     public function handle(SessionOpened $event): void
     {
         $session = AgentSession::byId($event->sessionId);
-        $program = StartProgram::of($session->program)->program;
+        $driver = StartDriver::of($session->driver)->driver;
 
-        if ($program === null || ! $this->adapters->supports($program)) {
-            throw StartRefused::skillsUnsupported((string) $session->program);
+        if ($driver === null || ! $this->adapters->supports($driver)) {
+            throw StartRefused::skillsUnsupported((string) $session->driver);
         }
 
         $generation = SkillGeneration::latestReady();
@@ -57,8 +57,8 @@ final readonly class AdmitStartSkills implements Listener
         $selected = $this->selection->select($this->skills->all(), $context);
         $publication = $this->publications->intend(
             $session->id,
-            $program->key,
-            $this->targets->targetFor($session->id, $program),
+            $driver->key,
+            $this->targets->targetFor($session->id, $driver),
             $generation,
             $selected->digest,
             $selected->selectedKeys(),

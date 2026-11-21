@@ -52,6 +52,6 @@ final readonly class ContinueHelperHandler extends HelperCommandHandler
             throw HelperLaunchUncertain::forIdentity($job->helper_identity_id);
         }
 
-        return $this->dispatch->continueJob($job, $command->requestId, $command->model, $command->programKey);
+        return $this->dispatch->continueJob($job, $command->requestId, $command->model, $command->driverKey);
     }
 }

@@ -40,7 +40,7 @@ final readonly class SubmitSignInCodeHandler implements CommandHandler
     {
         $secret = SignInSecret::from($text);
         $key = $this->config->string('app.key');
-        $attempt->keepFingerprint($secret->fingerprintFor($attempt->program, $attempt->method, $key));
+        $attempt->keepFingerprint($secret->fingerprintFor($attempt->driver, $attempt->method, $key));
 
         return $secret->secret;
     }

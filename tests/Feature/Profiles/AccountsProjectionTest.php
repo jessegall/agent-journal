@@ -7,12 +7,13 @@ namespace Tests\Feature\Profiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\ProgramFailure;
-use App\Agents\Events\ProgramFailed;
+use App\Agents\Enums\DriverFailure;
+use App\Agents\Events\DriverFailed;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Commands\RecordAccountNotice;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\SwitchAccount;
@@ -21,7 +22,6 @@ use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountNotice;
 use App\Profiles\Values\AccountLabel;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Events\Dispatcher;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -54,7 +54,7 @@ final class AccountsProjectionTest extends TestCase
             new OwnerAuthority('test'),
         );
         $this->app->make(Dispatcher::class)->listen(AccountsChanged::class, function (AccountsChanged $changed): void {
-            $this->changes[] = [$changed->program, $changed->accountId];
+            $this->changes[] = [$changed->driver, $changed->accountId];
         });
     }
 
@@ -82,7 +82,7 @@ final class AccountsProjectionTest extends TestCase
     public function test_a_program_failure_records_its_notice_through_a_command_and_refreshes_for_the_notice(): void
     {
         $this->app->make(Dispatcher::class)->dispatch(
-            new ProgramFailed('agent', 'session', 'claude-code', ProgramFailure::AuthenticationFailed),
+            new DriverFailed('agent', 'session', 'claude-code', DriverFailure::AuthenticationFailed),
         );
 
         $notice = AccountNotice::query()->sole();
@@ -96,7 +96,7 @@ final class AccountsProjectionTest extends TestCase
         $log = $this->spy(LoggerInterface::class);
 
         $this->app->make(Dispatcher::class)->dispatch(
-            new ProgramFailed('agent', 'session', 'claude-code', ProgramFailure::AuthenticationFailed),
+            new DriverFailed('agent', 'session', 'claude-code', DriverFailure::AuthenticationFailed),
         );
 
         $this->assertSame(0, AccountNotice::query()->count());
@@ -118,7 +118,7 @@ final class AccountsProjectionTest extends TestCase
 
     private function account(string $label): Account
     {
-        return Account::create(HookProgram::ClaudeCode, AccountLabel::from($label), '/journal/accounts/'.$label);
+        return Account::create(HookDriver::ClaudeCode, AccountLabel::from($label), '/journal/accounts/'.$label);
     }
 
     private function bus(): CommandBus

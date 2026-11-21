@@ -9,6 +9,7 @@ use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
@@ -23,7 +24,6 @@ use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Models\Support\KeepsCleanupTries;
 use App\Profiles\Values\CleanupProgress;
-use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -42,7 +42,7 @@ use Illuminate\Support\Str;
  * attempt may still owe the deletion of what it left behind.
  *
  * @property string $id
- * @property string $program
+ * @property string $driver
  * @property string|null $account_id
  * @property SignInMethod $method
  * @property ActorType $actor_type
@@ -65,7 +65,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  * @property-read Account|null $account
  */
-#[Fillable(['program', 'method', 'actor_type', 'actor_id'])]
+#[Fillable(['driver', 'method', 'actor_type', 'actor_id'])]
 final class SignInAttempt extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -110,14 +110,14 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      */
     public static function create(
         ActorIdentity $starter,
-        Account|HookProgram $accountOrProgram,
+        Account|HookDriver $accountOrProgram,
         SignInMethod $method,
         string $directory,
         string $requestKey,
         CarbonImmutable $expiresAt,
     ): self {
         $attempt = new self([
-            'program' => $accountOrProgram instanceof Account ? $accountOrProgram->program : $accountOrProgram->value,
+            'driver' => $accountOrProgram instanceof Account ? $accountOrProgram->driver : $accountOrProgram->value,
             'method' => $method,
             ...$starter->asColumns('actor'),
         ]);
@@ -164,10 +164,10 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * The earliest attempt still signing in a new account of the program, or this account, which a second start
      * rejoins instead of starting another writer.
      */
-    public static function liveFor(HookProgram $program, Account|null $account): self|null
+    public static function liveFor(HookDriver $driver, Account|null $account): self|null
     {
         return self::query()
-            ->ofProgram($program)
+            ->ofDriver($driver)
             ->where('account_id', $account?->id)
             ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('created_at')
@@ -215,15 +215,15 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      *
      * @throws SignInAttemptMissing
      */
-    public static function programForJournal(string $attemptId): HookProgram
+    public static function driverForJournal(string $attemptId): HookDriver
     {
-        $program = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($attemptId)->value('program');
+        $driver = self::query()->withoutGlobalScope(AccountOwnerScope::class)->whereKey($attemptId)->value('driver');
 
-        if (! is_string($program)) {
+        if (! is_string($driver)) {
             throw SignInAttemptMissing::for($attemptId);
         }
 
-        return HookProgram::from($program);
+        return HookDriver::from($driver);
     }
 
     /**
@@ -463,7 +463,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         }
 
         $this->resetCleanupTries();
-        $this->raise(new SignInAttemptCleanupRetried($this->program, $this->id));
+        $this->raise(new SignInAttemptCleanupRetried($this->driver, $this->id));
     }
 
     /**
@@ -473,7 +473,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     {
         $this->waits_for_uses = false;
         $this->assertSaved($this->save());
-        $this->raise(new SignInAttemptReleased($this->program, $this->id, $this->account_id));
+        $this->raise(new SignInAttemptReleased($this->driver, $this->id, $this->account_id));
     }
 
     // ----------[ Answers ]----------
@@ -520,7 +520,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
     public function finish(SignInState $state): void
     {
         $this->end($state);
-        $this->raise(new SignInAttemptFinished($this->program, $this->id, $this->account_id));
+        $this->raise(new SignInAttemptFinished($this->driver, $this->id, $this->account_id));
     }
 
     public function awaitsCleanupRetry(): bool
@@ -567,7 +567,7 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
         $this->request_key = $requestKey;
         $this->expires_at = $expiresAt;
         $this->assertSaved($this->save());
-        $this->raise(new SignInAttemptStarted($this->program, $this->id, $this->account_id));
+        $this->raise(new SignInAttemptStarted($this->driver, $this->id, $this->account_id));
     }
 
     // ----------[ Scopes ]----------
@@ -576,8 +576,8 @@ final class SignInAttempt extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofProgram(Builder $query, HookProgram $program): void
+    protected function ofDriver(Builder $query, HookDriver $driver): void
     {
-        $query->where('program', $program->value);
+        $query->where('driver', $driver->value);
     }
 }

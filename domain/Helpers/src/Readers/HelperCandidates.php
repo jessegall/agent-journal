@@ -48,7 +48,7 @@ final readonly class HelperCandidates
 
         $ranked = $this->launches->rank(new LaunchCandidateQuery(
             new LaunchProfileKey($query->profileKey),
-            $query->program,
+            $query->driver,
             $query->model,
             $query->purpose->id,
             array_values($identities->map(fn (HelperIdentity $identity) => $this->factsOf(

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type {
     AccountRowData,
-    ProgramMethodsData,
+    DriverMethodsData,
     SignInAttemptData,
     SignInMethod,
     SignInMethodData,
@@ -25,17 +25,17 @@ import { signInActions } from './signInActions';
  */
 const props = defineProps<{
     request: WizardRequest | null;
-    methods: ProgramMethodsData[];
+    methods: DriverMethodsData[];
     attempts: SignInAttemptData[];
     rows: AccountRowData[];
 }>();
 
 const emit = defineEmits<{ close: [] }>();
 
-const program = ref('claude-code');
+const driver = ref('claude-code');
 const method = ref<SignInMethod | null>(null);
 const followedId = ref<string | null>(null);
-const awaited = ref<{ program: string; accountId: string | null } | null>(null);
+const awaited = ref<{ driver: string; accountId: string | null } | null>(null);
 const isAskingToClose = ref(false);
 const followed = computed(() =>
     props.attempts.find((attempt) => attempt.id === followedId.value),
@@ -44,12 +44,12 @@ const actions = signInActions(followed);
 const formId = 'add-account-step';
 
 function methodsOf(of: string): SignInMethodData[] {
-    return props.methods.find((entry) => entry.program === of)?.methods ?? [];
+    return props.methods.find((entry) => entry.driver === of)?.methods ?? [];
 }
 
-const shownProgram = computed(() => followed.value?.program ?? program.value);
+const shownDriver = computed(() => followed.value?.driver ?? driver.value);
 const shownMethod = computed(() =>
-    methodsOf(shownProgram.value).find(
+    methodsOf(shownDriver.value).find(
         (option) => option.method === (followed.value?.method ?? method.value),
     ),
 );
@@ -115,9 +115,9 @@ watch(
         }
 
         if (request?.kind === 'again') {
-            program.value = request.program;
+            driver.value = request.driver;
             awaited.value = {
-                program: request.program,
+                driver: request.driver,
                 accountId: request.accountId,
             };
             actions.beginAgain(request.accountId);
@@ -135,7 +135,7 @@ watch(
 
         const started = attemptToRejoin(
             attempts,
-            awaited.value.program,
+            awaited.value.driver,
             awaited.value.accountId,
         );
 
@@ -148,15 +148,15 @@ watch(
 
 function begin(of: string, chosen: SignInMethod): void {
     followedId.value = null;
-    program.value = of;
+    driver.value = of;
     method.value = chosen;
-    awaited.value = { program: of, accountId: null };
+    awaited.value = { driver: of, accountId: null };
     actions.begin(of, chosen);
 }
 
 function continueWithChoice(): void {
     if (method.value !== null) {
-        begin(program.value, method.value);
+        begin(driver.value, method.value);
     }
 }
 
@@ -219,7 +219,7 @@ function cancelAndClose(): void {
         @close="askToClose"
     >
         <template v-if="isAskingToClose && shownMethod !== undefined">
-            <ChosenSignIn :program="shownProgram" :method="shownMethod" />
+            <ChosenSignIn :driver="shownDriver" :method="shownMethod" />
             <div
                 class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"
             >
@@ -238,7 +238,7 @@ function cancelAndClose(): void {
         </template>
         <template v-else-if="step === 1">
             <ChooseSignIn
-                v-model:program="program"
+                v-model:driver="driver"
                 v-model:method="method"
                 :methods="methods"
                 @confirm="continueWithChoice"
@@ -246,7 +246,7 @@ function cancelAndClose(): void {
         </template>
         <template v-else-if="step === 2 && shownMethod !== undefined">
             <SignInTask
-                :program="shownProgram"
+                :driver="shownDriver"
                 :method="shownMethod"
                 :attempt="followed"
                 :actions="actions"
@@ -257,7 +257,7 @@ function cancelAndClose(): void {
             v-else-if="accountToName !== undefined && shownMethod !== undefined"
         >
             <NameAccountStep
-                :program="shownProgram"
+                :driver="shownDriver"
                 :method="shownMethod"
                 :account="accountToName"
                 :form-id="formId"
@@ -268,7 +268,7 @@ function cancelAndClose(): void {
             v-else-if="followed !== undefined && shownMethod !== undefined"
         >
             <SignInOutcome
-                :program="shownProgram"
+                :driver="shownDriver"
                 :method="shownMethod"
                 :attempt="followed"
                 :account-name="accountName"
@@ -314,7 +314,7 @@ function cancelAndClose(): void {
                         >Add account</Button
                     >
                 </template>
-                <template v-else-if="shownProgram === 'codex'">
+                <template v-else-if="shownDriver === 'codex'">
                     <span class="pr-2 text-small whitespace-nowrap text-text-3"
                         >Continues on its own</span
                     >
@@ -360,7 +360,7 @@ function cancelAndClose(): void {
                 <Button
                     variant="primary"
                     :pending="actions.start.processing"
-                    @click="begin(followed.program, followed.method)"
+                    @click="begin(followed.driver, followed.method)"
                     >Add it as a new account</Button
                 >
             </template>
@@ -370,7 +370,7 @@ function cancelAndClose(): void {
                 <Button
                     variant="primary"
                     :pending="actions.start.processing"
-                    @click="begin(followed.program, followed.method)"
+                    @click="begin(followed.driver, followed.method)"
                     >Start again</Button
                 >
             </template>

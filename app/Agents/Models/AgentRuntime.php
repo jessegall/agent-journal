@@ -7,7 +7,7 @@ namespace App\Agents\Models;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\DriverOperation;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
@@ -34,9 +34,9 @@ use PhpOption\Option;
  * @property string $id
  * @property string $agent_session_id
  * @property string $host_id
- * @property DriverType $driver_type
- * @property string $program
- * @property string $program_build
+ * @property DriverVariant $variant
+ * @property string $driver
+ * @property string $driver_build
  * @property string $profile
  * @property string $canonical_folder
  * @property RuntimeActivity $activity
@@ -55,7 +55,7 @@ use PhpOption\Option;
  * @property Carbon $updated_at
  * @property int $row_version
  */
-#[Fillable(['agent_session_id', 'host_id', 'driver_type', 'program', 'program_build', 'profile', 'canonical_folder'])]
+#[Fillable(['agent_session_id', 'host_id', 'variant', 'driver', 'driver_build', 'profile', 'canonical_folder'])]
 final class AgentRuntime extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -75,7 +75,7 @@ final class AgentRuntime extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'driver_type' => DriverType::class,
+            'variant' => DriverVariant::class,
             'start_grant' => 'encrypted',
             'activity' => RuntimeActivity::class,
             'hold_reason' => HoldReason::class,
@@ -90,9 +90,9 @@ final class AgentRuntime extends Model implements ReadableModel
         $runtime = new self();
         $runtime->agent_session_id = $session->id;
         $runtime->host_id = $intent->hostId;
-        $runtime->driver_type = $intent->driverType;
-        $runtime->program = $intent->program;
-        $runtime->program_build = $intent->programBuild;
+        $runtime->variant = $intent->variant;
+        $runtime->driver = $intent->driver;
+        $runtime->driver_build = $intent->driverBuild;
         $runtime->profile = $intent->profile;
         $runtime->canonical_folder = $intent->folder;
         $runtime->requested_model = $intent->model;
@@ -361,7 +361,7 @@ final class AgentRuntime extends Model implements ReadableModel
      */
     public function hasScreen(): bool
     {
-        return $this->driver_type === DriverType::Terminal;
+        return $this->variant === DriverVariant::Terminal;
     }
 
     /**
@@ -391,7 +391,7 @@ final class AgentRuntime extends Model implements ReadableModel
             'runtimeId' => $this->id,
             'agentId' => $this->session->agent_id,
             'sessionId' => $this->agent_session_id,
-            'program' => $this->program,
+            'driver' => $this->driver,
             'activity' => $this->activity,
             'hold' => $this->hold_reason,
             'model' => self::setting($this->requested_model, $this->staged_model, $this->observed_model, $settingsAge),
@@ -405,7 +405,7 @@ final class AgentRuntime extends Model implements ReadableModel
             'isStale' => $this->isStale($now),
             'processGeneration' => $this->process_generation,
             'canReleaseHold' => $this->canReleaseHold(),
-            'driverType' => $this->driver_type,
+            'variant' => $this->variant,
             'watchers' => $this->watcherCount(),
         ]);
     }

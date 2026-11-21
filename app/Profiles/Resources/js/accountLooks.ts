@@ -14,21 +14,21 @@ export const accountStateLook: Record<
 };
 
 /**
- * The name a program goes by on the page.
+ * The name a driver goes by on the page.
  */
-export function programName(program: string): string {
-    return { 'claude-code': 'Claude Code', codex: 'Codex' }[program] ?? program;
+export function driverName(driver: string): string {
+    return { 'claude-code': 'Claude Code', codex: 'Codex' }[driver] ?? driver;
 }
 
 /**
- * The product icon a program is marked with: the Claude spark for Claude Code, the OpenAI knot for Codex.
+ * The product icon a driver is marked with: the Claude spark for Claude Code, the OpenAI knot for Codex.
  */
-export function programIcon(program: string): 'claude' | 'codex' {
-    return program === 'codex' ? 'codex' : 'claude';
+export function driverIcon(driver: string): 'claude' | 'codex' {
+    return driver === 'codex' ? 'codex' : 'claude';
 }
 
 /**
- * Why a cleanup has not finished, in words safe to show; the program's own output is never shown.
+ * Why a cleanup has not finished, in words safe to show; the driver's own output is never shown.
  */
 export const cleanupProblemText: Record<CleanupProblem, string> = {
     sign_in_not_verified: 'Unable to verify the sign-in was removed.',

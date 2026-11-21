@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
-use App\Programs\Values\ProgramKey;
+use App\Drivers\Values\DriverKey;
+use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Models\SkillPublication;
-use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Values\PublicationManifest;
 use App\Skills\Values\SkillKey;
 
@@ -32,9 +32,9 @@ final readonly class PublicationFiles
     public static function of(
         SkillPublication $publication,
         SkillTargets $targets,
-        ProgramSkillAdapters $adapters,
+        DriverSkillAdapters $adapters,
     ): self {
-        $program = $adapters->for(ProgramKey::from($publication->program));
+        $driver = $adapters->for(DriverKey::from($publication->driver));
         $generation = $publication->generation();
         $skills = [];
 
@@ -42,7 +42,7 @@ final readonly class PublicationFiles
             $entry = $generation->entry($key);
 
             if ($entry !== null) {
-                $skills[$program->skillFile(SkillKey::from($key))] = $entry['markdown'];
+                $skills[$driver->skillFile(SkillKey::from($key))] = $entry['markdown'];
             }
         }
 
@@ -50,14 +50,14 @@ final readonly class PublicationFiles
             $generation->id,
             $publication->id,
             $publication->session_id,
-            $publication->program,
+            $publication->driver,
             $publication->selection_digest,
             array_map(fn (string $bytes) => hash('sha256', $bytes), $skills),
         );
 
         return new self(
             "{$targets->generationsFolder()}/{$generation->id}/{$publication->id}",
-            [...$skills, ...$program->supportFiles(), self::MANIFEST => $manifest->text()],
+            [...$skills, ...$driver->supportFiles(), self::MANIFEST => $manifest->text()],
             $manifest,
         );
     }

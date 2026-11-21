@@ -20,7 +20,7 @@ func pickerEntry(t *testing.T, menu *liveMenu) Entry {
 
 	return Entry{
 		ID:        "entry-1",
-		Program:   "codex",
+		Driver:   "codex",
 		Goal:      EntryGoal{Script: "ChangeModel", Version: 2, Parameters: []EntryParameter{{Name: "model", Value: label}}},
 		Steps:     []EntryStep{{Fingerprint: fingerprint, Choose: &label}},
 		Completes: "goal",

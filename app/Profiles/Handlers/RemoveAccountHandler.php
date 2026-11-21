@@ -23,15 +23,15 @@ final readonly class RemoveAccountHandler implements CommandHandler
 
     public function handle(RemoveAccount $command): void
     {
-        $program = Account::programOf($command->accountId);
-        $selection = ActiveAccount::lockedFor($program);
+        $driver = Account::driverOf($command->accountId);
+        $selection = ActiveAccount::lockedFor($driver);
         $account = Account::lockedForChange($command->accountId);
 
         if ($account->isBeingRemoved()) {
             return;
         }
 
-        SignInAttempt::liveFor($program, $account)?->finish(SignInState::Cancelled);
+        SignInAttempt::liveFor($driver, $account)?->finish(SignInState::Cancelled);
         $this->facts->applyRequired();
         $account->refresh()->beginRemoval();
         $selection->clearIfChosen($account);

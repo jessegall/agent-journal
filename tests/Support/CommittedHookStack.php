@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\AgentRuntimes;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -19,6 +19,8 @@ use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\StartStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Events\StateTypesRequested;
@@ -27,8 +29,6 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\AgentStateMachine;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Storage\FrameRecord;
@@ -132,7 +132,7 @@ trait CommittedHookStack
             'claude',
             '1.0.0',
             'default',
-            DriverType::Process,
+            DriverVariant::Headless,
             null,
             null,
             null,
@@ -156,7 +156,7 @@ trait CommittedHookStack
             $this->stop(),
             $this->capabilities(),
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => ProgramReplies::stop($answer),
+            fn (HookAnswer $answer) => DriverReplies::stop($answer),
         )->stdout;
     }
 
@@ -194,9 +194,9 @@ trait CommittedHookStack
         return $this->app->make(AgentStateMachine::class);
     }
 
-    protected function capabilities(RewriteSupport $rewrites = RewriteSupport::WithoutApproval): ProgramCapabilities
+    protected function capabilities(RewriteSupport $rewrites = RewriteSupport::WithoutApproval): DriverCapabilities
     {
-        return new ProgramCapabilities(
+        return new DriverCapabilities(
             'Test program',
             'pre-tool and stop replies',
             ['onShellCommand', 'onStop'],
@@ -253,7 +253,7 @@ trait CommittedHookStack
             'start_tokens',
             'start_bypasses',
             'command_aliases',
-            'program_conversations',
+            'driver_conversations',
             'conversation_visits',
             'agent_runtimes',
             'process_runs',

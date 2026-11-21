@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\AccountNoticeReason;
 use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 
 /**
@@ -19,13 +19,13 @@ final readonly class AccountNotices
     /**
      * Records that it happened: an open notice of the same program and reason counts once more instead of repeating.
      */
-    public function record(string $program, AccountNoticeReason $reason): AccountNotice
+    public function record(string $driver, AccountNoticeReason $reason): AccountNotice
     {
-        ActiveAccount::lockedForJournal(HookProgram::from($program));
-        $open = AccountNotice::lockedOpenFor($program, $reason);
+        ActiveAccount::lockedForJournal(HookDriver::from($driver));
+        $open = AccountNotice::lockedOpenFor($driver, $reason);
 
         if ($open === null) {
-            return AccountNotice::create($program, $reason);
+            return AccountNotice::create($driver, $reason);
         }
 
         $open->countAgain();
@@ -36,11 +36,11 @@ final readonly class AccountNotices
     /**
      * Resolves the program's open notices once its accounts work again, in the order of their ids.
      */
-    public function resolveOpen(string $program, CarbonImmutable $now): void
+    public function resolveOpen(string $driver, CarbonImmutable $now): void
     {
-        ActiveAccount::lockedForJournal(HookProgram::from($program));
+        ActiveAccount::lockedForJournal(HookDriver::from($driver));
 
-        foreach (AccountNotice::lockedOpenOf($program) as $notice) {
+        foreach (AccountNotice::lockedOpenOf($driver) as $notice) {
             $notice->resolveAt($now);
         }
     }

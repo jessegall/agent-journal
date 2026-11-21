@@ -31,7 +31,7 @@ final readonly class ReportEntryReplayedHandler implements CommandHandler
             fn () => throw NavigationRaiseRefused::unknownEntry($command->entryId),
         );
 
-        $entry->recordReplay($command->operationKey, $runtime->program_build);
+        $entry->recordReplay($command->operationKey, $runtime->driver_build);
 
         if ($runtime->hold_reason === HoldReason::NavigationNeeded) {
             $runtime->holdFor(HoldReason::None);

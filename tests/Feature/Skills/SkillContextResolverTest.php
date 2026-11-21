@@ -54,7 +54,7 @@ final class SkillContextResolverTest extends TestCase
         $this->assertSame(ConditionOutcome::Match, Conditions::dispatchesWork()->evaluate($mainContext)->outcome);
         $this->assertSame(ConditionOutcome::NoMatch, Conditions::dispatchesWork()->evaluate($helperContext)->outcome);
         $this->assertSame(ProfileBase::mainAgent()->key, $mainContext->profile->snapshot?->base->key);
-        $this->assertSame('claude-code', $helperContext->program?->key);
+        $this->assertSame('claude-code', $helperContext->driver?->key);
         $this->assertSame('anthropic', $helperContext->provider?->key);
         $this->assertSame(ProfileBase::readOnlyHelper()->key, $helperContext->profile->snapshot?->base->key);
     }

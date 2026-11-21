@@ -6,11 +6,11 @@ namespace App\Skills\Conditions;
 
 use App\Actors\Values\AccessRequirement;
 use App\Assignments\Policies\AssignmentRecipientPolicy;
+use App\Drivers\Values\DriverKey;
+use App\Drivers\Values\ProviderKey;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
-use App\Programs\Values\ProgramKey;
-use App\Programs\Values\ProviderKey;
 use App\Skills\Contracts\SkillCondition;
 use Spatie\LaravelData\Data;
 
@@ -48,9 +48,9 @@ final class Conditions
         return new ProfileBases(array_values($bases));
     }
 
-    public static function programs(ProgramKey ...$keys): Programs
+    public static function drivers(DriverKey ...$keys): Drivers
     {
-        return new Programs(array_values($keys));
+        return new Drivers(array_values($keys));
     }
 
     public static function providers(ProviderKey ...$keys): Providers

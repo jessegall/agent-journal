@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks\Programs;
 
+use App\Drivers\Enums\HookDriver;
 use App\Hooks\Enums\AuthenticationArrangement;
-use App\Hooks\Enums\ProgramEvidence;
-use App\Hooks\Exceptions\ProgramArrangementUnproven;
-use App\Hooks\Support\ProgramCompatibility;
-use App\Programs\Enums\HookProgram;
+use App\Hooks\Enums\DriverEvidence;
+use App\Hooks\Exceptions\DriverArrangementUnproven;
+use App\Hooks\Support\DriverCompatibility;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -24,22 +24,22 @@ final class ProgramCompatibilityTest extends TestCase
     ];
 
     /**
-     * @return iterable<string, array{HookProgram}>
+     * @return iterable<string, array{HookDriver}>
      */
-    public static function programs(): iterable
+    public static function drivers(): iterable
     {
-        foreach (HookProgram::cases() as $program) {
-            yield $program->value => [$program];
+        foreach (HookDriver::cases() as $driver) {
+            yield $driver->value => [$driver];
         }
     }
 
-    #[DataProvider('programs')]
-    public function test_the_pinned_build_is_the_captured_one(HookProgram $program): void
+    #[DataProvider('drivers')]
+    public function test_the_pinned_build_is_the_captured_one(HookDriver $driver): void
     {
-        $capture = $this->captureOf($program);
-        $compatibility = $this->compatibilityOf($program);
+        $capture = $this->captureOf($driver);
+        $compatibility = $this->compatibilityOf($driver);
 
-        $this->assertSame($program, $compatibility->program);
+        $this->assertSame($driver, $compatibility->driver);
         $this->assertSame($capture['version'], $compatibility->version);
         $this->assertTrue($compatibility->isPinnedBinary($capture['binary_sha256']));
         $this->assertFalse($compatibility->isPinnedBinary(str_repeat('0', 64)));
@@ -47,57 +47,57 @@ final class ProgramCompatibilityTest extends TestCase
 
     public function test_every_claude_start_flag_exists_in_the_captured_build(): void
     {
-        $captured = $this->captureOf(HookProgram::ClaudeCode)['flags_present'];
-        $relied = $this->compatibilityOf(HookProgram::ClaudeCode)->startFlags;
+        $captured = $this->captureOf(HookDriver::ClaudeCode)['flags_present'];
+        $relied = $this->compatibilityOf(HookDriver::ClaudeCode)->startFlags;
 
         $this->assertSame([], array_values(array_diff($relied, $captured)));
     }
 
     public function test_codex_keeps_its_sign_in_in_the_account_file_under_one_owner(): void
     {
-        $compatibility = $this->compatibilityOf(HookProgram::Codex);
+        $compatibility = $this->compatibilityOf(HookDriver::Codex);
 
         $this->assertSame(['cli_auth_credentials_store' => 'file'], $compatibility->settings);
         $this->assertSame(AuthenticationArrangement::SharedOwner, $compatibility->arrangement);
     }
 
-    #[DataProvider('programs')]
-    public function test_an_arrangement_not_shown_on_the_real_program_refuses_the_start(HookProgram $program): void
+    #[DataProvider('drivers')]
+    public function test_an_arrangement_not_shown_on_the_real_program_refuses_the_start(HookDriver $driver): void
     {
-        $compatibility = $this->compatibilityOf($program);
+        $compatibility = $this->compatibilityOf($driver);
 
-        $this->assertSame(ProgramEvidence::PrerequisiteMissing, $compatibility->arrangementEvidence);
-        $this->expectException(ProgramArrangementUnproven::class);
+        $this->assertSame(DriverEvidence::PrerequisiteMissing, $compatibility->arrangementEvidence);
+        $this->expectException(DriverArrangementUnproven::class);
 
         $compatibility->assertStartable();
     }
 
     public function test_only_native_evidence_lets_a_start_through(): void
     {
-        $shown = $this->withEvidence(ProgramEvidence::NativeShown, 'this test');
+        $shown = $this->withEvidence(DriverEvidence::NativeShown, 'this test');
         $shown->assertStartable();
 
-        $this->expectException(ProgramArrangementUnproven::class);
+        $this->expectException(DriverArrangementUnproven::class);
 
-        $this->withEvidence(ProgramEvidence::ContractPassed, 'this test')->assertStartable();
+        $this->withEvidence(DriverEvidence::ContractPassed, 'this test')->assertStartable();
     }
 
-    private function withEvidence(ProgramEvidence $evidence): ProgramCompatibility
+    private function withEvidence(DriverEvidence $evidence): DriverCompatibility
     {
-        return $this->compatibilityOf(HookProgram::Codex)->withEvidence($evidence, 'this test');
+        return $this->compatibilityOf(HookDriver::Codex)->withEvidence($evidence, 'this test');
     }
 
-    private function compatibilityOf(HookProgram $program): ProgramCompatibility
+    private function compatibilityOf(HookDriver $driver): DriverCompatibility
     {
-        return ProgramCompatibility::pinned($program);
+        return DriverCompatibility::pinned($driver);
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function captureOf(HookProgram $program): array
+    private function captureOf(HookDriver $driver): array
     {
-        $text = (string) file_get_contents(base_path(self::CAPTURES[$program->value]));
+        $text = (string) file_get_contents(base_path(self::CAPTURES[$driver->value]));
 
         return json_decode($text, true, flags: JSON_THROW_ON_ERROR);
     }

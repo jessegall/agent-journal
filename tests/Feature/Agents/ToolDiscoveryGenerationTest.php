@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Actions\AgentRuntimes;
 use App\Agents\Contracts\ToolDiscovery;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Models\AgentRuntime;
@@ -62,7 +62,7 @@ final class ToolDiscoveryGenerationTest extends TestCase
             'claude',
             '1.0.0',
             'default',
-            DriverType::Process,
+            DriverVariant::Headless,
             null,
             null,
             null,

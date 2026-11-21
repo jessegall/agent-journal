@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Profiles\Resolvers;
 
 use App\Agents\Contracts\AccountUses;
+use App\Drivers\Enums\HookDriver;
 use App\Http\Data\Profiles\AccountListData;
 use App\Http\Data\Profiles\AccountRowData;
-use App\Http\Data\Profiles\ProgramMethodsData;
+use App\Http\Data\Profiles\DriverMethodsData;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInProtocols;
-use App\Programs\Enums\HookProgram;
 use App\Ui\Contracts\PageResolver;
 use Carbon\CarbonImmutable;
 
@@ -44,11 +44,11 @@ final readonly class AccountsWindowResolver implements PageResolver
             'attempts' => SignInAttempt::recentFor(CarbonImmutable::now()),
             'pendingCleanups' => SignInAttempt::pendingCleanups(),
             'methods' => array_map(
-                fn (HookProgram $program) => ProgramMethodsData::fromMethods(
-                    $program,
-                    $this->protocols->methodsOf($program->value),
+                fn (HookDriver $driver) => DriverMethodsData::fromMethods(
+                    $driver,
+                    $this->protocols->methodsOf($driver->value),
                 ),
-                HookProgram::cases(),
+                HookDriver::cases(),
             ),
         ]);
     }

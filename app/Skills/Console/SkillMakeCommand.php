@@ -22,7 +22,7 @@ final class SkillMakeCommand extends Command
     use PrintsSkillRefusals;
     use ReadsAudienceOptions;
 
-    protected $signature = 'skill:make {key : A new user- key} {--name= : The display name, the key unless given} {--description= : What the skill is for} {--body=- : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=* : Profile keys} {--base=* : Built-in profiles the profile starts from} {--program=* : Program keys} {--provider=* : Provider keys} {--ability=* : An ability the profile must grant, as policy class:ability} {--request-id= : Send again under the id a failed attempt printed}';
+    protected $signature = 'skill:make {key : A new user- key} {--name= : The display name, the key unless given} {--description= : What the skill is for} {--body=- : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=* : Profile keys} {--base=* : Built-in profiles the profile starts from} {--driver=* : Driver keys} {--provider=* : Provider keys} {--ability=* : An ability the profile must grant, as policy class:ability} {--request-id= : Send again under the id a failed attempt printed}';
 
     protected $description = 'Store a new skill';
 

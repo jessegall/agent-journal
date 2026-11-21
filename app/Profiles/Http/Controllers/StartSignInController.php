@@ -21,7 +21,7 @@ final readonly class StartSignInController
         Redirector $redirect,
     ): RedirectResponse {
         $commands->run(new BeginSignIn(
-            $request->program(),
+            $request->driver(),
             $request->signInMethod(),
             $request->requestKey(),
         ));

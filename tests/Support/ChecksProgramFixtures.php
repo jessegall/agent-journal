@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Hooks\Contracts\DriverCall;
 use App\Hooks\Contracts\HookInput;
-use App\Hooks\Contracts\ProgramCall;
+use App\Hooks\Drivers\HookPayload;
+use App\Hooks\Drivers\JudgedCall;
 use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Programs\HookPayload;
-use App\Hooks\Programs\JudgedCall;
 
 /**
  * What the adapter tests of every program share: its recorded fixture, its mapping as a data provider, and reading a
@@ -38,7 +38,7 @@ trait ChecksProgramFixtures
         return self::programFixture()->payload($name);
     }
 
-    protected function inputOf(ProgramCall $call): HookInput
+    protected function inputOf(DriverCall $call): HookInput
     {
         $this->assertInstanceOf(JudgedCall::class, $call);
 

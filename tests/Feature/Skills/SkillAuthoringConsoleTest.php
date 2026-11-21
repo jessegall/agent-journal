@@ -127,7 +127,7 @@ final class SkillAuthoringConsoleTest extends TestCase
                 '--description' => 'Codex main',
                 '--body' => 'Text.',
                 '--ability' => [self::DISPATCH],
-                '--program' => ['codex'],
+                '--driver' => ['codex'],
             ],
         )->assertSuccessful();
 

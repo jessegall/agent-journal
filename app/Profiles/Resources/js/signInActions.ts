@@ -66,10 +66,10 @@ export function signInActions(followed: Ref<SignInAttemptData | undefined>) {
 
     onBeforeUnmount(forget);
 
-    function begin(program: string, method: SignInMethod): void {
+    function begin(driver: string, method: SignInMethod): void {
         start
             .transform(() => ({
-                program,
+                driver,
                 method,
                 request_key: crypto.randomUUID(),
             }))

@@ -10,7 +10,7 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Exceptions\CredentialRejected;
-use App\Agents\Exceptions\ProgramUnsupported;
+use App\Agents\Exceptions\DriverUnsupported;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -19,20 +19,20 @@ use App\Agents\Support\StartedAgent;
 use App\Agents\Values\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\AgentStateMachine;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\FrameRecord;
 use App\Profiles\Exceptions\ProfileMissing;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Tasks\Commands\StartTask;
@@ -54,7 +54,7 @@ final class HookStartTest extends TestCase
         'hook_calls',
         'tasks',
         'links',
-        'program_conversations',
+        'driver_conversations',
         'conversation_visits',
         'process_events',
         'part_runs',
@@ -76,7 +76,7 @@ final class HookStartTest extends TestCase
             $settings['hooks']['Stop'],
         );
         $this->assertSame(
-            ['allow' => ['mcp__journal__*'], 'deny' => HookProgram::ClaudeCode->nativeChildTools()],
+            ['allow' => ['mcp__journal__*'], 'deny' => HookDriver::ClaudeCode->nativeChildTools()],
             $settings['permissions'],
         );
     }
@@ -88,7 +88,7 @@ final class HookStartTest extends TestCase
 
         $this->assertNotSame($first->session->id, $second->session->id);
         $this->assertNotSame($first->token, $second->token);
-        $this->assertSame('claude-code', $first->session->fresh()?->program);
+        $this->assertSame('claude-code', $first->session->fresh()?->driver);
         $this->assertSame(
             $second->session->id,
             $this->app->make(CredentialLookup::class)->sessionFor($second->token)->id,
@@ -115,7 +115,7 @@ final class HookStartTest extends TestCase
 
     public function test_a_program_without_journal_hooks_cannot_be_started(): void
     {
-        $this->expectException(ProgramUnsupported::class);
+        $this->expectException(DriverUnsupported::class);
 
         $this->start('main-agent', 'some-other-program');
     }
@@ -174,13 +174,13 @@ final class HookStartTest extends TestCase
         $this->app->make(CredentialLookup::class)->sessionFor($started->token);
     }
 
-    private function start(string $profileKey, string $program = 'claude-code'): StartedAgent
+    private function start(string $profileKey, string $driver = 'claude-code'): StartedAgent
     {
         $agent = Agent::create('Test agent', $profileKey);
 
         return $this->app->make(StartSessions::class)->start(
             $agent,
-            TestSelections::of($program),
+            TestSelections::of($driver),
             TestSelections::requestId(),
         );
     }
@@ -208,7 +208,7 @@ final class HookStartTest extends TestCase
                 ),
                 new StopDetails('turn-1', false),
             );
-            $capabilities = new ProgramCapabilities(
+            $capabilities = new DriverCapabilities(
                 'Test program',
                 'stop replies',
                 ['onStop'],
@@ -219,7 +219,7 @@ final class HookStartTest extends TestCase
                 $stop,
                 $capabilities,
                 new OperationDeadline(3000),
-                fn (HookAnswer $answer) => ProgramReplies::stop($answer),
+                fn (HookAnswer $answer) => DriverReplies::stop($answer),
             )->stdout;
         }, $callId);
     }

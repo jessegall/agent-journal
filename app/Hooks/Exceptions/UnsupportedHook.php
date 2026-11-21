@@ -11,40 +11,40 @@ use LogicException;
  */
 final class UnsupportedHook extends LogicException
 {
-    public static function for(string $program, string $method): self
+    public static function for(string $driver, string $method): self
     {
-        return new self("The {$program} adapter does not map {$method}.");
+        return new self("The {$driver} adapter does not map {$method}.");
     }
 
-    public static function forTool(string $program, string $toolName): self
+    public static function forTool(string $driver, string $toolName): self
     {
         return new self(
             sprintf(
                 'The %s adapter does not know the tool %s, so the call is refused rather than let through.',
-                $program,
+                $driver,
                 $toolName,
             ),
         );
     }
 
-    public static function notAnOperation(string $program, string $toolName): self
+    public static function notAnOperation(string $driver, string $toolName): self
     {
         return new self(sprintf(
             'The %s tool %s declares no operation: it is judged as a shell line or file edit, or touches nothing.',
-            $program,
+            $driver,
             $toolName,
         ));
     }
 
-    public static function forResource(string $program, string $toolName): self
+    public static function forResource(string $driver, string $toolName): self
     {
         return new self(
-            "The {$program} call {$toolName} names a server or address other than the journal's, so it is refused.",
+            "The {$driver} call {$toolName} names a server or address other than the journal's, so it is refused.",
         );
     }
 
-    public static function forValue(string $program, string $field, string $hookField): self
+    public static function forValue(string $driver, string $field, string $hookField): self
     {
-        return new self("The {$program} adapter cannot read the {$field} value {$hookField}.");
+        return new self("The {$driver} adapter cannot read the {$field} value {$hookField}.");
     }
 }

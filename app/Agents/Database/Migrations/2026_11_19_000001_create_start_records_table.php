@@ -16,11 +16,11 @@ return new class extends Migration
             $table->ulid('agent_id')->index();
             $table->string('actor_type', 16);
             $table->string('actor_id', 64);
-            $table->string('program', 32);
+            $table->string('driver', 32);
             $table->string('model', 128);
             $table->string('requested_model_type', 16);
             $table->string('requested_model', 128)->nullable();
-            $table->string('program_source', 16);
+            $table->string('driver_source', 16);
             $table->string('profile_key', 128)->nullable();
             $table->unsignedInteger('profile_revision')->nullable();
             $table->string('origin_type', 16);

@@ -28,9 +28,9 @@ final class SignInProtocols
     /**
      * @param  class-string<SignInProtocol>  $protocol
      */
-    public function register(string $program, SignInMethod $method, string $protocol): void
+    public function register(string $driver, SignInMethod $method, string $protocol): void
     {
-        $this->protocols->put(self::keyOf($program, $method), $protocol);
+        $this->protocols->put(self::keyOf($driver, $method), $protocol);
     }
 
     /**
@@ -38,20 +38,20 @@ final class SignInProtocols
      *
      * @return list<SignInMethod>
      */
-    public function methodsOf(string $program): array
+    public function methodsOf(string $driver): array
     {
         return array_values(array_filter(
             SignInMethod::cases(),
-            fn (SignInMethod $method) => $this->supports($program, $method),
+            fn (SignInMethod $method) => $this->supports($driver, $method),
         ));
     }
 
     /**
      * Whether the host has a protocol for the program's method, OAuth when no method is named.
      */
-    public function supports(string $program, SignInMethod $method = SignInMethod::OAuth): bool
+    public function supports(string $driver, SignInMethod $method = SignInMethod::OAuth): bool
     {
-        return $this->protocols->has(self::keyOf($program, $method));
+        return $this->protocols->has(self::keyOf($driver, $method));
     }
 
     /**
@@ -59,13 +59,13 @@ final class SignInProtocols
      *
      * @throws SignInMethodMissing
      */
-    public function for(string $program, SignInMethod $method = SignInMethod::OAuth): SignInProtocol
+    public function for(string $driver, SignInMethod $method = SignInMethod::OAuth): SignInProtocol
     {
-        return $this->container->make($this->protocols->get(self::keyOf($program, $method)));
+        return $this->container->make($this->protocols->get(self::keyOf($driver, $method)));
     }
 
-    private static function keyOf(string $program, SignInMethod $method): string
+    private static function keyOf(string $driver, SignInMethod $method): string
     {
-        return "{$program}:{$method->value}";
+        return "{$driver}:{$method->value}";
     }
 }

@@ -6,12 +6,12 @@ namespace App\Profiles\Support;
 
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\StopCondition;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\SupervisorRoutes;
 use App\Profiles\Values\WithheldGrant;
-use App\Programs\Enums\HookProgram;
 
 /**
  * One profile as a proposal describes it, before its policy is resolved: its key, label, type, instructions, model
@@ -34,8 +34,8 @@ final readonly class ProposedProfile
         public ProfileBase $base,
         public string $instructions,
         public string $model,
-        public HookProgram|null $program,
-        public bool $programPinned,
+        public HookDriver|null $driver,
+        public bool $driverPinned,
         public array $allowedModels,
         public array|null $skillAllowlist,
         public array $requiredSkills,

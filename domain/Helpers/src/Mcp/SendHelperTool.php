@@ -44,7 +44,7 @@ final class SendHelperTool extends JournalWriteTool
             $arguments->ulid('identity_id'),
             $arguments->text('profile_key'),
             $arguments->text('model'),
-            $arguments->optionalText('program_key'),
+            $arguments->optionalText('driver_key'),
             $this->work($arguments),
         );
     }

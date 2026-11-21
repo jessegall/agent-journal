@@ -43,7 +43,7 @@ final class ClaudeNativeEvidenceTest extends TestCase
         $results = array_column($evidence['items'], 'result', 'item');
 
         $this->assertSame(['claude-code', '2.1.323', 'direct-processes'], [
-            $evidence['program'],
+            $evidence['driver'],
             $evidence['version'],
             $evidence['arrangement'],
         ]);

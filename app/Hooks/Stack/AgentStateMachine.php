@@ -6,11 +6,11 @@ namespace App\Hooks\Stack;
 
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\HookInput;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Exceptions\HookDeadlineExpired;
 use App\Hooks\Exceptions\ReplayFound;
 use App\Hooks\Pipelines\AnswerHookPipeline;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\StateEvents\StateEventActivity;
 use App\Hooks\Support\IncomingWorkList;
 use App\Hooks\Support\StackAccess;
@@ -34,14 +34,14 @@ final readonly class AgentStateMachine
     ) {}
 
     /**
-     * @param  Closure(HookAnswer): ProgramReply  $render  the program adapter's reply to the final answer
+     * @param  Closure(HookAnswer): DriverReply  $render  the program adapter's reply to the final answer
      */
     public function answer(
         HookInput $input,
-        ProgramCapabilities $capabilities,
+        DriverCapabilities $capabilities,
         OperationDeadline $deadline,
         Closure $render,
-    ): ProgramReply {
+    ): DriverReply {
         $capabilities->assertSupports($input->methodName());
         $identity = $this->access->hookIdentity();
 
@@ -57,9 +57,9 @@ final readonly class AgentStateMachine
             return $this->transaction->runAdmittedForTarget(
                 $target,
                 $deadline,
-                fn (): ProgramReply => $this->eventActivity->evaluate(
+                fn (): DriverReply => $this->eventActivity->evaluate(
                     $target,
-                    fn (): ProgramReply => $this->pipelines->run(AnswerHookPipeline::class, $call, ProgramReply::class),
+                    fn (): DriverReply => $this->pipelines->run(AnswerHookPipeline::class, $call, DriverReply::class),
                 ),
             );
         } catch (ReplayFound $replay) {

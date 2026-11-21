@@ -29,7 +29,7 @@ final readonly class AnnounceUnavailableStart implements CommandMiddleware
 
             if ($command instanceof AgentStartCommand) {
                 $this->events->dispatch(
-                    new StartUnavailable($command->startedAgentId(), $refused->program, $refused->reason),
+                    new StartUnavailable($command->startedAgentId(), $refused->driver, $refused->reason),
                 );
             }
 

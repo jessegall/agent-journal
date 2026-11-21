@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * marked stale on its own (doc 54, sections 4 and 15). It belongs to the user, never to an agent.
  *
  * @property string $id
- * @property string $program
+ * @property string $driver
  * @property string $entry_fingerprint
  * @property string $goal_script
  * @property int $goal_version
@@ -49,7 +49,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[Fillable([
     'source_request_id',
-    'program',
+    'driver',
     'builds',
     'goal_key',
     'goal_script',
@@ -109,7 +109,7 @@ final class MenuEntry extends Model implements ReadableModel
     ): self {
         $goal = $source->goal();
         $entry = new self();
-        $entry->program = $source->program;
+        $entry->driver = $source->driver;
         $entry->entry_fingerprint = $steps[0]->fingerprint;
         $entry->goal_script = $goal->script;
         $entry->goal_version = $goal->version;
@@ -135,7 +135,7 @@ final class MenuEntry extends Model implements ReadableModel
      */
     public static function lockForPath(NavigationRequest $navigation, array $steps): self|null
     {
-        return self::query()->ownedBy($navigation->actor())->current()->forProgram($navigation->program)
+        return self::query()->ownedBy($navigation->actor())->current()->forDriver($navigation->driver)
             ->matching($steps[0]->fingerprint, $navigation->goal())
             ->whereRaw('steps::jsonb = ?::jsonb', [json_encode(self::storedSteps($steps), JSON_THROW_ON_ERROR)])
             ->lockForUpdate()
@@ -153,9 +153,9 @@ final class MenuEntry extends Model implements ReadableModel
         string $fingerprint,
         array $declinedEntries,
     ): self|null {
-        $menuQuery = self::query()->ownedBy($owner)->current()->forProgram($runtime->program)
+        $menuQuery = self::query()->ownedBy($owner)->current()->forDriver($runtime->driver)
             ->matching($fingerprint, $goal)->whereNotIn('id', $declinedEntries)->recentFirst();
-        $build = $runtime->program_build;
+        $build = $runtime->driver_build;
         $current = (clone $menuQuery)->whereJsonContains('builds', [['build' => $build, 'stale' => false]])->first();
 
         return $current ?? $menuQuery->whereJsonDoesntContain('builds', [['build' => $build]])->first();
@@ -280,7 +280,7 @@ final class MenuEntry extends Model implements ReadableModel
     {
         return new LibraryEntryAnswer(
             $this->id,
-            $this->program,
+            $this->driver,
             EntryGoalAnswer::of($this->goal()),
             $this->steps(),
             $this->completes->value,
@@ -324,9 +324,9 @@ final class MenuEntry extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function forProgram(Builder $query, string $program): void
+    protected function forDriver(Builder $query, string $driver): void
     {
-        $query->where('program', $program);
+        $query->where('driver', $driver);
     }
 
     /**

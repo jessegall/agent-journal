@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Listeners;
 
-use App\Agents\Events\ProgramFailed;
+use App\Agents\Events\DriverFailed;
 use App\Agents\Events\StartUnavailable;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
@@ -20,7 +20,7 @@ final readonly class ShowAccountsNotice implements Listener
 {
     public function __construct(private JournalCommands $journal) {}
 
-    public function handle(StartUnavailable|ProgramFailed $fact): void
+    public function handle(StartUnavailable|DriverFailed $fact): void
     {
         $reason = $fact instanceof StartUnavailable
             ? AccountNoticeReason::forStart($fact->reason)
@@ -33,7 +33,7 @@ final readonly class ShowAccountsNotice implements Listener
         $this->journal->runAsJournal(
             CommandEntry::AccountMaintenance,
             'accounts notice',
-            new RecordAccountNotice($fact->program, $reason),
+            new RecordAccountNotice($fact->driver, $reason),
         );
     }
 }

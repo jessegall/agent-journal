@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Listeners;
 
-use App\Agents\Events\ProgramFailed;
+use App\Agents\Events\DriverFailed;
 use App\Bus\Contracts\JournalCommands;
 use App\Bus\Enums\CommandEntry;
 use App\Contracts\Listener;
@@ -19,11 +19,11 @@ final readonly class CheckFailedAccount implements Listener
 {
     public function __construct(private JournalCommands $journal) {}
 
-    public function handle(ProgramFailed $failed): void
+    public function handle(DriverFailed $failed): void
     {
         $account = $failed->account;
 
-        if (! $failed->failure->needsAccountCheck() || $account === null || $failed->accountGeneration === null) {
+        if (! $failed->failure->isAccountCheckNeeded() || $account === null || $failed->accountGeneration === null) {
             return;
         }
 

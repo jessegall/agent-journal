@@ -10,7 +10,7 @@ use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\ToolCallFinished;
-use App\Hooks\Inputs\ProgramToolInput;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Support\ContextReminders;
 use App\Skills\Listeners\RecordProvenSkillReads;
@@ -68,7 +68,7 @@ final class SessionSkillStatusTest extends TestCase
             new ToolResult(
                 'mcp__journal__skills_show',
                 ToolOutcome::Succeeded,
-                new ProgramToolInput(['key' => 'user-guide']),
+                new DriverToolInput(['key' => 'user-guide']),
             ),
         ));
         $this->assertTrue($this->guideOf($session)->loaded);

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\Assignments\Policies\AssignmentRecipientPolicy;
+use App\Drivers\Values\DriverKey;
+use App\Drivers\Values\ProviderKey;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Support\BuiltInAuthorizations;
@@ -13,8 +15,6 @@ use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
-use App\Programs\Values\ProgramKey;
-use App\Programs\Values\ProviderKey;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillConditionInvalid;
@@ -42,7 +42,7 @@ final class ConditionTreeTest extends TestCase
     {
         $php = Conditions::all(
             Conditions::profiles(ProfileKey::from('journal-reviewer')),
-            Conditions::programs(ProgramKey::from('codex')),
+            Conditions::drivers(DriverKey::from('codex')),
         );
         $json = $this->tree()->fromJson(self::SECTION_6_JSON);
 
@@ -252,7 +252,7 @@ final class ConditionTreeTest extends TestCase
         return $this->app->make(ConditionTree::class);
     }
 
-    private function reviewerOn(string $program, string|null $provider = 'openai'): SkillContext
+    private function reviewerOn(string $driver, string|null $provider = 'openai'): SkillContext
     {
         $snapshot = ProfileSnapshot::from([
             'key' => ProfileKey::from('journal-reviewer'),
@@ -271,12 +271,12 @@ final class ConditionTreeTest extends TestCase
             TestIds::of(3),
             'main',
             StartProfile::of($snapshot),
-            ProgramKey::from($program),
+            DriverKey::from($driver),
             $provider === null ? null : ProviderKey::from($provider),
         );
     }
 
-    private function mainAgentOn(string $program): SkillContext
+    private function mainAgentOn(string $driver): SkillContext
     {
         $snapshot = ProfileSnapshot::from([
             'key' => ProfileKey::from('main-agent'),
@@ -297,19 +297,19 @@ final class ConditionTreeTest extends TestCase
             TestIds::of(4),
             'main',
             StartProfile::of($snapshot),
-            ProgramKey::from($program),
+            DriverKey::from($driver),
             ProviderKey::from('openai'),
         );
     }
 
-    private function profileFreeOn(string $program): SkillContext
+    private function profileFreeOn(string $driver): SkillContext
     {
         return new SkillContext(
             TestActors::agentIdentity(1),
             TestIds::of(4),
             'main',
             StartProfile::profileFree(),
-            ProgramKey::from($program),
+            DriverKey::from($driver),
             ProviderKey::from('openai'),
         );
     }

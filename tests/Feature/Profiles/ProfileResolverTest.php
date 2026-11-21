@@ -10,6 +10,7 @@ use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\StopCondition;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\RefusalCode;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\PolicyOriginType;
@@ -20,7 +21,6 @@ use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileStartPolicy;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -46,8 +46,8 @@ final class ProfileResolverTest extends TestCase
     public function test_the_revision_table_holds_the_start_policy_columns(): void
     {
         $this->assertTrue(Schema::hasColumns('profile_revisions', [
-            'program',
-            'program_pinned',
+            'driver',
+            'driver_pinned',
             'allowed_models',
             'access_policy',
             'stop_conditions',
@@ -65,8 +65,8 @@ final class ProfileResolverTest extends TestCase
 
         $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
         $start = $snapshot->start;
-        $this->assertSame(HookProgram::Codex, $start->program);
-        $this->assertFalse($start->programPinned);
+        $this->assertSame(HookDriver::Codex, $start->driver);
+        $this->assertFalse($start->driverPinned);
         $this->assertSame(['opus', 'sonnet'], $start->allowedModels);
         $this->assertSame([], $start->stopConditions->conditions);
         $this->assertSame(ExecutionModeType::RequiredContainer, $start->execution->mode);

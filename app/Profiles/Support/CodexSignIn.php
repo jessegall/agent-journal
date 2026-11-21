@@ -29,7 +29,7 @@ final readonly class CodexSignIn implements SignInProtocol
 
     private const int ACCOUNT_REQUEST = 2;
 
-    public function __construct(private CodexProgram $codex) {}
+    public function __construct(private CodexDriver $codex) {}
 
     public function begin(string $directory): PrivateAccountProcess
     {

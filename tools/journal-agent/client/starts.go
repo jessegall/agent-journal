@@ -19,7 +19,7 @@ type AccountRecipe struct {
 	RemovedVariables     []string       `json:"removedVariables"`
 	StartFlags           []string       `json:"startFlags"`
 	AccountSettings      []StartSetting `json:"accountSettings"`
-	ProgramVersion       string         `json:"programVersion"`
+	DriverVersion       string         `json:"driverVersion"`
 	BinaryDigest         string         `json:"binaryDigest"`
 	Arrangement          string         `json:"arrangement"`
 	ProtectionSettings   string         `json:"protectionSettings"`
@@ -55,7 +55,7 @@ func (client *Client) ClaimStart(ctx context.Context, sessionID string) (Claimed
 	if err := client.call(ctx, "/host/starts/claim", map[string]string{"session_id": sessionID}, &claimed); err != nil {
 		return ClaimedStart{}, err
 	}
-	if claimed.StartKey == "" || claimed.Directory == "" || claimed.Recipe.ProgramVersion == "" ||
+	if claimed.StartKey == "" || claimed.Directory == "" || claimed.Recipe.DriverVersion == "" ||
 		claimed.Recipe.Arrangement == "" {
 		return ClaimedStart{}, ErrIncompleteClaim
 	}

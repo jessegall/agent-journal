@@ -8,8 +8,8 @@ use App\Agents\Enums\ArrangementType;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\HostCredentialRejected;
 use App\Agents\Values\ProtectionReport;
+use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
-use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property list<string> $start_roots
  * @property ArrangementType $arrangement
  * @property array<string, StoredReport> $protection
+ * @property int|null $protocol_version
+ * @property list<array{driver: string, build: string, arrangement: string, placement: string, variant: string}> $combinations
  * @property CarbonImmutable|null $revoked_at
  */
 #[Fillable(['installation_name', 'credential_hash', 'start_roots', 'arrangement'])]
@@ -48,6 +50,7 @@ final class Host extends Model implements ReadableModel
             'arrangement' => ArrangementType::class,
             'start_roots' => 'array',
             'protection' => 'array',
+            'combinations' => 'array',
             'revoked_at' => 'immutable_datetime',
         ];
     }
@@ -101,7 +104,7 @@ final class Host extends Model implements ReadableModel
      * The protection a contained host of this installation last reported for the program's build, or an unreported
      * one when no contained host has.
      */
-    public static function containedProtectionOf(HookProgram $program, string $build): ProtectionReport
+    public static function containedProtectionOf(HookDriver $driver, string $build): ProtectionReport
     {
         $host = self::query()
             ->where('arrangement', ArrangementType::Contained)
@@ -110,18 +113,31 @@ final class Host extends Model implements ReadableModel
             ->first();
 
         if ($host === null) {
-            return ProtectionReport::unreported($program, $build);
+            return ProtectionReport::unreported($driver, $build);
         }
 
-        return $host->protectionOf($program, $build);
+        return $host->protectionOf($driver, $build);
     }
 
     // ----------[ Mutations ]----------
 
     public function recordProtection(ProtectionReport $report): void
     {
-        $key = ProtectionReport::keyOf($report->program, $report->build);
+        $key = ProtectionReport::keyOf($report->driver, $report->build);
         $this->protection = [...$this->protection, $key => $report->stored()];
+        $this->save();
+    }
+
+    /**
+     * Keeps the protocol version the host speaks and the combinations it reported it can run, in place of the ones it
+     * reported before.
+     *
+     * @param  list<array{driver: string, build: string, arrangement: string, placement: string, variant: string}>  $combinations
+     */
+    public function recordCombinations(int $protocolVersion, array $combinations): void
+    {
+        $this->protocol_version = $protocolVersion;
+        $this->combinations = $combinations;
         $this->save();
     }
 
@@ -133,12 +149,12 @@ final class Host extends Model implements ReadableModel
 
     // ----------[ Answers ]----------
 
-    public function protectionOf(HookProgram $program, string $build): ProtectionReport
+    public function protectionOf(HookDriver $driver, string $build): ProtectionReport
     {
-        $key = ProtectionReport::keyOf($program, $build);
+        $key = ProtectionReport::keyOf($driver, $build);
 
         if (! array_key_exists($key, $this->protection)) {
-            return ProtectionReport::unreported($program, $build);
+            return ProtectionReport::unreported($driver, $build);
         }
 
         return ProtectionReport::fromStored($this->protection[$key]);

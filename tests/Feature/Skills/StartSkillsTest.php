@@ -10,7 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\SessionOpened;
 use App\Agents\Exceptions\StartRefused;
@@ -187,18 +187,18 @@ final class StartSkillsTest extends TestCase
             'codex',
             '0.165.0',
             'codex',
-            DriverType::Process,
+            DriverVariant::Headless,
             'gpt-5.5',
         ));
 
         return [$host->hostId, $opened];
     }
 
-    private function sessionRow(Agent $agent, string $program, int|null $profileRevision): AgentSession
+    private function sessionRow(Agent $agent, string $driver, int|null $profileRevision): AgentSession
     {
         $session = new AgentSession([
             ...TestSelections::sessionColumns(),
-            'program' => $program,
+            'driver' => $driver,
             'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer',
             'profile_revision' => $profileRevision ?? 1,
         ]);

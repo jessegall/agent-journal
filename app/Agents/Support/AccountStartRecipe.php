@@ -28,7 +28,7 @@ final readonly class AccountStartRecipe
         public array $removedVariables,
         public array $startFlags,
         public array $accountSettings,
-        public string $programVersion,
+        public string $driverVersion,
         public string $binaryDigest,
         public string $arrangement,
         public string $protectionSettings,

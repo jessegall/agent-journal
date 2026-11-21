@@ -1,35 +1,35 @@
 <script setup lang="ts">
 import type {
-    ProgramMethodsData,
+    DriverMethodsData,
     SignInMethod,
 } from '@generated/types/accounts';
 import OptionCards from '@kit/OptionCards';
-import ProgramIcon from '@kit/ProgramIcon';
+import DriverIcon from '@kit/DriverIcon';
 import SegmentedSwitch from '@kit/SegmentedSwitch';
 import { computed } from 'vue';
-import { programIcon, programName } from './accountLooks';
+import { driverIcon, driverName } from './accountLooks';
 
 /**
- * The wizard's first step: the program switch, then a card for each way that program signs in on this host, each
+ * The wizard's first step: the driver switch, then a card for each way that driver signs in on this host, each
  * saying how it works and what it bills. Enter or a double click on a card moves on.
  */
-const props = defineProps<{ methods: ProgramMethodsData[] }>();
+const props = defineProps<{ methods: DriverMethodsData[] }>();
 
-const program = defineModel<string>('program', { required: true });
+const driver = defineModel<string>('driver', { required: true });
 const method = defineModel<SignInMethod | null>('method', { required: true });
 
 const emit = defineEmits<{ confirm: [] }>();
 
-const programs = computed(() =>
+const drivers = computed(() =>
     props.methods.map((entry) => ({
-        value: entry.program,
-        label: programName(entry.program),
+        value: entry.driver,
+        label: driverName(entry.driver),
     })),
 );
 
 const cards = computed(() =>
     (
-        props.methods.find((entry) => entry.program === program.value)
+        props.methods.find((entry) => entry.driver === driver.value)
             ?.methods ?? []
     ).map((option) => ({
         value: option.method,
@@ -39,21 +39,21 @@ const cards = computed(() =>
     })),
 );
 
-function chooseProgram(chosen: string): void {
-    program.value = chosen;
+function chooseDriver(chosen: string): void {
+    driver.value = chosen;
     method.value = null;
 }
 </script>
 
 <template>
     <SegmentedSwitch
-        label="Program"
-        :options="programs"
-        :model-value="program"
-        @update:model-value="chooseProgram"
+        label="Driver"
+        :options="drivers"
+        :model-value="driver"
+        @update:model-value="chooseDriver"
     >
         <template #icon="{ value }">
-            <ProgramIcon :program="programIcon(value)" :size="14" />
+            <DriverIcon :driver="driverIcon(value)" :size="14" />
         </template>
     </SegmentedSwitch>
     <OptionCards
@@ -63,7 +63,7 @@ function chooseProgram(chosen: string): void {
         @confirm="emit('confirm')"
     >
         <template #icon>
-            <ProgramIcon :program="programIcon(program)" :size="18" />
+            <DriverIcon :driver="driverIcon(driver)" :size="18" />
         </template>
     </OptionCards>
     <template v-if="method === null">

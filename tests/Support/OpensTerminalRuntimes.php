@@ -10,7 +10,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\AgentRuntimes;
 use App\Agents\Actions\StartSessions;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Values\RuntimeIntent;
@@ -25,7 +25,7 @@ use Tests\Fixtures\Agents\TestSelections;
  */
 trait OpensTerminalRuntimes
 {
-    private function runtimeOn(string $hostId, DriverType $driver = DriverType::Terminal): AgentRuntime
+    private function runtimeOn(string $hostId, DriverVariant $driver = DriverVariant::Terminal): AgentRuntime
     {
         $agent = Agent::create('Watched agent '.Str::random(6), 'main-agent');
         $started = $this->app->make(StartSessions::class)->start(

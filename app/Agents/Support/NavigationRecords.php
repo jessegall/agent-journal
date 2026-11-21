@@ -31,11 +31,11 @@ final readonly class NavigationRecords implements NavigationReader
 
     public function menuEntries(
         ActorIdentity $owner,
-        string|null $program,
+        string|null $driver,
         MenuEntryState|null $state,
         int $page,
     ): array {
-        $menuEntries = $this->menuQuery($owner, $program, $state)
+        $menuEntries = $this->menuQuery($owner, $driver, $state)
             ->recentFirst()
             ->offset(($page - 1) * self::MENU_PAGE_SIZE)
             ->limit(self::MENU_PAGE_SIZE)
@@ -43,7 +43,7 @@ final readonly class NavigationRecords implements NavigationReader
 
         return $menuEntries->mapWithKeys(fn (MenuEntry $entry) => [$entry->id => [
             'id' => $entry->id,
-            'program' => $entry->program,
+            'driver' => $entry->driver,
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
             'builds' => array_values(array_map(
@@ -56,9 +56,9 @@ final readonly class NavigationRecords implements NavigationReader
         ]])->all();
     }
 
-    public function menuEntryCount(ActorIdentity $owner, string|null $program, MenuEntryState|null $state): int
+    public function menuEntryCount(ActorIdentity $owner, string|null $driver, MenuEntryState|null $state): int
     {
-        return $this->menuQuery($owner, $program, $state)->count();
+        return $this->menuQuery($owner, $driver, $state)->count();
     }
 
     public function menuEntry(ActorIdentity $owner, string $id): array
@@ -69,7 +69,7 @@ final readonly class NavigationRecords implements NavigationReader
 
         return [
             'id' => $entry->id,
-            'program' => $entry->program,
+            'driver' => $entry->driver,
             'goal' => $entry->goal_script,
             'parameters' => $entry->goal_parameters,
             'steps' => array_map(fn (MenuStep $step) => $step->toStored(), $entry->steps()),
@@ -107,7 +107,7 @@ final readonly class NavigationRecords implements NavigationReader
         return [
             'request' => $navigation->id,
             'agent' => $runtime->session->agent->name,
-            'program' => $navigation->program,
+            'driver' => $navigation->driver,
             'build' => $navigation->build,
             'goal' => ['script' => $navigation->goal_script, 'parameters' => $navigation->goal_parameters],
             'stalled_step' => $navigation->stalled_step,
@@ -151,11 +151,11 @@ final readonly class NavigationRecords implements NavigationReader
     /**
      * @return ReadBuilder<MenuEntry>
      */
-    private function menuQuery(ActorIdentity $owner, string|null $program, MenuEntryState|null $state): ReadBuilder
+    private function menuQuery(ActorIdentity $owner, string|null $driver, MenuEntryState|null $state): ReadBuilder
     {
         return MenuEntry::query()
             ->ownedBy($owner)
-            ->when($program !== null, fn (Builder $query) => $query->forProgram($program))
+            ->when($driver !== null, fn (Builder $query) => $query->forDriver($driver))
             ->when($state !== null, fn (Builder $query) => $query->where('state', $state));
     }
 }

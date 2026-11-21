@@ -12,7 +12,7 @@ const { attemptToRejoin, codeDirection, isLive } = await import('./signIn');
 function attempt(fields: Record<string, unknown>) {
     return {
         id: 'a',
-        program: 'claude-code',
+        driver: 'claude-code',
         type: 'new_account',
         label: 'Work',
         accountId: null,
@@ -30,7 +30,7 @@ describe('codeDirection', () => {
 });
 
 describe('attemptToRejoin', () => {
-    it('rejoins the running sign-in of the same program and account only', () => {
+    it('rejoins the running sign-in of the same driver and account only', () => {
         const attempts = [
             attempt({ id: 'ended', state: 'failed' }),
             attempt({ id: 'other-account', accountId: 'acc-1' }),

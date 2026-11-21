@@ -45,7 +45,7 @@ type BoundaryResult struct {
 // available only when every item has a native mechanism and recorded native evidence that it held.
 type ProtectionCapability struct {
 	Platform  string           `json:"platform"`
-	Program   string           `json:"program"`
+	Driver   string           `json:"driver"`
 	Build     string           `json:"build"`
 	Items     []BoundaryResult `json:"items"`
 	Available bool             `json:"available"`
@@ -109,7 +109,7 @@ func InspectProtection(
 	if !known {
 		return ProtectionCapability{}, ErrUnknownProgram
 	}
-	capability := ProtectionCapability{Platform: platform.Name, Program: program, Build: build, Available: true}
+	capability := ProtectionCapability{Platform: platform.Name, Driver: program, Build: build, Available: true}
 	for _, item := range BoundaryItems {
 		result, err := judgeItem(program, build, platform.EvidenceKey, item, mechanisms[item], evidence)
 		if err != nil {

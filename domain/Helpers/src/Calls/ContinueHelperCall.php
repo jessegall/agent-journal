@@ -32,7 +32,7 @@ final class ContinueHelperCall extends Data implements JournalCall
         public string $identityId,
         public string $jobId,
         public string $model,
-        public string|null $programKey,
+        public string|null $driverKey,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,

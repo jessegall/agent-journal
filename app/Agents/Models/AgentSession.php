@@ -6,19 +6,19 @@ namespace App\Agents\Models;
 
 use App\Actors\Support\PresenceWindow;
 use App\Agents\Enums\AccountProcessRole;
+use App\Agents\Enums\DriverSourceType;
 use App\Agents\Enums\ModelSelectionType;
-use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Enums\WorkspaceUse;
 use App\Agents\Exceptions\SessionSelectionFixed;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\AccountUse;
 use App\Agents\Values\ModelSelection;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\SelectionSource;
 use App\Agents\Values\StackTarget;
+use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
-use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
@@ -40,12 +40,12 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $agent_id
  * @property string|null $parent_session_id
- * @property string|null $program
+ * @property string|null $driver
  * @property string|null $current_conversation_id
  * @property string $model
  * @property ModelSelectionType $requested_model_type
  * @property string|null $requested_model
- * @property ProgramSourceType $program_source
+ * @property DriverSourceType $driver_source
  * @property string $profile_key
  * @property int $profile_revision
  * @property string $start_request_id
@@ -62,13 +62,13 @@ use Illuminate\Support\Carbon;
  * @property-read StartToken|null $startToken
  */
 #[Fillable([
-    'program',
+    'driver',
     'current_conversation_id',
     'discovered_at',
     'model',
     'requested_model_type',
     'requested_model',
-    'program_source',
+    'driver_source',
     'profile_key',
     'profile_revision',
     'start_request_id',
@@ -94,7 +94,7 @@ final class AgentSession extends Model implements ReadableModel
             'silent_since' => 'immutable_datetime',
             'discovered_at' => 'immutable_datetime',
             'requested_model_type' => ModelSelectionType::class,
-            'program_source' => ProgramSourceType::class,
+            'driver_source' => DriverSourceType::class,
             'profile_revision' => 'integer',
         ];
     }
@@ -262,17 +262,17 @@ final class AgentSession extends Model implements ReadableModel
      *
      * @throws SessionSelectionFixed
      */
-    public function useSelection(SelectedProgram $selection, string $requestId): void
+    public function useSelection(SelectedDriver $selection, string $requestId): void
     {
         if ($this->getAttribute('model') !== null) {
             throw SessionSelectionFixed::forSession($this->id);
         }
 
-        $this->program = $selection->program->value;
+        $this->driver = $selection->driver->value;
         $this->model = $selection->model;
         $this->requested_model_type = $selection->requested->type;
         $this->requested_model = $selection->requested->model;
-        $this->program_source = $selection->source->programSource;
+        $this->driver_source = $selection->source->driverSource;
         $this->profile_key = $selection->source->profileKey;
         $this->profile_revision = $selection->source->profileRevision;
         $this->start_request_id = $requestId;
@@ -288,7 +288,7 @@ final class AgentSession extends Model implements ReadableModel
         $this->save();
     }
 
-    public function enterConversation(ProgramConversation $conversation): void
+    public function enterConversation(DriverConversation $conversation): void
     {
         $this->current_conversation_id = $conversation->id;
         $this->save();
@@ -319,7 +319,7 @@ final class AgentSession extends Model implements ReadableModel
      *
      * @throws SessionSelectionFixed
      */
-    public function startFor(Agent $agent, self|null $parent, SelectedProgram $selection, string $requestId): void
+    public function startFor(Agent $agent, self|null $parent, SelectedDriver $selection, string $requestId): void
     {
         $this->agent_id = $agent->id;
         $this->parent_session_id = $parent?->id;
@@ -330,17 +330,17 @@ final class AgentSession extends Model implements ReadableModel
     /**
      * The selection this session was started with, rebuilt from its row.
      */
-    public function selection(): SelectedProgram
+    public function selection(): SelectedDriver
     {
         $requested = $this->requested_model_type === ModelSelectionType::Named
             ? ModelSelection::named((string) $this->requested_model)
             : ModelSelection::profileDefault();
 
-        return new SelectedProgram(
-            HookProgram::from((string) $this->program),
+        return new SelectedDriver(
+            HookDriver::from((string) $this->driver),
             $this->model,
             $requested,
-            new SelectionSource($this->program_source, $this->profile_key, $this->profile_revision),
+            new SelectionSource($this->driver_source, $this->profile_key, $this->profile_revision),
         );
     }
 
@@ -358,7 +358,7 @@ final class AgentSession extends Model implements ReadableModel
             $account,
             $this->id,
             $this->agent_id,
-            $this->selection()->program->value,
+            $this->selection()->driver->value,
             AccountProcessRole::Execution,
             CarbonImmutable::instance($this->created_at),
             $this->ended_at,
@@ -404,11 +404,11 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * @return BelongsTo<ProgramConversation, $this>
+     * @return BelongsTo<DriverConversation, $this>
      */
     public function currentConversation(): BelongsTo
     {
-        return $this->belongsTo(ProgramConversation::class, 'current_conversation_id');
+        return $this->belongsTo(DriverConversation::class, 'current_conversation_id');
     }
 
     /**

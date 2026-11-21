@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 /**
  * What a profile decides about a start, as plain values from its owner: its program (pinned or open), its default
@@ -18,8 +18,8 @@ final readonly class ProfileDefaults
     public function __construct(
         public string $key,
         public int $revision,
-        public HookProgram|null $program,
-        public bool $programPinned,
+        public HookDriver|null $driver,
+        public bool $driverPinned,
         public string|null $defaultModel,
         public array $allowedModels,
     ) {}

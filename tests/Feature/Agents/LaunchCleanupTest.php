@@ -23,7 +23,7 @@ use App\Agents\Values\CleanupReport;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\HostCapacity;
 use App\Agents\Values\ModelSelection;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use PhpOption\None;
@@ -152,7 +152,7 @@ final class LaunchCleanupTest extends TestCase
         $request = new StartRequest(
             $launch->session->start_request_id,
             $launch->agent->id,
-            SelectedProgram::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null),
+            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null),
             StartOriginType::OwnerRequest,
             'helpers.job:01m7wgahp0n7766x1e1ta8ehew',
             null,

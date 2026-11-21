@@ -6,9 +6,9 @@ namespace App\Skills\Handlers;
 
 use App\Contracts\CommandHandler;
 use App\Skills\Commands\PublishSkills;
+use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Exceptions\SkillPublicationFailed;
 use App\Skills\Models\SkillPublication;
-use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Support\PublicationFiles;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Values\PublicationClaim;
@@ -20,7 +20,7 @@ final readonly class PublishSkillsHandler implements CommandHandler
 
     public function __construct(
         private SkillTargets $targets,
-        private ProgramSkillAdapters $adapters,
+        private DriverSkillAdapters $adapters,
     ) {}
 
     public function handle(PublishSkills $command): PublicationClaim

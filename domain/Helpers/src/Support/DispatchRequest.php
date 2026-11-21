@@ -17,7 +17,7 @@ final readonly class DispatchRequest
         public string $requestId,
         public string $profileKey,
         public string $model,
-        public string|null $programKey,
+        public string|null $driverKey,
         public HelperWork $work,
         public string|null $identityId,
     ) {}
@@ -31,7 +31,7 @@ final readonly class DispatchRequest
             $this->identityId,
             $this->profileKey,
             $this->model,
-            $this->programKey,
+            $this->driverKey,
             ...$this->work->fingerprint(),
         ], JSON_THROW_ON_ERROR));
     }

@@ -6,16 +6,16 @@ namespace Tests\Feature\Hooks\Programs;
 
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Drivers\CodexAdapter;
+use App\Hooks\Drivers\DriverReplies;
+use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Drivers\JudgedCall;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
-use App\Hooks\Programs\CodexAdapter;
-use App\Hooks\Programs\JudgedCall;
-use App\Hooks\Programs\ProgramReplies;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\Frame;
 use App\Hooks\Stack\HookAnswer;
@@ -137,7 +137,7 @@ final class CodexTest extends TestCase
 
         $this->assertSame([], $settled->stack->frameIds());
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame(ProgramReplies::REWRITE_REFUSAL, $reply['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertSame(DriverReplies::REWRITE_REFUSAL, $reply['hookSpecificOutput']['permissionDecisionReason']);
         $this->assertArrayNotHasKey('updatedInput', $reply['hookSpecificOutput']);
     }
 
@@ -156,7 +156,7 @@ final class CodexTest extends TestCase
         }
     }
 
-    private function render(string $name, Decision $decision): ProgramReply
+    private function render(string $name, Decision $decision): DriverReply
     {
         return $this->renderAnswer(
             $name,
@@ -164,7 +164,7 @@ final class CodexTest extends TestCase
         );
     }
 
-    private function renderAnswer(string $name, HookAnswer $answer): ProgramReply
+    private function renderAnswer(string $name, HookAnswer $answer): DriverReply
     {
         $call = $this->adapter()->callFor($this->payload($name), $this->hook());
         $this->assertInstanceOf(JudgedCall::class, $call);

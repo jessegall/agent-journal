@@ -23,7 +23,7 @@ final readonly class ClaimAccountCheckController
             ? new Response(status: Response::HTTP_NO_CONTENT)
             : new JsonResponse([
                 'account_id' => $claimed->accountId,
-                'program' => $claimed->program,
+                'driver' => $claimed->driver,
                 'method' => $claimed->method->value,
                 'directory' => $claimed->directory,
                 'generation' => $claimed->generation,

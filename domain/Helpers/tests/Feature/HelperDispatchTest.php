@@ -14,8 +14,8 @@ use App\Agents\Models\Agent;
 use App\Agents\Support\StartReceipt;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Values\ProfileBase;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Domain\Helpers\Commands\SendHelper;
 use Domain\Helpers\Commands\StartHelper;
@@ -62,7 +62,7 @@ final class HelperDispatchTest extends TestCase
         $this->assertTrue($receipt->isNewJob);
         $this->assertTrue($receipt->start->newSession);
         $this->assertSame('opus', $selection->model);
-        $this->assertSame(HookProgram::Codex, $selection->program);
+        $this->assertSame(HookDriver::Codex, $selection->driver);
         $this->assertSame(1, $receipt->launch->profileRevision);
         $this->assertSame('read-only-helper', $receipt->profileType);
         $this->assertSame(ExecutionModeType::RequiredContainer, $receipt->start->executionMode);

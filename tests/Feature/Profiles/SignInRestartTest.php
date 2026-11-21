@@ -72,13 +72,13 @@ final class SignInRestartTest extends TestCase
         $this->assertSame([[]], $host->reconciled);
     }
 
-    private function begin(string $program, string $hostId): string
+    private function begin(string $driver, string $hostId): string
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $begin = new BeginSignIn($program, SignInMethod::OAuth, "key-{$program}");
+        $begin = new BeginSignIn($driver, SignInMethod::OAuth, "key-{$driver}");
         $attemptId = $this->app->make(CommandBus::class)->run($begin)
             ->attemptId;
         $this->assertSame($attemptId, $this->claimSignIn($hostId, CarbonImmutable::now())?->id);

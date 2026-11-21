@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Profiles\Enums\InstancePolicy;
 
@@ -15,7 +15,7 @@ use App\Profiles\Enums\InstancePolicy;
 final readonly class ProfileSelection
 {
     public function __construct(
-        public SelectedProgram $selection,
+        public SelectedDriver $selection,
         public ProfileBase $base,
         public int $revision,
         public ProfileStartPolicy $start,

@@ -9,7 +9,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\ConversationVisit;
-use App\Agents\Models\ProgramConversation;
+use App\Agents\Models\DriverConversation;
 use App\Agents\Models\StartBypass;
 use App\Agents\Models\StartToken;
 use App\Assignments\Contracts\AssignmentRegistration;
@@ -109,7 +109,7 @@ final class CoreServiceProvider extends ServiceProvider
             'core.engine-frame-time' => EngineFrameTime::class,
             'core.capacity-reservation' => CapacityReservation::class,
             'core.conversation-visit' => ConversationVisit::class,
-            'core.program-conversation' => ProgramConversation::class,
+            'core.program-conversation' => DriverConversation::class,
             'core.skill-publication' => SkillPublication::class,
             'core.skill-request' => SkillRequest::class,
             Profile::LINK_TYPE => Profile::class,

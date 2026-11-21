@@ -10,7 +10,7 @@ use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\StartOwnedAgent;
-use App\Agents\Contracts\CallingProgram;
+use App\Agents\Contracts\CallingDriver;
 use App\Agents\Contracts\StartReservations;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Exceptions\AgentBusy;
@@ -62,7 +62,7 @@ final readonly class HelperDispatch
     public function __construct(
         private CurrentActor $actors,
         private ProfileSelections $profiles,
-        private CallingProgram $callingProgram,
+        private CallingDriver $callingProgram,
         private PurposeResolver $purposes,
         private HelperCandidates $candidates,
         private StartReservations $reservations,
@@ -78,7 +78,7 @@ final readonly class HelperDispatch
             return $this->repeated($request);
         }
 
-        $profile = $this->admittedProfile($request->profileKey, $request->model, $request->programKey);
+        $profile = $this->admittedProfile($request->profileKey, $request->model, $request->driverKey);
         $purpose = $this->purposeOf($request);
 
         if ($profile->instances !== InstancePolicy::Reusable) {
@@ -114,7 +114,7 @@ final readonly class HelperDispatch
             return $this->repeated($request);
         }
 
-        $profile = $this->admittedProfile($request->profileKey, $request->model, $request->programKey);
+        $profile = $this->admittedProfile($request->profileKey, $request->model, $request->driverKey);
         $identity = HelperIdentity::query()->whereKey($request->identityId)->first();
 
         if ($identity === null) {
@@ -146,10 +146,10 @@ final readonly class HelperDispatch
         HelperJob $job,
         string $requestId,
         string $model,
-        string|null $programKey,
+        string|null $driverKey,
     ): HelperReceipt {
         $identity = HelperIdentity::query()->whereKey($job->helper_identity_id)->sole();
-        $profile = $this->admittedProfile($identity->profile_key, $model, $programKey);
+        $profile = $this->admittedProfile($identity->profile_key, $model, $driverKey);
         $this->reserve($identity);
         $job->reopenForAttempt();
         $start = $this->commands->run(new StartOwnedAgent(new OwnerStartRequest(
@@ -195,7 +195,7 @@ final readonly class HelperDispatch
      * profile, and that profile's whole authority, its grants, named reads, denials and host scope, lies inside the
      * parent's frozen authority.
      */
-    private function admittedProfile(string $profileKey, string $model, string|null $programKey): ProfileSelection
+    private function admittedProfile(string $profileKey, string $model, string|null $driverKey): ProfileSelection
     {
         $authority = $this->actors->authority();
         $parent = $authority instanceof StartProfileAuthority ? $authority->profile : null;
@@ -208,8 +208,8 @@ final readonly class HelperDispatch
             $profile = $this->profiles->select(
                 ProfileKey::from($profileKey),
                 ModelSelection::fromInput($model),
-                $programKey,
-                $this->callingProgram->programKey(),
+                $driverKey,
+                $this->callingProgram->driverKey(),
             );
         } catch (ProfileMissing $missingProfile) {
             throw HelperProfilesUnavailable::forProfile($profileKey, $missingProfile);
@@ -256,7 +256,7 @@ final readonly class HelperDispatch
             $request->profileKey,
             $profile->base->key,
             $purpose,
-            $profile->selection->program,
+            $profile->selection->driver,
             $profile->selection->model,
             $request->work->independent,
         ));

@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\StartAgent;
-use App\Agents\Contracts\ProgramConversationResolver;
+use App\Agents\Contracts\DriverConversationResolver;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\ConversationIncompatible;
@@ -16,7 +16,7 @@ use App\Agents\Models\ConversationVisit;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
@@ -104,9 +104,9 @@ final class ConversationVisitTest extends TestCase
             CarbonImmutable::now(),
         );
 
-        $conversations = $this->app->make(ProgramConversationResolver::class)->conversations(
+        $conversations = $this->app->make(DriverConversationResolver::class)->conversations(
             $this->agent->id,
-            HookProgram::ClaudeCode,
+            HookDriver::ClaudeCode,
             'helpers.job 1',
         );
 
@@ -116,9 +116,9 @@ final class ConversationVisitTest extends TestCase
         );
         $this->assertSame(
             [],
-            $this->app->make(ProgramConversationResolver::class)->conversations(
+            $this->app->make(DriverConversationResolver::class)->conversations(
                 $this->agent->id,
-                HookProgram::ClaudeCode,
+                HookDriver::ClaudeCode,
                 'helpers.job 2',
             ),
         );

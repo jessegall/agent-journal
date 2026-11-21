@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Skills\Values;
 
 use App\Actors\Support\ActorIdentity;
-use App\Programs\Values\ProgramKey;
-use App\Programs\Values\ProviderKey;
+use App\Drivers\Values\DriverKey;
+use App\Drivers\Values\ProviderKey;
 
 /**
  * The facts every skill condition of one boundary reads: who acts, its session, environment, start profile with what
@@ -20,7 +20,7 @@ final readonly class SkillContext
         public string $sessionId,
         public string $environment,
         public StartProfile $profile,
-        public ProgramKey|null $program,
+        public DriverKey|null $driver,
         public ProviderKey|null $provider,
     ) {}
 }

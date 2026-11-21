@@ -11,7 +11,7 @@ use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\WithheldGrant;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 /**
  * Proposals of profiles that take every policy field from their type's defaults, as tests that only need some
@@ -40,7 +40,7 @@ final class TestProposals
             $type,
             $instructions,
             $model,
-            HookProgram::Codex,
+            HookDriver::Codex,
             false,
             ['opus', 'sonnet'],
             $skillAllowlist,

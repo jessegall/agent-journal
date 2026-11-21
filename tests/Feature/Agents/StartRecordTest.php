@@ -18,10 +18,10 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\StartRecord;
 use App\Agents\Values\ModelSelection;
 use App\Agents\Values\ProfileDefaults;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 use Illuminate\Support\Facades\Schema;
 use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
@@ -44,7 +44,7 @@ final class StartRecordTest extends TestCase
             'model',
             'requested_model_type',
             'requested_model',
-            'program_source',
+            'driver_source',
             'profile_key',
             'profile_revision',
             'start_request_id',
@@ -54,11 +54,11 @@ final class StartRecordTest extends TestCase
             'agent_id',
             'actor_type',
             'actor_id',
-            'program',
+            'driver',
             'model',
             'requested_model_type',
             'requested_model',
-            'program_source',
+            'driver_source',
             'profile_key',
             'profile_revision',
             'origin_type',
@@ -74,10 +74,10 @@ final class StartRecordTest extends TestCase
 
     public function test_a_session_shows_the_requested_default_apart_from_the_resolved_model(): void
     {
-        $selection = SelectedProgram::resolve(
+        $selection = SelectedDriver::resolve(
             null,
             ModelSelection::fromInput('default'),
-            new ProfileDefaults('journal-researcher', 4, HookProgram::ClaudeCode, false, 'claude-sonnet-5-5', []),
+            new ProfileDefaults('journal-researcher', 4, HookDriver::ClaudeCode, false, 'claude-sonnet-5-5', []),
             null,
         );
         $requestId = TestSelections::requestId();
@@ -93,9 +93,9 @@ final class StartRecordTest extends TestCase
             [$session->requested_model_type, $session->requested_model, $session->model, $session->start_request_id],
         );
         $this->assertSame(
-            [HookProgram::ClaudeCode, 'claude-sonnet-5-5', 'journal-researcher', 4],
+            [HookDriver::ClaudeCode, 'claude-sonnet-5-5', 'journal-researcher', 4],
             [
-                $session->selection()->program,
+                $session->selection()->driver,
                 $session->selection()->model,
                 $session->selection()->source->profileKey,
                 $session->selection()->source->profileRevision,
@@ -183,7 +183,7 @@ final class StartRecordTest extends TestCase
         return new StartRequest(
             $requestId,
             $agent->id,
-            SelectedProgram::resolve('claude-code', $model, null, null),
+            SelectedDriver::resolve('claude-code', $model, null, null),
             $origin,
             $owner,
             null,

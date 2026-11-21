@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Enums;
 
-use App\Agents\Enums\ProgramFailure;
+use App\Agents\Enums\DriverFailure;
 use App\Agents\Enums\StartUnavailableReason;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -33,13 +33,13 @@ enum AccountNoticeReason: string
     /**
      * The notice a program failure leaves, or none for a failure the owner need not act on.
      */
-    public static function forFailure(ProgramFailure $failure): self|null
+    public static function forFailure(DriverFailure $failure): self|null
     {
         return match ($failure) {
-            ProgramFailure::AuthenticationFailed => self::SignInRejected,
-            ProgramFailure::RateLimit, ProgramFailure::AccountOnHold, ProgramFailure::BillingError,
-            ProgramFailure::OrganizationNotAllowed => self::AccountLimited,
-            ProgramFailure::ServerError, ProgramFailure::Unknown => null,
+            DriverFailure::AuthenticationFailed => self::SignInRejected,
+            DriverFailure::RateLimit, DriverFailure::AccountOnHold, DriverFailure::BillingError,
+            DriverFailure::OrganizationNotAllowed => self::AccountLimited,
+            DriverFailure::ServerError, DriverFailure::Unknown => null,
         };
     }
 }

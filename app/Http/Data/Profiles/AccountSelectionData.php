@@ -15,13 +15,13 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class AccountSelectionData extends Data
 {
     public function __construct(
-        public readonly string $program,
+        public readonly string $driver,
         public readonly string|null $accountId,
         public readonly int $changeNumber,
     ) {}
 
     public static function fromSelection(ActiveAccount $selection): self
     {
-        return new self($selection->program, $selection->account_id, $selection->change_number);
+        return new self($selection->driver, $selection->account_id, $selection->change_number);
     }
 }

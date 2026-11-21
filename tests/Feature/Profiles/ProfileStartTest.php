@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Agents\Enums\ProgramSourceType;
-use App\Agents\Exceptions\ProgramConflict;
+use App\Agents\Enums\DriverSourceType;
+use App\Agents\Exceptions\DriverConflict;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Values\ModelSelection;
 use App\Bus\Contracts\CommandBus;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\StartProfileMain;
 use App\Profiles\Contracts\ProfileResolver;
@@ -19,7 +20,6 @@ use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
-use App\Programs\Enums\HookProgram;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
@@ -57,24 +57,24 @@ final class ProfileStartTest extends TestCase
 
     public function test_default_resolves_to_the_profiles_model_and_revision(): void
     {
-        $this->activate(self::main('opus', HookProgram::ClaudeCode, false));
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
         $revision = $this->currentRevision();
 
         $receipt = $this->start('default', null);
 
         $this->assertSame('opus', $receipt->selection->model);
-        $this->assertSame(HookProgram::ClaudeCode, $receipt->selection->program);
+        $this->assertSame(HookDriver::ClaudeCode, $receipt->selection->driver);
         $source = $receipt->selection->source;
-        $this->assertSame(ProgramSourceType::Profile, $source->programSource);
+        $this->assertSame(DriverSourceType::Profile, $source->driverSource);
         $this->assertSame('journal-main', $source->profileKey);
         $this->assertSame($revision, $source->profileRevision);
     }
 
     public function test_a_pinned_program_refuses_another(): void
     {
-        $this->activate(self::main('opus', HookProgram::ClaudeCode, true));
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, true));
 
-        $this->expectException(ProgramConflict::class);
+        $this->expectException(DriverConflict::class);
 
         $this->start('default', 'codex');
     }
@@ -90,20 +90,20 @@ final class ProfileStartTest extends TestCase
 
     public function test_a_later_activation_leaves_an_accepted_start_as_it_was(): void
     {
-        $this->activate(self::main('opus', HookProgram::ClaudeCode, false));
+        $this->activate(self::main('opus', HookDriver::ClaudeCode, false));
         $revision = $this->currentRevision();
         $receipt = $this->start('default', null);
 
-        $this->activate(self::main('sonnet', HookProgram::Codex, true));
+        $this->activate(self::main('sonnet', HookDriver::Codex, true));
 
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
 
         $this->assertSame($revision, $session->profile_revision);
         $this->assertSame('opus', $session->model);
-        $this->assertSame(HookProgram::ClaudeCode->value, $session->program);
+        $this->assertSame(HookDriver::ClaudeCode->value, $session->driver);
     }
 
-    private static function main(string $model, HookProgram $program, bool $pinned): ProposedProfile
+    private static function main(string $model, HookDriver $driver, bool $pinned): ProposedProfile
     {
         return new ProposedProfile(
             ProfileKey::from('journal-main'),
@@ -111,7 +111,7 @@ final class ProfileStartTest extends TestCase
             ProfileBase::mainAgent(),
             'Lead the work.',
             $model,
-            $program,
+            $driver,
             $pinned,
             ['opus', 'sonnet'],
             null,
@@ -135,14 +135,14 @@ final class ProfileStartTest extends TestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of($profile)));
     }
 
-    private function start(string $model, string|null $program): StartReceipt
+    private function start(string $model, string|null $driver): StartReceipt
     {
         $start = new StartProfileMain(
             strtolower((string) Str::ulid()),
             $this->main->id,
             ProfileKey::from('journal-main'),
             ModelSelection::fromInput($model),
-            $program,
+            $driver,
         );
 
         return $this->app->make(CommandBus::class)->run($start);

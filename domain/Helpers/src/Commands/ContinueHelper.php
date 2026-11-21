@@ -32,6 +32,6 @@ final readonly class ContinueHelper extends Command
         public string $jobId,
         #[Required]
         public string $model,
-        public string|null $programKey,
+        public string|null $driverKey,
     ) {}
 }

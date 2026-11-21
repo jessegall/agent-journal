@@ -8,13 +8,14 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\AccessRequirement;
 use App\Actors\Values\PolicyRegistration;
 use App\Contracts\Attributes\DecodesAnyJson;
+use App\Drivers\Values\DriverKey;
+use App\Drivers\Values\ProviderKey;
 use App\Operations\Enums\AccessType;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
-use App\Programs\Values\ProgramKey;
-use App\Programs\Values\ProviderKey;
 use App\Skills\Conditions\AllOf;
 use App\Skills\Conditions\AnyOf;
+use App\Skills\Conditions\Drivers;
 use App\Skills\Conditions\Environments;
 use App\Skills\Conditions\Everyone;
 use App\Skills\Conditions\Grants;
@@ -22,7 +23,6 @@ use App\Skills\Conditions\Named;
 use App\Skills\Conditions\Not;
 use App\Skills\Conditions\ProfileBases;
 use App\Skills\Conditions\Profiles;
-use App\Skills\Conditions\Programs;
 use App\Skills\Conditions\Providers;
 use App\Skills\Conditions\RegisteredCondition;
 use App\Skills\Contracts\SkillCondition;
@@ -155,8 +155,8 @@ final readonly class ConditionTree
             ProfileBases::TYPE => $this->keyed($node, ProfileBases::VERSION, fn (array $keys) => new ProfileBases(
                 array_map(ProfileBase::of(...), $keys),
             )),
-            Programs::TYPE => $this->keyed($node, Programs::VERSION, fn (array $keys) => new Programs(
-                array_map(ProgramKey::from(...), $keys),
+            Drivers::TYPE => $this->keyed($node, Drivers::VERSION, fn (array $keys) => new Drivers(
+                array_map(DriverKey::from(...), $keys),
             )),
             Providers::TYPE => $this->keyed($node, Providers::VERSION, fn (array $keys) => new Providers(
                 array_map(ProviderKey::from(...), $keys),

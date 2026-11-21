@@ -83,13 +83,13 @@ final readonly class ScriptStopPreparation implements StopPreparer
             return $this->answer($run, tellsOwner: false);
         }
 
-        $program = $this->currentProgram($script);
+        $driver = $this->currentDriver($script);
 
-        if ($program->isEmpty()) {
+        if ($driver->isEmpty()) {
             return $this->hold($run, self::DEFINITIONS_CHANGED, $run->unchanged_returns);
         }
 
-        return $this->go($run, $program->get(), $request);
+        return $this->go($run, $driver->get(), $request);
     }
 
     /**
@@ -98,7 +98,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
      *
      * @return Option<CompiledScript>
      */
-    private function currentProgram(ProfileScript $script): Option
+    private function currentDriver(ProfileScript $script): Option
     {
         $current = $this->checks->check($script->source)->compiled;
 
@@ -107,7 +107,7 @@ final readonly class ScriptStopPreparation implements StopPreparer
             : None::create();
     }
 
-    private function go(ProfileRun $run, CompiledScript $program, StopPreparationRequest $request): StopPreparation
+    private function go(ProfileRun $run, CompiledScript $driver, StopPreparationRequest $request): StopPreparation
     {
         if ($run->generation === null) {
             $entry = $this->context($run, $request, self::ENTRY_READ);
@@ -133,11 +133,11 @@ final readonly class ScriptStopPreparation implements StopPreparer
         /**
          * @var array{entry: string, policy: TriggerPolicy} $handler
          */
-        $handler = $program->graph['handlers'][self::TRIGGER];
+        $handler = $driver->graph['handlers'][self::TRIGGER];
         /**
          * @var array<string, Instruction> $instructions
          */
-        $instructions = $program->graph['instructions'];
+        $instructions = $driver->graph['instructions'];
         $next = $handler['entry'];
         $evidence = '';
 

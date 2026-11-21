@@ -11,19 +11,19 @@ use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\ReconcileStarts;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Models\Agent;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
-use App\Hooks\Contracts\ProgramCompatibilities;
-use App\Hooks\Enums\ProgramEvidence;
-use App\Hooks\Support\ProgramCompatibility;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Contracts\DriverCompatibilities;
+use App\Hooks\Enums\DriverEvidence;
+use App\Hooks\Support\DriverCompatibility;
 use App\Profiles\Commands\SwitchAccount;
 use App\Profiles\Models\Account;
 use App\Profiles\Values\AccountLabel;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
@@ -70,11 +70,11 @@ final class ContainerAccountTest extends TestCase
         parent::setUp();
 
         $this->first = $this->chooseActiveAccounts()['claude-code'];
-        $this->app->instance(ProgramCompatibilities::class, new class implements ProgramCompatibilities
+        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
         {
-            public function for(HookProgram $program): ProgramCompatibility
+            public function for(HookDriver $driver): DriverCompatibility
             {
-                return ProgramCompatibility::pinned($program)->withEvidence(ProgramEvidence::NativeShown, 'this test');
+                return DriverCompatibility::pinned($driver)->withEvidence(DriverEvidence::NativeShown, 'this test');
             }
         });
     }
@@ -84,7 +84,7 @@ final class ContainerAccountTest extends TestCase
         $host = $this->enrollHost();
         $running = $this->open($host);
         $this->asSystem(new ClaimStart($host->hostId, $running->sessionId));
-        $second = Account::create(HookProgram::ClaudeCode, AccountLabel::from('Second'), '/journal/accounts/second');
+        $second = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Second'), '/journal/accounts/second');
         $this->actAsOwner();
         $this->app->make(CommandBus::class)->run(new SwitchAccount($second->id));
 
@@ -138,7 +138,7 @@ final class ContainerAccountTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverType::Process,
+            DriverVariant::Headless,
             'claude-opus-5-5',
         );
 

@@ -38,10 +38,10 @@ final readonly class BeginSignInAgainHandler implements CommandHandler
             return new SignInStarted($repeated->id, true);
         }
 
-        $program = Account::programOf($command->accountId);
-        ActiveAccount::lockedFor($program);
+        $driver = Account::driverOf($command->accountId);
+        ActiveAccount::lockedFor($driver);
         $account = Account::lockedForChange($command->accountId);
-        $running = SignInAttempt::liveFor($program, $account);
+        $running = SignInAttempt::liveFor($driver, $account);
 
         if ($running !== null) {
             return new SignInStarted($running->id, true);

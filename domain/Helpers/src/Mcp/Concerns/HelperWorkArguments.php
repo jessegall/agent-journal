@@ -22,7 +22,7 @@ trait HelperWorkArguments
         return [
             'profile_key' => $schema->string()->max(128)->required(),
             'model' => $schema->string()->max(200)->required(),
-            'program_key' => $schema->string()->max(64),
+            'driver_key' => $schema->string()->max(64),
             'subject' => $schema->string()->max(200),
             'purpose_id' => $schema->string()->max(64),
             'purpose_text' => $schema->string()->max(2000),

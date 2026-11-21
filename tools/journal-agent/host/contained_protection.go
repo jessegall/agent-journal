@@ -57,7 +57,7 @@ func ReportContainedProtection(
 }
 
 func protectionReport(program string, capability ProtectionCapability) client.ProtectionReport {
-	report := client.ProtectionReport{Program: program, Build: capability.Build, Platform: capability.Platform}
+	report := client.ProtectionReport{Driver: program, Build: capability.Build, Platform: capability.Platform}
 	for _, item := range capability.Items {
 		report.Items = append(report.Items, client.ProtectionItem{
 			Item: string(item.Item), Enforced: item.Enforced, Evidence: item.Evidence, Reason: item.Reason,

@@ -7,9 +7,9 @@ namespace App\Hooks\Console;
 use App\AgentRequests\Contracts\StartTokenSource;
 use App\AgentRequests\Support\StartEnvironment;
 use App\Agents\Support\OfflineReplySeal;
+use App\Drivers\Enums\HookDriver;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\RelaySettings;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Console\Command;
 
 /**
@@ -17,7 +17,7 @@ use Illuminate\Console\Command;
  */
 final class RelayHookCommand extends Command
 {
-    protected $signature = 'hooks:relay {program}';
+    protected $signature = 'hooks:relay {driver}';
 
     protected $description = 'Pass one native hook call to the journal and print its reply';
 
@@ -28,8 +28,8 @@ final class RelayHookCommand extends Command
         OfflineReplySeal $seal,
     ): int {
         $settings = RelaySettings::forStart($credentials->forThisStart(), $start, $seal);
-        $program = HookProgram::from((string) $this->argument('program'));
-        $reply = $relay->relay($program, (string) stream_get_contents(STDIN), $settings);
+        $driver = HookDriver::from((string) $this->argument('driver'));
+        $reply = $relay->relay($driver, (string) stream_get_contents(STDIN), $settings);
 
         $this->output->write($reply->stdout);
         fwrite(STDERR, $reply->stderr);

@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Data\ScreenFrameData;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
@@ -67,7 +67,7 @@ final class TerminalViewRoutesTest extends TestCase
 
     public function test_each_refusal_answers_its_message_and_status(): void
     {
-        $process = $this->runtimeOn('host-1', DriverType::Process);
+        $process = $this->runtimeOn('host-1', DriverVariant::Headless);
         $stopped = $this->runtimeOn('host-1');
         $this->app->make(DriverRequestEndings::class)->closeAfterExit($stopped);
 

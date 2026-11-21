@@ -46,6 +46,6 @@ final readonly class ProjectAccountsChanged implements Listener
         |SignInAttemptReleased
         |SignInAttemptStarted $fact,
     ): void {
-        $this->events->dispatch(new AccountsChanged($fact->program(), $fact->subjectId()));
+        $this->events->dispatch(new AccountsChanged($fact->driver(), $fact->subjectId()));
     }
 }

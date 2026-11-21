@@ -20,7 +20,7 @@ final class StartAccountData extends Data
 {
     public function __construct(
         public readonly string $sessionId,
-        public readonly string $program,
+        public readonly string $driver,
         public readonly string $accountId,
         public readonly string $accountLabel,
         public readonly AccountState $accountState,
@@ -33,7 +33,7 @@ final class StartAccountData extends Data
     {
         return new self(
             $use->sessionId,
-            $use->program,
+            $use->driver,
             $account->id,
             $account->label,
             $account->state,

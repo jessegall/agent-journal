@@ -11,6 +11,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\SubmitSignInCode;
 use App\Profiles\Enums\SignInMethod;
@@ -20,7 +21,6 @@ use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
 use App\Profiles\Values\SignInIdentity;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -61,7 +61,7 @@ final class SignInSecretTest extends TestCase
     public function test_a_long_key_reaches_the_host_once_and_only_its_fingerprint_is_saved(): void
     {
         $key = str_repeat('k', 3000);
-        $attempt = $this->attempt(HookProgram::ClaudeCode, SignInMethod::ApiKey, 'request-1');
+        $attempt = $this->attempt(HookDriver::ClaudeCode, SignInMethod::ApiKey, 'request-1');
 
         $this->submit($attempt, " {$key} ");
 
@@ -79,8 +79,8 @@ final class SignInSecretTest extends TestCase
 
         $cases = [['claude-code', 'key-1'], ['claude-code', 'key-1'], ['codex', 'key-1'], ['claude-code', 'key-2']];
 
-        foreach ($cases as $index => [$program, $key]) {
-            $attempt = $this->attempt(HookProgram::from($program), SignInMethod::ApiKey, "request-{$index}");
+        foreach ($cases as $index => [$driver, $key]) {
+            $attempt = $this->attempt(HookDriver::from($driver), SignInMethod::ApiKey, "request-{$index}");
             $this->submit($attempt, $key);
             $fingerprints[] = $attempt->refresh()->fingerprint;
         }
@@ -91,8 +91,8 @@ final class SignInSecretTest extends TestCase
 
     public function test_an_oauth_code_keeps_its_short_limit_and_a_control_character_is_refused_for_both(): void
     {
-        $oauth = $this->attempt(HookProgram::ClaudeCode, SignInMethod::OAuth, 'request-1');
-        $secret = $this->attempt(HookProgram::ClaudeCode, SignInMethod::ApiKey, 'request-2');
+        $oauth = $this->attempt(HookDriver::ClaudeCode, SignInMethod::OAuth, 'request-1');
+        $secret = $this->attempt(HookDriver::ClaudeCode, SignInMethod::ApiKey, 'request-2');
 
         $this->assertThrows(fn () => $this->submit($oauth, str_repeat('k', 3000)), SignInCodeInvalid::class);
         $this->assertThrows(fn () => $this->submit($oauth, "ab\u{0007}c"), SignInCodeInvalid::class);
@@ -107,7 +107,7 @@ final class SignInSecretTest extends TestCase
         $code = 'Ksaw83zu7MDwmacNrrJ8tHqQXm1P6Rs1n7KMTUjY2lKY1#DV0-PaIOKpbJKqe--nxwxE48';
 
         foreach ([SignInMethod::OAuth, SignInMethod::ProviderToken] as $index => $method) {
-            $attempt = $this->attempt(HookProgram::ClaudeCode, $method, "request-{$index}");
+            $attempt = $this->attempt(HookDriver::ClaudeCode, $method, "request-{$index}");
 
             $this->assertThrows(
                 fn () => $this->submit($attempt, $pasted),
@@ -146,7 +146,7 @@ final class SignInSecretTest extends TestCase
     {
         $attempt = SignInAttempt::create(
             ActorIdentity::of(ActorContext::forUser(TestIds::of(1))),
-            HookProgram::ClaudeCode,
+            HookDriver::ClaudeCode,
             SignInMethod::ApiKey,
             '/journal/accounts/'.$requestKey,
             $requestKey,
@@ -163,11 +163,11 @@ final class SignInSecretTest extends TestCase
         return $attempt;
     }
 
-    private function attempt(HookProgram $program, SignInMethod $method, string $requestKey): SignInAttempt
+    private function attempt(HookDriver $driver, SignInMethod $method, string $requestKey): SignInAttempt
     {
         return SignInAttempt::create(
             ActorIdentity::system(),
-            $program,
+            $driver,
             $method,
             '/journal/accounts/'.$requestKey,
             $requestKey,

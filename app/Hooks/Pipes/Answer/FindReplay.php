@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Exceptions\HookDigestChanged;
 use App\Hooks\Exceptions\ReplayFound;
 use App\Hooks\Models\HookCall;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Values\Answer\LockedCall;
 use App\Pipelines\Contracts\Pipe;
 
@@ -34,6 +34,6 @@ final readonly class FindReplay implements Pipe
             throw HookDigestChanged::forCall($identity->hookId);
         }
 
-        throw ReplayFound::answeredBefore($identity->hookId, ProgramReply::fromRecorded($recorded->answer));
+        throw ReplayFound::answeredBefore($identity->hookId, DriverReply::fromRecorded($recorded->answer));
     }
 }

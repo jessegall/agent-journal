@@ -30,16 +30,16 @@ use App\Agents\Contracts\AccountUses;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\AgentCallContext;
 use App\Agents\Contracts\AgentResolver;
-use App\Agents\Contracts\CallingProgram;
+use App\Agents\Contracts\CallingDriver;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\DockerImageVerifier as DockerImageVerifierContract;
+use App\Agents\Contracts\DriverConversationResolver;
 use App\Agents\Contracts\HelperCommitImport as HelperCommitImportContract;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\MergeAdmission;
 use App\Agents\Contracts\NavigationExpiry as NavigationExpiryContract;
 use App\Agents\Contracts\NavigationReader;
-use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\ReadGrant as ReadGrantContract;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Contracts\RuntimeStops;
@@ -65,10 +65,10 @@ use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
 use App\Agents\Resolvers\AgentLaunchCandidates;
-use App\Agents\Resolvers\CallingSessionProgram;
+use App\Agents\Resolvers\CallingSessionDriver;
+use App\Agents\Resolvers\DriverConversationRecords;
 use App\Agents\Resolvers\LinkedAccountUses;
 use App\Agents\Resolvers\OwnerStartReceipts;
-use App\Agents\Resolvers\ProgramConversationRecords;
 use App\Agents\Resolvers\RecordedHostCapabilities;
 use App\Agents\Resolvers\RuntimeRecords;
 use App\Agents\Resolvers\SessionRecords;
@@ -180,7 +180,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(CallSender::class, SignedCallSender::class);
         $this->app->bind(CallRegistrar::class, CallRoutes::class);
         $this->app->bind(StartRecordResolver::class, StartRecords::class);
-        $this->app->bind(ProgramConversationResolver::class, ProgramConversationRecords::class);
+        $this->app->bind(DriverConversationResolver::class, DriverConversationRecords::class);
         $this->app->bind(
             DockerImageVerifierContract::class,
             fn () => new DockerImageVerifier(
@@ -193,7 +193,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(LaunchCandidates::class, AgentLaunchCandidates::class);
         $this->app->bind(StartReservations::class, ReserveStarts::class);
         $this->app->bind(StartReceipts::class, OwnerStartReceipts::class);
-        $this->app->bind(CallingProgram::class, CallingSessionProgram::class);
+        $this->app->bind(CallingDriver::class, CallingSessionDriver::class);
         $this->app->singleton(DriverBudgets::class, fn () => new DriverBudgets(
             $this->app->make('config')->integer('agents.driver_budgets.claim_batch_max'),
             $this->app->make('config')->integer('agents.driver_budgets.long_poll_max_seconds'),

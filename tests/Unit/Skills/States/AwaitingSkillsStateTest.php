@@ -82,13 +82,13 @@ final class AwaitingSkillsStateTest extends TestCase
         $this->assertTrue(new AwaitingSkillsState($state)->isFinished());
     }
 
-    private static function command(string $program, CommandEffect $effect): ShellCommand
+    private static function command(string $driver, CommandEffect $effect): ShellCommand
     {
         return new ShellCommand(
-            "{$program} artisan skill:status",
+            "{$driver} artisan skill:status",
             ShellDialect::Bash,
             ParseOutcome::Complete,
-            [new CommandPart($program, ['artisan', 'skill:status'], $effect, CommandType::Ordinary)],
+            [new CommandPart($driver, ['artisan', 'skill:status'], $effect, CommandType::Ordinary)],
         );
     }
 

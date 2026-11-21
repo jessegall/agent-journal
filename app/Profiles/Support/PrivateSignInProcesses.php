@@ -50,13 +50,13 @@ final readonly class PrivateSignInProcesses
             return false;
         }
 
-        if (! $this->protocols->supports($claimed->program, $claimed->method)) {
+        if (! $this->protocols->supports($claimed->driver, $claimed->method)) {
             $this->host->report($claimed, SignInOutcome::Failed, SignInIdentity::unproved());
 
             return true;
         }
 
-        $protocol = $this->protocols->for($claimed->program, $claimed->method);
+        $protocol = $this->protocols->for($claimed->driver, $claimed->method);
 
         if (! $this->owners->drain($claimed->directory, $claimed->accountId)) {
             $this->host->report($claimed, SignInOutcome::Failed, SignInIdentity::unproved());
@@ -102,13 +102,13 @@ final readonly class PrivateSignInProcesses
             return false;
         }
 
-        if (! $this->protocols->supports($claimed->program, $claimed->method)) {
+        if (! $this->protocols->supports($claimed->driver, $claimed->method)) {
             $this->host->reportCheck($claimed, AccountCheckResult::Unknown);
 
             return true;
         }
 
-        $verification = $this->protocols->for($claimed->program, $claimed->method)->verify($claimed->directory);
+        $verification = $this->protocols->for($claimed->driver, $claimed->method)->verify($claimed->directory);
 
         $accountCheck = match (true) {
             ! $verification->isCertain => AccountCheckResult::Unknown,
@@ -154,13 +154,13 @@ final readonly class PrivateSignInProcesses
             return true;
         }
 
-        $isServed = $this->protocols->supports($claimed->program, $claimed->method);
+        $isServed = $this->protocols->supports($claimed->driver, $claimed->method);
 
         if (! $isServed || ! $this->isUnused($claimed)) {
             return false;
         }
 
-        $protocol = $this->protocols->for($claimed->program, $claimed->method);
+        $protocol = $this->protocols->for($claimed->driver, $claimed->method);
 
         $protocol->signOut($claimed->directory);
         $verification = $protocol->verify($claimed->directory);

@@ -9,8 +9,8 @@ use App\Agents\Enums\LaunchCandidateRank;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
+use App\Agents\Models\DriverConversation;
 use App\Agents\Models\ProcessStart;
-use App\Agents\Models\ProgramConversation;
 use App\Agents\Models\WorkReservation;
 use App\Agents\Support\LaunchCandidateFacts;
 use App\Agents\Support\LaunchCandidateQuery;
@@ -32,13 +32,13 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
         $agentIds = array_map(fn (LaunchCandidateFacts $helper) => $helper->actor->id, $helpers);
         $agents = Agent::byIds($agentIds);
         $busy = [...$this->busyAgents($agentIds), ...WorkReservation::reservedAgentIds($agentIds)];
-        $purposeConversations = ProgramConversation::query()
+        $purposeConversations = DriverConversation::query()
             ->whereIn('agent_id', $agentIds)
             ->where('context_reference', $query->purposeReference)
             ->readAll('every conversation the offered helpers kept under one purpose, to prove exposure')
             ->get();
         $exactAgents = $this->agentsLastOnModel(
-            $purposeConversations->where('program', $query->program->value)->all(),
+            $purposeConversations->where('driver', $query->driver->value)->all(),
             $query->model,
         );
         $sawPurpose = $purposeConversations->pluck('agent_id')->unique()->all();
@@ -104,7 +104,7 @@ final readonly class AgentLaunchCandidates implements LaunchCandidates
     /**
      * The agents whose conversation's last visit ran on the model.
      *
-     * @param  array<int, ProgramConversation>  $conversations
+     * @param  array<int, DriverConversation>  $conversations
      * @return list<string>
      */
     private function agentsLastOnModel(array $conversations, string $model): array

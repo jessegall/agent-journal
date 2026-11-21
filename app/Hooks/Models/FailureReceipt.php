@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Models;
 
-use App\Agents\Enums\ProgramFailure;
+use App\Agents\Enums\DriverFailure;
 use App\Contracts\Support\InsertsAbsentRows;
 use App\Hooks\Inputs\HookIdentity;
 use App\Links\Support\Linkable;
@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property string $agent_id
  * @property string $session_id
  * @property string $event_id
- * @property ProgramFailure $failure
+ * @property DriverFailure $failure
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -43,7 +43,7 @@ final class FailureReceipt extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'failure' => ProgramFailure::class,
+            'failure' => DriverFailure::class,
         ];
     }
 
@@ -52,7 +52,7 @@ final class FailureReceipt extends Model implements ReadableModel
     /**
      * Keeps the failure the hook reported unless its event was already received, and answers whether it is new.
      */
-    public static function receive(HookIdentity $hook, ProgramFailure $failure): bool
+    public static function receive(HookIdentity $hook, DriverFailure $failure): bool
     {
         $receipt = new self();
         $receipt->setRawAttributes([

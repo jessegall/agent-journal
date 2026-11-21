@@ -8,7 +8,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Values\StackTarget;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Events\ToolCallFinished;
-use App\Hooks\Inputs\ProgramToolInput;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Inputs\ToolResult;
 use App\Skills\Listeners\RecordProvenSkillReads;
 
@@ -24,7 +24,7 @@ trait FinishesToolCalls
     {
         $this->app->make(RecordProvenSkillReads::class)->handle(new ToolCallFinished(
             new StackTarget($session->agent_id, $session->id),
-            new ToolResult($tool, ToolOutcome::Succeeded, new ProgramToolInput($arguments)),
+            new ToolResult($tool, ToolOutcome::Succeeded, new DriverToolInput($arguments)),
         ));
     }
 }

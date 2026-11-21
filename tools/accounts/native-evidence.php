@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 namespace Tools\Accounts;
 
-use App\Hooks\Support\ProgramCompatibility;
+use App\Hooks\Support\DriverCompatibility;
 use RuntimeException;
 
 const PASS = 'pass';
@@ -76,7 +76,7 @@ final readonly class InstalledBuild
         public string $digest,
     ) {}
 
-    public function isPinnedBy(ProgramCompatibility $compatibility): bool
+    public function isPinnedBy(DriverCompatibility $compatibility): bool
     {
         return $this->version === $compatibility->version && $compatibility->isPinnedBinary($this->digest);
     }
@@ -253,10 +253,10 @@ function installed_build(string $program, string $versionOutput): InstalledBuild
 /**
  * @param  list<array{item: string, result: string, reason: string, consumer: string}>  $items
  */
-function print_evidence(ProgramCompatibility $compatibility, InstalledBuild $installed, array $items): void
+function print_evidence(DriverCompatibility $compatibility, InstalledBuild $installed, array $items): void
 {
     echo json_encode([
-        'program' => $compatibility->program->value,
+        'driver' => $compatibility->driver->value,
         'version' => $installed->version,
         'binary_sha256' => $installed->digest,
         'arrangement' => $compatibility->arrangement->value,
@@ -269,7 +269,7 @@ function print_evidence(ProgramCompatibility $compatibility, InstalledBuild $ins
  *
  * @return array{item: string, result: string, reason: string, consumer: string}
  */
-function pinned_build_item(ProgramCompatibility $compatibility, InstalledBuild $installed, string $consumer): array
+function pinned_build_item(DriverCompatibility $compatibility, InstalledBuild $installed, string $consumer): array
 {
     $pinned = $installed->isPinnedBy($compatibility);
 

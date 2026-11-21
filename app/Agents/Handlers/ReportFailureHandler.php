@@ -6,7 +6,7 @@ namespace App\Agents\Handlers;
 
 use App\Agents\Commands\ReportFailure;
 use App\Agents\Events\AccountUseChanged;
-use App\Agents\Events\ProgramFailed;
+use App\Agents\Events\DriverFailed;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
 use App\Bus\Contracts\CommandFacts;
@@ -25,11 +25,11 @@ final readonly class ReportFailureHandler implements CommandHandler
         }
 
         $session = AgentSession::query()->findOrFail($start->session_id);
-        $program = $session->selection()->program->value;
-        $this->facts->publishAfterCommit(new ProgramFailed(
+        $driver = $session->selection()->driver->value;
+        $this->facts->publishAfterCommit(new DriverFailed(
             $start->agent_id,
             $start->session_id,
-            $program,
+            $driver,
             $command->failure,
             $start->accountIdentity(),
             $start->account_generation,

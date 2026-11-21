@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('operation_key');
             $table->string('actor_type', 16);
             $table->string('actor_id');
-            $table->string('program', 80);
+            $table->string('driver', 80);
             $table->string('build', 80);
             $table->string('fingerprint', 80);
             $table->string('goal_script');
@@ -42,7 +42,7 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->unique(['agent_runtime_id', 'operation_key']);
-            $table->index(['actor_type', 'actor_id', 'program', 'build', 'fingerprint', 'goal_key']);
+            $table->index(['actor_type', 'actor_id', 'driver', 'build', 'fingerprint', 'goal_key']);
         });
 
         // One open request per runtime: a second is refused by the database, not by a check that could race.

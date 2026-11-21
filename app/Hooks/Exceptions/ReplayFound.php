@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Exceptions;
 
-use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Drivers\DriverReply;
 use RuntimeException;
 
 /**
@@ -13,12 +13,12 @@ use RuntimeException;
  */
 final class ReplayFound extends RuntimeException
 {
-    private function __construct(string $message, public readonly ProgramReply $reply)
+    private function __construct(string $message, public readonly DriverReply $reply)
     {
         parent::__construct($message);
     }
 
-    public static function answeredBefore(string $hookId, ProgramReply $reply): self
+    public static function answeredBefore(string $hookId, DriverReply $reply): self
     {
         return new self("The hook call {$hookId} was answered before; its recorded reply is sent again.", $reply);
     }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Pipes\Answer;
 
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Models\HookCall;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\RecordedSteps;
 use App\Hooks\Values\Answer\RenderedCall;
@@ -20,7 +20,7 @@ final readonly class SaveCall implements Pipe
 {
     public function __construct(private StateTypes $types) {}
 
-    public function handle(RenderedCall $rendered): ProgramReply
+    public function handle(RenderedCall $rendered): DriverReply
     {
         $answer = $rendered->answer;
         $rendered->row->saveFrames($answer->stack->records(), $this->types->ticking());

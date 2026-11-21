@@ -7,9 +7,9 @@ namespace App\Skills\Handlers;
 use App\Contracts\CommandHandler;
 use App\Skills\Commands\PruneSkillPublications;
 use App\Skills\Contracts\SkillPublisher;
+use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Exceptions\SkillPublicationFailed;
 use App\Skills\Models\SkillPublication;
-use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Support\PublicationFiles;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Values\PrunedPublications;
@@ -26,7 +26,7 @@ final readonly class PruneSkillPublicationsHandler implements CommandHandler
     public function __construct(
         private SkillPublisher $publisher,
         private SkillTargets $targets,
-        private ProgramSkillAdapters $adapters,
+        private DriverSkillAdapters $adapters,
     ) {}
 
     public function handle(PruneSkillPublications $command): PrunedPublications

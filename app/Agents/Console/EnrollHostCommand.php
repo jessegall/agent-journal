@@ -19,7 +19,7 @@ final class EnrollHostCommand extends Command
         .' {--root=* : A folder the host may start agents in}'
         .' {--contained : The host is the contained agent-host service, which runs every agent in a container}';
 
-    protected $description = 'Enroll a host that runs agent programs and print its secret once';
+    protected $description = 'Enroll a host that runs agents and print its secret once';
 
     public function handle(EntryDispatchers $dispatchers): int
     {

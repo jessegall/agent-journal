@@ -21,7 +21,7 @@ final class PendingAttemptCleanupData extends Data
 {
     public function __construct(
         public readonly string $attemptId,
-        public readonly string $program,
+        public readonly string $driver,
         public readonly CleanupProblem|null $problem,
         public readonly string|null $lastTriedAt,
         public readonly bool $awaitsRetry,
@@ -31,7 +31,7 @@ final class PendingAttemptCleanupData extends Data
     {
         return new self(
             $attempt->id,
-            $attempt->program,
+            $attempt->driver,
             $attempt->cleanup_problem,
             $attempt->updated_at?->toIso8601String(),
             $attempt->awaitsCleanupRetry(),

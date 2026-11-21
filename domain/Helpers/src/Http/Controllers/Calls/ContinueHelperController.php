@@ -21,7 +21,7 @@ final readonly class ContinueHelperController
             $call->identityId,
             $call->jobId,
             $call->model,
-            $call->programKey,
+            $call->driverKey,
         )));
     }
 }

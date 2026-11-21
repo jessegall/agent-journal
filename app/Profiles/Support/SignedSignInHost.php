@@ -46,7 +46,7 @@ final readonly class SignedSignInHost implements SignInHost
 
         return new ClaimedSignIn(
             (string) $response->json('attempt_id'),
-            (string) $response->json('program'),
+            (string) $response->json('driver'),
             SignInMethod::from((string) $response->json('method')),
             (string) $response->json('directory'),
             (int) $response->json('generation'),
@@ -98,7 +98,7 @@ final readonly class SignedSignInHost implements SignInHost
 
         return new ClaimedAccountCheck(
             (string) $response->json('account_id'),
-            (string) $response->json('program'),
+            (string) $response->json('driver'),
             SignInMethod::from((string) $response->json('method')),
             (string) $response->json('directory'),
             (int) $response->json('generation'),
@@ -131,7 +131,7 @@ final readonly class SignedSignInHost implements SignInHost
         return new ClaimedCleanup(
             CleanupTarget::from((string) $response->json('target')),
             (string) $response->json('id'),
-            (string) $response->json('program'),
+            (string) $response->json('driver'),
             SignInMethod::from((string) $response->json('method')),
             (string) $response->json('directory'),
             (int) $response->json('generation'),

@@ -7,9 +7,10 @@ namespace Tests\Feature\Hooks;
 use App\Contracts\StartTransaction;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
-use App\Hooks\Contracts\ProgramAdapters;
-use App\Hooks\Contracts\ProgramCall;
-use App\Hooks\Programs\HookPayload;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Contracts\DriverAdapters;
+use App\Hooks\Contracts\DriverCall;
+use App\Hooks\Drivers\HookPayload;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\States\AgentState;
 use App\Hooks\Support\HookRetryWindow;
@@ -17,7 +18,6 @@ use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Support\ShellParser;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
@@ -53,53 +53,53 @@ final class HookRuntimeStartTest extends TestCase
     ];
 
     /**
-     * @return iterable<string, array{HookProgram, string}>
+     * @return iterable<string, array{HookDriver, string}>
      */
     public static function programEvents(): iterable
     {
-        foreach (HookProgram::cases() as $program) {
-            foreach ($program->nativeEvents() as $event) {
-                yield "{$program->value} {$event}" => [$program, $event];
+        foreach (HookDriver::cases() as $driver) {
+            foreach ($driver->nativeEvents() as $event) {
+                yield "{$driver->value} {$event}" => [$driver, $event];
             }
         }
     }
 
     /**
-     * @return iterable<string, array{HookProgram}>
+     * @return iterable<string, array{HookDriver}>
      */
-    public static function programs(): iterable
+    public static function drivers(): iterable
     {
-        foreach (HookProgram::cases() as $program) {
-            yield $program->value => [$program];
+        foreach (HookDriver::cases() as $driver) {
+            yield $driver->value => [$driver];
         }
     }
 
-    #[DataProvider('programs')]
+    #[DataProvider('drivers')]
     public function test_each_program_has_its_endpoint_and_an_adapter_mapping_only_real_hooks(
-        HookProgram $program,
+        HookDriver $driver,
     ): void {
-        $capabilities = $this->app->make(ProgramAdapters::class)->for($program)->capabilities();
+        $capabilities = $this->app->make(DriverAdapters::class)->for($driver)->capabilities();
 
         $this->assertTrue(Route::has('hooks.answer'));
-        $this->assertSame("/hooks/{$program->value}", route('hooks.answer', ['program' => $program->value], false));
+        $this->assertSame("/hooks/{$driver->value}", route('hooks.answer', ['driver' => $driver->value], false));
         $this->assertSame([], array_values(array_diff($capabilities->hookMethods, $this->hookMethods())));
     }
 
     #[DataProvider('programEvents')]
     public function test_every_event_the_isolated_settings_register_is_mapped_by_the_adapter(
-        HookProgram $program,
+        HookDriver $driver,
         string $event,
     ): void {
         $payload = HookPayload::from(
-            ['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$program->value][$event]],
+            ['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$driver->value][$event]],
         );
 
-        $call = $this->app->make(ProgramAdapters::class)->for($program)->callFor(
+        $call = $this->app->make(DriverAdapters::class)->for($driver)->callFor(
             $payload,
             TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', $event)),
         );
 
-        $this->assertInstanceOf(ProgramCall::class, $call);
+        $this->assertInstanceOf(DriverCall::class, $call);
     }
 
     public function test_the_runtime_binds_the_real_parser_start_transaction_and_state_types(): void

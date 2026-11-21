@@ -5,8 +5,8 @@ import TerminalRow from './TerminalRow.vue';
 import { useTerminalFrames } from './useTerminalFrames';
 
 /**
- * An agent's live terminal, read only: the screen as the program draws it, with its colours and cursor, at the
- * program's own size, and what the view knows about it: its age, a silent host, an end or a restart.
+ * An agent's live terminal, read only: the screen as the driver draws it, with its colours and cursor, at the
+ * driver's own size, and what the view knows about it: its age, a silent host, an end or a restart.
  */
 const props = defineProps<{ agentId: string }>();
 

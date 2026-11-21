@@ -62,7 +62,7 @@ final class StartAgentTest extends TestCase
             [
                 'id' => (string) Str::ulid(),
                 'agent_id' => $this->agent->id,
-                'program' => 'claude-code',
+                'driver' => 'claude-code',
                 'status' => 'active',
                 'profile_key' => 'main-agent',
                 'profile_revision' => 1,
@@ -145,7 +145,7 @@ final class StartAgentTest extends TestCase
         $receipt = $this->start($this->request());
 
         $start = ProcessStart::query()->withoutGlobalScopes()->sole();
-        $account = Account::query()->withoutGlobalScopes()->where('program', 'claude-code')->sole();
+        $account = Account::query()->withoutGlobalScopes()->where('driver', 'claude-code')->sole();
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
         $this->assertSame(
             [$receipt->sessionId, $account->id, 1],
@@ -157,7 +157,7 @@ final class StartAgentTest extends TestCase
 
     public function test_without_a_chosen_account_the_start_is_refused_and_keeps_nothing(): void
     {
-        ActiveAccount::query()->withoutGlobalScopes()->where('program', 'claude-code')->sole()->clear();
+        ActiveAccount::query()->withoutGlobalScopes()->where('driver', 'claude-code')->sole()->clear();
 
         try {
             $this->start($this->request());

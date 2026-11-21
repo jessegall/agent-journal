@@ -14,13 +14,13 @@ use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\StartStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\Drivers\DriverReplies;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Exceptions\StateEventAfterCommitFailed;
 use App\Hooks\Exceptions\StateEventReentry;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\PendingAgentMessage;
-use App\Hooks\Programs\ProgramReplies;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
@@ -208,10 +208,10 @@ final class StateEventDeliveryTest extends TestCase
             $this->stop(),
             $this->capabilities(),
             new OperationDeadline(),
-            function (HookAnswer $answer): ProgramReply {
+            function (HookAnswer $answer): DriverReply {
                 $this->dispatch(new NoteWritten());
 
-                return ProgramReplies::stop($answer);
+                return DriverReplies::stop($answer);
             },
         );
     }

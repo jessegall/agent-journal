@@ -1,5 +1,5 @@
 {
-    "program": "Codex",
+    "driver": "Codex",
     "mapping": {
         "session start": "onSessionStart",
         "prompt": "onPrompt",

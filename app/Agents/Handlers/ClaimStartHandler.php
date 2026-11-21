@@ -44,9 +44,9 @@ final readonly class ClaimStartHandler implements CommandHandler
             return null;
         }
 
-        $program = AgentSession::query()->findOrFail($start->session_id)->selection()->program->value;
+        $driver = AgentSession::query()->findOrFail($start->session_id)->selection()->driver->value;
         $settings = new AccountStartSettings();
-        $requested = new AccountSettingsRequested($program, $start->accountIdentity(), $start->directory, $settings);
+        $requested = new AccountSettingsRequested($driver, $start->accountIdentity(), $start->directory, $settings);
         $this->extensions->accountSettings($requested);
 
         return new ClaimedStart(
@@ -54,7 +54,7 @@ final readonly class ClaimStartHandler implements CommandHandler
             $start->session_id,
             $start->directory,
             $start->account_generation,
-            $settings->recipeFor($program, $start->transport_profile),
+            $settings->recipeFor($driver, $start->transport_profile),
             StartRecord::conversationTargetOf($start->session_id),
         );
     }

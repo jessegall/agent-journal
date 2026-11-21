@@ -20,7 +20,7 @@ final class HelperSendCommand extends Command
     use PrintsHelperReceipts;
     use RunsCallPipelines;
 
-    protected $signature = 'helper:send {identity} {brief} {--profile= : The profile of the helper} {--subject= : The record the work is about, as type:id} {--purpose= : An existing purpose id} {--purpose-text= : A purpose in words} {--source=* : Records given as the source, as type:id} {--independent : Independent of everything the helper saw} {--program= : The program, when the profile allows several} {--model= : The model, or default} {--key= : The request key, to retry the same request} {--json : Print the receipt as JSON}';
+    protected $signature = 'helper:send {identity} {brief} {--profile= : The profile of the helper} {--subject= : The record the work is about, as type:id} {--purpose= : An existing purpose id} {--purpose-text= : A purpose in words} {--source=* : Records given as the source, as type:id} {--independent : Independent of everything the helper saw} {--driver= : The driver, when the profile allows several} {--model= : The model, or default} {--key= : The request key, to retry the same request} {--json : Print the receipt as JSON}';
 
     protected $description = 'Give the named helper new work';
 
@@ -38,7 +38,7 @@ final class HelperSendCommand extends Command
             'identityId' => (string) $this->argument('identity'),
             'profileKey' => (string) $this->option('profile'),
             'model' => $model,
-            'programKey' => $this->textOption('program'),
+            'driverKey' => $this->textOption('driver'),
             'subject' => $this->textOption('subject'),
             'purposeId' => $this->textOption('purpose'),
             'purposeText' => $this->textOption('purpose-text'),
@@ -56,7 +56,7 @@ final class HelperSendCommand extends Command
             $call->identityId,
             $call->profileKey,
             $call->model,
-            $call->programKey,
+            $call->driverKey,
             $call->subject,
             $call->purposeId,
             $call->purposeText,

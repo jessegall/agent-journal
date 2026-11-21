@@ -18,7 +18,7 @@ final readonly class AccountUse
         public RecordIdentity $account,
         public string $sessionId,
         public string $agentId,
-        public string $program,
+        public string $driver,
         public AccountProcessRole $role,
         public CarbonImmutable $startedAt,
         public CarbonImmutable|null $endedAt,

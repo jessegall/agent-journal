@@ -8,11 +8,11 @@ use App\Agents\Events\AccountSettingsRequested;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
+use App\Agents\Events\DriverFailed;
 use App\Agents\Events\DriverRequestRecovered;
 use App\Agents\Events\LaunchCancelled;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Events\MergeOutcomeRecorded;
-use App\Agents\Events\ProgramFailed;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\SessionOpened;
 use App\Agents\Events\StartAccepted;
@@ -132,13 +132,13 @@ final class EventPayloads
                     'attemptId' => 'string',
                 ],
             ],
-            ProgramFailed::class => [
+            DriverFailed::class => [
                 'afterCommit' => true,
                 'fields' => [
                     'agentId' => 'string',
                     'sessionId' => 'string',
-                    'program' => 'string',
-                    'failure' => 'App\Agents\Enums\ProgramFailure',
+                    'driver' => 'string',
+                    'failure' => 'App\Agents\Enums\DriverFailure',
                     'account' => '?App\Records\Support\RecordIdentity',
                     'accountGeneration' => '?int',
                 ],
@@ -171,7 +171,7 @@ final class EventPayloads
                 'afterCommit' => true,
                 'fields' => [
                     'agentId' => 'string',
-                    'program' => 'string',
+                    'driver' => 'string',
                     'reason' => 'App\Agents\Enums\StartUnavailableReason',
                 ],
             ],

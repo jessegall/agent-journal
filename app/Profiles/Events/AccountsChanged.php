@@ -15,7 +15,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 final readonly class AccountsChanged implements Event, ShouldDispatchAfterCommit, UserInterfaceUpdater
 {
     public function __construct(
-        public string $program,
+        public string $driver,
         public string $accountId,
     ) {}
 }

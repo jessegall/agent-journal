@@ -6,7 +6,7 @@ namespace App\Agents\Data;
 
 use App\Agents\Values\ProtectedItem;
 use App\Agents\Values\ProtectionReport;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
@@ -19,7 +19,7 @@ final class ProtectionReportData extends Data
      * @param  list<ProtectedItemData>  $items
      */
     public function __construct(
-        public readonly HookProgram $program,
+        public readonly HookDriver $driver,
         public readonly string $build,
         public readonly string $platform,
         #[DataCollectionOf(ProtectedItemData::class)]
@@ -29,7 +29,7 @@ final class ProtectionReportData extends Data
     public function report(): ProtectionReport
     {
         return new ProtectionReport(
-            $this->program,
+            $this->driver,
             $this->build,
             $this->platform,
             array_map(

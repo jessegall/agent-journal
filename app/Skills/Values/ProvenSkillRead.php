@@ -6,8 +6,8 @@ namespace App\Skills\Values;
 
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Inputs\ToolResult;
+use App\Skills\Drivers\ClaudeCodeSkills;
 use App\Skills\Enums\ReadEvidence;
-use App\Skills\Programs\ClaudeCodeSkills;
 
 /**
  * A finished tool call that proves an agent read one skill whole: Claude's Skill tool, a Read of a whole delivered

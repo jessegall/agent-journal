@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Profiles;
 
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\SignInMethod;
-use App\Programs\Enums\HookProgram;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -25,19 +24,19 @@ final class SignInMethodData extends Data
         public readonly string $title,
         public readonly string $description,
         public readonly string $billingLabel,
-        public readonly string|Optional $secretSource = new Optional(),
+        public readonly string|null $secretSource,
     ) {}
 
-    public static function fromMethod(HookProgram $program, SignInMethod $method): self
+    public static function fromMethod(HookDriver $driver, SignInMethod $method): self
     {
         return SignInMethodData::from([
             'method' => $method,
             'isSecret' => $method->isSecret(),
             'billingNote' => $method->billingNote(),
-            'title' => $method->title($program),
-            'description' => $method->description($program),
+            'title' => $method->title($driver),
+            'description' => $method->description($driver),
             'billingLabel' => $method->billingLabel(),
-            'secretSource' => $method->secretSource($program) ?? Optional::create(),
+            'secretSource' => $method->secretSource($driver),
         ]);
     }
 }

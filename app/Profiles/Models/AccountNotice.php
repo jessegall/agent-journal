@@ -26,14 +26,14 @@ use Illuminate\Support\Carbon;
  * program, the safe reason and how often it happened, until the owner dismisses it or a later success resolves it.
  *
  * @property string $id
- * @property string $program
+ * @property string $driver
  * @property AccountNoticeReason $reason
  * @property int $times
  * @property CarbonImmutable|null $resolved_at
  * @property Carbon $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['program', 'reason'])]
+#[Fillable(['driver', 'reason'])]
 final class AccountNotice extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -58,11 +58,11 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     /**
      * A new open notice of the program and reason, counted once.
      */
-    public static function create(string $program, AccountNoticeReason $reason): self
+    public static function create(string $driver, AccountNoticeReason $reason): self
     {
-        $notice = new self(['program' => $program, 'reason' => $reason->value]);
+        $notice = new self(['driver' => $driver, 'reason' => $reason->value]);
         $notice->assertSaved($notice->save());
-        $notice->raise(new AccountNoticeRecorded($notice->program, $notice->id));
+        $notice->raise(new AccountNoticeRecorded($notice->driver, $notice->id));
 
         return $notice;
     }
@@ -72,12 +72,12 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     /**
      * The program's open notice of the reason, locked, if one is open.
      */
-    public static function lockedOpenFor(string $program, AccountNoticeReason $reason): self|null
+    public static function lockedOpenFor(string $driver, AccountNoticeReason $reason): self|null
     {
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->open()
-            ->where('program', $program)
+            ->where('driver', $driver)
             ->where('reason', $reason->value)
             ->lockForUpdate()
             ->first();
@@ -88,12 +88,12 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
      *
      * @return list<self>
      */
-    public static function lockedOpenOf(string $program): array
+    public static function lockedOpenOf(string $driver): array
     {
         $notices = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
             ->open()
-            ->where('program', $program)
+            ->where('driver', $driver)
             ->orderBy('id')
             ->lockForUpdate()
             ->readAll('a program keeps one open notice per reason')
@@ -121,7 +121,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     {
         $this->times++;
         $this->assertSaved($this->save());
-        $this->raise(new AccountNoticeRecorded($this->program, $this->id));
+        $this->raise(new AccountNoticeRecorded($this->driver, $this->id));
     }
 
     /**
@@ -131,7 +131,7 @@ final class AccountNotice extends Model implements EventSource, ReadableModel
     {
         $this->resolved_at = $now;
         $this->assertSaved($this->save());
-        $this->raise(new AccountNoticeResolved($this->program, $this->id));
+        $this->raise(new AccountNoticeResolved($this->driver, $this->id));
     }
 
     // ----------[ Scopes ]----------

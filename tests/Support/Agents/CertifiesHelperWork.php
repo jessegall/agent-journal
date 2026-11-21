@@ -15,7 +15,7 @@ use App\Agents\Support\HelperCommitImport;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\ModelSelection;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Records\Support\RecordIdentity;
@@ -82,7 +82,7 @@ trait CertifiesHelperWork
         $request = new StartRequest(
             $launch->session->start_request_id,
             $launch->agent->id,
-            SelectedProgram::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null),
+            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null),
             StartOriginType::OwnerRequest,
             "{$work->type}:{$work->id}",
             null,

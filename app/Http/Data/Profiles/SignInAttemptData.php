@@ -20,7 +20,7 @@ final class SignInAttemptData extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $program,
+        public readonly string $driver,
         public readonly SignInMethod $method,
         public readonly SignInType $type,
         public readonly string|null $accountId,
@@ -33,7 +33,7 @@ final class SignInAttemptData extends Data
     {
         return new self(
             $attempt->id,
-            $attempt->program,
+            $attempt->driver,
             $attempt->method,
             $attempt->type(),
             $attempt->account_id,

@@ -24,7 +24,7 @@ final readonly class ClaimSignInController
             ? new Response(status: Response::HTTP_NO_CONTENT)
             : new JsonResponse([
                 'attempt_id' => $claimed->attemptId,
-                'program' => $claimed->program,
+                'driver' => $claimed->driver,
                 'method' => $claimed->method->value,
                 'directory' => $claimed->directory,
                 'generation' => $claimed->generation,

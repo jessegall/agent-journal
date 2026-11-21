@@ -14,7 +14,7 @@ use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Values\ProfileKey;
 use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillContextUnavailable;
-use App\Skills\Support\StartProgram;
+use App\Skills\Support\StartDriver;
 use App\Skills\Values\SkillContext;
 use App\Skills\Values\StartProfile;
 
@@ -126,15 +126,15 @@ final readonly class SkillContextResolver
 
     private function contextOf(Agent $agent, AgentSession $session, StartProfile $profile): SkillContext
     {
-        $program = StartProgram::of($session->program);
+        $driver = StartDriver::of($session->driver);
 
         return new SkillContext(
             actor: new ActorIdentity(ActorType::Agent, $agent->id),
             sessionId: $session->id,
             environment: self::ENVIRONMENT,
             profile: $profile,
-            program: $program->program,
-            provider: $program->provider,
+            driver: $driver->driver,
+            provider: $driver->provider,
         );
     }
 

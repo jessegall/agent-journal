@@ -44,8 +44,8 @@ final readonly class ProfileDefinition
             || $this->model !== $active->model
             || $this->skillAllowlist !== $active->skillAllowlist
             || $this->requiredSkills !== $active->requiredSkills
-            || $mine->program !== $theirs->program
-            || $mine->programPinned !== $theirs->programPinned
+            || $mine->driver !== $theirs->driver
+            || $mine->driverPinned !== $theirs->driverPinned
             || $mine->allowedModels !== $theirs->allowedModels
             || $mine->access != $theirs->access
             || $mine->stopConditions != $theirs->stopConditions

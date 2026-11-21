@@ -16,7 +16,7 @@ use App\Profiles\Values\SignInVerification;
  */
 final readonly class CodexKeySignIn implements SignInProtocol
 {
-    public function __construct(private CodexProgram $codex) {}
+    public function __construct(private CodexDriver $codex) {}
 
     public function begin(string $directory): PrivateAccountProcess
     {

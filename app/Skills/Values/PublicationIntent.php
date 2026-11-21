@@ -14,7 +14,7 @@ final readonly class PublicationIntent
      */
     public function __construct(
         public string $sessionId,
-        public string $program,
+        public string $driver,
         public string $target,
         public string $selectionDigest,
         public array $skillKeys,

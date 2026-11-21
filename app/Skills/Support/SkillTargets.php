@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
-use App\Programs\Values\ProgramKey;
+use App\Drivers\Values\DriverKey;
 
 /**
  * Where the journal keeps each session's delivered skills: a protected folder it owns per session and program, which
@@ -21,9 +21,9 @@ final readonly class SkillTargets
         return $this->root;
     }
 
-    public function targetFor(string $sessionId, ProgramKey $program): string
+    public function targetFor(string $sessionId, DriverKey $driver): string
     {
-        return "{$this->root}/targets/{$sessionId}/{$program->key}";
+        return "{$this->root}/targets/{$sessionId}/{$driver->key}";
     }
 
     public function generationsFolder(): string

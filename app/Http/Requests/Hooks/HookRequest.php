@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Hooks;
 
-use App\Hooks\Programs\HookPayload;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Drivers\HookPayload;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -37,9 +37,9 @@ final class HookRequest extends FormRequest
         ];
     }
 
-    public function program(): HookProgram
+    public function driver(): HookDriver
     {
-        return HookProgram::from((string) $this->route('program'));
+        return HookDriver::from((string) $this->route('driver'));
     }
 
     /**

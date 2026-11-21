@@ -6,6 +6,8 @@ namespace Tests\Feature\Hooks;
 
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Drivers\DriverReplies;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\RewriteSupport;
@@ -14,11 +16,9 @@ use App\Hooks\Exceptions\HookDigestChanged;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
-use App\Hooks\Inputs\ProgramToolInput;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
-use App\Hooks\Programs\ProgramReplies;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Storage\WalkStep;
 use Closure;
@@ -193,21 +193,21 @@ final class AgentStateMachineTest extends TestCase
     }
 
     /**
-     * @return Closure(HookAnswer): ProgramReply
+     * @return Closure(HookAnswer): DriverReply
      */
     private function stopReply(): Closure
     {
-        return fn (HookAnswer $answer) => ProgramReplies::stop($answer);
+        return fn (HookAnswer $answer) => DriverReplies::stop($answer);
     }
 
     /**
-     * @return Closure(HookAnswer): ProgramReply
+     * @return Closure(HookAnswer): DriverReply
      */
     private function shellReply(RewriteSupport $rewrites): Closure
     {
-        return fn (HookAnswer $answer) => ProgramReplies::shell(
+        return fn (HookAnswer $answer) => DriverReplies::shell(
             $answer,
-            new ProgramToolInput(['command' => 'composer test', 'description' => 'Run the tests']),
+            new DriverToolInput(['command' => 'composer test', 'description' => 'Run the tests']),
             $rewrites,
         );
     }

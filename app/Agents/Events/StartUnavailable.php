@@ -17,7 +17,7 @@ final readonly class StartUnavailable implements Event, ListenerFailureLog, User
 {
     public function __construct(
         public string $agentId,
-        public string $program,
+        public string $driver,
         public StartUnavailableReason $reason,
     ) {}
 }

@@ -14,8 +14,8 @@ declare(strict_types=1);
  * --allow-requests lets the hostile work settings item send one small request on account A.
  */
 
-use App\Hooks\Support\ProgramCompatibility;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Support\DriverCompatibility;
 use Tools\Accounts\AccountStatus;
 
 use function Tools\Accounts\empty_folder;
@@ -32,7 +32,7 @@ use function Tools\Accounts\run_program;
 require __DIR__.'/../../vendor/autoload.php';
 require __DIR__.'/native-evidence.php';
 
-$compatibility = ProgramCompatibility::pinned(HookProgram::ClaudeCode);
+$compatibility = DriverCompatibility::pinned(HookDriver::ClaudeCode);
 $options = read_options(array_slice($argv, 1), 'claude');
 $program = $options['program'];
 $accountA = journal_account($options['accounts_root'], $options['account_a']);

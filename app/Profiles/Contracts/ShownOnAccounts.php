@@ -12,7 +12,7 @@ use App\Contracts\Event;
  */
 interface ShownOnAccounts extends Event
 {
-    public function program(): string;
+    public function driver(): string;
 
     public function subjectId(): string;
 }

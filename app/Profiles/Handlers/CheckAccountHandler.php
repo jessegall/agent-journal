@@ -23,8 +23,8 @@ final readonly class CheckAccountHandler implements CommandHandler
 
     public function handle(CheckAccount $command): void
     {
-        $program = Account::programForJournal($command->accountId);
-        $selection = ActiveAccount::lockedForJournal($program);
+        $driver = Account::driverForJournal($command->accountId);
+        $selection = ActiveAccount::lockedForJournal($driver);
         $account = Account::lockedForJournal($command->accountId);
 
         if (! $account->applyCheck($command->generation, $command->accountCheck, CarbonImmutable::now())) {
@@ -32,6 +32,6 @@ final readonly class CheckAccountHandler implements CommandHandler
         }
 
         $selection->clearIfChosen($account);
-        $this->notices->record($account->program, AccountNoticeReason::NeedsSignIn);
+        $this->notices->record($account->driver, AccountNoticeReason::NeedsSignIn);
     }
 }

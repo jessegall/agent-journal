@@ -32,14 +32,14 @@ final readonly class HelperCalls
         string $identityId,
         string $jobId,
         string $model,
-        string|null $programKey,
+        string|null $driverKey,
         CallKey $requestKey = new CallKey(),
     ): HelperReceiptData {
         return $this->sender->send(ContinueHelperCall::from([
             'identityId' => $identityId,
             'jobId' => $jobId,
             'model' => $model,
-            'programKey' => $programKey,
+            'driverKey' => $driverKey,
             'requestKey' => $requestKey,
         ]));
     }
@@ -57,7 +57,7 @@ final readonly class HelperCalls
         string $identityId,
         string $profileKey,
         string $model,
-        string|null $programKey,
+        string|null $driverKey,
         string|null $subject,
         string|null $purposeId,
         string|null $purposeText,
@@ -70,7 +70,7 @@ final readonly class HelperCalls
             'identityId' => $identityId,
             'profileKey' => $profileKey,
             'model' => $model,
-            'programKey' => $programKey,
+            'driverKey' => $driverKey,
             'subject' => $subject,
             'purposeId' => $purposeId,
             'purposeText' => $purposeText,
@@ -87,7 +87,7 @@ final readonly class HelperCalls
     public function startHelper(
         string $profileKey,
         string $model,
-        string|null $programKey,
+        string|null $driverKey,
         string|null $subject,
         string|null $purposeId,
         string|null $purposeText,
@@ -99,7 +99,7 @@ final readonly class HelperCalls
         return $this->sender->send(StartHelperCall::from([
             'profileKey' => $profileKey,
             'model' => $model,
-            'programKey' => $programKey,
+            'driverKey' => $driverKey,
             'subject' => $subject,
             'purposeId' => $purposeId,
             'purposeText' => $purposeText,

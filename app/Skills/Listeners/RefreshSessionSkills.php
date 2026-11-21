@@ -7,22 +7,22 @@ namespace App\Skills\Listeners;
 use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandFacts;
 use App\Contracts\Listener;
+use App\Drivers\Values\DriverKey;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Events\ContextStarted;
-use App\Programs\Values\ProgramKey;
 use App\Skills\Contracts\SkillResolver;
+use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Enums\SkillReload;
 use App\Skills\Events\SessionSkillsIntended;
 use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
-use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\States\Support\AwaitingSkillsStateReference;
 use App\Skills\Support\SkillPublications;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
-use App\Skills\Support\StartProgram;
+use App\Skills\Support\StartDriver;
 use App\Skills\Values\SelectedSkills;
 
 /**
@@ -35,7 +35,7 @@ final readonly class RefreshSessionSkills implements Listener
     public function __construct(
         private SkillContextResolver $contexts,
         private SkillSelection $selection,
-        private ProgramSkillAdapters $adapters,
+        private DriverSkillAdapters $adapters,
         private SkillTargets $targets,
         private SkillResolver $skills,
         private AgentStack $stacks,
@@ -46,10 +46,10 @@ final readonly class RefreshSessionSkills implements Listener
     public function handle(ContextStarted $event): void
     {
         $session = AgentSession::byId($event->target->sessionId);
-        $program = StartProgram::of($session->program)->program;
+        $driver = StartDriver::of($session->driver)->driver;
         $generation = SkillGeneration::latestReady();
 
-        if ($program === null || ! $this->adapters->supports($program) || $generation === null) {
+        if ($driver === null || ! $this->adapters->supports($driver) || $generation === null) {
             return;
         }
 
@@ -67,8 +67,8 @@ final readonly class RefreshSessionSkills implements Listener
         if ($latest === null || $latest->selection_digest !== $selected->digest) {
             $publication = $this->publications->intend(
                 $session->id,
-                $program->key,
-                $this->targets->targetFor($session->id, $program),
+                $driver->key,
+                $this->targets->targetFor($session->id, $driver),
                 $generation,
                 $selected->digest,
                 $selected->selectedKeys(),
@@ -82,14 +82,14 @@ final readonly class RefreshSessionSkills implements Listener
 
         $started = SkillPublication::firstOfSession($session->id);
 
-        if ($started->selection_digest !== $selected->digest && $this->reloadsAtNewSession($program)) {
-            $event->reminders->add($this->newSessionNotice($program, $selected), true);
+        if ($started->selection_digest !== $selected->digest && $this->reloadsAtNewSession($driver)) {
+            $event->reminders->add($this->newSessionNotice($driver, $selected), true);
         }
     }
 
-    private function reloadsAtNewSession(ProgramKey $program): bool
+    private function reloadsAtNewSession(DriverKey $driver): bool
     {
-        return $this->adapters->for($program)->reloadMode() === SkillReload::NewSession;
+        return $this->adapters->for($driver)->reloadMode() === SkillReload::NewSession;
     }
 
     /**
@@ -103,14 +103,14 @@ final readonly class RefreshSessionSkills implements Listener
         );
     }
 
-    private function newSessionNotice(ProgramKey $program, SelectedSkills $selected): string
+    private function newSessionNotice(DriverKey $driver, SelectedSkills $selected): string
     {
         $keys = $selected->selectedKeys() === [] ? 'none' : implode(', ', $selected->selectedKeys());
 
         return sprintf(
             'Your journal skills changed; they are now: %s. %s loads skills only when a session starts, so start a new session to use the new set; until then read a skill with php artisan skill:show <key>.',
             $keys,
-            $program->key,
+            $driver->key,
         );
     }
 }

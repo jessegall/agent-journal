@@ -173,8 +173,8 @@ final readonly class ActivateProfilesHandler implements CommandHandler
     {
         $start = $definition->start;
 
-        if ($start->execution->mode === ExecutionModeType::RequiredContainer && $start->program !== null) {
-            $this->containers->assertSupported($start->program);
+        if ($start->execution->mode === ExecutionModeType::RequiredContainer && $start->driver !== null) {
+            $this->containers->assertSupported($start->driver);
         }
     }
 

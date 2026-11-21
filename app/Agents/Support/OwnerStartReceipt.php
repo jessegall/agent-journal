@@ -6,7 +6,7 @@ namespace App\Agents\Support;
 
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 
 /**
  * What an owner learns of a start for its work: the request as the launch's reference, the selection, whether the
@@ -17,7 +17,7 @@ final readonly class OwnerStartReceipt
 {
     public function __construct(
         public string $launchReference,
-        public SelectedProgram $selection,
+        public SelectedDriver $selection,
         public bool $newSession,
         public ConversationModeType $conversationMode,
         public ExecutionModeType $executionMode,

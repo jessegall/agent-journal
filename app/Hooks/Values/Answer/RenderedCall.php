@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Values\Answer;
 
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 
 /**
@@ -17,6 +17,6 @@ final readonly class RenderedCall
         public HookCallStage $call,
         public AgentStackRow $row,
         public HookAnswer $answer,
-        public ProgramReply $reply,
+        public DriverReply $reply,
     ) {}
 }

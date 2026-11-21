@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Enums;
 
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Inputs\ProgramToolInput;
-use App\Hooks\Programs\ProgramReplies;
-use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Drivers\DriverReplies;
+use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 
@@ -40,17 +40,17 @@ enum RewriteSupport: string
             return $answer;
         }
 
-        return $answer->replacedBy(Decision::deny(ProgramReplies::REWRITE_REFUSAL), $stackBefore);
+        return $answer->replacedBy(Decision::deny(DriverReplies::REWRITE_REFUSAL), $stackBefore);
     }
 
-    public function reply(HookAnswer $answer, ProgramToolInput $original): ProgramReply
+    public function reply(HookAnswer $answer, DriverToolInput $original): DriverReply
     {
         return match ($this) {
-            self::WithoutApproval => ProgramReplies::rewriteTool(
+            self::WithoutApproval => DriverReplies::rewriteTool(
                 $original->withCommand($answer->decision->replacementLine()),
                 $answer->context,
             ),
-            self::NeedsApproval => ProgramReplies::denyTool(ProgramReplies::REWRITE_REFUSAL, $answer->context),
+            self::NeedsApproval => DriverReplies::denyTool(DriverReplies::REWRITE_REFUSAL, $answer->context),
         };
     }
 }

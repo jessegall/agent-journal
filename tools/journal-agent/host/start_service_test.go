@@ -17,7 +17,7 @@ type startJournal struct {
 
 func (journal *startJournal) StartGrant(context.Context, string) (client.Grant, error) {
 	journal.grants++
-	return client.Grant{Token: "token", Runtime: client.RuntimeStart{SessionID: "session-1", ProgramBuild: "2.1.323"}},
+	return client.Grant{Token: "token", Runtime: client.RuntimeStart{SessionID: "session-1", DriverBuild: "2.1.323"}},
 		nil
 }
 
@@ -31,7 +31,7 @@ func (journal *startJournal) ClaimStart(_ context.Context, sessionID string) (cl
 		return client.ClaimedStart{}, journal.claimError
 	}
 	return client.ClaimedStart{StartKey: "start-1", SessionID: sessionID, Directory: "/accounts/a",
-		Recipe: client.AccountRecipe{ProgramVersion: "2.1.323", Arrangement: "direct"}}, nil
+		Recipe: client.AccountRecipe{DriverVersion: "2.1.323", Arrangement: "direct"}}, nil
 }
 
 func preparation(t *testing.T, journal *startJournal, prerequisites error) StartPreparation {

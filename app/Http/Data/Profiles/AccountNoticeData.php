@@ -20,7 +20,7 @@ final class AccountNoticeData extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $program,
+        public readonly string $driver,
         public readonly AccountNoticeReason $reason,
         public readonly int $times,
         public readonly string $since,
@@ -30,7 +30,7 @@ final class AccountNoticeData extends Data
     {
         return new self(
             $notice->id,
-            $notice->program,
+            $notice->driver,
             $notice->reason,
             $notice->times,
             $notice->created_at->toIso8601String(),

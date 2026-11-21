@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Agents\Models\AgentRuntime;
+use App\Hooks\Contracts\DriverCall;
 use App\Hooks\Contracts\HookInput;
-use App\Hooks\Contracts\ProgramCall;
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Drivers\ClaudeCodeAdapter;
+use App\Hooks\Drivers\CodexAdapter;
+use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Drivers\HookPayload;
+use App\Hooks\Drivers\JudgedCall;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
-use App\Hooks\Programs\ClaudeCodeAdapter;
-use App\Hooks\Programs\CodexAdapter;
-use App\Hooks\Programs\HookPayload;
-use App\Hooks\Programs\JudgedCall;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 use App\Processes\Contracts\ShellCommandParser;
@@ -136,7 +136,7 @@ final class DeliveredSkillsGuardTest extends TestCase
         $this->assertRefusedWith(DeliveredSkillsAccess::OTHER_RUNTIME, $reply);
     }
 
-    private function codexShell(string $line): ProgramCall
+    private function codexShell(string $line): DriverCall
     {
         return $this->app->make(CodexAdapter::class)->callFor(
             $this->payload('Bash', ['command' => $line]),
@@ -155,7 +155,7 @@ final class DeliveredSkillsGuardTest extends TestCase
     /**
      * @param  array<string, mixed>  $arguments
      */
-    private function claudeCode(string $tool, array $arguments): ProgramReply
+    private function claudeCode(string $tool, array $arguments): DriverReply
     {
         $allowed = new HookAnswer(Decision::allow(), [], [], new AgentStack([], new InMemoryStateFactory()));
 
@@ -180,7 +180,7 @@ final class DeliveredSkillsGuardTest extends TestCase
         ]);
     }
 
-    private function assertRefusedWith(string $reason, ProgramReply $reply): void
+    private function assertRefusedWith(string $reason, DriverReply $reply): void
     {
         $this->assertSame(
             ['hookEventName' => 'PreToolUse', 'permissionDecision' => 'deny', 'permissionDecisionReason' => $reason],

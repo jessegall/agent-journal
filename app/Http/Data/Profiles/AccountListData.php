@@ -19,7 +19,7 @@ final class AccountListData extends Data
      * @param  list<AccountSelectionData>  $selections
      * @param  list<SignInAttemptData>  $attempts
      * @param  list<PendingAttemptCleanupData>  $pendingCleanups
-     * @param  list<ProgramMethodsData>  $methods
+     * @param  list<DriverMethodsData>  $methods
      */
     public function __construct(
         #[DataCollectionOf(AccountRowData::class)]
@@ -30,7 +30,7 @@ final class AccountListData extends Data
         public readonly array $attempts,
         #[DataCollectionOf(PendingAttemptCleanupData::class)]
         public readonly array $pendingCleanups,
-        #[DataCollectionOf(ProgramMethodsData::class)]
+        #[DataCollectionOf(DriverMethodsData::class)]
         public readonly array $methods,
     ) {}
 }

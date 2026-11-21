@@ -21,11 +21,11 @@ final readonly class SwitchAccountHandler implements CommandHandler
 
     public function handle(SwitchAccount $command): void
     {
-        $program = Account::programOf($command->accountId);
-        $selection = ActiveAccount::lockedFor($program);
+        $driver = Account::driverOf($command->accountId);
+        $selection = ActiveAccount::lockedFor($driver);
         $account = Account::lockedForChange($command->accountId);
 
-        $this->notices->resolveOpen($program->value, CarbonImmutable::now());
+        $this->notices->resolveOpen($driver->value, CarbonImmutable::now());
 
         $selection->switchTo($account);
     }

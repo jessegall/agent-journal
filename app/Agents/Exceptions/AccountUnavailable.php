@@ -20,15 +20,15 @@ final class AccountUnavailable extends RuntimeException implements CodedRefusal,
 
     public function __construct(
         string $message,
-        public readonly string $program,
+        public readonly string $driver,
         public readonly StartUnavailableReason $reason,
     ) {
         parent::__construct($message);
     }
 
-    public static function forStart(string $program, StartUnavailableReason $reason): self
+    public static function forStart(string $driver, StartUnavailableReason $reason): self
     {
-        return new self("{$program} cannot be started now: {$reason->sentence()}.", $program, $reason);
+        return new self("{$driver} cannot be started now: {$reason->sentence()}.", $driver, $reason);
     }
 
     protected function status(): int
@@ -42,10 +42,10 @@ final class AccountUnavailable extends RuntimeException implements CodedRefusal,
     }
 
     /**
-     * @return array{program: string, reason: string}
+     * @return array{driver: string, reason: string}
      */
     protected function details(): array
     {
-        return ['program' => $this->program, 'reason' => $this->reason->value];
+        return ['driver' => $this->driver, 'reason' => $this->reason->value];
     }
 }

@@ -10,7 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\RunKeyScript;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\EnrolledHost;
@@ -54,7 +54,7 @@ trait OpensLedgerRuntimes
                 'claude-code',
                 $build,
                 'claude',
-                DriverType::Process,
+                DriverVariant::Headless,
                 'claude-opus-5-5',
                 firstMessage: $firstMessage,
             ),

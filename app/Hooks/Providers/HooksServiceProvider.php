@@ -22,9 +22,9 @@ use App\Hooks\Console\RelayHookCommand;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\CurrentState;
+use App\Hooks\Contracts\DriverAdapters;
+use App\Hooks\Contracts\DriverCompatibilities;
 use App\Hooks\Contracts\IncomingWorkRegistration;
-use App\Hooks\Contracts\ProgramAdapters;
-use App\Hooks\Contracts\ProgramCompatibilities;
 use App\Hooks\Contracts\StackInspectionQuery as StackInspectionQueryContract;
 use App\Hooks\Contracts\StackPermission;
 use App\Hooks\Contracts\StackTransaction as StackTransactionContract;
@@ -37,13 +37,13 @@ use App\Hooks\Contracts\StopPreparer;
 use App\Hooks\Contracts\UserStack;
 use App\Hooks\Contracts\WorkProgress;
 use App\Hooks\Declarations\StateMethods;
+use App\Hooks\Drivers\SupportedDriverAdapters;
 use App\Hooks\Inspection\StackInspectionQuery;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\FailureReceipt;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Models\StopAttempt;
 use App\Hooks\Models\Support\AgentSessionScope;
-use App\Hooks\Programs\SupportedProgramAdapters;
 use App\Hooks\Readers\FrameProgress;
 use App\Hooks\Resolvers\PinnedCompatibilities;
 use App\Hooks\Resolvers\StopAttemptRecords;
@@ -109,8 +109,8 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(ProtectedAccounts::class, fn ($app) => new ProtectedAccounts([
             $app->make(Repository::class)->string('accounts.root'),
         ]));
-        $this->app->bind(ProgramCompatibilities::class, PinnedCompatibilities::class);
-        $this->app->bind(ProgramAdapters::class, SupportedProgramAdapters::class);
+        $this->app->bind(DriverCompatibilities::class, PinnedCompatibilities::class);
+        $this->app->bind(DriverAdapters::class, SupportedDriverAdapters::class);
         $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
         $this->app->scoped(StopEvidence::class, StopAttemptRecords::class);
         $this->app->scoped(StopConditionGate::class, StopAttemptGate::class);

@@ -10,7 +10,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useAccountNaming } from './accountNaming';
 import {
     accountStateLook,
-    programName,
+    driverName,
     signInAgainLabel,
 } from './accountLooks';
 
@@ -49,7 +49,7 @@ function dateOf(moment: string | null): string {
 }
 
 const facts = computed(() => [
-    { term: 'Program', value: programName(props.account.program) },
+    { term: 'Driver', value: driverName(props.account.driver) },
     { term: 'Sign-in', value: props.account.signIn.title },
     { term: 'Billing', value: props.account.signIn.billingLabel },
     { term: 'Signed in as', value: props.account.identity ?? 'Not known' },
@@ -173,7 +173,7 @@ function signInAgain(): void {
                 <template v-if="isChosen">
                     <p class="text-text-2">
                         This is the default account for new
-                        {{ programName(account.program) }} starts.
+                        {{ driverName(account.driver) }} starts.
                     </p>
                 </template>
                 <template v-else-if="canBeDefault">

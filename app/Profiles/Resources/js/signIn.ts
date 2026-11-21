@@ -16,10 +16,10 @@ export type SignInChallenge = { address: string | null; code: string | null };
 export type WizardRequest =
     | { kind: 'new' }
     | { kind: 'resume'; attemptId: string }
-    | { kind: 'again'; program: string; accountId: string };
+    | { kind: 'again'; driver: string; accountId: string };
 
-export function codeDirection(program: string): CodeDirection {
-    return program === 'codex' ? 'outgoing' : 'paste-back';
+export function codeDirection(driver: string): CodeDirection {
+    return driver === 'codex' ? 'outgoing' : 'paste-back';
 }
 
 const liveStates = ['starting', 'waiting', 'checking'];
@@ -29,34 +29,34 @@ export function isLive(attempt: SignInAttemptData): boolean {
 }
 
 /**
- * The running sign-in a reopened form rejoins: a new account's for the program, or the given account's.
+ * The running sign-in a reopened form rejoins: a new account's for the driver, or the given account's.
  */
 export function attemptToRejoin(
     attempts: SignInAttemptData[],
-    program: string,
+    driver: string,
     accountId: string | null,
 ): SignInAttemptData | undefined {
     return attempts.find(
         (attempt) =>
             isLive(attempt) &&
-            attempt.program === program &&
+            attempt.driver === driver &&
             attempt.accountId === accountId,
     );
 }
 
 /**
- * The newest ended sign-in a form reports on: a new account's for the program, or the given account's.
+ * The newest ended sign-in a form reports on: a new account's for the driver, or the given account's.
  */
 export function lastEndedAttempt(
     attempts: SignInAttemptData[],
-    program: string,
+    driver: string,
     accountId: string | null,
 ): SignInAttemptData | undefined {
     return attempts
         .filter(
             (attempt) =>
                 !isLive(attempt) &&
-                attempt.program === program &&
+                attempt.driver === driver &&
                 attempt.accountId === accountId,
         )
         .sort((first, second) =>

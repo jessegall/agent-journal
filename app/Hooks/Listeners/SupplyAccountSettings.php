@@ -6,10 +6,10 @@ namespace App\Hooks\Listeners;
 
 use App\Agents\Events\AccountSettingsRequested;
 use App\Contracts\Listener;
-use App\Hooks\Contracts\ProgramCompatibilities;
-use App\Hooks\Programs\ClaudeAccountSettings;
-use App\Hooks\Programs\CodexAccountSettings;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Contracts\DriverCompatibilities;
+use App\Hooks\Drivers\ClaudeAccountSettings;
+use App\Hooks\Drivers\CodexAccountSettings;
 use Illuminate\Contracts\Config\Repository;
 
 /**
@@ -19,19 +19,19 @@ use Illuminate\Contracts\Config\Repository;
 final class SupplyAccountSettings implements Listener
 {
     public function __construct(
-        private ProgramCompatibilities $compatibilities,
+        private DriverCompatibilities $compatibilities,
         private Repository $config,
     ) {}
 
     public function handle(AccountSettingsRequested $event): void
     {
-        $program = HookProgram::tryFrom($event->program);
+        $driver = HookDriver::tryFrom($event->driver);
 
-        if ($program === null) {
+        if ($driver === null) {
             return;
         }
 
-        $compatibility = $this->compatibilities->for($program);
+        $compatibility = $this->compatibilities->for($driver);
         $compatibility->assertStartable();
         $event->settings->holdFor(
             $compatibility->version,
@@ -39,14 +39,14 @@ final class SupplyAccountSettings implements Listener
             $compatibility->arrangement->value,
         );
 
-        match ($program) {
-            HookProgram::ClaudeCode => ClaudeAccountSettings::fill(
+        match ($driver) {
+            HookDriver::ClaudeCode => ClaudeAccountSettings::fill(
                 $event->settings,
                 $event->directory,
                 $this->config->string('accounts.root'),
                 $compatibility->startFlags,
             ),
-            HookProgram::Codex => CodexAccountSettings::fill(
+            HookDriver::Codex => CodexAccountSettings::fill(
                 $event->settings,
                 $event->directory,
                 $this->config->string('accounts.root'),

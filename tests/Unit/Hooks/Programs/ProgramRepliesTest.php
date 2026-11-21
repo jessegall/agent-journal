@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks\Programs;
 
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Drivers\DriverReplies;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\InvalidShellAnswer;
 use App\Hooks\Exceptions\InvalidStopAnswer;
-use App\Hooks\Inputs\ProgramToolInput;
-use App\Hooks\Programs\ProgramReplies;
-use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
@@ -49,11 +49,11 @@ final class ProgramRepliesTest extends TestCase
 
     public function test_a_rewrite_keeps_every_other_tool_argument_when_the_program_takes_it(): void
     {
-        $original = new ProgramToolInput(
+        $original = new DriverToolInput(
             ['command' => 'composer test', 'description' => 'Run the tests', 'timeout' => 120],
         );
 
-        $reply = ProgramReplies::shell(
+        $reply = DriverReplies::shell(
             $this->answer(Decision::rewrite('journal run tests')),
             $original,
             RewriteSupport::WithoutApproval,
@@ -67,9 +67,9 @@ final class ProgramRepliesTest extends TestCase
 
     public function test_a_rewrite_the_program_cannot_take_without_approval_is_refused_with_the_journal_command(): void
     {
-        $reply = ProgramReplies::shell(
+        $reply = DriverReplies::shell(
             $this->answer(Decision::rewrite('journal run tests')),
-            new ProgramToolInput(['command' => 'composer test']),
+            new DriverToolInput(['command' => 'composer test']),
             RewriteSupport::NeedsApproval,
         );
 
@@ -83,7 +83,7 @@ final class ProgramRepliesTest extends TestCase
 
     public function test_a_held_stop_blocks_with_one_reason_followed_by_the_context(): void
     {
-        $reply = ProgramReplies::stop(
+        $reply = DriverReplies::stop(
             $this->answer(Decision::deny('Task 42 still needs work.'), ['Run the phase tests.']),
         );
 
@@ -95,14 +95,14 @@ final class ProgramRepliesTest extends TestCase
 
     public function test_an_allowed_stop_is_an_empty_object(): void
     {
-        $this->assertSame('{}', ProgramReplies::stop($this->answer(Decision::allow(), ['Optional context.']))->stdout);
+        $this->assertSame('{}', DriverReplies::stop($this->answer(Decision::allow(), ['Optional context.']))->stdout);
     }
 
     public function test_a_rewrite_has_no_stop_reply(): void
     {
         $this->expectException(InvalidStopAnswer::class);
 
-        ProgramReplies::stop($this->answer(Decision::rewrite('ls')));
+        DriverReplies::stop($this->answer(Decision::rewrite('ls')));
     }
 
     public function test_a_delegation_has_no_shell_reply(): void
@@ -117,13 +117,13 @@ final class ProgramRepliesTest extends TestCase
         $replies = [
             $this->shell(Decision::allow(), ['context']),
             $this->shell(Decision::deny('No.')),
-            ProgramReplies::shell(
+            DriverReplies::shell(
                 $this->answer(Decision::rewrite('journal run tests')),
-                new ProgramToolInput(['command' => 'x']),
+                new DriverToolInput(['command' => 'x']),
                 RewriteSupport::WithoutApproval,
             ),
-            ProgramReplies::stop($this->answer(Decision::allow())),
-            ProgramReplies::stop($this->answer(Decision::deny('Wait.'))),
+            DriverReplies::stop($this->answer(Decision::allow())),
+            DriverReplies::stop($this->answer(Decision::deny('Wait.'))),
         ];
 
         foreach ($replies as $reply) {
@@ -134,11 +134,11 @@ final class ProgramRepliesTest extends TestCase
     /**
      * @param  list<string>  $context
      */
-    private function shell(Decision $decision, array $context = []): ProgramReply
+    private function shell(Decision $decision, array $context = []): DriverReply
     {
-        return ProgramReplies::shell(
+        return DriverReplies::shell(
             $this->answer($decision, $context),
-            new ProgramToolInput(['command' => 'git status']),
+            new DriverToolInput(['command' => 'git status']),
             RewriteSupport::WithoutApproval,
         );
     }

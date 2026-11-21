@@ -14,6 +14,6 @@ final readonly class RecordAccountNoticeHandler implements CommandHandler
 
     public function handle(RecordAccountNotice $command): void
     {
-        $this->notices->record($command->program, $command->reason);
+        $this->notices->record($command->driver, $command->reason);
     }
 }

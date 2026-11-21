@@ -13,7 +13,7 @@ final readonly class ClaimedAccountCheck
 {
     public function __construct(
         public string $accountId,
-        public string $program,
+        public string $driver,
         public SignInMethod $method,
         public string $directory,
         public int $generation,

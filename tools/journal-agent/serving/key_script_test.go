@@ -363,7 +363,7 @@ func TestAHeldAnswerEndsTheRunEntryUnavailableAndAWaitKeepsTheHold(t *testing.T)
 
 // entryAnswer is the journal's answer naming a library entry to replay.
 func entryAnswer(guarded bool) raiseReply {
-	entry := `{"id":"entry-1","program":"codex","goal":{"script":"ChangeModel","version":2,"parameters":[]},` +
+	entry := `{"id":"entry-1","driver":"codex","goal":{"script":"ChangeModel","version":2,"parameters":[]},` +
 		`"steps":[{"fingerprint":"fp1:a","choose":"GPT-6","key":null,"proof":null}],"completes":"goal",` +
 		`"nextStep":null,"proof":"GPT-6"}`
 	answer := client.NavigationAnswer{Answer: client.NavigationEntry, Entry: []byte(entry), Guarded: guarded}
@@ -405,7 +405,7 @@ func TestAGuardedEntryThatFailsIsDeclinedAndTheJournalAskedAgain(t *testing.T) {
 
 // twoStepEntryAnswer names a library entry that presses a key, then chooses a label.
 func twoStepEntryAnswer() raiseReply {
-	entry := `{"id":"entry-2","program":"codex","goal":{"script":"ChangeModel","version":2,"parameters":[]},` +
+	entry := `{"id":"entry-2","driver":"codex","goal":{"script":"ChangeModel","version":2,"parameters":[]},` +
 		`"steps":[{"fingerprint":"fp1:a","choose":null,"key":"down","proof":null},` +
 		`{"fingerprint":"fp1:b","choose":"GPT-6","key":null,"proof":null}],"completes":"goal",` +
 		`"nextStep":null,"proof":"GPT-6"}`

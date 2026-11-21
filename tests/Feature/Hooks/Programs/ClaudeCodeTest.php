@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Drivers\ClaudeCodeAdapter;
+use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Drivers\JudgedCall;
+use App\Hooks\Drivers\NotificationCall;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
-use App\Hooks\Programs\ClaudeCodeAdapter;
-use App\Hooks\Programs\JudgedCall;
-use App\Hooks\Programs\NotificationCall;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 use App\Processes\Enums\CommandType;
@@ -186,7 +186,7 @@ final class ClaudeCodeTest extends TestCase
     /**
      * @param  list<string>  $context
      */
-    private function render(string $name, Decision $decision, array $context = []): ProgramReply
+    private function render(string $name, Decision $decision, array $context = []): DriverReply
     {
         $call = $this->adapter()->callFor($this->payload($name), $this->hook());
         $this->assertInstanceOf(JudgedCall::class, $call);

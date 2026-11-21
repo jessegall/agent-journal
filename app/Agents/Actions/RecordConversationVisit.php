@@ -9,8 +9,8 @@ use App\Agents\Enums\ConversationModeType;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
+use App\Agents\Models\DriverConversation;
 use App\Agents\Models\ProcessStart;
-use App\Agents\Models\ProgramConversation;
 use App\Agents\Models\StartRecord;
 use Carbon\CarbonImmutable;
 
@@ -45,8 +45,8 @@ final readonly class RecordConversationVisit implements ConversationVisits
         $start = ProcessStart::lockedCurrentOf($session->id);
         $settings = $start === null ? self::HOST_SETTINGS : $start->settingsIdentity();
         $context = StartRecord::query()->where('request_id', $session->start_request_id)->value('context_reference');
-        $conversation = ProgramConversation::query()->native((string) $session->program, $settings, $nativeId)->first()
-            ?? ProgramConversation::create($session, $settings, $nativeId, $context);
+        $conversation = DriverConversation::query()->native((string) $session->driver, $settings, $nativeId)->first()
+            ?? DriverConversation::create($session, $settings, $nativeId, $context);
 
         if (! $conversation->admits($session->agent_id, $context)) {
             throw ConversationIncompatible::forSession($session->id);
@@ -67,7 +67,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
     public function compacted(string $sessionId, string $eventId, CarbonImmutable $observedAt): void
     {
         $session = AgentSession::lockedForUpdate($sessionId);
-        $conversation = $session->current_conversation_id === null ? null : ProgramConversation::query()->find(
+        $conversation = $session->current_conversation_id === null ? null : DriverConversation::query()->find(
             $session->current_conversation_id,
         );
 

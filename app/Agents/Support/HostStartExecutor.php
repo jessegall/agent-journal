@@ -30,7 +30,7 @@ final readonly class HostStartExecutor implements StartExecutor
             'startId' => $start->startId,
             'runtimeId' => $start->runtimeId,
             'sessionId' => $start->sessionId,
-            'program' => $start->hostProgram(),
+            'driver' => $start->hostDriver(),
             'executionMode' => $start->executionMode->value,
             'policyReference' => $start->policyReference,
             'workspace' => $start->workspace,

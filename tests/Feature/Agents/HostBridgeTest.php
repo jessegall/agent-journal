@@ -17,7 +17,7 @@ use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Bus\Contracts\CommandBus;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
@@ -36,15 +36,15 @@ final class HostBridgeTest extends TestCase
         $commands = $this->app->make(CommandBus::class);
         $actor = Agent::create('Builder', 'writing-helper');
 
-        foreach (HookProgram::cases() as $program) {
+        foreach (HookDriver::cases() as $driver) {
             $this->assertThrows(
-                fn () => $commands->run(new StartAgent($this->requestFor($actor, $program))),
+                fn () => $commands->run(new StartAgent($this->requestFor($actor, $driver))),
                 AccountContainerUnsupported::class,
             );
         }
     }
 
-    private function requestFor(Agent $actor, HookProgram $program): StartRequest
+    private function requestFor(Agent $actor, HookDriver $driver): StartRequest
     {
         $image = 'registry.example/journal-helper@sha256:'.str_repeat('a', 64);
         $policy = ExecutionPolicy::make(
@@ -58,7 +58,7 @@ final class HostBridgeTest extends TestCase
         return new StartRequest(
             TestSelections::requestId(),
             $actor->id,
-            TestSelections::of($program->value),
+            TestSelections::of($driver->value),
             StartOriginType::OwnerRequest,
             'helpers.job 1',
             null,

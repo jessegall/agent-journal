@@ -6,8 +6,8 @@ namespace App\Agents\Models;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\DriverSourceType;
 use App\Agents\Enums\ModelSelectionType;
-use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\StartRequestConflict;
@@ -33,11 +33,11 @@ use PhpOption\Option;
  * @property string $agent_id
  * @property string $actor_type
  * @property string $actor_id
- * @property string $program
+ * @property string $driver
  * @property string $model
  * @property ModelSelectionType $requested_model_type
  * @property string|null $requested_model
- * @property ProgramSourceType $program_source
+ * @property DriverSourceType $driver_source
  * @property string|null $profile_key
  * @property int|null $profile_revision
  * @property StartOriginType $origin_type
@@ -58,11 +58,11 @@ use PhpOption\Option;
     'agent_id',
     'actor_type',
     'actor_id',
-    'program',
+    'driver',
     'model',
     'requested_model_type',
     'requested_model',
-    'program_source',
+    'driver_source',
     'profile_key',
     'profile_revision',
     'origin_type',
@@ -91,7 +91,7 @@ final class StartRecord extends Model implements ReadableModel
     {
         return [
             'requested_model_type' => ModelSelectionType::class,
-            'program_source' => ProgramSourceType::class,
+            'driver_source' => DriverSourceType::class,
             'profile_revision' => 'integer',
             'origin_type' => StartOriginType::class,
             'conversation_mode' => ConversationModeType::class,
@@ -125,11 +125,11 @@ final class StartRecord extends Model implements ReadableModel
             'agent_id' => $request->agentId,
             'actor_type' => $requester->type->value,
             'actor_id' => $requester->id,
-            'program' => $selection->program->value,
+            'driver' => $selection->driver->value,
             'model' => $selection->model,
             'requested_model_type' => $requested->type,
             'requested_model' => $requested->model,
-            'program_source' => $source->programSource,
+            'driver_source' => $source->driverSource,
             'profile_key' => $source->profileKey,
             'profile_revision' => $source->profileRevision,
             'origin_type' => $request->origin,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Support\Hooks;
 
-use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Drivers\DriverReply;
 use Spatie\LaravelData\Data;
 
 /**
@@ -18,7 +18,7 @@ final class HookResponse extends Data
         public readonly int $exitCode,
     ) {}
 
-    public static function fromProgramReply(ProgramReply $reply): self
+    public static function fromDriverReply(DriverReply $reply): self
     {
         return new self($reply->stdout, $reply->stderr, $reply->exitCode);
     }

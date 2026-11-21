@@ -13,7 +13,7 @@ import { useAccountNaming } from './accountNaming';
  * saved under a default name and the step asks for a better one, all of it selected so typing replaces it.
  */
 const props = defineProps<{
-    program: string;
+    driver: string;
     method: SignInMethodData;
     account: AccountRowData;
     formId: string;
@@ -41,7 +41,7 @@ function saveOrSkip(): void {
 </script>
 
 <template>
-    <ChosenSignIn :program="program" :method="method" />
+    <ChosenSignIn :driver="driver" :method="method" />
     <form
         :id="formId"
         class="flex flex-1 flex-col gap-3"

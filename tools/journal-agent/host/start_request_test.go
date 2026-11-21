@@ -67,7 +67,7 @@ func TestAFolderUseRequestNeedsAPlainIdAndReachesTheExecutor(t *testing.T) {
 
 func TestAStartRequestReachesTheExecutorAndItsReplyIsWritten(t *testing.T) {
 	executor := &recordingExecutor{}
-	line := `{"start":{"startId":"s1","runtimeId":"r1","sessionId":"sess","program":"claude",` +
+	line := `{"start":{"startId":"s1","runtimeId":"r1","sessionId":"sess","driver":"claude",` +
 		`"executionMode":"protected_host","policyReference":"p1","workspace":"/work","accountReference":"a1"}}` + "\n"
 	pipe := &connection{Reader: strings.NewReader(line)}
 
@@ -89,7 +89,7 @@ func TestAStartRequestReachesTheExecutorAndItsReplyIsWritten(t *testing.T) {
 
 func TestAnIncompleteStartIsRefusedWithoutReachingTheExecutor(t *testing.T) {
 	executor := &recordingExecutor{}
-	line := `{"start":{"startId":"s1","program":"claude","executionMode":"protected_host","workspace":"work"}}` + "\n"
+	line := `{"start":{"startId":"s1","driver":"claude","executionMode":"protected_host","workspace":"work"}}` + "\n"
 	pipe := &connection{Reader: strings.NewReader(line)}
 
 	if err := AnswerHostRequest(context.Background(), pipe, executor); err != nil {

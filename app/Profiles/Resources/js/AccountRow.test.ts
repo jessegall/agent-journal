@@ -75,7 +75,7 @@ const subscription: SignInMethodData = {
 function account(overrides: Partial<AccountRowData> = {}): AccountRowData {
     return {
         id: 'acc-1',
-        program: 'codex',
+        driver: 'codex',
         label: 'jesse@example.com',
         signIn: subscription,
         state: 'signed_in',
@@ -119,7 +119,7 @@ afterEach(() => {
 });
 
 describe('an account row', () => {
-    it('reads its program and what it bills in one plain line, and says when it is the default', () => {
+    it('reads its driver and what it bills in one plain line, and says when it is the default', () => {
         expect(row().text()).toContain('Codex subscription');
         expect(row({ isChosen: true }).text()).toContain(
             'Codex subscription · Default',

@@ -9,14 +9,14 @@ use App\Agents\Exceptions\StaleProcessGeneration;
 use App\Agents\Support\NativeTurns;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Contracts\DriverAdapters;
 use App\Hooks\Contracts\HookInput;
-use App\Hooks\Contracts\ProgramAdapters;
+use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Exceptions\HookDigestChanged;
 use App\Hooks\Exceptions\HookIdentityExpired;
 use App\Hooks\Exceptions\IncomingWorkFailed;
 use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Exceptions\UnsupportedHook;
-use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\AgentStateMachine;
 use App\Hooks\Support\StackAccess;
 use App\Http\Requests\Hooks\HookRequest;
@@ -36,7 +36,7 @@ final readonly class HookController
     private const string NATIVE_CHILD_REFUSAL = "A program's own subagents never run here (rule 36): start a journal helper or worker instead.";
 
     public function __construct(
-        private ProgramAdapters $adapters,
+        private DriverAdapters $adapters,
         private OperationDeadline $deadline,
         private NativeTurns $turns,
     ) {}
@@ -47,15 +47,15 @@ final readonly class HookController
      */
     public function __invoke(HookRequest $request, StackAccess $access, AgentStateMachine $machine): JsonResponse
     {
-        $adapter = $this->adapters->for($request->program());
+        $adapter = $this->adapters->for($request->driver());
 
         try {
             $hookInput = $request->payload();
 
-            if ($hookInput->isFromNativeChild() || $hookInput->callsAnyOf($request->program()->nativeChildTools())) {
-                $refusal = ProgramReplies::denyTool(self::NATIVE_CHILD_REFUSAL, []);
+            if ($hookInput->isFromNativeChild() || $hookInput->callsAnyOf($request->driver()->nativeChildTools())) {
+                $refusal = DriverReplies::denyTool(self::NATIVE_CHILD_REFUSAL, []);
 
-                return new JsonResponse(HookResponse::fromProgramReply($refusal)->toArray());
+                return new JsonResponse(HookResponse::fromDriverReply($refusal)->toArray());
             }
 
             $sessionId = $access->target()->sessionId;
@@ -84,7 +84,7 @@ final readonly class HookController
             return $this->failure($unavailable->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
-        return new JsonResponse(HookResponse::fromProgramReply($reply)->toArray());
+        return new JsonResponse(HookResponse::fromDriverReply($reply)->toArray());
     }
 
     private function failure(string $message, int $status): JsonResponse

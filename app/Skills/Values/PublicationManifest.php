@@ -19,7 +19,7 @@ final readonly class PublicationManifest implements JsonSerializable
         public string $generationId,
         public string $publicationId,
         public string $sessionId,
-        public string $program,
+        public string $driver,
         public string $selectionDigest,
         public array $files,
     ) {}
@@ -37,7 +37,7 @@ final readonly class PublicationManifest implements JsonSerializable
      *     generation: string,
      *     publication: string,
      *     session: string,
-     *     program: string,
+     *     driver: string,
      *     selection_digest: string,
      *     files: array<string, string>,
      * }
@@ -48,7 +48,7 @@ final readonly class PublicationManifest implements JsonSerializable
             'generation' => $this->generationId,
             'publication' => $this->publicationId,
             'session' => $this->sessionId,
-            'program' => $this->program,
+            'driver' => $this->driver,
             'selection_digest' => $this->selectionDigest,
             'files' => $this->files,
         ];

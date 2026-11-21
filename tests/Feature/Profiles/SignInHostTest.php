@@ -7,7 +7,6 @@ namespace Tests\Feature\Profiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\AgentRequests\Support\SignedCall;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Support\EnrolledHost;
 use App\Bus\Contracts\CommandBus;
@@ -24,7 +23,6 @@ use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\ClaimedSignIn;
-use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Bus;
@@ -35,6 +33,7 @@ use Tests\Fixtures\Profiles\LingeringProtocol;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -48,6 +47,7 @@ final class SignInHostTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
+    use SendsHostCalls;
 
     private const array TABLES = [
         'accounts',
@@ -104,14 +104,14 @@ final class SignInHostTest extends TestCase
     public function test_a_start_names_only_its_program_and_an_unknown_program_starts_nothing(): void
     {
         $owner = $this->owner();
-        $start = ['program' => 'claude-code', 'method' => 'oauth', 'request_key' => 'request-1'];
+        $start = ['driver' => 'claude-code', 'method' => 'oauth', 'request_key' => 'request-1'];
 
         $this->actingAs($owner)->post('/accounts/sign-ins', $start)->assertStatus(303);
         $this->actingAs($owner)->post('/accounts/sign-ins', [...$start, 'request_key' => 'request-2'])
             ->assertStatus(303);
-        $unknown = ['program' => 'gemini', 'method' => 'oauth', 'request_key' => 'request-3'];
+        $unknown = ['driver' => 'gemini', 'method' => 'oauth', 'request_key' => 'request-3'];
         $this->actingAs($owner)->post('/accounts/sign-ins', $unknown)
-            ->assertSessionHasErrors('program');
+            ->assertSessionHasErrors('driver');
 
         $this->assertSame(1, SignInAttempt::query()->withoutGlobalScopes()->count());
     }
@@ -119,8 +119,8 @@ final class SignInHostTest extends TestCase
     public function test_a_start_carries_its_method_and_an_undeclared_method_starts_nothing(): void
     {
         $owner = $this->owner();
-        $start = fn (string $program, string $method, string $key) => $this->actingAs($owner)
-            ->post('/accounts/sign-ins', ['program' => $program, 'method' => $method, 'request_key' => $key]);
+        $start = fn (string $driver, string $method, string $key) => $this->actingAs($owner)
+            ->post('/accounts/sign-ins', ['driver' => $driver, 'method' => $method, 'request_key' => $key]);
 
         $start('claude-code', 'api_key', 'request-1')->assertStatus(303);
         $start('codex', 'provider_token', 'request-2')->assertSessionHasErrors('method');
@@ -170,7 +170,7 @@ final class SignInHostTest extends TestCase
         $owner = $this->owner();
         $host = $this->enrollHost();
         $this->actingAs($owner)->post('/accounts/sign-ins', [
-            'program' => 'claude-code',
+            'driver' => 'claude-code',
             'method' => 'oauth',
             'request_key' => 'request-1',
         ])->assertStatus(303);
@@ -292,9 +292,9 @@ final class SignInHostTest extends TestCase
     /**
      * A sign-in this test's host took, far from its deadline.
      */
-    private static function claimed(string $program, SignInMethod $method, string $directory): ClaimedSignIn
+    private static function claimed(string $driver, SignInMethod $method, string $directory): ClaimedSignIn
     {
-        return new ClaimedSignIn('attempt-1', $program, $method, $directory, 0, '2099-01-01T00:00:00+00:00', null);
+        return new ClaimedSignIn('attempt-1', $driver, $method, $directory, 0, '2099-01-01T00:00:00+00:00', null);
     }
 
     private function attempt(string $attemptId): SignInAttempt
@@ -321,26 +321,7 @@ final class SignInHostTest extends TestCase
      */
     private function signed(EnrolledHost $host, string $target, array $body = []): TestResponse
     {
-        $content = $body === [] ? '' : (string) json_encode($body);
-        $callId = (string) Str::uuid();
-        $issuedAt = CarbonImmutable::now()->getTimestamp();
-        $this->app->forgetScopedInstances();
-
-        return $this->call('POST', $target, server: [
-            'CONTENT_TYPE' => 'application/json',
-            'HTTP_ACCEPT' => 'application/json',
-            'HTTP_AUTHORIZATION' => "Bearer {$host->secret}",
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ID_HEADER)) => $callId,
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ISSUED_AT_HEADER)) => (string) $issuedAt,
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::SIGNATURE_HEADER)) => SignedCall::signatureFor(
-                $host->secret,
-                'POST',
-                $target,
-                $callId,
-                $issuedAt,
-                $content,
-            ),
-        ], content: $content);
+        return $this->signedHostCall($host, 'POST', $target, $body === [] ? '' : (string) json_encode($body));
     }
 
     private function enrollHost(): EnrolledHost

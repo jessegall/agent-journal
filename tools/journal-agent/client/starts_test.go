@@ -13,7 +13,7 @@ import (
 const accountClaimAnswer = `{"start_key":"start-1","session_id":"session-1","directory":"/accounts/a","generation":2,` +
 	`"recipe":{"environment":[{"name":"CLAUDE_CONFIG_DIR","value":"/accounts/a"}],"emptyFolderVariables":[],` +
 	`"removedVariables":["ANTHROPIC_API_KEY"],"startFlags":["--restricted"],"accountSettings":[],` +
-	`"programVersion":"2.1.323","binaryDigest":"abc","arrangement":"direct","protectionSettings":"{}"}}`
+	`"driverVersion":"2.1.323","binaryDigest":"abc","arrangement":"direct","protectionSettings":"{}"}}`
 
 func TestAClaimReadsTheWholeRecipe(t *testing.T) {
 	journal, target, body := fakeJournal(t, accountClaimAnswer)

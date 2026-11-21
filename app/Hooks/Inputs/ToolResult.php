@@ -11,6 +11,6 @@ final readonly class ToolResult
     public function __construct(
         public string $toolName,
         public ToolOutcome $outcome,
-        public ProgramToolInput $arguments,
+        public DriverToolInput $arguments,
     ) {}
 }

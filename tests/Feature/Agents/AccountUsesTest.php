@@ -30,10 +30,10 @@ use App\Agents\Values\SelectedAccount;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Exceptions\CommandTransactionMissing;
+use App\Drivers\Enums\HookDriver;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\LinkTypeRegistry;
 use App\Profiles\Resolvers\ActiveAccountRecords;
-use App\Programs\Enums\HookProgram;
 use App\Records\Contracts\IdentityLinks;
 use App\Records\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
@@ -187,10 +187,10 @@ final class AccountUsesTest extends TestCase
         $this->assertInstanceOf(ActiveAccountRecords::class, $this->app->make(ActiveAccountReader::class));
 
         try {
-            new UnconfiguredAccounts()->forStart(HookProgram::ClaudeCode);
+            new UnconfiguredAccounts()->forStart(HookDriver::ClaudeCode);
             $this->fail('Core alone gave a start an account.');
         } catch (AccountUnavailable $refused) {
-            $this->assertSame('claude-code', $refused->program);
+            $this->assertSame('claude-code', $refused->driver);
             $this->assertSame(StartUnavailableReason::NoAccount, $refused->reason);
         }
     }

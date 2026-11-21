@@ -42,7 +42,7 @@ Cancel
 Cancel script
 Cancel sign-in
 Checked reader revision
-Checking the sign-in with {{ programName(program) }}…
+Checking the sign-in with {{ driverName(driver) }}…
 Choose a way to sign in to continue.
 Choose another way
 Choose exact text in the source
@@ -82,6 +82,7 @@ Domain off
 Done
 Download it as a file
 Drag to resize; double-click to reset
+Driver
 Dropped compared with the rule in use: {{ revision.removedClasses.join(', ') || 'none' }}
 Edit
 Email
@@ -189,7 +190,6 @@ Preview saved; it can be confirmed until {{ data.savedPreview.expiresAt }}.
 Privilege change
 Problems
 Process control
-Program
 Program version
 Proposal by {{ proposal.author }}: {{ proposal.state }}, revision {{ proposal.currentRevision }}
 Provider host
@@ -282,7 +282,7 @@ The project has no rule of its own yet.
 The source holds Markdown marks (such as ** or a link) that the page shows as formatting.
 The version that runs here
 This account must sign in again.
-This is the default account for new {{ programName(account.program) }} starts.
+This is the default account for new {{ driverName(account.driver) }} starts.
 This machine and the share service must keep running for the link to work.
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 To renew it, choose Sign in again on the account.
@@ -327,7 +327,7 @@ exit %s: %s when %s
 expected
 in the list.
 in {{ problem.stream }} bytes {{ problem.start }} to {{ problem.end }}:
-is saved as a {{ programName(program) }} account.
+is saved as a {{ driverName(driver) }} account.
 known
 label
 model

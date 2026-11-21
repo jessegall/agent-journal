@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Agents\Contracts\BuiltInStartProfiles;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Profiles\Commands\InstallBuiltInProfiles;
@@ -30,7 +30,7 @@ final readonly class BuiltInProfilePins implements BuiltInStartProfiles
         return $this->snapshotOf(BuiltInProfiles::keyFor($type));
     }
 
-    public function pin(SelectedProgram $selection, string $profileKey): SelectedProgram
+    public function pin(SelectedDriver $selection, string $profileKey): SelectedDriver
     {
         if ($selection->source->profileKey !== null) {
             return $selection;

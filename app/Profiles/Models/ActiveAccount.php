@@ -8,10 +8,10 @@ use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Contracts\EventSource;
 use App\Contracts\Support\RaisesEvents;
+use App\Drivers\Enums\HookDriver;
 use App\Links\Support\Linkable;
 use App\Profiles\Events\AccountSwitched;
 use App\Profiles\Models\Support\AccountOwnerScope;
-use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -27,14 +27,14 @@ use Illuminate\Support\Str;
  * change number that only grows so a page can tell a newer choice from an older one.
  *
  * @property string $id
- * @property string $program
+ * @property string $driver
  * @property string|null $account_id
  * @property bool $has_selected
  * @property int $change_number
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['program'])]
+#[Fillable(['driver'])]
 final class ActiveAccount extends Model implements EventSource, ReadableModel
 {
     use BoundedReads;
@@ -63,11 +63,11 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      * The program's selection row, made when it is first needed and locked for the rest of the transaction; two
      * requests that make it at once end with the same one row.
      */
-    public static function lockedFor(HookProgram $program): self
+    public static function lockedFor(HookDriver $driver): self
     {
-        self::makeIfAbsent($program);
+        self::makeIfAbsent($driver);
 
-        return self::query()->ofProgram($program)->lockForUpdate()->firstOrFail();
+        return self::query()->ofDriver($driver)->lockForUpdate()->firstOrFail();
     }
 
     /**
@@ -76,16 +76,16 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      *
      * @throws AccountUnavailable
      */
-    public static function lockedAccountForStart(HookProgram $program): Account
+    public static function lockedAccountForStart(HookDriver $driver): Account
     {
         $selection = self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->ofProgram($program)
+            ->ofDriver($driver)
             ->lockForUpdate()
             ->first();
 
         if ($selection === null || $selection->account_id === null) {
-            throw AccountUnavailable::forStart($program->value, StartUnavailableReason::NoAccount);
+            throw AccountUnavailable::forStart($driver->value, StartUnavailableReason::NoAccount);
         }
 
         return Account::lockedForStart($selection->account_id);
@@ -95,13 +95,13 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      * The program's selection row for the journal's own maintenance or the host, made when first needed and locked;
      * whoever acts.
      */
-    public static function lockedForJournal(HookProgram $program): self
+    public static function lockedForJournal(HookDriver $driver): self
     {
-        self::makeIfAbsent($program);
+        self::makeIfAbsent($driver);
 
         return self::query()
             ->withoutGlobalScope(AccountOwnerScope::class)
-            ->ofProgram($program)
+            ->ofDriver($driver)
             ->lockForUpdate()
             ->firstOrFail();
     }
@@ -113,7 +113,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      */
     public static function listed(): array
     {
-        return array_values(self::query()->orderBy('program')->readAll('one row per program')->get()->all());
+        return array_values(self::query()->orderBy('driver')->readAll('one row per program')->get()->all());
     }
 
     // ----------[ Mutations ]----------
@@ -129,7 +129,7 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
             return false;
         }
 
-        $this->raise(new AccountSwitched($this->program, $account->id));
+        $this->raise(new AccountSwitched($this->driver, $account->id));
 
         return true;
     }
@@ -200,19 +200,19 @@ final class ActiveAccount extends Model implements EventSource, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function ofProgram(Builder $query, HookProgram $program): void
+    protected function ofDriver(Builder $query, HookDriver $driver): void
     {
-        $query->where('program', $program->value);
+        $query->where('driver', $driver->value);
     }
 
     /**
      * Makes the program's selection row when none exists yet; two requests that make it at once leave one row.
      */
-    private static function makeIfAbsent(HookProgram $program): void
+    private static function makeIfAbsent(HookDriver $driver): void
     {
         $selection = new self();
         $selection->id = strtolower((string) Str::ulid());
-        $selection->program = $program->value;
+        $selection->driver = $driver->value;
         $selection->has_selected = false;
         $selection->change_number = 0;
         $selection->insertIfAbsent();

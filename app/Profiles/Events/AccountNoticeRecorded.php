@@ -11,11 +11,11 @@ use App\Profiles\Contracts\ShownOnAccounts;
  */
 final readonly class AccountNoticeRecorded implements ShownOnAccounts
 {
-    public function __construct(public string $program, public string $noticeId) {}
+    public function __construct(public string $driver, public string $noticeId) {}
 
-    public function program(): string
+    public function driver(): string
     {
-        return $this->program;
+        return $this->driver;
     }
 
     public function subjectId(): string

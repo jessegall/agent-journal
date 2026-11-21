@@ -15,6 +15,8 @@ use App\Agents\Support\PendingWorkSources;
 use App\Agents\Values\StackTarget;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\RewriteSupport;
@@ -25,8 +27,6 @@ use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Models\PendingAgentMessage;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\StateEvents\StateEventContext;
 use App\Hooks\StateEvents\StateEventDispatch;
@@ -94,7 +94,7 @@ final class AgentMessageDeliveryTest extends TestCase
             ),
             $this->messagingCapabilities(),
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => ProgramReplies::allowTool($answer->context),
+            fn (HookAnswer $answer) => DriverReplies::allowTool($answer->context),
         )->stdout;
 
         $this->assertSame(MessagingState::TEXT, $this->contextOf($reply));
@@ -162,13 +162,13 @@ final class AgentMessageDeliveryTest extends TestCase
             ),
             $this->messagingCapabilities(),
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
+            fn (HookAnswer $answer) => DriverReplies::prompt($answer),
         )->stdout;
     }
 
-    private function messagingCapabilities(): ProgramCapabilities
+    private function messagingCapabilities(): DriverCapabilities
     {
-        return new ProgramCapabilities(
+        return new DriverCapabilities(
             'Test program',
             'prompt, file edit and stop replies',
             ['onPrompt', 'onFileEdit', 'onStop'],

@@ -40,7 +40,7 @@ final class MenuListTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'program' => $schema->string()->max(80),
+            'driver' => $schema->string()->max(80),
             'state' => $schema->string()->enum(array_column(MenuEntryState::cases(), 'value')),
             'page' => $schema->integer()->min(1),
             'continuation' => $schema->string(),
@@ -53,7 +53,7 @@ final class MenuListTool extends JournalReadTool
             $this->name(),
             $arguments,
             fn (ToolArguments $initialArguments) => array_filter([
-                'program' => $initialArguments->optionalText('program'),
+                'driver' => $initialArguments->optionalText('driver'),
                 'state' => $initialArguments->optionalText('state'),
                 'page' => $initialArguments->positiveIntegerOr('page', 1),
             ], fn (string|int|null $filter) => $filter !== null),
@@ -64,16 +64,16 @@ final class MenuListTool extends JournalReadTool
     private function page(ToolArguments $filters): ListedPage
     {
         $owner = ActorIdentity::of($this->admission->owner());
-        $program = $filters->optionalText('program');
+        $driver = $filters->optionalText('driver');
         $state = $filters->optionalText('state');
         $state = $state === null ? null : MenuEntryState::from($state);
         $page = $filters->positiveInteger('page');
 
         return new ListedPage(
-            $this->navigation->menuEntries($owner, $program, $state, $page),
+            $this->navigation->menuEntries($owner, $driver, $state, $page),
             $page,
             NavigationReader::MENU_PAGE_SIZE,
-            $this->navigation->menuEntryCount($owner, $program, $state),
+            $this->navigation->menuEntryCount($owner, $driver, $state),
         );
     }
 }

@@ -19,9 +19,9 @@ enum LaunchCandidateRank: int
     public function reason(): string
     {
         return match ($this) {
-            self::ExactConversation => 'It did this work before on the chosen program and model.',
+            self::ExactConversation => 'It did this work before on the chosen driver and model.',
             self::CompatibleConversation => 'It did this work before on a model the adapter confirms compatible.',
-            self::SamePurpose => 'It did this work before, with no conversation the chosen program and model can use.',
+            self::SamePurpose => 'It did this work before, with no conversation the chosen driver and model can use.',
             self::OtherPurpose => 'It is free and did other work; it starts a new conversation.',
         };
     }

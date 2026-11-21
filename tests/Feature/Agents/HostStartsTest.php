@@ -7,27 +7,26 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\AgentRequests\Support\SignedCall;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Models\Agent;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
-use App\Hooks\Contracts\ProgramCompatibilities;
-use App\Hooks\Enums\ProgramEvidence;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Contracts\DriverCompatibilities;
+use App\Hooks\Enums\DriverEvidence;
 use App\Hooks\Relay\OutputGrantSeal;
 use App\Hooks\Resolvers\PinnedCompatibilities;
-use App\Hooks\Support\ProgramCompatibility;
-use App\Programs\Enums\HookProgram;
-use Carbon\CarbonImmutable;
+use App\Hooks\Support\DriverCompatibility;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\SendsHostCalls;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
@@ -42,6 +41,7 @@ final class HostStartsTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
+    use SendsHostCalls;
     use WithActiveAccount;
 
     private const array TABLES = [
@@ -68,21 +68,21 @@ final class HostStartsTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
-        $this->app->instance(ProgramCompatibilities::class, new class implements ProgramCompatibilities
+        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
         {
-            public function for(HookProgram $program): ProgramCompatibility
+            public function for(HookDriver $driver): DriverCompatibility
             {
-                $pinned = ProgramCompatibility::pinned($program);
+                $pinned = DriverCompatibility::pinned($driver);
 
-                return $pinned->withEvidence(ProgramEvidence::NativeShown, 'this test');
+                return $pinned->withEvidence(DriverEvidence::NativeShown, 'this test');
             }
         });
     }
 
     public function test_until_the_real_program_shows_its_arrangement_no_start_is_claimed(): void
     {
-        $this->app->forgetInstance(ProgramCompatibilities::class);
-        $this->app->bind(ProgramCompatibilities::class, PinnedCompatibilities::class);
+        $this->app->forgetInstance(DriverCompatibilities::class);
+        $this->app->bind(DriverCompatibilities::class, PinnedCompatibilities::class);
         [$host, $opened] = $this->openRuntime();
 
         $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertStatus(409);
@@ -103,7 +103,7 @@ final class HostStartsTest extends TestCase
         $this->assertSame(['ANTHROPIC_CONFIG_DIR'], $recipe['emptyFolderVariables']);
         $this->assertContains('ANTHROPIC_API_KEY', $recipe['removedVariables']);
         $this->assertContains('--restricted', $recipe['startFlags']);
-        $this->assertSame(['2.1.323', 'direct-processes'], [$recipe['programVersion'], $recipe['arrangement']]);
+        $this->assertSame(['2.1.323', 'direct-processes'], [$recipe['driverVersion'], $recipe['arrangement']]);
         $this->assertStringContainsString(
             'Read(//journal/accounts/claude-code/.credentials.json)',
             $recipe['protectionSettings'],
@@ -189,26 +189,7 @@ final class HostStartsTest extends TestCase
      */
     private function signed(EnrolledHost $host, string $method, string $target, array $body = []): TestResponse
     {
-        $content = $body === [] ? '' : (string) json_encode($body);
-        $callId = (string) Str::uuid();
-        $issuedAt = CarbonImmutable::now()->getTimestamp();
-        $this->app->forgetScopedInstances();
-
-        return $this->call($method, $target, server: [
-            'CONTENT_TYPE' => 'application/json',
-            'HTTP_ACCEPT' => 'application/json',
-            'HTTP_AUTHORIZATION' => "Bearer {$host->secret}",
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ID_HEADER)) => $callId,
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ISSUED_AT_HEADER)) => (string) $issuedAt,
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::SIGNATURE_HEADER)) => SignedCall::signatureFor(
-                $host->secret,
-                $method,
-                $target,
-                $callId,
-                $issuedAt,
-                $content,
-            ),
-        ], content: $content);
+        return $this->signedHostCall($host, $method, $target, $body === [] ? '' : (string) json_encode($body));
     }
 
     /**
@@ -226,7 +207,7 @@ final class HostStartsTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverType::Process,
+            DriverVariant::Headless,
             'claude-opus-5-5',
         );
 

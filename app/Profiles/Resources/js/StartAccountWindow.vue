@@ -2,7 +2,7 @@
 import type { StartAccountData } from '@generated/types/accounts';
 import PageHeader from '@kit/PageHeader';
 import StateBadge from '@kit/StateBadge';
-import { accountStateLook, programName } from './accountLooks';
+import { accountStateLook, driverName } from './accountLooks';
 
 /**
  * The account one start ran with, for the owner: its name as it is now, also after the account was removed, its
@@ -26,8 +26,8 @@ defineProps<{ data: StartAccountData }>();
                 </dd>
             </div>
             <div class="flex gap-2">
-                <dt class="text-text-3">Program</dt>
-                <dd class="text-text">{{ programName(data.program) }}</dd>
+                <dt class="text-text-3">Driver</dt>
+                <dd class="text-text">{{ driverName(data.driver) }}</dd>
             </div>
             <div class="flex gap-2">
                 <dt class="text-text-3">Started</dt>

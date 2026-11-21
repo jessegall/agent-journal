@@ -28,8 +28,8 @@ final readonly class SignInSecret
     /**
      * A keyed fingerprint of the secret for its program and method, so the same key is known again without keeping it.
      */
-    public function fingerprintFor(string $program, SignInMethod $method, string $key): string
+    public function fingerprintFor(string $driver, SignInMethod $method, string $key): string
     {
-        return hash_hmac('sha256', "{$program}\n{$method->value}\n{$this->secret}", $key);
+        return hash_hmac('sha256', "{$driver}\n{$method->value}\n{$this->secret}", $key);
     }
 }

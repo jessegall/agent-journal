@@ -11,7 +11,7 @@ use App\AgentRequests\Support\StartProfilePin;
 use App\Agents\Actions\AgentRuntimes;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\StartTokens;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -70,7 +70,7 @@ final readonly class TestStart
             'claude',
             '1.0.0',
             'default',
-            DriverType::Process,
+            DriverVariant::Headless,
             null,
             null,
             null,

@@ -8,8 +8,8 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\ExecutionBudgets;
 use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\ModelSelection;
-use App\Agents\Values\SelectedProgram;
-use App\Programs\Enums\HookProgram;
+use App\Agents\Values\SelectedDriver;
+use App\Drivers\Enums\HookDriver;
 use Illuminate\Support\Str;
 
 /**
@@ -19,9 +19,9 @@ final class TestSelections
 {
     public const string MODEL = 'claude-opus-5-5';
 
-    public static function of(string $program = 'claude-code'): SelectedProgram
+    public static function of(string $driver = 'claude-code'): SelectedDriver
     {
-        return SelectedProgram::resolve($program, ModelSelection::named(self::MODEL), null, null);
+        return SelectedDriver::resolve($driver, ModelSelection::named(self::MODEL), null, null);
     }
 
     public static function requestId(): string
@@ -34,14 +34,14 @@ final class TestSelections
      *
      * @return array<string, string|int>
      */
-    public static function sessionColumns(HookProgram $program = HookProgram::ClaudeCode): array
+    public static function sessionColumns(HookDriver $driver = HookDriver::ClaudeCode): array
     {
         return [
-            'program' => $program->value,
+            'driver' => $driver->value,
             'model' => self::MODEL,
             'requested_model_type' => 'named',
             'requested_model' => self::MODEL,
-            'program_source' => 'explicit',
+            'driver_source' => 'explicit',
             'profile_key' => 'main-agent',
             'profile_revision' => 1,
             'start_request_id' => self::requestId(),

@@ -1,5 +1,5 @@
 {
-  "program": "codex",
+  "driver": "codex",
   "version": "0.165.0",
   "binary_sha256": "a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a",
   "captured_at": "2026-11-18",

@@ -8,6 +8,8 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\HookInput;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
@@ -16,8 +18,6 @@ use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\HookAnswer;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
@@ -91,7 +91,7 @@ final class MemoryContextTest extends TestCase
     private function answer(string $callId, HookInput $input, string $method): string
     {
         $this->callAs($callId, hash('sha256', $callId));
-        $capabilities = new ProgramCapabilities(
+        $capabilities = new DriverCapabilities(
             'Test program',
             'context starts',
             [$method],
@@ -102,7 +102,7 @@ final class MemoryContextTest extends TestCase
             $input,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer),
+            fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionStart, $answer),
         )->stdout;
     }
 }

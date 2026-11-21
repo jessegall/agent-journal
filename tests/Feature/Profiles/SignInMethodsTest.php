@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Drivers\Enums\HookDriver;
 use App\Http\Data\Profiles\SignInMethodData;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Profiles\Support\ClaudeSignIn;
 use App\Profiles\Support\CodexSignIn;
 use App\Profiles\Support\SignInProtocols;
-use App\Programs\Enums\HookProgram;
 use Tests\TestCase;
 
 /**
@@ -53,11 +53,11 @@ final class SignInMethodsTest extends TestCase
         $cards = array_map(
             fn (array $pair) => SignInMethodData::fromMethod(...$pair)->toArray(),
             [
-                [HookProgram::ClaudeCode, SignInMethod::OAuth],
-                [HookProgram::ClaudeCode, SignInMethod::ProviderToken],
-                [HookProgram::ClaudeCode, SignInMethod::ApiKey],
-                [HookProgram::Codex, SignInMethod::OAuth],
-                [HookProgram::Codex, SignInMethod::ApiKey],
+                [HookDriver::ClaudeCode, SignInMethod::OAuth],
+                [HookDriver::ClaudeCode, SignInMethod::ProviderToken],
+                [HookDriver::ClaudeCode, SignInMethod::ApiKey],
+                [HookDriver::Codex, SignInMethod::OAuth],
+                [HookDriver::Codex, SignInMethod::ApiKey],
             ],
         );
         $shown = array_map(
@@ -111,6 +111,6 @@ final class SignInMethodsTest extends TestCase
     {
         $this->expectException(SignInMethodMissing::class);
 
-        SignInMethod::ProviderToken->title(HookProgram::Codex);
+        SignInMethod::ProviderToken->title(HookDriver::Codex);
     }
 }

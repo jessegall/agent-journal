@@ -21,18 +21,18 @@ final readonly class CallbackEnvelope
 
     public function __construct(
         public string $id,
-        public string $program,
+        public string $driver,
         public string $body,
         public string $bodyDigest,
         public int $issuedAt,
         public int $deadlineAt,
     ) {}
 
-    public static function forCallback(string $program, string $body, CarbonImmutable $now): self
+    public static function forCallback(string $driver, string $body, CarbonImmutable $now): self
     {
         return new self(
             (string) Str::ulid(),
-            $program,
+            $driver,
             $body,
             hash('sha256', $body),
             $now->getTimestamp(),

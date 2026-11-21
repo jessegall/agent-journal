@@ -7,10 +7,11 @@ namespace Tests\Feature\Profiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\ProgramFailure;
-use App\Agents\Events\ProgramFailed;
+use App\Agents\Enums\DriverFailure;
+use App\Agents\Events\DriverFailed;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
+use App\Drivers\Enums\HookDriver;
 use App\Files\Contracts\Files;
 use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Enums\AccountCheckResult;
@@ -24,7 +25,6 @@ use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\ClaimedAccountCheck;
-use App\Programs\Enums\HookProgram;
 use Tests\Fixtures\Profiles\FinishingProtocol;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\CommitsHookRows;
@@ -60,17 +60,17 @@ final class AccountChecksTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $this->account = Account::create(HookProgram::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
-        ActiveAccount::lockedFor(HookProgram::Codex)->select($this->account);
+        $this->account = Account::create(HookDriver::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
+        ActiveAccount::lockedFor(HookDriver::Codex)->select($this->account);
     }
 
     public function test_only_a_rejected_sign_in_of_the_current_generation_asks_for_a_check(): void
     {
-        $this->failWith(ProgramFailure::RateLimit, 1);
-        $this->failWith(ProgramFailure::AuthenticationFailed, 0);
+        $this->failWith(DriverFailure::RateLimit, 1);
+        $this->failWith(DriverFailure::AuthenticationFailed, 0);
         $this->assertNull($this->account->refresh()->check_requested_generation);
 
-        $this->failWith(ProgramFailure::AuthenticationFailed, 1);
+        $this->failWith(DriverFailure::AuthenticationFailed, 1);
 
         $this->assertSame(1, $this->account->refresh()->check_requested_generation);
     }
@@ -114,9 +114,9 @@ final class AccountChecksTest extends TestCase
         $this->assertSame([AccountCheckResult::SignedIn], $host->checks);
     }
 
-    private function failWith(ProgramFailure $failure, int $generation): void
+    private function failWith(DriverFailure $failure, int $generation): void
     {
-        event(new ProgramFailed('agent', 'session', 'codex', $failure, $this->account->recordIdentity(), $generation));
+        event(new DriverFailed('agent', 'session', 'codex', $failure, $this->account->recordIdentity(), $generation));
     }
 
     private function check(int $generation, AccountCheckResult $result): void

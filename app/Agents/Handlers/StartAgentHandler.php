@@ -66,10 +66,10 @@ final readonly class StartAgentHandler implements CommandHandler
         $this->sessions->reserveStart($agent);
 
         if ($request->execution()->mode === ExecutionModeType::RequiredContainer) {
-            $this->containers->admit($request->requestId, $request->selection->program, $request->execution());
+            $this->containers->admit($request->requestId, $request->selection->driver, $request->execution());
         }
 
-        $account = $this->accounts->forStart($request->selection->program);
+        $account = $this->accounts->forStart($request->selection->driver);
         $parent = $request->parentSessionId === null
             ? null
             : AgentSession::query()->findOrFail($request->parentSessionId);
@@ -106,7 +106,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $newSession,
             $request->conversationMode,
             StartReceipt::ACTUAL_MODEL_NOT_REPORTED,
-            $selection->program->modelArguments($selection->model),
+            $selection->driver->modelArguments($selection->model),
         );
     }
 }

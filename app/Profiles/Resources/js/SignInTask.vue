@@ -17,14 +17,14 @@ import type { SignInActions } from './signInActions';
  * host has the sign-in page ready, it shows that the sign-in is starting. The form is sent by the footer's button.
  */
 const props = defineProps<{
-    program: string;
+    driver: string;
     method: SignInMethodData;
     attempt: SignInAttemptData | undefined;
     actions: SignInActions;
     formId: string;
 }>();
 
-const direction = computed(() => codeDirection(props.program));
+const direction = computed(() => codeDirection(props.driver));
 
 const isStarting = computed(
     () =>
@@ -56,7 +56,7 @@ const openLink =
 </script>
 
 <template>
-    <ChosenSignIn :program="program" :method="method" />
+    <ChosenSignIn :driver="driver" :method="method" />
     <template v-if="isStarting">
         <div
             class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"

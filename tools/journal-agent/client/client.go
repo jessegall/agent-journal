@@ -202,7 +202,7 @@ type LivenessReport struct {
 // ProtectionReport mirrors App\Agents\Data\ProtectionReportData: what a contained host found of one program's
 // protected arrangement in the agent image, item by item.
 type ProtectionReport struct {
-	Program  string           `json:"program"`
+	Driver  string           `json:"driver"`
 	Build    string           `json:"build"`
 	Platform string           `json:"platform"`
 	Items    []ProtectionItem `json:"items"`
@@ -358,10 +358,10 @@ type Grant struct {
 
 // RuntimeStart mirrors App\Agents\Support\RuntimeStart: what the host needs to start the runtime's program.
 type RuntimeStart struct {
-	DriverType        string  `json:"driver_type"`
+	Variant        string  `json:"variant"`
 	SessionID         string  `json:"session_id"`
-	Program           string  `json:"program"`
-	ProgramBuild      string  `json:"program_build"`
+	Driver           string  `json:"driver"`
+	DriverBuild      string  `json:"driver_build"`
 	Folder            string  `json:"folder"`
 	ProcessGeneration int     `json:"process_generation"`
 	Model             *string `json:"model"`
@@ -370,7 +370,7 @@ type RuntimeStart struct {
 
 // ProgramBuild is the build of the program the grant starts.
 func (grant Grant) ProgramBuild() string {
-	return grant.Runtime.ProgramBuild
+	return grant.Runtime.DriverBuild
 }
 
 // ProfileEnvironment is the start's pinned authorization profile as environment entries; none when it has no pin.
@@ -434,6 +434,26 @@ func (client *Client) ReportHeartbeat(ctx context.Context, report LivenessReport
 	return client.call(ctx, "/host/reports/heartbeat", report, nil)
 }
 
+// HostCombination mirrors App\Agents\Data\HostCombinationData: one way this host can run an agent.
+type HostCombination struct {
+	Driver      string `json:"driver"`
+	Build       string `json:"build"`
+	Arrangement string `json:"arrangement"`
+	Placement   string `json:"placement"`
+	Variant     string `json:"variant"`
+}
+
+// HostCombinations mirrors App\Agents\Data\HostCombinationsData: the protocol version and what the host can run.
+type HostCombinations struct {
+	ProtocolVersion int               `json:"protocolVersion"`
+	Combinations    []HostCombination `json:"combinations"`
+}
+
+// ReportCombinations tells the journal which protocol this host speaks and which combinations it can run.
+func (client *Client) ReportCombinations(ctx context.Context, combinations []HostCombination) error {
+	return client.call(ctx, "/host/reports/combinations", HostCombinations{HostProtocolVersion, combinations}, nil)
+}
+
 func (client *Client) ReportProtection(ctx context.Context, report ProtectionReport) error {
 	return client.call(ctx, "/host/reports/protection", report, nil)
 }
@@ -488,6 +508,7 @@ func (client *Client) send(ctx context.Context, method, target string, content [
 	request.Header.Set(issuedAtHeader, strconv.FormatInt(issuedAt, 10))
 	request.Header.Set(signatureHeader, signed)
 	request.Header.Set(protocolHeader, protocolVersion)
+	request.Header.Set(hostProtocolHeader, strconv.Itoa(HostProtocolVersion))
 
 	response, err := client.http.Do(request)
 	if err != nil {
@@ -537,8 +558,8 @@ func newCallID() (string, error) {
 type MainRuntimeRequest struct {
 	AgentID      string `json:"agent_id"`
 	Folder       string `json:"folder"`
-	Program      string `json:"program"`
-	ProgramBuild string `json:"program_build"`
+	Driver      string `json:"driver"`
+	DriverBuild string `json:"driver_build"`
 	Profile      string `json:"profile"`
 }
 

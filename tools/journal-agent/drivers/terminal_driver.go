@@ -14,8 +14,8 @@ import (
 	"journal-agent/terminal"
 )
 
-// TerminalDriverType is the driver type the journal names for a runtime kept open in one interactive terminal.
-const TerminalDriverType = "terminal"
+// TerminalVariant is the driver type the journal names for a runtime kept open in one interactive terminal.
+const TerminalVariant = "terminal"
 
 // interruptKey stops the running turn in both pinned programs (recorded in the terminal-interrupt fixtures).
 const interruptKey = "\x1b"

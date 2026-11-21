@@ -14,7 +14,7 @@ final readonly class ClaimedSignIn
 {
     public function __construct(
         public string $attemptId,
-        public string $program,
+        public string $driver,
         public SignInMethod $method,
         public string $directory,
         public int $generation,

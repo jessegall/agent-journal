@@ -13,7 +13,7 @@ final class CallbackEnvelopeData extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $program,
+        public readonly string $driver,
         public readonly string $body,
         public readonly string $bodyDigest,
         public readonly int $issuedAt,
@@ -24,7 +24,7 @@ final class CallbackEnvelopeData extends Data
     {
         return new CallbackEnvelope(
             $this->id,
-            $this->program,
+            $this->driver,
             $this->body,
             $this->bodyDigest,
             $this->issuedAt,

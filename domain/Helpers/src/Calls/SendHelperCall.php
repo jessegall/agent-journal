@@ -36,7 +36,7 @@ final class SendHelperCall extends Data implements JournalCall
         public string $identityId,
         public string $profileKey,
         public string $model,
-        public string|null $programKey,
+        public string|null $driverKey,
         public string|null $subject,
         public string|null $purposeId,
         public string|null $purposeText,

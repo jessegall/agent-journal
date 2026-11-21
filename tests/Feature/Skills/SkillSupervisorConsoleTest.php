@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Skills\Contracts\SkillPublisher;
+use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
-use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\PublicationFiles;
 use App\Skills\Support\SkillPublishing;
@@ -153,7 +153,7 @@ final class SkillSupervisorConsoleTest extends TestCase
         return PublicationFiles::of(
             $publication,
             $this->app->make(SkillTargets::class),
-            $this->app->make(ProgramSkillAdapters::class),
+            $this->app->make(DriverSkillAdapters::class),
         )->stagingFolder;
     }
 

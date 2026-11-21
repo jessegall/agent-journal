@@ -6,7 +6,7 @@ namespace App\Hooks\Listeners;
 
 use App\Agents\Events\StartSettingsRequested;
 use App\Contracts\Listener;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 /**
  * Adds the journal's hooks for a program it supports to the start's isolated settings, allows the journal's own MCP
@@ -16,21 +16,21 @@ final class SupplyHookSettings implements Listener
 {
     public function handle(StartSettingsRequested $event): void
     {
-        $program = HookProgram::tryFrom($event->program);
+        $driver = HookDriver::tryFrom($event->driver);
 
-        if ($program === null) {
+        if ($driver === null) {
             return;
         }
 
-        foreach ($program->nativeEvents() as $eventName) {
-            $event->settings->addHook($eventName, $program->hookCommand());
+        foreach ($driver->nativeEvents() as $eventName) {
+            $event->settings->addHook($eventName, $driver->hookCommand());
         }
 
-        foreach ($program->nativeChildTools() as $toolName) {
+        foreach ($driver->nativeChildTools() as $toolName) {
             $event->settings->denyTool($toolName);
         }
 
-        foreach ($program->journalToolRules() as $toolRule) {
+        foreach ($driver->journalToolRules() as $toolRule) {
             $event->settings->allowTool($toolRule);
         }
     }

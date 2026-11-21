@@ -12,13 +12,13 @@ return new class extends Migration
     {
         Schema::create('account_notices', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('program', 64);
+            $table->string('driver', 64);
             $table->string('reason', 64);
             $table->unsignedInteger('times')->default(1);
             $table->timestampTz('resolved_at')->nullable();
             $table->timestampsTz();
 
-            $table->index(['program', 'reason', 'resolved_at']);
+            $table->index(['driver', 'reason', 'resolved_at']);
         });
     }
 

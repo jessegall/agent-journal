@@ -22,7 +22,7 @@ use App\Profiles\Handlers\RecordAccountNoticeHandler;
 final readonly class RecordAccountNotice extends Command
 {
     public function __construct(
-        public string $program,
+        public string $driver,
         public AccountNoticeReason $reason,
     ) {}
 }

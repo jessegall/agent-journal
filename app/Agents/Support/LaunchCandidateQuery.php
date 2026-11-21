@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 /**
  * Which of an owner's helpers may take a new launch: the profile key it must pin, the chosen program and exact model,
@@ -17,7 +17,7 @@ final readonly class LaunchCandidateQuery
      */
     public function __construct(
         public LaunchProfileKey $profile,
-        public HookProgram $program,
+        public HookDriver $driver,
         public string $model,
         public string $purposeReference,
         public array $helpers,

@@ -9,16 +9,16 @@ use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\AgentCallReply;
 use App\Agents\Values\LoggedBypass;
+use App\Drivers\Enums\HookDriver;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
+use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Drivers\OutageReply;
 use App\Hooks\Enums\CallFailure;
 use App\Hooks\Enums\HookEvent;
+use App\Hooks\Exceptions\DriverReplyMalformed;
 use App\Hooks\Exceptions\OutputGrantsInvalid;
-use App\Hooks\Exceptions\ProgramReplyMalformed;
 use App\Hooks\Inputs\ProtectedFileRead;
-use App\Hooks\Programs\OutageReply;
-use App\Hooks\Programs\ProgramReply;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Client\ConnectionException;
@@ -53,14 +53,14 @@ final readonly class HookRelay
         private Repository $config,
     ) {}
 
-    public function relay(HookProgram $program, string $json, RelaySettings $settings): ProgramReply
+    public function relay(HookDriver $driver, string $json, RelaySettings $settings): DriverReply
     {
         $this->config->set(Place::HookRuntime->rootSetting(), $settings->runtimeFolder());
         $log = new BypassLog($this->files, $settings->bypassLog());
         $pending = new PendingEnvelopes($this->files, $settings->pendingEnvelopesFolder());
-        $envelope = CallbackEnvelope::forCallback($program->value, $json, CarbonImmutable::now());
+        $envelope = CallbackEnvelope::forCallback($driver->value, $json, CarbonImmutable::now());
         $preparation = new PreparationState($this->files, $settings->preparationFile());
-        $event = HookEvent::tryFrom(ProgramEventName::of($json));
+        $event = HookEvent::tryFrom(DriverEventName::of($json));
 
         if ($event?->isToolCall() === true && ! $preparation->isPrepared()) {
             return OutageReply::preparationPending($event->value);
@@ -86,8 +86,8 @@ final readonly class HookRelay
         $pending->acknowledge($envelope);
 
         try {
-            $programReply = ProgramReply::fromJournal($reply->body);
-        } catch (JsonException|ProgramReplyMalformed) {
+            $programReply = DriverReply::fromJournal($reply->body);
+        } catch (JsonException|DriverReplyMalformed) {
             return $this->answerWithoutJournal(CallFailure::Refused, $json, $settings, $log);
         }
 
@@ -110,7 +110,7 @@ final readonly class HookRelay
         for ($attempt = 1; ; $attempt++) {
             $call = $this->client->prepareWithId(
                 $settings->client(),
-                $settings->hookPath($envelope->program),
+                $settings->hookPath($envelope->driver),
                 $envelope->body,
                 $envelope->id,
                 $envelope->issuedAt,
@@ -131,8 +131,8 @@ final readonly class HookRelay
         string $json,
         RelaySettings $settings,
         BypassLog $log,
-    ): ProgramReply {
-        $event = ProgramEventName::of($json);
+    ): DriverReply {
+        $event = DriverEventName::of($json);
 
         if ($failure->isOutage() && $settings->passesOutages && $this->touchesAccounts($json, $settings)) {
             return OutageReply::protectedRefusal($event);

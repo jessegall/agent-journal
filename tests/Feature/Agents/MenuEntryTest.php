@@ -53,7 +53,7 @@ final class MenuEntryTest extends TestCase
 
         $found = MenuEntry::query()
             ->current()
-            ->forProgram('claude-code')
+            ->forDriver('claude-code')
             ->matching('fp1:first', $goal)
             ->firstOrFail();
 

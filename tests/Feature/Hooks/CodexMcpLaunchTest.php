@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Agents\Enums\TransportProfileType;
+use App\Hooks\Drivers\CodexFolderTrust;
+use App\Hooks\Drivers\CodexJournalServer;
 use App\Hooks\Exceptions\JournalServerUnresolved;
-use App\Hooks\Programs\CodexFolderTrust;
-use App\Hooks\Programs\CodexJournalServer;
 use App\Hooks\Support\AccountConfigurationWrite;
 use Illuminate\Filesystem\Filesystem;
 use PHPUnit\Framework\Attributes\DataProvider;

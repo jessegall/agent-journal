@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Handlers\OpenHostMainRuntimeHandler;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Attributes\Entry;
@@ -26,8 +26,8 @@ final readonly class OpenHostMainRuntime extends Command
         public string $agentId,
         public string $hostId,
         public string $folder,
-        public string $program,
-        public string $programBuild,
+        public string $driver,
+        public string $driverBuild,
         public string $profile,
         public string|null $model,
     ) {}
@@ -41,10 +41,10 @@ final readonly class OpenHostMainRuntime extends Command
             $this->agentId,
             $this->hostId,
             $this->folder,
-            $this->program,
-            $this->programBuild,
+            $this->driver,
+            $this->driverBuild,
             $this->profile,
-            DriverType::Terminal,
+            DriverVariant::Terminal,
             $this->model,
         );
     }

@@ -688,6 +688,10 @@
                 "inputSchema": {
                     "additionalProperties": false,
                     "properties": {
+                        "driver_key": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
                         "identity_id": {
                             "maxLength": 64,
                             "type": "string"
@@ -698,10 +702,6 @@
                         },
                         "model": {
                             "maxLength": 200,
-                            "type": "string"
-                        },
-                        "program_key": {
-                            "maxLength": 64,
                             "type": "string"
                         },
                         "request_key": {
@@ -729,6 +729,10 @@
                             "maxLength": 20000,
                             "type": "string"
                         },
+                        "driver_key": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
                         "identity_id": {
                             "maxLength": 64,
                             "type": "string"
@@ -742,10 +746,6 @@
                         },
                         "profile_key": {
                             "maxLength": 128,
-                            "type": "string"
-                        },
-                        "program_key": {
-                            "maxLength": 64,
                             "type": "string"
                         },
                         "purpose_id": {
@@ -793,6 +793,10 @@
                             "maxLength": 20000,
                             "type": "string"
                         },
+                        "driver_key": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
                         "independent": {
                             "type": "boolean"
                         },
@@ -802,10 +806,6 @@
                         },
                         "profile_key": {
                             "maxLength": 128,
-                            "type": "string"
-                        },
-                        "program_key": {
-                            "maxLength": 64,
                             "type": "string"
                         },
                         "purpose_id": {
@@ -1005,13 +1005,13 @@
                         "continuation": {
                             "type": "string"
                         },
+                        "driver": {
+                            "maxLength": 80,
+                            "type": "string"
+                        },
                         "page": {
                             "minimum": 1,
                             "type": "integer"
-                        },
-                        "program": {
-                            "maxLength": 80,
-                            "type": "string"
                         },
                         "state": {
                             "enum": [

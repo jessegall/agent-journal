@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Agents\Actions;
 
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\DriverConversation;
 use App\Agents\Models\ProcessStart;
-use App\Agents\Models\ProgramConversation;
 use App\Agents\Models\SessionOutputGrant;
 use App\Agents\Models\StartRecord;
 use App\Agents\Values\SessionOutputPaths;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 /**
  * A step of recording a conversation visit, in the hook's transaction under the session's lock: the session's current
@@ -22,14 +22,14 @@ final readonly class MapSessionOutputs
 {
     public function map(
         AgentSession $session,
-        ProgramConversation $conversation,
+        DriverConversation $conversation,
         ProcessStart $start,
         string|null $transcriptPath,
     ): void {
         $start->advanceOutputGeneration();
         $granted = SessionOutputGrant::heldBy($session->id) ?: $this->continuedFrom($session);
         $paths = $transcriptPath === null ? null : SessionOutputPaths::verified(
-            HookProgram::from((string) $session->program),
+            HookDriver::from((string) $session->driver),
             $start->directory,
             $conversation->native_id,
             $transcriptPath,

@@ -88,7 +88,7 @@ func (journal *fakeJournal) StartGrant(context.Context, string) (client.Grant, e
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.grants++
-	return client.Grant{Token: "token", Runtime: client.RuntimeStart{ProgramBuild: "0.165.0"}}, nil
+	return client.Grant{Token: "token", Runtime: client.RuntimeStart{DriverBuild: "0.165.0"}}, nil
 }
 
 func (journal *fakeJournal) ReportRequest(_ context.Context, report client.RequestReport) error {

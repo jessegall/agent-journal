@@ -28,7 +28,7 @@ trait ReadsAudienceOptions
         $optionsByType = [
             'profiles' => 'profile',
             'profile-bases' => 'base',
-            'programs' => 'program',
+            'programs' => 'driver',
             'providers' => 'provider',
             'abilities' => 'ability',
         ];

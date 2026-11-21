@@ -11,7 +11,7 @@ use App\Agents\Exceptions\StartRefused;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\DatabaseManager;
 
@@ -72,7 +72,7 @@ final readonly class AgentSessions
      */
     public function start(
         Agent $agent,
-        SelectedProgram $selection,
+        SelectedDriver $selection,
         string $requestId,
         AgentSession|null $parent = null,
     ): AgentSession {
@@ -88,7 +88,7 @@ final readonly class AgentSessions
     /**
      * The selection with its profile pin; a selection that names no profile is pinned to the agent's own profile.
      */
-    private function pinned(Agent $agent, SelectedProgram $selection): SelectedProgram
+    private function pinned(Agent $agent, SelectedDriver $selection): SelectedDriver
     {
         return $this->builtInProfiles->pin($selection, $agent->profile_key);
     }

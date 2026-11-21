@@ -11,7 +11,7 @@ use App\Actors\Support\ActorContext;
 use App\Agents\Commands\CloseTerminalView;
 use App\Agents\Commands\OpenTerminalView;
 use App\Agents\Commands\RenewTerminalView;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
@@ -56,7 +56,7 @@ final class TerminalViewCommandsTest extends TestCase
 
     public function test_a_process_driver_agent_is_refused_and_no_view_is_made(): void
     {
-        $runtime = $this->runtimeOn('host-1', DriverType::Process);
+        $runtime = $this->runtimeOn('host-1', DriverVariant::Headless);
 
         $this->assertRefused(
             $this->open($runtime),
@@ -175,7 +175,7 @@ final class TerminalViewCommandsTest extends TestCase
 
         $read = AgentRuntime::query()->withWatchers()->with('session')->findOrFail($runtime->id);
         $status = $read->status(CarbonImmutable::now());
-        $this->assertSame([2, DriverType::Terminal], [$status->watchers, $status->driverType]);
+        $this->assertSame([2, DriverVariant::Terminal], [$status->watchers, $status->variant]);
 
         $first->close(CarbonImmutable::now());
         $reread = AgentRuntime::query()->with('session')->findOrFail($runtime->id);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Commands;
 
 use App\Agents\Contracts\AgentStartCommand;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Handlers\OpenAgentRuntimeHandler;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\OpenedRuntime;
@@ -29,10 +29,10 @@ final readonly class OpenAgentRuntime extends Command implements AgentStartComma
         public string $agentId,
         public string $hostId,
         public string $folder,
-        public string $program,
-        public string $programBuild,
+        public string $driver,
+        public string $driverBuild,
         public string $profile,
-        public DriverType $driverType,
+        public DriverVariant $variant,
         public string|null $model = null,
         public string|null $effort = null,
         public string|null $firstMessage = null,

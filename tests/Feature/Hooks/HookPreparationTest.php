@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Drivers\Enums\HookDriver;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Files\Values\FilePath;
+use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Drivers\OutageReply;
 use App\Hooks\Enums\CallFailure;
-use App\Hooks\Programs\OutageReply;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\PreparationState;
 use App\Hooks\Relay\RelaySettings;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Facades\Http;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Hooks\JournalUnreachable;
@@ -128,7 +128,7 @@ final class HookPreparationTest extends TestCase
         return $this->bypassLog.'.preparation.json';
     }
 
-    private function relay(string $payload, bool $passesOutages = true): ProgramReply
+    private function relay(string $payload, bool $passesOutages = true): DriverReply
     {
         $settings = new RelaySettings(
             'http://journal.test',
@@ -138,7 +138,7 @@ final class HookPreparationTest extends TestCase
             $this->bypassLog,
         );
 
-        return $this->app->make(HookRelay::class)->relay(HookProgram::ClaudeCode, $payload, $settings);
+        return $this->app->make(HookRelay::class)->relay(HookDriver::ClaudeCode, $payload, $settings);
     }
 
     /**

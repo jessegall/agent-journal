@@ -29,6 +29,6 @@ final readonly class StartProfileMain extends Command
         public string $agentId,
         public ProfileKey $profile,
         public ModelSelection $requested,
-        public string|null $programKey,
+        public string|null $driverKey,
     ) {}
 }

@@ -7,13 +7,13 @@ namespace App\Skills\Handlers;
 use App\Agents\Models\AgentSession;
 use App\Contracts\CommandHandler;
 use App\Skills\Commands\RefreshSkills;
+use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Enums\GenerationState;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
-use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Resolvers\SkillCatalogue;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\CanonicalRenderer;
@@ -41,7 +41,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         private SkillContextResolver $contexts,
         private SkillSelection $selection,
         private SkillTargets $targets,
-        private ProgramSkillAdapters $adapters,
+        private DriverSkillAdapters $adapters,
         private SkillPublications $publications,
     ) {}
 
@@ -104,7 +104,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         $current = SkillPublication::currentSelectionsOf(array_keys($contexts));
 
         foreach ($contexts as $sessionId => $context) {
-            if ($context->program === null || ! $this->adapters->supports($context->program)) {
+            if ($context->driver === null || ! $this->adapters->supports($context->driver)) {
                 continue;
             }
 
@@ -120,8 +120,8 @@ final readonly class RefreshSkillsHandler implements CommandHandler
 
             $intents[] = new PublicationIntent(
                 $sessionId,
-                $context->program->key,
-                $this->targets->targetFor($sessionId, $context->program),
+                $context->driver->key,
+                $this->targets->targetFor($sessionId, $context->driver),
                 $selected->digest,
                 $selected->selectedKeys(),
             );

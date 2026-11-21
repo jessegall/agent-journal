@@ -15,7 +15,7 @@ final readonly class SelectedAccount
 {
     public function __construct(
         public RecordIdentity $record,
-        public string $program,
+        public string $driver,
         public string $directory,
         public int $generation,
     ) {}

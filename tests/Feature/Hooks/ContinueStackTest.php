@@ -11,7 +11,7 @@ use App\Agents\Enums\StartOriginType;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\StartRecord;
 use App\Agents\Values\ModelSelection;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StackTarget;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
@@ -104,7 +104,7 @@ final class ContinueStackTest extends TestCase
         $request = new StartRequest(
             TestSelections::requestId(),
             $old->agent->id,
-            SelectedProgram::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null),
+            SelectedDriver::resolve('claude-code', ModelSelection::named('claude-opus-5-5'), null, null),
             StartOriginType::OwnerRequest,
             'helpers.job:01m7wgahp0n7766x1e1ta8ehew',
             null,

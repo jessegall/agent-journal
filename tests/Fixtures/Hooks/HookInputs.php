@@ -16,7 +16,7 @@ use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\ProgramToolInput;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEndDetails;
@@ -81,13 +81,13 @@ final class HookInputs
             ),
             'tool requested' => new ToolRequested(
                 $hook,
-                ClaudeCodeTool::Read->operation(new ProgramToolInput(['file_path' => 'app/Models/Task.php'])),
+                ClaudeCodeTool::Read->operation(new DriverToolInput(['file_path' => 'app/Models/Task.php'])),
             ),
             'stop' => new StopRequested($hook, new StopDetails('turn-1', false)),
             'compaction' => new ContextCompacted($hook, new CompactionDetails('compaction-1')),
             'tool finished' => new ToolFinished(
                 $hook,
-                new ToolResult('Bash', ToolOutcome::Succeeded, new ProgramToolInput(['command' => 'ls'])),
+                new ToolResult('Bash', ToolOutcome::Succeeded, new DriverToolInput(['command' => 'ls'])),
             ),
             'session end' => new SessionEnded($hook, new SessionEndDetails(SessionEndReason::Exit)),
         ];

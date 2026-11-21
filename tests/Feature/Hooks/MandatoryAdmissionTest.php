@@ -7,12 +7,12 @@ namespace Tests\Feature\Hooks;
 use App\Agents\Models\AgentRuntime;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Drivers\DriverReplies;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Inputs\ProgramToolInput;
-use App\Hooks\Programs\ProgramReplies;
-use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Stack\HookAnswer;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Models\ProcessRun;
@@ -93,13 +93,13 @@ final class MandatoryAdmissionTest extends TestCase
 
     public function test_a_program_that_cannot_take_a_rewrite_and_a_session_without_a_runtime_are_refused(): void
     {
-        $program = $this->answerShell('git status', RewriteSupport::NeedsApproval);
+        $driver = $this->answerShell('git status', RewriteSupport::NeedsApproval);
         $this->callAs('call-2');
         AgentRuntime::query()->delete();
         $session = $this->answerShell('git status');
 
-        $this->assertStringStartsWith('runner-unavailable: ', $program->decision->refusalReason());
-        $this->assertStringContainsString('cannot take a rewritten command line', $program->decision->refusalReason());
+        $this->assertStringStartsWith('runner-unavailable: ', $driver->decision->refusalReason());
+        $this->assertStringContainsString('cannot take a rewritten command line', $driver->decision->refusalReason());
         $this->assertStringContainsString('no runtime', $session->decision->refusalReason());
         $this->assertSame([], $this->admissions->lines);
     }
@@ -107,7 +107,7 @@ final class MandatoryAdmissionTest extends TestCase
     private function answerShell(string $line, RewriteSupport $rewrites = RewriteSupport::WithoutApproval): HookAnswer
     {
         $answered = null;
-        $render = function (HookAnswer $answer) use ($line, $rewrites, &$answered): ProgramReply {
+        $render = function (HookAnswer $answer) use ($line, $rewrites, &$answered): DriverReply {
             $answered = $answer;
 
             return $this->reply($line, $rewrites)($answer);
@@ -121,7 +121,7 @@ final class MandatoryAdmissionTest extends TestCase
     }
 
     /**
-     * @return array{0: mixed, 1: mixed, 2: OperationDeadline, 3: Closure(HookAnswer): ProgramReply}
+     * @return array{0: mixed, 1: mixed, 2: OperationDeadline, 3: Closure(HookAnswer): DriverReply}
      */
     private function shellCall(string $line): array
     {
@@ -136,12 +136,12 @@ final class MandatoryAdmissionTest extends TestCase
     }
 
     /**
-     * @return Closure(HookAnswer): ProgramReply
+     * @return Closure(HookAnswer): DriverReply
      */
     private function reply(string $line, RewriteSupport $rewrites): Closure
     {
-        $input = new ProgramToolInput(['command' => $line]);
+        $input = new DriverToolInput(['command' => $line]);
 
-        return fn (HookAnswer $answer) => ProgramReplies::shell($answer, $input, $rewrites);
+        return fn (HookAnswer $answer) => DriverReplies::shell($answer, $input, $rewrites);
     }
 }

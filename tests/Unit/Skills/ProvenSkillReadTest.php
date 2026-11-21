@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\Hooks\Enums\ToolOutcome;
-use App\Hooks\Inputs\ProgramToolInput;
+use App\Hooks\Inputs\DriverToolInput;
 use App\Hooks\Inputs\ToolResult;
 use App\Skills\Enums\ReadEvidence;
 use App\Skills\Values\ProvenSkillRead;
@@ -52,7 +52,7 @@ final class ProvenSkillReadTest extends TestCase
         yield 'another file' => [self::call('Read', ['file_path' => '/work/README.md'])];
 
         yield 'a failed read' => [
-            new ToolResult('Read', ToolOutcome::Failed, new ProgramToolInput(['file_path' => self::FILE])),
+            new ToolResult('Read', ToolOutcome::Failed, new DriverToolInput(['file_path' => self::FILE])),
         ];
     }
 
@@ -77,6 +77,6 @@ final class ProvenSkillReadTest extends TestCase
      */
     private static function call(string $tool, array $arguments): ToolResult
     {
-        return new ToolResult($tool, ToolOutcome::Succeeded, new ProgramToolInput($arguments));
+        return new ToolResult($tool, ToolOutcome::Succeeded, new DriverToolInput($arguments));
     }
 }

@@ -16,7 +16,7 @@ final readonly class MaintainAccountHandler implements CommandHandler
 {
     public function handle(MaintainAccount $command): void
     {
-        ActiveAccount::lockedFor(Account::programOf($command->accountId));
+        ActiveAccount::lockedFor(Account::driverOf($command->accountId));
         $account = Account::lockedForChange($command->accountId);
         $account->holdForMaintenance();
 

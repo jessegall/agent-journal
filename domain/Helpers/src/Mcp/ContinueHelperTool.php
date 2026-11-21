@@ -30,7 +30,7 @@ final class ContinueHelperTool extends JournalWriteTool
             'identity_id' => $schema->string()->max(64)->required(),
             'job_id' => $schema->string()->max(64)->required(),
             'model' => $schema->string()->max(200)->required(),
-            'program_key' => $schema->string()->max(64),
+            'driver_key' => $schema->string()->max(64),
         ];
     }
 
@@ -41,7 +41,7 @@ final class ContinueHelperTool extends JournalWriteTool
             $arguments->ulid('identity_id'),
             $arguments->ulid('job_id'),
             $arguments->text('model'),
-            $arguments->optionalText('program_key'),
+            $arguments->optionalText('driver_key'),
         );
     }
 

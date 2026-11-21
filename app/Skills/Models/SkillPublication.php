@@ -29,7 +29,7 @@ use Illuminate\Support\Carbon;
  *
  * @property string $id
  * @property string $session_id
- * @property string $program
+ * @property string $driver
  * @property string $target
  * @property string $generation_id
  * @property string $selection_digest
@@ -48,7 +48,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'session_id',
-    'program',
+    'driver',
     'target',
     'generation_id',
     'selection_digest',
@@ -96,7 +96,7 @@ final class SkillPublication extends Model implements ReadableModel
     ): self {
         return self::query()->create([
             'session_id' => $intent->sessionId,
-            'program' => $intent->program,
+            'driver' => $intent->driver,
             'target' => $intent->target,
             'generation_id' => $generation->id,
             'selection_digest' => $intent->selectionDigest,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Enums;
 
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Exceptions\SignInMethodMissing;
-use App\Programs\Enums\HookProgram;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
@@ -65,14 +65,14 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the program has no such sign-in
      */
-    public function title(HookProgram $program): string
+    public function title(HookDriver $driver): string
     {
-        return match ([$program, $this]) {
-            [HookProgram::ClaudeCode, self::OAuth] => 'Sign in with Claude',
-            [HookProgram::Codex, self::OAuth] => 'Sign in with ChatGPT',
-            [HookProgram::ClaudeCode, self::ProviderToken] => 'Setup token',
-            [HookProgram::ClaudeCode, self::ApiKey], [HookProgram::Codex, self::ApiKey] => 'API key',
-            default => throw SignInMethodMissing::for($program->value, $this->value),
+        return match ([$driver, $this]) {
+            [HookDriver::ClaudeCode, self::OAuth] => 'Sign in with Claude',
+            [HookDriver::Codex, self::OAuth] => 'Sign in with ChatGPT',
+            [HookDriver::ClaudeCode, self::ProviderToken] => 'Setup token',
+            [HookDriver::ClaudeCode, self::ApiKey], [HookDriver::Codex, self::ApiKey] => 'API key',
+            default => throw SignInMethodMissing::for($driver->value, $this->value),
         };
     }
 
@@ -81,17 +81,17 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the program has no such sign-in
      */
-    public function description(HookProgram $program): string
+    public function description(HookDriver $driver): string
     {
-        return match ([$program, $this]) {
-            [HookProgram::ClaudeCode, self::OAuth] => "Sign in on Claude's site, then paste the code it gives you.",
-            [HookProgram::ClaudeCode, self::ProviderToken] => 'Paste a token made with claude setup-token. '
+        return match ([$driver, $this]) {
+            [HookDriver::ClaudeCode, self::OAuth] => "Sign in on Claude's site, then paste the code it gives you.",
+            [HookDriver::ClaudeCode, self::ProviderToken] => 'Paste a token made with claude setup-token. '
                 .'Suits a server.',
-            [HookProgram::ClaudeCode, self::ApiKey] => 'Paste a key from the Anthropic Console. '
+            [HookDriver::ClaudeCode, self::ApiKey] => 'Paste a key from the Anthropic Console. '
                 .'You pay for what agents use.',
-            [HookProgram::Codex, self::OAuth] => "Enter a short code on OpenAI's site. The rest happens by itself.",
-            [HookProgram::Codex, self::ApiKey] => 'Paste a key from the OpenAI platform. You pay for what agents use.',
-            default => throw SignInMethodMissing::for($program->value, $this->value),
+            [HookDriver::Codex, self::OAuth] => "Enter a short code on OpenAI's site. The rest happens by itself.",
+            [HookDriver::Codex, self::ApiKey] => 'Paste a key from the OpenAI platform. You pay for what agents use.',
+            default => throw SignInMethodMissing::for($driver->value, $this->value),
         };
     }
 
@@ -100,16 +100,16 @@ enum SignInMethod: string
      *
      * @throws SignInMethodMissing when the program has no such sign-in
      */
-    public function secretSource(HookProgram $program): string|null
+    public function secretSource(HookDriver $driver): string|null
     {
-        return match ([$program, $this]) {
-            [HookProgram::ClaudeCode, self::OAuth], [HookProgram::Codex, self::OAuth] => null,
-            [HookProgram::ClaudeCode, self::ProviderToken] => 'On a computer where you are signed in to Claude '
+        return match ([$driver, $this]) {
+            [HookDriver::ClaudeCode, self::OAuth], [HookDriver::Codex, self::OAuth] => null,
+            [HookDriver::ClaudeCode, self::ProviderToken] => 'On a computer where you are signed in to Claude '
                 .'Code, run claude setup-token in a terminal and copy the token it prints.',
-            [HookProgram::ClaudeCode, self::ApiKey] => 'In the Anthropic Console, open API keys and create a key. Copy '
+            [HookDriver::ClaudeCode, self::ApiKey] => 'In the Anthropic Console, open API keys and create a key. Copy '
                 .'it right away: the Console shows it only once.',
-            [HookProgram::Codex, self::ApiKey] => 'On the OpenAI platform, open API keys and create a secret key.',
-            default => throw SignInMethodMissing::for($program->value, $this->value),
+            [HookDriver::Codex, self::ApiKey] => 'On the OpenAI platform, open API keys and create a secret key.',
+            default => throw SignInMethodMissing::for($driver->value, $this->value),
         };
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 /**
  * The exact files one native conversation of a session may read back: its transcript and, for a program that saves
@@ -24,7 +24,7 @@ final readonly class SessionOutputPaths
      * folder and names that conversation; none for any other path, so a session never gains another's history.
      */
     public static function verified(
-        HookProgram $program,
+        HookDriver $driver,
         string $accountDirectory,
         string $nativeId,
         string $transcriptPath,
@@ -32,11 +32,11 @@ final readonly class SessionOutputPaths
         $root = rtrim($accountDirectory, '/').'/';
         $isInside = str_starts_with($transcriptPath, $root) && preg_match(self::DOT_SEGMENT, $transcriptPath) === 0;
 
-        if (! $isInside || ! $program->namesTranscriptOf(basename($transcriptPath), $nativeId)) {
+        if (! $isInside || ! $driver->namesTranscriptOf(basename($transcriptPath), $nativeId)) {
             return null;
         }
 
-        $outputDirectory = $program->keepsOutputsBesideTranscript() ? dirname($transcriptPath).'/'.$nativeId : null;
+        $outputDirectory = $driver->keepsOutputsBesideTranscript() ? dirname($transcriptPath).'/'.$nativeId : null;
 
         return new self($transcriptPath, $outputDirectory);
     }

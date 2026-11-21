@@ -7,8 +7,8 @@ namespace App\Hooks\Stack;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Drivers\DriverCapabilities;
 use App\Hooks\Inputs\ShellCommandRequested;
-use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Support\StackAccess;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Enums\AdmissionRefusalCode;
@@ -36,7 +36,7 @@ final readonly class HookShellAdmission
         ShellCommandRequested $input,
         HookAnswer $answer,
         AgentStack $stackBefore,
-        ProgramCapabilities $capabilities,
+        DriverCapabilities $capabilities,
     ): HookAnswer {
         if ($answer->isDenied()) {
             return $answer;

@@ -7,21 +7,21 @@ namespace Tests\Feature\Hooks;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Models\StartBypass;
 use App\Agents\Values\StackTarget;
+use App\Drivers\Enums\HookDriver;
 use App\Files\Contracts\Files;
 use App\Files\Enums\Place;
 use App\Files\Values\FilePath;
 use App\Hooks\Actions\StartStacks;
+use App\Hooks\Drivers\DriverReply;
+use App\Hooks\Drivers\OutageReply;
 use App\Hooks\Enums\CallFailure;
 use App\Hooks\Models\HookCall;
-use App\Hooks\Programs\OutageReply;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Relay\CallbackEnvelope;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\PreparationState;
 use App\Hooks\Relay\RelaySettings;
 use App\Hooks\Support\ProtectedAccounts;
 use App\Hooks\Support\StackTransaction;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\ConnectionException;
@@ -254,7 +254,7 @@ final class HookRelayTest extends TestCase
         $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
     }
 
-    private function relay(string $payload, bool $passesOutages = true, string|null $token = null): ProgramReply
+    private function relay(string $payload, bool $passesOutages = true, string|null $token = null): DriverReply
     {
         $settings = new RelaySettings(
             'http://journal.test',
@@ -265,7 +265,7 @@ final class HookRelayTest extends TestCase
             accounts: new ProtectedAccounts(['/journal/accounts']),
         );
 
-        return $this->app->make(HookRelay::class)->relay(HookProgram::ClaudeCode, $payload, $settings);
+        return $this->app->make(HookRelay::class)->relay(HookDriver::ClaudeCode, $payload, $settings);
     }
 
     /**

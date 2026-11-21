@@ -2,7 +2,7 @@
     "rows": [
         {
             "capability": "account-transport",
-            "program": "claude-code",
+            "driver": "claude-code",
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -12,7 +12,7 @@
         },
         {
             "capability": "account-transport",
-            "program": "codex",
+            "driver": "codex",
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -22,7 +22,7 @@
         },
         {
             "capability": "account-transport",
-            "program": "claude-code",
+            "driver": "claude-code",
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "protected_host",
@@ -32,7 +32,7 @@
         },
         {
             "capability": "account-transport",
-            "program": "codex",
+            "driver": "codex",
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "protected_host",
@@ -42,7 +42,7 @@
         },
         {
             "capability": "callback-separation",
-            "program": "claude-code",
+            "driver": "claude-code",
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -52,7 +52,7 @@
         },
         {
             "capability": "callback-separation",
-            "program": "codex",
+            "driver": "codex",
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -62,7 +62,7 @@
         },
         {
             "capability": "relay-protection",
-            "program": "claude-code",
+            "driver": "claude-code",
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -72,7 +72,7 @@
         },
         {
             "capability": "relay-protection",
-            "program": "codex",
+            "driver": "codex",
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -82,7 +82,7 @@
         },
         {
             "capability": "process-tracking",
-            "program": "claude-code",
+            "driver": "claude-code",
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -92,7 +92,7 @@
         },
         {
             "capability": "process-tracking",
-            "program": "codex",
+            "driver": "codex",
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -102,7 +102,7 @@
         },
         {
             "capability": "completion-fence",
-            "program": "claude-code",
+            "driver": "claude-code",
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -112,7 +112,7 @@
         },
         {
             "capability": "completion-fence",
-            "program": "codex",
+            "driver": "codex",
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -122,7 +122,7 @@
         },
         {
             "capability": "stop-deadline",
-            "program": "claude-code",
+            "driver": "claude-code",
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -132,7 +132,7 @@
         },
         {
             "capability": "stop-deadline",
-            "program": "codex",
+            "driver": "codex",
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -142,7 +142,7 @@
         },
         {
             "capability": "container-runtime",
-            "program": "claude-code",
+            "driver": "claude-code",
             "program_version": "2.1.323",
             "account_mode": "subscription",
             "execution_mode": "required_container",
@@ -152,7 +152,7 @@
         },
         {
             "capability": "container-runtime",
-            "program": "codex",
+            "driver": "codex",
             "program_version": "0.165.0",
             "account_mode": "subscription",
             "execution_mode": "required_container",

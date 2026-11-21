@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReplies;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Support\ContextBudget;
 use Domain\Memory\Models\Memory;
@@ -92,7 +92,7 @@ final class SessionContextTest extends TestCase
             TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)),
             new SessionStartDetails("native-{$callId}", $source, null),
         );
-        $capabilities = new ProgramCapabilities(
+        $capabilities = new DriverCapabilities(
             'Test program',
             'session starts',
             ['onSessionStart'],
@@ -103,7 +103,7 @@ final class SessionContextTest extends TestCase
             $start,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer),
+            fn (HookAnswer $answer) => DriverReplies::observation(HookEvent::SessionStart, $answer),
         );
 
         return $reply->stdout;

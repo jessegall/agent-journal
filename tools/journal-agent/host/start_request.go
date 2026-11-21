@@ -18,7 +18,7 @@ type StartRequest struct {
 	StartID          string `json:"startId"`
 	RuntimeID        string `json:"runtimeId"`
 	SessionID        string `json:"sessionId"`
-	Program          string `json:"program"`
+	Driver          string `json:"driver"`
 	ExecutionMode    string `json:"executionMode"`
 	PolicyReference  string `json:"policyReference"`
 	Workspace        string `json:"workspace"`
@@ -111,8 +111,8 @@ func (request StartRequest) Check() error {
 			return fmt.Errorf("%w: %s is empty", ErrMalformedRequest, name)
 		}
 	}
-	if !startPrograms[request.Program] {
-		return fmt.Errorf("%w: unknown program %q", ErrMalformedRequest, request.Program)
+	if !startPrograms[request.Driver] {
+		return fmt.Errorf("%w: unknown program %q", ErrMalformedRequest, request.Driver)
 	}
 	if !executionModes[request.ExecutionMode] {
 		return fmt.Errorf("%w: unknown execution mode %q", ErrMalformedRequest, request.ExecutionMode)

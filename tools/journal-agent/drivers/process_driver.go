@@ -22,8 +22,8 @@ import (
 // while the journal could not be reached, to send them once it answers again.
 const BypassLogName = "bypasses.jsonl"
 
-// ProcessDriverType is the driver type the journal names for a runtime run one child per turn.
-const ProcessDriverType = "process"
+// HeadlessVariant is the driver type the journal names for a runtime run one child per turn.
+const HeadlessVariant = "headless"
 
 // ErrConversationUnknown is returned when a resume has no exact conversation reference; the latest is never taken.
 var ErrConversationUnknown = errors.New("the runtime has no exact conversation reference")
@@ -355,7 +355,7 @@ func WithoutJournalVariables(environment []string) []string {
 // RegisterProcessDriver makes the process driver available to the factory; runtimeOf supplies what the grant alone
 // does not say: the runtime's folders, its conversation and the generation the journal last recorded.
 func RegisterProcessDriver(factory *host.RuntimeFactory, runtimeOf func(grant host.StartGrant) (ProcessRuntime, int, error)) {
-	factory.Register(ProcessDriverType, func(grant host.StartGrant) (contracts.AgentDriver, error) {
+	factory.Register(HeadlessVariant, func(grant host.StartGrant) (contracts.AgentDriver, error) {
 		runtime, generation, err := runtimeOf(grant)
 		if err != nil {
 			return nil, err

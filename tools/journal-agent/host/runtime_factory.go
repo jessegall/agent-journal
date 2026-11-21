@@ -9,7 +9,7 @@ import (
 // StartGrant is what the journal hands a host for one runtime: which driver and profile, and its credential.
 type StartGrant struct {
 	RuntimeID  string
-	DriverType string
+	Variant string
 	Profile    string
 	Credential string
 	// ProfilePin is the start's pinned authorization profile as environment entries; empty when it has none.
@@ -34,9 +34,9 @@ func (factory *RuntimeFactory) Register(driverType string, constructor DriverCon
 
 // Open builds the driver the grant names.
 func (factory *RuntimeFactory) Open(grant StartGrant) (contracts.AgentDriver, error) {
-	constructor, found := factory.constructors[grant.DriverType]
+	constructor, found := factory.constructors[grant.Variant]
 	if !found {
-		return nil, fmt.Errorf("no driver of type %q is registered", grant.DriverType)
+		return nil, fmt.Errorf("no driver of type %q is registered", grant.Variant)
 	}
 	return constructor(grant)
 }

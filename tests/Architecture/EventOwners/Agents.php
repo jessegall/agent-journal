@@ -6,11 +6,11 @@ use App\Agents\Events\AccountSettingsRequested;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
+use App\Agents\Events\DriverFailed;
 use App\Agents\Events\DriverRequestRecovered;
 use App\Agents\Events\LaunchCancelled;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Events\MergeOutcomeRecorded;
-use App\Agents\Events\ProgramFailed;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\SessionOpened;
 use App\Agents\Events\StartAccepted;
@@ -89,12 +89,12 @@ return [
             'app/Agents/Handlers/MergeReviewedWorkHandler.php',
         ],
     ],
-    ProgramFailed::class => [
+    DriverFailed::class => [
         'role' => EventRole::CommandFact,
         'migrated' => false,
         'producers' => [
             'app/Agents/Handlers/ReportFailureHandler.php',
-            'app/Hooks/Actions/RecordProgramFailure.php',
+            'app/Hooks/Actions/RecordDriverFailure.php',
         ],
     ],
     SessionClosed::class => [

@@ -8,8 +8,8 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\StartOriginType;
-use App\Agents\Models\ProgramConversation;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Models\DriverConversation;
+use App\Agents\Values\SelectedDriver;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StartRequest;
 use App\Records\Support\RecordIdentity;
@@ -25,7 +25,7 @@ final readonly class OwnerStartRequest
         public ActorIdentity $agent,
         public RecordIdentity $work,
         public string $contextReference,
-        public SelectedProgram $selection,
+        public SelectedDriver $selection,
         public ConversationModeType $conversationMode,
         public StartPolicy $policy,
     ) {}
@@ -56,7 +56,7 @@ final readonly class OwnerStartRequest
             $this->policy,
             $authorizedSource,
             $this->conversationMode === ConversationModeType::Resume
-                ? ProgramConversation::lastUnder($this->agent->id, $this->contextReference, $this->selection->program)
+                ? DriverConversation::lastUnder($this->agent->id, $this->contextReference, $this->selection->driver)
                 : null,
         );
     }

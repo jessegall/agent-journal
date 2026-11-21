@@ -105,10 +105,10 @@ final class AccountStartSettings
     /**
      * @throws StartRefused
      */
-    public function recipeFor(string $program, TransportProfileType $transport): AccountStartRecipe
+    public function recipeFor(string $driver, TransportProfileType $transport): AccountStartRecipe
     {
         if ($this->build === null) {
-            throw StartRefused::withoutAccountSettings($program);
+            throw StartRefused::withoutAccountSettings($driver);
         }
 
         return new AccountStartRecipe(

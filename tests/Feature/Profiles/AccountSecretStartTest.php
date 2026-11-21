@@ -8,13 +8,13 @@ use App\Agents\Enums\TransportProfileType;
 use App\Agents\Events\AccountSettingsRequested;
 use App\Agents\Support\AccountStartRecipe;
 use App\Agents\Support\AccountStartSettings;
-use App\Hooks\Contracts\ProgramCompatibilities;
-use App\Hooks\Enums\ProgramEvidence;
-use App\Hooks\Support\ProgramCompatibility;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Contracts\DriverCompatibilities;
+use App\Hooks\Enums\DriverEvidence;
+use App\Hooks\Support\DriverCompatibility;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Models\Account;
 use App\Profiles\Values\AccountLabel;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -31,11 +31,11 @@ final class AccountSecretStartTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(ProgramCompatibilities::class, new class implements ProgramCompatibilities
+        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
         {
-            public function for(HookProgram $program): ProgramCompatibility
+            public function for(HookDriver $driver): DriverCompatibility
             {
-                return ProgramCompatibility::pinned($program)->withEvidence(ProgramEvidence::NativeShown, 'this test');
+                return DriverCompatibility::pinned($driver)->withEvidence(DriverEvidence::NativeShown, 'this test');
             }
         });
     }
@@ -59,7 +59,7 @@ final class AccountSecretStartTest extends TestCase
     private function recipeFor(SignInMethod $method): AccountStartRecipe
     {
         $folder = '/journal/accounts/work';
-        $account = Account::create(HookProgram::ClaudeCode, AccountLabel::from('Work '.$method->value), $folder);
+        $account = Account::create(HookDriver::ClaudeCode, AccountLabel::from('Work '.$method->value), $folder);
         $account->forceFill(['method' => $method])->save();
         $settings = new AccountStartSettings();
         $event = new AccountSettingsRequested('claude-code', $account->recordIdentity(), $folder, $settings);

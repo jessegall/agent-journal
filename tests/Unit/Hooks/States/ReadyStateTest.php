@@ -127,7 +127,7 @@ final class ReadyStateTest extends TestCase
         CommandEffect $effect = CommandEffect::ReadsOnly,
         PartJoin $join = PartJoin::End,
     ): CommandPart {
-        return new CommandPart('program', [], $effect, $type, $join);
+        return new CommandPart('driver', [], $effect, $type, $join);
     }
 
     private function request(ShellCommand $command): ShellCommandRequested

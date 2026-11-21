@@ -1,5 +1,5 @@
 {
-    "program": "Claude Code",
+    "driver": "Claude Code",
     "mapping": {
         "session start": "onSessionStart",
         "session resume after compaction": "onCompaction",

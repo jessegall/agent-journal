@@ -14,11 +14,11 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->ulid('agent_id')->index();
             $table->ulid('parent_session_id')->nullable()->index();
-            $table->string('program', 32)->nullable();
+            $table->string('driver', 32)->nullable();
             $table->string('model', 128);
             $table->string('requested_model_type', 16);
             $table->string('requested_model', 128)->nullable();
-            $table->string('program_source', 16);
+            $table->string('driver_source', 16);
             $table->string('profile_key', 128);
             $table->unsignedInteger('profile_revision');
             $table->ulid('start_request_id')->index();

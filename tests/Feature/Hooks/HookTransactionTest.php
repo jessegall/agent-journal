@@ -7,14 +7,14 @@ namespace Tests\Feature\Hooks;
 use App\Agents\Models\AgentSession;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReplies;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Models\HookCall;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReplies;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Storage\WalkStep;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +45,7 @@ final class HookTransactionTest extends TestCase
                 $this->stop(),
                 $this->capabilities(),
                 new OperationDeadline(300),
-                fn (HookAnswer $answer) => ProgramReplies::stop($answer),
+                fn (HookAnswer $answer) => DriverReplies::stop($answer),
             );
             $this->fail('The hook did not time out on the held lock.');
         } catch (StackLockTimedOut $timedOut) {
@@ -69,7 +69,7 @@ final class HookTransactionTest extends TestCase
                 $this->stop(),
                 $this->capabilities(),
                 new OperationDeadline(5000),
-                fn (HookAnswer $answer) => ProgramReplies::stop($answer),
+                fn (HookAnswer $answer) => DriverReplies::stop($answer),
             );
         } finally {
             $this->assertSame(<<<'TEXT'
@@ -136,7 +136,7 @@ final class HookTransactionTest extends TestCase
 
     public function test_a_replayed_session_start_with_a_changed_program_session_id_keeps_the_first_mapping(): void
     {
-        $capabilities = new ProgramCapabilities(
+        $capabilities = new DriverCapabilities(
             'Test program',
             'session starts',
             ['onSessionStart'],
@@ -155,7 +155,7 @@ final class HookTransactionTest extends TestCase
         $this->assertSame(1, HookCall::query()->count());
     }
 
-    private function answerSessionStart(string $vendorSessionId, ProgramCapabilities $capabilities): void
+    private function answerSessionStart(string $vendorSessionId, DriverCapabilities $capabilities): void
     {
         $this->callAs('call-start', hash('sha256', 'call-start'));
         $start = new SessionStarted(
@@ -167,7 +167,7 @@ final class HookTransactionTest extends TestCase
             $start,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => new ProgramReply('{}', '', 0),
+            fn (HookAnswer $answer) => new DriverReply('{}', '', 0),
         );
     }
 }

@@ -48,7 +48,7 @@ final class ConversationVisit extends Model implements ReadableModel
      */
     public static function appendOnce(
         AgentSession $session,
-        ProgramConversation $conversation,
+        DriverConversation $conversation,
         string $eventId,
         CarbonImmutable $observedAt,
     ): self {

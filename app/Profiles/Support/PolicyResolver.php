@@ -53,14 +53,14 @@ final readonly class PolicyResolver
         $this->assertKnownOperations($profile, $project);
 
         $start = new ProfileStartPolicy(
-            $profile->program,
-            $profile->programPinned,
+            $profile->driver,
+            $profile->driverPinned,
             $profile->allowedModels,
             $this->access($profile, $project),
             $this->stopConditions($profile),
             $this->execution($profile),
             new ProfileProvenance($configurationHash, [
-                new FieldOrigin('program', PolicyOriginType::Profile),
+                new FieldOrigin('driver', PolicyOriginType::Profile),
                 new FieldOrigin('allowedModels', PolicyOriginType::Profile),
                 new FieldOrigin('access', self::originOf($project, $profile->override)),
                 new FieldOrigin('stopConditions', $profile->stopConditions === []

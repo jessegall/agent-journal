@@ -14,6 +14,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Bus\Support\EntryDispatchers;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\CheckAccount;
@@ -29,7 +30,6 @@ use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\SignInIdentity;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -175,7 +175,7 @@ final class SignInAgainTest extends TestCase
     public function test_a_key_another_account_already_holds_ends_already_added(): void
     {
         $this->account->forceFill(['method' => SignInMethod::ApiKey, 'fingerprint' => 'old'])->save();
-        $other = Account::create(HookProgram::Codex, AccountLabel::from('Other'), '/journal/accounts/other');
+        $other = Account::create(HookDriver::Codex, AccountLabel::from('Other'), '/journal/accounts/other');
         $other->forceFill(['fingerprint' => 'shared'])->save();
         $saved = $this->account->directory;
         [$attemptId] = $this->waitingReconnect();
@@ -303,7 +303,7 @@ final class SignInAgainTest extends TestCase
 
     private function chosen(): string|null
     {
-        return ActiveAccount::query()->withoutGlobalScopes()->where('program', 'codex')->value('account_id');
+        return ActiveAccount::query()->withoutGlobalScopes()->where('driver', 'codex')->value('account_id');
     }
 
     private function startProcessOnAccount(): void

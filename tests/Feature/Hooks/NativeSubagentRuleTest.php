@@ -9,10 +9,10 @@ use App\Actors\Support\ActorContext;
 use App\Agents\Events\StartSettingsRequested;
 use App\Agents\Support\IsolatedHookSettings;
 use App\Agents\Values\StackTarget;
+use App\Drivers\Enums\HookDriver;
 use App\Hooks\Actions\StartStacks;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
-use App\Programs\Enums\HookProgram;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
@@ -58,15 +58,15 @@ final class NativeSubagentRuleTest extends TestCase
 
     public function test_rule_36_every_program_start_denies_each_native_child_tool(): void
     {
-        foreach (HookProgram::cases() as $program) {
+        foreach (HookDriver::cases() as $driver) {
             $settings = new IsolatedHookSettings();
-            $this->app->make(Dispatcher::class)->dispatch(new StartSettingsRequested($program->value, $settings));
+            $this->app->make(Dispatcher::class)->dispatch(new StartSettingsRequested($driver->value, $settings));
             $denied = json_decode($settings->content(), true, flags: JSON_THROW_ON_ERROR)['permissions']['deny'];
 
-            $this->assertNotSame([], $program->nativeChildTools(), $program->value);
+            $this->assertNotSame([], $driver->nativeChildTools(), $driver->value);
 
-            foreach ($program->nativeChildTools() as $toolName) {
-                $this->assertContains($toolName, $denied, "{$program->value} starts without denying {$toolName}");
+            foreach ($driver->nativeChildTools() as $toolName) {
+                $this->assertContains($toolName, $denied, "{$driver->value} starts without denying {$toolName}");
             }
         }
     }
@@ -108,14 +108,14 @@ final class NativeSubagentRuleTest extends TestCase
         $this->assertSame(0, HookCall::query()->authorizedFor($this->target())->count());
     }
 
-    private function hook(string $program, string $body): TestResponse
+    private function hook(string $driver, string $body): TestResponse
     {
         $this->app->forgetScopedInstances();
 
         return $this->call(
             'POST',
-            "/hooks/{$program}",
-            server: $this->start->serverHeaders($body, 'call-1', target: "/hooks/{$program}"),
+            "/hooks/{$driver}",
+            server: $this->start->serverHeaders($body, 'call-1', target: "/hooks/{$driver}"),
             content: $body,
         );
     }

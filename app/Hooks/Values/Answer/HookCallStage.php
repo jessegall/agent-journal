@@ -6,10 +6,10 @@ namespace App\Hooks\Values\Answer;
 
 use App\Agents\Values\StackTarget;
 use App\Hooks\Contracts\HookInput;
+use App\Hooks\Drivers\DriverCapabilities;
+use App\Hooks\Drivers\DriverReply;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use Closure;
 
@@ -20,11 +20,11 @@ use Closure;
 final readonly class HookCallStage
 {
     /**
-     * @param  Closure(HookAnswer): ProgramReply  $render  the program adapter's reply to the final answer
+     * @param  Closure(HookAnswer): DriverReply  $render  the program adapter's reply to the final answer
      */
     public function __construct(
         public HookInput $input,
-        public ProgramCapabilities $capabilities,
+        public DriverCapabilities $capabilities,
         public Closure $render,
         public HookIdentity $identity,
         public StackTarget $target,

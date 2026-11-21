@@ -24,7 +24,7 @@ final readonly class ClaimCleanupController
             : new JsonResponse([
                 'target' => $claimed->target->value,
                 'id' => $claimed->id,
-                'program' => $claimed->program,
+                'driver' => $claimed->driver,
                 'method' => $claimed->method->value,
                 'directory' => $claimed->directory,
                 'generation' => $claimed->generation,

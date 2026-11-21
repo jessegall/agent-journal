@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Values\SelectedProgram;
+use App\Agents\Values\SelectedDriver;
 
 /**
  * Everything the host needs for one committed start: the runtime and session it belongs to, the selected program and
@@ -17,7 +17,7 @@ final readonly class PreparedStart
         public string $startId,
         public string $runtimeId,
         public string $sessionId,
-        public SelectedProgram $selectedProgram,
+        public SelectedDriver $selectedDriver,
         public ExecutionModeType $executionMode,
         public string $policyReference,
         public string $workspace,
@@ -27,8 +27,8 @@ final readonly class PreparedStart
     /**
      * The name the protected host knows the selected program by.
      */
-    public function hostProgram(): string
+    public function hostDriver(): string
     {
-        return $this->selectedProgram->program->hostName();
+        return $this->selectedDriver->driver->hostName();
     }
 }

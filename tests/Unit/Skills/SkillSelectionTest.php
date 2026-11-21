@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
+use App\Drivers\Values\DriverKey;
+use App\Drivers\Values\ProviderKey;
 use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
-use App\Programs\Values\ProgramKey;
-use App\Programs\Values\ProviderKey;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Enums\SkillOrigin;
@@ -136,7 +136,7 @@ final class SkillSelectionTest extends TestCase
             TestIds::of(3),
             'main',
             StartProfile::of($snapshot),
-            ProgramKey::from('gemini-cli'),
+            DriverKey::from('gemini-cli'),
             null,
         );
     }

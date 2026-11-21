@@ -7,15 +7,15 @@ namespace Tests\Feature\Hooks;
 use App\Agents\Contracts\SessionOutputAccess;
 use App\Agents\Values\SessionOutputPaths;
 use App\Hooks\Actions\CheckProtectedResources;
+use App\Hooks\Contracts\DriverCall;
 use App\Hooks\Contracts\HookInput;
-use App\Hooks\Contracts\ProgramCall;
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Drivers\ClaudeAccountProtection;
+use App\Hooks\Drivers\ClaudeCodeAdapter;
+use App\Hooks\Drivers\CodexAccountProtection;
+use App\Hooks\Drivers\CodexAdapter;
+use App\Hooks\Drivers\HookPayload;
 use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Programs\ClaudeAccountProtection;
-use App\Hooks\Programs\ClaudeCodeAdapter;
-use App\Hooks\Programs\CodexAccountProtection;
-use App\Hooks\Programs\CodexAdapter;
-use App\Hooks\Programs\HookPayload;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 use Closure;
@@ -166,7 +166,7 @@ final class AccountProtectionTest extends TestCase
     /**
      * The permission the call's reply gives when the journal's walk allows it: a refusal before the walk stays one.
      */
-    private static function permissionOf(ProgramCall $call): string
+    private static function permissionOf(DriverCall $call): string
     {
         $allowed = new HookAnswer(Decision::allow(), [], [], new AgentStack([], new InMemoryStateFactory()));
         $reply = $call->replyWith(fn (HookInput $input, Closure $render) => $render($allowed));

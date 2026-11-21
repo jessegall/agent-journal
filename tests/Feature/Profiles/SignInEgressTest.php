@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Profiles\Support\ClaudeProgram;
-use App\Profiles\Support\CodexProgram;
+use App\Profiles\Support\ClaudeDriver;
+use App\Profiles\Support\CodexDriver;
 use App\Profiles\Support\SignInEgress;
 use Tests\TestCase;
 
@@ -28,10 +28,10 @@ final class SignInEgressTest extends TestCase
 
         $this->folder = sys_get_temp_dir().'/sign-in-egress-'.uniqid();
         mkdir($this->folder, 0o700);
-        $program = $this->folder.'/program';
-        file_put_contents($program, "#!/bin/sh\nenv > \"\$HOME/environment\"\n");
-        chmod($program, 0o700);
-        config(['accounts.claude_program' => $program, 'accounts.codex_program' => $program]);
+        $driver = $this->folder.'/program';
+        file_put_contents($driver, "#!/bin/sh\nenv > \"\$HOME/environment\"\n");
+        chmod($driver, 0o700);
+        config(['accounts.claude_program' => $driver, 'accounts.codex_program' => $driver]);
     }
 
     protected function tearDown(): void
@@ -70,9 +70,9 @@ final class SignInEgressTest extends TestCase
      */
     private function environments(): array
     {
-        $this->app->make(ClaudeProgram::class)->start([], $this->folder)->finish();
+        $this->app->make(ClaudeDriver::class)->start([], $this->folder)->finish();
         $claude = $this->readEnvironment();
-        $this->app->make(CodexProgram::class)->start([], $this->folder)->finish();
+        $this->app->make(CodexDriver::class)->start([], $this->folder)->finish();
 
         return [$claude, $this->readEnvironment()];
     }

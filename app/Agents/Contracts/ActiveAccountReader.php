@@ -6,7 +6,7 @@ namespace App\Agents\Contracts;
 
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Values\SelectedAccount;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 /**
  * The account a start of a program runs with, read and locked inside the start's transaction: selection before
@@ -17,5 +17,5 @@ interface ActiveAccountReader
     /**
      * @throws AccountUnavailable
      */
-    public function forStart(HookProgram $program): SelectedAccount;
+    public function forStart(HookDriver $driver): SelectedAccount;
 }

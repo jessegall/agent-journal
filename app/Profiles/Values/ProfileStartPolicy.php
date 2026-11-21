@@ -12,8 +12,8 @@ use App\Agents\Values\ExecutionPolicy;
 use App\Agents\Values\Operation;
 use App\Agents\Values\StartPolicy;
 use App\Agents\Values\StopConditions;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\PolicyOriginType;
-use App\Programs\Enums\HookProgram;
 
 /**
  * How a profile's agent is started: its program and whether a start may choose another, the models it allows (none
@@ -26,14 +26,14 @@ final readonly class ProfileStartPolicy
 
     public const string HELPER_IMAGE = 'journal-helper';
 
-    public const array FIELDS = ['program', 'allowedModels', 'access', 'stopConditions', 'execution'];
+    public const array FIELDS = ['driver', 'allowedModels', 'access', 'stopConditions', 'execution'];
 
     /**
      * @param  list<string>  $allowedModels
      */
     public function __construct(
-        public HookProgram|null $program,
-        public bool $programPinned,
+        public HookDriver|null $driver,
+        public bool $driverPinned,
         public array $allowedModels,
         public AccessPolicy $access,
         public StopConditions $stopConditions,
@@ -49,15 +49,15 @@ final readonly class ProfileStartPolicy
      */
     public static function defaultsFor(
         ProfileBase $type,
-        HookProgram|null $program,
-        bool $programPinned,
+        HookDriver|null $driver,
+        bool $driverPinned,
         array $allowedModels,
         string $configurationHash,
     ): self {
 
         return new self(
-            $program,
-            $programPinned,
+            $driver,
+            $driverPinned,
             $allowedModels,
             $type->defaultAccess(),
             StopConditions::make($type->defaultStopConditions()),

@@ -1,5 +1,5 @@
 {
-  "program": "claude",
+  "driver": "claude",
   "version": "2.1.323",
   "binary_sha256": "5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7",
   "captured_at": "2026-11-18",

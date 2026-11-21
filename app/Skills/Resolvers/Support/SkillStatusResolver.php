@@ -8,8 +8,9 @@ use App\Actors\Contracts\CurrentActor;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentInspection;
-use App\Programs\Values\ProgramKey;
+use App\Drivers\Values\DriverKey;
 use App\Skills\Contracts\SkillResolver;
+use App\Skills\Drivers\DriverSkillAdapters;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Enums\SkillReload;
 use App\Skills\Exceptions\SkillContextUnavailable;
@@ -18,7 +19,6 @@ use App\Skills\Exceptions\SkillSessionHidden;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Models\SkillReceipt;
-use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Values\SessionSkillStatus;
 use App\Skills\Values\SkillEntry;
@@ -38,7 +38,7 @@ final readonly class SkillStatusResolver
         private SkillResolver $skills,
         private SkillContextResolver $contexts,
         private SkillSelection $selection,
-        private ProgramSkillAdapters $adapters,
+        private DriverSkillAdapters $adapters,
     ) {}
 
     /**
@@ -57,8 +57,8 @@ final readonly class SkillStatusResolver
         $delivered = SkillPublication::latestDeliveredOfSession($sessionId);
         $started = SkillPublication::firstOfSession($sessionId);
         $generation = SkillGeneration::latestReady();
-        $reloadsAtNewSession = $this->adapters->supports(ProgramKey::from($started->program))
-            && $this->adapters->for(ProgramKey::from($started->program))->reloadMode() === SkillReload::NewSession;
+        $reloadsAtNewSession = $this->adapters->supports(DriverKey::from($started->driver))
+            && $this->adapters->for(DriverKey::from($started->driver))->reloadMode() === SkillReload::NewSession;
 
         return array_map(function (SkillEntry $entry) use (
             $sessionId,

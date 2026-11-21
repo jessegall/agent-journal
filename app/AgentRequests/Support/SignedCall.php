@@ -21,6 +21,8 @@ final readonly class SignedCall
 
     public const string PROTOCOL_HEADER = 'X-Journal-Protocol';
 
+    public const string HOST_PROTOCOL_HEADER = 'Journal-Host-Protocol';
+
     public const string PROFILE_HEADER = 'X-Journal-Profile';
 
     public const string PROFILE_REVISION_HEADER = 'X-Journal-Profile-Revision';

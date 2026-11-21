@@ -23,7 +23,7 @@ use App\Profiles\Values\SignInVerification;
  */
 abstract readonly class ClaudeSecretSignIn implements SignInProtocol
 {
-    public function __construct(protected ClaudeProgram $claude, protected Files $files) {}
+    public function __construct(protected ClaudeDriver $claude, protected Files $files) {}
 
     public function begin(string $directory): PrivateAccountProcess
     {

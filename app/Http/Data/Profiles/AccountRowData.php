@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Data\Profiles;
 
 use App\Agents\Values\AccountUse;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Models\Account;
-use App\Programs\Enums\HookProgram;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -26,7 +26,7 @@ final class AccountRowData extends Data
      */
     public function __construct(
         public readonly string $id,
-        public readonly string $program,
+        public readonly string $driver,
         public readonly string $label,
         public readonly SignInMethodData $signIn,
         public readonly AccountState $state,
@@ -49,9 +49,9 @@ final class AccountRowData extends Data
     {
         return new self(
             $account->id,
-            $account->program,
+            $account->driver,
             $account->label,
-            SignInMethodData::fromMethod(HookProgram::from($account->program), $account->method),
+            SignInMethodData::fromMethod(HookDriver::from($account->driver), $account->method),
             $account->state,
             $account->identity,
             $account->workspace,

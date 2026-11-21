@@ -26,7 +26,7 @@ trait PrintsHelperReceipts
                 'Model requested %s, resolved %s on %s, actual: %s',
                 $receipt->requestedModel ?? $receipt->requestedModelType,
                 $receipt->resolvedModel,
-                $receipt->program,
+                $receipt->driver,
                 $receipt->actualModel,
             ))
             ->line("Launch {$receipt->launchReference}, runs {$receipt->executionMode}");

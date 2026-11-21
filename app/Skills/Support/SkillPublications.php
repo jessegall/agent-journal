@@ -23,14 +23,14 @@ final readonly class SkillPublications
      */
     public function intend(
         string $sessionId,
-        string $program,
+        string $driver,
         string $target,
         SkillGeneration $generation,
         string $selectionDigest,
         array $keys,
     ): SkillPublication {
         return $this->intendMany($generation, [
-            new PublicationIntent($sessionId, $program, $target, $selectionDigest, $keys),
+            new PublicationIntent($sessionId, $driver, $target, $selectionDigest, $keys),
         ])[0];
     }
 

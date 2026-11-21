@@ -13,7 +13,7 @@ use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\ReportStopped;
 use App\Agents\Commands\RetireAgent;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\ProcessStartState;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
@@ -22,14 +22,14 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
-use App\Hooks\Contracts\ProgramCompatibilities;
-use App\Hooks\Enums\ProgramEvidence;
-use App\Hooks\Support\ProgramCompatibility;
+use App\Drivers\Enums\HookDriver;
+use App\Hooks\Contracts\DriverCompatibilities;
+use App\Hooks\Enums\DriverEvidence;
+use App\Hooks\Support\DriverCompatibility;
 use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\AccountMaintenance;
-use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
@@ -81,13 +81,13 @@ final class AccountMaintenanceTest extends TestCase
         parent::setUp();
 
         $this->account = $this->chooseActiveAccounts()['claude-code'];
-        $this->app->instance(ProgramCompatibilities::class, new class implements ProgramCompatibilities
+        $this->app->instance(DriverCompatibilities::class, new class implements DriverCompatibilities
         {
-            public function for(HookProgram $program): ProgramCompatibility
+            public function for(HookDriver $driver): DriverCompatibility
             {
-                $pinned = ProgramCompatibility::pinned($program);
+                $pinned = DriverCompatibility::pinned($driver);
 
-                return $pinned->withEvidence(ProgramEvidence::NativeShown, 'this test');
+                return $pinned->withEvidence(DriverEvidence::NativeShown, 'this test');
             }
         });
     }
@@ -163,7 +163,7 @@ final class AccountMaintenanceTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverType::Process,
+            DriverVariant::Headless,
             'claude-opus-5-5',
         );
 

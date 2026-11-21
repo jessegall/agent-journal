@@ -18,10 +18,10 @@ import { attemptToRejoin, isLive } from './signIn';
 import type { WizardRequest } from './signIn';
 
 /**
- * The owner's saved Claude Code and Codex accounts in one list: which one new starts of each program use, choosing
+ * The owner's saved Claude Code and Codex accounts in one list: which one new starts of each driver use, choosing
  * or renaming one, and adding one through the add-account wizard. A sign-in still waiting on the host is resumed from
  * the header. The page reloads on every change; a reload that answers an older choice never takes back a newer one,
- * by each program's change number.
+ * by each driver's change number.
  */
 const props = defineProps<{ data: AccountListData }>();
 
@@ -44,11 +44,11 @@ const waitingSignIn = computed(() =>
 );
 
 function resumeOrAgain(row: AccountRowData): void {
-    const running = attemptToRejoin(props.data.attempts, row.program, row.id);
+    const running = attemptToRejoin(props.data.attempts, row.driver, row.id);
 
     request.value =
         running === undefined
-            ? { kind: 'again', program: row.program, accountId: row.id }
+            ? { kind: 'again', driver: row.driver, accountId: row.id }
             : { kind: 'resume', attemptId: running.id };
 }
 </script>
@@ -100,14 +100,14 @@ function resumeOrAgain(row: AccountRowData): void {
                 <template v-for="row in data.rows" :key="row.id">
                     <AccountRow
                         :account="row"
-                        :is-chosen="isChosen(selections, row.program, row.id)"
+                        :is-chosen="isChosen(selections, row.driver, row.id)"
                         @sign-in-again="resumeOrAgain(row)"
                     >
                         <template
                             v-if="
                                 attemptToRejoin(
                                     data.attempts,
-                                    row.program,
+                                    row.driver,
                                     row.id,
                                 ) !== undefined
                             "

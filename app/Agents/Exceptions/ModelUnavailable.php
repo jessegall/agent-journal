@@ -13,13 +13,13 @@ use InvalidArgumentException;
  */
 final class ModelUnavailable extends InvalidArgumentException implements CommandRefusal
 {
-    public static function for(string $model, string $program): self
+    public static function for(string $model, string $driver): self
     {
         return new self(
             sprintf(
                 'Model %s is not allowed for %s with this profile. Name an allowed model. Nothing was started.',
                 $model,
-                $program,
+                $driver,
             ),
         );
     }

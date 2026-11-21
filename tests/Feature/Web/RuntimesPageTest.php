@@ -9,7 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Enums\DriverType;
+use App\Agents\Enums\DriverVariant;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
@@ -58,7 +58,7 @@ final class RuntimesPageTest extends TestCase
         $response = $this->actingAs($this->owner)->get('/web/runtimes')->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('web/Runtimes')
-            ->where('page.data.runtimes.0.status.program', 'claude-code')
+            ->where('page.data.runtimes.0.status.driver', 'claude-code')
             ->where('page.data.runtimes.0.status.isStale', true)
             ->has('page.data.runtimes.0.requests', 1)
             ->where('page.data.runtimes.0.requests.0.operation', 'deliver'));
@@ -146,7 +146,7 @@ final class RuntimesPageTest extends TestCase
             'claude-code',
             '2.1.323',
             'claude',
-            DriverType::Process,
+            DriverVariant::Headless,
             'claude-opus-5-5',
             firstMessage: 'hello',
         ));

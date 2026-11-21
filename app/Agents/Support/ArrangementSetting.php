@@ -7,15 +7,15 @@ namespace App\Agents\Support;
 use App\Agents\Enums\ArrangementType;
 use App\Agents\Exceptions\AccountFolderInvalid;
 use App\Agents\Exceptions\ArrangementUnknown;
+use App\Agents\Exceptions\DriverNotContainable;
 use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\InstallationNameMissing;
-use App\Agents\Exceptions\ProgramNotContainable;
 use App\Agents\Exceptions\RunnerArrangementRefused;
 use App\Agents\Exceptions\WorkspaceSourceMissing;
 use App\Agents\Exceptions\WorkspaceSourcesInvalid;
 use App\Agents\Models\Host;
 use App\Agents\Values\SelectedAccount;
-use App\Programs\Enums\HookProgram;
+use App\Drivers\Enums\HookDriver;
 
 /**
  * The arrangement this journal runs its agents in, read once from AGENTS_ARRANGEMENT; the one place that answers it,
@@ -99,12 +99,12 @@ final readonly class ArrangementSetting
      * Refuses, contained, a program whose sandbox does not keep its tools from its sign-in, whatever the account's
      * sign-in method: Codex limits writes only (doc 61, decision 8).
      *
-     * @throws ProgramNotContainable
+     * @throws DriverNotContainable
      */
-    public function assertContainable(HookProgram $program): void
+    public function assertContainable(HookDriver $driver): void
     {
-        if ($this->arrangement->isContained() && $program === HookProgram::Codex) {
-            throw ProgramNotContainable::codex();
+        if ($this->arrangement->isContained() && $driver === HookDriver::Codex) {
+            throw DriverNotContainable::codex();
         }
     }
 

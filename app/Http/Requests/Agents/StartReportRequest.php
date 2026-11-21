@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Agents;
 
-use App\Agents\Enums\ProgramFailure;
+use App\Agents\Enums\DriverFailure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +22,7 @@ final class StartReportRequest extends FormRequest
         return [
             'session_id' => ['sometimes', 'required', 'string', 'max:64'],
             'execution_id' => ['sometimes', 'required', 'string', 'max:128'],
-            'failure' => ['sometimes', 'required', Rule::enum(ProgramFailure::class)],
+            'failure' => ['sometimes', 'required', Rule::enum(DriverFailure::class)],
             'stopped' => ['sometimes', 'array', 'max:500'],
             'stopped.*' => ['string', 'max:64'],
         ];
@@ -43,9 +43,9 @@ final class StartReportRequest extends FormRequest
         return $this->string('execution_id')->toString();
     }
 
-    public function failure(): ProgramFailure
+    public function failure(): DriverFailure
     {
-        return $this->enum('failure', ProgramFailure::class) ?? ProgramFailure::Unknown;
+        return $this->enum('failure', DriverFailure::class) ?? DriverFailure::Unknown;
     }
 
     /**

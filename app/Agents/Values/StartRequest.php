@@ -17,7 +17,7 @@ final readonly class StartRequest
     public function __construct(
         public string $requestId,
         public string $agentId,
-        public SelectedProgram $selection,
+        public SelectedDriver $selection,
         public StartOriginType $origin,
         public string|null $ownerReference,
         public string|null $contextReference,
@@ -43,11 +43,11 @@ final readonly class StartRequest
 
         return hash('sha256', json_encode([
             $this->agentId,
-            $this->selection->program->value,
+            $this->selection->driver->value,
             $this->selection->model,
             $requested->type->value,
             $requested->model,
-            $source->programSource->value,
+            $source->driverSource->value,
             $source->profileKey,
             $source->profileRevision,
             $this->origin->value,

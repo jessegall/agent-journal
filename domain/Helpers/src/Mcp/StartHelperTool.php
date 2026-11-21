@@ -32,7 +32,7 @@ final class StartHelperTool extends JournalWriteTool
             $arguments->text('request_key'),
             $arguments->text('profile_key'),
             $arguments->text('model'),
-            $arguments->optionalText('program_key'),
+            $arguments->optionalText('driver_key'),
             $this->work($arguments),
         );
     }

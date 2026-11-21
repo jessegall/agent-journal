@@ -12,9 +12,9 @@ enum StartRefusalType: string
     case ModelRequired = 'model-required';
     case ModelUnavailable = 'model-unavailable';
     case DefaultUnavailable = 'default-unavailable';
-    case ProgramRequired = 'program-required';
-    case ProgramConflict = 'program-conflict';
-    case ProgramUnsupported = 'program-unsupported';
+    case DriverRequired = 'driver-required';
+    case DriverConflict = 'driver-conflict';
+    case DriverUnsupported = 'driver-unsupported';
     case AccountContainerUnsupported = 'account-container-unsupported';
     case CapabilityUnsupported = 'capability-unsupported';
     case ContextFailed = 'context-failed';

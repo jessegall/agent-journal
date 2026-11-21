@@ -5,7 +5,7 @@ import type {
 } from '@generated/types/accounts';
 import Spinner from '@kit/Spinner';
 import ChosenSignIn from './ChosenSignIn.vue';
-import { programName } from './accountLooks';
+import { driverName } from './accountLooks';
 import { endedMessage } from './signIn';
 
 /**
@@ -13,7 +13,7 @@ import { endedMessage } from './signIn';
  * was already there, or what went wrong in the attempt's own sentence. The done mark is blue, every other mark grey.
  */
 defineProps<{
-    program: string;
+    driver: string;
     method: SignInMethodData;
     attempt: SignInAttemptData;
     accountName: string | null;
@@ -21,7 +21,7 @@ defineProps<{
 </script>
 
 <template>
-    <ChosenSignIn :program="program" :method="method" />
+    <ChosenSignIn :driver="driver" :method="method" />
     <div
         class="flex flex-1 flex-col items-center justify-center gap-3 pb-3 text-center"
         role="status"
@@ -29,7 +29,7 @@ defineProps<{
         <template v-if="attempt.state === 'checking'">
             <Spinner large class="text-brand" />
             <h4 class="mt-1 font-semibold text-card text-text">
-                Checking the sign-in with {{ programName(program) }}…
+                Checking the sign-in with {{ driverName(driver) }}…
             </h4>
             <p class="max-w-[340px] text-field leading-relaxed text-text-2">
                 This usually takes a few seconds. You can close this window: the
@@ -45,9 +45,9 @@ defineProps<{
             <h4 class="mt-1 font-semibold text-card text-text">Account added</h4>
             <p class="max-w-[340px] text-field leading-relaxed text-text-2">
                 <b class="font-medium [overflow-wrap:anywhere] text-text">{{
-                    accountName ?? programName(program)
+                    accountName ?? driverName(driver)
                 }}</b>
-                is saved as a {{ programName(program) }} account.
+                is saved as a {{ driverName(driver) }} account.
             </p>
         </template>
         <template v-else-if="attempt.state === 'already_added'">

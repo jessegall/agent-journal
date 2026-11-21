@@ -14,9 +14,9 @@ final class StartRefused extends RuntimeException
         return new self("The start of session {$sessionId} opened no runtime.");
     }
 
-    public static function withoutHooks(string $program): self
+    public static function withoutHooks(string $driver): self
     {
-        return new self("No domain supplies hooks for {$program}, so it cannot be started under the journal.");
+        return new self("No domain supplies hooks for {$driver}, so it cannot be started under the journal.");
     }
 
     public static function withoutPredecessor(string $sessionId): self
@@ -24,14 +24,14 @@ final class StartRefused extends RuntimeException
         return new self("No start of session {$sessionId} of this agent can be continued.");
     }
 
-    public static function withoutAccountSettings(string $program): self
+    public static function withoutAccountSettings(string $driver): self
     {
-        return new self("No adapter prepares an account start of {$program}, so it is not claimed.");
+        return new self("No adapter prepares an account start of {$driver}, so it is not claimed.");
     }
 
-    public static function skillsUnsupported(string $program): self
+    public static function skillsUnsupported(string $driver): self
     {
-        return new self("The journal cannot deliver skills to {$program}, so it is not started.");
+        return new self("The journal cannot deliver skills to {$driver}, so it is not started.");
     }
 
     public static function skillsNotReady(string $sessionId, string $reason): self

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use App\Agents\Enums\ProgramSourceType;
+use App\Agents\Enums\DriverSourceType;
 
 /**
  * Where a start's program came from, and the profile and its revision when one took part; a main agent with an
@@ -13,7 +13,7 @@ use App\Agents\Enums\ProgramSourceType;
 final readonly class SelectionSource
 {
     public function __construct(
-        public ProgramSourceType $programSource,
+        public DriverSourceType $driverSource,
         public string|null $profileKey,
         public int|null $profileRevision,
     ) {}

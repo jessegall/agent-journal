@@ -7,10 +7,10 @@ namespace Tests\Support;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
+use App\Drivers\Enums\HookDriver;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Values\AccountLabel;
-use App\Programs\Enums\HookProgram;
 
 /**
  * For a test that starts agents through the real start path: saves a signed-in account for each program and
@@ -32,11 +32,11 @@ trait WithActiveAccount
         );
         $chosen = [];
 
-        foreach (HookProgram::cases() as $program) {
-            $directory = "/journal/accounts/{$program->value}";
-            $account = Account::create($program, AccountLabel::from('Test account'), $directory);
-            ActiveAccount::lockedFor($program)->select($account);
-            $chosen[$program->value] = $account;
+        foreach (HookDriver::cases() as $driver) {
+            $directory = "/journal/accounts/{$driver->value}";
+            $account = Account::create($driver, AccountLabel::from('Test account'), $directory);
+            ActiveAccount::lockedFor($driver)->select($account);
+            $chosen[$driver->value] = $account;
         }
 
         return $chosen;
