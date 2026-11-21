@@ -26,7 +26,7 @@ final class ProjectCommandFrames extends Data
      *
      * @param  list<CommandFrame>  $frames
      */
-    public static function fromFrames(array $frames): self
+    public static function ofFrames(array $frames): self
     {
         return self::from(['frames' => array_map(fn (CommandFrame $frame) => $frame->toArray(), $frames)]);
     }

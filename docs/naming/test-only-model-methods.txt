@@ -12,6 +12,6 @@ SequenceRun::written
 TaskRun::replyInboxId
 CommandAlias::recordLine
 ChildClaim::nestedUnder
-ChildClaim::assertBaseIsHead
+ChildClaim::assertHeadUnmoved
 WorktreeDelivery::recordMerged
 WorktreeDelivery::recordConflict

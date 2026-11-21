@@ -35,9 +35,9 @@ final readonly class CommandFrame
         return new self($frame['sequence'], $frame['stream'], $frame['text'], $frame['isBase64'], $frame['exitCode']);
     }
 
-    public static function exit(int $sequence, int $exitCode): self
+    public static function exit(int $sequence, int $code): self
     {
-        return new self($sequence, 'exit', '', false, $exitCode);
+        return new self($sequence, 'exit', '', false, $code);
     }
 
     /**

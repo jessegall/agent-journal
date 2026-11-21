@@ -77,11 +77,11 @@ final class DeviceGrant extends Model implements ReadableModel
         ];
     }
 
-    public static function start(ProjectBinding $binding, string $deviceCodeDigest, string $userCode): self
+    public static function create(ProjectBinding $binding, string $codeDigest, string $userCode): self
     {
         $grant = new self();
         $grant->binding_id = $binding->id;
-        $grant->device_code_digest = $deviceCodeDigest;
+        $grant->device_code_digest = $codeDigest;
         $grant->user_code = $userCode;
         $grant->scopes = self::SCOPES;
         $grant->state = DeviceGrantState::Pending;

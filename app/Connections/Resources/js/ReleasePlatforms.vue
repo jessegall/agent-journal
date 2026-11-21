@@ -30,8 +30,8 @@ function megabytes(bytes: number): string {
             </template>
             <template v-else>
                 <li>
-                    {{ target.name }} is not offered yet: it does not run
-                    {{ target.missingProviders.join(' or ') }} yet.
+                    {{ target.name }} is not offered yet, because it does not
+                    run {{ target.missingProviders.join(' or ') }}.
                 </li>
             </template>
         </template>

@@ -24,7 +24,7 @@ final readonly class StartDeviceGrantHandler implements CommandHandler
             throw PresenceRefused::notTheHost($binding->id);
         }
 
-        $grant = DeviceGrant::start($binding, $command->deviceCodeDigest, $command->userCode);
+        $grant = DeviceGrant::create($binding, $command->deviceCodeDigest, $command->userCode);
 
         return new DeviceGrantStart($grant->user_code, $grant->code_expires_at->toIso8601String());
     }

@@ -226,7 +226,6 @@ Readers
 Readers and proofs
 Ready
 Reason
-Recent starts
 Reconnecting…
 Record
 Record type
@@ -257,7 +256,6 @@ Rule in use: {{ data.activeRevision === 0 ? 'none yet' : `revision ${data.active
 Rules
 Run a project on your own computer and keep its tasks, plans and decisions on {{ data.serverName }}.
 Run {{ sample.runId }}: {{ sample.parts.join('; ') }}
-Running now
 Runs
 Runtimes
 Samples
@@ -331,7 +329,7 @@ This machine and the share service must keep running for the link to work.
 This page could not be refreshed.
 This profile does not allow that model.
 This profile runs only its own driver.
-This release cannot do {{ release.withheldCapabilities.join(', ') }} yet.
+This release cannot do {{ release.missingCapabilities.join(', ') }} yet.
 This usually takes a few seconds. You can close this window: the account appears in the list when it is ready.
 This window could not be refreshed. It shows what it last loaded.
 To renew it, choose Sign in again on the account.
@@ -420,7 +418,7 @@ updated {{ ageSeconds().toFixed(1) }} s ago
 {{ rule.ruleId }} ({{ rule.owner }}) revision {{ rule.revision }}: {{ rule.state }} - {{ rule.reason }}
 {{ runtime.isHealthy ? 'Running' : 'Not answering: no sign of life in the last 45 seconds' }}. Version {{ runtime.endpointVersion }}, last seen {{ runtime.lastHealthAt ?? 'never' }}.
 {{ status.watchers }} watching
-{{ target.name }} is not offered yet: it does not run {{ target.withheldProviders.join(' or ') }} yet.
+{{ target.name }} is not offered yet, because it does not run {{ target.missingProviders.join(' or ') }}.
 {{ target.name }} is not offered yet: its size was not measured.
 {{ target.name }}: {{ megabytes(target.bytes) }} to download and install. Needs {{ target.prerequisites.join(', ') }}.
 {{ title }} can sit beside this pane or join its tabs.

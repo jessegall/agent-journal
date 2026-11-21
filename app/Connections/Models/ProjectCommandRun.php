@@ -56,7 +56,7 @@ final class ProjectCommandRun extends Model implements ReadableModel
     /**
      * @param  list<string>  $argv
      */
-    public static function start(string $requestKey, string $agentId, ProjectBinding $binding, array $argv): self
+    public static function create(string $requestKey, string $agentId, ProjectBinding $binding, array $argv): self
     {
         $run = new self();
         $run->request_key = $requestKey;

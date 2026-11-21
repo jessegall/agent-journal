@@ -29,6 +29,6 @@ final readonly class RunProjectCommandController
             'JOURNAL_PROFILE_REVISION' => (string) $request->header(SignedCall::PROFILE_REVISION_HEADER),
         ]);
 
-        return ProjectCommandFrames::fromFrames($frames);
+        return ProjectCommandFrames::ofFrames($frames);
     }
 }
