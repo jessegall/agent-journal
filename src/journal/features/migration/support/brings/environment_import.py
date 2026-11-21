@@ -23,6 +23,6 @@ class EnvironmentImport:
                 continue
             if self.ledger.is_imported(source):
                 continue
-            self.ledger.record(source, self.environments.ensure(row.title), actor)
+            self.ledger.record(source, self.environments.lookup(row.title), actor)
             count += 1
         return ImportTally("environments", count, tuple(skipped))

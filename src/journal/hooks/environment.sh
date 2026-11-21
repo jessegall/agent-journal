@@ -1,5 +1,5 @@
 # The environment a hook or a journal command works: JOURNAL_ENV when it is set; else, run inside a linked worktree of
-# the project, the environment named after the worktree's folder when that folder is under .claude/worktrees (a worker's folder under .journal/worktrees names none); else main. A name is this machine's own, on a shared
+# the project, the environment named after the worktree's folder; else main. A name is this machine's own, on a shared
 # journal too: the team knows the environment by its key, never by the name here.
 journal_environment() {
     if [ -n "$JOURNAL_ENV" ]; then
@@ -31,9 +31,10 @@ journal_local_environment() {
     top=$(git rev-parse --show-toplevel 2>/dev/null) || { printf main; return; }
     own=$(cd "$(git rev-parse --git-dir)" && pwd -P)
     common=$(cd "$(git rev-parse --git-common-dir)" && pwd -P)
-    case "$top" in
-        */.claude/worktrees/*) [ "$own" != "$common" ] && { printf '%s' "${top##*/}"; return; } ;;
-    esac
+    if [ "$own" != "$common" ]; then
+        printf '%s' "${top##*/}"
+        return
+    fi
     printf main
 }
 

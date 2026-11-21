@@ -257,9 +257,7 @@ class Worker(Helper):
 
     def finished(self, time: float, reason: str) -> "Worker":
         retired = self.moved("retired", time).with_(adopted=True, retire_reason=reason).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker=self.mention()))
-        if self.is_running():
-            return retired.stopped(time, reason)
-        return retired.with_(state=WorkerState.RELEASED) if self.is_delivered() else retired
+        return retired.stopped(time, reason) if self.is_running() else retired
 
     def is_running(self) -> bool:
         return self.state in (WorkerState.DISPATCHED, WorkerState.READY)

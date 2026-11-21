@@ -84,7 +84,7 @@ def tick_at(app, later: float, silence_seconds: float) -> list:
     from journal.events.agent.ticked import Ticked
     app.runtime().deferred.drain()
     clock = app.container.get(Clock)
-    environment = app.container.get(Environments).ensure("main").id
+    environment = app.container.get(Environments).lookup("main").id
     source = app.container.get(TimeSource)
     with clock.tick_lock:
         source.pin(clock.held_at + later)

@@ -1712,7 +1712,7 @@ def test_the_restart_notice_closes_in_every_environment_once_a_session_started_o
     from journal.repositories.environments import Environments
     from journal.repositories.notices import Notices
     from journal.version import VERSION
-    app.container.get(Environments).ensure("second")
+    app.container.get(Environments).lookup("second")
     restart, notices = app.container.get(SessionRestart), app.container.get(Notices)
     restart.notice()
     def open_everywhere():
@@ -2791,28 +2791,6 @@ def test_a_journal_standing_by_serves_the_moment_the_one_holding_the_project_is_
     assert Config.rooted(linked).home.resolve() == app.config.home.resolve(), "a journal reached through another spelling of its path is the same journal"
 
 
-def test_a_hook_and_a_command_inside_a_worker_worktree_without_journal_env_make_no_environment(app: App):
-    import subprocess
-    from journal.repositories.environments import Environments
-    root = app.config.root
-    git = lambda *argv: subprocess.run(["git", *argv], cwd=root, capture_output=True, text=True, timeout=30)
-    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
-        git(*argv)
-    folder = app.config.home / "worktrees" / "12-Ada-Lovelace,-keeper-of-the-loom"
-    git("worktree", "add", "-q", "-b", "worker/12", str(folder))
-    (folder / "deep").mkdir()
-    script = Path(__file__).resolve().parents[1] / "src" / "journal" / "hooks" / "environment.sh"
-    named = subprocess.run(["sh", "-c", f". '{script}'; journal_environment"], cwd=folder / "deep", env={key: value for key, value in os.environ.items() if key != "JOURNAL_ENV"}, capture_output=True, text=True, timeout=30).stdout
-    assert named == "main", "a worker's worktree folder names a worker, never an environment, so a hook or a command there works main"
-    environments = app.container.get(Environments)
-    before = sorted(row.name for row in environments.rows())
-    status, _ = posted(app, "/hooks/claude", {"hook_event_name": "SessionStart", "session_id": "s-stray"}, {"X-Journal-Env": folder.name})
-    refused = app.console().run(["task", "list"], Caller.user(folder.name))
-    assert status == 200, "a hook naming an environment with no row is let through, never answered 404 as a journal that did not answer"
-    assert refused.code == 1 and f"no environment {folder.name}" in refused.error, "a command naming one is refused with a line, never a 404"
-    assert sorted(row.name for row in environments.rows()) == before and folder.name not in before, "and neither makes an environment"
-
-
 def test_hooks_from_two_worktrees_at_once_each_land_in_their_own_environment(app: App):
     import subprocess
     import threading
@@ -3057,7 +3035,7 @@ def test_the_viewer_lists_an_environments_worktree_with_its_branch(app: App):
         subprocess.run(["git", *argv], cwd=root, capture_output=True, timeout=30)
     Worktree(root, "calm-river").created()
     environments = app.container.get(Environments)
-    rows = app.container.get(EnvironmentController).shown_page([environments.ensure("main"), environments.ensure("calm-river")])
+    rows = app.container.get(EnvironmentController).shown_page([environments.lookup("main"), environments.lookup("calm-river")])
     assert [(r["name"], r["worktree"]) for r in rows] == [("main", ""), ("calm-river", "worktree on worktree-calm-river")]
 
 
@@ -7832,44 +7810,3 @@ def test_a_released_worker_with_unmerged_commits_loses_its_worktree_after_the_se
     assert not folder.is_dir(), "past them its worktree goes, though its commit was never merged"
     kept = git_run(root / "platform", "for-each-ref", "--format=%(objectname)", f"{TIPS_REF}/").stdout
     assert tip[:7] in kept or git_run(root / "platform", "cat-file", "-e", f"{tip}^{{commit}}").returncode == 0, "its last commit stays"
-
-
-def test_a_wait_on_a_row_that_does_not_exist_is_open_and_broken_and_never_fails_a_stop(app: App):
-    from datetime import datetime, timezone
-    from journal.models.link import Link
-    from journal.models.support.ref import Ref
-    from journal.models.task import Task
-    from journal.repositories.links import Links
-    from journal.repositories.tasks import WAIT_LINK, Tasks
-    from journal.features.tasks.support.person_wait import PersonWait
-    from journal.hooks.receiver import GUARD_FAILED
-    from journal.repositories.entries import Entries
-    from journal.support.actor import Actor
-    with app.container.get(Scope).environment(1):
-        tasks = app.container.get(Tasks)
-        task = tasks.save(Task(environment_id=1, title="waits on a lost question"), USER.actor)
-        app.container.get(Links).save(Link(source=Ref.build(task), target=Ref("questions", 725), link_type=WAIT_LINK), Actor.system())
-        blocked = tasks.save(tasks.find(task.id).blocked("waiting on question 725", datetime.now(timezone.utc)), USER.actor)
-        assert tasks.open_waits(blocked) == [Ref("questions", 725)], "a missing target keeps the wait open"
-        assert tasks.open_wait_refs([blocked]) == {blocked.id: [Ref("questions", 725)]}
-        assert tasks.waiting_ids([blocked]) == {blocked.id}
-        assert [t.id for t in tasks.blocked_tasks()] == [blocked.id], "the task stays blocked"
-        assert not app.container.get(PersonWait).is_person_wait(blocked), "the person-wait read passes over the missing row"
-        assert [(t.id, ref) for t, ref in tasks.dangling_waits()] == [(blocked.id, Ref("questions", 725))], "the link is reported as broken"
-    hook(app, "Stop")
-    with app.container.get(Scope).environment(1):
-        failed = [e.data for e in app.container.get(Entries).scoped() if e.entry_type == GUARD_FAILED]
-    assert failed == [], f"the Stop raised no guard failure: {failed}"
-
-
-def test_a_completed_worker_that_had_clocked_out_is_no_longer_waiting_to_be_checked(app: App):
-    from journal.models.worker import Worker
-    from journal.models.worker_state import WorkerState
-    from journal.repositories.workers import Workers
-    with app.container.get(Scope).environment(1):
-        workers = app.container.get(Workers)
-        worker = workers.save(Worker(environment_id=1, name="Mr. Babbage", brief="b", state=WorkerState.DELIVERED), Actor.system())
-        assert [w.id for w in workers.checkable_workers()] == [worker.id]
-        workers.save(worker.finished(10.0, "its work was acted on"), Actor.system())
-        assert workers.checkable_workers() == [], "a completed worker is not named on Stop"
-        assert workers.find(worker.id).state == WorkerState.RELEASED

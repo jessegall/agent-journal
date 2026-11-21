@@ -19,4 +19,4 @@ class OldMainWorktree(Seed):
         if not tree.path.is_dir():
             return
         moved = tree.renamed(WorktreeNames(self.config.root).unused({environment.name for environment in self.environments.all()}))
-        self.environments.save(self.environments.ensure(moved.name).with_(branch=moved.branch), Actor.system())
+        self.environments.save(self.environments.lookup(moved.name).with_(branch=moved.branch), Actor.system())
