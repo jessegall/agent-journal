@@ -57,9 +57,8 @@ final readonly class WindowResults implements WindowResultsContract
                 throw ReaderDataMismatch::for($key, $resolver->dataClass, $windowContent::class);
             }
 
-            $offer = $windowContent instanceof DockableWindow
-                ? $this->offers->offerFor($windowContent->dockSource())
-                : None::create();
+            $dockSource = $windowContent instanceof DockableWindow ? $windowContent->dockSource() : None::create();
+            $offer = $dockSource->flatMap($this->offers->offerFor(...));
 
             return $offer->map(fn (DockOfferData $made) => ReadyWindow::offering($windowContent->toArray(), $made))
                 ->getOrCall(fn () => ReadyWindow::of($windowContent->toArray()));

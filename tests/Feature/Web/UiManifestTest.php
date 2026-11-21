@@ -19,6 +19,7 @@ use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
+use Tests\Fixtures\UiDeclarations\ShelfLayoutResolver;
 use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
@@ -111,6 +112,25 @@ final class UiManifestTest extends TestCase
             File::get("{$this->root}/resources/js/generated/ui-manifest.ts"),
         );
         $this->assertStringContainsString("Shelf/Resources/js/Index.vue').default> = true;", $checks);
+    }
+
+    public function test_a_declared_layout_page_is_typed_with_the_layout_and_drawn_by_the_shared_renderer(): void
+    {
+        File::ensureDirectoryExists("{$this->root}/resources/js/components/layout");
+        File::put("{$this->root}/resources/js/components/layout/DeclaredLayout.vue", '<template><div /></template>');
+        $shelf = DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
+            Page::make('index', 'Shelf', Icon::Docs, ShelfResolver::class, 'Index.vue')->at(''),
+            Page::layout('lent', 'Lent', Icon::Docs, ShelfLayoutResolver::class)->at('lent'),
+        ]);
+        $this->manifest([$this->library(), $shelf])->write($this->root);
+        $props = File::get("{$this->root}/resources/js/generated/types/page-props.ts");
+
+        $this->assertStringContainsString('window_shelf_lent?: WindowResult<DeclaredLayoutData>;', $props);
+        $this->assertStringContainsString("import type { DeclaredLayoutData } from './core';", $props);
+        $this->assertStringContainsString(
+            "'layout/DeclaredLayout',",
+            File::get("{$this->root}/resources/js/generated/ui-manifest.ts"),
+        );
     }
 
     public function test_a_types_owner_is_core_its_domain_or_shared(): void

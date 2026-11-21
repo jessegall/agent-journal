@@ -11216,6 +11216,8 @@ method	DeclaredCommand::needsRepeatableRead()
 method	DeclaredCommand::read()
 method	DeclaredCommand::retention()
 method	DeclaredLayoutData::__construct()
+method	DeclaredLayoutData::dockSource()
+method	DeclaredLayoutData::docking()
 method	DeclaredLayoutData::of()
 method	DeclaredPageGate::__construct()
 method	DeclaredPageGate::contextFor()
@@ -22857,6 +22859,7 @@ method	WebServiceProvider::refusalAnswer()
 method	WebServiceProvider::register()
 method	WebServiceProvider::renderRefusals()
 method	WindowResults::__construct()
+method	WindowResults::dockSourceOf()
 method	WindowResults::result()
 method	WithContext::withContext()
 method	WithContext::withMessage()
@@ -25701,6 +25704,7 @@ parameter	$while
 parameter	$wider
 parameter	$width
 parameter	$window
+parameter	$windowContent
 parameter	$windowFields
 parameter	$windowMinutes
 parameter	$windowResults
@@ -27667,6 +27671,7 @@ property	DeclaredCommand::$command
 property	DeclaredCommand::$entry
 property	DeclaredCommand::$handler
 property	DeclaredCommand::$owner
+property	DeclaredLayoutData::$dock
 property	DeclaredLayoutData::$root
 property	DeclaredPageGate::$pages
 property	DeclaredPageRoutes::$declarations
@@ -36747,7 +36752,6 @@ variable	$whenTrue
 variable	$where
 variable	$wildcard
 variable	$window
-variable	$windowContent
 variable	$windows
 variable	$withdrawn
 variable	$withoutKey

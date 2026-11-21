@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Ui\Declarations;
 
+use App\Files\Enums\Place;
 use App\Files\Exceptions\FileMissing;
 use App\Files\Exceptions\FileOutsidePlaces;
 use App\Files\Exceptions\FilePathInvalid;
@@ -11,6 +12,7 @@ use App\Files\Exceptions\FolderClosed;
 use App\Files\Exceptions\LinkLeavesPlace;
 use App\Files\Exceptions\LinkLoop;
 use App\Files\Support\CodeFiles;
+use App\Files\Values\FilePath;
 use App\Reflection\Support\Reflector;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
@@ -116,9 +118,9 @@ final readonly class DomainUi
             return $this->componentFile($declaration, $component);
         }
 
-        $code = CodeFiles::ofProcess();
-
-        return $code->realPathOf($code->projectPathOf('resources/js/components/layout')->child(self::DECLARED_LAYOUT));
+        return CodeFiles::ofProcess()->realPathOf(
+            FilePath::in(Place::Project, 'resources/js/components/layout/'.self::DECLARED_LAYOUT),
+        );
     }
 
     /**

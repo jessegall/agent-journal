@@ -12,6 +12,8 @@ use App\Text\Support\MarkdownText;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\Report;
+use PhpOption\Option;
+use PhpOption\Some;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -105,8 +107,11 @@ final class RecordPageData extends Data implements DockableWindow
         ]);
     }
 
-    public function dockSource(): DockIdentity
+    /**
+     * @return Option<DockIdentity>
+     */
+    public function dockSource(): Option
     {
-        return new DockIdentity($this->sourceType, $this->sourceId);
+        return new Some(new DockIdentity($this->sourceType, $this->sourceId));
     }
 }
